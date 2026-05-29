@@ -1,0 +1,296 @@
+openapi: 3.1.0
+info:
+  title: Loom Creator Channel Registry API
+  version: 0.1.0
+  summary: Canonical creator channel identity, handles, keys, metadata host pointers, and provider role grants.
+  description: Defines the registry-owned API surface for creating channels, reserving handles, rotating keys, recovering channel authority, updating metadata host pointers, and recording provider role grants.
+servers:
+  - url: https://registry.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/channel-registry
+x-loom-architecture-docs:
+  - ../../../Architecture/04-creator-tools-and-channel-metadata.md
+x-loom-downstream-apis:
+  - ./creator-metadata-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+paths:
+  /v1/channels:
+    post:
+      operationId: createCreatorChannel
+      summary: Create a canonical creator channel.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChannelRequest'
+      responses:
+        '201':
+          description: Creator channel created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorChannel'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/channels/{channelId}:
+    get:
+      operationId: getCreatorChannel
+      summary: Read canonical creator channel registry state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creator channel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorChannel'
+  /v1/channels/{channelId}/metadata-host-pointer:
+    put:
+      operationId: updateMetadataHostPointer
+      summary: Update the canonical metadata host pointer after migration or recovery.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMetadataHostPointerRequest'
+      responses:
+        '200':
+          description: Pointer updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataHostPointer'
+  /v1/channels/{channelId}/keys/rotate:
+    post:
+      operationId: rotateChannelKey
+      summary: Rotate or recover a channel signing key.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RotateChannelKeyRequest'
+      responses:
+        '200':
+          description: Channel key rotated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelKeyRecord'
+  /v1/channels/{channelId}/provider-roles:
+    put:
+      operationId: putProviderRoleGrant
+      summary: Attach or replace a provider role grant.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutProviderRoleGrantRequest'
+      responses:
+        '200':
+          description: Provider role grant stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderRoleGrant'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateChannelRequest:
+      type: object
+      required:
+        - handle
+        - displayName
+        - metadataHostId
+        - publicKey
+      properties:
+        handle:
+          type: string
+        displayName:
+          type: string
+        metadataHostId:
+          type: string
+        publicKey:
+          type: string
+    CreatorChannel:
+      type: object
+      required:
+        - channelId
+        - handle
+        - displayName
+        - metadataHost
+        - keyRecord
+        - state
+      properties:
+        channelId:
+          type: string
+        handle:
+          type: string
+        displayName:
+          type: string
+        metadataHost:
+          $ref: '#/components/schemas/MetadataHostPointer'
+        keyRecord:
+          $ref: '#/components/schemas/ChannelKeyRecord'
+        providerRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderRoleGrant'
+        state:
+          type: string
+          enum:
+            - active
+            - suspended
+            - recovery
+            - migrated
+    MetadataHostPointer:
+      type: object
+      required:
+        - providerId
+        - baseUrl
+        - manifestVersion
+      properties:
+        providerId:
+          type: string
+        baseUrl:
+          type: string
+          format: uri
+        manifestVersion:
+          type: string
+        activeFrom:
+          type: string
+          format: date-time
+    UpdateMetadataHostPointerRequest:
+      type: object
+      required:
+        - metadataHost
+        - verificationProof
+      properties:
+        metadataHost:
+          $ref: '#/components/schemas/MetadataHostPointer'
+        verificationProof:
+          type: string
+    RotateChannelKeyRequest:
+      type: object
+      required:
+        - newPublicKey
+        - reason
+      properties:
+        newPublicKey:
+          type: string
+        reason:
+          type: string
+          enum:
+            - scheduled_rotation
+            - compromise
+            - recovery
+        governanceCaseId:
+          type: string
+          nullable: true
+    ChannelKeyRecord:
+      type: object
+      required:
+        - keyId
+        - publicKey
+        - state
+        - activeFrom
+      properties:
+        keyId:
+          type: string
+        publicKey:
+          type: string
+        state:
+          type: string
+          enum:
+            - active
+            - retired
+            - revoked
+            - suspended
+        activeFrom:
+          type: string
+          format: date-time
+    PutProviderRoleGrantRequest:
+      type: object
+      required:
+        - providerRole
+        - providerId
+        - capabilityVersion
+      properties:
+        providerRole:
+          type: string
+          enum:
+            - metadata_host
+            - content_host
+            - payment
+            - search
+            - ai
+            - settlement
+            - app
+            - extension_runtime
+        providerId:
+          type: string
+        capabilityVersion:
+          type: string
+        contractManifestId:
+          type: string
+          nullable: true
+    ProviderRoleGrant:
+      allOf:
+        - $ref: '#/components/schemas/PutProviderRoleGrantRequest'
+        - type: object
+          required:
+            - grantId
+            - state
+          properties:
+            grantId:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - suspended
+                - revoked

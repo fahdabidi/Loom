@@ -1,0 +1,404 @@
+openapi: 3.1.0
+info:
+  title: Loom Fan Wallet API
+  version: 0.1.0
+  summary: Fan wallet, purchases, credits, boosts, refunds, and entitlement-facing wallet state.
+  description: Defines the fan-owned API surface for payment intents, wallet balances, subscriptions, tips, boosts, premium modes, refunds, and wallet-visible entitlement state.
+servers:
+  - url: https://wallet.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.wallet
+  - LoomServiceAuth: []
+x-loom-api-owner: identity/fan-wallet
+x-loom-architecture-docs:
+  - ../../../Architecture/03-identity-fan-data-wallets-and-fan-app-shell.md
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+x-loom-downstream-apis:
+  - ./fan-passport-api.openapi.yaml
+  - ../monetization/entitlement-ledger-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../monetization/settlement-engine-api.openapi.yaml
+paths:
+  /v1/fan-wallets/{fanId}:
+    get:
+      operationId: getFanWallet
+      summary: Read wallet balances, active modes, and payment status.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan wallet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanWallet'
+  /v1/fan-wallets/{fanId}/payment-intents:
+    post:
+      operationId: createPaymentIntent
+      summary: Create a payment intent for membership, premium, paid content, tips, boosts, events, AI credits, or commerce.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentIntentRequest'
+      responses:
+        '201':
+          description: Payment intent created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentIntent'
+  /v1/fan-wallets/{fanId}/payment-intents/{paymentIntentId}/confirm:
+    post:
+      operationId: confirmPaymentIntent
+      summary: Confirm a payment intent and issue downstream receipts and entitlements.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: paymentIntentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment confirmed or pending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentIntent'
+  /v1/fan-wallets/{fanId}/subscriptions:
+    get:
+      operationId: listWalletSubscriptions
+      summary: List wallet-managed subscriptions and premium modes.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscriptions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListSubscriptionsResponse'
+    post:
+      operationId: createWalletSubscription
+      summary: Start a wallet-managed subscription.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletSubscription'
+  /v1/fan-wallets/{fanId}/boosts:
+    post:
+      operationId: allocateBoost
+      summary: Allocate a boost, tip, or creator support amount.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocateBoostRequest'
+      responses:
+        '201':
+          description: Boost allocated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoostAllocation'
+  /v1/fan-wallets/{fanId}/refunds:
+    post:
+      operationId: requestRefund
+      summary: Request a refund for a wallet purchase.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestRefundRequest'
+      responses:
+        '202':
+          description: Refund request accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundRequest'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    FanWallet:
+      type: object
+      required:
+        - fanId
+        - balances
+        - activeModes
+      properties:
+        fanId:
+          type: string
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletBalance'
+        activeModes:
+          type: array
+          items:
+            type: string
+            enum:
+              - premium_no_ads
+              - premium_private
+              - sponsor_free
+    WalletBalance:
+      type: object
+      required:
+        - balanceType
+        - amount
+      properties:
+        balanceType:
+          type: string
+          enum:
+            - cash
+            - credit
+            - ai_credit
+            - reward
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+    PurchaseType:
+      type: string
+      enum:
+        - membership
+        - premium_no_ads
+        - premium_private
+        - paid_content
+        - event
+        - course
+        - commerce
+        - tip
+        - boost
+        - ai_credit
+    CreatePaymentIntentRequest:
+      type: object
+      required:
+        - purchaseType
+        - amount
+      properties:
+        purchaseType:
+          $ref: '#/components/schemas/PurchaseType'
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        channelId:
+          type: string
+          nullable: true
+    PaymentIntent:
+      type: object
+      required:
+        - paymentIntentId
+        - fanId
+        - purchaseType
+        - amount
+        - state
+      properties:
+        paymentIntentId:
+          type: string
+        fanId:
+          type: string
+        purchaseType:
+          $ref: '#/components/schemas/PurchaseType'
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        state:
+          type: string
+          enum:
+            - requires_payment_method
+            - requires_confirmation
+            - processing
+            - succeeded
+            - failed
+            - canceled
+        entitlementIds:
+          type: array
+          items:
+            type: string
+    CreateSubscriptionRequest:
+      type: object
+      required:
+        - subscriptionType
+        - amount
+      properties:
+        subscriptionType:
+          type: string
+          enum:
+            - creator_membership
+            - premium_no_ads
+            - premium_private
+            - sponsor_free
+        channelId:
+          type: string
+          nullable: true
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+    WalletSubscription:
+      type: object
+      required:
+        - subscriptionId
+        - fanId
+        - subscriptionType
+        - state
+      properties:
+        subscriptionId:
+          type: string
+        fanId:
+          type: string
+        subscriptionType:
+          type: string
+        channelId:
+          type: string
+          nullable: true
+        state:
+          type: string
+          enum:
+            - active
+            - past_due
+            - canceled
+            - paused
+        renewsAt:
+          type: string
+          format: date-time
+          nullable: true
+    AllocateBoostRequest:
+      type: object
+      required:
+        - channelId
+        - amount
+      properties:
+        channelId:
+          type: string
+        contentId:
+          type: string
+          nullable: true
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        message:
+          type: string
+          nullable: true
+    BoostAllocation:
+      type: object
+      required:
+        - boostId
+        - fanId
+        - channelId
+        - amount
+        - state
+      properties:
+        boostId:
+          type: string
+        fanId:
+          type: string
+        channelId:
+          type: string
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        state:
+          type: string
+          enum:
+            - accepted
+            - pending_settlement
+            - failed
+    RequestRefundRequest:
+      type: object
+      required:
+        - paymentIntentId
+        - reason
+      properties:
+        paymentIntentId:
+          type: string
+        reason:
+          type: string
+    RefundRequest:
+      type: object
+      required:
+        - refundRequestId
+        - paymentIntentId
+        - state
+      properties:
+        refundRequestId:
+          type: string
+        paymentIntentId:
+          type: string
+        state:
+          type: string
+          enum:
+            - pending
+            - approved
+            - denied
+            - processed
+    ListSubscriptionsResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletSubscription'

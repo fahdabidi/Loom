@@ -1,0 +1,255 @@
+openapi: 3.1.0
+info:
+  title: Loom Provider Registry API
+  version: 0.1.0
+  summary: Provider capability manifests, certified scopes, endpoint discovery, keys, incidents, and marketplace listings.
+servers:
+  - url: https://providers.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomApiKey: []
+x-loom-api-owner: ecosystem/provider-registry
+x-loom-architecture-docs:
+  - ../../../Architecture/06-provider-certification-governance-and-developer-supply-chain.md
+x-loom-downstream-apis:
+  - ./certification-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+  - ../governance/governance-api.openapi.yaml
+paths:
+  /v1/providers:
+    post:
+      operationId: registerProvider
+      summary: Register a provider capability manifest.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterProviderRequest'
+      responses:
+        '201':
+          description: Provider registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderRecord'
+  /v1/providers/{providerId}:
+    get:
+      operationId: getProvider
+      summary: Read provider registry record.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Provider record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderRecord'
+  /v1/provider-capabilities/resolve:
+    post:
+      operationId: resolveProviderCapability
+      summary: Resolve a certified provider endpoint for a capability.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveProviderCapabilityRequest'
+      responses:
+        '200':
+          description: Provider capability endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCapabilityEndpoint'
+  /v1/providers/{providerId}/incidents:
+    post:
+      operationId: recordProviderIncident
+      summary: Record or update provider incident state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderIncidentRequest'
+      responses:
+        '201':
+          description: Provider incident recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderIncident'
+components:
+  securitySchemes:
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+    LoomApiKey:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomApiKey'
+  schemas:
+    RegisterProviderRequest:
+      type: object
+      required:
+        - providerName
+        - capabilities
+        - publicKeys
+      properties:
+        providerName:
+          type: string
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProviderCapability'
+        publicKeys:
+          type: array
+          items:
+            type: string
+    ProviderCapability:
+      type: object
+      required:
+        - role
+        - apiVersion
+        - endpointUrl
+      properties:
+        role:
+          type: string
+        apiVersion:
+          type: string
+        endpointUrl:
+          type: string
+          format: uri
+        regions:
+          type: array
+          items:
+            type: string
+    ProviderRecord:
+      allOf:
+        - $ref: '#/components/schemas/RegisterProviderRequest'
+        - type: object
+          required:
+            - providerId
+            - state
+          properties:
+            providerId:
+              type: string
+            state:
+              type: string
+              enum:
+                - pending_certification
+                - active
+                - limited
+                - suspended
+                - revoked
+            certificationScopes:
+              type: array
+              items:
+                $ref: '#/components/schemas/CertificationScope'
+    CertificationScope:
+      type: object
+      required:
+        - role
+        - apiVersion
+        - state
+      properties:
+        role:
+          type: string
+        apiVersion:
+          type: string
+        state:
+          type: string
+          enum:
+            - certified
+            - limited
+            - expired
+            - revoked
+    ResolveProviderCapabilityRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+        apiVersion:
+          type: string
+          nullable: true
+        region:
+          type: string
+          nullable: true
+    ProviderCapabilityEndpoint:
+      type: object
+      required:
+        - providerId
+        - role
+        - apiVersion
+        - endpointUrl
+      properties:
+        providerId:
+          type: string
+        role:
+          type: string
+        apiVersion:
+          type: string
+        endpointUrl:
+          type: string
+          format: uri
+        keyId:
+          type: string
+          nullable: true
+    ProviderIncidentRequest:
+      type: object
+      required:
+        - incidentType
+        - severity
+        - summary
+      properties:
+        incidentType:
+          type: string
+        severity:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - critical
+        summary:
+          type: string
+        affectedRoles:
+          type: array
+          items:
+            type: string
+    ProviderIncident:
+      allOf:
+        - $ref: '#/components/schemas/ProviderIncidentRequest'
+        - type: object
+          required:
+            - incidentId
+            - state
+          properties:
+            incidentId:
+              type: string
+            state:
+              type: string
+              enum:
+                - open
+                - mitigating
+                - resolved
+                - closed

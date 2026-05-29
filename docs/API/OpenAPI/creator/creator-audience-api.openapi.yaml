@@ -1,0 +1,245 @@
+openapi: 3.1.0
+info:
+  title: Loom Creator Audience API
+  version: 0.1.0
+  summary: Creator-visible audience analytics, relationship state, segments, and permissioned CRM export.
+  description: Defines the API surface for creator audience views while enforcing fan visibility, direct-contact grants, data minimization, export restrictions, and auditable data access.
+servers:
+  - url: https://audience.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.audience
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/audience
+x-loom-architecture-docs:
+  - ../../../Architecture/03-identity-fan-data-wallets-and-fan-app-shell.md
+  - ../../../Architecture/04-creator-tools-and-channel-metadata.md
+x-loom-downstream-apis:
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../identity/fan-vault-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../safety/trust-safety-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/audience/summary:
+    get:
+      operationId: getAudienceSummary
+      summary: Read creator audience aggregate analytics.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audience summary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceSummary'
+  /v1/channels/{channelId}/audience/relationships:
+    get:
+      operationId: listAudienceRelationships
+      summary: List creator-visible audience relationships.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: segmentId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creator-visible audience relationships.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAudienceRelationshipsResponse'
+  /v1/channels/{channelId}/audience/segments:
+    post:
+      operationId: createAudienceSegment
+      summary: Create a creator audience segment from eligible fields.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAudienceSegmentRequest'
+      responses:
+        '201':
+          description: Segment created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceSegment'
+  /v1/channels/{channelId}/audience/exports:
+    post:
+      operationId: createAudienceExport
+      summary: Request a permissioned audience export or direct-contact dataset.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAudienceExportRequest'
+      responses:
+        '202':
+          description: Export request accepted, narrowed, or denied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceExportJob'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    AudienceSummary:
+      type: object
+      required:
+        - channelId
+        - followerCount
+        - visibleFollowerCount
+        - directContactEligibleCount
+      properties:
+        channelId:
+          type: string
+        followerCount:
+          type: integer
+        visibleFollowerCount:
+          type: integer
+        directContactEligibleCount:
+          type: integer
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AudienceSegment'
+    AudienceRelationship:
+      type: object
+      required:
+        - pairwiseCreatorFanId
+        - visibility
+        - state
+      properties:
+        pairwiseCreatorFanId:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        visibility:
+          type: string
+          enum:
+            - public
+            - creator_visible
+            - pseudonymous
+        directContactAllowed:
+          type: boolean
+        state:
+          type: string
+          enum:
+            - active
+            - revoked
+            - blocked
+    CreateAudienceSegmentRequest:
+      type: object
+      required:
+        - name
+        - criteria
+      properties:
+        name:
+          type: string
+        criteria:
+          type: object
+          additionalProperties: true
+    AudienceSegment:
+      type: object
+      required:
+        - segmentId
+        - name
+        - eligibleCount
+      properties:
+        segmentId:
+          type: string
+        name:
+          type: string
+        eligibleCount:
+          type: integer
+    CreateAudienceExportRequest:
+      type: object
+      required:
+        - purpose
+        - fields
+      properties:
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        segmentId:
+          type: string
+          nullable: true
+        destination:
+          type: string
+          nullable: true
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+    AudienceExportJob:
+      type: object
+      required:
+        - exportJobId
+        - channelId
+        - decision
+      properties:
+        exportJobId:
+          type: string
+        channelId:
+          type: string
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        approvedFields:
+          type: array
+          items:
+            type: string
+        dataAccessReceipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/DataAccessReceipt'
+          nullable: true
+    ListAudienceRelationshipsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AudienceRelationship'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

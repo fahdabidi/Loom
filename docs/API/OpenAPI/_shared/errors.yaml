@@ -1,0 +1,75 @@
+components:
+  schemas:
+    ApiError:
+      type: object
+      required:
+        - code
+        - message
+        - correlationId
+      properties:
+        code:
+          type: string
+          example: policy_denied
+        message:
+          type: string
+          example: The requested action is not allowed by the active policy.
+        correlationId:
+          type: string
+          format: uuid
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      required:
+        - target
+        - reason
+      properties:
+        target:
+          type: string
+          example: fanGrant.fields.email
+        reason:
+          type: string
+          example: Field is not allowed for the requested purpose.
+        remediation:
+          type: string
+          example: Request aggregate reporting or ask the fan for a direct-contact grant.
+  responses:
+    BadRequest:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Authentication is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: Authenticated actor is not allowed to perform this operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: Request conflicts with current resource state or version.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+

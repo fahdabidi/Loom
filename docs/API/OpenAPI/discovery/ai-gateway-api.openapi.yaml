@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: Loom AI Gateway API
+  version: 0.1.0
+  summary: AI archive Q&A, AI search assistance, creator copilot, private vault assistant, and AI source-use receipts.
+servers:
+  - url: https://ai.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.passport
+  - LoomServiceAuth: []
+x-loom-api-owner: discovery/ai-gateway
+x-loom-architecture-docs:
+  - ../../../Architecture/07-search-recommendations-and-ai.md
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ../identity/fan-vault-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../safety/trust-safety-api.openapi.yaml
+paths:
+  /v1/ai/archive-qa:
+    post:
+      operationId: answerArchiveQuestion
+      summary: Answer a fan question over a creator archive under AI content policy.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveQARequest'
+      responses:
+        '200':
+          description: AI answer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAnswer'
+  /v1/ai/search-assistant:
+    post:
+      operationId: runSearchAssistant
+      summary: Run an AI search assistant over public and optionally private fan-granted context.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchAssistantRequest'
+      responses:
+        '200':
+          description: AI search assistant response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIAnswer'
+  /v1/ai/creator-copilot:
+    post:
+      operationId: runCreatorCopilot
+      summary: Generate creator drafts, titles, summaries, clips, translations, or packaging suggestions.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatorCopilotRequest'
+      responses:
+        '200':
+          description: AI copilot output.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIGeneratedArtifact'
+  /v1/ai/indexing-jobs:
+    post:
+      operationId: createAiIndexingJob
+      summary: Start, update, or revoke creator archive indexing.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAiIndexingJobRequest'
+      responses:
+        '202':
+          description: AI indexing job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    ArchiveQARequest:
+      type: object
+      required:
+        - channelId
+        - prompt
+      properties:
+        channelId:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        prompt:
+          type: string
+    SearchAssistantRequest:
+      type: object
+      required:
+        - prompt
+      properties:
+        fanId:
+          type: string
+          nullable: true
+        prompt:
+          type: string
+        usePrivateVault:
+          type: boolean
+          default: false
+        memoryBundleId:
+          type: string
+          nullable: true
+    CreatorCopilotRequest:
+      type: object
+      required:
+        - channelId
+        - task
+      properties:
+        channelId:
+          type: string
+        task:
+          type: string
+          enum:
+            - draft
+            - title
+            - summary
+            - clip
+            - translation
+            - dubbing
+            - package
+        sourceRefs:
+          type: array
+          items:
+            $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+    AIAnswer:
+      type: object
+      required:
+        - answer
+        - sources
+      properties:
+        answer:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/AISourceCitation'
+        sourceUseReceiptId:
+          type: string
+          nullable: true
+    AISourceCitation:
+      type: object
+      required:
+        - source
+      properties:
+        source:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        excerpt:
+          type: string
+          nullable: true
+        policyVersion:
+          type: string
+          nullable: true
+    AIGeneratedArtifact:
+      type: object
+      required:
+        - artifactId
+        - artifactType
+        - state
+      properties:
+        artifactId:
+          type: string
+        artifactType:
+          type: string
+        state:
+          type: string
+          enum:
+            - draft
+            - ready_for_review
+            - rejected
+        content:
+          type: object
+          additionalProperties: true
+        provenance:
+          type: array
+          items:
+            $ref: '#/components/schemas/AISourceCitation'
+    CreateAiIndexingJobRequest:
+      type: object
+      required:
+        - channelId
+        - action
+      properties:
+        channelId:
+          type: string
+        action:
+          type: string
+          enum:
+            - index
+            - reindex
+            - revoke
+            - delete
+        policyVersion:
+          type: string
+          nullable: true

@@ -1,0 +1,105 @@
+components:
+  schemas:
+    ReceiptBase:
+      type: object
+      required:
+        - receiptId
+        - receiptType
+        - schemaVersion
+        - occurredAt
+        - correlationId
+        - signature
+      properties:
+        receiptId:
+          type: string
+        receiptType:
+          type: string
+        schemaVersion:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+          format: uuid
+        idempotencyKey:
+          type: string
+        actor:
+          $ref: './components.yaml#/components/schemas/ActorPrincipal'
+        subject:
+          $ref: './components.yaml#/components/schemas/ResourceRef'
+        manifestRefs:
+          type: array
+          items:
+            $ref: './components.yaml#/components/schemas/ManifestRef'
+        signature:
+          type: string
+          description: Detached or compact signature over canonical receipt payload.
+    EconomicReceipt:
+      allOf:
+        - $ref: '#/components/schemas/ReceiptBase'
+        - type: object
+          required:
+            - grossAmount
+          properties:
+            grossAmount:
+              $ref: './components.yaml#/components/schemas/Money'
+            allocationContext:
+              type: object
+              additionalProperties: true
+    AuditReceipt:
+      allOf:
+        - $ref: '#/components/schemas/ReceiptBase'
+        - type: object
+          properties:
+            action:
+              type: string
+            evidenceRefs:
+              type: array
+              items:
+                type: string
+    DataAccessReceipt:
+      allOf:
+        - $ref: '#/components/schemas/ReceiptBase'
+        - type: object
+          required:
+            - purpose
+            - fields
+            - decision
+          properties:
+            purpose:
+              type: string
+            fields:
+              type: array
+              items:
+                type: string
+            destination:
+              type: string
+              nullable: true
+            decision:
+              $ref: './components.yaml#/components/schemas/PolicyDecision'
+    MigrationAuditReceipt:
+      allOf:
+        - $ref: '#/components/schemas/ReceiptBase'
+        - type: object
+          properties:
+            sourceProviderId:
+              type: string
+            targetProviderId:
+              type: string
+            packageHash:
+              type: string
+    SettlementReceipt:
+      allOf:
+        - $ref: '#/components/schemas/ReceiptBase'
+        - type: object
+          properties:
+            settlementRunId:
+              type: string
+            netAmount:
+              $ref: './components.yaml#/components/schemas/Money'
+            adjustmentRefs:
+              type: array
+              items:
+                type: string
+

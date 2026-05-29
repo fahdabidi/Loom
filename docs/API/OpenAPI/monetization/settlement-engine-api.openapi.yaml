@@ -1,0 +1,209 @@
+openapi: 3.1.0
+info:
+  title: Loom Settlement Engine API
+  version: 0.1.0
+  summary: Settlement runs, payout statements, allocation calculations, disputes, reserves, and adjustments.
+servers:
+  - url: https://settlement.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomUserOAuth:
+      - creator.channel
+x-loom-api-owner: monetization/settlement-engine
+x-loom-architecture-docs:
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+  - ../../../Architecture/11-business-model-and-incentive-architecture.md
+x-loom-downstream-apis:
+  - ./receipt-ledger-api.openapi.yaml
+  - ./entitlement-ledger-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../safety/fraud-api.openapi.yaml
+paths:
+  /v1/settlement-runs:
+    post:
+      operationId: createSettlementRun
+      summary: Start a settlement run for a period and scope.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSettlementRunRequest'
+      responses:
+        '202':
+          description: Settlement run accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementRun'
+  /v1/settlement-runs/{settlementRunId}:
+    get:
+      operationId: getSettlementRun
+      summary: Read settlement run state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: settlementRunId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Settlement run.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementRun'
+  /v1/statements:
+    get:
+      operationId: listStatements
+      summary: List payout or allocation statements for an actor.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: actorType
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: actorId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statements.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStatementsResponse'
+  /v1/disputes:
+    post:
+      operationId: createSettlementDispute
+      summary: Open a settlement dispute for receipts, adjustments, payouts, or allocations.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSettlementDisputeRequest'
+      responses:
+        '201':
+          description: Dispute opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementDispute'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateSettlementRunRequest:
+      type: object
+      required:
+        - period
+        - scope
+      properties:
+        period:
+          $ref: '../_shared/components.yaml#/components/schemas/TimeWindow'
+        scope:
+          type: object
+          additionalProperties: true
+        dryRun:
+          type: boolean
+          default: false
+    SettlementRun:
+      type: object
+      required:
+        - settlementRunId
+        - status
+      properties:
+        settlementRunId:
+          type: string
+        status:
+          $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+        period:
+          $ref: '../_shared/components.yaml#/components/schemas/TimeWindow'
+        totals:
+          type: object
+          additionalProperties:
+            $ref: '../_shared/components.yaml#/components/schemas/Money'
+    Statement:
+      type: object
+      required:
+        - statementId
+        - actor
+        - period
+        - lineItems
+      properties:
+        statementId:
+          type: string
+        actor:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        period:
+          $ref: '../_shared/components.yaml#/components/schemas/TimeWindow'
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementLineItem'
+    StatementLineItem:
+      type: object
+      required:
+        - label
+        - amount
+      properties:
+        label:
+          type: string
+        receiptIds:
+          type: array
+          items:
+            type: string
+        amount:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+    ListStatementsResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Statement'
+    CreateSettlementDisputeRequest:
+      type: object
+      required:
+        - subject
+        - reason
+      properties:
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        reason:
+          type: string
+        receiptIds:
+          type: array
+          items:
+            type: string
+    SettlementDispute:
+      type: object
+      required:
+        - disputeId
+        - state
+      properties:
+        disputeId:
+          type: string
+        state:
+          type: string
+          enum:
+            - open
+            - under_review
+            - resolved
+            - rejected

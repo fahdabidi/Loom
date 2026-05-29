@@ -1,0 +1,328 @@
+openapi: 3.1.0
+info:
+  title: Loom Fan Vault API
+  version: 0.1.0
+  summary: Fan-owned portable state, private event storage, and scoped private memory bundles.
+  description: Defines the owned API surface for core fan vault records, private event vault records, preference export, and AI/private assistant memory bundles.
+servers:
+  - url: https://vault.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.vault
+  - LoomServiceAuth: []
+x-loom-api-owner: identity/fan-vault
+x-loom-architecture-docs:
+  - ../../../Architecture/03-identity-fan-data-wallets-and-fan-app-shell.md
+x-loom-downstream-apis:
+  - ./fan-passport-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../discovery/ai-gateway-api.openapi.yaml
+paths:
+  /v1/fan-vaults/{fanId}/records:
+    get:
+      operationId: listVaultRecords
+      summary: List portable fan-owned records.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: recordType
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan vault records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVaultRecordsResponse'
+    post:
+      operationId: upsertVaultRecord
+      summary: Create or update a portable fan-owned vault record.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertVaultRecordRequest'
+      responses:
+        '200':
+          description: Vault record stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VaultRecord'
+  /v1/fan-vaults/{fanId}/private-events:
+    post:
+      operationId: appendPrivateEvent
+      summary: Append a private event under purpose-bound controls.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendPrivateEventRequest'
+      responses:
+        '201':
+          description: Private event appended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateEvent'
+  /v1/fan-vaults/{fanId}/memory-bundles:
+    post:
+      operationId: createScopedMemoryBundle
+      summary: Create a scoped private memory bundle for a single app, AI, or recommendation request.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemoryBundleRequest'
+      responses:
+        '201':
+          description: Scoped memory bundle created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryBundle'
+  /v1/fan-vaults/{fanId}/exports:
+    post:
+      operationId: exportFanVault
+      summary: Export fan vault records for portability or data rights requests.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVaultExportRequest'
+      responses:
+        '202':
+          description: Export job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+  /v1/fan-vaults/{fanId}/records/{recordId}:
+    delete:
+      operationId: deleteVaultRecord
+      summary: Delete or tombstone a fan vault record.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Vault record deleted or tombstoned.
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    VaultRecord:
+      type: object
+      required:
+        - recordId
+        - fanId
+        - recordType
+        - data
+        - updatedAt
+      properties:
+        recordId:
+          type: string
+        fanId:
+          type: string
+        recordType:
+          type: string
+          enum:
+            - preference
+            - bookmark
+            - mute
+            - app_setting
+            - recommendation_preference
+            - ai_memory
+        data:
+          type: object
+          additionalProperties: true
+        visibility:
+          type: string
+          enum:
+            - fan_private
+            - app_scoped
+            - exportable
+        updatedAt:
+          type: string
+          format: date-time
+    UpsertVaultRecordRequest:
+      type: object
+      required:
+        - recordType
+        - data
+      properties:
+        recordId:
+          type: string
+        recordType:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        visibility:
+          type: string
+          enum:
+            - fan_private
+            - app_scoped
+            - exportable
+    AppendPrivateEventRequest:
+      type: object
+      required:
+        - eventType
+        - purpose
+        - data
+      properties:
+        eventType:
+          type: string
+        purpose:
+          type: string
+        retention:
+          type: string
+          enum:
+            - session
+            - thirty_days
+            - fan_controlled
+        data:
+          type: object
+          additionalProperties: true
+    PrivateEvent:
+      type: object
+      required:
+        - eventId
+        - fanId
+        - eventType
+        - purpose
+        - occurredAt
+      properties:
+        eventId:
+          type: string
+        fanId:
+          type: string
+        eventType:
+          type: string
+        purpose:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    CreateMemoryBundleRequest:
+      type: object
+      required:
+        - purpose
+        - requestedRecordTypes
+        - expiresAt
+      properties:
+        purpose:
+          type: string
+        requestedRecordTypes:
+          type: array
+          items:
+            type: string
+        maxRecords:
+          type: integer
+          default: 25
+        expiresAt:
+          type: string
+          format: date-time
+    MemoryBundle:
+      type: object
+      required:
+        - bundleId
+        - fanId
+        - purpose
+        - records
+        - expiresAt
+      properties:
+        bundleId:
+          type: string
+        fanId:
+          type: string
+        purpose:
+          type: string
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultRecord'
+        expiresAt:
+          type: string
+          format: date-time
+    CreateVaultExportRequest:
+      type: object
+      properties:
+        includePrivateEvents:
+          type: boolean
+          default: false
+        includeAiMemory:
+          type: boolean
+          default: true
+        encryptionPublicKey:
+          type: string
+          nullable: true
+    ListVaultRecordsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/VaultRecord'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

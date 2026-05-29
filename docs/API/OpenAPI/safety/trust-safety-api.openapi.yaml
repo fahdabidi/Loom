@@ -1,0 +1,235 @@
+openapi: 3.1.0
+info:
+  title: Loom Trust And Safety API
+  version: 0.1.0
+  summary: Abuse reports, safety cases, enforcement actions, appeals, privacy misuse, campaign compliance, and AI safety cases.
+servers:
+  - url: https://safety.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.passport
+  - LoomServiceAuth: []
+x-loom-api-owner: safety/trust-safety
+x-loom-architecture-docs:
+  - ../../../Architecture/09-trust-safety-fraud-and-compliance.md
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../creator/creator-audience-api.openapi.yaml
+  - ../campaigns/campaign-api.openapi.yaml
+  - ../discovery/ai-gateway-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/safety-reports:
+    post:
+      operationId: createSafetyReport
+      summary: Submit abuse, privacy misuse, campaign, recommendation, provider, or AI safety report.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSafetyReportRequest'
+      responses:
+        '201':
+          description: Safety case created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafetyCase'
+  /v1/safety-cases/{caseId}:
+    get:
+      operationId: getSafetyCase
+      summary: Read case status and safe-to-show outcome.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Safety case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafetyCase'
+  /v1/safety-cases/{caseId}/enforcement-actions:
+    post:
+      operationId: applyEnforcementAction
+      summary: Apply takedown, limit, suspend, revoke, freeze, restore, or notify action.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyEnforcementActionRequest'
+      responses:
+        '201':
+          description: Enforcement action applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnforcementAction'
+  /v1/safety-cases/{caseId}/appeals:
+    post:
+      operationId: createAppeal
+      summary: Submit appeal evidence for an enforcement action.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppealRequest'
+      responses:
+        '201':
+          description: Appeal opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appeal'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateSafetyReportRequest:
+      type: object
+      required:
+        - reportType
+        - subject
+        - summary
+      properties:
+        reportType:
+          type: string
+          enum:
+            - abuse
+            - privacy_misuse
+            - creator_audience_misuse
+            - takedown
+            - campaign_compliance
+            - provider_incident
+            - ai_safety
+            - recommendation_abuse
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        summary:
+          type: string
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+    SafetyCase:
+      type: object
+      required:
+        - caseId
+        - reportType
+        - subject
+        - state
+      properties:
+        caseId:
+          type: string
+        reportType:
+          type: string
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        state:
+          type: string
+          enum:
+            - open
+            - investigating
+            - actioned
+            - appealed
+            - closed
+        safeSummary:
+          type: string
+          nullable: true
+    ApplyEnforcementActionRequest:
+      type: object
+      required:
+        - actionType
+        - reason
+      properties:
+        actionType:
+          type: string
+          enum:
+            - takedown
+            - limit
+            - suspend
+            - revoke
+            - freeze
+            - restore
+            - notify
+        reason:
+          type: string
+        scope:
+          type: object
+          additionalProperties: true
+    EnforcementAction:
+      allOf:
+        - $ref: '#/components/schemas/ApplyEnforcementActionRequest'
+        - type: object
+          required:
+            - enforcementActionId
+            - state
+          properties:
+            enforcementActionId:
+              type: string
+            state:
+              type: string
+              enum:
+                - applied
+                - pending
+                - failed
+                - reversed
+    CreateAppealRequest:
+      type: object
+      required:
+        - appellant
+        - rationale
+      properties:
+        appellant:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        rationale:
+          type: string
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+    Appeal:
+      type: object
+      required:
+        - appealId
+        - state
+      properties:
+        appealId:
+          type: string
+        state:
+          type: string
+          enum:
+            - open
+            - under_review
+            - accepted
+            - rejected

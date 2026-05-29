@@ -1,0 +1,204 @@
+openapi: 3.1.0
+info:
+  title: Loom Migration And Export API
+  version: 0.1.0
+  summary: Creator export, fan export, metadata migration, media migration, extension state export, import validation, and data deletion coordination.
+servers:
+  - url: https://portability.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: portability/migration-export
+x-loom-architecture-docs:
+  - ../../../Architecture/10-migration-export-and-portability.md
+x-loom-downstream-apis:
+  - ../creator/creator-channel-registry-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../identity/fan-vault-api.openapi.yaml
+  - ../identity/fan-wallet-api.openapi.yaml
+  - ../ecosystem/extension-runtime-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/export-jobs:
+    post:
+      operationId: createExportJob
+      summary: Create a creator, fan, media, metadata, extension, or data-rights export job.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExportJobRequest'
+      responses:
+        '202':
+          description: Export job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortabilityJob'
+  /v1/import-jobs:
+    post:
+      operationId: createImportJob
+      summary: Create an import job for a Loom export bundle or existing-platform metadata.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateImportJobRequest'
+      responses:
+        '202':
+          description: Import job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortabilityJob'
+  /v1/migration-jobs:
+    post:
+      operationId: createMigrationJob
+      summary: Coordinate export, import, verification, cutover, and rollback for migration.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMigrationJobRequest'
+      responses:
+        '202':
+          description: Migration job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortabilityJob'
+  /v1/data-deletion-jobs:
+    post:
+      operationId: createDataDeletionJob
+      summary: Coordinate data deletion, tombstones, and downstream revocation.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDataDeletionJobRequest'
+      responses:
+        '202':
+          description: Deletion job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortabilityJob'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    ExportScope:
+      type: string
+      enum:
+        - creator_channel
+        - fan_passport
+        - fan_vault
+        - wallet_references
+        - media
+        - metadata
+        - extension_state
+        - receipts
+    CreateExportJobRequest:
+      type: object
+      required:
+        - owner
+        - scopes
+      properties:
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportScope'
+        targetFormat:
+          type: string
+          default: loom_bundle
+    CreateImportJobRequest:
+      type: object
+      required:
+        - owner
+        - source
+      properties:
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        source:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        validateOnly:
+          type: boolean
+          default: false
+    CreateMigrationJobRequest:
+      type: object
+      required:
+        - owner
+        - sourceProviderId
+        - targetProviderId
+        - scopes
+      properties:
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        sourceProviderId:
+          type: string
+        targetProviderId:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExportScope'
+        cutoverAt:
+          type: string
+          format: date-time
+          nullable: true
+    CreateDataDeletionJobRequest:
+      type: object
+      required:
+        - owner
+        - scopes
+      properties:
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        scopes:
+          type: array
+          items:
+            type: string
+        requireTombstone:
+          type: boolean
+          default: true
+    PortabilityJob:
+      type: object
+      required:
+        - jobId
+        - status
+      properties:
+        jobId:
+          type: string
+        status:
+          $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+        packageUrl:
+          type: string
+          format: uri
+          nullable: true
+        receipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/MigrationAuditReceipt'
+          nullable: true

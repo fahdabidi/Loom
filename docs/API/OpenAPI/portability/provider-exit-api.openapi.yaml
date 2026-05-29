@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Loom Provider Exit API
+  version: 0.1.0
+  summary: Certified provider exit-button contract for export, transfer, revocation, deletion, and cutover status.
+servers:
+  - url: https://provider-exit.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: portability/provider-exit
+x-loom-architecture-docs:
+  - ../../../Architecture/10-migration-export-and-portability.md
+x-loom-downstream-apis:
+  - ./migration-export-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/provider-exit-requests:
+    post:
+      operationId: createProviderExitRequest
+      summary: Start provider exit for a creator, fan, app, or extension owner.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProviderExitRequest'
+      responses:
+        '202':
+          description: Exit request accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderExitRequest'
+  /v1/provider-exit-requests/{exitRequestId}:
+    get:
+      operationId: getProviderExitRequest
+      summary: Read exit status and blockers.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: exitRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Provider exit request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderExitRequest'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateProviderExitRequest:
+      type: object
+      required:
+        - owner
+        - sourceProviderId
+        - targetProviderId
+        - requestedActions
+      properties:
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        sourceProviderId:
+          type: string
+        targetProviderId:
+          type: string
+        requestedActions:
+          type: array
+          items:
+            type: string
+            enum:
+              - export
+              - transfer
+              - revoke
+              - delete
+              - cutover
+    ProviderExitRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateProviderExitRequest'
+        - type: object
+          required:
+            - exitRequestId
+            - state
+          properties:
+            exitRequestId:
+              type: string
+            state:
+              type: string
+              enum:
+                - accepted
+                - exporting
+                - transferring
+                - blocked
+                - completed
+                - failed
+            blockers:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExitBlocker'
+    ExitBlocker:
+      type: object
+      required:
+        - blockerType
+        - message
+      properties:
+        blockerType:
+          type: string
+          enum:
+            - unpaid_invoice
+            - legal_hold
+            - unsupported_scope
+            - target_unavailable
+            - verification_failed
+        message:
+          type: string

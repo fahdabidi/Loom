@@ -1,0 +1,273 @@
+openapi: 3.1.0
+info:
+  title: Loom Extension Registry API
+  version: 0.1.0
+  summary: Extension manifests, signed artifacts, install grants, listings, suspension state, and export contracts.
+servers:
+  - url: https://extensions.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: ecosystem/extension-registry
+x-loom-architecture-docs:
+  - ../../../Architecture/06-provider-certification-governance-and-developer-supply-chain.md
+  - ../../../Architecture/08-extensions-campaigns-and-sponsor-tools.md
+x-loom-downstream-apis:
+  - ./certification-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+paths:
+  /v1/extensions:
+    post:
+      operationId: publishExtension
+      summary: Publish a signed extension artifact and manifest.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishExtensionRequest'
+      responses:
+        '201':
+          description: Extension version submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtensionVersion'
+  /v1/extensions/{extensionId}:
+    get:
+      operationId: getExtension
+      summary: Read extension listing and active version state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: extensionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Extension listing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtensionListing'
+  /v1/channels/{channelId}/extension-installs:
+    post:
+      operationId: installExtension
+      summary: Store a creator-approved extension install grant.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallExtensionRequest'
+      responses:
+        '201':
+          description: Extension install grant created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtensionInstallGrant'
+  /v1/extensions/{extensionId}/suspensions:
+    post:
+      operationId: suspendExtension
+      summary: Suspend or limit an extension version.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: extensionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuspendExtensionRequest'
+      responses:
+        '201':
+          description: Suspension record created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtensionSuspension'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PublishExtensionRequest:
+      type: object
+      required:
+        - developerId
+        - manifest
+        - artifact
+      properties:
+        developerId:
+          type: string
+        manifest:
+          $ref: '#/components/schemas/ExtensionManifest'
+        artifact:
+          $ref: '#/components/schemas/ExtensionArtifact'
+    ExtensionManifest:
+      type: object
+      required:
+        - name
+        - surfaces
+        - permissions
+        - exportBehavior
+      properties:
+        name:
+          type: string
+        surfaces:
+          type: array
+          items:
+            type: string
+        permissions:
+          type: array
+          items:
+            type: string
+        riskTier:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+        exportBehavior:
+          type: string
+          enum:
+            - none
+            - creator_owned
+            - fan_owned
+            - mixed
+    ExtensionArtifact:
+      type: object
+      required:
+        - artifactUri
+        - artifactHash
+        - signature
+      properties:
+        artifactUri:
+          type: string
+          format: uri
+        artifactHash:
+          type: string
+        signature:
+          type: string
+        sbomUri:
+          type: string
+          format: uri
+          nullable: true
+    ExtensionVersion:
+      type: object
+      required:
+        - extensionId
+        - version
+        - state
+      properties:
+        extensionId:
+          type: string
+        version:
+          type: string
+        state:
+          type: string
+          enum:
+            - submitted
+            - certified
+            - rejected
+            - suspended
+    ExtensionListing:
+      allOf:
+        - $ref: '#/components/schemas/ExtensionVersion'
+        - type: object
+          properties:
+            manifest:
+              $ref: '#/components/schemas/ExtensionManifest'
+    InstallExtensionRequest:
+      type: object
+      required:
+        - extensionId
+        - version
+        - approvedPermissions
+      properties:
+        extensionId:
+          type: string
+        version:
+          type: string
+        approvedPermissions:
+          type: array
+          items:
+            type: string
+        approvedSurfaces:
+          type: array
+          items:
+            type: string
+    ExtensionInstallGrant:
+      allOf:
+        - $ref: '#/components/schemas/InstallExtensionRequest'
+        - type: object
+          required:
+            - installGrantId
+            - channelId
+            - state
+          properties:
+            installGrantId:
+              type: string
+            channelId:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - revoked
+                - suspended
+    SuspendExtensionRequest:
+      type: object
+      required:
+        - reason
+        - scope
+      properties:
+        reason:
+          type: string
+        scope:
+          type: string
+          enum:
+            - extension
+            - version
+            - permission
+        version:
+          type: string
+          nullable: true
+    ExtensionSuspension:
+      allOf:
+        - $ref: '#/components/schemas/SuspendExtensionRequest'
+        - type: object
+          required:
+            - suspensionId
+            - state
+          properties:
+            suspensionId:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - remediated
+                - lifted

@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Loom Governance API
+  version: 0.1.0
+  summary: API version governance, utility fee policy, certification policy, privacy/data-rights governance, disputes, and public registry state.
+servers:
+  - url: https://governance.loom.example
+security:
+  - LoomUserOAuth:
+      - governance.admin
+  - LoomServiceAuth: []
+x-loom-api-owner: governance/governance
+x-loom-architecture-docs:
+  - ../../../Architecture/06-provider-certification-governance-and-developer-supply-chain.md
+  - ../../../Architecture/11-business-model-and-incentive-architecture.md
+x-loom-downstream-apis:
+  - ./audit-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../ecosystem/certification-api.openapi.yaml
+paths:
+  /v1/api-versions:
+    post:
+      operationId: publishApiVersion
+      summary: Publish API or manifest version governance record.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishApiVersionRequest'
+      responses:
+        '201':
+          description: API version published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiVersionRecord'
+  /v1/utility-fee-policies:
+    post:
+      operationId: publishUtilityFeePolicy
+      summary: Publish utility fee policy.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishUtilityFeePolicyRequest'
+      responses:
+        '201':
+          description: Utility fee policy published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilityFeePolicy'
+  /v1/governance-disputes:
+    post:
+      operationId: createGovernanceDispute
+      summary: Open governance dispute for certification, policy, API version, privacy, or utility fee matter.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGovernanceDisputeRequest'
+      responses:
+        '201':
+          description: Governance dispute opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GovernanceDispute'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PublishApiVersionRequest:
+      type: object
+      required:
+        - apiName
+        - version
+        - lifecycleState
+      properties:
+        apiName:
+          type: string
+        version:
+          type: string
+        lifecycleState:
+          type: string
+          enum:
+            - draft
+            - active
+            - deprecated
+            - retired
+        deprecatesAt:
+          type: string
+          format: date-time
+          nullable: true
+    ApiVersionRecord:
+      allOf:
+        - $ref: '#/components/schemas/PublishApiVersionRequest'
+        - type: object
+          required:
+            - apiVersionId
+          properties:
+            apiVersionId:
+              type: string
+    PublishUtilityFeePolicyRequest:
+      type: object
+      required:
+        - policyName
+        - rateBasisPoints
+      properties:
+        policyName:
+          type: string
+        rateBasisPoints:
+          type: integer
+        appliesToReceiptTypes:
+          type: array
+          items:
+            type: string
+        cap:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+          nullable: true
+    UtilityFeePolicy:
+      allOf:
+        - $ref: '#/components/schemas/PublishUtilityFeePolicyRequest'
+        - type: object
+          required:
+            - policyId
+            - state
+          properties:
+            policyId:
+              type: string
+            state:
+              type: string
+              enum:
+                - draft
+                - active
+                - retired
+    CreateGovernanceDisputeRequest:
+      type: object
+      required:
+        - disputeType
+        - subject
+        - rationale
+      properties:
+        disputeType:
+          type: string
+          enum:
+            - certification
+            - policy
+            - api_version
+            - privacy
+            - utility_fee
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        rationale:
+          type: string
+    GovernanceDispute:
+      allOf:
+        - $ref: '#/components/schemas/CreateGovernanceDisputeRequest'
+        - type: object
+          required:
+            - disputeId
+            - state
+          properties:
+            disputeId:
+              type: string
+            state:
+              type: string
+              enum:
+                - open
+                - review
+                - resolved
+                - rejected

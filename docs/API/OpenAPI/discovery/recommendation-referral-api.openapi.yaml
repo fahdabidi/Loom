@@ -1,0 +1,217 @@
+openapi: 3.1.0
+info:
+  title: Loom Recommendation And Referral API
+  version: 0.1.0
+  summary: Creator-led recommendations, referral terms, community feed subscriptions, and referral attribution.
+servers:
+  - url: https://recommendations.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: discovery/recommendation-referral
+x-loom-architecture-docs:
+  - ../../../Architecture/07-search-recommendations-and-ai.md
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../monetization/settlement-engine-api.openapi.yaml
+  - ../safety/trust-safety-api.openapi.yaml
+paths:
+  /v1/referral-terms:
+    post:
+      operationId: publishReferralTerms
+      summary: Publish destination creator referral terms.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishReferralTermsRequest'
+      responses:
+        '201':
+          description: Referral terms published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralTerms'
+  /v1/recommendations:
+    post:
+      operationId: publishRecommendation
+      summary: Publish a creator-led recommendation.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRecommendationRequest'
+      responses:
+        '201':
+          description: Recommendation published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recommendation'
+  /v1/recommendations/feed:
+    get:
+      operationId: getRecommendationFeed
+      summary: Get fan-eligible creator-led recommendations.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: query
+          schema:
+            type: string
+        - name: channelId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recommendation feed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationFeed'
+  /v1/referral-attributions:
+    post:
+      operationId: createReferralAttribution
+      summary: Record referral impression, click, follow, purchase, or conversion attribution.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReferralAttributionRequest'
+      responses:
+        '202':
+          description: Attribution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PublishReferralTermsRequest:
+      type: object
+      required:
+        - destinationChannelId
+        - offer
+        - attributionWindowDays
+      properties:
+        destinationChannelId:
+          type: string
+        offer:
+          type: string
+        attributionWindowDays:
+          type: integer
+        rateBasisPoints:
+          type: integer
+          nullable: true
+        cap:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+          nullable: true
+    ReferralTerms:
+      allOf:
+        - $ref: '#/components/schemas/PublishReferralTermsRequest'
+        - type: object
+          required:
+            - termsId
+            - version
+            - state
+          properties:
+            termsId:
+              type: string
+            version:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - paused
+                - retired
+    PublishRecommendationRequest:
+      type: object
+      required:
+        - sourceChannelId
+        - target
+        - message
+      properties:
+        sourceChannelId:
+          type: string
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        message:
+          type: string
+        referralTermsId:
+          type: string
+          nullable: true
+        surfaces:
+          type: array
+          items:
+            type: string
+    Recommendation:
+      allOf:
+        - $ref: '#/components/schemas/PublishRecommendationRequest'
+        - type: object
+          required:
+            - recommendationId
+            - state
+          properties:
+            recommendationId:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - paused
+                - removed
+            disclosure:
+              type: string
+              nullable: true
+    RecommendationFeed:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+    CreateReferralAttributionRequest:
+      type: object
+      required:
+        - recommendationId
+        - action
+      properties:
+        recommendationId:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        action:
+          type: string
+          enum:
+            - impression
+            - click
+            - follow
+            - purchase
+            - conversion
+        conversionReceiptId:
+          type: string
+          nullable: true

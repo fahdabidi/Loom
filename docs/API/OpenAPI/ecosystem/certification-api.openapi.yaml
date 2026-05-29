@@ -1,0 +1,200 @@
+openapi: 3.1.0
+info:
+  title: Loom Certification API
+  version: 0.1.0
+  summary: Provider, app, extension, AI provider, and capability certification requests and conformance results.
+servers:
+  - url: https://certification.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomApiKey: []
+x-loom-api-owner: ecosystem/certification
+x-loom-architecture-docs:
+  - ../../../Architecture/06-provider-certification-governance-and-developer-supply-chain.md
+x-loom-downstream-apis:
+  - ./provider-registry-api.openapi.yaml
+  - ./extension-registry-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+  - ../governance/governance-api.openapi.yaml
+paths:
+  /v1/certification-requests:
+    post:
+      operationId: createCertificationRequest
+      summary: Submit a provider, app, extension, AI provider, or capability for certification.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCertificationRequest'
+      responses:
+        '201':
+          description: Certification request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationRequest'
+  /v1/certification-requests/{certificationRequestId}/conformance-runs:
+    post:
+      operationId: startConformanceRun
+      summary: Start a conformance test run for a certification request.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: certificationRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Conformance run accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConformanceRun'
+  /v1/certification-requests/{certificationRequestId}/decision:
+    post:
+      operationId: decideCertificationRequest
+      summary: Approve, limit, or reject a certification request.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: certificationRequestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CertificationDecisionRequest'
+      responses:
+        '200':
+          description: Certification decision recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificationScopeRecord'
+components:
+  securitySchemes:
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+    LoomApiKey:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomApiKey'
+  schemas:
+    CreateCertificationRequest:
+      type: object
+      required:
+        - targetType
+        - targetId
+        - requestedScopes
+      properties:
+        targetType:
+          type: string
+          enum:
+            - provider
+            - app
+            - extension
+            - ai_provider
+            - capability
+        targetId:
+          type: string
+        requestedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CertificationScopeRequest'
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+    CertificationScopeRequest:
+      type: object
+      required:
+        - capability
+        - apiVersion
+      properties:
+        capability:
+          type: string
+        apiVersion:
+          type: string
+    CertificationRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateCertificationRequest'
+        - type: object
+          required:
+            - certificationRequestId
+            - state
+          properties:
+            certificationRequestId:
+              type: string
+            state:
+              type: string
+              enum:
+                - submitted
+                - testing
+                - review
+                - approved
+                - limited
+                - rejected
+    ConformanceRun:
+      type: object
+      required:
+        - conformanceRunId
+        - status
+      properties:
+        conformanceRunId:
+          type: string
+        status:
+          $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+        resultSummary:
+          type: string
+          nullable: true
+    CertificationDecisionRequest:
+      type: object
+      required:
+        - decision
+        - rationale
+      properties:
+        decision:
+          type: string
+          enum:
+            - approve
+            - limit
+            - reject
+        rationale:
+          type: string
+        restrictions:
+          type: array
+          items:
+            type: string
+    CertificationScopeRecord:
+      type: object
+      required:
+        - scopeId
+        - targetType
+        - targetId
+        - state
+      properties:
+        scopeId:
+          type: string
+        targetType:
+          type: string
+        targetId:
+          type: string
+        state:
+          type: string
+          enum:
+            - certified
+            - limited
+            - rejected
+            - revoked
+        restrictions:
+          type: array
+          items:
+            type: string

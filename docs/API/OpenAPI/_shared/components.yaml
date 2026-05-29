@@ -1,0 +1,170 @@
+components:
+  parameters:
+    CorrelationId:
+      name: X-Loom-Correlation-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Packet trace id shared across API boundaries.
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 200
+      description: Client-generated idempotency key for mutating requests.
+    ManifestVersion:
+      name: X-Loom-Manifest-Version
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Optional manifest version pin.
+  schemas:
+    ActorPrincipal:
+      type: object
+      required:
+        - actorType
+        - actorId
+      properties:
+        actorType:
+          type: string
+          enum:
+            - fan
+            - creator
+            - sponsor
+            - developer
+            - provider
+            - app
+            - service
+            - governance
+        actorId:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        scopes:
+          type: array
+          items:
+            type: string
+    ResourceRef:
+      type: object
+      required:
+        - resourceType
+        - resourceId
+      properties:
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+        version:
+          type: string
+          nullable: true
+    PolicyDecision:
+      type: object
+      required:
+        - decision
+        - policyVersion
+      properties:
+        decision:
+          type: string
+          enum:
+            - allow
+            - deny
+            - narrow
+            - hold
+            - pending
+        policyVersion:
+          type: string
+        reasons:
+          type: array
+          items:
+            type: string
+    ManifestRef:
+      type: object
+      required:
+        - manifestType
+        - manifestId
+        - version
+      properties:
+        manifestType:
+          type: string
+        manifestId:
+          type: string
+        version:
+          type: string
+    CreatorChannelRef:
+      type: object
+      required:
+        - channelId
+      properties:
+        channelId:
+          type: string
+        handle:
+          type: string
+          nullable: true
+        manifestVersion:
+          type: string
+          nullable: true
+    FanRef:
+      type: object
+      required:
+        - fanId
+      properties:
+        fanId:
+          type: string
+        pairwiseCreatorFanId:
+          type: string
+          nullable: true
+    Money:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: integer
+          format: int64
+          description: Minor currency units.
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+    TimeWindow:
+      type: object
+      properties:
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+    JobStatus:
+      type: string
+      enum:
+        - queued
+        - running
+        - succeeded
+        - failed
+        - canceled
+        - requires_action
+    OperationStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        message:
+          type: string
+          nullable: true
+        resource:
+          $ref: '#/components/schemas/ResourceRef'
+

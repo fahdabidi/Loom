@@ -1,0 +1,355 @@
+openapi: 3.1.0
+info:
+  title: Loom Creator Metadata API
+  version: 0.1.0
+  summary: Creator profiles, catalogs, content manifests, business manifests, and public catalog projections.
+  description: Defines the metadata-host-owned API surface for creator channel metadata, content catalog writes, manifest validation, public catalog projections, search policy, and AI content policy.
+servers:
+  - url: https://metadata.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/metadata
+x-loom-architecture-docs:
+  - ../../../Architecture/04-creator-tools-and-channel-metadata.md
+x-loom-downstream-apis:
+  - ./creator-channel-registry-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ../discovery/search-api.openapi.yaml
+  - ../discovery/ai-gateway-api.openapi.yaml
+  - ../monetization/settlement-engine-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/profile:
+    get:
+      operationId: getCreatorProfile
+      summary: Read creator public profile metadata.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creator profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+    put:
+      operationId: putCreatorProfile
+      summary: Create or replace creator profile metadata.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCreatorProfileRequest'
+      responses:
+        '200':
+          description: Creator profile stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+  /v1/channels/{channelId}/content:
+    get:
+      operationId: listContentManifests
+      summary: List content manifests for a creator channel.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Content manifests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListContentManifestsResponse'
+    post:
+      operationId: publishContentManifest
+      summary: Publish content metadata and public catalog projection.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishContentManifestRequest'
+      responses:
+        '201':
+          description: Content manifest published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentManifest'
+  /v1/channels/{channelId}/manifests/{manifestType}:
+    put:
+      operationId: putBusinessManifest
+      summary: Store monetization, settlement, hosting, search, AI, extension, or referral manifests.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: manifestType
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutBusinessManifestRequest'
+      responses:
+        '200':
+          description: Manifest stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessManifest'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/public/channels/{channelId}/catalog:
+    get:
+      operationId: getPublicCatalog
+      summary: Read app/search-facing public catalog projection.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Public catalog.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCatalog'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PutCreatorProfileRequest:
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          format: uri
+          nullable: true
+        links:
+          type: array
+          items:
+            type: string
+            format: uri
+    CreatorProfile:
+      allOf:
+        - $ref: '#/components/schemas/PutCreatorProfileRequest'
+        - type: object
+          required:
+            - channelId
+            - version
+          properties:
+            channelId:
+              type: string
+            version:
+              type: string
+            updatedAt:
+              type: string
+              format: date-time
+    ContentType:
+      type: string
+      enum:
+        - video
+        - short
+        - post
+        - newsletter
+        - event
+        - course
+        - livestream
+        - community_update
+    AccessMode:
+      type: string
+      enum:
+        - public
+        - members
+        - paid
+        - premium
+        - private
+    PublishContentManifestRequest:
+      type: object
+      required:
+        - title
+        - contentType
+        - accessMode
+        - mediaRefs
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        contentType:
+          $ref: '#/components/schemas/ContentType'
+        accessMode:
+          $ref: '#/components/schemas/AccessMode'
+        mediaRefs:
+          type: array
+          items:
+            $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        searchPolicy:
+          $ref: '#/components/schemas/SearchAccessPolicy'
+        aiPolicy:
+          $ref: '#/components/schemas/AIContentPolicy'
+    ContentManifest:
+      allOf:
+        - $ref: '#/components/schemas/PublishContentManifestRequest'
+        - type: object
+          required:
+            - contentId
+            - channelId
+            - version
+            - state
+          properties:
+            contentId:
+              type: string
+            channelId:
+              type: string
+            version:
+              type: string
+            state:
+              type: string
+              enum:
+                - draft
+                - published
+                - limited
+                - removed
+            publishedAt:
+              type: string
+              format: date-time
+              nullable: true
+    SearchAccessPolicy:
+      type: object
+      properties:
+        indexable:
+          type: boolean
+          default: true
+        allowSnippets:
+          type: boolean
+          default: true
+        allowTranscriptIndexing:
+          type: boolean
+          default: false
+    AIContentPolicy:
+      type: object
+      properties:
+        allowArchiveQa:
+          type: boolean
+          default: false
+        allowSourceUse:
+          type: boolean
+          default: false
+        allowTranslationDubbingClipping:
+          type: boolean
+          default: false
+        attributionRequired:
+          type: boolean
+          default: true
+    PutBusinessManifestRequest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          additionalProperties: true
+        expectedPreviousVersion:
+          type: string
+          nullable: true
+    BusinessManifest:
+      type: object
+      required:
+        - manifestId
+        - manifestType
+        - channelId
+        - version
+        - manifest
+      properties:
+        manifestId:
+          type: string
+        manifestType:
+          type: string
+        channelId:
+          type: string
+        version:
+          type: string
+        manifest:
+          type: object
+          additionalProperties: true
+    PublicCatalog:
+      type: object
+      required:
+        - channelId
+        - profile
+        - content
+      properties:
+        channelId:
+          type: string
+        profile:
+          $ref: '#/components/schemas/CreatorProfile'
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentManifest'
+    ListContentManifestsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentManifest'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

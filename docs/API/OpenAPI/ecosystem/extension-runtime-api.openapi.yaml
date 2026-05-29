@@ -1,0 +1,162 @@
+openapi: 3.1.0
+info:
+  title: Loom Extension Runtime API
+  version: 0.1.0
+  summary: Sandboxed extension sessions, runtime events, campaign actions, data grants, and extension state export.
+servers:
+  - url: https://extension-runtime.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomUserOAuth:
+      - fan.passport
+x-loom-api-owner: ecosystem/extension-runtime
+x-loom-architecture-docs:
+  - ../../../Architecture/08-extensions-campaigns-and-sponsor-tools.md
+x-loom-downstream-apis:
+  - ./extension-registry-api.openapi.yaml
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../identity/fan-vault-api.openapi.yaml
+  - ../campaigns/campaign-api.openapi.yaml
+  - ../creator/creator-audience-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/extension-sessions:
+    post:
+      operationId: createExtensionSession
+      summary: Start a sandboxed extension runtime session.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExtensionSessionRequest'
+      responses:
+        '201':
+          description: Extension session created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtensionSession'
+  /v1/extension-sessions/{sessionId}/events:
+    post:
+      operationId: submitExtensionEvent
+      summary: Submit an extension runtime event.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitExtensionEventRequest'
+      responses:
+        '202':
+          description: Event accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+  /v1/extension-state-exports:
+    post:
+      operationId: createExtensionStateExport
+      summary: Export creator-owned or fan-owned extension state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExtensionStateExportRequest'
+      responses:
+        '202':
+          description: Export job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateExtensionSessionRequest:
+      type: object
+      required:
+        - extensionId
+        - version
+        - surface
+      properties:
+        extensionId:
+          type: string
+        version:
+          type: string
+        surface:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        channelId:
+          type: string
+          nullable: true
+        campaignId:
+          type: string
+          nullable: true
+    ExtensionSession:
+      type: object
+      required:
+        - sessionId
+        - extensionId
+        - state
+      properties:
+        sessionId:
+          type: string
+        extensionId:
+          type: string
+        state:
+          type: string
+          enum:
+            - active
+            - blocked
+            - completed
+            - expired
+        allowedPermissions:
+          type: array
+          items:
+            type: string
+    SubmitExtensionEventRequest:
+      type: object
+      required:
+        - eventType
+        - payload
+      properties:
+        eventType:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    CreateExtensionStateExportRequest:
+      type: object
+      required:
+        - extensionId
+        - owner
+      properties:
+        extensionId:
+          type: string
+        owner:
+          $ref: '../_shared/components.yaml#/components/schemas/ActorPrincipal'
+        includeCampaignState:
+          type: boolean
+          default: true

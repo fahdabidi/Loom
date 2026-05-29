@@ -1,0 +1,177 @@
+openapi: 3.1.0
+info:
+  title: Loom Audit API
+  version: 0.1.0
+  summary: Audit probes, evidence bundles, remediation tracking, key revocation evidence, and public audit records.
+servers:
+  - url: https://audit.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomUserOAuth:
+      - governance.admin
+x-loom-api-owner: governance/audit
+x-loom-architecture-docs:
+  - ../../../Architecture/06-provider-certification-governance-and-developer-supply-chain.md
+  - ../../../Architecture/09-trust-safety-fraud-and-compliance.md
+x-loom-downstream-apis:
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+paths:
+  /v1/audit-probes:
+    post:
+      operationId: createAuditProbe
+      summary: Launch provider, app, extension, AI, search, privacy, or receipt audit probe.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAuditProbeRequest'
+      responses:
+        '202':
+          description: Audit probe accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditProbe'
+  /v1/evidence-bundles:
+    post:
+      operationId: createEvidenceBundle
+      summary: Store an evidence bundle for certification, enforcement, audit, or dispute workflows.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvidenceBundleRequest'
+      responses:
+        '201':
+          description: Evidence bundle stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceBundle'
+  /v1/remediation-plans:
+    post:
+      operationId: createRemediationPlan
+      summary: Create remediation plan for a failed audit, incident, or certification issue.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRemediationPlanRequest'
+      responses:
+        '201':
+          description: Remediation plan created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemediationPlan'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateAuditProbeRequest:
+      type: object
+      required:
+        - probeType
+        - target
+      properties:
+        probeType:
+          type: string
+          enum:
+            - provider
+            - app
+            - extension
+            - ai
+            - search
+            - privacy
+            - receipt
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        assertions:
+          type: array
+          items:
+            type: string
+    AuditProbe:
+      allOf:
+        - $ref: '#/components/schemas/CreateAuditProbeRequest'
+        - type: object
+          required:
+            - probeId
+            - status
+          properties:
+            probeId:
+              type: string
+            status:
+              $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+    CreateEvidenceBundleRequest:
+      type: object
+      required:
+        - subject
+        - evidenceRefs
+      properties:
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        evidenceRefs:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+          nullable: true
+    EvidenceBundle:
+      allOf:
+        - $ref: '#/components/schemas/CreateEvidenceBundleRequest'
+        - type: object
+          required:
+            - evidenceBundleId
+          properties:
+            evidenceBundleId:
+              type: string
+    CreateRemediationPlanRequest:
+      type: object
+      required:
+        - subject
+        - requiredActions
+      properties:
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        requiredActions:
+          type: array
+          items:
+            type: string
+        dueAt:
+          type: string
+          format: date-time
+          nullable: true
+    RemediationPlan:
+      allOf:
+        - $ref: '#/components/schemas/CreateRemediationPlanRequest'
+        - type: object
+          required:
+            - remediationPlanId
+            - state
+          properties:
+            remediationPlanId:
+              type: string
+            state:
+              type: string
+              enum:
+                - open
+                - in_progress
+                - complete
+                - failed

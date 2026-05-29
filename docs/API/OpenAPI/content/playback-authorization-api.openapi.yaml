@@ -1,0 +1,147 @@
+openapi: 3.1.0
+info:
+  title: Loom Playback Authorization API
+  version: 0.1.0
+  summary: Access decisions, ad/no-ad routing, playback tokens, and playback receipt triggers.
+  description: Defines the playback authorization API surface that decides whether a fan/app can access content and which playback route applies.
+servers:
+  - url: https://playback.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.passport
+  - LoomServiceAuth: []
+x-loom-api-owner: content/playback-authorization
+x-loom-architecture-docs:
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+x-loom-downstream-apis:
+  - ./content-host-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../monetization/entitlement-ledger-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../safety/fraud-api.openapi.yaml
+paths:
+  /v1/playback/authorize:
+    post:
+      operationId: authorizePlayback
+      summary: Authorize playback for a content item.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizePlaybackRequest'
+      responses:
+        '200':
+          description: Playback decision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackAuthorization'
+  /v1/playback/sessions/{playbackSessionId}/complete:
+    post:
+      operationId: completePlaybackSession
+      summary: Complete or heartbeat a playback session for receipt generation.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: playbackSessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePlaybackSessionRequest'
+      responses:
+        '202':
+          description: Playback completion accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    AuthorizePlaybackRequest:
+      type: object
+      required:
+        - contentId
+        - appId
+      properties:
+        contentId:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        appId:
+          type: string
+        requestedMode:
+          type: string
+          enum:
+            - ad_supported
+            - premium_no_ads
+            - paid_access
+            - member_access
+            - preview
+    PlaybackAuthorization:
+      type: object
+      required:
+        - playbackSessionId
+        - decision
+      properties:
+        playbackSessionId:
+          type: string
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        playbackToken:
+          type: string
+          nullable: true
+        mediaObjectIds:
+          type: array
+          items:
+            type: string
+        adDecision:
+          $ref: '#/components/schemas/AdDecision'
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    AdDecision:
+      type: object
+      required:
+        - route
+      properties:
+        route:
+          type: string
+          enum:
+            - serve_ads
+            - suppress_ads
+            - serve_sponsor
+            - no_ads_entitlement
+        reason:
+          type: string
+          nullable: true
+    CompletePlaybackSessionRequest:
+      type: object
+      required:
+        - watchDurationSeconds
+      properties:
+        watchDurationSeconds:
+          type: integer
+        completionState:
+          type: string
+          enum:
+            - heartbeat
+            - completed
+            - abandoned

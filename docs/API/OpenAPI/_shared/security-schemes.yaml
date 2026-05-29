@@ -1,0 +1,30 @@
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      type: oauth2
+      description: User-delegated OAuth for fan, creator, sponsor, and developer actions.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.loom.example/oauth/authorize
+          tokenUrl: https://auth.loom.example/oauth/token
+          scopes:
+            fan.passport: Read and manage fan passport state.
+            fan.vault: Read and manage fan vault state.
+            fan.wallet: Read and manage wallet and entitlement purchases.
+            creator.channel: Manage creator channel and metadata.
+            creator.audience: Access creator audience tools.
+            content.host: Manage content host objects.
+            campaign.manage: Manage campaign configuration.
+            sponsor.campaign: Manage sponsor campaigns.
+            governance.admin: Perform governance operations.
+    LoomServiceAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Service-to-service JWT with signed service identity and capability claims.
+    LoomApiKey:
+      type: apiKey
+      in: header
+      name: X-Loom-Api-Key
+      description: Provider, app, or developer API key for certified service access.
+

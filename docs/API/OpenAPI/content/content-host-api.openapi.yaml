@@ -1,0 +1,266 @@
+openapi: 3.1.0
+info:
+  title: Loom Content Host API
+  version: 0.1.0
+  summary: Media object upload, storage, export, rendition, and playback asset availability.
+  description: Defines the content-host-owned API surface for media upload, object lifecycle, rendition readiness, media export, migration verification, and playback asset references.
+servers:
+  - url: https://content.loom.example
+security:
+  - LoomUserOAuth:
+      - content.host
+  - LoomServiceAuth: []
+x-loom-api-owner: content/content-host
+x-loom-architecture-docs:
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+  - ../../../Architecture/10-migration-export-and-portability.md
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../portability/migration-export-api.openapi.yaml
+paths:
+  /v1/media-objects:
+    post:
+      operationId: createMediaObject
+      summary: Create a media upload target.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMediaObjectRequest'
+      responses:
+        '201':
+          description: Media object created with upload targets.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaObject'
+  /v1/media-objects/{mediaObjectId}:
+    get:
+      operationId: getMediaObject
+      summary: Read media object and rendition status.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: mediaObjectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Media object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaObject'
+  /v1/media-objects/{mediaObjectId}/renditions:
+    post:
+      operationId: requestRenditions
+      summary: Request transcoding or derived renditions.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: mediaObjectId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestRenditionsRequest'
+      responses:
+        '202':
+          description: Rendition job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+  /v1/media-objects/{mediaObjectId}/playback-assets:
+    get:
+      operationId: getPlaybackAssets
+      summary: Resolve playback-ready asset references for an authorized playback request.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: mediaObjectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: playbackToken
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Playback assets.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaybackAssetSet'
+  /v1/media-exports:
+    post:
+      operationId: createMediaExport
+      summary: Create a media export package for host migration or creator export.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMediaExportRequest'
+      responses:
+        '202':
+          description: Media export job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaExportJob'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateMediaObjectRequest:
+      type: object
+      required:
+        - channelId
+        - mediaType
+        - fileName
+      properties:
+        channelId:
+          type: string
+        mediaType:
+          type: string
+          enum:
+            - video
+            - audio
+            - image
+            - document
+            - transcript
+            - caption
+        fileName:
+          type: string
+        declaredSizeBytes:
+          type: integer
+          format: int64
+          nullable: true
+    MediaObject:
+      type: object
+      required:
+        - mediaObjectId
+        - channelId
+        - mediaType
+        - state
+      properties:
+        mediaObjectId:
+          type: string
+        channelId:
+          type: string
+        mediaType:
+          type: string
+        state:
+          type: string
+          enum:
+            - pending_upload
+            - processing
+            - ready
+            - failed
+            - deleted
+        uploadUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        renditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rendition'
+    RequestRenditionsRequest:
+      type: object
+      required:
+        - renditionTypes
+      properties:
+        renditionTypes:
+          type: array
+          items:
+            type: string
+    Rendition:
+      type: object
+      required:
+        - renditionId
+        - renditionType
+        - state
+      properties:
+        renditionId:
+          type: string
+        renditionType:
+          type: string
+        state:
+          type: string
+          enum:
+            - processing
+            - ready
+            - failed
+        uri:
+          type: string
+          format: uri
+          nullable: true
+    PlaybackAssetSet:
+      type: object
+      required:
+        - mediaObjectId
+        - assets
+      properties:
+        mediaObjectId:
+          type: string
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rendition'
+        expiresAt:
+          type: string
+          format: date-time
+    CreateMediaExportRequest:
+      type: object
+      required:
+        - channelId
+        - mediaObjectIds
+      properties:
+        channelId:
+          type: string
+        mediaObjectIds:
+          type: array
+          items:
+            type: string
+        includeRenditions:
+          type: boolean
+          default: true
+        includeTranscripts:
+          type: boolean
+          default: true
+    MediaExportJob:
+      type: object
+      required:
+        - exportJobId
+        - status
+      properties:
+        exportJobId:
+          type: string
+        status:
+          $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+        packageManifestUrl:
+          type: string
+          format: uri
+          nullable: true

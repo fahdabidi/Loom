@@ -1,0 +1,450 @@
+openapi: 3.1.0
+info:
+  title: Loom Fan Passport API
+  version: 0.1.0
+  summary: Portable fan identity, follows, pairwise creator identity, and consent grants.
+  description: Defines the owned API surface for Fan Passport creation, follow relationships, pairwise creator-scoped identity, app grants, campaign grants, and relationship visibility controls.
+servers:
+  - url: https://identity.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.passport
+  - LoomServiceAuth: []
+x-loom-api-owner: identity/fan-passport
+x-loom-architecture-docs:
+  - ../../../Architecture/03-identity-fan-data-wallets-and-fan-app-shell.md
+x-loom-downstream-apis:
+  - ../creator/creator-audience-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/fan-passports:
+    post:
+      operationId: createFanPassport
+      summary: Create a portable fan passport.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFanPassportRequest'
+      responses:
+        '201':
+          description: Fan passport created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanPassport'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/fan-passports/{fanId}:
+    get:
+      operationId: getFanPassport
+      summary: Read a fan passport.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan passport.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanPassport'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/fan-passports/{fanId}/follows:
+    get:
+      operationId: listFollows
+      summary: List creator follow relationships for a fan.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Follow relationships.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFollowsResponse'
+    post:
+      operationId: followCreator
+      summary: Follow a creator with relationship visibility controls.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowCreatorRequest'
+      responses:
+        '201':
+          description: Follow relationship created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowRelationship'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+  /v1/fan-passports/{fanId}/follows/{channelId}:
+    patch:
+      operationId: updateFollowVisibility
+      summary: Update relationship visibility or revocation state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFollowVisibilityRequest'
+      responses:
+        '200':
+          description: Follow visibility updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowRelationship'
+    delete:
+      operationId: unfollowCreator
+      summary: Unfollow a creator and revoke relationship visibility.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Follow relationship removed.
+  /v1/fan-passports/{fanId}/pairwise-identities/{channelId}:
+    get:
+      operationId: getPairwiseCreatorIdentity
+      summary: Resolve a creator-scoped fan identifier.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pairwise identity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairwiseCreatorIdentity'
+  /v1/fan-passports/{fanId}/grants:
+    get:
+      operationId: listConsentGrants
+      summary: List app, campaign, AI, provider, and direct-contact grants.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consent grants.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListConsentGrantsResponse'
+    post:
+      operationId: createConsentGrant
+      summary: Create a purpose-bound consent grant.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConsentGrantRequest'
+      responses:
+        '201':
+          description: Consent grant created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentGrant'
+  /v1/fan-passports/{fanId}/grants/{grantId}:
+    delete:
+      operationId: revokeConsentGrant
+      summary: Revoke a consent grant.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: grantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Consent grant revoked.
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateFanPassportRequest:
+      type: object
+      required:
+        - displayName
+      properties:
+        displayName:
+          type: string
+        defaultPrivacyMode:
+          $ref: '#/components/schemas/FanPrivacyMode'
+        publicKey:
+          type: string
+    FanPassport:
+      type: object
+      required:
+        - fanId
+        - displayName
+        - privacyMode
+        - createdAt
+      properties:
+        fanId:
+          type: string
+        displayName:
+          type: string
+        privacyMode:
+          $ref: '#/components/schemas/FanPrivacyMode'
+        publicKey:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    FanPrivacyMode:
+      type: string
+      enum:
+        - free_personalized
+        - premium_no_ads
+        - premium_private
+    FollowVisibility:
+      type: string
+      enum:
+        - public
+        - creator_visible
+        - pseudonymous
+        - private
+    FollowCreatorRequest:
+      type: object
+      required:
+        - channelId
+        - visibility
+      properties:
+        channelId:
+          type: string
+        visibility:
+          $ref: '#/components/schemas/FollowVisibility'
+        directContactAllowed:
+          type: boolean
+          default: false
+    UpdateFollowVisibilityRequest:
+      type: object
+      properties:
+        visibility:
+          $ref: '#/components/schemas/FollowVisibility'
+        directContactAllowed:
+          type: boolean
+        revoked:
+          type: boolean
+          default: false
+    FollowRelationship:
+      type: object
+      required:
+        - fanId
+        - channelId
+        - pairwiseCreatorFanId
+        - visibility
+        - state
+      properties:
+        fanId:
+          type: string
+        channelId:
+          type: string
+        pairwiseCreatorFanId:
+          type: string
+        visibility:
+          $ref: '#/components/schemas/FollowVisibility'
+        directContactAllowed:
+          type: boolean
+        state:
+          type: string
+          enum:
+            - active
+            - revoked
+            - blocked
+        updatedAt:
+          type: string
+          format: date-time
+    PairwiseCreatorIdentity:
+      type: object
+      required:
+        - fanId
+        - channelId
+        - pairwiseCreatorFanId
+      properties:
+        fanId:
+          type: string
+        channelId:
+          type: string
+        pairwiseCreatorFanId:
+          type: string
+        visibility:
+          $ref: '#/components/schemas/FollowVisibility'
+    ConsentGrantType:
+      type: string
+      enum:
+        - app
+        - campaign
+        - ai
+        - provider
+        - direct_contact
+    CreateConsentGrantRequest:
+      type: object
+      required:
+        - grantType
+        - granteeId
+        - purpose
+        - fields
+      properties:
+        grantType:
+          $ref: '#/components/schemas/ConsentGrantType'
+        granteeId:
+          type: string
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    ConsentGrant:
+      type: object
+      required:
+        - grantId
+        - fanId
+        - grantType
+        - granteeId
+        - purpose
+        - fields
+        - state
+      properties:
+        grantId:
+          type: string
+        fanId:
+          type: string
+        grantType:
+          $ref: '#/components/schemas/ConsentGrantType'
+        granteeId:
+          type: string
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        state:
+          type: string
+          enum:
+            - active
+            - revoked
+            - expired
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    ListFollowsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FollowRelationship'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    ListConsentGrantsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentGrant'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

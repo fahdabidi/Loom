@@ -1,0 +1,203 @@
+openapi: 3.1.0
+info:
+  title: Loom Campaign API
+  version: 0.1.0
+  summary: Creator and sponsor campaign manifests, fan participation, rewards, compliance state, and campaign receipts.
+servers:
+  - url: https://campaigns.loom.example
+security:
+  - LoomUserOAuth:
+      - campaign.manage
+  - LoomServiceAuth: []
+x-loom-api-owner: campaigns/campaign
+x-loom-architecture-docs:
+  - ../../../Architecture/08-extensions-campaigns-and-sponsor-tools.md
+x-loom-downstream-apis:
+  - ../ecosystem/extension-runtime-api.openapi.yaml
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../creator/creator-audience-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../safety/trust-safety-api.openapi.yaml
+paths:
+  /v1/campaigns:
+    post:
+      operationId: createCampaign
+      summary: Create a creator or sponsor campaign.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCampaignRequest'
+      responses:
+        '201':
+          description: Campaign created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+  /v1/campaigns/{campaignId}:
+    get:
+      operationId: getCampaign
+      summary: Read campaign configuration and lifecycle state.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Campaign.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+  /v1/campaigns/{campaignId}/participations:
+    post:
+      operationId: submitCampaignParticipation
+      summary: Submit fan campaign participation and reward proof.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitCampaignParticipationRequest'
+      responses:
+        '202':
+          description: Participation accepted or rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignParticipationResult'
+  /v1/campaigns/{campaignId}/compliance-state:
+    put:
+      operationId: updateCampaignComplianceState
+      summary: Freeze, limit, resume, or terminate a campaign.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCampaignComplianceStateRequest'
+      responses:
+        '200':
+          description: Campaign compliance state updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateCampaignRequest:
+      type: object
+      required:
+        - channelId
+        - campaignType
+        - objective
+      properties:
+        channelId:
+          type: string
+        sponsorId:
+          type: string
+          nullable: true
+        campaignType:
+          type: string
+          enum:
+            - creator
+            - sponsor
+            - community
+        objective:
+          type: string
+        extensionId:
+          type: string
+          nullable: true
+        rewardRule:
+          type: object
+          additionalProperties: true
+        dataFields:
+          type: array
+          items:
+            type: string
+    Campaign:
+      allOf:
+        - $ref: '#/components/schemas/CreateCampaignRequest'
+        - type: object
+          required:
+            - campaignId
+            - state
+          properties:
+            campaignId:
+              type: string
+            state:
+              type: string
+              enum:
+                - draft
+                - active
+                - frozen
+                - completed
+                - terminated
+    SubmitCampaignParticipationRequest:
+      type: object
+      required:
+        - fanId
+        - proof
+      properties:
+        fanId:
+          type: string
+        proof:
+          type: object
+          additionalProperties: true
+    CampaignParticipationResult:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        reward:
+          type: object
+          additionalProperties: true
+          nullable: true
+        receiptId:
+          type: string
+          nullable: true
+    UpdateCampaignComplianceStateRequest:
+      type: object
+      required:
+        - state
+        - reason
+      properties:
+        state:
+          type: string
+          enum:
+            - active
+            - frozen
+            - terminated
+        reason:
+          type: string

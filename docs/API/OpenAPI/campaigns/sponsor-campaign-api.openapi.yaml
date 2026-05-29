@@ -1,0 +1,168 @@
+openapi: 3.1.0
+info:
+  title: Loom Sponsor Campaign API
+  version: 0.1.0
+  summary: Sponsor campaign proposals, budget, narrowed audience-data requests, reports, invoices, and settlement reconciliation.
+servers:
+  - url: https://sponsors.loom.example
+security:
+  - LoomUserOAuth:
+      - sponsor.campaign
+  - LoomServiceAuth: []
+x-loom-api-owner: campaigns/sponsor-campaign
+x-loom-architecture-docs:
+  - ../../../Architecture/08-extensions-campaigns-and-sponsor-tools.md
+x-loom-downstream-apis:
+  - ./campaign-api.openapi.yaml
+  - ../creator/creator-audience-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../monetization/settlement-engine-api.openapi.yaml
+paths:
+  /v1/sponsor-campaign-proposals:
+    post:
+      operationId: createSponsorCampaignProposal
+      summary: Create a sponsor campaign proposal for creator approval.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSponsorCampaignProposalRequest'
+      responses:
+        '201':
+          description: Sponsor proposal created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SponsorCampaignProposal'
+  /v1/sponsor-data-requests:
+    post:
+      operationId: evaluateSponsorDataRequest
+      summary: Evaluate, narrow, aggregate, or deny sponsor audience data requests.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SponsorDataRequest'
+      responses:
+        '200':
+          description: Sponsor data request decision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SponsorDataDecision'
+  /v1/sponsor-reports/{campaignId}:
+    get:
+      operationId: getSponsorReport
+      summary: Read aggregate sponsor report and settlement reconciliation.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sponsor report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SponsorReport'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateSponsorCampaignProposalRequest:
+      type: object
+      required:
+        - sponsorId
+        - channelId
+        - objective
+        - budget
+      properties:
+        sponsorId:
+          type: string
+        channelId:
+          type: string
+        objective:
+          type: string
+        budget:
+          $ref: '../_shared/components.yaml#/components/schemas/Money'
+        requestedDataFields:
+          type: array
+          items:
+            type: string
+    SponsorCampaignProposal:
+      allOf:
+        - $ref: '#/components/schemas/CreateSponsorCampaignProposalRequest'
+        - type: object
+          required:
+            - proposalId
+            - state
+          properties:
+            proposalId:
+              type: string
+            state:
+              type: string
+              enum:
+                - pending_creator_approval
+                - approved
+                - rejected
+                - active
+    SponsorDataRequest:
+      type: object
+      required:
+        - sponsorId
+        - campaignId
+        - fields
+        - purpose
+      properties:
+        sponsorId:
+          type: string
+        campaignId:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+        purpose:
+          type: string
+    SponsorDataDecision:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        approvedFields:
+          type: array
+          items:
+            type: string
+        aggregateOnly:
+          type: boolean
+    SponsorReport:
+      type: object
+      required:
+        - campaignId
+        - metrics
+      properties:
+        campaignId:
+          type: string
+        metrics:
+          type: object
+          additionalProperties:
+            type: number
+        invoiceStatementId:
+          type: string
+          nullable: true

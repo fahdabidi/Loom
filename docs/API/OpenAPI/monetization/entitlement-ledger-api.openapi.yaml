@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: Loom Entitlement Ledger API
+  version: 0.1.0
+  summary: Signed access rights for memberships, paid content, premium modes, events, courses, bundles, and commerce.
+servers:
+  - url: https://entitlements.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomUserOAuth:
+      - fan.wallet
+x-loom-api-owner: monetization/entitlement-ledger
+x-loom-architecture-docs:
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+x-loom-downstream-apis:
+  - ../identity/fan-wallet-api.openapi.yaml
+  - ./receipt-ledger-api.openapi.yaml
+paths:
+  /v1/entitlements:
+    post:
+      operationId: createEntitlement
+      summary: Create a signed entitlement.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntitlementRequest'
+      responses:
+        '201':
+          description: Entitlement created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entitlement'
+  /v1/entitlements/{entitlementId}:
+    get:
+      operationId: getEntitlement
+      summary: Read an entitlement.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: entitlementId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entitlement'
+  /v1/entitlements/verify:
+    post:
+      operationId: verifyEntitlement
+      summary: Verify whether a fan has access to a target resource.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEntitlementRequest'
+      responses:
+        '200':
+          description: Entitlement decision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitlementDecision'
+  /v1/entitlements/{entitlementId}/revoke:
+    post:
+      operationId: revokeEntitlement
+      summary: Revoke an entitlement because of refund, chargeback, expiration, or enforcement.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: entitlementId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entitlement revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entitlement'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateEntitlementRequest:
+      type: object
+      required:
+        - fanId
+        - entitlementType
+        - target
+      properties:
+        fanId:
+          type: string
+        entitlementType:
+          type: string
+          enum:
+            - membership
+            - paid_content
+            - premium_no_ads
+            - premium_private
+            - event
+            - course
+            - bundle
+            - commerce
+            - sponsor_free
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    Entitlement:
+      allOf:
+        - $ref: '#/components/schemas/CreateEntitlementRequest'
+        - type: object
+          required:
+            - entitlementId
+            - state
+          properties:
+            entitlementId:
+              type: string
+            state:
+              type: string
+              enum:
+                - active
+                - expired
+                - revoked
+                - pending
+            signature:
+              type: string
+    VerifyEntitlementRequest:
+      type: object
+      required:
+        - fanId
+        - target
+      properties:
+        fanId:
+          type: string
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        requiredEntitlementType:
+          type: string
+          nullable: true
+    EntitlementDecision:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        entitlement:
+          $ref: '#/components/schemas/Entitlement'
+          nullable: true

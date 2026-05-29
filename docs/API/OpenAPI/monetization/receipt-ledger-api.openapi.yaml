@@ -1,0 +1,191 @@
+openapi: 3.1.0
+info:
+  title: Loom Receipt Ledger API
+  version: 0.1.0
+  summary: Immutable economic, audit, data-access, migration, and settlement receipt ingestion and query.
+  description: Defines the ledger-owned API surface for ingesting signed receipts, reading receipts, querying receipt sets, and appending adjustment receipts.
+servers:
+  - url: https://receipts.loom.example
+security:
+  - LoomServiceAuth: []
+x-loom-api-owner: monetization/receipt-ledger
+x-loom-architecture-docs:
+  - ../../../Architecture/05-content-hosting-playback-monetization-and-settlement.md
+  - ../../../Architecture/11-business-model-and-incentive-architecture.md
+x-loom-downstream-apis:
+  - ../safety/fraud-api.openapi.yaml
+  - ./settlement-engine-api.openapi.yaml
+paths:
+  /v1/receipts:
+    post:
+      operationId: ingestReceipt
+      summary: Ingest a signed receipt.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestReceiptRequest'
+      responses:
+        '202':
+          description: Receipt accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptIngestResult'
+  /v1/receipts/{receiptId}:
+    get:
+      operationId: getReceipt
+      summary: Read a receipt by id.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: receiptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Receipt envelope.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptEnvelope'
+  /v1/receipt-queries:
+    post:
+      operationId: queryReceipts
+      summary: Query receipt sets for settlement, audit, dispute, or reporting.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptQueryRequest'
+      responses:
+        '200':
+          description: Receipt query result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptQueryResponse'
+  /v1/adjustment-receipts:
+    post:
+      operationId: appendAdjustmentReceipt
+      summary: Append an adjustment receipt without mutating the original receipt.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendAdjustmentReceiptRequest'
+      responses:
+        '201':
+          description: Adjustment receipt appended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptEnvelope'
+components:
+  securitySchemes:
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    IngestReceiptRequest:
+      type: object
+      required:
+        - receipt
+      properties:
+        receipt:
+          oneOf:
+            - $ref: '../_shared/receipts.yaml#/components/schemas/EconomicReceipt'
+            - $ref: '../_shared/receipts.yaml#/components/schemas/AuditReceipt'
+            - $ref: '../_shared/receipts.yaml#/components/schemas/DataAccessReceipt'
+            - $ref: '../_shared/receipts.yaml#/components/schemas/MigrationAuditReceipt'
+            - $ref: '../_shared/receipts.yaml#/components/schemas/SettlementReceipt'
+    ReceiptIngestResult:
+      type: object
+      required:
+        - receiptId
+        - state
+      properties:
+        receiptId:
+          type: string
+        state:
+          type: string
+          enum:
+            - accepted
+            - duplicate
+            - rejected
+        ledgerPosition:
+          type: string
+          nullable: true
+    ReceiptEnvelope:
+      type: object
+      required:
+        - receiptId
+        - receiptType
+        - payload
+      properties:
+        receiptId:
+          type: string
+        receiptType:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+        ledgerPosition:
+          type: string
+    ReceiptQueryRequest:
+      type: object
+      properties:
+        receiptTypes:
+          type: array
+          items:
+            type: string
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        occurredAfter:
+          type: string
+          format: date-time
+          nullable: true
+        occurredBefore:
+          type: string
+          format: date-time
+          nullable: true
+        settlementRunId:
+          type: string
+          nullable: true
+    ReceiptQueryResponse:
+      type: object
+      required:
+        - receipts
+      properties:
+        receipts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptEnvelope'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    AppendAdjustmentReceiptRequest:
+      type: object
+      required:
+        - originalReceiptId
+        - reason
+        - adjustment
+      properties:
+        originalReceiptId:
+          type: string
+        reason:
+          type: string
+        adjustment:
+          type: object
+          additionalProperties: true

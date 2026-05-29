@@ -1,0 +1,179 @@
+openapi: 3.1.0
+info:
+  title: Loom Fraud API
+  version: 0.1.0
+  summary: Invalid traffic signals, fraud cases, adjustment recommendations, and settlement holds.
+servers:
+  - url: https://fraud.loom.example
+security:
+  - LoomServiceAuth: []
+x-loom-api-owner: safety/fraud
+x-loom-architecture-docs:
+  - ../../../Architecture/09-trust-safety-fraud-and-compliance.md
+x-loom-downstream-apis:
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../monetization/settlement-engine-api.openapi.yaml
+  - ./trust-safety-api.openapi.yaml
+paths:
+  /v1/fraud-signals:
+    post:
+      operationId: submitFraudSignal
+      summary: Submit invalid traffic, reward abuse, payment abuse, or referral abuse signals.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitFraudSignalRequest'
+      responses:
+        '202':
+          description: Fraud signal accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FraudSignal'
+  /v1/fraud-cases:
+    post:
+      operationId: createFraudCase
+      summary: Create a fraud case from one or more signals or receipt sets.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCaseRequest'
+      responses:
+        '201':
+          description: Fraud case created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FraudCase'
+  /v1/invalid-traffic-adjustments:
+    post:
+      operationId: createInvalidTrafficAdjustment
+      summary: Create an invalid traffic adjustment recommendation for the receipt ledger and settlement engine.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvalidTrafficAdjustmentRequest'
+      responses:
+        '201':
+          description: Invalid traffic adjustment created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidTrafficAdjustment'
+components:
+  securitySchemes:
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    SubmitFraudSignalRequest:
+      type: object
+      required:
+        - signalType
+        - subject
+      properties:
+        signalType:
+          type: string
+          enum:
+            - invalid_playback
+            - invalid_ad_click
+            - campaign_reward_abuse
+            - referral_abuse
+            - payment_abuse
+        subject:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        evidence:
+          type: object
+          additionalProperties: true
+    FraudSignal:
+      allOf:
+        - $ref: '#/components/schemas/SubmitFraudSignalRequest'
+        - type: object
+          required:
+            - fraudSignalId
+          properties:
+            fraudSignalId:
+              type: string
+    CreateFraudCaseRequest:
+      type: object
+      required:
+        - signalIds
+      properties:
+        signalIds:
+          type: array
+          items:
+            type: string
+        receiptIds:
+          type: array
+          items:
+            type: string
+    FraudCase:
+      type: object
+      required:
+        - fraudCaseId
+        - state
+      properties:
+        fraudCaseId:
+          type: string
+        state:
+          type: string
+          enum:
+            - open
+            - review
+            - adjustment_recommended
+            - cleared
+    CreateInvalidTrafficAdjustmentRequest:
+      type: object
+      required:
+        - fraudCaseId
+        - receiptIds
+        - reason
+      properties:
+        fraudCaseId:
+          type: string
+        receiptIds:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
+        recommendedAction:
+          type: string
+          enum:
+            - hold
+            - reverse
+            - release
+    InvalidTrafficAdjustment:
+      allOf:
+        - $ref: '#/components/schemas/CreateInvalidTrafficAdjustmentRequest'
+        - type: object
+          required:
+            - adjustmentId
+            - state
+          properties:
+            adjustmentId:
+              type: string
+            state:
+              type: string
+              enum:
+                - recommended
+                - applied
+                - reversed

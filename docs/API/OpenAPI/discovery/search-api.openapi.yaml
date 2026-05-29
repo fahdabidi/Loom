@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: Loom Search API
+  version: 0.1.0
+  summary: Neutral public search query, indexing policy enforcement, and search audit diagnostics.
+servers:
+  - url: https://search.loom.example
+security:
+  - LoomServiceAuth: []
+  - LoomUserOAuth:
+      - fan.passport
+x-loom-api-owner: discovery/search
+x-loom-architecture-docs:
+  - ../../../Architecture/07-search-recommendations-and-ai.md
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+paths:
+  /v1/search:
+    get:
+      operationId: searchPublicCatalog
+      summary: Search public creator and content metadata.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: contentType
+          in: query
+          schema:
+            type: string
+        - name: channelId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+  /v1/index-updates:
+    post:
+      operationId: submitIndexUpdate
+      summary: Submit a metadata or content index update.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndexUpdateRequest'
+      responses:
+        '202':
+          description: Index update accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+  /v1/audit/probes:
+    post:
+      operationId: runSearchAuditProbe
+      summary: Execute a controlled search audit probe.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchAuditProbeRequest'
+      responses:
+        '200':
+          description: Probe result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAuditProbeResult'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    SearchResponse:
+      type: object
+      required:
+        - results
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+    SearchResult:
+      type: object
+      required:
+        - resource
+        - title
+        - rank
+      properties:
+        resource:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        title:
+          type: string
+        snippet:
+          type: string
+          nullable: true
+        channel:
+          $ref: '../_shared/components.yaml#/components/schemas/CreatorChannelRef'
+        rank:
+          type: integer
+        policyVersion:
+          type: string
+    IndexUpdateRequest:
+      type: object
+      required:
+        - resource
+        - action
+        - policyVersion
+      properties:
+        resource:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        action:
+          type: string
+          enum:
+            - upsert
+            - delete
+            - suppress
+        policyVersion:
+          type: string
+        document:
+          type: object
+          additionalProperties: true
+    SearchAuditProbeRequest:
+      type: object
+      required:
+        - probeType
+        - queries
+      properties:
+        probeType:
+          type: string
+          enum:
+            - freshness
+            - deletion
+            - neutrality
+            - policy_enforcement
+        queries:
+          type: array
+          items:
+            type: string
+    SearchAuditProbeResult:
+      type: object
+      required:
+        - probeId
+        - passed
+        - evidence
+      properties:
+        probeId:
+          type: string
+        passed:
+          type: boolean
+        evidence:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
