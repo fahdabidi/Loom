@@ -144,6 +144,9 @@ components:
           type: array
           items:
             type: string
+        fanDataGrantOffer:
+          $ref: '#/components/schemas/FanDataGrantOffer'
+          nullable: true
     Campaign:
       allOf:
         - $ref: '#/components/schemas/CreateCampaignRequest'
@@ -173,6 +176,16 @@ components:
         proof:
           type: object
           additionalProperties: true
+        consentGrantId:
+          type: string
+          nullable: true
+        dataGrantDecision:
+          type: string
+          enum:
+            - approved
+            - denied
+            - alternate_entry
+          nullable: true
     CampaignParticipationResult:
       type: object
       required:
@@ -185,6 +198,51 @@ components:
           additionalProperties: true
           nullable: true
         receiptId:
+          type: string
+          nullable: true
+        createdConsentGrantId:
+          type: string
+          nullable: true
+    FanDataGrantField:
+      type: string
+      enum:
+        - explicit_interests
+        - inferred_interests
+        - liked_content
+        - disliked_content
+        - liked_creators
+        - disliked_creators
+        - muted_creators
+        - muted_providers
+        - ad_preferences
+        - campaign_participation
+    FanDataGrantOffer:
+      type: object
+      required:
+        - requestedFields
+        - purpose
+      properties:
+        requestedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataGrantField'
+        purpose:
+          type: string
+        rewardDescription:
+          type: string
+          nullable: true
+        useForCreatorAds:
+          type: boolean
+          default: false
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
+        alternateEntryAvailable:
+          type: boolean
+          default: false
+        valueDisclosure:
           type: string
           nullable: true
     UpdateCampaignComplianceStateRequest:

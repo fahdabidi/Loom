@@ -36,6 +36,7 @@ It does not cover media storage internals, fan identity internals, or full gover
 | `CreatorChannelManifest` | Signed root contract for creator identity, metadata host, public keys, and channel state. | Enables verification, migration, and app/provider interoperability. | Governance, Certification, and Foundation Model |
 | Metadata separate from media | Metadata lives in Creator Metadata Host while media can live with one or more content hosts. | Creators can switch hosts without rebuilding the channel. | Hosting Provider Lifecycle and Progressive Unbundling |
 | Content Catalog API | Standard API for content metadata across videos, shorts, posts, newsletters, events, courses, livestreams, and community updates. | Apps and search can understand creator catalogs consistently. | Fan Apps and App Ecosystem; Neutral Public Search Utility |
+| Required content summaries | Every `ContentManifest` includes creator-approved `summary` metadata beside the title. | Fan apps, recommendation agents, recommendation engines, search snippets, and accessibility surfaces can evaluate relevance without over-weighting sensational title wording. | Creator-Led Recommendation Economy; AI Layer; Neutral Public Search Utility |
 | Manifest-based business rules | Monetization, hosting, AI, search, recommendations, extensions, campaigns, and settlement are explicit manifests. | Apps and providers enforce creator rules consistently. | Revenue, Receipts, Ledgers, and Settlement; AI Layer |
 | Signed metadata versioning | Metadata updates are signed and versioned. | Supports audit, rollback, dispute handling, and migration. | Trust, Safety, Fraud, and Compliance |
 | Provider relationship pointers | Channel stores current and historical provider roles. | Provider switching and unbundling are transparent. | Provider Marketplace and Certified APIs |
@@ -50,7 +51,7 @@ Creators should be able to see and manage:
 
 - Channel identity, handle, domain, and verification status.
 - Public profile and brand assets.
-- Content catalog and access modes.
+- Content catalog, titles, summaries, descriptions, tags, and access modes.
 - Active provider stack.
 - Manifests that affect monetization, AI, search, recommendations, and extensions.
 - Export and migration readiness.
@@ -333,7 +334,7 @@ Steps:
 #### Core manifest contracts
 
 - `CreatorChannelManifest`: root creator identity, metadata host, public keys, provider pointers, and channel state.
-- `ContentManifest`: content metadata, access mode, media references, AI policy, and search policy.
+- `ContentManifest`: title, required creator-approved summary, description, content metadata, access mode, media references, AI policy, and search policy.
 - `MonetizationManifest`: ads, memberships, premium eligibility, AI royalties, sponsor rules, tips, and paid content.
 - `HostingContractManifest`: hosting tier, revenue split, ad control, lifecycle, export, and provider obligations.
 - `RecommendationManifest`: creator-authored recommendations.

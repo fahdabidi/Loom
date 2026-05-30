@@ -325,7 +325,7 @@ Steps:
 - `FraudAdjustmentRecord`: invalid activity settlement offset.
 - `RefundChargebackRecord`: refund and chargeback evidence.
 - `SettlementAdjustmentRecord`: correction or dispute adjustment.
-- `RecommendationAbuseAPI`: clickbait, fake referral, undisclosed paid relationship, and spam signals.
+- `RecommendationAbuseAPI`: clickbait, ragebait, title-summary mismatch, fake referral, undisclosed paid relationship, and spam signals.
 - `DiscoveryReceipt`: recommendation-driven discovery evidence.
 - `CreatorReferralReceipt`: qualified referral evidence.
 - `SearchAuditProbeAPI`: search manipulation detection.

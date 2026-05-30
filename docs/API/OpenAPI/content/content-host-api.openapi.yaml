@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: Loom Content Host API
   version: 0.1.0
-  summary: Media object upload, storage, export, rendition, and playback asset availability.
-  description: Defines the content-host-owned API surface for media upload, object lifecycle, rendition readiness, media export, migration verification, and playback asset references.
+  summary: Media object upload, storage, export, rendition, playback asset availability, and public content performance metadata.
+  description: Defines the content-host-owned API surface for media upload, object lifecycle, rendition readiness, media export, migration verification, playback asset references, and signed aggregate content performance signals used by intent-aware recommendation scoring.
 servers:
   - url: https://content.loom.example
 security:
@@ -125,6 +125,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MediaExportJob'
+  /v1/hosting-trending-stats-batches:
+    post:
+      operationId: publishHostingTrendingStatsBatch
+      summary: Publish aggregate public content performance signals for eligible session intents.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishHostingTrendingStatsBatchRequest'
+      responses:
+        '202':
+          description: Content performance signal batch accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostingTrendingStatsBatch'
+    get:
+      operationId: listHostingTrendingStatsBatches
+      summary: List recent aggregate public content performance signal batches.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: providerId
+          in: query
+          schema:
+            type: string
+        - name: windowStartedAfter
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Content performance signal batches.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListHostingTrendingStatsBatchesResponse'
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -264,3 +305,148 @@ components:
           type: string
           format: uri
           nullable: true
+    PublishHostingTrendingStatsBatchRequest:
+      type: object
+      description: Signed aggregate public content performance signals; hosts must exclude private-mode, minor-restricted, private vault, non-public, and safety-restricted behavior.
+      required:
+        - providerId
+        - aggregationWindow
+        - thresholdPolicyVersion
+        - signals
+        - signature
+      properties:
+        providerId:
+          type: string
+        aggregationWindow:
+          $ref: '../_shared/components.yaml#/components/schemas/TimeWindow'
+        thresholdPolicyVersion:
+          type: string
+        signals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrendingContentSignal'
+        excludedSignalClasses:
+          type: array
+          items:
+            type: string
+            enum:
+              - private_mode_behavior
+              - minor_restricted_behavior
+              - private_vault_data
+              - non_public_content
+              - safety_restricted_content
+        signature:
+          type: string
+    TrendingContentSignal:
+      type: object
+      required:
+        - contentId
+        - channelId
+        - velocityScore
+        - noveltyScore
+        - freshnessScore
+        - performanceFlags
+        - eligibility
+      properties:
+        contentId:
+          type: string
+        channelId:
+          type: string
+        velocityScore:
+          type: number
+          minimum: 0
+        noveltyScore:
+          type: number
+          minimum: 0
+        freshnessScore:
+          type: number
+          minimum: 0
+        trendingState:
+          type: string
+          enum:
+            - not_trending
+            - rising
+            - trending
+            - cooling
+        performanceFlags:
+          $ref: '#/components/schemas/ContentPerformanceFlags'
+        completionMomentumScore:
+          type: number
+          minimum: 0
+          nullable: true
+        localeBuckets:
+          type: array
+          items:
+            type: string
+        eligibility:
+          type: string
+          enum:
+            - eligible
+            - limited
+            - excluded
+        policyVersion:
+          type: string
+          nullable: true
+        lastActivityAt:
+          type: string
+          format: date-time
+          nullable: true
+    ContentPerformanceFlags:
+      type: object
+      required:
+        - isTrending
+        - isBeingWatchedNow
+        - isFresh
+        - totalViewCount
+      properties:
+        isTrending:
+          type: boolean
+        isBeingWatchedNow:
+          type: boolean
+        isFresh:
+          type: boolean
+        totalViewCount:
+          type: integer
+          format: int64
+          minimum: 0
+        currentViewerBucket:
+          type: string
+          enum:
+            - none
+            - low
+            - medium
+            - high
+          nullable: true
+        freshnessWindow:
+          type: string
+          enum:
+            - new
+            - recent
+            - evergreen
+            - stale
+          nullable: true
+    HostingTrendingStatsBatch:
+      allOf:
+        - $ref: '#/components/schemas/PublishHostingTrendingStatsBatchRequest'
+        - type: object
+          required:
+            - batchId
+            - state
+          properties:
+            batchId:
+              type: string
+            state:
+              type: string
+              enum:
+                - accepted
+                - rejected
+                - under_audit
+    ListHostingTrendingStatsBatchesResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HostingTrendingStatsBatch'

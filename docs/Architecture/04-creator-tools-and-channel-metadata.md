@@ -60,7 +60,7 @@ flowchart TB
 | `CreatorChannelManifest` | Root creator identity, metadata host pointer, public keys, and portable channel state. |
 | `CreatorMetadataAPI` | Read/write creator profile, catalog, manifests, provider settings, and versioned channel state. |
 | `CreatorChannelRegistry` | Canonical channel id, channel keys, metadata host pointer, and pointer history. |
-| `ContentManifest` | Content metadata, type, access mode, media references, searchability, AI policy, and lifecycle metadata. |
+| `ContentManifest` | Title, required creator-approved summary, content metadata, type, access mode, media references, searchability, AI policy, and lifecycle metadata. |
 | `ContentCatalogAPI` | Public/private channel catalog projections. |
 | `PublicCatalogAPI` | App/search-facing public catalog view. |
 | `HostingContractManifest` | Hosting tier, provider role, ad control, revenue split, lifecycle, export, and support obligations. |
@@ -262,7 +262,7 @@ sequenceDiagram
   CS-->>C: Publish status
 ```
 
-1. Creator enters title, description, content type, access mode, media refs, AI policy, and search policy.
+1. Creator enters title, required summary, description, content type, access mode, media refs, AI policy, and search policy.
 2. Validation checks manifest shape, rights, search policy, monetization, safety, and hosting refs.
 3. Metadata Host writes versioned `ContentManifest`.
 4. Content Catalog updates private and public channel views.
@@ -390,4 +390,3 @@ sequenceDiagram
 | Content host upload succeeds but metadata write fails | Content Host keeps upload in pending/unpublished state until metadata write is retried or cleaned up. |
 | Audience export denied | `CreatorCRMExportAPI` returns policy-safe denial or aggregate counts only. |
 | Metadata host key compromised | Registry, governance, and key management suspend old key, record audit evidence, and require recovery flow. |
-

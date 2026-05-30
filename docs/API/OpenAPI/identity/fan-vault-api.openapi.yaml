@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: Loom Fan Vault API
   version: 0.1.0
-  summary: Fan-owned portable state, private event storage, and scoped private memory bundles.
-  description: Defines the owned API surface for core fan vault records, private event vault records, preference export, and AI/private assistant memory bundles.
+  summary: Fan-owned portable state, fan interest and dislike profile, private event storage, and scoped private memory bundles.
+  description: Defines the owned API surface for core fan vault records, fan interests, disliked interests, liked/disliked creators, muted recommendation providers, private event vault records, preference export, and AI/private assistant memory bundles.
 servers:
   - url: https://vault.loom.example
 security:
@@ -17,6 +17,7 @@ x-loom-downstream-apis:
   - ./fan-passport-api.openapi.yaml
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../discovery/ai-gateway-api.openapi.yaml
+  - ../discovery/recommendation-referral-api.openapi.yaml
 paths:
   /v1/fan-vaults/{fanId}/records:
     get:
@@ -116,6 +117,115 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MemoryBundle'
+  /v1/fan-vaults/{fanId}/interest-profile:
+    get:
+      operationId: getFanInterestProfile
+      summary: Read fan-owned interests, disliked interests, creator preferences, and muted providers.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan interest profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanInterestProfile'
+    put:
+      operationId: updateFanInterestProfile
+      summary: Replace or patch explicit fan interest and dislike controls.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFanInterestProfileRequest'
+      responses:
+        '200':
+          description: Updated fan interest profile.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanInterestProfile'
+  /v1/fan-vaults/{fanId}/interest-signals:
+    post:
+      operationId: appendFanInterestSignal
+      summary: Append a fan interest, dislike, creator preference, muted provider, or feedback signal.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppendFanInterestSignalRequest'
+      responses:
+        '201':
+          description: Fan interest signal stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanInterestSignal'
+  /v1/fan-vaults/{fanId}/ad-preferences:
+    get:
+      operationId: getFanAdPreferences
+      summary: Read fan-owned ad preferences and creator ad data-sharing defaults.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan ad preferences.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanAdPreferences'
+    put:
+      operationId: updateFanAdPreferences
+      summary: Replace or update fan-owned ad preferences.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFanAdPreferencesRequest'
+      responses:
+        '200':
+          description: Updated fan ad preferences.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanAdPreferences'
   /v1/fan-vaults/{fanId}/exports:
     post:
       operationId: exportFanVault
@@ -189,6 +299,15 @@ components:
             - mute
             - app_setting
             - recommendation_preference
+            - session_intent_preference
+            - startup_tile_feedback
+            - fan_interest_profile
+            - interest_token
+            - disliked_interest
+            - disliked_creator
+            - muted_recommendation_provider
+            - fan_interest_signal
+            - ad_preference
             - ai_memory
         data:
           type: object
@@ -302,6 +421,329 @@ components:
         expiresAt:
           type: string
           format: date-time
+    InterestToken:
+      type: object
+      required:
+        - token
+        - tokenType
+      properties:
+        token:
+          type: string
+          examples:
+            - tennis
+            - cricket
+            - video_game_reviews
+        tokenType:
+          type: string
+          enum:
+            - topic
+            - creator
+            - format
+            - product
+            - sport
+            - genre
+            - community
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        source:
+          type: string
+          enum:
+            - startup_selection
+            - follow_graph
+            - explicit_feedback
+            - permitted_private_summary
+            - app_default
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    DislikedInterestToken:
+      type: object
+      required:
+        - token
+        - tokenType
+        - severity
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          enum:
+            - topic
+            - creator
+            - format
+            - product
+            - sport
+            - genre
+            - community
+        severity:
+          type: string
+          enum:
+            - reduce
+            - suppress
+            - exclude
+        source:
+          type: string
+          enum:
+            - fan_explicit
+            - feedback
+            - policy
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    CreatorPreferenceRecord:
+      type: object
+      required:
+        - channelId
+        - preference
+      properties:
+        channelId:
+          type: string
+        preference:
+          type: string
+          enum:
+            - liked
+            - followed
+            - disliked
+            - muted
+            - blocked
+        source:
+          type: string
+          enum:
+            - follow_graph
+            - explicit_feedback
+            - app_control
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    MutedProviderRecord:
+      type: object
+      required:
+        - providerId
+        - providerType
+      properties:
+        providerId:
+          type: string
+        providerType:
+          type: string
+          enum:
+            - recommendation_provider
+            - hosting_provider
+            - app
+        reason:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+    FanInterestProfile:
+      type: object
+      required:
+        - fanId
+        - interests
+        - dislikedInterests
+        - creatorPreferences
+        - mutedProviders
+        - updatedAt
+      properties:
+        fanId:
+          type: string
+        interests:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        dislikedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikedInterestToken'
+        creatorPreferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorPreferenceRecord'
+        mutedProviders:
+          type: array
+          items:
+            $ref: '#/components/schemas/MutedProviderRecord'
+        derivedPrivateInterestSummaryAvailable:
+          type: boolean
+          default: false
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateFanInterestProfileRequest:
+      type: object
+      properties:
+        interests:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        dislikedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikedInterestToken'
+        creatorPreferences:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorPreferenceRecord'
+        mutedProviders:
+          type: array
+          items:
+            $ref: '#/components/schemas/MutedProviderRecord'
+        writeMode:
+          type: string
+          default: merge
+          enum:
+            - merge
+            - replace
+    FanInterestSignalType:
+      type: string
+      enum:
+        - startup_tile_selected
+        - interest_liked
+        - interest_disliked
+        - content_liked
+        - content_disliked
+        - content_not_interested
+        - content_flagged
+        - creator_followed
+        - creator_unfollowed
+        - creator_disliked
+        - creator_muted
+        - provider_muted
+    AppendFanInterestSignalRequest:
+      type: object
+      required:
+        - signalType
+      properties:
+        signalType:
+          $ref: '#/components/schemas/FanInterestSignalType'
+        sessionIntentId:
+          type: string
+          nullable: true
+        platformIntentId:
+          type: string
+          nullable: true
+        targetId:
+          type: string
+          nullable: true
+        targetType:
+          type: string
+          enum:
+            - content
+            - creator
+            - provider
+            - interest
+            - startup_tile
+          nullable: true
+        interestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        dislikedInterests:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikedInterestToken'
+        sourceAppId:
+          type: string
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+    FanInterestSignal:
+      allOf:
+        - $ref: '#/components/schemas/AppendFanInterestSignalRequest'
+        - type: object
+          required:
+            - signalId
+            - fanId
+            - occurredAt
+          properties:
+            signalId:
+              type: string
+            fanId:
+              type: string
+            occurredAt:
+              type: string
+              format: date-time
+    FanAdPreferences:
+      type: object
+      required:
+        - fanId
+        - creatorApprovedOnlyDefault
+        - useInterestsForCreatorAdsDefault
+        - updatedAt
+      properties:
+        fanId:
+          type: string
+        creatorApprovedOnlyDefault:
+          type: boolean
+          default: true
+        useInterestsForCreatorAdsDefault:
+          type: boolean
+          default: false
+        allowedAdCategories:
+          type: array
+          items:
+            type: string
+        blockedAdCategories:
+          type: array
+          items:
+            type: string
+        blockedSponsorIds:
+          type: array
+          items:
+            type: string
+        sensitiveAdCategoriesDenied:
+          type: array
+          items:
+            type: string
+        creatorDataGrantDefault:
+          type: string
+          enum:
+            - ask_each_time
+            - deny_by_default
+            - use_category_policies
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateFanAdPreferencesRequest:
+      type: object
+      properties:
+        creatorApprovedOnlyDefault:
+          type: boolean
+        useInterestsForCreatorAdsDefault:
+          type: boolean
+        allowedAdCategories:
+          type: array
+          items:
+            type: string
+        blockedAdCategories:
+          type: array
+          items:
+            type: string
+        blockedSponsorIds:
+          type: array
+          items:
+            type: string
+        sensitiveAdCategoriesDenied:
+          type: array
+          items:
+            type: string
+        creatorDataGrantDefault:
+          type: string
+          enum:
+            - ask_each_time
+            - deny_by_default
+            - use_category_policies
     CreateVaultExportRequest:
       type: object
       properties:

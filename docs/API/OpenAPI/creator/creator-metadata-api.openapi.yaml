@@ -31,6 +31,26 @@ paths:
           required: true
           schema:
             type: string
+        - name: platformIntentId
+          in: query
+          description: Current fan platform intent for filtering or explaining creator catalog ordering.
+          schema:
+            type: string
+        - name: interestTokens
+          in: query
+          description: Comma-separated active interest tokens supplied by the Fan App or recommendation engine.
+          schema:
+            type: string
+        - name: dislikeFilters
+          in: query
+          description: Comma-separated disliked interests, creators, formats, providers, or safety labels to suppress when returning creator content.
+          schema:
+            type: string
+        - name: includePerformanceMetadata
+          in: query
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Creator profile.
@@ -49,6 +69,26 @@ paths:
           required: true
           schema:
             type: string
+        - name: platformIntentId
+          in: query
+          description: Current fan platform intent for app-facing creator catalog ordering.
+          schema:
+            type: string
+        - name: interestTokens
+          in: query
+          description: Comma-separated active interest tokens supplied by the Fan App or recommendation engine.
+          schema:
+            type: string
+        - name: dislikeFilters
+          in: query
+          description: Comma-separated disliked interests, creators, formats, providers, or safety labels to suppress in the public catalog projection.
+          schema:
+            type: string
+        - name: includePerformanceMetadata
+          in: query
+          schema:
+            type: boolean
+            default: false
       requestBody:
         required: true
         content:
@@ -220,12 +260,18 @@ components:
       type: object
       required:
         - title
+        - summary
         - contentType
         - accessMode
         - mediaRefs
       properties:
         title:
           type: string
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Creator-approved short content summary used by fan apps, recommendation agents, recommendation engines, search snippets, and accessibility surfaces so ranking does not have to over-weight promotional title wording.
         description:
           type: string
           nullable: true
@@ -241,6 +287,16 @@ components:
           $ref: '#/components/schemas/SearchAccessPolicy'
         aiPolicy:
           $ref: '#/components/schemas/AIContentPolicy'
+        interestTags:
+          type: array
+          items:
+            type: string
+          description: Creator-supplied topic, sport, genre, product, or community tags used for intent-aware discovery.
+        dislikeSensitiveTags:
+          type: array
+          items:
+            type: string
+          description: Tags that allow fan dislike filters to suppress matching content without exposing private reasons to the creator.
     ContentManifest:
       allOf:
         - $ref: '#/components/schemas/PublishContentManifestRequest'
@@ -268,6 +324,31 @@ components:
               type: string
               format: date-time
               nullable: true
+            contentPerformance:
+              $ref: '#/components/schemas/PublicContentPerformance'
+              nullable: true
+    PublicContentPerformance:
+      type: object
+      properties:
+        trendingState:
+          type: string
+          enum:
+            - not_trending
+            - rising
+            - trending
+            - cooling
+          nullable: true
+        isBeingWatchedNow:
+          type: boolean
+          nullable: true
+        isFresh:
+          type: boolean
+          nullable: true
+        totalViewCount:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
     SearchAccessPolicy:
       type: object
       properties:

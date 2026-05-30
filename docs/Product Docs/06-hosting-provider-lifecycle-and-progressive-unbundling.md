@@ -23,6 +23,7 @@ This product area covers:
 - Provider capability control states.
 - Hosting upgrade, downgrade, and unbundling workflows.
 - Ad, CDN, storage, analytics, AI, moderation, search, and lifecycle controls as they relate to hosting.
+- Aggregate public content performance statistics for eligible session intents.
 - Media export, backup, retention, and lifecycle policies.
 - Cost/revenue simulations for hosting decisions.
 
@@ -42,6 +43,7 @@ It does not define the entire Provider Marketplace or settlement engine, but it 
 | Control state model | Capabilities can be provider-managed, creator-controlled, delegated, or external. | Makes progressive unbundling explicit. | Provider Marketplace and Certified APIs |
 | Export and exit support | Host exports media, host-held lifecycle state, delivery/export receipts, and media references while Creator Metadata Host and Receipt Ledger remain authoritative for channel metadata and receipts. | Host switching becomes real without blurring ownership. | Migration Strategy from Existing Platforms |
 | Cost and revenue simulation | Creator can see impact of hosting tier or provider changes. | Makes business decisions concrete. | Creator Experience; Business Model and Incentive Design |
+| Aggregate content performance signals | Certified hosts publish aggregate velocity, novelty, freshness, being-watched-now, total view count, completion, and momentum statistics for eligible public content. | Intent-aware scoring can reflect real public momentum without exposing raw fan behavior. | Creator-Led Recommendation Economy; Audience Data Firewall and Data Rights |
 
 ## 4. Hosting Tiers
 
@@ -57,6 +59,7 @@ Typical provider responsibilities:
 - Basic public catalog integration.
 - Basic ads or provider-managed monetization.
 - Basic export support.
+- Aggregate public content performance statistics where certified.
 
 Creator tradeoff:
 
@@ -183,6 +186,17 @@ End state:
 - Metadata remains with Creator Metadata Host.
 - New host validates import.
 - Channel registry and provider pointers update.
+
+### Story 7: Host publishes content performance metadata
+
+As a certified host, I want to publish aggregate public content performance metadata so Loom can score content by intent using freshness, currently-watched, view-count, velocity, and trending signals without transferring raw fan behavior.
+
+End state:
+
+- Host publishes `HostingContentSignalBatch` through `HostingTrendingStatsAPI`.
+- Only eligible public content and aggregate thresholds are included.
+- Private-mode fan behavior, minors' restricted signals, and non-consented private vault data are excluded.
+- Governance can audit the signed signal batch.
 
 ## 6. End-to-End Workflows
 
@@ -338,6 +352,24 @@ Steps:
 7. Fan playback and entitlements remain continuous.
 8. Settlement Engine applies new revenue-share, no-ad replacement, provider cost, and utility-fee rules from the effective date.
 
+### Workflow 8: Hosting content performance signal publication
+
+Actors:
+
+- Hosting Provider
+- Content Host
+- Recommendation Engine
+- Governance Admin
+
+Steps:
+
+1. Host aggregates eligible public content velocity, novelty, freshness, being-watched-now, total view count, completion, and safety-filtered momentum over a declared time window.
+2. Host applies privacy thresholds and excludes private-mode fan behavior, minors' restricted signals, non-consented private vault data, and content blocked from public recommendation surfaces.
+3. Host signs `HostingContentSignalBatch` with provider id, content refs, aggregation window, thresholds, policy version, public performance fields, and certification scope.
+4. Host publishes the batch through `HostingTrendingStatsAPI`.
+5. Recommendation Engine uses the batch only for session intents whose `RecommendationModePolicy` permits aggregate host performance inputs.
+6. Governance can audit the batch through `TrendingSignalAuditAPI` and provider evidence.
+
 ## 7. Cross-Area Interactions
 
 - Creator Experience: Creator Studio exposes `HostingContractManifest`, provider selection, migration, and hosting-tier controls.
@@ -346,6 +378,7 @@ Steps:
 - Revenue, Receipts, Ledgers, and Settlement: `CDNDeliveryReceipt`, hosting service receipts, and `SettlementManifest` affect payouts.
 - Monetization Models: hosting tier influences `AdDecisionAPI`, `PremiumNoAdReceipt`, direct fees, and revenue share.
 - Neutral Public Search Utility: hosts expose `HostPublicCatalogAPI`, `HostPublicSearchAPI`, `PublicSearchResultSchema`, and `OpenSearchKernelConformance`.
+- Creator-Led Recommendation Economy: hosts publish `HostingContentSignalBatch` only as aggregate inputs for eligible session intents and scoring policies.
 - Migration Strategy from Existing Platforms: `MediaExportAPI`, `MigrationPlanAPI`, `MigrationManifest`, and `MigrationReceipt` prove portability.
 - Trust, Safety, Fraud, and Compliance: hosts participate in `TakedownAPI`, `SafetyPolicyManifest`, `FraudSignalAPI`, and provider incident workflows.
 
@@ -374,6 +407,9 @@ Steps:
 - `HostPublicCatalogAPI`: host-level public catalog exposure.
 - `HostPublicSearchAPI`: certified host-local search exposure.
 - `OpenSearchKernelConformance`: verifies neutral host search behavior. Host search exposure must not create host-controlled paid ranking, search ads, or per-click search monetization.
+- `HostingTrendingStatsAPI`: publishes aggregate public content performance statistics for eligible session intents.
+- `HostingContentSignalBatch`: signed batch of velocity, novelty, freshness, being-watched-now, total view count, completion, and safety-filtered momentum signals.
+- `TrendingSignalAuditAPI`: governance audit surface for host-published trending statistics.
 
 #### Provider marketplace and certification systems
 

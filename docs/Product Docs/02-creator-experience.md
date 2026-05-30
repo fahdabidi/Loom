@@ -473,7 +473,7 @@ Steps:
 
 - `ContentIngestAPI`: upload and content creation.
 - `ContentCatalogAPI`: public and private content metadata.
-- `ContentManifest`: content type, access mode, media references, searchability, AI policy, and lifecycle metadata.
+- `ContentManifest`: title, required creator-approved summary, content type, access mode, media references, searchability, AI policy, and lifecycle metadata.
 - `HostingContractManifest`: current hosting tier, provider role, ad control, revenue split, export support, and lifecycle policy.
 - `PublicCatalogAPI`: exposes published content to apps and search.
 

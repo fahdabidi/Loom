@@ -141,6 +141,17 @@ components:
           type: array
           items:
             type: string
+        abuseSubtypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - clickbait
+              - ragebait
+              - title_summary_mismatch
+              - fake_referral
+              - undisclosed_paid_relationship
+              - spam
     SafetyCase:
       type: object
       required:

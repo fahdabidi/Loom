@@ -37,6 +37,7 @@ It does not define the complete developer platform, but it depends heavily on it
 | Verified supply chain | Source, CI/CD, signed artifacts, SBOM, scans, and attestations. | Prevents random code snippets from touching fan data. | Developer Ecosystem and DevOps Supply Chain |
 | Scoped permissions | Extensions request explicit creator/fan scopes. | Data access is limited and auditable. | Audience Data Firewall and Data Rights |
 | Direct-contact safeguards | CRM and direct-contact extensions must honor follow visibility, fan grants, revocation, and tombstones. | Prevents extensions from becoming a loophole for follower scraping or off-platform contact. | Fan Passport, Wallet, Vaults, and Identity Architecture |
+| Data-for-value campaign grants | Campaign and promotion extensions can request fan interests, likes, dislikes, creator dislikes, muted providers, and ad preferences only through explicit creator-scoped grants. | Lets creators improve offers and creator-sold ads without giving extensions a hidden private-data backdoor. | Audience Data Firewall and Data Rights; Brand/Sponsor/Advertiser Tools |
 | Sandboxed runtime | Fan apps render extensions through safe runtime boundaries. | Protects fans and apps from unsafe code. | Fan Apps and App Ecosystem |
 | Campaign Ledger | Campaign entries, eligibility, compliance, and sponsor terms are tracked. | Campaigns become auditable. | Brand/Sponsor/Advertiser Tools |
 | Reward Ledger | Points, badges, rewards, issuance, and redemption are portable. | Fans get persistent engagement value. | Fan Passport, Wallet, Vaults, and Identity Architecture |
@@ -68,6 +69,7 @@ Initial categories:
 - Community tools.
 - AI modules.
 - Creator CRM or direct-contact tools, subject to `FollowVisibilityPolicy`, `DirectContactGrant`, revocation state, and creator-scoped tombstones.
+- Data-for-value promotion tools, subject to `CreatorInterestDataGrant`, `CreatorCategoryPermissionPolicy`, fan ad preferences, revocation state, and alternate entry rules.
 
 ## 5. User Stories
 
@@ -103,6 +105,17 @@ End state:
 - Fan data grants are scoped.
 - Sponsor receives aggregate or permissioned conversion reporting.
 - Settlement allocates sponsor funds.
+
+### Story 3A: Extension requests fan interest data for a promotion
+
+As a fan, I want a promotion extension to clearly ask before using my interests, likes, dislikes, or ad preferences.
+
+End state:
+
+- Extension displays requested fields, creator/sponsor context, purpose, retention, ad-use flag, offer value, and alternate path.
+- Fan can approve, deny, narrow, revoke, or apply a creator-category default.
+- Extension receives only approved creator-scoped fields through the Audience Data Firewall.
+- Data access receipts record actual use.
 
 ### Story 4: Developer publishes extension
 
@@ -202,15 +215,16 @@ Steps:
 
 1. Fan opens creator campaign.
 2. Extension displays rules, rewards, sponsor disclosure, and data request.
-3. Extension checks `CampaignDataGrant` requirements and any broader `DataUseGrant`.
-4. Fan grants permission or selects alternate entry.
-5. `DataAccessReceipt` records actual sensitive data access.
-6. Campaign Ledger records entry.
-7. Creator Audience Vault receives only allowed creator-scoped state.
-8. Raw Private Event Vault data is not exported to the extension, creator, or sponsor.
-9. Extension evaluates eligibility.
-10. Reward Ledger records reward or winner state.
-11. Fan sees entry and reward status.
+3. Extension checks `CampaignDataGrant` requirements, `CreatorInterestDataGrant` requirements, category defaults, and any broader `DataUseGrant`.
+4. Fan grants permission, narrows requested fields, applies a creator-category default, or selects alternate entry.
+5. `ConsentGrantAPI` records purpose, fields, retention, ad-use flag, offer context, and revocation behavior.
+6. `DataAccessReceipt` records actual sensitive or grant-protected data access.
+7. Campaign Ledger records entry.
+8. Creator Audience Vault receives only allowed creator-scoped state.
+9. Raw Private Event Vault data is not exported to the extension, creator, or sponsor.
+10. Extension evaluates eligibility.
+11. Reward Ledger records reward or winner state.
+12. Fan sees entry, reward status, active grants, and revocation controls in settings.
 
 ### Workflow 3A: CRM or direct-contact extension access
 
@@ -249,12 +263,12 @@ Actors:
 Steps:
 
 1. Sponsor proposes campaign terms.
-2. `SponsorCampaignAPI` creates offer, product cards, promo codes, conversion goals, and reporting needs.
+2. `SponsorCampaignAPI` creates offer, product cards, promo codes, conversion goals, requested fan interest/ad-preference fields, and reporting needs.
 3. Creator reviews and accepts campaign.
 4. Extension configures `CampaignManifest`, `CampaignComplianceManifest`, and `SponsorDisclosurePolicy`.
 5. Fans participate.
 6. `SponsorDeliveryReceipt`, `CampaignEntryReceipt`, `RewardReceipt`, `ConversionReceipt`, and `ExtensionUsageReceipt` are generated where relevant.
-7. Sponsor receives permitted aggregate or permissioned reporting.
+7. Sponsor receives permitted aggregate, clean-room, or explicitly grant-backed reporting.
 8. `ReceiptIngestAPI` sends receipts to `ReceiptLedger`.
 9. `SettlementEngineAPI` applies `SettlementManifest` and allocates funds to creator, extension developer, providers, and utilities.
 
@@ -305,7 +319,7 @@ Steps:
 - Creator Experience: Creator Studio exposes `ExtensionManifest`, `ExtensionInstallRecord`, extension permissions, and campaign management.
 - Fan Experience: Fan Apps render extension surfaces through `ExtensionRuntimeGateway` and app sandbox controls.
 - Developer Ecosystem and DevOps Supply Chain: developers build, test, sign, and publish through `ExtensionArtifactAPI`, `ExtensionBuildAttestation`, `SoftwareBillOfMaterials`, and `ExtensionRegistryAPI`.
-- Audience Data Firewall and Data Rights: `ExtensionPermissionGrant`, `CampaignDataGrant`, `DataUseGrant`, `FollowVisibilityPolicy`, `DirectContactGrant`, and `DataAccessReceipt` govern data access.
+- Audience Data Firewall and Data Rights: `ExtensionPermissionGrant`, `CampaignDataGrant`, `CreatorInterestDataGrant`, `CreatorCategoryPermissionPolicy`, `DataUseGrant`, `FollowVisibilityPolicy`, `DirectContactGrant`, and `DataAccessReceipt` govern data access.
 - Brand/Sponsor/Advertiser Tools: sponsor campaigns use `SponsorCampaignAPI`, `SponsorDisclosurePolicy`, `SponsorDeliveryReceipt`, and campaign receipts.
 - Revenue, Receipts, Ledgers, and Settlement: extension activity can generate `ExtensionUsageReceipt`, campaign receipts, and settlement fees.
 - Trust, Safety, Fraud, and Compliance: `CertificationScopeRecord`, sandboxing, `ExtensionArtifactAPI`, abuse reports, and suspension state enforce safety.
@@ -330,6 +344,9 @@ Steps:
 - `ExtensionPermissionGrant`: creator and fan permission scopes.
 - `FollowVisibilityPolicy`: relationship visibility limit that extensions must honor before exposing fan relationship state.
 - `DirectContactGrant`: required fan permission before CRM or direct-contact extensions can export or use contact data.
+- `CreatorInterestDataGrant`: required fan permission before campaign, promotion, or ad extensions can use interests, likes, dislikes, disliked creators, muted providers, or ad preferences.
+- `CreatorCategoryPermissionPolicy`: fan category-level defaults that extensions must honor before showing or auto-resolving creator data requests.
+- `FanAdPreferencesAPI`: ad preference records shown in Fan settings and available only through explicit grants.
 - `CreatorScopedTombstoneRecord`: deletion/remediation marker that extensions must respect when storing or rehydrating creator-scoped state.
 - `CreatorAudienceExportPolicy`: field, destination, retention, no-resale, watermarking, revocation, and breach-notice constraints for extension-mediated audience export.
 - `ConsentGrantAPI`, `CampaignDataGrant`, `DataUseGrant`, and `DataAccessReceipt`: fan-level grants, revocations, purpose-bound access, and audit records.

@@ -40,6 +40,7 @@ It does not define the models themselves. It defines how AI capabilities interac
 | Fan AI memory controls | Fan controls retention, memory, training, and ad-use settings. | AI respects fan privacy. | Fan Passport, Wallet, Vaults, and Identity Architecture |
 | Creator Channel Brain | AI assistant grounded in creator-approved channel archive and metadata. | Turns creator archive into a knowledge product. | Creator Experience |
 | Fan AI Assistant | Summaries, Q&A, search refinement, digests, and trusted recommendations. | Fans get more value from creator content. | Fan Experience |
+| Summary-aware fan recommendation tools | Fan-controlled MCP agents can use creator-approved `ContentManifest.summary` for eligible recommendation candidates and downweight clickbait/ragebait title wording when the fan requests it. | Improves recommendation relevance without expanding Fan Recommendation AI beyond creator/follow/recommendation-sourced candidates. | Creator-Led Recommendation Economy |
 | Source attribution receipts | AI records which creator sources contributed. | Enables royalties and trust. | Revenue, Receipts, Ledgers, and Settlement |
 | AI usage receipts | AI interactions are auditable and billable. | Supports subscriptions, credits, provider payment, and governance. | Monetization Models |
 | AI workbench tools | AI helps creators draft recommendations, campaigns, summaries, and metadata. | Improves creator productivity. | Creator-Led Recommendation Economy |
@@ -68,6 +69,7 @@ Fans should be able to:
 - Search across public or permissioned content.
 - Generate digests.
 - Filter recommendations through personal preferences.
+- Instruct their MCP-based recommendation agent to prefer content summaries over ragebait/clickbait title wording.
 - Control memory, retention, and data use.
 - See when AI answers use creator sources.
 
@@ -210,7 +212,7 @@ Actors:
 Steps:
 
 1. Creator uploads or drafts content.
-2. Creator requests title, description, chapters, clips, tags, or summary.
+2. Creator requests title, required summary, description, chapters, clips, or tags.
 3. AI Gateway checks allowed provider and data policy.
 4. AI returns suggestions.
 5. Creator edits and approves.
@@ -248,14 +250,14 @@ Actors:
 
 Steps:
 
-1. Fan enables private recommendation mode.
+1. Fan enables a private ranking setting for the current session intent.
 2. Private Event Vault stores behavior under fan policy.
 3. Fan AI Assistant requests local ranking context for a specific purpose.
 4. `DataUseGrant` is checked and `FanAIMemoryPolicy` / `AIConversationPolicy` are enforced.
-5. `PrivateRankingAPI` ranks trusted candidates inside vault boundary.
+5. `PrivateRankingAPI` ranks trusted candidates inside vault boundary, using `ContentManifest.summary` where available and allowed by content policy.
 6. `DataAccessReceipt` records actual access.
-7. Fan App receives ranked results or derived tokens, not raw history.
-8. Fan can clear memory or disable mode.
+7. Fan App receives ranked results, score metadata such as summary-used/title-deemphasized flags, or derived tokens, not raw history.
+8. Fan can clear memory or disable the private ranking setting.
 
 ### Workflow 6: AI provider certification and audit
 
@@ -330,7 +332,7 @@ Steps:
 - Provider Marketplace and Certified APIs: AI providers are certified through `ProviderCapabilityManifest`, `ProviderCertificationAPI`, and `CertificationScopeRecord`.
 - Revenue, Receipts, Ledgers, and Settlement: `AIUsageReceipt` and `SourceAttributionReceipt` feed settlement.
 - Audience Data Firewall and Data Rights: `DataUseGrant`, `DataAccessReceipt`, and no-training policy make AI data use purpose-bound and auditable.
-- Creator-Led Recommendation Economy: `RecommendationWorkbenchMCPServer` and `CreatorAgentDelegationToken` assist recommendations while creators publish `RecommendationManifest`.
+- Creator-Led Recommendation Economy: `RecommendationWorkbenchMCPServer` and `CreatorAgentDelegationToken` assist recommendations while creators publish `RecommendationManifest`; `FanRecommendationMCPServer` may use `ContentManifest.summary` for eligible fan recommendation candidates without expanding the candidate source scope.
 
 ## 8. FAQ
 
@@ -373,7 +375,7 @@ Steps:
 
 - `SearchMCPServer`: AI access to public search tools.
 - `RecommendationWorkbenchMCPServer`: AI support for creator recommendation drafting.
-- `FanRecommendationMCPServer`: fan AI trusted filtering.
+- `FanRecommendationMCPServer`: fan AI trusted filtering over eligible creator/follow/recommendation candidates; can accept fan instructions to deemphasize clickbait/ragebait titles and use creator-approved `ContentManifest.summary` for relevance.
 - Tool Permission Scopes: tool calls must respect `CreatorAgentDelegationToken`, fan permissions, and tool-call audit records.
 - Public Search Utility integration: neutral search results retrieved through `OpenSearchKernel` and `PublicSearchResultSchema`; AI personalization happens after retrieval and cannot create paid ranking.
 

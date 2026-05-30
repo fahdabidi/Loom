@@ -12,6 +12,8 @@ The creator should control sponsor relationships. Fans should see disclosures an
 
 Sponsor inventory is creator-opt-in B2B inventory. It is separate from neutral public search and fan recommendation ranking. Public campaign exposure can be searchable only through `SearchAccessPolicy`, `PublicSearchResultSchema`, and `SponsorDisclosurePolicy`, with no paid routing, merge priority, or ordering advantage.
 
+Session intent can set ad posture, ad load, contextual category, creator-approved-only status, and eligible creator/provider breadth, but it does not decide which ads are eligible. Ad eligibility remains governed by `CreatorAdPolicy`, `SponsorDisclosurePolicy`, campaign compliance, and safety rules. Intent may change how much inventory can appear in a session and which contextual category is relevant, not create behavioral ad targeting or override creator control.
+
 ## 2. Scope
 
 This product area covers:
@@ -30,6 +32,7 @@ This product area covers:
 - Sponsor delivery, campaign entry, conversion, and reward receipts.
 - Click and interaction metrics as aggregate reporting, not a default paid-click receipt.
 - Campaign compliance manifests.
+- Intent-aware ad posture, creator-approved-only status, contextual category, and creator/provider breadth constraints.
 
 ## 3. Key Features and Differentiators
 
@@ -43,6 +46,8 @@ This product area covers:
 | Clean-room reporting | Sponsors measure performance without raw data export. | Enables privacy-preserving advertising. | Audience Data Firewall and Data Rights |
 | Sponsor receipts | Delivery, entry, conversion, and reward events are auditable; clicks are aggregate interaction metrics unless explicitly mapped to a permitted conversion. | Supports settlement and reporting without search-style per-click incentives. | Revenue, Receipts, Ledgers, and Settlement |
 | Sponsor-free variants | Creators can offer premium sponsor-free versions. | Aligns fan premium value and creator monetization. | Monetization Models |
+| Intent-aware ad constraints | `SessionIntent` can set ad posture, load, contextual category, creator-approved-only flag, and creator/provider breadth, while creator and sponsor policies decide eligible ads. | Enables differentiated experiences without hidden behavioral targeting. | Creator-Led Recommendation Economy; Fan Apps and App Ecosystem |
+| Data-for-value fan offers | Creators and sponsors can offer better giveaways, promotions, or rewards when fans explicitly grant interests, likes, dislikes, disliked creators, muted providers, or ad preferences. | Lets creators improve creator-sold ads without the platform owning or silently reselling fan data. | Audience Data Firewall and Data Rights; Fan Passport, Wallet, Vaults, and Identity Architecture |
 
 ## 4. Product Experience Requirements
 
@@ -53,19 +58,24 @@ Sponsors should:
 - Configure product cards, promo codes, giveaway rewards, and conversion goals.
 - See disclosures and compliance requirements.
 - Receive aggregate reporting and permitted conversion data.
+- Request fan interest/ad-preference data only through creator-approved, fan-granted, purpose-bound campaign flows.
 - Avoid raw follower-list, direct-contact, or private relationship exports unless a valid fan grant explicitly allows them.
 
 Creators should:
 
 - Approve or reject sponsors.
 - Control placement, disclosure, timing, and fan experience.
+- Define `CreatorAdPolicy` so mode ad load cannot override creator ad eligibility.
+- Offer data-for-value terms and decide whether sponsor-linked fan interest data may be requested for a campaign.
 - See sponsor revenue and obligations.
 - Offer sponsor-free variants where desired.
 
 Fans should:
 
 - See sponsor disclosures.
+- See when current session intent changes ad posture, creator-approved-only status, ad load, contextual category, or creator/provider breadth.
 - Understand campaign terms and data grants.
+- Approve, deny, narrow, or revoke fan interest/ad-preference grants on a per-creator basis or by creator category.
 - Participate voluntarily.
 - Access alternate entry where required.
 
@@ -100,6 +110,17 @@ End state:
 - Fan sees sponsor and data grant.
 - Campaign entry is recorded.
 - Reward state is tracked.
+
+### Story 3A: Fan grants sponsor-linked creator ad relevance
+
+As a fan, I want to choose whether a creator can use my interests, likes, dislikes, and ad preferences for a sponsor promotion in exchange for a better offer.
+
+End state:
+
+- Campaign terms show the creator, sponsor, requested fields, ad-use purpose, retention, offer value, and alternate entry where required.
+- Fan can approve, deny, narrow, or rely on a creator-category default.
+- Sponsor receives aggregate or clean-room reporting unless the explicit fan grant permits more.
+- Creator Audience API and Audience Data Firewall prevent sponsor or creator access after revocation.
 
 ### Story 4: Sponsor receives report
 
@@ -136,14 +157,17 @@ Actors:
 Steps:
 
 1. Sponsor creates campaign proposal.
-2. Sponsor defines objective, budget, product, target creator, required disclosures, reporting needs, data needs, and sponsor obligations; raw follower-list, direct-contact, or private relationship exports are rejected unless valid fan grants allow them.
+2. Sponsor defines objective, budget, product, target creator, required disclosures, reporting needs, data needs, requested fan interest/ad-preference fields, and sponsor obligations; raw follower-list, direct-contact, or private relationship exports are rejected unless valid fan grants allow them.
 3. `SponsorCampaignAPI` verifies sponsor/provider certification scope for campaign, ad-decision, clean-room, reporting, and receipt-signing roles.
 4. Creator reviews terms.
 5. `CampaignComplianceManifest` defines eligibility, age/region rules, odds/rules, alternate entry, rewards, data use, brand-safety constraints, and dispute paths.
 6. `EligibilityAPI`, `ModerationLabelAPI`, and `SafetyPolicyManifest` checks run.
 7. Creator accepts and configures campaign.
 8. `CampaignManifest`, `SponsorDisclosurePolicy`, and compliance rules are stored.
-9. Campaign becomes active or enters `Limited`, `Paused`, `Corrected`, or `Ended` state if compliance requires it.
+9. `CreatorAdPolicy` defines which ads or sponsors are eligible for creator surfaces.
+10. If the campaign requests fan interest data, `FanDataGrantOffer` and required fields are attached to the campaign and routed through fan permission surfaces.
+11. `SessionIntent`, `RecommendationModePolicy`, and `SessionIntentAdContext` may set session-level ad posture, creator-approved-only status, ad load, contextual category, and breadth, but cannot make an ineligible ad eligible.
+12. Campaign becomes active or enters `Limited`, `Paused`, `Corrected`, or `Ended` state if compliance requires it.
 
 ### Workflow 2: Fan campaign participation
 
@@ -161,13 +185,13 @@ Steps:
 1. Fan sees sponsored campaign with disclosure.
 2. Fan opens terms, eligibility, reward, and data grant.
 3. `EligibilityAPI` checks eligibility without exporting raw Private Event Vault data.
-4. Fan accepts `CampaignDataGrant` or uses `AlternateEntryMethodPolicy`.
-5. `ConsentGrantAPI` and `DataUseGrant` record purpose, scope, duration, destination, and revocation behavior where broader data access is needed.
+4. Fan accepts `CampaignDataGrant`, approves or narrows any `creator_interest_data` grant, applies a creator-category default, or uses `AlternateEntryMethodPolicy`.
+5. `ConsentGrantAPI` and `DataUseGrant` record purpose, scope, duration, destination, ad-use flag, offer context, and revocation behavior where broader data access is needed.
 6. Campaign Ledger records `CampaignEntryReceipt`.
 7. Reward Ledger records reward state through `RewardReceipt` where applicable.
 8. `DataAccessReceipt` records grant-protected sponsor or clean-room access.
 9. Fan access history shows campaign grants, access receipts, retained receipt exceptions, and revocation controls.
-10. Sponsor reporting receives only permitted aggregate, clean-room, or conversion data; `FollowVisibilityPolicy` and `DirectContactGrant` prevent sponsor access to restricted follower or direct-contact data.
+10. Sponsor reporting receives only permitted aggregate, clean-room, or conversion data; `FollowVisibilityPolicy`, `DirectContactGrant`, and creator interest-data grants prevent sponsor access to restricted follower, direct-contact, or fan interest data.
 
 ### Workflow 2A: Sponsor request for audience data is narrowed or denied
 
@@ -185,10 +209,32 @@ Steps:
 
 1. Sponsor requests a follower list, direct-contact data, lookalike file, or private relationship segment.
 2. Sponsor Dashboard classifies the request as raw audience export, clean-room measurement, aggregate reporting, or explicitly granted campaign data.
-3. `AudienceDataFirewallPolicy` checks `FollowVisibilityPolicy`, `DirectContactGrant`, `CampaignDataGrant`, `DataUseGrant`, and `CreatorAudienceExportPolicy`.
+3. `AudienceDataFirewallPolicy` checks `FollowVisibilityPolicy`, `DirectContactGrant`, `CampaignDataGrant`, `DataUseGrant`, `CreatorInterestDataGrant`, `CreatorCategoryPermissionPolicy`, and `CreatorAudienceExportPolicy`.
 4. If raw export is not permitted, Sponsor Dashboard returns a clean-room, aggregate, or alternate campaign option instead of a follower list.
 5. If explicit fan grants allow limited data, `DataAccessReceipt` records the sponsor/clean-room access and retention rules.
 6. Suspicious sponsor pressure, resale terms, or repeated denied requests route to governance through sponsor/provider audit evidence.
+
+### Workflow 2B: Sponsor-linked creator interest-data offer
+
+Actors:
+
+- Sponsor
+- Creator
+- Fan
+- Fan App
+- Creator Studio
+- Audience Data Firewall
+- Sponsor Dashboard
+
+Steps:
+
+1. Sponsor proposes a promotion that asks for fan interests, likes, dislikes, disliked creators, muted providers, or ad preferences.
+2. Creator reviews sponsor terms, data fields, ad-use purpose, retention, and offer value before approving the request.
+3. Fan App shows the data-for-value offer with requested fields, sponsor context, creator category, ad-use flag, retention, and alternate entry where required.
+4. Fan approves, denies, narrows fields, revokes an existing grant, or applies a creator-category default.
+5. `ConsentGrantAPI` records a `creator_interest_data` grant or denial.
+6. `AudienceDataFirewallPolicy` exposes only approved creator-scoped fields or aggregate counts through `PermissionedAudienceInterestDataAPI`.
+7. Sponsor Dashboard receives only aggregate, clean-room, or explicitly grant-backed metrics, and `DataAccessReceipt` records actual grant-protected access.
 
 ### Workflow 3: Sponsor reporting and settlement
 
@@ -233,13 +279,14 @@ Steps:
 - Creator Experience: creators approve and manage `CampaignManifest`, `SponsorDisclosurePolicy`, and sponsor placements in Creator Studio.
 - Fan Experience: fans see `SponsorDisclosurePolicy`, campaign terms, `CampaignDataGrant`, and `AlternateEntryMethodPolicy`.
 - Creator Channel and Metadata Architecture: `ContentManifest`, `MonetizationManifest`, and `SearchAccessPolicy` define sponsor-related content state.
-- Fan Passport, Wallet, Vaults, and Identity Architecture: `CampaignDataGrant`, rewards, and entitlements depend on fan identity and wallet state.
+- Fan Passport, Wallet, Vaults, and Identity Architecture: `CampaignDataGrant`, creator interest-data grants, creator-category defaults, fan ad preferences, rewards, and entitlements depend on fan identity and wallet state.
 - Provider Marketplace and Certified APIs: sponsor, clean-room, ad-decision, reporting, and receipt-signing roles need `CertificationScopeRecord`.
 - Revenue, Receipts, Ledgers, and Settlement: `SponsorDeliveryReceipt`, `CampaignEntryReceipt`, `RewardReceipt`, `ConversionReceipt`, and `SponsorCampaignStatement` settle.
 - Monetization Models: `SponsorCampaignAPI`, sponsor receipts, and sponsor-free premium entitlements define sponsor revenue and premium alternatives.
 - Creator Plugins / Extensions / Campaign Layer: campaigns often run through `ExtensionManifest`, `CampaignLedgerAPI`, and `ExtensionRuntimeGateway`.
 - Neutral Public Search Utility: sponsor inventory cannot buy `SearchDirectoryAPI` routing, `NeutralSearchMergePolicy` priority, or public search ranking.
-- Audience Data Firewall and Data Rights: sponsor data access is permissioned by `DataUseGrant`, `CampaignDataGrant`, `FollowVisibilityPolicy`, `DirectContactGrant`, `CreatorAudienceExportPolicy`, `DataAccessReceipt`, and `CleanRoomMeasurementAPI`.
+- Creator-Led Recommendation Economy: `SessionIntent`, `SessionIntentAdContext`, and `RecommendationModePolicy` can affect ad posture, creator-approved-only status, ad load, contextual category, and creator/provider breadth while `CreatorAdPolicy` and sponsor policy control ad eligibility.
+- Audience Data Firewall and Data Rights: sponsor data access is permissioned by `DataUseGrant`, `CampaignDataGrant`, `CreatorInterestDataGrant`, `CreatorCategoryPermissionPolicy`, `FollowVisibilityPolicy`, `DirectContactGrant`, `CreatorAudienceExportPolicy`, `DataAccessReceipt`, and `CleanRoomMeasurementAPI`.
 - Trust, Safety, Fraud, and Compliance: `CampaignComplianceManifest`, `EligibilityAPI`, `ModerationLabelAPI`, and `SafetyPolicyManifest` enforce rules.
 - Fan Apps and App Ecosystem: apps display `SponsorDisclosurePolicy`, enforce `CampaignDataGrant`, and generate `CampaignEntryReceipt` and sponsor receipts.
 
@@ -253,10 +300,18 @@ Steps:
 - `CampaignManifest`: campaign rules, sponsor terms, eligibility, rewards, and dates.
 - `CampaignComplianceManifest`: legal, regional, age, giveaway, and alternate entry requirements.
 - `SponsorDisclosurePolicy`: labels and disclosure requirements.
+- `CreatorAdPolicy`: creator-owned rules for ad/sponsor eligibility, category exclusions, surfaces, formats, and sponsor controls.
+- `AdLoadPolicy`: session-intent-aware ad load and creator-breadth constraints passed to ad decision systems.
+- `SessionIntentAdContext`: ad posture, contextual category, creator-approved-only flag, and session intent metadata passed to ad decision systems without raw private behavior, raw interest tokens, or dislike records.
 - `ProductCardAPI`: sponsor products, links, promo codes, and offers.
 - `EligibilityAPI`: campaign eligibility checks.
 - `AlternateEntryMethodPolicy`: required alternate entry rules for giveaways and regulated campaigns.
 - `CampaignDataGrant`: fan campaign permissions.
+- `FanDataGrantOffer`: offer terms, reward value, requested interest/ad-preference fields, ad-use flag, retention, and alternate entry disclosure for data-for-value campaigns.
+- `CreatorDataGrantRequestAPI`: creator-originated requests for interests, likes, dislikes, creator dislikes, muted providers, and ad preferences.
+- `CreatorInterestDataGrant`: fan-approved creator-scoped data grant for creator-sold ads, giveaways, and promotions.
+- `CreatorCategoryPermissionPolicy`: broad fan defaults for categories of creators.
+- `FanAdPreferencesAPI`: fan ad preference settings used only when campaign and creator grants allow them.
 - `FollowVisibilityPolicy`: fan relationship visibility state that sponsor tools and reporting must respect.
 - `DirectContactGrant`: explicit fan permission required before direct-contact data can be exported or used in sponsor-linked creator campaigns.
 - `CreatorAudienceExportPolicy`: field, destination, retention, no-resale, watermarking, and breach-notice rules that block sponsor-driven follower-list extraction.

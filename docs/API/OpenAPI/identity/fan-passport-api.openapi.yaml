@@ -3,7 +3,7 @@ info:
   title: Loom Fan Passport API
   version: 0.1.0
   summary: Portable fan identity, follows, pairwise creator identity, and consent grants.
-  description: Defines the owned API surface for Fan Passport creation, follow relationships, pairwise creator-scoped identity, app grants, campaign grants, and relationship visibility controls.
+  description: Defines the owned API surface for Fan Passport creation, follow relationships, pairwise creator-scoped identity, app grants, campaign grants, creator interest-data grants, category-level creator permission policies, and relationship visibility controls.
 servers:
   - url: https://identity.loom.example
 security:
@@ -181,7 +181,7 @@ paths:
   /v1/fan-passports/{fanId}/grants:
     get:
       operationId: listConsentGrants
-      summary: List app, campaign, AI, provider, and direct-contact grants.
+      summary: List app, campaign, creator interest-data, AI, provider, and direct-contact grants.
       parameters:
         - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
         - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
@@ -242,6 +242,107 @@ paths:
       responses:
         '204':
           description: Consent grant revoked.
+  /v1/fan-passports/{fanId}/creator-data-grant-requests:
+    get:
+      operationId: listCreatorDataGrantRequests
+      summary: List pending or resolved creator requests for fan interest, like, dislike, and ad-preference access.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending
+              - approved
+              - denied
+              - expired
+      responses:
+        '200':
+          description: Creator data grant requests visible to the fan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCreatorDataGrantRequestsResponse'
+  /v1/fan-passports/{fanId}/creator-data-grant-requests/{requestId}/decision:
+    post:
+      operationId: decideCreatorDataGrantRequest
+      summary: Approve, narrow, deny, or apply a category rule to a creator data grant request.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecideCreatorDataGrantRequest'
+      responses:
+        '200':
+          description: Creator data grant decision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorDataGrantDecision'
+  /v1/fan-passports/{fanId}/creator-category-permission-policies:
+    get:
+      operationId: listCreatorCategoryPermissionPolicies
+      summary: List fan defaults for creator-category data access requests.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Creator category permission policies.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCreatorCategoryPermissionPoliciesResponse'
+    put:
+      operationId: updateCreatorCategoryPermissionPolicies
+      summary: Replace fan defaults for creator-category data access requests.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCreatorCategoryPermissionPoliciesRequest'
+      responses:
+        '200':
+          description: Updated creator category permission policies.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCreatorCategoryPermissionPoliciesResponse'
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -364,9 +465,57 @@ components:
       enum:
         - app
         - campaign
+        - creator_interest_data
         - ai
         - provider
         - direct_contact
+    ConsentGrantGranteeType:
+      type: string
+      enum:
+        - app
+        - campaign
+        - creator_channel
+        - creator_category
+        - ai_provider
+        - provider
+        - sponsor
+    FanDataField:
+      type: string
+      enum:
+        - explicit_interests
+        - inferred_interests
+        - liked_content
+        - disliked_content
+        - liked_creators
+        - disliked_creators
+        - muted_creators
+        - muted_providers
+        - ad_preferences
+        - follow_state
+        - campaign_participation
+        - direct_contact
+        - aggregate_segments
+    DataGrantOffer:
+      type: object
+      properties:
+        offerId:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        rewardDescription:
+          type: string
+          nullable: true
+        rewardRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        alternateEntryAvailable:
+          type: boolean
+          default: false
+        valueDisclosure:
+          type: string
+          nullable: true
     CreateConsentGrantRequest:
       type: object
       required:
@@ -377,6 +526,9 @@ components:
       properties:
         grantType:
           $ref: '#/components/schemas/ConsentGrantType'
+        granteeType:
+          $ref: '#/components/schemas/ConsentGrantGranteeType'
+          nullable: true
         granteeId:
           type: string
         purpose:
@@ -385,6 +537,37 @@ components:
           type: array
           items:
             type: string
+        fanDataFields:
+          type: array
+          description: Typed fan data fields for creator interest-data grants. Generic app/campaign grants can continue to use fields.
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        creatorCategoryIds:
+          type: array
+          items:
+            type: string
+        adUseAllowed:
+          type: boolean
+          default: false
+        sharingMode:
+          type: string
+          default: creator_scoped
+          enum:
+            - creator_scoped
+            - creator_category_default
+            - campaign_scoped
+            - aggregate_only
+        requestId:
+          type: string
+          nullable: true
+        offer:
+          $ref: '#/components/schemas/DataGrantOffer'
+          nullable: true
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
         expiresAt:
           type: string
           format: date-time
@@ -406,6 +589,9 @@ components:
           type: string
         grantType:
           $ref: '#/components/schemas/ConsentGrantType'
+        granteeType:
+          $ref: '#/components/schemas/ConsentGrantGranteeType'
+          nullable: true
         granteeId:
           type: string
         purpose:
@@ -414,6 +600,36 @@ components:
           type: array
           items:
             type: string
+        fanDataFields:
+          type: array
+          description: Typed fan data fields for creator interest-data grants. Generic app/campaign grants can continue to use fields.
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        creatorCategoryIds:
+          type: array
+          items:
+            type: string
+        adUseAllowed:
+          type: boolean
+          default: false
+        sharingMode:
+          type: string
+          enum:
+            - creator_scoped
+            - creator_category_default
+            - campaign_scoped
+            - aggregate_only
+        requestId:
+          type: string
+          nullable: true
+        offer:
+          $ref: '#/components/schemas/DataGrantOffer'
+          nullable: true
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
         state:
           type: string
           enum:
@@ -424,6 +640,146 @@ components:
           type: string
           format: date-time
           nullable: true
+    CreatorDataGrantRequest:
+      type: object
+      required:
+        - requestId
+        - requestingChannelId
+        - purpose
+        - fields
+        - state
+        - createdAt
+      properties:
+        requestId:
+          type: string
+        requestingChannelId:
+          type: string
+        creatorCategoryIds:
+          type: array
+          items:
+            type: string
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        adUseRequested:
+          type: boolean
+          default: false
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
+        offer:
+          $ref: '#/components/schemas/DataGrantOffer'
+          nullable: true
+        state:
+          type: string
+          enum:
+            - pending
+            - approved
+            - denied
+            - expired
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    DecideCreatorDataGrantRequest:
+      type: object
+      required:
+        - decision
+      properties:
+        decision:
+          type: string
+          enum:
+            - approve
+            - deny
+            - narrow
+        approvedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        adUseAllowed:
+          type: boolean
+          default: false
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        applyAsCategoryPolicy:
+          type: boolean
+          default: false
+        creatorCategoryIds:
+          type: array
+          items:
+            type: string
+    CreatorDataGrantDecision:
+      type: object
+      required:
+        - requestId
+        - decision
+      properties:
+        requestId:
+          type: string
+        decision:
+          type: string
+          enum:
+            - approved
+            - denied
+            - narrowed
+        consentGrant:
+          $ref: '#/components/schemas/ConsentGrant'
+          nullable: true
+        categoryPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorCategoryPermissionPolicy'
+    CreatorCategoryPermissionPolicy:
+      type: object
+      required:
+        - policyId
+        - creatorCategoryId
+        - defaultDecision
+        - updatedAt
+      properties:
+        policyId:
+          type: string
+        creatorCategoryId:
+          type: string
+        creatorCategoryLabel:
+          type: string
+          nullable: true
+        defaultDecision:
+          type: string
+          enum:
+            - ask_each_time
+            - auto_approve
+            - auto_deny
+        approvedFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        adUseAllowed:
+          type: boolean
+          default: false
+        maxRetentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
     ListFollowsResponse:
       type: object
       required:
@@ -448,3 +804,33 @@ components:
             $ref: '#/components/schemas/ConsentGrant'
         page:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    ListCreatorDataGrantRequestsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDataGrantRequest'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    UpdateCreatorCategoryPermissionPoliciesRequest:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorCategoryPermissionPolicy'
+    ListCreatorCategoryPermissionPoliciesResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorCategoryPermissionPolicy'

@@ -15,6 +15,7 @@ x-loom-architecture-docs:
 x-loom-downstream-apis:
   - ./campaign-api.openapi.yaml
   - ../creator/creator-audience-api.openapi.yaml
+  - ../discovery/recommendation-referral-api.openapi.yaml
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../monetization/settlement-engine-api.openapi.yaml
 paths:
@@ -103,6 +104,19 @@ components:
           type: array
           items:
             type: string
+        requestedFanInterestDataFields:
+          type: array
+          description: Fan interest, like, dislike, and ad-preference fields requested for creator-approved and fan-granted campaign use.
+          items:
+            $ref: '#/components/schemas/FanInterestDataField'
+        requiresExplicitFanGrant:
+          type: boolean
+          default: true
+        acceptedIntentAdContexts:
+          type: array
+          description: Contextual session intent categories the sponsor is willing to appear in. This is not behavioral targeting and does not override creator ad policy.
+          items:
+            type: string
     SponsorCampaignProposal:
       allOf:
         - $ref: '#/components/schemas/CreateSponsorCampaignProposalRequest'
@@ -136,8 +150,16 @@ components:
           type: array
           items:
             type: string
+        fanInterestFields:
+          type: array
+          description: Fan-owned interest, like, dislike, creator dislike, and ad preference fields requested for explicit fan-granted campaign use.
+          items:
+            $ref: '#/components/schemas/FanInterestDataField'
         purpose:
           type: string
+        useForCreatorAds:
+          type: boolean
+          default: false
     SponsorDataDecision:
       type: object
       required:
@@ -151,6 +173,22 @@ components:
             type: string
         aggregateOnly:
           type: boolean
+        requiredFanGrant:
+          type: boolean
+          default: true
+    FanInterestDataField:
+      type: string
+      enum:
+        - explicit_interests
+        - inferred_interests
+        - liked_content
+        - disliked_content
+        - liked_creators
+        - disliked_creators
+        - muted_creators
+        - muted_providers
+        - ad_preferences
+        - campaign_participation
     SponsorReport:
       type: object
       required:
@@ -166,3 +204,7 @@ components:
         invoiceStatementId:
           type: string
           nullable: true
+        metricsByIntentContext:
+          type: object
+          additionalProperties:
+            type: number

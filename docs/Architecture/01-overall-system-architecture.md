@@ -59,7 +59,10 @@ flowchart TB
     HostSearch[Host Public Search APIs]
     RecommendationExchange[Creator Discovery Exchange]
     RecommendationWorkbench[Recommendation Workbench]
+    StartupTileService[Startup Tile / Session Intent Service]
     FanRecommendationEngine[Fan Scoped Recommendation Engine]
+    ContentScoringService[Content Scoring Service]
+    ExternalRecommendationProviders[Certified External Recommendation Providers]
     ExtensionRuntime[Extension Runtime Gateway]
     AIGateway[AI Gateway / Tool Runtime]
   end
@@ -101,6 +104,7 @@ flowchart TB
   FanApp --> PlaybackAuthorization
   FanApp --> PublicCatalog
   FanApp --> SearchDirectory
+  FanApp --> StartupTileService
   FanApp --> FanRecommendationEngine
   FanApp --> ExtensionRuntime
   FanApp --> AIGateway
@@ -133,7 +137,15 @@ flowchart TB
 
   SearchDirectory --> HostSearch
   HostSearch --> FanApp
+  StartupTileService --> CoreFanVault
+  StartupTileService --> PrivateEventVault
+  StartupTileService --> FanRecommendationEngine
   FanRecommendationEngine --> RecommendationWorkbench
+  FanRecommendationEngine --> ContentScoringService
+  FanRecommendationEngine --> ExternalRecommendationProviders
+  FanRecommendationEngine --> ContentHost
+  ContentScoringService --> CoreFanVault
+  ContentScoringService --> PrivateEventVault
   RecommendationWorkbench --> CreatorMetadataHost
   RecommendationExchange --> PublicCatalog
 
@@ -177,8 +189,8 @@ flowchart TB
 | Search Directory | Routing layer for neutral search across certified hosts and public indexes. | Exposes `SearchDirectoryAPI`, host routing, and search policy metadata. |
 | Migration System | Builds migration plans, coordinates export/import, records cutover state, and routes migration disputes. | Exposes `MigrationPlanAPI`, migration orchestration, and `MigrationReceipt` creation. |
 | Fan Passport Ledger | Durable fan identity and follow control ledger. | Exposes `FanPassportAPI`, `FollowRelationshipAPI`, `ConsentGrantAPI`, `AppPermissionGrant`, and `FanPassportClaim`. |
-| Core Fan Vault | Portable fan-owned lightweight state. | Stores saves, notification preferences, app preferences, blocked creators/topics, wallet display preferences, and lightweight AI settings. |
-| Private Event Vault | Protected store for rich private behavior. | Stores watch/read history, search history, AI memory, recommendation feedback, and derived interests under purpose-bound grants. |
+| Core Fan Vault | Portable fan-owned lightweight state. | Stores saves, notification preferences, app preferences, explicit interests, disliked interests, liked/disliked creators, muted providers, wallet display preferences, and lightweight AI settings. |
+| Private Event Vault | Protected store for rich private behavior. | Stores watch/read history, search history, AI memory, recommendation feedback, derived interest confidence, and private ranking memory under purpose-bound grants. |
 | Creator Audience Vault | Creator-scoped audience store. | Stores follower/member state, pairwise identifiers, campaign participation, creator analytics, direct-contact grants, block state, and tombstones. |
 | Entitlement Ledger | Durable access-right ledger. | Stores memberships, paid content, no-ad premium, AI credits, tickets, courses, and wallet entitlements. |
 | Audience Data Firewall | Policy enforcement boundary between fan private data, creator-scoped audience data, providers, apps, sponsors, AI tools, and extensions. | Evaluates `DataUseGrant`, `CampaignDataGrant`, `FollowVisibilityPolicy`, `DirectContactGrant`, `CreatorAudienceExportPolicy`, and creates `DataAccessReceipt`. |
@@ -189,7 +201,9 @@ flowchart TB
 | Host Public Search APIs | Host-local search endpoints that return signed neutral search result records. | Returns `PublicSearchResultSchema` records. |
 | Creator Discovery Exchange | Creator-facing discovery system for finding creators, content, referral terms, promotions, and reputation signals. | Returns discovery candidates and reputation signals for creators. |
 | Recommendation Workbench | Creator tool for drafting, labeling, and publishing recommendation manifests. | Writes `RecommendationManifest` and disclosure metadata. |
-| Fan Scoped Recommendation Engine | Fan-facing ranking service over trusted creator recommendation candidates and permitted community feeds. | Returns ranked eligible recommendations and can trigger `DiscoveryReceipt`. |
+| Startup Tile / Session Intent Service | Fan-facing service that creates launch and mid-session `ContentTile` choices from platform intents, fan interests/dislikes, follows, and public context, then turns fan selection into `SessionIntent` objects. | Exposes `StartupTileSurfaceAPI`, `PlatformIntentRegistry`, `SessionIntentAPI`, `SessionIntentDisclosure`, and tile feedback state. |
+| Fan Scoped Recommendation Engine | Fan-facing ranking service over trusted creator recommendation candidates, permitted community feeds, certified external recommendation providers, host content-performance signals, and current `SessionIntent`. | Returns ranked eligible recommendations, score explanations, intent disclosures, ad posture constraints, and can trigger `DiscoveryReceipt`. |
+| Content Scoring Service | Applies intent-specific scoring across followed creators, creator recommendations, external provider candidates, host performance metadata, fan interest relevance, dislikes, safety labels, and creator reputation. | Returns `ContentScoreExplanation`, candidate score, suppression reason, and source-factor breakdown. |
 | Extension Runtime Gateway | Safe runtime boundary for certified extensions in fan apps and creator surfaces. | Enforces `ExtensionManifest`, `ExtensionPermissionGrant`, artifact signature, sandbox, grants, and fail-closed behavior. |
 | AI Gateway / Tool Runtime | Controlled path for AI calls, creator delegation tokens, fan AI settings, source attribution, and tool-call audit. | Returns AI outputs and creates `AIUsageReceipt`, `SourceAttributionReceipt`, or `ToolCallAuditRecord` where required. |
 | Campaign Ledger | Durable campaign state, entries, eligibility, sponsor terms, and campaign receipts. | Creates `CampaignEntryReceipt` and campaign state. |
@@ -459,9 +473,14 @@ sequenceDiagram
   participant AI as AI Gateway
   participant RW as Recommendation Workbench
   participant CMH as Creator Metadata Host
+  participant Tiles as Startup Tile / Session Intent Service
   participant FRE as Fan Recommendation Engine
+  participant Score as Content Scoring Service
+  participant ERP as External Recommendation Providers
+  participant Host as Content Host
   participant FA as Fan App
   actor F as Fan
+  participant ADF as Audience Data Firewall
   participant RL as Receipt Ledger
   participant SE as Settlement Engine
 
@@ -473,9 +492,18 @@ sequenceDiagram
   AI-->>SC: Draft recommendation text
   SC->>RW: Publish RecommendationManifest
   RW->>CMH: Store recommendation and disclosure
-  FA->>FRE: Request trusted candidates
+  FA->>Tiles: Request startup content tiles
+  Tiles->>ADF: Check allowed interest/dislike posture
+  Tiles-->>FA: ContentTile list with platform intents
+  F->>FA: Select tile and active interest
+  FA->>Tiles: Create SessionIntent
+  Tiles->>ADF: Check data posture
+  FA->>FRE: Request candidates for SessionIntent
   FRE->>CMH: Fetch RecommendationManifest records
-  FRE-->>FA: Ranked trusted recommendations
+  FRE->>ERP: Fetch capped external candidates if intent permits
+  FRE->>Host: Fetch content performance metadata
+  FRE->>Score: Score by intent, interests, dislikes, reputation, and performance
+  FRE-->>FA: Ranked recommendations, score explanations, and intent disclosures
   F->>FA: Follow, watch, join, or buy
   FA->>RL: DiscoveryReceipt or CreatorReferralReceipt
   RL->>SE: Referral settlement input
@@ -489,17 +517,24 @@ sequenceDiagram
 | 4 | Source Creator -> AI Gateway | Optional `CreatorAgentDelegationToken` request | Draft recommendation or research summary | AI call is bounded by creator delegation, source policy, and tool audit. |
 | 5 | Source Creator -> Recommendation Workbench | Publish recommendation | Draft validation result | Workbench validates disclosure, destination, terms, and manifest compatibility. |
 | 6 | Recommendation Workbench -> Creator Metadata Host | Write `RecommendationManifest` | Signed recommendation version | Metadata host stores recommendation and disclosure labels. |
-| 7 | Fan App -> Fan Scoped Recommendation Engine | Request trusted recommendation candidates | Ranked candidate set | Engine fetches recommendations from creators the fan trusts and applies fan settings and eligible community feeds. |
-| 8 | Fan Scoped Recommendation Engine -> Fan App | Recommendation response | Explanation and disclosure metadata | Fan sees why the recommendation appears and whether it is editorial, affiliate, sponsored, paid, or referral-based. |
-| 9 | Fan -> Fan App | Follow, watch, join, or buy destination | Qualified action packet | Action can trigger follow, playback, entitlement, campaign, or purchase workflows. |
-| 10 | Fan App -> Receipt Ledger | `DiscoveryReceipt` or `CreatorReferralReceipt` | Receipt accepted/rejected | Receipt includes source creator, destination creator, manifest version, action type, and eligibility context. |
-| 11 | Receipt Ledger -> Settlement Engine | Referral settlement input | Settlement allocation | Engine applies `ReferralTermsManifest`, caps, fraud holds, and adjustments. |
-| 12 | Trust/Safety -> Recommendation reputation | Abuse/fraud feedback | Reputation update | Recommendation abuse, misleading disclosures, or invalid referrals lower reputation or trigger enforcement. |
+| 7 | Fan App -> Startup Tile / Session Intent Service | `StartupTileSurfaceAPI.list` | `ContentTile` list | Tiles are generated from certified `PlatformIntent` definitions, follows, fan interests, disliked interests/creators, muted providers, and public/trending context. |
+| 8 | Fan -> Fan App | Select tile, active interest, or dislike/mute control | Tile selection packet | Fan chooses the current platform intent, such as Creator Updates, Learning, Shopping, Reviews, Entertainment, Low-Engagement Browsing, Friends and Family, Search, or News, with active interest/dislike filters. |
+| 9 | Fan App -> Startup Tile / Session Intent Service | `SessionIntentAPI.create` | `SessionIntent` and disclosure | Service binds `platformIntentId`, active interest tokens, dislike filters, creator/provider blend, score weights, data posture, ad posture, and session shape. |
+| 10 | Startup Tile / Session Intent Service -> Audience Data Firewall | Data posture check | Allowed, narrowed, or denied posture | Firewall applies privacy mode, grants, age/region policy, vault rules, direct-connection restrictions, and platform-intent policy before ranking uses fan data. |
+| 11 | Fan App -> Fan Scoped Recommendation Engine | Request recommendation candidates for `SessionIntent` | Ranked candidate set | Engine fetches followed-creator, creator-recommended, direct-connection, host-performance, and certified external provider candidates according to intent quotas. |
+| 12 | Fan Scoped Recommendation Engine -> Content Scoring Service | Score candidate set | Scores and explanation factors | Scoring weights followed creators, creator recommendations, creator reputation, external provider score, host trending/freshness/being-watched/view-count metadata, interest relevance, dislikes, and safety labels. |
+| 13 | Fan Scoped Recommendation Engine -> Fan App | Recommendation response | Explanation, intent disclosure, ad posture constraints | Fan sees why the recommendation appears, source mix, creator/provider boundary, and whether it is editorial, affiliate, sponsored, paid, referral-based, or externally recommended. |
+| 14 | Fan -> Fan App | Follow, unfollow, like, dislike, flag, watch, join, buy, switch intent, mute provider/creator, or clear intent | Qualified action packet | Action can trigger follow, playback, entitlement, campaign, purchase, `FanContentFeedbackAPI`, or a new session intent. |
+| 15 | Fan App -> Receipt Ledger | `DiscoveryReceipt` or `CreatorReferralReceipt` | Receipt accepted/rejected | Receipt includes source creator, destination creator, manifest version, action type, session intent id, and eligibility context. |
+| 16 | Receipt Ledger -> Settlement Engine | Referral settlement input | Settlement allocation | Engine applies `ReferralTermsManifest`, caps, fraud holds, and adjustments. |
+| 17 | Trust/Safety -> Recommendation reputation | Abuse/fraud feedback | Reputation update | Recommendation abuse, misleading disclosures, clickbait/ragebait signals, or invalid referrals lower reputation or trigger enforcement. |
 
 Primary state created:
 
 - `ReferralTermsManifest`.
 - `RecommendationManifest`.
+- `SessionIntent`.
+- `FanInterestProfile` updates where the fan explicitly likes, dislikes, mutes, follows, or unfollows.
 - Disclosure metadata.
 - Discovery or referral receipt.
 - Referral settlement input.

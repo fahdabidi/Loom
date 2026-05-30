@@ -24,6 +24,9 @@ This product area covers:
 - Fan Wallet and entitlements.
 - Core Fan Vault.
 - Private Event Vault.
+- Fan Interest Profile.
+- Disliked interests and disliked creators.
+- Fan feedback signals.
 - Creator Audience Vault interaction.
 - Pairwise creator relationship IDs.
 - Export, delete, migration, and privacy controls.
@@ -42,6 +45,9 @@ It does not define complete Fan App UX, but it powers the Fan Experience across 
 | Fan Wallet | Wallet for memberships, subscriptions, premium, AI credits, tips, events, and paid content. | One payment and entitlement model across apps. | Monetization Models; Revenue, Receipts, Ledgers, and Settlement |
 | Core Fan Vault | Lightweight portable fan-owned state. | Saves preferences, bookmarks, and settings across apps. | Fan Apps and App Ecosystem |
 | Private Event Vault | Richer behavior stored under purpose-bound controls. | Enables personalization and AI without exporting raw behavior broadly. | Audience Data Firewall and Data Rights; AI Layer |
+| Fan Interest Profile | Fan-owned interest tokens, disliked interests, liked/disliked creators, muted providers, and confidence/source metadata. | Lets recommendations personalize around fan-controlled interests instead of app-owned profiles. | Creator-Led Recommendation Economy; Fan Apps and App Ecosystem |
+| Explicit dislike controls | Fan can dislike content, interests, creators, and recommendation providers. | Gives fans a direct way to suppress topics and creators, and gives ranking a strong negative signal. | Fan Experience; Trust, Safety, Fraud, and Compliance |
+| Creator interest-data grants | Fan can approve, narrow, deny, or revoke creator access to interests, likes, dislikes, ad preferences, and creator preference records on a per-creator or creator-category basis. | Lets fans trade data for better creator offers without making interest data platform-owned or creator-owned by default. | Audience Data Firewall and Data Rights; Brand/Sponsor/Advertiser Tools |
 | Consent grants | Explicit fan permissions for apps, campaigns, AI, and providers. | Data use becomes visible and revocable. | Brand/Sponsor/Advertiser Tools; Creator Plugins / Extensions / Campaign Layer |
 | Entitlement portability | Purchases and access rights work across certified apps. | Fans can change apps without losing paid access. | Provider Marketplace and Certified APIs |
 | Export/delete/migration | Fan can export, delete, revoke, or move identity and vault state. | Data rights become operational. | Migration Strategy from Existing Platforms |
@@ -66,8 +72,8 @@ Fan identity should support:
 Fan data should be separated by sensitivity and purpose:
 
 - Fan Passport Ledger: identity, follows, personas, permissions, entitlements references, and migration records.
-- Core Fan Vault: saved content, playlists, bookmarks, notification preferences, app settings, blocked creators/topics, display preferences, lightweight AI preferences, and reward state.
-- Private Event Vault: watch/read/search history, AI memory, recommendation feedback, derived interests, and private ranking state.
+- Core Fan Vault: saved content, playlists, bookmarks, notification preferences, app settings, explicit interests, disliked interests, liked/disliked creators, muted providers, blocked creators/topics, display preferences, lightweight AI preferences, and reward state.
+- Private Event Vault: watch/read/search history, AI memory, recommendation feedback, derived interest confidence, private interest signals, and private ranking state.
 - Creator Audience Vault: creator-scoped audience records, membership state, campaign participation, and permissioned direct contact.
 
 ### 4.3 Wallet Model
@@ -93,8 +99,13 @@ Fans should be able to:
 - See who has access to what.
 - Revoke app permissions.
 - Revoke campaign or sponsor data grants.
+- Approve or deny creator requests for interest, like, dislike, and ad-preference access per creator.
+- Set broad creator-category defaults, such as always ask, auto-deny, or auto-approve limited fields for creator categories the fan trusts.
 - Choose AI memory settings.
 - Choose data modes.
+- View, edit, export, or delete interest and dislike profiles.
+- View and edit ad preferences, data-for-value offers, active creator data grants, and disliked/blocked creators from Fan App settings.
+- Like, dislike, flag, save, follow, unfollow, mute, or block content and creators.
 - Export data.
 - Delete selected data.
 - Migrate identity and vault state.
@@ -163,6 +174,17 @@ End state:
 - PrivateRankingAPI ranks inside the vault where required.
 - Apps receive ranked outputs or derived signals, not unrestricted history.
 
+### Story 5A: Fan manages interests and dislikes
+
+As a fan, I want to see and correct the interests and dislikes Loom uses for recommendations.
+
+End state:
+
+- `FanInterestProfile` shows explicit interests, inferred interests, disliked interests, liked/disliked creators, muted providers, and source/confidence.
+- Fan can add, remove, mute, dislike, export, or delete interest records.
+- Raw private behavior remains in Private Event Vault unless the fan grants access.
+- Startup tiles and recommendation scoring honor dislikes and muted creators/providers.
+
 ### Story 6: Fan revokes campaign data access
 
 As a fan, I want to revoke a campaign data grant after participating.
@@ -172,6 +194,17 @@ End state:
 - ConsentGrantAPI revokes future access.
 - Data access records remain auditable.
 - Campaign keeps valid historical receipts but loses future access where applicable.
+
+### Story 6A: Fan grants creator interest data for better offers
+
+As a fan, I want to approve, narrow, or deny a creator's request to use my interests, likes, dislikes, and ad preferences for creator-approved ads, giveaways, or promotions.
+
+End state:
+
+- Creator request shows purpose, requested fields, retention, ad-use flag, and offer value.
+- Fan can approve for one creator, deny, narrow fields, or save a creator-category default.
+- `ConsentGrantAPI` stores `creator_interest_data` grants and revocations.
+- Creator Audience APIs expose only approved creator-scoped fields and create `DataAccessReceipt` on access.
 
 ### Story 7: Fan migrates to another vault provider
 
@@ -295,6 +328,27 @@ Steps:
 7. AI response is returned.
 8. Fan can clear memory, change retention, or revoke access.
 
+### Workflow 5A: Interest and dislike update
+
+Actors:
+
+- Fan
+- Fan App
+- Core Fan Vault
+- Private Event Vault
+- Fan Scoped Recommendation Engine
+- Trust and Safety
+
+Steps:
+
+1. Fan selects a startup tile, likes content, dislikes content, says not interested, saves content, follows or unfollows a creator, dislikes a creator, mutes a provider, blocks a creator, or flags content.
+2. Fan App sends `FanInterestSignal` to `FanInterestProfileAPI`.
+3. Core Fan Vault updates explicit interests, disliked interests, liked/disliked creators, muted providers, and blocked creators where the signal is portable.
+4. Private Event Vault stores private behavioral evidence, confidence, and recency where fan policy allows.
+5. Flag actions route to Trust and Safety while still creating a dislike/suppression signal for the fan.
+6. Fan Scoped Recommendation Engine receives only allowed interest tokens, dislike filters, and derived private summaries.
+7. Fan can later edit, export, or delete interest/dislike records from the Data Dashboard.
+
 ### Workflow 6: Campaign data grant
 
 Actors:
@@ -315,6 +369,29 @@ Steps:
 5. Campaign Ledger records entry.
 6. Creator Audience Vault records campaign participation.
 7. Fan can later revoke future access.
+
+### Workflow 6A: Creator interest-data grant request
+
+Actors:
+
+- Creator
+- Creator Studio
+- Fan
+- Fan App Settings
+- Consent Grant API
+- Fan Interest Profile API
+- Creator Audience API
+- Audience Data Firewall
+
+Steps:
+
+1. Creator creates an `AudienceDataGrantRequest` with purpose, requested fields, creator categories, retention, ad-use flag, and optional giveaway/promotion value.
+2. Fan App shows the request in settings and, where appropriate, at campaign or creator surfaces.
+3. Fan approves, denies, narrows fields, or applies a creator-category default.
+4. `ConsentGrantAPI` records a `creator_interest_data` grant with `granteeType` set to creator channel or creator category.
+5. `FanInterestProfileAPI` and `FanAdPreferencesAPI` expose only approved fields through Audience Data Firewall.
+6. `CreatorAudienceAPI` returns creator-scoped interest/ad-preference fields or aggregate counts according to the grant.
+7. Every access creates `DataAccessReceipt`; revocation blocks future access while preserving required receipts.
 
 ### Workflow 7: Fan export or migration
 
@@ -342,7 +419,8 @@ Steps:
 ## 7. Cross-Area Interactions
 
 - Fan Experience: fan-facing behavior depends on `FanPassportClaim`, `CoreFanVaultAPI`, `PrivateEventVaultAPI`, `FanWalletAPI`, and `ConsentGrantAPI`.
-- Creator Experience: creators receive creator-scoped audience data through `CreatorAudienceAPI`, `PairwiseIdentityAPI`, and `AudienceAnalyticsAPI`.
+- Creator-Led Recommendation Economy: `FanInterestProfile`, dislike filters, and feedback signals shape startup tiles and content scoring.
+- Creator Experience: creators receive creator-scoped audience data through `CreatorAudienceAPI`, `PairwiseIdentityAPI`, `AudienceAnalyticsAPI`, and permissioned interest-data grants.
 - Revenue, Receipts, Ledgers, and Settlement: wallet payments and usage entitlements generate `PaymentReceipt`, `MembershipReceipt`, `PremiumNoAdReceipt`, and entitlement claims.
 - Audience Data Firewall and Data Rights: this architecture enforces `DataUseGrant`, `CampaignDataGrant`, `DataAccessReceipt`, and `AudienceDataFirewallPolicy`.
 - Fan Apps and App Ecosystem: apps authenticate through `FanAppLoginSDK` and request scoped access through `AppPermissionGrant`.
@@ -366,7 +444,9 @@ Steps:
 - `CreatorScopedTombstoneRecord`: minimal retained marker that prevents creator rehydration of deleted relationship data while preserving required audit, safety, settlement, and legal exceptions.
 - `SensitiveRelationshipDefaultPolicy`: stricter relationship visibility and direct-contact defaults for minors, vulnerable users, sensitive creator categories, private-mode users, and regulated regions.
 - `CreatorAudienceExportPolicy`: field, destination, retention, watermarking, no-resale, revocation, and breach-notice rules for creator audience exports.
-- `ConsentGrantAPI`: app, provider, campaign, AI, and creator permission grants and revocations.
+- `ConsentGrantAPI`: app, provider, campaign, AI, creator interest-data, creator-category default, and direct-contact permission grants and revocations.
+- `CreatorDataGrantRequest`: creator request for fan interests, likes, dislikes, ad preferences, and creator preference records, including purpose, retention, ad-use flag, and offer value.
+- `CreatorCategoryPermissionPolicy`: fan default for creator categories, such as ask every time, auto-deny, or auto-approve limited fields.
 - `EntitlementClaimAPI`: signed entitlement references linked to fan identity.
 - `PairwiseIdentityAPI`: creator-scoped identifiers and anti-correlation controls.
 - `FanMigrationRecord`: identity and vault migration history.
@@ -391,6 +471,13 @@ Steps:
 
 - `CoreFanVaultAPI`: encrypted portable state for saves, preferences, app settings, notifications, blocks, wallet display preferences, and rewards.
 - `PrivateEventVaultAPI`: richer private behavior under purpose-bound access controls.
+- `FanInterestProfileAPI`: read/update explicit interests, inferred interests, disliked interests, liked/disliked creators, muted providers, source, confidence, and recency.
+- `FanAdPreferencesAPI`: fan-owned ad preference settings, blocked ad categories, blocked sponsors, and default creator data-sharing stance.
+- `FanInterestSignal`: like, dislike, not interested, flag, save, tile selected, follow, unfollow, mute creator, block creator, and mute provider event.
+- `InterestToken`: normalized topic, creator, format, product, sport, genre, or community token used for ranking.
+- `DislikedInterestToken`: strong negative signal that suppresses matching candidates unless the fan temporarily overrides it.
+- `DislikedCreatorRecord`: creator-level suppression signal distinct from unfollow, mute, and block.
+- `MutedRecommendationProviderRecord`: fan-owned suppression of external recommendation providers.
 - `VaultAccessGrant`: app/provider permission to access specific vault scopes.
 - `VaultExportAPI`: export portable vault state.
 - `VaultDeleteAPI`: delete or revoke fan state.
@@ -399,6 +486,8 @@ Steps:
 #### Creator audience vault systems
 
 - `CreatorAudienceAPI`: creator-scoped audience records, member/follower state, follow visibility state, direct contact grants, block state, tombstone status, and campaign participation.
+- `AudienceDataGrantRequestAPI`: creator-side request lifecycle for interest, like, dislike, and ad-preference access.
+- `PermissionedAudienceInterestDataAPI`: creator-side query path for granted interest/ad-preference fields and aggregate counts.
 - `AudienceSegmentAPI`: creator-controlled segments for campaigns and communication.
 - `CampaignDataGrant`: fan-granted data for a specific creator campaign.
 - `CreatorCRMExportAPI`: export only permissioned creator audience data where `DirectContactGrant`, `FollowVisibilityPolicy`, `CreatorAudienceExportPolicy`, access history, revocation state, and retention rules allow it.

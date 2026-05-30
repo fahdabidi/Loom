@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: Loom Creator Audience API
   version: 0.1.0
-  summary: Creator-visible audience analytics, relationship state, segments, and permissioned CRM export.
-  description: Defines the API surface for creator audience views while enforcing fan visibility, direct-contact grants, data minimization, export restrictions, and auditable data access.
+  summary: Creator-visible audience analytics, relationship state, segments, creator interest-data grant requests, and permissioned CRM export.
+  description: Defines the API surface for creator audience views while enforcing fan visibility, direct-contact grants, fan interest/like/dislike grants, data minimization, export restrictions, and auditable data access.
 servers:
   - url: https://audience.loom.example
 security:
@@ -87,6 +87,84 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AudienceSegment'
+  /v1/channels/{channelId}/audience/data-grant-requests:
+    get:
+      operationId: listAudienceDataGrantRequests
+      summary: List creator requests for fan interest, like, dislike, and ad-preference access.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - active
+              - paused
+              - expired
+      responses:
+        '200':
+          description: Creator audience data grant requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAudienceDataGrantRequestsResponse'
+    post:
+      operationId: createAudienceDataGrantRequest
+      summary: Ask fans for permission to share interest, like, dislike, and ad-preference data with this creator.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAudienceDataGrantRequest'
+      responses:
+        '201':
+          description: Audience data grant request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceDataGrantRequest'
+  /v1/channels/{channelId}/audience/interest-data-queries:
+    post:
+      operationId: queryPermissionedAudienceInterestData
+      summary: Query creator-scoped fan interest, like, dislike, and ad-preference data allowed by fan grants.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAudienceInterestDataRequest'
+      responses:
+        '200':
+          description: Permissioned audience interest data response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudienceInterestDataQueryResult'
   /v1/channels/{channelId}/audience/exports:
     post:
       operationId: createAudienceExport
@@ -165,6 +243,180 @@ components:
             - active
             - revoked
             - blocked
+        interestDataGrantState:
+          type: string
+          enum:
+            - none
+            - pending
+            - active
+            - revoked
+          nullable: true
+    FanDataField:
+      type: string
+      enum:
+        - explicit_interests
+        - inferred_interests
+        - liked_content
+        - disliked_content
+        - liked_creators
+        - disliked_creators
+        - muted_creators
+        - muted_providers
+        - ad_preferences
+        - follow_state
+        - campaign_participation
+        - direct_contact
+        - aggregate_segments
+    DataGrantOffer:
+      type: object
+      properties:
+        offerId:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        rewardDescription:
+          type: string
+          nullable: true
+        rewardRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        alternateEntryAvailable:
+          type: boolean
+          default: false
+        valueDisclosure:
+          type: string
+          nullable: true
+    CreateAudienceDataGrantRequest:
+      type: object
+      required:
+        - purpose
+        - fields
+      properties:
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        segmentId:
+          type: string
+          nullable: true
+        creatorCategoryIds:
+          type: array
+          items:
+            type: string
+        adUseRequested:
+          type: boolean
+          default: false
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          nullable: true
+        offer:
+          $ref: '#/components/schemas/DataGrantOffer'
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    AudienceDataGrantRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateAudienceDataGrantRequest'
+        - type: object
+          required:
+            - requestId
+            - channelId
+            - state
+            - createdAt
+          properties:
+            requestId:
+              type: string
+            channelId:
+              type: string
+            state:
+              type: string
+              enum:
+                - draft
+                - active
+                - paused
+                - expired
+            createdAt:
+              type: string
+              format: date-time
+            consentedFanCount:
+              type: integer
+              nullable: true
+    QueryAudienceInterestDataRequest:
+      type: object
+      required:
+        - purpose
+        - fields
+      properties:
+        purpose:
+          type: string
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FanDataField'
+        segmentId:
+          type: string
+          nullable: true
+        requestId:
+          type: string
+          nullable: true
+        useForAdTargeting:
+          type: boolean
+          default: false
+        aggregateOnly:
+          type: boolean
+          default: false
+        maxRecords:
+          type: integer
+          default: 1000
+    AudienceInterestRecord:
+      type: object
+      required:
+        - pairwiseCreatorFanId
+        - consentGrantId
+        - fields
+      properties:
+        pairwiseCreatorFanId:
+          type: string
+        consentGrantId:
+          type: string
+        fields:
+          type: object
+          additionalProperties: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    AudienceInterestDataQueryResult:
+      type: object
+      required:
+        - decision
+        - approvedFields
+      properties:
+        decision:
+          $ref: '../_shared/components.yaml#/components/schemas/PolicyDecision'
+        approvedFields:
+          type: array
+          items:
+            type: string
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/AudienceInterestRecord'
+        aggregateCounts:
+          type: object
+          additionalProperties:
+            type: integer
+        dataAccessReceipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/DataAccessReceipt'
+          nullable: true
     CreateAudienceSegmentRequest:
       type: object
       required:
@@ -241,5 +493,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AudienceRelationship'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+    ListAudienceDataGrantRequestsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AudienceDataGrantRequest'
         page:
           $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

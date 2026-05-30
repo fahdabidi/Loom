@@ -61,8 +61,8 @@ flowchart TB
 | --- | --- |
 | `extensionContext` | Extension id, developer id, manifest version, artifact version, permissions, surfaces, risk tier, and suspension state. |
 | `campaignContext` | Campaign id, creator id, sponsor id, objective, audience, budget, schedule, reward rules, and compliance state. |
-| `fanGrantContext` | Fan identity, pairwise creator identity, requested fields, purpose, retention, revocation, and private-mode state. |
-| `sponsorContext` | Sponsor account, brand safety constraints, reporting scope, invoicing, allowed metrics, and denied data fields. |
+| `fanGrantContext` | Fan identity, pairwise creator identity, requested fields, creator interest-data fields, purpose, retention, revocation, ad-use flag, offer context, category defaults, and private-mode state. |
+| `sponsorContext` | Sponsor account, brand safety constraints, accepted session intent ad contexts, requested fan-interest fields, reporting scope, invoicing, allowed metrics, and denied data fields. |
 | `runtimeContext` | App surface, extension runtime session, sandbox permissions, event id, idempotency key, and provider version. |
 | `receiptContext` | Participation, reward, conversion, sponsor spend, developer fee, and settlement receipts. |
 | `auditContext` | Artifact attestation, permission grant, data-access receipt, compliance review, suspension, and export evidence. |
@@ -77,8 +77,14 @@ flowchart TB
 | `ExtensionRuntimeAPI` | Sandboxed runtime calls between fan apps, extensions, campaign services, and platform APIs. |
 | `CampaignManifest` | Creator/sponsor campaign objective, eligibility, data grants, reward rules, schedule, and settlement rules. |
 | `SponsorCampaignAPI` | Sponsor setup, approvals, budget, reporting, invoicing, and sponsor-safe metrics. |
+| `SessionIntentAdContext` | Platform-intent ad posture, contextual category, creator-approved-only flag, and ad-load/breadth boundary from the current fan session intent; never raw private behavior, raw interest tokens, or dislike records. |
 | `AudienceDataFirewallPolicy` | Data minimization, field gating, aggregation thresholds, denial reasons, retention, and revocation. |
 | `CampaignDataGrant` | Fan-granted campaign data scope, purpose, expiration, and revocation state. |
+| `FanDataGrantOffer` | Data-for-value offer terms, requested fan interest/ad-preference fields, reward/promo value, retention, ad-use flag, and alternate path. |
+| `CreatorInterestDataGrant` | Fan-approved creator-scoped grant for interests, likes, dislikes, creator dislikes, muted providers, and ad preferences. |
+| `CreatorCategoryPermissionPolicy` | Fan defaults for broad creator categories that campaign and sponsor tools must honor. |
+| `FanAdPreferencesAPI` | Fan ad preference settings available to campaign/ad tools only through explicit grants. |
+| `PermissionedAudienceInterestDataAPI` | Creator-side query path for approved creator-scoped fan interest/ad-preference fields or aggregate counts. |
 | `CreatorCRMExportAPI` | Direct-contact and CRM export path for permissioned audience data. |
 | `CampaignParticipationReceipt` | Signed participation, reward, conversion, and spend events. |
 | `SponsorReport` | Aggregated campaign performance report with privacy thresholds and settlement reconciliation. |
@@ -93,13 +99,14 @@ flowchart TB
 | `03/W6` | Fan participates in campaign and earns reward. | Fan App -> Extension Runtime -> Campaign API -> Receipt Ledger. | Participation grant, reward receipt. | Fan receives reward or ineligible reason. |
 | `10/W1` | Developer publishes extension. | Developer Console -> Extension Registry -> Certification. | Manifest, signed artifact, attestation, listing. | Extension listed or remediation returned. |
 | `10/W2` | Creator installs extension. | Creator Studio -> Extension Registry -> permission review -> Metadata Host. | `ExtensionInstallGrant`. | Extension becomes active on approved surfaces. |
-| `10/W3` | Fan participates in campaign extension. | Fan App -> Extension Runtime -> Data Firewall -> Campaign API. | Data grant, participation receipt. | Fan completes campaign step. |
+| `10/W3` | Fan participates in campaign extension. | Fan App -> Extension Runtime -> Data Firewall -> Campaign API. | Campaign grant, optional creator interest-data grant, participation receipt. | Fan completes campaign step and sees data-use status. |
 | `10/W3A` | Extension requests CRM or direct-contact access. | Extension Runtime -> CreatorCRMExportAPI -> Audience Data Firewall. | Data-access receipt or denial. | Access is granted, narrowed, or denied. |
 | `10/W4` | Sponsor campaign executes. | Sponsor Console -> SponsorCampaignAPI -> Campaign API -> Fan App. | Sponsor budget, delivery, participation, spend receipts. | Campaign runs and reports aggregate performance. |
 | `10/W5` | Extension is suspended. | Trust/Safety -> Extension Registry -> Runtime blocklist. | Suspension record and remediation state. | Extension runtime calls are blocked or limited. |
 | `10/W6` | Extension state is exported. | Creator/Fan -> Extension Registry -> Extension Runtime -> export package. | Export receipt and package manifest. | Portable extension state is delivered. |
 | `18/W1` | Sponsor sets up campaign. | Sponsor Console -> SponsorCampaignAPI -> Creator approval -> Campaign API. | Campaign proposal, approvals, budget reservation. | Campaign ready for creator or platform approval. |
-| `18/W2` | Fan participates in sponsor campaign. | Fan App -> Extension Runtime -> Data Firewall -> Campaign API. | Data grant, participation, reward receipt. | Fan sees reward and data-use status. |
+| `18/W2` | Fan participates in sponsor campaign. | Fan App -> Extension Runtime -> Data Firewall -> Campaign API. | Campaign grant, optional creator interest-data grant, participation, reward receipt. | Fan sees reward and data-use status. |
+| `18/W2B` | Fan grants sponsor-linked creator interest data. | Fan App -> `ConsentGrantAPI` -> Audience Data Firewall -> `PermissionedAudienceInterestDataAPI`. | `CreatorInterestDataGrant`, data-access receipt, category policy update if selected. | Creator/sponsor tooling receives approved fields, aggregate counts, or denial. |
 | `18/W2A` | Sponsor asks for too much audience data. | SponsorCampaignAPI -> Audience Data Firewall -> Creator/Sponsor response. | Denial or narrowed scope record. | Sponsor receives approved aggregate or denial reason. |
 | `18/W3` | Sponsor reporting and settlement. | SponsorCampaignAPI -> Receipt Ledger -> Settlement Engine. | Spend, reward, developer, creator, and sponsor reports. | Statements and invoices are produced. |
 | `18/W4` | Fan chooses sponsor-free premium variant. | Fan App -> Fan Wallet -> Campaign API/ad decision. | Premium entitlement and no-sponsor delivery state. | Sponsor campaign is suppressed for that fan. |
@@ -220,18 +227,19 @@ sequenceDiagram
 
   Fan->>App: Open extension campaign
   App->>Runtime: Start extension session
-  Runtime->>ADF: Check fan data grant
-  ADF-->>Fan: Grant prompt if needed
+  Runtime->>ADF: Check campaign and creator-interest grants
+  ADF-->>Fan: Grant prompt, category default, or denial
   Fan-->>ADF: Approve, narrow, or deny
   Runtime->>Campaign: Complete campaign action
   Campaign->>Ledger: CampaignParticipationReceipt
 ```
 
 1. The fan app creates a runtime session tied to extension version, campaign id, and app surface.
-2. The firewall evaluates requested fan data against campaign purpose and fan privacy mode.
-3. The fan can approve, narrow, or deny the grant before participation continues.
-4. The extension submits the completed action to `CampaignAPI`.
-5. The receipt ledger stores participation and reward evidence for reporting and settlement.
+2. The firewall evaluates requested fan data against campaign purpose, creator interest-data purpose, creator category defaults, fan ad preferences, and fan privacy mode.
+3. The fan can approve, narrow, deny, apply a creator-category default, or choose alternate entry before participation continues.
+4. `ConsentGrantAPI` records purpose, fields, retention, ad-use flag, offer context, and revocation behavior for grant-backed access.
+5. The extension submits the completed action to `CampaignAPI`.
+6. The receipt ledger stores data-access, participation, and reward evidence for reporting and settlement.
 
 ### 6.6 `10/W3A`: CRM Or Direct-Contact Extension Access
 
@@ -277,7 +285,7 @@ sequenceDiagram
   SponsorAPI-->>Sponsor: Live campaign status
 ```
 
-1. Sponsor setup includes objective, budget, brand constraints, reward rules, reporting scope, and requested data.
+1. Sponsor setup includes objective, budget, brand constraints, accepted session intent ad contexts, reward rules, reporting scope, and requested data.
 2. Creator approval is required before campaign delivery on creator-controlled surfaces.
 3. `CampaignAPI` activates the campaign only after budget and compliance checks pass.
 4. Runtime delivery and participation events write signed receipts.
@@ -353,10 +361,10 @@ sequenceDiagram
   SponsorAPI-->>Sponsor: Setup status
 ```
 
-1. Sponsor Console captures objective, target constraints, budget, reward, data needs, and reporting needs.
-2. `AudienceDataFirewallPolicy` preflights whether requested fields are allowed or must be aggregated.
+1. Sponsor Console captures objective, contextual session intent categories, target constraints, budget, reward, requested fan interest/ad-preference fields, data needs, and reporting needs.
+2. `AudienceDataFirewallPolicy` preflights whether requested fields require explicit fan grants, must be aggregated, or must be denied.
 3. Creator Studio receives a campaign proposal with the narrowed data scope and brand terms.
-4. Campaign activation requires creator approval and budget reservation.
+4. Campaign activation requires creator approval, budget reservation, and `FanDataGrantOffer` terms when the campaign asks fans to share interest/ad-preference data.
 5. Denied scopes are returned with specific policy reasons.
 
 ### 6.11 `18/W2`: Fan Campaign Participation
@@ -372,20 +380,54 @@ sequenceDiagram
 
   Fan->>App: Join sponsor campaign
   App->>Runtime: Start sponsor extension
-  Runtime->>ADF: Request campaign grant
-  ADF-->>Runtime: Scoped grant
+  Runtime->>ADF: Request campaign and creator-interest grants
+  ADF-->>Runtime: Scoped grants, prompt, or denial
   Runtime->>Campaign: Submit participation proof
   Campaign->>Wallet: Issue reward or credit
   Campaign-->>App: Participation result
 ```
 
 1. The fan joins from a clearly labeled sponsor campaign surface.
-2. The extension requests only data allowed by campaign scope and fan choice.
-3. `CampaignAPI` validates the participation proof and anti-fraud constraints.
-4. Rewards are issued to the fan wallet or marked pending.
-5. The fan can inspect, revoke, or export the campaign grant later.
+2. The extension requests only data allowed by campaign scope, `FanDataGrantOffer`, creator category defaults, and fan choice.
+3. Fan can approve, narrow, deny, or use alternate entry before grant-protected data is accessed.
+4. `CampaignAPI` validates the participation proof and anti-fraud constraints.
+5. Rewards are issued to the fan wallet or marked pending.
+6. The fan can inspect, revoke, or export the campaign grant and creator interest-data grant later.
 
-### 6.12 `18/W2A`: Sponsor Request For Audience Data Is Narrowed Or Denied
+### 6.12 `18/W2B`: Sponsor-Linked Creator Interest-Data Grant
+
+```mermaid
+sequenceDiagram
+  actor Fan
+  participant App as Fan App Settings
+  participant Runtime as Campaign Extension
+  participant CG as ConsentGrantAPI
+  participant ADF as Audience Data Firewall
+  participant Interest as PermissionedAudienceInterestDataAPI
+  participant Report as Sponsor Reporting
+  participant Ledger as Receipt Ledger
+
+  Fan->>App: Review data-for-value offer
+  App->>Runtime: Fan decision packet
+  Runtime->>CG: Create/narrow/deny creator_interest_data grant
+  CG->>ADF: Publish grant and category policy state
+  Interest->>ADF: Query approved fields or counts
+  ADF-->>Interest: Approved creator-scoped fields, aggregates, or denial
+  Interest->>Ledger: DataAccessReceipt
+  Interest->>Report: Aggregate or permitted grant-backed metrics
+  App-->>Fan: Active grant, ad preferences, access history
+```
+
+1. Fan opens the campaign or Fan App settings request for a sponsor-linked creator offer.
+2. The offer names the creator, sponsor, requested interests/likes/dislikes/ad preferences, purpose, retention, ad-use flag, reward value, and alternate path.
+3. Fan approves, denies, narrows fields, revokes an existing grant, or applies a creator-category default.
+4. `ConsentGrantAPI` records the `creator_interest_data` grant or denial.
+5. Audience Data Firewall applies privacy mode, relationship state, block/dislike state, age/region rules, category policy, purpose, retention, and ad-use limits.
+6. `PermissionedAudienceInterestDataAPI` returns only approved creator-scoped fields or aggregate counts.
+7. Sponsor reporting receives aggregate, clean-room, or explicitly grant-backed metrics according to the campaign contract.
+8. `DataAccessReceipt` and Fan App settings expose actual access and revocation state.
+
+### 6.13 `18/W2A`: Sponsor Request For Audience Data Is Narrowed Or Denied
 
 ```mermaid
 sequenceDiagram
@@ -404,12 +446,12 @@ sequenceDiagram
 ```
 
 1. Sponsor requests are evaluated by field, purpose, audience size, retention, and destination.
-2. The firewall applies fan grants, creator policy, private mode, minor/vulnerable-user rules, and aggregation thresholds.
-3. Direct identifiers are denied unless explicit grants and creator policy allow them.
+2. The firewall applies fan grants, creator interest-data grants, creator category defaults, creator policy, private mode, minor/vulnerable-user rules, and aggregation thresholds.
+3. Direct identifiers, interest records, ad preferences, and disliked-creator data are denied unless explicit grants and creator policy allow the requested purpose.
 4. Sponsor receives aggregate metrics, a narrowed dataset, or a structured denial reason.
 5. The decision is logged for privacy audit and later campaign disputes.
 
-### 6.13 `18/W3`: Sponsor Reporting And Settlement
+### 6.14 `18/W3`: Sponsor Reporting And Settlement
 
 ```mermaid
 sequenceDiagram
@@ -432,7 +474,7 @@ sequenceDiagram
 4. Creator, developer, fan reward, and platform utility allocations are reconciled.
 5. The sponsor receives an invoice and a report linked to the receipt set.
 
-### 6.14 `18/W4`: Sponsor-Free Premium Variant
+### 6.15 `18/W4`: Sponsor-Free Premium Variant
 
 ```mermaid
 sequenceDiagram

@@ -56,6 +56,7 @@ flowchart TB
 | --- | --- |
 | `creatorBusinessContext` | Creator id, channel id, hosting tier, monetization mode, settlement manifest, and provider role grants. |
 | `contentAccessContext` | Content id, access mode, content manifest version, entitlement requirements, safety state, and playback route. |
+| `sessionIntentContext` | Optional session intent id, platform intent id, active interest category summary, ad posture, creator/provider breadth constraint, creator-approved-only flag, and no-behavioral-targeting flag. |
 | `fanPaymentContext` | Fan identity, wallet state, payment intent, entitlement target, refund/chargeback state, and subscription allocation policy. |
 | `deliveryContext` | Host id, playback token, CDN/rendition refs, delivery region, ad/no-ad route, and invalid-traffic signals. |
 | `receiptContext` | Receipt type, schema version, signing key, manifest versions, idempotency key, and correlation id. |
@@ -68,8 +69,9 @@ flowchart TB
 | `HostingContractManifest` | Hosting tier, revenue share, direct fees, export, lifecycle, ad control, and support obligations. |
 | `MonetizationManifest` | Ads, no-ad, memberships, paid content, events, AI, sponsors, commerce, and eligibility rules. |
 | `SettlementManifest` | Required receipts, revenue splits, provider allocations, utility fees, reserves, and payout rules. |
-| `PlaybackAuthorizationAPI` | Access decision against content, monetization, entitlement, safety, and fan mode. |
-| `AdDecisionAPI` | Eligible ad/sponsor delivery and targeting constraints. |
+| `PlaybackAuthorizationAPI` | Access decision against content, monetization, entitlement, safety, fan mode, and optional session intent context. |
+| `AdDecisionAPI` | Eligible ad/sponsor delivery, creator ad policy enforcement, session intent ad posture, contextual category, creator-approved-only flag, and targeting constraints. |
+| `SessionIntentAdContext` | Platform-intent ad posture, contextual category, ad-load/breadth boundary, and creator-approved-only flag from the current session intent; raw private behavior, raw interests, and dislikes are not passed to ad decision. |
 | `FanWalletAPI` | Payment intents, subscriptions, premium modes, boosts, credits, refunds, and wallet display. |
 | `EntitlementLedgerAPI` | Signed access rights for paid/premium/member content. |
 | `ReceiptIngestAPI` | Receipt validation, schema checks, signature checks, and ledger submission. |
@@ -184,9 +186,9 @@ sequenceDiagram
   participant RL as Receipt Ledger
 
   F->>FA: Select free content
-  FA->>PA: Request authorization
+  FA->>PA: Request authorization with optional sessionIntentId
   PA->>CMH: Read content/monetization manifests
-  PA->>AD: Request eligible ad
+  PA->>AD: Request eligible ad with SessionIntentAdContext
   AD-->>PA: Ad decision and disclosure
   PA-->>FA: Playback token and ad route
   FA->>CH: Request stream
@@ -196,8 +198,8 @@ sequenceDiagram
 ```
 
 1. Fan selects ad-supported content.
-2. Playback Authorization checks content, monetization, safety, and entitlement state.
-3. Ad Decision returns eligible ad or no-fill.
+2. Playback Authorization checks content, monetization, safety, entitlement state, and optional session intent context.
+3. Ad Decision receives `SessionIntentAdContext` with platform-intent ad posture, contextual category, creator-approved-only flag, and ad-load constraints, then returns an eligible creator-approved ad/sponsor placement or no-fill.
 4. Fan App receives playback token and ad route.
 5. Content Host serves media.
 6. Runtime submits playback, delivery, and ad receipts.
@@ -594,7 +596,7 @@ sequenceDiagram
   participant Fraud as Invalid Traffic
   participant SE as Settlement Engine
 
-  Playback->>AD: Request ad decision
+  Playback->>AD: Request ad decision with SessionIntentAdContext
   AD-->>Playback: Eligible ad
   Playback->>RL: PlaybackReceipt and AdImpressionReceipt
   RL->>Fraud: Validate traffic
@@ -604,7 +606,7 @@ sequenceDiagram
 ```
 
 1. Playback route uses ad-supported monetization.
-2. Ad decision returns eligible ad/sponsor disclosure.
+2. Ad decision applies `SessionIntentAdContext`, `CreatorAdPolicy`, sponsor policy, and safety constraints before returning eligible ad/sponsor disclosure.
 3. Playback and ad receipts are ingested.
 4. Invalid traffic signals can adjust eligibility.
 5. Settlement allocates revenue from valid receipts.
@@ -784,4 +786,3 @@ sequenceDiagram
 | Chargeback after settlement | `RefundChargebackRecord` creates downstream settlement adjustment. |
 | Provider contract changed mid-period | Settlement resolves historical manifest/contract versions by event timestamp. |
 | Fraud signal invalidates receipts | Settlement applies hold or `FraudAdjustmentRecord`. |
-

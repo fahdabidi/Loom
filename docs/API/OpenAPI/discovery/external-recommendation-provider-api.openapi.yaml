@@ -1,0 +1,235 @@
+openapi: 3.1.0
+info:
+  title: Loom External Recommendation Provider Candidate API
+  version: 0.1.0
+  summary: Certified external recommendation provider candidate retrieval under platform intent, fan interest, dislike, quota, and privacy boundaries.
+  description: Defines the provider-owned API surface used by Loom recommendation services to request candidate content from certified external recommendation providers without exposing raw private fan behavior.
+servers:
+  - url: https://external-recommendations.loom.example
+security:
+  - LoomServiceAuth: []
+x-loom-api-owner: discovery/external-recommendation-provider
+x-loom-architecture-docs:
+  - ../../../Architecture/07-search-recommendations-and-ai.md
+x-loom-downstream-apis:
+  - ../ecosystem/provider-registry-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ../safety/trust-safety-api.openapi.yaml
+paths:
+  /v1/provider-candidates:
+    post:
+      operationId: getExternalRecommendationCandidates
+      summary: Return provider candidates for an allowed session intent and interest/dislike context.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetExternalRecommendationCandidatesRequest'
+      responses:
+        '200':
+          description: External provider candidate set.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalRecommendationCandidateResponse'
+components:
+  securitySchemes:
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PlatformIntentId:
+      type: string
+      enum:
+        - creator_updates
+        - friends_family
+        - learning
+        - reviews_research
+        - shopping
+        - entertainment
+        - low_engagement_browsing
+        - search
+        - news_briefing
+        - calm
+    InterestToken:
+      type: object
+      required:
+        - token
+        - tokenType
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          enum:
+            - topic
+            - creator
+            - format
+            - product
+            - sport
+            - genre
+            - community
+        weight:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+    DislikeFilter:
+      type: object
+      required:
+        - filterType
+        - value
+        - severity
+      properties:
+        filterType:
+          type: string
+          enum:
+            - interest
+            - creator
+            - provider
+            - format
+            - safety_label
+        value:
+          type: string
+        severity:
+          type: string
+          enum:
+            - reduce
+            - suppress
+            - exclude
+    CreatorProviderBlend:
+      type: object
+      required:
+        - externalProviderShareMax
+      properties:
+        externalProviderShareMax:
+          type: integer
+          minimum: 0
+          maximum: 100
+        directConnectionOnly:
+          type: boolean
+          default: false
+    GetExternalRecommendationCandidatesRequest:
+      type: object
+      required:
+        - providerId
+        - sessionIntentId
+        - platformIntentId
+        - candidateQuota
+        - allowedSignalClasses
+      properties:
+        providerId:
+          type: string
+        sessionIntentId:
+          type: string
+        fanPseudonymousId:
+          type: string
+          nullable: true
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+        activeInterestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        activeDislikeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikeFilter'
+        creatorProviderBlend:
+          $ref: '#/components/schemas/CreatorProviderBlend'
+          nullable: true
+        candidateQuota:
+          type: integer
+          minimum: 0
+          maximum: 100
+        allowedSignalClasses:
+          type: array
+          items:
+            type: string
+            enum:
+              - platform_intent
+              - fan_interest_profile
+              - public_metadata
+              - host_content_performance
+              - moderation_labels
+              - neutral_search_query
+        excludedChannelIds:
+          type: array
+          items:
+            type: string
+        policyEnvelopeVersion:
+          type: string
+          nullable: true
+        contextualQuery:
+          type: string
+          nullable: true
+        noRawPrivateBehavior:
+          type: boolean
+          default: true
+    ExternalRecommendationCandidate:
+      type: object
+      required:
+        - providerCandidateId
+        - target
+        - contentMetadata
+        - providerScore
+        - disclosure
+      properties:
+        providerCandidateId:
+          type: string
+        target:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+        contentMetadata:
+          $ref: '#/components/schemas/CandidateContentMetadata'
+        providerScore:
+          type: number
+          minimum: 0
+          maximum: 1
+        matchedInterestTokens:
+          type: array
+          items:
+            type: string
+        sourceReason:
+          type: string
+          nullable: true
+        safetyLabels:
+          type: array
+          items:
+            type: string
+        disclosure:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    CandidateContentMetadata:
+      type: object
+      required:
+        - title
+        - summary
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+          description: Creator-approved content summary from ContentManifest or an equivalent certified public catalog projection.
+        summaryManifestVersion:
+          type: string
+          nullable: true
+    ExternalRecommendationCandidateResponse:
+      type: object
+      required:
+        - providerId
+        - candidates
+      properties:
+        providerId:
+          type: string
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalRecommendationCandidate'
+        deniedReason:
+          type: string
+          nullable: true

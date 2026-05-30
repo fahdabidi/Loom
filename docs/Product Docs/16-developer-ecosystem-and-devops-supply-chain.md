@@ -246,7 +246,7 @@ Steps:
 - `AppAuditAPI`: app privacy, receipt, manifest, search, recommendation, and extension behavior checks.
 - `SearchMCPServer`: search tool template with `NeutralSearchMergePolicy` and no paid-ranking/search-ad behavior.
 - `RecommendationWorkbenchMCPServer`: creator recommendation research and draft tools.
-- `FanRecommendationMCPServer`: fan-scoped recommendation tools.
+- `FanRecommendationMCPServer`: fan-scoped recommendation tools, including summary-first relevance and title-deemphasis options over eligible creator/recommendation candidates.
 - `CreatorAgentDelegationToken`: scoped creator-agent tool access.
 - `DataUseGrant`: private-context permission where MCP tools access private data.
 - `ToolCallAuditRecord`: MCP/tool-call audit record.

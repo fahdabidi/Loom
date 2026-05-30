@@ -22,6 +22,8 @@ This product area covers:
 - Content playback and rendering.
 - Public search integration.
 - Creator-led recommendation integration.
+- Startup content tile surface and session intent switching.
+- Fan interest/dislike controls.
 - Extension runtime support.
 - Usage receipt generation.
 - Data mode settings.
@@ -38,6 +40,7 @@ This product area covers:
 | Manifest enforcement | Apps enforce content, monetization, search, AI, and extension rules. | Creator rules travel across apps. | Creator Channel and Metadata Architecture |
 | Receipt generation | Apps generate usage and interaction receipts where required. | Settlement and audit remain consistent. | Revenue, Receipts, Ledgers, and Settlement |
 | Extension rendering | Apps safely render certified creator extensions. | Creator customization works across apps. | Creator Plugins / Extensions / Campaign Layer |
+| Intent-and-interest recommendation UX | Apps expose startup content tiles built from platform intents plus fan interests/dislikes, create `SessionIntent`, disclose policy tradeoffs, pass summary/title metadata preferences, and allow mid-session switching or clearing. | App competition can improve intent capture without hiding ranking objectives or owning fan interests. | Fan Experience; Creator-Led Recommendation Economy |
 | App specialization | Apps compete on privacy, verticals, AI, devices, accessibility, and feed design. | Fans get better experiences. | Business Model and Incentive Design |
 | Certified app audits | Apps are tested for API, privacy, entitlement, and receipt behavior. | Prevents app-level lock-in or data abuse. | Governance, Certification, and Foundation Model |
 
@@ -51,6 +54,8 @@ Fans should:
 - Set follow visibility and revoke creator direct-contact permission.
 - Unfollow, block, or request creator-scoped tombstoning without changing apps.
 - Search and receive recommendations according to Loom rules.
+- Choose, switch, save, mute, dislike, or clear session intents with disclosed platform intent, active interests, creator/provider blend, data posture, ad posture, and session shape.
+- Like, dislike, flag, save, follow, unfollow, mute, block, and manage interests/dislikes from any certified app.
 - Manage wallet and privacy.
 - Revoke an app without losing portable state.
 
@@ -97,6 +102,17 @@ End state:
 
 - App requests minimal scopes.
 - Private Event Vault and `PrivateRankingAPI` are used.
+
+### Story 3A: App supports session intent recommendations
+
+As a fan, I want every certified app to show seed content choices and let me switch what I am here for without hidden ranking changes.
+
+End state:
+
+- App shows `ContentTile` choices at launch and can refresh them mid-session.
+- App renders `SessionIntentDisclosure`.
+- App passes selected `SessionIntent` to `FanScopedRecommendationAPI`.
+- App respects session-intent creator/provider blend, ad posture, active interests, disliked interests, disliked creators, data posture, and session shape.
 
 ### Story 4: App loads certified extension
 
@@ -198,14 +214,20 @@ Actors:
 Steps:
 
 1. App exposes search and recommendation surfaces.
-2. Search uses `SearchDirectory`, `HostPublicSearchAPI`, `PublicSearchResultSchema`, `OpenSearchKernel`, and `OpenSearchKernelConformance`.
-3. App applies `NeutralSearchMergePolicy`; app premium features cannot influence neutral public search ordering.
-4. Search creates `SearchReceipt` for audit/utility funding only and never paid ranking, search ads, per-click monetization, or ordering advantage.
-5. Recommendations fetch `RecommendationManifestAPI` records from followed/trusted creators, optional `CommunityFeedAPI` candidates, and fan-initiated search-result candidates.
-6. `FanScopedRecommendationAPI` applies `FanRecommendationSettings`, privacy mode, and trusted-candidate boundaries.
-7. App displays disclosures, source, funding/referral labels, and why-shown context.
-8. Fan feedback updates settings through `RecommendationFeedbackAPI`.
-9. Qualified discovery or conversion can create `DiscoveryReceipt` or `CreatorReferralReceipt`.
+2. On launch, app calls `StartupTileSurfaceAPI` for content tiles generated from platform intents and the fan's `FanInterestProfile`.
+3. App displays tiles with `SessionIntentDisclosure`: platform intent, active interests, why suggested, creator/provider blend, data posture, ad posture, and session shape.
+4. Fan accepts a tile, starts from Creator Updates, searches for a topic, dislikes an interest, mutes a creator/provider, or clears the current intent.
+5. App calls `SessionIntentAPI` to create or switch the current `SessionIntent` with `platformIntentId`, active interest tokens, and dislike filters.
+6. Search platform intent uses `SearchDirectory`, `HostPublicSearchAPI`, `PublicSearchResultSchema`, `OpenSearchKernel`, and `OpenSearchKernelConformance`.
+7. App applies `NeutralSearchMergePolicy`; app premium features cannot influence neutral public search ordering.
+8. Search creates `SearchReceipt` for audit/utility funding only and never paid ranking, search ads, per-click monetization, or ordering advantage.
+9. Search result lists show no ads.
+10. Intent-based recommendation feeds fetch `RecommendationManifestAPI` records from followed/trusted creators, optional `CommunityFeedAPI` candidates, intent-eligible `HostingTrendingStatsAPI` and public content performance signals, direct-connection candidates, fan-initiated search-result candidates, and certified external provider candidates where allowed.
+11. `FanScopedRecommendationAPI` applies `SessionIntent`, `RecommendationModePolicy`, `FanInterestProfile`, `FanRecommendationSettings`, `RecommendationMetadataPreference`, privacy mode, creator/provider quotas, and trusted-candidate boundaries.
+12. `SessionIntentAdContext` constrains ad posture, ad load, contextual category, and creator/provider breadth; `CreatorAdPolicy` and sponsor policy decide eligible ads.
+13. App displays title, summary where appropriate, intent label, active interests, disclosures, source, score explanation, funding/referral labels, and why-shown context.
+14. Fan feedback updates settings, interest/dislike state, and tile quality through `FanContentFeedbackAPI`.
+15. Qualified discovery or conversion can create `DiscoveryReceipt` or `CreatorReferralReceipt`.
 
 ### Workflow 4: Extension rendering
 
@@ -255,7 +277,7 @@ Steps:
 - Provider Marketplace and Certified APIs: apps rely on certified providers plus `AppCertificationAPI`, `AppCapabilityManifest`, and `CertificationScopeRecord`.
 - Revenue, Receipts, Ledgers, and Settlement: typed `PlaybackReceipt`, `SearchReceipt`, `DiscoveryReceipt`, `DataAccessReceipt`, and campaign receipts feed settlement and audits.
 - Neutral Public Search Utility: apps must apply `NeutralSearchMergePolicy`, use `PublicSearchResultSchema`, and generate audit-only `SearchReceipt`.
-- Creator-Led Recommendation Economy: apps rank `RecommendationManifest` and `CommunityFeedAPI` candidates through `FanScopedRecommendationAPI`.
+- Creator-Led Recommendation Economy: apps create `SessionIntent`, pass `FanInterestProfile` context, then rank `RecommendationManifest`, `CommunityFeedAPI`, host performance, and certified provider candidates through `FanScopedRecommendationAPI`.
 - Creator Plugins / Extensions / Campaign Layer: apps render extensions through `ExtensionRuntimeGateway` and `ExtensionArtifactAPI`.
 - Audience Data Firewall and Data Rights: app data access requires `DataUseGrant`, `AppPermissionGrant`, `FollowVisibilityPolicy`, and `DataAccessReceipt`.
 - Trust, Safety, Fraud, and Compliance: `AppAuditAPI`, `AbuseReportAPI`, and `AppRevocationWorkflow` enforce app behavior.
@@ -291,9 +313,19 @@ Steps:
 - `OpenSearchKernel`: reference neutral host search.
 - `OpenSearchKernelConformance`: neutral search test suite.
 - `SearchReceipt`: audit/utility funding receipt, never paid-ranking input.
+- `PlatformIntentRegistry`: platform-defined intent list and policy effects.
+- `StartupTileSurfaceAPI`: launch and mid-session content tiles derived from platform intents, fan interests/dislikes, follows, and public/trending signals.
+- `ContentTile`: tile with platform intent, active interest tokens, dislike filters, source explanation, and policy envelope.
+- `FanInterestProfileAPI`: app-visible interest/dislike controls under Fan Vault policy.
+- `SessionIntentAPI`: create, switch, clear, and optionally save platform intent plus scoped interest context.
+- `SessionIntent`: current-session platform intent, active interests, dislike filters, creator/provider blend, ad posture, score weights, and disclosure context.
+- `SessionIntentDisclosure`: app-rendered disclosure of purpose, creator/provider blend, data posture, ad posture, and session shape.
+- `SessionIntentAdContext`: ad posture, contextual category, creator-approved-only flag, and ad-load/breadth constraints for ad decision boundaries.
+- `FanContentFeedbackAPI`: like, dislike, not interested, flag, save, follow, unfollow, mute, and block actions.
+- `ContentScoreExplanation`: app-rendered why-shown factors for followed creator, creator recommendation, external provider, trending/freshness, interest match, dislike suppression, and reputation.
 - `RecommendationManifestAPI`: creator-authored recommendation source.
 - `CommunityFeedAPI`: optional community recommendation candidates.
-- `FanScopedRecommendationAPI`: fan-scoped ranking over trusted candidates.
+- `FanScopedRecommendationAPI`: fan-scoped ranking over trusted candidates, including summary-first relevance and title-deemphasis preferences where supplied by the fan/app/agent.
 - `FanRecommendationSettings`: fan recommendation controls.
 - `DiscoveryReceipt`: recommendation-driven discovery evidence.
 - `CreatorReferralReceipt`: eligible referral event.

@@ -87,8 +87,9 @@ All workflows in this function use the shared packet envelope from `01-overall-s
 | `fanIdentity` | `FanPassportClaim`, persona context, app session, and key state. |
 | `appScope` | Certified app id, app capability scope, requested permissions, and app grant version. |
 | `relationshipContext` | Creator id, follow state, `FollowVisibilityPolicy`, `PairwiseIdentityAPI` id, block state, tombstone state, and notification preferences. |
-| `grantContext` | `AppPermissionGrant`, `ConsentGrantAPI`, `DataUseGrant`, `CampaignDataGrant`, `DirectContactGrant`, revocation state, purpose, destination, and retention. |
+| `grantContext` | `AppPermissionGrant`, `ConsentGrantAPI`, `DataUseGrant`, `CampaignDataGrant`, `DirectContactGrant`, `CreatorInterestDataGrant`, creator-category defaults, revocation state, purpose, destination, ad-use flag, offer context, and retention. |
 | `vaultContext` | Core Fan Vault scopes, Private Event Vault scopes, vault provider, data mode, and retention policy. |
+| `interestContext` | Explicit interests, inferred interest tokens, liked/disliked content, disliked interests, disliked creators, muted providers, ad preferences, and feedback source/confidence. |
 | `walletContext` | Fan Wallet account, payment intent, entitlement target, membership tier, allocation policy, and refund/chargeback state. |
 | `dataRightsPolicy` | `AudienceDataFirewallPolicy`, `SensitiveRelationshipDefaultPolicy`, `CreatorAudienceExportPolicy`, and disclosure requirements. |
 | `auditContext` | Correlation id, idempotency key, actor, timestamp, API version, certification scope, and receipt requirements. |
@@ -106,16 +107,22 @@ All workflows in this function use the shared packet envelope from `01-overall-s
 | `DataUseGrant` | Purpose-bound private or sensitive data use. |
 | `CampaignDataGrant` | Campaign-specific fan data-for-value grant. |
 | `DirectContactGrant` | Explicit fan permission for creator direct contact or CRM export. |
+| `CreatorDataGrantRequestAPI` | Creator request lifecycle for interests, likes, dislikes, creator dislikes, muted providers, and ad preferences. |
+| `CreatorInterestDataGrant` | Fan-approved creator-scoped grant with approved fields, purpose, retention, ad-use flag, offer context, and revocation state. |
+| `CreatorCategoryPermissionPolicy` | Fan defaults that allow, deny, narrow, or ask each time for creator categories. |
 | `FollowVisibilityPolicy` | Fan-selected public, creator-visible, private, or pseudonymous/anonymous relationship visibility. |
 | `CreatorRelationshipActionRecord` | Audit record for follow visibility changes, unfollows, blocks, direct-contact revocations, and deletion requests. |
 | `CreatorScopedTombstoneRecord` | Minimal retained marker preventing rehydration of deleted creator-scoped relationship data. |
 | `CreatorAudienceExportPolicy` | Field, destination, retention, watermarking, no-resale, revocation, and breach-notice rules for creator audience exports. |
 | `SensitiveRelationshipDefaultPolicy` | Stricter defaults for minors, vulnerable users, sensitive creator categories, private mode, and regulated regions. |
-| `CoreFanVaultAPI` | Read/write portable fan state, saves, preferences, notification state, app settings, and blocks. |
+| `CoreFanVaultAPI` | Read/write portable fan state, saves, preferences, notification state, app settings, explicit interests, dislikes, ad preferences, and blocks. |
 | `PrivateEventVaultAPI` | Store richer behavior and AI/recommendation memory under strict scopes. |
+| `FanInterestProfileAPI` | Manage fan-owned interests, disliked interests, liked/disliked creators, muted providers, source, confidence, and recency. |
+| `FanAdPreferencesAPI` | Manage fan-owned ad preferences shown in Fan App settings and used only where grants allow. |
 | `FanWalletAPI` | Memberships, subscriptions, tips, paid content, events, premium modes, boosts, and AI credits. |
 | `EntitlementLedgerAPI` | Signed access rights for paid and premium experiences. |
 | `CreatorAudienceAPI` | Creator-scoped audience records and analytics state. |
+| `PermissionedAudienceInterestDataAPI` | Creator-side query surface returning only approved creator-scoped fan interest/ad-preference fields or aggregate counts. |
 | `CreatorCRMExportAPI` | Permissioned creator audience export and direct-contact eligibility. |
 | `AudienceDataFirewallPolicy` | Boundary policy among fan private data, creator audience data, providers, sponsors, apps, extensions, and AI. |
 | `DataAccessReceipt` | Audit evidence for grant-protected data access. |
@@ -149,7 +156,7 @@ All workflows in this function use the shared packet envelope from `01-overall-s
 
 | Ref | Trigger | Packet path | Required packet context | Durable writes / receipts | Completion response |
 | --- | --- | --- | --- | --- | --- |
-| `03/W7`: Fan revokes app or campaign access | Fan revokes an app, campaign, AI, creator, or provider grant. | Data Dashboard -> `ConsentGrantAPI` -> Audience Data Firewall -> affected vault/API providers. | Grant id, actor, purpose, destination, revocation time, retained-record policy. | Grant revocation record; optional `DataAccessReceipt` or revocation audit record. | Future access is denied; retained receipts and legal/safety exceptions remain visible. |
+| `03/W7`: Fan revokes app, campaign, or creator data access | Fan revokes an app, campaign, AI, creator interest-data, category default, sponsor-linked, or provider grant. | Data Dashboard -> `ConsentGrantAPI` / `CreatorCategoryPermissionPolicy` -> Audience Data Firewall -> affected vault/API providers. | Grant id or category id, actor, approved fields, purpose, destination, ad-use flag, revocation time, retained-record policy. | Grant revocation record; optional `DataAccessReceipt` or revocation audit record. | Future access is denied; retained receipts and legal/safety exceptions remain visible. |
 | `03/W10`: Premium private data mode | Fan selects paid/private data mode. | Fan App -> Fan Wallet -> Entitlement Ledger -> Audience Data Firewall -> Core Fan Vault / Private Event Vault. | Fan passport, selected mode, payment entitlement, current grants, private ranking/AI defaults. | `PrivateVaultEntitlement`, narrowed grant defaults, vault policy update, optional `VaultServiceReceipt`. | App, AI, recommendations, and campaign surfaces use stricter defaults. |
 | `05/W5`: Private event storage and AI memory | Fan behavior or AI memory is stored under purpose-bound scopes. | Fan App / AI boundary -> `PrivateEventVaultAPI` -> Audience Data Firewall -> optional AI Gateway. | Event type, retention class, fan privacy mode, AI memory policy, `DataUseGrant` if access is requested. | Private event record; optional AI memory record; `DataAccessReceipt` if accessed by tool/provider. | Private behavior is available only through permitted in-vault or purpose-bound access. |
 | `05/W6`: Campaign data grant | Fan joins campaign and grants campaign-specific data. | Fan App -> `CampaignDataGrant` / `ConsentGrantAPI` -> Audience Data Firewall -> Campaign Ledger / Creator Audience Vault. | Campaign id, sponsor disclosure, data fields, purpose, reward, alternate entry, age/region rules. | `CampaignDataGrant`, campaign participation state, optional `DataAccessReceipt`. | Campaign receives only permitted data; fan can revoke future access. |
@@ -158,6 +165,7 @@ All workflows in this function use the shared packet envelope from `01-overall-s
 | `14/W2`: Creator analytics | Creator requests segment or analytics. | Creator Studio -> `CreatorAudienceAPI` -> Audience Data Firewall -> Creator Audience Vault / Private Event Vault -> Receipt Ledger. | Creator id, analytics purpose, segment definition, aggregate/private boundary, fan privacy mode. | Aggregate query record; `DataAccessReceipt` if protected private data is used. | Creator sees creator-scoped analytics without raw cross-creator fan history. |
 | `14/W2A`: Creator relationship visibility and revocation | Fan changes relationship state. | Fan App -> `FollowRelationshipAPI` -> Audience Data Firewall -> `CreatorAudienceAPI` -> Creator Studio. | Follow id, visibility/contact/block/delete action, retention rules. | `CreatorRelationshipActionRecord`, optional tombstone, updated audience/export eligibility. | Creator tools and future exports reflect the restricted state. |
 | `14/W2B`: Creator CRM export and direct-contact gating | Creator requests direct-message, CRM sync, or export. | Creator Studio -> `CreatorCRMExportAPI` -> Audience Data Firewall -> `CreatorAudienceAPI` -> Receipt Ledger -> Data Dashboard. | Creator id, segment id, purpose, destination, retention, `DirectContactGrant`, `CreatorAudienceExportPolicy`. | `DataAccessReceipt`, export log, denied-record aggregate counts, access history. | Creator receives only eligible fields; fan access/export history updates where disclosure is required. |
+| `14/W2C`: Creator interest-data grant for ads and promotions | Creator requests fan interests, likes, dislikes, disliked creators, muted providers, or ad preferences. | Creator Studio -> `CreatorDataGrantRequestAPI` -> Fan App Settings/Data Dashboard -> `ConsentGrantAPI` -> Audience Data Firewall -> `PermissionedAudienceInterestDataAPI` -> Receipt Ledger. | Creator id, requested fields, purpose, retention, ad-use flag, offer context, creator category, fan category defaults, privacy mode. | `CreatorInterestDataGrant` or denial, category policy update if selected, `DataAccessReceipt` for allowed access. | Fan sees request/grant state; creator receives only approved creator-scoped fields or aggregate counts. |
 | `14/W3`: Campaign data grant | Fan accepts campaign data exchange. | Fan App -> Campaign Extension -> `CampaignDataGrant` -> Audience Data Firewall -> Campaign Ledger / Reward Ledger. | Campaign id, sponsor, reward, eligibility, alternate entry, requested fields. | `CampaignDataGrant`, `CampaignEntryReceipt`, optional `RewardReceipt`, optional `DataAccessReceipt`. | Fan enters campaign or alternate route; sponsor/creator get only permitted reporting. |
 | `14/W4`: Data mode selection and premium private mode | Fan chooses free personalized, no-ad premium, or premium private. | Fan App -> Fan Wallet / Entitlement Ledger -> Audience Data Firewall -> Private Event Vault / AI / Recommendation boundaries. | Selected mode, entitlement, existing grants, AI memory policy, recommendation policy. | Entitlement if paid, data mode policy update, vault service funding record if applicable. | Data access defaults, AI training/memory, ads, and recommendations follow selected mode. |
 | `14/W5`: Data export/delete | Fan requests export, migration, deletion, or tombstoning. | Data Dashboard -> `FanExportAPI` / `VaultDeleteAPI` / `MigrationPlanAPI` -> vault providers -> Governance boundary. | Data scope, vaults, portability class, delete/tombstone selection, retained-record exceptions. | Export package, deletion/tombstone records, migration/export receipt, dispute evidence if failure. | Fan sees completed export/delete state and any retained audit/safety/settlement exceptions. |
@@ -168,7 +176,7 @@ All workflows in this function use the shared packet envelope from `01-overall-s
 | --- | --- | --- | --- | --- | --- |
 | `03/W12`: Multi-format creator engagement | Fan opens a creator surface with videos, posts, events, memberships, campaigns, and community features. | Fan App -> Public Catalog / Creator Metadata Host -> Entitlement Ledger -> Audience Data Firewall -> domain services. | Fan identity, creator id, content type, access mode, privacy mode, entitlements. | Domain-specific receipts from playback, campaign, event, or commerce functions. | Fan sees a coherent creator surface across content types without separate identities. |
 | `15/W2`: Content rendering and playback | Fan App renders channel/content and starts playback. | Fan App -> Public Catalog -> Creator Metadata Host -> Playback Authorization -> Content Host boundary. | App certification, content id, manifest versions, entitlement refs, safety labels. | Playback/ad/delivery receipts handled by playback architecture. | App renders content according to manifests and starts authorized playback. |
-| `15/W3`: App search and recommendation | Fan App invokes search and recommendation surfaces. | Fan App -> Search Directory / Fan Scoped Recommendation Engine -> Public Catalog / Creator manifests. | Fan settings, privacy mode, query or recommendation request, neutral/search vs recommendation boundary. | `SearchReceipt` or `DiscoveryReceipt` handled by search/recommendation architecture. | App shows search results or trusted recommendations with disclosures. |
+| `15/W3`: App search and intent-based recommendation | Fan App invokes search, startup tile, and recommendation surfaces. | Fan App -> `StartupTileSurfaceAPI` / `SessionIntentAPI` / Search Directory / Fan Scoped Recommendation Engine -> Public Catalog / Creator manifests. | Fan settings, privacy mode, query, selected `ContentTile`, `FanInterestProfile`, dislike filters, `SessionIntent`, neutral/search vs recommendation boundary. | Session intent state, tile/interest feedback, `SearchReceipt`, or `DiscoveryReceipt` handled by search/recommendation architecture. | App shows search results or trusted recommendations with platform-intent disclosures, score explanations, and feedback controls. |
 | `15/W4`: Extension rendering | Fan App renders a certified extension. | Fan App -> Extension Runtime Gateway -> Extension Registry -> Audience Data Firewall -> domain ledgers. | Extension id/version, artifact signature, permissions, grants, fan app certification. | Extension/campaign/data-access receipts handled by extension/campaign architecture. | Extension renders or fails closed if certification, artifact, or grant checks fail. |
 
 ## 6. Step-By-Step Life Of A Packet Overlays
@@ -281,7 +289,7 @@ sequenceDiagram
 8. Playback Authorization checks `ContentManifest`, membership entitlement, and safety policy.
 9. Fan App receives access approval; playback and settlement receipts are handled in the playback/settlement architecture doc.
 
-### 6.4 `03/W7`: Fan Revokes App Or Campaign Access
+### 6.4 `03/W7`: Fan Revokes App, Campaign, Or Creator Data Access
 
 ```mermaid
 sequenceDiagram
@@ -292,11 +300,11 @@ sequenceDiagram
   participant Vaults as Core/Private Vaults
   participant Apps as Affected Apps / Campaigns
 
-  F->>DD: Select grant to revoke
+  F->>DD: Select grant or category default to revoke
   DD->>CG: resolveGrant
   CG-->>DD: Purpose, scopes, destination, access history
   F->>DD: Confirm revocation
-  DD->>CG: revoke(grant id)
+  DD->>CG: revoke(grant id) or update category policy
   CG->>ADF: Publish revocation state
   ADF->>Vaults: Invalidate future access
   Apps->>ADF: Later access request
@@ -304,11 +312,11 @@ sequenceDiagram
   DD-->>F: Revoked state and retained exceptions
 ```
 
-1. Fan opens `DataDashboard` and selects an app, campaign, AI tool, creator, provider, or sponsor grant.
-2. `DataDashboard` calls `ConsentGrantAPI.resolveGrant` to show purpose, scopes, destination, retention, and access history.
+1. Fan opens `DataDashboard` and selects an app, campaign, AI tool, creator interest-data grant, creator-category default, provider, or sponsor grant.
+2. `DataDashboard` calls `ConsentGrantAPI.resolveGrant` to show purpose, scopes, destination, ad-use flag, offer context, retention, and access history.
 3. Fan confirms revocation.
 4. `ConsentGrantAPI.revoke` writes the revocation state and effective time.
-5. Audience Data Firewall invalidates future access for affected vault scopes, campaign data, app reads, or direct-contact paths.
+5. Audience Data Firewall invalidates future access for affected vault scopes, campaign data, app reads, direct-contact paths, or creator interest/ad-preference fields.
 6. Affected API calls receive policy-safe denial after the effective time.
 7. Existing required receipts, safety records, settlement records, and legal exceptions remain retained and visible.
 8. If the revoked grant affected a campaign or app surface, Fan App refreshes UI and removes unavailable features.
@@ -815,7 +823,50 @@ sequenceDiagram
 8. `DataDashboard` shows fan-visible export/access history where required.
 9. Creator Studio receives export file, CRM sync result, or policy-safe denial.
 
-### 6.20 `14/W3`: Campaign Data Grant
+### 6.20 `14/W2C`: Creator Interest-Data Grant For Ads And Promotions
+
+```mermaid
+sequenceDiagram
+  actor C as Creator
+  participant CS as Creator Studio
+  participant CDR as CreatorDataGrantRequestAPI
+  actor F as Fan
+  participant DD as Fan App Settings / DataDashboard
+  participant CG as ConsentGrantAPI
+  participant Vault as Core Fan Vault
+  participant ADF as Audience Data Firewall
+  participant AID as PermissionedAudienceInterestDataAPI
+  participant RL as Receipt Ledger
+
+  C->>CS: Create data-for-value offer
+  CS->>CDR: Request fields, purpose, retention, ad-use flag
+  CDR->>DD: Deliver pending creator request
+  DD->>F: Show fields, offer, sponsor context, category default option
+  F->>DD: Approve, narrow, deny, or apply category default
+  DD->>CG: Create creator_interest_data grant or denial
+  CG->>Vault: Store grant, category policy, ad preference state
+  CS->>AID: Query approved interest/ad-preference fields
+  AID->>ADF: Enforce grant, category, privacy, age, block policies
+  ADF->>Vault: Read approved fan data fields
+  Vault-->>ADF: Approved fields only
+  ADF-->>AID: Creator-scoped records or aggregate counts
+  AID->>RL: DataAccessReceipt
+  AID-->>CS: Allowed fields/counts or denial
+  DD-->>F: Updated grants, ad preferences, access history
+```
+
+1. Creator Studio creates an `AudienceDataGrantRequest` with requested fields, creator category, purpose, retention, ad-use flag, sponsor/offer context, and alternate path where required.
+2. `CreatorDataGrantRequestAPI` delivers the pending request to Fan App settings and any relevant campaign or promotion surface.
+3. Fan reviews requested interests, likes, dislikes, disliked creators, muted providers, ad preferences, value exchange, and category-default option.
+4. Fan approves, denies, narrows fields, revokes an existing grant, or applies a creator-category default.
+5. `ConsentGrantAPI` records a `creator_interest_data` grant or denial; Core Fan Vault stores active grants, category policies, ad preferences, and access history.
+6. When Creator Studio later queries approved data, `PermissionedAudienceInterestDataAPI` calls Audience Data Firewall.
+7. Audience Data Firewall applies privacy mode, age/region policy, sensitive-category defaults, relationship state, blocks, disliked creators, category policy, grant scope, purpose, retention, and ad-use flag.
+8. Core Fan Vault returns only approved creator-scoped fields; raw Private Event Vault behavior is never exported.
+9. `DataAccessReceipt` records actual grant-protected access.
+10. Fan App settings shows pending requests, grants, ad preferences, interests/dislikes, disliked creators, revocation controls, and access history.
+
+### 6.21 `14/W3`: Campaign Data Grant
 
 ```mermaid
 sequenceDiagram
@@ -848,7 +899,7 @@ sequenceDiagram
 8. Reward Ledger creates `RewardReceipt` where reward issuance or redemption occurs.
 9. Fan sees campaign and reward status; sponsor reporting is handled by sponsor architecture.
 
-### 6.21 `14/W4`: Data Mode Selection And Premium Private Mode
+### 6.22 `14/W4`: Data Mode Selection And Premium Private Mode
 
 ```mermaid
 sequenceDiagram
@@ -883,7 +934,7 @@ sequenceDiagram
 8. AI memory, private ranking, campaign eligibility, and recommendation access update to the selected mode.
 9. Fan App displays active data mode and retained receipt/safety exceptions.
 
-### 6.22 `14/W5`: Data Export/Delete
+### 6.23 `14/W5`: Data Export/Delete
 
 ```mermaid
 sequenceDiagram
@@ -918,7 +969,7 @@ sequenceDiagram
 8. Required audit, safety, receipt, tax, chargeback, and settlement records remain retained and visible as exceptions.
 9. Export/deletion records and migration receipts are created; failures route to governance/dispute boundary.
 
-### 6.23 `15/W1`: App Login And Permission Grant
+### 6.24 `15/W1`: App Login And Permission Grant
 
 ```mermaid
 sequenceDiagram
@@ -954,7 +1005,7 @@ sequenceDiagram
 8. `DataAccessReceipt` records grant-protected private access where required.
 9. App renders the fan shell and relationship controls without owning portable state.
 
-### 6.24 `15/W1A`: Certified App Relationship Controls
+### 6.25 `15/W1A`: Certified App Relationship Controls
 
 ```mermaid
 sequenceDiagram
@@ -987,7 +1038,7 @@ sequenceDiagram
 7. `CreatorAudienceAPI`, `CreatorCRMExportAPI`, and `CreatorAudienceExportPolicy` prevent reappearance through other apps, sponsor tools, or exports.
 8. App refreshes UI from canonical state and clears local cached relationship views.
 
-### 6.25 `15/W2`: Content Rendering And Playback
+### 6.26 `15/W2`: Content Rendering And Playback
 
 ```mermaid
 sequenceDiagram
@@ -1019,41 +1070,55 @@ sequenceDiagram
 7. App renders content or denial state.
 8. Playback receipts, ad/no-ad receipts, and settlement are handled by the content/settlement architecture doc.
 
-### 6.26 `15/W3`: App Search And Recommendation
+### 6.27 `15/W3`: App Search And Intent-Based Recommendation
 
 ```mermaid
 sequenceDiagram
   actor F as Fan
   participant FA as Fan App
+  participant Tiles as StartupTileSurfaceAPI
+  participant SI as SessionIntentAPI
+  participant Vault as Fan Vault
   participant SD as Search Directory
   participant RE as Fan Recommendation Engine
   participant ADF as Audience Data Firewall
   participant SR as Search/Recommendation Boundary
 
-  F->>FA: Search or open recommendations
+  F->>FA: Open app, search, or switch intent
+  FA->>Tiles: Request startup content tiles
+  Tiles->>Vault: Read FanInterestProfile and dislikes
+  Tiles-->>FA: ContentTile list and disclosures
+  F->>FA: Select tile, search, dislike, mute, or clear
+  FA->>SI: Create SessionIntent with platform intent and interests
+  SI->>ADF: Check data posture
+  ADF-->>SI: Allowed posture or denial
   alt Search
-    FA->>SD: Route neutral search query
+    FA->>SD: Route neutral search query with optional sessionIntentId
     SD-->>FA: Signed result sets
   else Recommendation
-    FA->>RE: Request trusted candidates
+    FA->>RE: Request candidates for SessionIntent and interest filters
     RE-->>FA: Ranked candidates with disclosures
   end
   FA->>ADF: Request private personalization if allowed
   ADF-->>FA: Allowed context or denial
   FA->>SR: Submit receipt/event boundary
-  FA-->>F: Results or recommendations
+  FA-->>F: Results or intent-specific recommendations
 ```
 
-1. Fan initiates search or opens recommendation surface.
-2. For search, App calls Search Directory and certified host search APIs with neutral-search context.
-3. For recommendations, App calls Fan Scoped Recommendation Engine with fan settings and trusted candidate boundaries.
-4. App receives signed search results or ranked recommendation candidates with disclosures.
-5. Audience Data Firewall mediates private personalization only when fan settings and grants allow it.
-6. App renders results or recommendations with clear search/recommendation distinction.
-7. `SearchReceipt` or `DiscoveryReceipt` is created in the downstream search/recommendation function.
-8. Fan opening content hands off to playback packet flow.
+1. Fan opens the app, initiates search, or switches what they want now.
+2. App calls `StartupTileSurfaceAPI` for content tiles based on platform intents, allowed follows, explicit interests, disliked interests, disliked creators, muted providers, and privacy-safe private summaries.
+3. Fan selects a tile, enters search intent, dislikes an interest, mutes a creator/provider, clears the current intent, or starts from Creator Updates.
+4. App calls `SessionIntentAPI` to create or switch `SessionIntent` with `platformIntentId`, active interests, and dislike filters.
+5. Audience Data Firewall checks platform intent, interest/dislike posture, privacy mode, grants, age/region rules, and vault policy.
+6. For search, App calls Search Directory and certified host search APIs with neutral-search context and optional `sessionIntentId`; the intent cannot alter search ranking or add search ads.
+7. For recommendations, App calls Fan Scoped Recommendation Engine with fan settings, `FanInterestProfile`, trusted candidate boundaries, and `SessionIntent`.
+8. App receives signed search results or ranked recommendation candidates with intent disclosures and score explanations.
+9. Audience Data Firewall mediates private personalization only when fan settings and grants allow it.
+10. App renders results or recommendations with clear search/recommendation distinction and controls to like, dislike, flag, follow, unfollow, save, mute, switch, or clear intent.
+11. `SearchReceipt`, `DiscoveryReceipt`, interest feedback, safety flag, or `DataAccessReceipt` is created in the downstream search/recommendation function where required.
+12. Fan opening content hands off to playback packet flow with optional `sessionIntentId` and contextual ad constraints.
 
-### 6.27 `15/W4`: Extension Rendering
+### 6.28 `15/W4`: Extension Rendering
 
 ```mermaid
 sequenceDiagram

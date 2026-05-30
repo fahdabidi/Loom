@@ -37,6 +37,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: sessionIntentId
+          in: query
+          description: Optional session intent context for audit and UI continuity. It cannot alter neutral search merge order or introduce search ads.
+          schema:
+            type: string
       responses:
         '200':
           description: Search results.
@@ -96,6 +101,9 @@ components:
       required:
         - results
       properties:
+        sessionIntentId:
+          type: string
+          nullable: true
         results:
           type: array
           items:
@@ -105,12 +113,16 @@ components:
       required:
         - resource
         - title
+        - summary
         - rank
       properties:
         resource:
           $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
         title:
           type: string
+        summary:
+          type: string
+          description: Creator-approved content summary from ContentManifest; neutral search may display or snippet from it without changing merge rules.
         snippet:
           type: string
           nullable: true

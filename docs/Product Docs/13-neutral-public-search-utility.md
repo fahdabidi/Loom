@@ -10,6 +10,8 @@ The Neutral Public Search Utility is Loom's fan-initiated path for broad discove
 
 Search is not recommendations. Search is not ad inventory. Search should be distributed across certified hosts and indexes, merged neutrally by apps, and funded as shared utility infrastructure through audit/utility receipts rather than paid placement.
 
+Search can be exposed inside Fan Apps as a platform-defined Search intent tile, but the underlying rules do not change: the fan explicitly provides intent, results are neutral, and no ads appear in search results. Opening a result can transition into normal content playback, purchase, campaign, or recommendation flows.
+
 ## 2. Scope
 
 This product area covers:
@@ -32,6 +34,7 @@ This product area covers:
 - Public search over creators, content, events, promotions, and giveaways.
 - Sponsor/campaign labels for searchable promotions and giveaways.
 - Optional fan-controlled AI search tools.
+- Search session intent behavior.
 
 It does not cover creator-led recommendations or paid ad ranking.
 
@@ -44,16 +47,18 @@ It does not cover creator-led recommendations or paid ad ranking.
 | No search ads | Search does not become ad inventory. | Avoids search incentives corrupting discovery. | Business Model and Incentive Design |
 | Distributed host search | Certified hosts expose searchable public metadata. | Avoids one centralized search owner. | Hosting Provider Lifecycle and Progressive Unbundling |
 | Open Search Kernel | Certified lightweight implementation for host-local search. | Makes neutral search easier for providers. | Developer Ecosystem and DevOps Supply Chain |
-| Standard result schema | `PublicSearchResultSchema` lets apps merge results consistently. | Fan apps can build good search UX. | Fan Apps and App Ecosystem |
+| Standard result schema | `PublicSearchResultSchema` includes title, required creator-approved summary, source refs, policy version, and allowed snippets so apps can merge results consistently. | Fan apps can build good search UX without relying only on promotional titles. | Fan Apps and App Ecosystem |
 | Search access policy | Creators define what metadata, transcripts, and snippets are searchable. | Creator control over public discoverability. | Creator Channel and Metadata Architecture |
 | Search receipts | `SearchReceipt` supports audit and utility funding only. | Search can be measured without per-click monetization. | Revenue, Receipts, Ledgers, and Settlement |
 | AI search tools | Fan-controlled AI can use search as a tool. | Fans can refine, summarize, and explore results. | AI Layer |
+| Search session intent | Fan apps may present search as a seed choice or session intent, but it remains fan-initiated, neutral, and ad-free in results. | Lets intent-based app UX include intentional discovery without weakening search neutrality. | Creator-Led Recommendation Economy; Fan Apps and App Ecosystem |
 
 ## 4. Product Experience Requirements
 
 Fans should be able to:
 
 - Search creators, content, posts, videos, newsletters, events, courses, livestreams, promotions, and communities.
+- Enter Search intent from app launch, a search box, or mid-session intent switching.
 - Filter by type, creator, freshness, language, duration, access mode, transcript availability, and topic.
 - Understand why a result is searchable.
 - Use AI to refine or summarize results where permitted.
@@ -71,6 +76,7 @@ Providers and apps should:
 - Expose certified search APIs.
 - Return signed result records.
 - Avoid paid ranking or search ad injection.
+- Show no ads inside search result lists, including when search is presented as a Search intent tile.
 - Avoid paid routing priority, paid merge priority, provider self-preference, app-owned boosts, or engagement-max ranking.
 - Generate `SearchReceipt` for audit and utility funding.
 
@@ -78,12 +84,13 @@ Providers and apps should:
 
 ### Story 1: Fan searches public content
 
-As a fan, I want to search public Loom content so I can find creators and topics beyond my follows.
+As a fan, I want to search public Loom content or choose a Search intent tile so I can find creators and topics beyond my follows.
 
 End state:
 
 - Host search APIs return signed results.
 - App merges results neutrally.
+- Search results contain no ads.
 - `SearchReceipt` records audit/utility event.
 
 ### Story 2: Creator controls searchability
@@ -138,7 +145,7 @@ Actors:
 Steps:
 
 1. Fan enters query.
-2. Fan App sends query to Search Directory.
+2. Fan App sends query to Search Directory from a search box or Search intent.
 3. Search Directory applies `SearchDirectoryPolicy` to route across relevant certified hosts and optional certified `SearchIndexProvider` services without paid routing priority.
 4. Routing decisions are signed for audit.
 5. Hosts query local `OpenSearchKernel` or equivalent certified implementation.
@@ -147,7 +154,7 @@ Steps:
 8. Merge decisions are logged for audit probes.
 9. Fan filters or opens result.
 10. `SearchReceipt` is submitted through `ReceiptIngestAPI` to `ReceiptLedger` for audit/utility funding only.
-11. Opening a result transitions to normal entitlement, playback, content, campaign, or purchase receipts rather than search-click monetization.
+11. Search result lists show no ads. Opening a result transitions to normal entitlement, playback, content, campaign, recommendation, or purchase receipts rather than search-click monetization.
 
 ### Workflow 2: Creator sets search policy
 
@@ -161,7 +168,7 @@ Actors:
 Steps:
 
 1. Creator edits content search settings.
-2. Creator sets whether title, description, metadata, transcript, snippet, event/campaign data, promotion/giveaway metadata, or full text is searchable.
+2. Creator sets whether title, required summary, description, metadata, transcript, snippet, event/campaign data, promotion/giveaway metadata, or full text is searchable.
 3. Creator Studio writes policy-versioned `SearchAccessPolicy`.
 4. Search providers separate indexability, snippet display, and full-content access in index records.
 5. Transcript snippets include provenance and redaction rules.
@@ -237,6 +244,7 @@ Steps:
 - Creator Plugins / Extensions / Campaign Layer: promotions and giveaways are searchable only as eligible `CampaignManifest` objects with `SponsorDisclosurePolicy`.
 - AI Layer: `SearchMCPServer` can use search tools without owning ranking or creating paid placement.
 - Creator-Led Recommendation Economy: `RecommendationManifest` and `CommunityFeedAPI` remain distinct from neutral search results.
+- Creator-Led Recommendation Economy: Search intent can invoke search UX, but `SessionIntent` and `RecommendationModePolicy` cannot override `NeutralSearchMergePolicy` or introduce ads in results.
 - Fan Apps and App Ecosystem: apps must apply `NeutralSearchMergePolicy` and produce merge audit evidence.
 - Governance, Certification, and Foundation Model: `OpenSearchKernelConformance`, `SearchAuditProbeAPI`, and certification enforce neutral behavior.
 - Business Model and Incentive Design: `SearchUtilityFundingPolicy` funds search without paid ranking.
@@ -251,7 +259,7 @@ Steps:
 - `SearchDirectoryAPI`: query routing to relevant certified hosts.
 - `SearchDirectoryPolicy`: no paid routing priority, no self-preference, and auditable routing criteria.
 - `SearchAccessPolicy`: content and transcript searchability rules.
-- `PublicSearchResultSchema`: standard result format.
+- `PublicSearchResultSchema`: standard result format with title, summary, source refs, policy version, rank, and allowed snippets.
 - `OpenSearchKernel`: reference host-local search implementation.
 - `OpenSearchKernelConformance`: tests for neutral search behavior.
 - `SearchIndexProvider`: certified optional index/metadata provider role.

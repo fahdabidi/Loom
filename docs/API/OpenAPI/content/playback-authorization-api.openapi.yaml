@@ -16,6 +16,7 @@ x-loom-architecture-docs:
 x-loom-downstream-apis:
   - ./content-host-api.openapi.yaml
   - ../creator/creator-metadata-api.openapi.yaml
+  - ../discovery/recommendation-referral-api.openapi.yaml
   - ../monetization/entitlement-ledger-api.openapi.yaml
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../safety/fraud-api.openapi.yaml
@@ -93,6 +94,12 @@ components:
             - paid_access
             - member_access
             - preview
+        sessionIntentId:
+          type: string
+          nullable: true
+        sessionIntentContext:
+          $ref: '#/components/schemas/SessionIntentPlaybackContext'
+          nullable: true
     PlaybackAuthorization:
       type: object
       required:
@@ -132,6 +139,67 @@ components:
         reason:
           type: string
           nullable: true
+        sessionIntentAdPosture:
+          type: string
+          enum:
+            - none
+            - creator_approved_only
+            - contextual_creator_approved
+            - broader_creator_approved
+            - commerce_sponsor_context
+            - family_safe_creator_approved
+          nullable: true
+        sessionIntentContextualCategory:
+          type: string
+          nullable: true
+        creatorApprovedOnly:
+          type: boolean
+          default: true
+        creatorPolicyStillRequired:
+          type: boolean
+          default: true
+    SessionIntentPlaybackContext:
+      type: object
+      properties:
+        platformIntentId:
+          type: string
+          enum:
+            - creator_updates
+            - friends_family
+            - learning
+            - reviews_research
+            - shopping
+            - entertainment
+            - low_engagement_browsing
+            - search
+            - news_briefing
+            - calm
+          nullable: true
+        activeInterestCategorySummary:
+          type: string
+          nullable: true
+        adPosture:
+          type: string
+          enum:
+            - none
+            - creator_approved_only
+            - contextual_creator_approved
+            - broader_creator_approved
+            - commerce_sponsor_context
+            - family_safe_creator_approved
+          nullable: true
+        contextualCategory:
+          type: string
+          nullable: true
+        adLoad:
+          type: string
+          nullable: true
+        creatorApprovedOnly:
+          type: boolean
+          default: true
+        behavioralTargetingAllowed:
+          type: boolean
+          default: false
     CompletePlaybackSessionRequest:
       type: object
       required:

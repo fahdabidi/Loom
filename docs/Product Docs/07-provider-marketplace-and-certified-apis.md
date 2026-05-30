@@ -21,6 +21,7 @@ This product area covers:
 - Provider public keys and signing.
 - Provider scorecards, incidents, and audit status.
 - Provider comparison and selection in Creator Studio and other surfaces.
+- External recommendation provider certification, including platform-intent quotas, fan interest/dislike boundary enforcement, no raw private behavior export, and disclosure labels.
 - Provider certification states: `Draft`, `Submitted`, `Certified`, `Limited`, `Suspended`, `Revoked`.
 - Capability-level certification for identity/passport, metadata, vaults, fan apps, content hosting, storage, transcoding, CDN, ads, payments, payouts, settlement, AI, search, recommendations, extensions, campaigns/sponsors, analytics, moderation, and backup.
 
@@ -39,6 +40,7 @@ It does not define every provider role in detail. Individual provider-dependent 
 | API versioning | Providers declare supported API versions and migration plans. | Keeps interoperability stable as the protocol evolves. | Developer Ecosystem and DevOps Supply Chain |
 | Provider receipts | Service usage creates signed receipts for payment and audit. | Providers get paid for real services and can be audited. | Revenue, Receipts, Ledgers, and Settlement |
 | Swappable roles | Providers can bundle services but each role remains separately declared. | Bundling does not become lock-in. | Core Thesis and Platform Principles |
+| Recommendation-provider boundaries | Certified recommendation providers must accept `PlatformIntent`, active interest tokens, dislike filters, quota limits, and allowed signal classes, and must not receive raw private behavior. | Lets fans use broader discovery without turning intent capture into external behavioral profiling. | Creator-Led Recommendation Economy; Audience Data Firewall and Data Rights |
 
 ## 4. Product Experience Requirements
 
@@ -133,6 +135,17 @@ End state:
 - Migration plan validates destination support.
 - Provider contract manifest updates.
 - Receipts and settlement continue.
+
+### Story 6: External recommendation provider certifies bounded candidate APIs
+
+As an external recommendation provider, I want to certify my candidate API so Loom can request recommendations using only platform intent, active interests, dislike filters, quotas, and allowed public/aggregate signal classes.
+
+End state:
+
+- Provider declares `external_recommendation_provider` capability and supported API version.
+- Conformance tests prove no raw private fan behavior is required or retained.
+- Provider responses include candidate score, disclosure, safety labels, and expiry.
+- Recommendation Engine can cap, label, audit, or suspend provider candidates by platform intent.
 
 ## 6. End-to-End Workflows
 
@@ -240,6 +253,26 @@ Steps:
 5. Marketplace shows supported versions and deprecation dates.
 6. Apps and creators migrate before older versions are retired.
 
+### Workflow 6: External recommendation provider certification and runtime routing
+
+Actors:
+
+- External Recommendation Provider
+- Provider Certification System
+- Fan Scoped Recommendation Engine
+- Audience Data Firewall
+- Trust and Safety
+
+Steps:
+
+1. Provider declares external recommendation capability, endpoint URL, supported API version, data-use terms, safety labels, and retention policy.
+2. Certification system runs conformance tests against `ExternalRecommendationProviderAPI`.
+3. Tests verify the provider accepts `PlatformIntent`, active interest tokens, dislike filters, quota limits, allowed signal classes, and pseudonymous fan ids without requiring raw private behavior.
+4. `CertificationScopeRecord` is created with provider quotas, allowed intents, audit probes, and disclosure requirements.
+5. During fan ranking, Recommendation Engine calls the certified provider only when the selected platform intent permits external candidates.
+6. Provider returns candidate refs, score, disclosure, safety labels, and expiry.
+7. Recommendation Engine caps provider share, applies fan dislikes and safety labels, records audit evidence, and drops or suspends provider output that violates policy.
+
 ## 7. Cross-Area Interactions
 
 - Creator Experience: creators select and compare providers through `ProviderMarketplaceAPI`, `ProviderComparisonAPI`, and Creator Studio provider controls.
@@ -248,6 +281,7 @@ Steps:
 - Developer Ecosystem and DevOps Supply Chain: `SDKRegistry`, `ConformanceTestSuite`, and `ProviderCertificationAPI` help providers certify.
 - Governance, Certification, and Foundation Model: governance defines `CertificationScopeRecord`, `ProviderAuditAPI`, `ProviderKeyManagementAPI`, and suspension states.
 - Trust, Safety, Fraud, and Compliance: `ProviderIncidentReport`, `DataAccessReceipt`, invalid receipts, and key revocation trigger enforcement.
+- Creator-Led Recommendation Economy: certified external recommendation providers must implement `ExternalRecommendationProviderAPI`, platform-intent quotas, disclosure labels, and fan dislike/provider mute enforcement.
 - Migration Strategy from Existing Platforms: provider exit and replacement depend on `MigrationPlanAPI`, role-specific export APIs, and certified export support.
 
 ## 8. FAQ
@@ -268,6 +302,7 @@ Steps:
 
 - Provider Certification API: certification applications, evidence, test results, and review status.
 - Conformance Test Suite: automated tests for each API role.
+- External Recommendation Provider Conformance: verifies `PlatformIntent`, active interest tokens, dislike filters, provider quota, allowed signal classes, disclosure, expiry, and no-raw-private-behavior requirements.
 - Certification Scope Record: certified capability, API version, restrictions, status, expiration, and revocation state.
 - Provider Audit API: continuous checks, probes, evidence collection, and remediation tracking.
 - Provider Key Management API: signing keys, rotation, suspension, revocation, and incident recovery.

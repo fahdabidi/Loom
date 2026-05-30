@@ -10,6 +10,8 @@ Monetization Models define the ways creators, providers, apps, developers, spons
 
 Loom's monetization should not be a single platform take-rate. Revenue should be tied to explicit value creation: content, memberships, AI source usage, referrals, sponsorships, campaigns, hosting, apps, extensions, payments, and shared utilities.
 
+Session intent can affect ad load, contextual ad category, and eligible creator breadth for a fan session, but it does not create behavioral ad targeting or override creator ad policy. Which ads are eligible remains controlled by `CreatorAdPolicy`, sponsor/campaign policy, fan privacy mode, and safety rules.
+
 ## 2. Scope
 
 This product area covers:
@@ -39,6 +41,7 @@ It does not define exact pricing, but it defines the product models and required
 | Feature / differentiator | Definition | Product value | Interacting product areas |
 | --- | --- | --- | --- |
 | Free with ads | Fans can consume free content supported by ads or sponsors. | Low-friction fan acquisition and creator monetization. | Fan Experience; Trust, Safety, Fraud, and Compliance |
+| Intent-aware ad load | `SessionIntent` can set how many ads may appear, the contextual ad category, and how wide the eligible creator set is for a session. | Supports higher-value contextual sessions while keeping fan control and creator ad policy. | Creator-Led Recommendation Economy; Brand/Sponsor/Advertiser Tools |
 | Global no-ad premium | Fan pays once for no-ad access across eligible content. | Better fan experience without starving creators. | Fan Passport, Wallet, Vaults, and Identity Architecture |
 | Paid private mode | Fan pays for stronger privacy, no external ad targeting, no raw behavior export, and stricter AI memory/training defaults. | Makes privacy an understandable paid product. | Audience Data Firewall and Data Rights |
 | Creator memberships | Recurring creator-specific support and benefits. | Direct creator revenue and fan loyalty. | Creator Experience |
@@ -54,6 +57,8 @@ It does not define exact pricing, but it defines the product models and required
 ### 4.1 Free Ad-Supported
 
 Fans watch or read free content. Ads, sponsor placements, or creator-sold inventory generate revenue. Receipts must separate playback, ad decision, ad impression, completion, fraud signals, and settlement.
+
+Session intent can set session-level ad load, contextual ad category, and creator breadth. My Creators has low load and narrow creator-trust breadth. Trending or entertainment topic intents can allow higher contextual load and broader eligible creator breadth. Learn / Deep Dive and Wind-down / Calm use minimal ads. Search intent has no ads in search result lists. Friends and Family has no behavioral ads and strict family-safe limits.
 
 ### 4.2 Global No-Ad Premium
 

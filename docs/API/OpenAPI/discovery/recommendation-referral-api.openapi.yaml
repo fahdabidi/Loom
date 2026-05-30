@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Loom Recommendation And Referral API
   version: 0.1.0
-  summary: Creator-led recommendations, referral terms, community feed subscriptions, and referral attribution.
+  summary: Startup content tiles, platform intents, fan-scoped session intents, creator-led recommendations, external provider candidate boundaries, feedback, referral terms, community feed subscriptions, and referral attribution.
 servers:
   - url: https://recommendations.loom.example
 security:
@@ -14,11 +14,158 @@ x-loom-architecture-docs:
   - ../../../Architecture/07-search-recommendations-and-ai.md
 x-loom-downstream-apis:
   - ../creator/creator-metadata-api.openapi.yaml
+  - ../content/content-host-api.openapi.yaml
+  - ./external-recommendation-provider-api.openapi.yaml
   - ../identity/fan-passport-api.openapi.yaml
+  - ../identity/fan-vault-api.openapi.yaml
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../monetization/settlement-engine-api.openapi.yaml
   - ../safety/trust-safety-api.openapi.yaml
 paths:
+  /v1/startup-content-tiles:
+    get:
+      operationId: listStartupContentTiles
+      summary: List launch or mid-session startup content tiles for a fan app.
+      security:
+        - LoomUserOAuth:
+            - fan.passport
+        - LoomServiceAuth: []
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: query
+          schema:
+            type: string
+        - name: appId
+          in: query
+          schema:
+            type: string
+        - name: surface
+          in: query
+          schema:
+            type: string
+            enum:
+              - launch
+              - mid_session
+              - search
+              - creator_page
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Startup content tiles.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListStartupContentTilesResponse'
+  /v1/session-intents:
+    post:
+      operationId: createSessionIntent
+      summary: Create or switch the current fan session intent.
+      security:
+        - LoomUserOAuth:
+            - fan.passport
+        - LoomServiceAuth: []
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionIntentRequest'
+      responses:
+        '201':
+          description: Session intent created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionIntent'
+  /v1/session-intent-feeds:
+    post:
+      operationId: getSessionIntentFeed
+      summary: Get a recommendation feed for the active session intent.
+      security:
+        - LoomUserOAuth:
+            - fan.passport
+        - LoomServiceAuth: []
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetSessionIntentFeedRequest'
+      responses:
+        '200':
+          description: Session intent recommendation feed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationFeed'
+  /v1/recommendations/feedback:
+    post:
+      operationId: submitFanContentFeedback
+      summary: Submit fan feedback that can update interest, dislike, creator, provider, and safety signals.
+      security:
+        - LoomUserOAuth:
+            - fan.passport
+            - fan.vault
+        - LoomServiceAuth: []
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitFanContentFeedbackRequest'
+      responses:
+        '202':
+          description: Feedback accepted for vault update, ranking update, or safety triage.
+          content:
+            application/json:
+              schema:
+                $ref: '../_shared/components.yaml#/components/schemas/OperationStatus'
+  /v1/recommendation-modes:
+    get:
+      operationId: listRecommendationModes
+      summary: List certified recommendation mode policy envelopes and disclosure cards.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Recommendation mode policy envelopes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRecommendationModesResponse'
+  /v1/recommendation-mode-sessions:
+    post:
+      operationId: createRecommendationModeSession
+      summary: Start or switch a fan recommendation mode session for compatibility clients.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecommendationModeSessionRequest'
+      responses:
+        '201':
+          description: Recommendation mode session created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationModeSession'
   /v1/referral-terms:
     post:
       operationId: publishReferralTerms
@@ -71,6 +218,28 @@ paths:
             type: string
         - name: channelId
           in: query
+          schema:
+            type: string
+        - name: sessionIntentId
+          in: query
+          schema:
+            type: string
+        - name: modeSessionId
+          in: query
+          schema:
+            type: string
+        - name: platformIntentId
+          in: query
+          schema:
+            $ref: '#/components/schemas/PlatformIntentId'
+        - name: interestTokens
+          in: query
+          description: Comma-separated active interest tokens for legacy GET clients. Structured clients should use /v1/session-intent-feeds.
+          schema:
+            type: string
+        - name: dislikeFilters
+          in: query
+          description: Comma-separated disliked interests, creators, providers, or safety labels for legacy GET clients. Structured clients should use /v1/session-intent-feeds.
           schema:
             type: string
       responses:
@@ -184,6 +353,46 @@ components:
             disclosure:
               type: string
               nullable: true
+            candidateSource:
+              $ref: '#/components/schemas/RecommendationCandidateSource'
+            scoreExplanation:
+              $ref: '#/components/schemas/ContentScoreExplanation'
+              nullable: true
+            hostPerformance:
+              $ref: '#/components/schemas/HostContentPerformance'
+              nullable: true
+            targetContentMetadata:
+              $ref: '#/components/schemas/RecommendationContentMetadata'
+              nullable: true
+    RecommendationContentMetadata:
+      type: object
+      required:
+        - title
+        - summary
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+          description: Creator-approved ContentManifest summary used by fan recommendation agents and recommendation engines to evaluate relevance without over-weighting title wording.
+        summaryManifestVersion:
+          type: string
+          nullable: true
+        titleRiskSignals:
+          type: array
+          items:
+            type: string
+            enum:
+              - possible_clickbait
+              - possible_ragebait
+              - sensationalized
+              - mismatch_with_summary
+        metadataSource:
+          type: string
+          enum:
+            - content_manifest
+            - public_catalog_projection
+          nullable: true
     RecommendationFeed:
       type: object
       required:
@@ -193,6 +402,787 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Recommendation'
+        sessionIntent:
+          $ref: '#/components/schemas/SessionIntent'
+          nullable: true
+        modeSession:
+          $ref: '#/components/schemas/RecommendationModeSession'
+          nullable: true
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'
+          nullable: true
+    RecommendationCandidateSource:
+      type: string
+      enum:
+        - followed_creator
+        - creator_recommendation
+        - direct_connection
+        - community_feed
+        - host_performance
+        - external_provider
+        - search_result
+    PlatformIntentId:
+      type: string
+      enum:
+        - creator_updates
+        - friends_family
+        - learning
+        - reviews_research
+        - shopping
+        - entertainment
+        - low_engagement_browsing
+        - search
+        - news_briefing
+        - calm
+    InterestToken:
+      type: object
+      required:
+        - token
+        - tokenType
+      properties:
+        token:
+          type: string
+          examples:
+            - tennis
+            - cricket
+            - video_game_reviews
+        tokenType:
+          type: string
+          enum:
+            - topic
+            - creator
+            - format
+            - product
+            - sport
+            - genre
+            - community
+        weight:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        source:
+          type: string
+          enum:
+            - startup_selection
+            - follow_graph
+            - explicit_feedback
+            - permitted_private_summary
+            - app_default
+          nullable: true
+    DislikeFilter:
+      type: object
+      required:
+        - filterType
+        - value
+        - severity
+      properties:
+        filterType:
+          type: string
+          enum:
+            - interest
+            - creator
+            - provider
+            - format
+            - safety_label
+        value:
+          type: string
+        severity:
+          type: string
+          enum:
+            - reduce
+            - suppress
+            - exclude
+        source:
+          type: string
+          enum:
+            - fan_explicit
+            - app_control
+            - policy
+            - safety
+          nullable: true
+    CreatorProviderBlend:
+      type: object
+      required:
+        - followedCreatorShareMin
+        - creatorRecommendationShareMax
+        - externalProviderShareMax
+      properties:
+        followedCreatorShareMin:
+          type: integer
+          minimum: 0
+          maximum: 100
+        creatorRecommendationShareMax:
+          type: integer
+          minimum: 0
+          maximum: 100
+        externalProviderShareMax:
+          type: integer
+          minimum: 0
+          maximum: 100
+        directConnectionOnly:
+          type: boolean
+          default: false
+    ContentScoreWeights:
+      type: object
+      additionalProperties:
+        type: number
+      description: Intent-specific scoring weights for candidate source, creator reputation, interest relevance, dislikes, host performance, provider score, and safety labels.
+    ContentTile:
+      type: object
+      required:
+        - tileId
+        - label
+        - platformIntentId
+        - disclosure
+      properties:
+        tileId:
+          type: string
+        label:
+          type: string
+          examples:
+            - Learn tennis technique
+            - Catch up with family
+            - Low-key comedy
+            - Video game reviews
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+        activeInterestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        activeDislikeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikeFilter'
+        sourceSignals:
+          type: array
+          items:
+            type: string
+            enum:
+              - follow_graph
+              - subscription
+              - saved_topic
+              - explicit_setting
+              - permitted_private_summary
+              - direct_connection
+              - aggregate_trending
+              - host_content_performance
+              - app_default
+              - explicit_search
+        whySuggested:
+          type: string
+          nullable: true
+        creatorProviderBlend:
+          $ref: '#/components/schemas/CreatorProviderBlend'
+          nullable: true
+        adPosture:
+          $ref: '#/components/schemas/AdPosture'
+          nullable: true
+        disclosure:
+          $ref: '#/components/schemas/SessionIntentDisclosure'
+        canSave:
+          type: boolean
+          default: true
+        canMute:
+          type: boolean
+          default: true
+    ListStartupContentTilesResponse:
+      type: object
+      required:
+        - items
+        - generatedAt
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentTile'
+        generatedAt:
+          type: string
+          format: date-time
+        privacyBoundary:
+          type: string
+          nullable: true
+        availablePlatformIntents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformIntentId'
+    CreateSessionIntentRequest:
+      type: object
+      required:
+        - appId
+        - platformIntentId
+      properties:
+        fanId:
+          type: string
+          nullable: true
+        appId:
+          type: string
+        tileId:
+          type: string
+          nullable: true
+        label:
+          type: string
+          nullable: true
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+        activeInterestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        activeDislikeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikeFilter'
+        searchQuery:
+          type: string
+          nullable: true
+        creatorProviderBlend:
+          $ref: '#/components/schemas/CreatorProviderBlend'
+          nullable: true
+        adPosture:
+          $ref: '#/components/schemas/AdPosture'
+          nullable: true
+        scoreWeights:
+          $ref: '#/components/schemas/ContentScoreWeights'
+          nullable: true
+        metadataPreference:
+          $ref: '#/components/schemas/RecommendationMetadataPreference'
+          nullable: true
+        storagePreference:
+          type: string
+          default: session_only
+          enum:
+            - session_only
+            - save_preference
+            - do_not_store
+        previousSessionIntentId:
+          type: string
+          nullable: true
+    SessionIntent:
+      type: object
+      required:
+        - sessionIntentId
+        - appId
+        - label
+        - platformIntentId
+        - dataPosture
+        - adContext
+        - sessionShape
+        - disclosure
+        - startedAt
+      properties:
+        sessionIntentId:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        appId:
+          type: string
+        tileId:
+          type: string
+          nullable: true
+        label:
+          type: string
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+        activeInterestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        activeDislikeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikeFilter'
+        creatorProviderBlend:
+          $ref: '#/components/schemas/CreatorProviderBlend'
+          nullable: true
+        scoreWeights:
+          $ref: '#/components/schemas/ContentScoreWeights'
+          nullable: true
+        metadataPreference:
+          $ref: '#/components/schemas/RecommendationMetadataPreference'
+          nullable: true
+        dataPosture:
+          $ref: '#/components/schemas/RecommendationDataPosture'
+        adContext:
+          $ref: '#/components/schemas/SessionIntentAdContext'
+        sessionShape:
+          type: string
+          enum:
+            - resume
+            - ask_first
+            - lean_back
+            - briefing
+            - long_session
+            - bounded
+            - strict_family
+            - short_session
+        disclosure:
+          $ref: '#/components/schemas/SessionIntentDisclosure'
+        startedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          default: active
+          enum:
+            - active
+            - cleared
+            - superseded
+        previousSessionIntentId:
+          type: string
+          nullable: true
+    SessionIntentAdContext:
+      type: object
+      required:
+        - adPosture
+        - adLoadPolicy
+      properties:
+        adPosture:
+          $ref: '#/components/schemas/AdPosture'
+        contextualCategory:
+          type: string
+          enum:
+            - none
+            - entertainment
+            - news
+            - sports
+            - product
+            - reviews
+            - learning
+            - shopping
+            - family
+            - creator_context
+            - contextual_topic
+          nullable: true
+        creatorApprovedOnly:
+          type: boolean
+          default: true
+        externalProviderAdsAllowed:
+          type: boolean
+          default: false
+        adLoadPolicy:
+          $ref: '#/components/schemas/AdLoadPolicy'
+        behavioralTargetingAllowed:
+          type: boolean
+          default: false
+        creatorPolicyStillRequired:
+          type: boolean
+          default: true
+        notes:
+          type: string
+          nullable: true
+    AdPosture:
+      type: string
+      enum:
+        - none
+        - creator_approved_only
+        - contextual_creator_approved
+        - broader_creator_approved
+        - commerce_sponsor_context
+        - family_safe_creator_approved
+    SessionIntentDisclosure:
+      type: object
+      required:
+        - headline
+        - objectiveSummary
+        - dataSummary
+        - adSummary
+        - sessionSummary
+      properties:
+        headline:
+          type: string
+        whySuggested:
+          type: string
+          nullable: true
+        objectiveSummary:
+          type: string
+        interestSummary:
+          type: string
+          nullable: true
+        dislikeSummary:
+          type: string
+          nullable: true
+        creatorProviderBlendSummary:
+          type: string
+          nullable: true
+        dataSummary:
+          type: string
+        adSummary:
+          type: string
+        sessionSummary:
+          type: string
+    GetSessionIntentFeedRequest:
+      type: object
+      required:
+        - sessionIntentId
+      properties:
+        sessionIntentId:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        channelId:
+          type: string
+          nullable: true
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+          nullable: true
+        activeInterestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        activeDislikeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DislikeFilter'
+        creatorProviderBlend:
+          $ref: '#/components/schemas/CreatorProviderBlend'
+          nullable: true
+        scoreWeights:
+          $ref: '#/components/schemas/ContentScoreWeights'
+          nullable: true
+        metadataPreference:
+          $ref: '#/components/schemas/RecommendationMetadataPreference'
+          nullable: true
+        externalProviderIds:
+          type: array
+          items:
+            type: string
+        includeScoreExplanations:
+          type: boolean
+          default: true
+        cursor:
+          type: string
+          nullable: true
+        limit:
+          type: integer
+          default: 25
+    ContentScoreExplanation:
+      type: object
+      properties:
+        score:
+          type: number
+          nullable: true
+        topFactors:
+          type: array
+          items:
+            type: string
+        matchedInterests:
+          type: array
+          items:
+            type: string
+        suppressedByDislikes:
+          type: boolean
+          default: false
+        suppressionReason:
+          type: string
+          nullable: true
+        externalProviderCapped:
+          type: boolean
+          default: false
+        summaryUsedForRelevance:
+          type: boolean
+          default: false
+        titleDeemphasized:
+          type: boolean
+          default: false
+    RecommendationMetadataPreference:
+      type: object
+      properties:
+        useSummaryForRelevance:
+          type: boolean
+          default: true
+        titleDeemphasis:
+          type: string
+          default: normal
+          enum:
+            - normal
+            - deemphasize_possible_clickbait
+            - deemphasize_possible_ragebait
+            - deemphasize_title_use_summary
+        ignoreTitleRiskTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - possible_clickbait
+              - possible_ragebait
+              - sensationalized
+              - mismatch_with_summary
+        agentInstructionSource:
+          type: string
+          enum:
+            - fan_app
+            - fan_mcp_agent
+            - fan_saved_preference
+          nullable: true
+    HostContentPerformance:
+      type: object
+      properties:
+        trendingState:
+          type: string
+          enum:
+            - not_trending
+            - rising
+            - trending
+            - cooling
+        beingWatchedNow:
+          type: boolean
+        fresh:
+          type: boolean
+        totalViewCount:
+          type: integer
+          format: int64
+          minimum: 0
+        velocityScore:
+          type: number
+          minimum: 0
+          nullable: true
+        noveltyScore:
+          type: number
+          minimum: 0
+          nullable: true
+        freshnessScore:
+          type: number
+          minimum: 0
+          nullable: true
+        completionMomentumScore:
+          type: number
+          minimum: 0
+          nullable: true
+    FanContentFeedbackAction:
+      type: string
+      enum:
+        - like
+        - dislike
+        - not_interested
+        - flag
+        - save
+        - unsave
+        - follow_creator
+        - unfollow_creator
+        - mute_creator
+        - block_creator
+        - mute_provider
+    FeedbackTarget:
+      type: object
+      required:
+        - targetType
+        - targetId
+      properties:
+        targetType:
+          type: string
+          enum:
+            - content
+            - creator
+            - provider
+            - interest
+            - recommendation
+        targetId:
+          type: string
+    SubmitFanContentFeedbackRequest:
+      type: object
+      required:
+        - fanId
+        - action
+        - target
+      properties:
+        fanId:
+          type: string
+        sessionIntentId:
+          type: string
+          nullable: true
+        platformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+          nullable: true
+        action:
+          $ref: '#/components/schemas/FanContentFeedbackAction'
+        target:
+          $ref: '#/components/schemas/FeedbackTarget'
+        interestTokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterestToken'
+        reason:
+          type: string
+          nullable: true
+        updateInterestProfile:
+          type: boolean
+          default: true
+    RecommendationModeId:
+      type: string
+      enum:
+        - focused_my_creators
+        - trending
+        - search_intent
+        - news_briefing
+        - learn_deep_dive
+        - wind_down_calm
+        - friends_and_family
+        - good_time
+    RecommendationMode:
+      type: object
+      required:
+        - modeId
+        - label
+        - objective
+        - dataPosture
+        - adLoadPolicy
+        - sessionShape
+        - disclosure
+      properties:
+        modeId:
+          $ref: '#/components/schemas/RecommendationModeId'
+        label:
+          type: string
+        objective:
+          type: string
+        mapsToPlatformIntentId:
+          $ref: '#/components/schemas/PlatformIntentId'
+          nullable: true
+        dataPosture:
+          $ref: '#/components/schemas/RecommendationDataPosture'
+        adLoadPolicy:
+          $ref: '#/components/schemas/AdLoadPolicy'
+        sessionShape:
+          type: string
+          enum:
+            - resume
+            - ask_first
+            - lean_back
+            - briefing
+            - long_session
+            - bounded
+            - strict_family
+            - short_session
+        disclosure:
+          $ref: '#/components/schemas/ModeDisclosureCard'
+    RecommendationDataPosture:
+      type: object
+      required:
+        - allowedSignalClasses
+      properties:
+        allowedSignalClasses:
+          type: array
+          items:
+            type: string
+            enum:
+              - follow_graph
+              - creator_trust_graph
+              - explicit_fan_settings
+              - session_intent
+              - platform_intent
+              - fan_interest_profile
+              - topic_preference
+              - disliked_interest
+              - disliked_creator
+              - muted_recommendation_provider
+              - public_metadata
+              - neutral_search_query
+              - aggregate_host_trending
+              - host_content_performance
+              - external_provider_score
+              - direct_connections
+              - permitted_private_summary
+              - private_vault_granted
+              - learning_progress
+              - moderation_labels
+        privateVaultGrantRequired:
+          type: boolean
+          default: false
+    AdLoadPolicy:
+      type: object
+      required:
+        - load
+        - breadth
+      properties:
+        load:
+          type: string
+          enum:
+            - none
+            - low
+            - moderate
+            - higher
+        breadth:
+          type: string
+          enum:
+            - none
+            - active_creator
+            - trusted_creators
+            - broader_contextual
+            - family_safe_contextual
+        notes:
+          type: string
+          nullable: true
+    ModeDisclosureCard:
+      type: object
+      required:
+        - headline
+        - objectiveSummary
+        - dataSummary
+        - adSummary
+        - sessionSummary
+      properties:
+        headline:
+          type: string
+        objectiveSummary:
+          type: string
+        dataSummary:
+          type: string
+        adSummary:
+          type: string
+        sessionSummary:
+          type: string
+    ListRecommendationModesResponse:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendationMode'
+    CreateRecommendationModeSessionRequest:
+      type: object
+      required:
+        - modeId
+      properties:
+        modeId:
+          $ref: '#/components/schemas/RecommendationModeId'
+        fanId:
+          type: string
+          nullable: true
+        savePreference:
+          type: boolean
+          default: false
+        previousModeSessionId:
+          type: string
+          nullable: true
+    RecommendationModeSession:
+      type: object
+      required:
+        - modeSessionId
+        - mode
+        - startedAt
+      properties:
+        modeSessionId:
+          type: string
+        derivedSessionIntentId:
+          type: string
+          nullable: true
+        fanId:
+          type: string
+          nullable: true
+        mode:
+          $ref: '#/components/schemas/RecommendationMode'
+        startedAt:
+          type: string
+          format: date-time
+        switchedFromModeSessionId:
+          type: string
+          nullable: true
     CreateReferralAttributionRequest:
       type: object
       required:

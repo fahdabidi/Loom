@@ -27,6 +27,7 @@ This product area covers:
 - Premium private mode.
 - Free personalized mode.
 - No-ad premium mode.
+- Platform intent, interest, and dislike data posture.
 - Revoke, export, delete, and dispute controls.
 
 ## 3. Key Features and Differentiators
@@ -44,6 +45,8 @@ This product area covers:
 | Data access receipts | Access to sensitive data creates audit records. | Supports fan trust, dispute handling, and compliance. | Revenue, Receipts, Ledgers, and Settlement |
 | Premium private mode | Fans can pay for stronger privacy and reduced data use. | Gives privacy a product and business model. | Business Model and Incentive Design |
 | Clean-room measurement | Sponsors and creators measure campaigns without raw fan data export. | Enables brand revenue with privacy. | Brand/Sponsor/Advertiser Tools |
+| Platform intent and interest data posture | Each `SessionIntent` resolves a platform intent plus scoped fan interests/dislikes and declares which vault, public, aggregate, direct-connection, or provider signals ranking may use. | Fans can understand intent and interest tradeoffs without confusing a session choice with broad consent. | Creator-Led Recommendation Economy; Fan Apps and App Ecosystem |
+| Fan-controlled dislikes | Disliked interests, disliked creators, muted providers, and blocked creators are explicit suppression signals in the Fan Vault. | Data rights include the right to tell the system what not to recommend. | Fan Passport, Wallet, Vaults, and Identity Architecture; Fan Experience |
 
 ## 4. Product Experience Requirements
 
@@ -54,6 +57,8 @@ Fans should be able to:
 - Grant, revoke, export, and delete data.
 - Set follow visibility, revoke creator direct-contact permission, unfollow, block, and request creator-scoped tombstoning.
 - Choose free personalized, no-ad premium, or premium private mode where available.
+- See and change platform intent, interest, and dislike data posture, bounded by privacy mode and grants.
+- View, export, edit, or delete explicit interest/dislike records.
 - See data access history.
 
 Creators should be able to:
@@ -78,6 +83,21 @@ Sponsors/providers should:
 | Free personalized | Uses permitted app, creator, recommendation, and campaign signals. | Ads or sponsor campaigns may use allowed context and disclosures. | `FanScopedRecommendationAPI` can use permitted preferences; private data requires grant. | `DataUseGrant`, `DataAccessReceipt`, `AdImpressionReceipt`, `CampaignDataGrant` |
 | No-ad premium | No ad targeting or ad delivery for premium surfaces. | `PaymentReceipt` activates entitlement; `UtilityFeePolicy` can fund shared infrastructure. | Recommendations remain available but cannot use ad targeting logic. | `EntitlementLedgerAPI`, `PremiumNoAdReceipt`, `UtilityFeePolicy` |
 | Premium private | Minimal external data use, no raw external recommendation data, no-training defaults, and stricter vault boundaries. | `PaymentReceipt` activates `PrivateVaultEntitlement`; vault service costs can create `VaultServiceReceipt`. | `PrivateRankingAPI` runs in-vault; `FanAIMemoryPolicy` and `AIConversationPolicy` default to limited memory and no training. | `PrivateVaultEntitlement`, `PrivateRankingAPI`, `FanAIMemoryPolicy`, `AIConversationPolicy`, `VaultServiceReceipt` |
+
+### 4.2 Platform Intent, Interest, And Dislike Data Posture
+
+Session intents are not the same thing as paid privacy modes. A `SessionIntent` can request use of a platform intent, explicit interests, inferred interests, dislike filters, host performance metadata, and provider candidates, but the Audience Data Firewall enforces the stricter of the fan's privacy mode, grants, age/region policy, vault policy, and platform intent policy.
+
+| Data class | Default posture |
+| --- | --- |
+| Platform intent | Session-scoped, platform-defined, visible to the fan, and safe to pass to ranking/ad systems as a policy constraint. |
+| Explicit interests | Core Fan Vault state that may be used for startup tiles and ranking when app grant and privacy mode allow. |
+| Inferred interests | Stored as derived tokens; raw behavior remains in Private Event Vault unless explicit access is granted. |
+| Disliked interests | Strong suppression signal in Core Fan Vault; ranking should honor it before engagement or provider scores. |
+| Disliked creators / muted creators | Creator-level suppression signal distinct from unfollow and block; apps must make it easy to change. |
+| External provider candidates | Allowed only up to the platform intent's provider quota and certification scope. |
+| Host content performance metadata | Public/aggregate fields such as trending, being watched now, fresh, total view count, velocity, and completion can be used where content is eligible. |
+| Raw private behavior | Never exported to external recommendation providers; in-vault ranking or derived summaries require grants and receipts. |
 
 ## 5. User Stories
 
@@ -127,6 +147,38 @@ End state:
 
 - Clean-room reporting returns permitted aggregate metrics.
 - `DataAccessReceipt` records access.
+
+### Story 5A: Fan reviews session intent data posture
+
+As a fan, I want to know what data a selected session intent can use before ranking starts.
+
+End state:
+
+- `SessionIntentDisclosure` shows platform intent, active interests, dislike filters, creator/provider blend, and allowed data classes.
+- Audience Data Firewall blocks data classes not allowed by privacy mode or grants.
+- Private vault ranking uses `PrivateRankingAPI` and creates `DataAccessReceipt` where required.
+
+### Story 5B: Fan controls interest and dislike data
+
+As a fan, I want to see and edit interests, disliked topics, disliked creators, and muted recommendation providers.
+
+End state:
+
+- Fan Vault exposes interest and dislike records.
+- Startup tiles and feed ranking honor fan edits.
+- Raw behavior evidence can stay private while derived interest tokens remain portable.
+- Fan can export or delete interest/dislike records.
+
+### Story 5C: Fan grants creator interest data selectively
+
+As a fan, I want to decide which creators or creator categories can use my interests, likes, dislikes, and ad preferences for creator-approved ads, giveaways, and promotions.
+
+End state:
+
+- Creator requests show requested fields, purpose, retention, ad-use flag, sponsor/offer context, and alternate path where required.
+- Fan can approve, deny, narrow, revoke, or set creator-category defaults.
+- Audience Data Firewall exposes only creator-scoped approved fields and creates `DataAccessReceipt`.
+- Creator and sponsor tools cannot use interests/dislikes unless the fan grant allows that purpose.
 
 ### Story 6: Fan limits creator relationship visibility
 
@@ -233,6 +285,31 @@ Steps:
 8. `DataDashboard` shows fan-visible access/export history where disclosure is required.
 9. Later revocation, block, or deletion changes future export eligibility and creates `CreatorRelationshipActionRecord`.
 
+### Workflow 2C: Creator interest-data grant for ads and promotions
+
+Actors:
+
+- Creator
+- Creator Studio
+- Fan
+- Fan App Settings
+- Fan Interest Profile API
+- ConsentGrantAPI
+- Creator Audience API
+- Audience Data Firewall
+- Receipt Ledger
+
+Steps:
+
+1. Creator creates `AudienceDataGrantRequest` for explicit interests, inferred interests, liked/disliked content, liked/disliked creators, muted providers, or ad preferences.
+2. Request declares purpose, field list, creator category, retention, ad-use flag, sponsor context, and any giveaway or promotional value.
+3. Fan App settings and relevant campaign surfaces show the request with approve, deny, narrow, and category-default actions.
+4. Fan decision creates or updates `creator_interest_data` consent grant, or records a denial.
+5. `AudienceDataFirewallPolicy` checks fan privacy mode, age/region policy, sensitive creator defaults, relationship state, blocks, category policies, and grant state.
+6. `CreatorAudienceAPI` can query only approved creator-scoped fields or aggregate counts; raw Private Event Vault behavior is never exported.
+7. If access is allowed, `DataAccessReceipt` records actor, creator, grant id, fields, purpose, ad-use flag, destination, retention, and revocation state.
+8. Fan can revoke future access from settings; Creator Audience API omits revoked fields from later ad targeting, promotions, exports, and reports.
+
 ### Workflow 3: Campaign data grant
 
 Actors:
@@ -272,14 +349,17 @@ Actors:
 Steps:
 
 1. Fan selects free personalized, no-ad premium, or premium private mode.
-2. If a paid mode is selected, Fan Wallet records `PaymentReceipt` and `EntitlementLedgerAPI` activates `PremiumNoAdEntitlement` or `PrivateVaultEntitlement`.
-3. Free personalized mode allows scoped personalization through explicit `DataUseGrant` and required `DataAccessReceipt`.
-4. No-ad premium disables ad targeting and ad delivery on premium surfaces while preserving neutral search and fan-controlled recommendations.
-5. Premium private mode restricts grant defaults, blocks raw external recommendation data, and keeps behavior inside stricter Private Event Vault boundaries.
-6. `FanScopedRecommendationAPI` ranks only eligible/trusted candidates; if private behavior is used, `PrivateRankingAPI` runs in-vault.
-7. Search history is stored only if fan policy allows; `SearchReceipt` remains audit/utility funding only and cannot become paid ranking.
-8. AI follows `FanAIMemoryPolicy`, `AIConversationPolicy`, no-training defaults, and limited-memory defaults.
-9. `VaultServiceReceipt` and utility records support private-mode infrastructure costs where applicable.
+2. Fan may also select a startup content tile; the resulting `SessionIntent` contains platform intent, active interest tokens, and dislike filters that are evaluated separately from privacy mode.
+3. If a paid privacy mode is selected, Fan Wallet records `PaymentReceipt` and `EntitlementLedgerAPI` activates `PremiumNoAdEntitlement` or `PrivateVaultEntitlement`.
+4. Free personalized mode allows scoped personalization through explicit `DataUseGrant` and required `DataAccessReceipt`.
+5. No-ad premium disables ad targeting and ad delivery on premium surfaces while preserving neutral search and fan-controlled recommendations.
+6. Premium private mode restricts grant defaults, blocks raw external recommendation data, and keeps behavior inside stricter Private Event Vault boundaries.
+7. `RecommendationDataPosturePolicy` declares allowed data classes for the selected platform intent, active interests, dislike filters, and provider candidate sources.
+8. `AudienceDataFirewallPolicy` applies the stricter of session intent posture, privacy mode, fan grants, age/region policy, vault policy, and platform intent policy.
+9. `FanScopedRecommendationAPI` ranks only eligible/trusted candidates; if private behavior is used, `PrivateRankingAPI` runs in-vault.
+10. Search history is stored only if fan policy allows; `SearchReceipt` remains audit/utility funding only and cannot become paid ranking.
+11. AI follows `FanAIMemoryPolicy`, `AIConversationPolicy`, no-training defaults, and limited-memory defaults.
+12. `VaultServiceReceipt` and utility records support private-mode infrastructure costs where applicable.
 
 ### Workflow 5: Data export/delete
 
@@ -311,6 +391,7 @@ Steps:
 - Creator Plugins / Extensions / Campaign Layer: extensions request `ExtensionPermissionGrant`, `CampaignDataGrant`, `DataUseGrant`, and `DataAccessReceipt`.
 - Brand/Sponsor/Advertiser Tools: sponsor reporting must use `CampaignDataGrant`, `CleanRoomMeasurementAPI`, `EligibilityAPI`, and sponsor receipts.
 - AI Layer: `FanAIMemoryPolicy`, `AIConversationPolicy`, `AIContentPolicy`, and no-training defaults depend on fan and creator policies.
+- Creator-Led Recommendation Economy: `PlatformIntent`, `FanInterestProfile`, `SessionIntent`, `RecommendationModePolicy`, `RecommendationDataPosturePolicy`, `AdLoadPolicy`, and `PrivateRankingAPI` require data-rights enforcement.
 - Trust, Safety, Fraud, and Compliance: `ProviderAuditAPI`, `AppAuditAPI`, `DisputeResolutionAPI`, and incident workflows enforce data violations.
 
 ## 8. FAQ
@@ -325,6 +406,11 @@ Steps:
 - `SensitiveRelationshipDefaultPolicy`: stricter relationship visibility and direct-contact defaults for minors, vulnerable users, sensitive creator categories, private-mode users, and regulated regions.
 - `CreatorAudienceExportPolicy`: field, destination, retention, watermarking, no-resale, revocation, and breach-notice rules for creator audience exports.
 - `ConsentGrantAPI`: grants and revocations.
+- `CreatorDataGrantRequestAPI`: creator-originated request lifecycle for fan interests, likes, dislikes, disliked creators, muted providers, and ad preferences.
+- `CreatorInterestDataGrant`: creator-scoped grant that records approved fields, purpose, retention, ad-use flag, sponsor/offer context, category policy source, and revocation state.
+- `CreatorCategoryPermissionPolicy`: fan defaults that allow, deny, or ask for selected creator categories before creator interest-data requests are shown.
+- `FanAdPreferencesAPI`: fan-owned ad preference records used for settings, ad posture, and creator-approved ad relevance when explicitly granted.
+- `PermissionedAudienceInterestDataAPI`: creator-side query surface that returns only approved creator-scoped fields or aggregate counts and never exports raw private behavior.
 - `DataUseGrant`: purpose-bound access.
 - `CampaignDataGrant`: campaign-specific data exchange.
 - `DataAccessReceipt`: mandatory signed audit record for actual grant-protected or private data access, including actor, provider key, grant id, purpose, data class, vault, timestamp, certification scope, retention policy, and dispute reference.
@@ -337,7 +423,10 @@ Steps:
 - `CreatorCRMExportAPI`: permissioned creator audience export gated by `FollowVisibilityPolicy`, `DirectContactGrant`, `CreatorAudienceExportPolicy`, access history, revocation state, and retention rules.
 - `AudienceAnalyticsAPI`: aggregate insights.
 - `PairwiseIdentityAPI`: creator-scoped identifiers.
-- `DerivedInterestTokenAPI`: privacy-preserving signals.
+- `FanInterestProfileAPI`: explicit interests, inferred interest tokens, disliked interests, disliked creators, muted providers, source, confidence, and recency.
+- `DerivedInterestTokenAPI`: privacy-preserving signals derived from private behavior.
+- `DislikedInterestToken`: fan-owned suppression signal for ranking and startup tiles.
+- `DislikedCreatorRecord`: creator-level suppression signal distinct from unfollow, mute, and block.
 - `PrivateRankingAPI`: in-vault recommendations.
 - `FanScopedRecommendationAPI`: ranks eligible/trusted recommendation candidates while respecting fan settings.
 - `CommunityFeedAPI`: optional community candidates that remain subject to fan and data-rights policy.
@@ -361,4 +450,11 @@ Steps:
 - `MigrationPlanAPI`: provider migration planning.
 - `MigrationReceipt`: migration/export completion evidence.
 - `DataDashboard`: fan-facing access, revoke, export, and delete controls.
+- `StartupTileSurfaceAPI`: returns content tiles using only allowed platform intent, fan interests/dislikes, follows, and public/trending context.
+- `SessionIntentAPI`: creates, switches, clears, and optionally saves the fan's current platform intent plus scoped interest context.
+- `SessionIntent`: selected platform intent, active interests, dislike filters, and policy envelope for the current session.
+- `SessionIntentDisclosure`: fan-facing disclosure of platform intent, interests/dislikes, and data posture before ranking.
+- `RecommendationModePolicy`: policy-level data posture and session constraints.
+- `RecommendationDataPosturePolicy`: data classes allowed by each session intent policy.
+- `ModeDisclosureCard`: compatibility disclosure for apps that expose explicit recommendation modes.
 - `ProviderAuditAPI`: detects misuse and verifies deletion/export compliance.

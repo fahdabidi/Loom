@@ -41,10 +41,9 @@ The initial spec set mirrors the system components named by the architecture doc
 - Creator: Creator Channel Registry, Creator Metadata, Creator Audience.
 - Content: Content Host, Playback Authorization.
 - Monetization: Entitlement Ledger, Receipt Ledger, Settlement Engine.
-- Discovery: Search, Recommendation/Referral, AI Gateway.
+- Discovery: Search, Recommendation/Referral, External Recommendation Provider, AI Gateway.
 - Ecosystem: Provider Registry, Certification, Extension Registry, Extension Runtime.
 - Campaigns: Campaign API, Sponsor Campaign API.
 - Safety: Trust and Safety, Fraud.
 - Portability: Migration/Export, Provider Exit.
 - Governance: Governance, Audit.
-

@@ -5,7 +5,7 @@ Source workflow map: `docs/Architecture/02-workflow-inventory-and-function-map.m
 
 ## 1. Purpose
 
-This document defines transaction packet models for public search, AI-assisted discovery, creator archive Q&A, creator AI tooling, recommendation workbenches, private in-vault assistance, AI provider certification, creator-led referrals, community feed subscriptions, recommendation abuse review, search policy, and search audit probes.
+This document defines transaction packet models for public search, AI-assisted discovery, creator archive Q&A, creator AI tooling, recommendation workbenches, session intent feeds, private in-vault assistance, AI provider certification, creator-led referrals, community feed subscriptions, recommendation abuse review, search policy, and search audit probes.
 
 ## 2. Functional System Diagram
 
@@ -21,12 +21,16 @@ flowchart TB
   ContentHost[Content Host]
   SearchIndex[Public Search Index]
   SearchAPI[Search API]
+  TileService[Startup Tile Service]
   AIGateway[AI Gateway]
   AIProvider[Certified AI Provider]
   RecEngine[Recommendation Engine]
+  Scoring[Content Scoring Service]
+  ExternalRec[Certified External Recommendation Providers]
   ReferralEngine[Referral Engine]
   FanVault[Fan Vault]
   DataFirewall[Audience Data Firewall]
+  AdDecision[Ad Decision Boundary]
   ProviderRegistry[Provider Capability Registry]
   Audit[Search / AI Audit]
   Moderation[Trust And Safety]
@@ -44,16 +48,24 @@ flowchart TB
   CMH --> SearchIndex
   ContentHost --> SearchIndex
   FanApp --> SearchAPI
+  FanApp --> TileService
   FanApp --> AIGateway
   FanApp --> RecEngine
   FanApp --> FanVault
   SearchAPI --> SearchIndex
   SearchAPI --> CMH
+  TileService --> FanVault
+  TileService --> RecEngine
   AIGateway --> AIProvider
   AIGateway --> SearchIndex
   AIGateway --> FanVault
   RecEngine --> CMH
   RecEngine --> ReferralEngine
+  RecEngine --> Scoring
+  RecEngine --> ExternalRec
+  Scoring --> ContentHost
+  Scoring --> FanVault
+  RecEngine --> AdDecision
   ReferralEngine --> ReceiptLedger
   ReceiptLedger --> Settlement
   ProviderRegistry --> SearchAPI
@@ -71,9 +83,12 @@ flowchart TB
 | --- | --- |
 | `actorContext` | Creator, source creator, destination creator, fan, app, provider, or governance actor and session. |
 | `queryContext` | Search query, AI prompt, language, filters, app context, safety state, and request id. |
-| `sourceContext` | Channel, content, transcript, metadata, fan-vault memory, and policy versions used as sources. |
+| `sourceContext` | Channel, content, title, `ContentManifest.summary`, transcript, metadata, fan-vault memory, and policy versions used as sources. |
 | `policyContext` | Search access policy, AI content policy, privacy mode, indexing consent, data retention, and safety constraints. |
-| `recommendationContext` | Source creator, destination creator, audience segment, recommendation surface, score, and disclosure text. |
+| `intentContext` | Platform intent id, session intent id, active interest tokens, active dislike filters, creator/provider blend, storage preference, and session state. |
+| `interestContext` | Fan-owned interests, disliked interests, liked/disliked creators, muted providers, confidence/source metadata, and vault policy. |
+| `recommendationContext` | Source creator, destination creator, recommendation provider, audience segment, recommendation surface, score, disclosure text, and session intent. |
+| `adContext` | Platform intent ad posture, ad load/breadth policy, creator-approved-only flag, sponsor eligibility boundary, and no-behavioral-targeting flag. |
 | `referralContext` | Referral terms, attribution window, eligible action, destination creator, source creator, and settlement rule. |
 | `receiptContext` | Impression, click, conversion, AI source use, abuse signal, and settlement receipts. |
 | `auditContext` | Correlation id, provider capability version, model/provider id, prompt/source log policy, and probe evidence. |
@@ -90,7 +105,21 @@ flowchart TB
 | `AICopilotAPI` | Creator drafting, packaging, clipping, and publishing assistance under creator policy. |
 | `AIProviderCertificationRecord` | Certified model/provider capabilities, restrictions, audit scope, and source-handling obligations. |
 | `FanVaultAssistantAPI` | Private fan-owned AI assistance that reads only fan-granted in-vault data. |
+| `FanRecommendationMCPServer` | Fan-controlled AI tool surface for trusted recommendation filtering over eligible creator/follow/recommendation candidates; may use `ContentManifest.summary` and fan title-deemphasis instructions without adding new candidate sources. |
+| `ContentManifest.summary` | Required creator-approved short summary used by search, fan apps, recommendation scoring, MCP agents, and accessibility surfaces to evaluate content without over-weighting title wording. |
+| `PlatformIntentRegistry` | Certified platform-defined session motives and policy effects. |
+| `StartupTileSurfaceAPI` | Returns launch and mid-session content tiles from platform intents, allowed fan interests/dislikes, follows, and public/trending context. |
+| `ContentTile` | Fan-facing tile with platform intent, active interest tokens, dislike filters, why-suggested explanation, and disclosure summary. |
+| `FanInterestProfileAPI` | Reads and updates fan-owned interests, disliked interests, liked/disliked creators, muted providers, confidence, source, and recency. |
+| `SessionIntentAPI` | Creates, switches, clears, and optionally saves the current platform intent plus scoped interest context. |
+| `SessionIntent` | Current-session object carrying platform intent, interest tokens, dislike filters, creator/provider blend, ad posture, score weights, and session shape. |
+| `SessionIntentDisclosure` | Fan-facing explanation of purpose, creator/provider blend, data posture, ad posture, and session shape. |
+| `SessionIntentAdContext` | Ad posture, contextual category, creator-approved-only flag, and ad-load/breadth constraints passed to ad decision systems without raw private behavior. |
+| `ContentScoringService` | Scores candidates by platform intent, fan interests/dislikes, source, `ContentManifest.summary` relevance, title-risk/title-summary mismatch, creator reputation, provider score, and host performance metadata. |
+| `ContentScoreExplanation` | Fan-facing why-shown factors and suppression reasons. |
+| `FanContentFeedbackAPI` | Like, dislike, not interested, flag, save, follow, unfollow, mute, block, and provider mute feedback. |
 | `RecommendationGraphAPI` | Creates, reads, ranks, and serves creator-led recommendations. |
+| `RecommendationModePolicy` | Machine-readable policy envelope behind a session intent. |
 | `ReferralTermsManifest` | Destination creator's referral offer, attribution rules, eligibility, caps, and settlement contract. |
 | `RecommendationReceipt` | Signed record for recommendation impression, click, follow, purchase, or conversion. |
 | `ReferralSettlementReceipt` | Settlement input for referral revenue allocation. |
@@ -105,6 +134,7 @@ flowchart TB
 | `02/W4` | Creator publishes recommendation/referral. | Creator Studio -> Recommendation Engine -> Referral Engine -> Metadata Host. | Recommendation object, referral binding, disclosure. | Recommendation becomes eligible for feeds and attribution. |
 | `03/W5` | Fan searches or asks for AI-assisted discovery. | Fan App -> Search API -> Search Index -> AI Gateway. | Query telemetry under privacy policy. | Results and optional AI answer returned. |
 | `03/W9` | Fan receives creator-led recommendation. | Fan App -> Recommendation Engine -> Metadata Host -> Referral Engine. | Impression/click receipt when eligible. | Fan sees disclosed recommendation. |
+| `03/W9A` | Fan chooses platform intent and interests from startup tiles. | Fan App -> Startup Tile Service -> Fan Vault -> Recommendation Engine -> Scoring -> Data Firewall -> Ad Decision boundary. | Session intent record, optional saved preference, interest feedback, discovery receipts. | Fan sees an intent-and-interest-specific feed with score explanations and policy-safe ads. |
 | `03/W11` | Fan asks AI archive question. | Fan App -> AI Gateway -> policy/source resolver -> certified AI provider. | AI source-use receipt if monetized or audited. | Answer with citations/limits returned. |
 | `11/W1` | Creator enables archive Q&A. | Creator Studio -> AI Gateway -> Metadata Host -> index builder. | AI policy, source grant, index job. | Q&A surface enabled. |
 | `11/W2` | Fan uses AI search. | Fan App -> AI Gateway -> Search API -> AI Provider. | Query/source audit subject to fan mode. | AI response and source links returned. |
@@ -117,6 +147,7 @@ flowchart TB
 | `12/W1` | Destination creator publishes referral terms. | Creator Studio -> Referral Engine -> Metadata Host. | Referral terms manifest. | Terms become discoverable to source creators. |
 | `12/W2` | Source creator publishes recommendation. | Creator Studio -> Recommendation Engine -> Referral Engine. | Recommendation, referral binding, disclosure. | Recommendation distributed to selected surfaces. |
 | `12/W3` | Fan receives trusted recommendation. | Fan App -> Recommendation Engine -> Fan controls -> Metadata Host. | Impression/click/follow receipts as eligible. | Fan can inspect source and opt out. |
+| `12/W3A` | Fan switches platform intent, interest, or dislike filters mid-session. | Fan App -> SessionIntentAPI -> Recommendation Engine -> Scoring -> Ad Decision boundary. | Superseded/active session intent state and optional interest/dislike feedback. | Feed is re-ranked under the new platform intent and interest context. |
 | `12/W4` | Referral conversion settles. | Referral Engine -> Receipt Ledger -> Settlement Engine. | Conversion and settlement receipts. | Source/destination allocation calculated. |
 | `12/W5` | Fan subscribes to community feed. | Fan App -> Community Feed API -> Recommendation Engine. | Feed subscription and preferences. | Feed begins delivering creator/community recommendations. |
 | `12/W6` | Recommendation abuse is reviewed. | Report -> Trust And Safety -> Recommendation Engine -> Referral Engine. | Abuse case, enforcement action, adjustment receipt. | Content/reward visibility is preserved, limited, or reversed. |
@@ -714,6 +745,61 @@ sequenceDiagram
 4. The provider registry records pass/fail evidence against the certified scope.
 5. Serious failures open an incident and can limit search certification until remediation.
 
+### 6.24 `03/W9A` / `12/W3A`: Startup Tile Selection And Intent-Aware Scoring
+
+```mermaid
+sequenceDiagram
+  actor Fan
+  participant App as Fan App
+  participant Tiles as StartupTileSurfaceAPI
+  participant Vault as Fan Vault
+  participant Intent as SessionIntentAPI
+  participant ADF as Audience Data Firewall
+  participant Rec as Recommendation Engine
+  participant MCP as FanRecommendationMCPServer
+  participant Provider as External Recommendation Providers
+  participant Score as Content Scoring Service
+  participant Host as HostingTrendingStatsAPI
+  participant Ad as Ad Decision Boundary
+  participant Ledger as Receipt Ledger
+
+  Fan->>App: Open app or switch what they want now
+  App->>Tiles: Request startup content tiles
+  Tiles->>Vault: Read allowed FanInterestProfile and dislikes
+  Tiles-->>App: ContentTile list with platform intent and interests
+  Fan->>App: Select tile, dislike interest, mute creator/provider, or clear
+  App->>Intent: Create SessionIntent with PlatformIntent and interest filters
+  Intent->>ADF: Check platform intent and interest posture against policy
+  ADF-->>Intent: Allowed posture or policy denial
+  Intent->>Rec: Request candidates for SessionIntent
+  Rec->>Provider: Pull external candidates within platform-intent quota
+  Rec->>Host: Pull aggregate performance stats if policy permits
+  Rec->>MCP: Optional fan instruction: deemphasize clickbait/ragebait titles
+  MCP-->>Rec: Metadata weighting preference, not new candidates
+  Rec->>Score: Score candidates using summary, source, title risk, and performance
+  Score->>Vault: Apply interest match and dislike suppression
+  Score-->>Rec: Ranked items and ContentScoreExplanation
+  Rec->>Ad: Pass SessionIntentAdContext and creator-approved-only posture
+  Rec-->>App: Feed items, score explanations, disclosures, ad constraints
+  App->>Ledger: DiscoveryReceipt or feedback receipt when eligible
+  App-->>Fan: Render intent-and-interest-specific feed
+```
+
+1. Fan App opens with startup tiles instead of a generic engagement feed.
+2. `StartupTileSurfaceAPI` combines certified `PlatformIntent` definitions with allowed `FanInterestProfile` tokens, disliked interests, disliked creators, muted providers, follows, and public/trending context.
+3. A `ContentTile` contains one platform intent and optional interest/dislike filters, such as Learning + Tennis, Reviews + Video Games, Entertainment + Comedy, Creator Updates, or Friends and Family.
+4. Fan selection creates a `SessionIntent` with platform intent, active interest tokens, active dislike filters, creator/provider blend, ad posture, and storage preference.
+5. Audience Data Firewall evaluates platform intent and interest/dislike posture against privacy mode, age/region policy, grants, vault policy, and direct-connection restrictions.
+6. Recommendation Engine fetches followed-creator candidates, creator recommendations, community feed candidates, direct-connection candidates, neutral search-derived candidates, certified external provider candidates, and host performance signals only as permitted by the platform intent.
+7. Candidate metadata includes title plus required creator-approved `ContentManifest.summary`; fan agents and recommendation engines may use the summary for relevance instead of over-weighting promotional title wording.
+8. If the fan uses a Claude, ChatGPT, Gemini, or other MCP-based recommendation agent and instructs it to ignore clickbait/ragebait titles, `FanRecommendationMCPServer` returns metadata weighting preferences only; it does not add candidates outside followed creators, trusted creators, or creator-authored recommendations for Fan Recommendation AI.
+9. `ContentScoringService` assigns scores using followed creator, creator recommendation, external provider score where allowed, content summary relevance, title risk/title-summary mismatch, host trending/freshness/being-watched/view-count signals, creator reputation, fan interest relevance, dislike suppression, and safety labels.
+10. Platform intent sets first-line protection by limiting provider quota and engagement-maximizing signals; creator reputation, summary/title mismatch, and safety labels are second-line defenses against clickbait and ragebait.
+11. Recommendation Engine sends only `SessionIntentAdContext` and ad posture to the ad decision boundary; raw private behavior does not become ad targeting input.
+12. Ad Decision still requires `CreatorAdPolicy`, sponsor policy, safety labels, and campaign compliance before any ad or sponsor placement can appear.
+13. Fan App renders the platform intent label, title, summary where appropriate, active interests, source disclosures, funding/referral labels, score explanation, and controls to like, dislike, flag, follow, unfollow, mute, block, switch, save, or clear.
+14. Discovery, referral, search, data-access, interest-feedback, or safety receipts are created only where the downstream workflow requires them.
+
 ## 7. Error And Recovery Behavior
 
 | Failure mode | Recovery behavior |
@@ -722,5 +808,8 @@ sequenceDiagram
 | AI provider cannot satisfy source or retention policy. | `AIGateway` denies the call or routes to another certified provider. |
 | Referral terms changed after recommendation publication. | Settlement uses the terms version bound in the recommendation receipt. |
 | Fan privacy mode blocks personalization. | Search and AI return public-only results and label personalization as unavailable. |
+| Session intent requests blocked data. | Audience Data Firewall narrows the data posture, returns a policy-safe disclosure, or denies the intent if no compliant version exists. |
+| Fan dislikes an interest or creator. | Fan Vault records a negative signal and scoring suppresses matching candidates without deleting required receipts. |
+| External recommendation provider exceeds intent quota. | Recommendation Engine drops excess provider candidates and records audit evidence for provider/app conformance. |
 | Recommendation abuse case is opened. | Recommendation distribution and referral eligibility can be frozen until outcome. |
 | Audit probe fails. | Provider registry marks remediation, limitation, suspension, or revocation state. |
