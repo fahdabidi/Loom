@@ -101,6 +101,17 @@ End state:
 - Sponsor disclosure is shown.
 - Delivery and conversion receipts are generated where permitted.
 
+### Story 2A: Creator sets ad eligibility policy
+
+As a creator, I want to control which ad categories and brands are eligible on my channel and content so sponsorships align with my values and my audience's trust.
+
+End state:
+
+- Creator defines `CreatorAdPolicy` with allowed and blocked categories, brands, formats, and surfaces.
+- Sponsor campaigns are eligible only where `CreatorAdPolicy` allows them; `SessionIntent` can adjust ad load, contextual category, and creator/provider breadth but cannot make an ineligible ad eligible.
+- Eligibility is contextual to creator and content, never fan behavioral targeting.
+- Creator can review and update the policy and see currently eligible sponsors and categories.
+
 ### Story 3: Fan joins sponsor giveaway
 
 As a fan, I want to join a sponsored giveaway with clear data terms.

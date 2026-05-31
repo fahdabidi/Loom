@@ -138,6 +138,28 @@ End state:
 - Fan apps can render the content according to its content type and access mode.
 - Search, AI, monetization, and playback rules are stored in manifests.
 
+### Story 2A: Creator publishes content with a required summary
+
+As a creator, I want to add or generate a required content summary when I publish so fans and AI agents can evaluate my content by its substance, not just its title, and my content ranks better for the fans who care about it.
+
+End state:
+
+- Publishing requires a creator-approved `ContentManifest.summary` beside the title.
+- Creator can write the summary or generate a draft with AI and edit it before approving.
+- Fan apps, recommendation engines, fan AI agents, and search snippets can use the summary for relevance.
+- Content without a valid summary cannot be published.
+
+### Story 2B: Creator imports an existing catalog
+
+As a creator, I want to import my existing catalog metadata from another platform so my back-catalog is immediately discoverable and AI-queryable on Loom without re-uploading everything.
+
+End state:
+
+- Creator links an external platform or uploads an export file.
+- Public metadata (titles, descriptions, thumbnails, links, timestamps) imports into `ExternalContentReferenceSchema` and `ContentManifest` records without claiming ownership of external media.
+- Imported items receive required summaries and creator-set search/AI policies before they become search- or AI-eligible.
+- The detailed import workflow follows Migration Strategy from Existing Platforms.
+
 ### Story 3: Creator launches memberships
 
 As a creator, I want to define membership tiers and member-only content so I can monetize recurring fan support without sending fans to another platform.
@@ -159,6 +181,17 @@ End state:
 - Direct-contact and CRM exports require valid `DirectContactGrant`.
 - `CreatorAudienceExportPolicy` limits fields, destination, retention, resale, and breach obligations.
 - Fans who unfollow, block, revoke contact, or request deletion are removed from future eligible exports.
+
+### Story 3B: Creator sets channel and content ad policy
+
+As a creator, I want to define which ad categories and brands are allowed or blocked on my channel and content so fans only see ads that align with my values and I stay in control of my monetization environment.
+
+End state:
+
+- Creator defines `CreatorAdPolicy` with allowed/blocked ad categories, brands, formats, and surfaces.
+- Only ads that satisfy `CreatorAdPolicy` are eligible on the creator's content; `SessionIntent` can change ad load and contextual category but cannot override the policy.
+- Ad eligibility uses content and creator context, not fan behavioral targeting.
+- Creator can update the policy and see which sponsors and categories are currently eligible.
 
 ### Story 4: Creator installs a giveaway extension
 
@@ -191,6 +224,16 @@ End state:
 - Creator sees gross revenue by source.
 - Provider costs, utility fees, adjustments, and net payout are visible.
 - Playback, ad, premium no-ad, AI, referral, campaign, and membership receipts are traceable.
+
+### Story 6A: Creator views revenue by session intent
+
+As a creator, I want to see my revenue broken down by the session intent fans were in (Creator Updates, Entertainment, Learn, Search, and others) so I can understand which audience contexts drive my income and optimize accordingly.
+
+End state:
+
+- Receipts carry the session intent context in effect at the time of the monetized event.
+- `CreatorPayoutStatement` and the revenue dashboard can break revenue down by session intent in addition to source.
+- Intent breakdown is aggregate and never exposes individual fan identity or raw behavior.
 
 ### Story 7: Creator upgrades hosting control
 

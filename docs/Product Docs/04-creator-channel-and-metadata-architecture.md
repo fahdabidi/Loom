@@ -184,7 +184,7 @@ Steps:
 
 1. Creator uploads or composes content.
 2. Content Host ingests media or stores content body.
-3. Creator Studio creates `ContentManifest`.
+3. Creator Studio creates `ContentManifest`, requiring a creator-approved `summary` beside the title; publishing is blocked until a valid summary is provided.
 4. Creator configures access, search, AI, and monetization rules.
 5. Creator Metadata Host stores metadata.
 6. `ContentCatalogAPI` exposes public/private views, and `PublicCatalogAPI` exposes eligible public metadata.

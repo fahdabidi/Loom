@@ -458,7 +458,7 @@ Steps:
 
 - `ReceiptLedger`: all monetization receipt ingestion.
 - `SettlementEngineAPI`: revenue allocation by manifest and contract.
-- `CreatorPayoutStatement`: creator gross-to-net.
+- `CreatorPayoutStatement`: creator gross-to-net, with revenue breakdown by source and by session intent.
 - `ProviderPayoutStatement`: provider service revenue.
 - `FanSubscriptionAllocationStatement`: premium/no-ad allocation.
 - `UtilityFeePolicy` and `UtilityFundingReceipt`: shared infrastructure funding. Utility fees for search cannot create search ads, paid ranking, per-click search monetization, or ordering advantages.
