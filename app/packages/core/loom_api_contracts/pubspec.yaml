@@ -1,0 +1,8 @@
+name: loom_api_contracts
+description: API DTOs and abstract clients for the Loom demo.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5

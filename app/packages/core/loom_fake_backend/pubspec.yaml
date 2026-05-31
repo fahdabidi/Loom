@@ -1,0 +1,14 @@
+name: loom_fake_backend
+description: In-process fake API implementations for the Loom demo.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  loom_api_contracts:
+    path: ../loom_api_contracts
+  loom_local_store:
+    path: ../loom_local_store

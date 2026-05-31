@@ -1,0 +1,51 @@
+name: loom_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.11.5
+
+dev_dependencies:
+  melos: ^7.8.0
+
+workspace:
+  - apps/loom_demo
+  - packages/core/loom_api_contracts
+  - packages/core/loom_local_store
+  - packages/core/loom_seed_data
+  - packages/core/loom_fake_backend
+  - packages/core/loom_design_system
+  - packages/core/loom_app_shell
+  - packages/features/fan/feature_fan_onboarding
+  - packages/features/fan/feature_discovery
+  - packages/features/fan/feature_creator_channel
+  - packages/features/fan/feature_playback
+  - packages/features/fan/feature_ai_qa
+  - packages/features/fan/feature_wallet
+  - packages/features/fan/feature_data_rights
+  - packages/features/fan/feature_campaigns
+  - packages/features/creator/feature_creator_onboarding
+  - packages/features/creator/feature_creator_publishing
+  - packages/features/creator/feature_creator_monetization
+  - packages/features/creator/feature_creator_ads
+  - packages/features/creator/feature_creator_recommendations
+  - packages/features/creator/feature_creator_campaigns
+  - packages/features/creator/feature_creator_ai
+  - packages/features/creator/feature_creator_audience
+  - packages/features/creator/feature_creator_revenue
+  - packages/features/creator/feature_creator_export
+  - packages/tooling/loom_lints
+
+melos:
+  scripts:
+    analyze:
+      run: melos exec --concurrency=1 --fail-fast -- "flutter analyze ."
+      description: Analyze every package.
+    test:
+      run: melos exec --concurrency=1 --fail-fast --dir-exists=test -- "flutter test"
+      description: Run package tests.
+    test:integration:
+      run: cd apps/loom_demo && flutter test integration_test -d emulator-5554
+      description: Run Phase integration tests.
+    lint:boundaries:
+      run: dart run packages/tooling/loom_lints/bin/check_boundaries.dart
+      description: Enforce feature and design-system import boundaries.

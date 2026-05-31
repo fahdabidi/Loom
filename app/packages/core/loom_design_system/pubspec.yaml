@@ -1,0 +1,12 @@
+name: loom_design_system
+description: Shared Loom demo design tokens and components.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter

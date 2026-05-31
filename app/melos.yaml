@@ -1,0 +1,22 @@
+name: loom_workspace
+
+packages:
+  - apps/*
+  - packages/core/*
+  - packages/features/fan/*
+  - packages/features/creator/*
+  - packages/tooling/*
+
+scripts:
+  analyze:
+    run: melos exec --concurrency=1 --fail-fast -- "flutter analyze ."
+    description: Analyze every package.
+  test:
+    run: melos exec --concurrency=1 --fail-fast --dir-exists=test -- "flutter test"
+    description: Run package tests.
+  test:integration:
+    run: cd apps/loom_demo && flutter test integration_test -d emulator-5554
+    description: Run Phase integration tests.
+  lint:boundaries:
+    run: dart run packages/tooling/loom_lints/bin/check_boundaries.dart
+    description: Enforce feature and design-system import boundaries.

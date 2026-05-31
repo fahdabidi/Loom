@@ -1,0 +1,32 @@
+name: loom_demo
+description: Loom Creator Studio and Fan App demo.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  feature_creator_channel:
+    path: ../../packages/features/fan/feature_creator_channel
+  flutter:
+    sdk: flutter
+  loom_app_shell:
+    path: ../../packages/core/loom_app_shell
+  loom_fake_backend:
+    path: ../../packages/core/loom_fake_backend
+  loom_local_store:
+    path: ../../packages/core/loom_local_store
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  sqlite3_flutter_libs: ^0.5.39
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

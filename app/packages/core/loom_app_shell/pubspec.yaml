@@ -1,0 +1,16 @@
+name: loom_app_shell
+description: Loom demo navigation shell and dependency registry.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  loom_api_contracts:
+    path: ../loom_api_contracts
+  loom_design_system:
+    path: ../loom_design_system

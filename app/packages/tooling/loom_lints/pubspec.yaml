@@ -1,0 +1,8 @@
+name: loom_lints
+description: Local boundary checks for the Loom demo workspace.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5

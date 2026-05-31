@@ -1,0 +1,24 @@
+[
+  {
+    "id": "creator_solar_sarah",
+    "handle": "solar-sarah",
+    "displayName": "Solar Sarah",
+    "vertical": "home-energy",
+    "avatarRef": "seed://avatars/solar-sarah"
+  },
+  {
+    "id": "creator_city_ferments",
+    "handle": "city-ferments",
+    "displayName": "City Ferments",
+    "vertical": "food",
+    "avatarRef": "seed://avatars/city-ferments"
+  },
+  {
+    "id": "creator_motion_lab",
+    "handle": "motion-lab",
+    "displayName": "Motion Lab",
+    "vertical": "fitness",
+    "avatarRef": "seed://avatars/motion-lab"
+  }
+]
+
