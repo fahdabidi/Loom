@@ -44,7 +44,12 @@ class _CreatorContentListScreenState extends State<CreatorContentListScreen> {
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(LoomSpacing.md),
+          padding: const EdgeInsets.fromLTRB(
+            LoomSpacing.md,
+            LoomSpacing.md,
+            LoomSpacing.md,
+            112,
+          ),
           itemBuilder: (context, index) {
             if (index == state.items.length) {
               return _LoadMoreRow(
@@ -61,6 +66,7 @@ class _CreatorContentListScreenState extends State<CreatorContentListScreen> {
                 summary: item.summary,
                 creatorName: item.creatorName,
                 contentTypeLabel: item.contentTypeLabel,
+                thumbnailRef: item.thumbnailRef,
               ),
             );
           },

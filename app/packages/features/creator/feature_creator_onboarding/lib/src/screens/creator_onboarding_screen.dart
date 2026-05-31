@@ -117,12 +117,15 @@ class _BodyForStep extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Channel: ${manifest?.displayName ?? ''}'),
-            Text('@${manifest?.handle ?? ''}'),
-            const SizedBox(height: LoomSpacing.md),
-            const Text(
-              'Managed hosting keeps the demo content available for fan playback in later phases.',
+            _StudioPreviewCard(
+              title: manifest?.displayName ?? '',
+              subtitle: '@${manifest?.handle ?? ''}',
+              body:
+                  'Managed hosting keeps demo media ready for playback, receipts, and later monetization phases.',
+              icon: Icons.cloud_done_outlined,
             ),
+            const SizedBox(height: LoomSpacing.md),
+            const _StudioChecklist(),
           ],
         );
       case CreatorOnboardingStep.complete:
@@ -131,11 +134,29 @@ class _BodyForStep extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Creator onboarding complete'),
-            if (channel != null) Text('Channel: ${channel.displayName}'),
-            if (channel != null) Text('@${channel.handle}'),
+            const _StudioPreviewCard(
+              title: 'Creator onboarding complete',
+              subtitle: 'Studio workspace ready',
+              body:
+                  'Your channel profile, handle, and hosting contract are ready for publishing setup.',
+              icon: Icons.check_circle_rounded,
+            ),
+            const SizedBox(height: LoomSpacing.md),
+            if (channel != null)
+              _StudioFactRow(
+                icon: Icons.badge_outlined,
+                text: 'Channel: ${channel.displayName}',
+              ),
+            if (channel != null)
+              _StudioFactRow(
+                icon: Icons.alternate_email_rounded,
+                text: '@${channel.handle}',
+              ),
             if (contract != null)
-              Text('Hosting: ${contract.provider} ${contract.status}'),
+              _StudioFactRow(
+                icon: Icons.cloud_done_outlined,
+                text: 'Hosting: ${contract.provider} ${contract.status}',
+              ),
           ],
         );
     }
@@ -165,7 +186,7 @@ class _PrimaryAction extends StatelessWidget {
 
     switch (controller.step) {
       case CreatorOnboardingStep.channel:
-        return FilledButton(
+        return FilledButton.icon(
           key: const ValueKey('creator_create_channel_button'),
           onPressed: () => controller.createChannel(
             displayName: displayNameController.text,
@@ -173,17 +194,144 @@ class _PrimaryAction extends StatelessWidget {
             description: descriptionController.text,
             vertical: verticalController.text,
           ),
-          child: const Text('Create creator channel'),
+          icon: const Icon(Icons.add_circle_outline_rounded),
+          label: const Text('Create creator channel'),
         );
       case CreatorOnboardingStep.hosting:
-        return FilledButton(
+        return FilledButton.icon(
           key: const ValueKey('creator_accept_hosting_button'),
           onPressed: controller.acceptManagedHosting,
-          child: const Text('Accept managed hosting'),
+          icon: const Icon(Icons.cloud_done_outlined),
+          label: const Text('Accept managed hosting'),
         );
       case CreatorOnboardingStep.complete:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class _StudioPreviewCard extends StatelessWidget {
+  const _StudioPreviewCard({
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final String body;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(LoomSpacing.lg),
+      decoration: BoxDecoration(
+        color: LoomColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: LoomColors.line),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: LoomColors.moss.withAlpha(34),
+            child: Icon(icon, color: LoomColors.moss),
+          ),
+          const SizedBox(width: LoomSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: LoomColors.mutedInk,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: LoomSpacing.sm),
+                Text(
+                  body,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: LoomColors.mutedInk,
+                    height: 1.28,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudioChecklist extends StatelessWidget {
+  const _StudioChecklist();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        _StudioFactRow(
+          icon: Icons.play_circle_outline_rounded,
+          text: 'Playback-ready demo hosting',
+        ),
+        _StudioFactRow(
+          icon: Icons.receipt_long_outlined,
+          text: 'Receipts available in later phases',
+        ),
+        _StudioFactRow(
+          icon: Icons.lock_outline_rounded,
+          text: 'Managed terms version: managed-v1',
+        ),
+      ],
+    );
+  }
+}
+
+class _StudioFactRow extends StatelessWidget {
+  const _StudioFactRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: LoomSpacing.sm),
+      child: Container(
+        padding: const EdgeInsets.all(LoomSpacing.md),
+        decoration: BoxDecoration(
+          color: LoomColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: LoomColors.line),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: LoomColors.ink),
+            const SizedBox(width: LoomSpacing.sm),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

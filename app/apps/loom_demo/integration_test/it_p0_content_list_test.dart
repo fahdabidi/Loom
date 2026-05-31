@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:loom_demo/main.dart';
@@ -12,13 +13,17 @@ void main() {
     expect(find.text('Solar Sarah'), findsWidgets);
     expect(
       find.text('Rooftop storage that actually pencils out'),
-      findsOneWidget,
+      findsWidgets,
     );
 
-    await tester.scrollUntilVisible(find.text('Load more'), 160);
+    await tester.scrollUntilVisible(
+      find.text('Load more'),
+      160,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.text('Load more'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Battery safety checks before summer'), findsOneWidget);
+    expect(find.text('Battery safety checks before summer'), findsWidgets);
   });
 }

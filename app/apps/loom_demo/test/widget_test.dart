@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_demo/main.dart';
 
@@ -8,7 +9,11 @@ void main() {
 
     expect(find.text('Fan App'), findsWidgets);
     expect(find.text('Solar Sarah'), findsWidgets);
-    await tester.scrollUntilVisible(find.text('Load more'), 160);
+    await tester.scrollUntilVisible(
+      find.text('Load more'),
+      160,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(find.text('Load more'), findsOneWidget);
   });
 }

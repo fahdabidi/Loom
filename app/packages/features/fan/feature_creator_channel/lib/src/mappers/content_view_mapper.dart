@@ -7,6 +7,7 @@ class ContentTileViewModel {
     required this.title,
     required this.summary,
     required this.contentTypeLabel,
+    required this.thumbnailRef,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class ContentTileViewModel {
   final String title;
   final String summary;
   final String contentTypeLabel;
+  final String thumbnailRef;
 }
 
 ContentTileViewModel mapContentSummary(ContentSummaryView item) {
@@ -26,5 +28,6 @@ ContentTileViewModel mapContentSummary(ContentSummaryView item) {
       ContentType.video => 'Video',
       ContentType.post => 'Post',
     },
+    thumbnailRef: item.thumbnailRef,
   );
 }

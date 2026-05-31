@@ -102,8 +102,29 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
     final selectedIndex = RoleScope.values.indexOf(_role);
 
     return LoomNavScaffold(
-      title: _role.label,
-      roleSwitcher: RoleSwitcher(
+      brand: 'Loom',
+      subtitle: _role == RoleScope.fanApp
+          ? 'Home, follows, and trusted discovery'
+          : 'Creator workspace and channel setup',
+      selectedIndex: selectedIndex,
+      destinations: const [
+        LoomNavItem(
+          label: 'Fan App',
+          icon: Icons.home_outlined,
+          selectedIcon: Icons.home_rounded,
+        ),
+        LoomNavItem(
+          label: 'Creator Studio',
+          icon: Icons.video_library_outlined,
+          selectedIcon: Icons.video_library_rounded,
+        ),
+      ],
+      onDestinationSelected: (index) {
+        setState(() {
+          _role = RoleScope.values[index];
+        });
+      },
+      trailing: RoleSwitcher(
         labels: labels,
         selectedIndex: selectedIndex,
         onChanged: (index) {

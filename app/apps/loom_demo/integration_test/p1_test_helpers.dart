@@ -26,6 +26,18 @@ Future<void> createPassportAndPickInterests(WidgetTester tester) async {
   for (final id in phase1InterestIds) {
     final finder = find.byKey(ValueKey('interest_chip_$id'));
     await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+
+    final scrollable = find.byType(Scrollable).last;
+    final centerY = tester.getCenter(finder).dy;
+    if (centerY < 120) {
+      await tester.drag(scrollable, const Offset(0, 160));
+      await tester.pumpAndSettle();
+    } else if (centerY > 560) {
+      await tester.drag(scrollable, const Offset(0, -160));
+      await tester.pumpAndSettle();
+    }
+
     await tester.tap(finder);
     await tester.pumpAndSettle();
   }
