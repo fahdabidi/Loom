@@ -125,6 +125,7 @@ class _BodyForStep extends StatelessWidget {
           creatorName:
               controller.recommendedCreatorName ?? 'the seeded creator',
           visibility: controller.selectedVisibility.label,
+          onFollow: controller.createFirstFollow,
         );
       case FanOnboardingStep.complete:
         final follow = controller.follow;
@@ -328,65 +329,83 @@ class _CreatorFollowPreview extends StatelessWidget {
   const _CreatorFollowPreview({
     required this.creatorName,
     required this.visibility,
+    required this.onFollow,
   });
 
   final String creatorName;
   final String visibility;
+  final VoidCallback onFollow;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(LoomSpacing.lg),
-      decoration: BoxDecoration(
+    const radius = BorderRadius.all(Radius.circular(22));
+
+    return Semantics(
+      button: true,
+      label: 'Follow $creatorName',
+      child: Material(
         color: LoomColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: LoomColors.line),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            alignment: Alignment.center,
+        borderRadius: radius,
+        child: InkWell(
+          key: const ValueKey('fan_first_follow_card'),
+          onTap: onFollow,
+          borderRadius: radius,
+          child: Container(
+            padding: const EdgeInsets.all(LoomSpacing.lg),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F6B55), Color(0xFFF2C94C)],
-              ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: radius,
+              border: Border.all(color: LoomColors.line),
             ),
-            child: const Text(
-              'SS',
-              style: TextStyle(
-                color: LoomColors.surface,
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: LoomSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  creatorName,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F6B55), Color(0xFFF2C94C)],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'SS',
+                    style: TextStyle(
+                      color: LoomColors.surface,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
-                const SizedBox(height: LoomSpacing.xs),
-                Text(
-                  'First follow · $visibility visibility',
-                  style: const TextStyle(
-                    color: LoomColors.mutedInk,
-                    fontWeight: FontWeight.w700,
+                const SizedBox(width: LoomSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        creatorName,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: LoomSpacing.xs),
+                      Text(
+                        'First follow - $visibility visibility',
+                        style: const TextStyle(
+                          color: LoomColors.mutedInk,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: LoomColors.mutedInk,
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: LoomColors.mutedInk),
-        ],
+        ),
       ),
     );
   }

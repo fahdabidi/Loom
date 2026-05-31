@@ -24,7 +24,7 @@
 - Fan onboarding steps are passport, interests, privacy, first follow, complete. A large progress header gives orientation without adding a heavy stepper.
 - The interest picker requires at least 10 selected topics, matching the phase gate and giving discovery enough cold-start signal for Phase 3.
 - Interest chips are grouped by category and include compact icons, matching social-app topic preference patterns while keeping the batch write unchanged.
-- The first follow defaults to private visibility. Privacy is shown as explicit option cards instead of a segmented control, and the complete state includes a visibility toggle so FE-S1A is demonstrable immediately.
+- The first follow defaults to private visibility. Privacy is shown as explicit option cards instead of a segmented control, the recommended creator card itself is tappable as the follow action, and the complete state includes a visibility toggle so FE-S1A is demonstrable immediately.
 - Creator Studio opens directly to creator onboarding because Phase 1 is the first real Studio workflow. Channel setup now includes a live-looking channel preview with banner, avatar, handle, category, and description.
 - Managed hosting acceptance is a separate step with a Studio-style readiness card and checklist so the creator explicitly accepts the simulated hosted-content baseline before Phase 2 publishing.
 
@@ -42,7 +42,7 @@
 1. Fan starts from the modern Fan App home, sees the setup prompt and seeded catalog, and opens fan onboarding.
 2. The app creates a fan passport, active persona, and baseline consent grant through idempotent Fan Passport calls.
 3. The app fetches the interest taxonomy once, renders grouped topic chips, the fan selects 10 chips, and the app persists them through one `putInterests` batch call.
-4. The fan chooses first-follow visibility from explicit privacy cards, then follows Solar Sarah using a creator id returned by the catalog API.
+4. The fan chooses first-follow visibility from explicit privacy cards, then follows Solar Sarah by tapping the recommended creator card using a creator id returned by the catalog API.
 5. The completion state shows saved interest count, one taxonomy fetch, one interest batch write, followed creator, and visibility in receipt-like rows; the visibility toggle demonstrates FE-S1A.
 6. Creator Studio opens to a channel setup flow with a preview card, creates a channel, binds a handle, writes the profile manifest, then accepts managed hosting.
 7. The creator completion state shows the created channel and accepted hosting contract.

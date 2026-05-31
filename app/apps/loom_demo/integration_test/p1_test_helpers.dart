@@ -50,6 +50,6 @@ Future<void> completeFanOnboarding(WidgetTester tester) async {
   await createPassportAndPickInterests(tester);
   await tester.tap(find.byKey(const ValueKey('fan_continue_privacy_button')));
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const ValueKey('fan_first_follow_button')));
+  await tester.tap(find.byKey(const ValueKey('fan_first_follow_card')));
   await tester.pumpAndSettle();
 }
