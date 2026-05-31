@@ -212,7 +212,7 @@ This tracker is the source of truth for demo-app phase completion. At the end of
 | Phase                                             | Status                | Completion date | Commit SHA | API review                               | Gate evidence / blockers |
 | ------------------------------------------------- | --------------------- | --------------- | ---------- | ---------------------------------------- | ------------------------ |
 | 0 — Foundation & scaffolding + role switcher      | Complete              | 2026-05-31      | `777e364`  | [Phase 0 API Review][phase-0-api-review] | Green: `melos bootstrap`, `melos run analyze`, `melos run lint:boundaries`, `melos run test`, `flutter build apk --debug`, `melos run test:integration` on `emulator-5554`, and emulator `adb install -r`. `loom_local_store` uses Drift/SQLite for app runs and in-memory Drift for tests. [Phase 0 UX Decisions][phase-0-ux-decisions] filed. Physical-phone verification is deferred to Phase 9. |
-| 1 — Identity & onboarding                         | Not started           | —               | —          | —                                        | — |
+| 1 — Identity & onboarding                         | Complete              | 2026-05-31      | pending    | [Phase 1 API Review][phase-1-api-review] | Green: prior Phase 0 commit recorded, `melos bootstrap`, `melos run analyze`, `melos run lint:boundaries`, `melos run test`, `flutter build apk --debug`, full `melos run test:integration` on `emulator-5554` (`it_p0_*` + `it_p1_*`), and emulator `adb install -r`. [Phase 1 UX Decisions][phase-1-ux-decisions] filed. Manual UX validation required before Phase 2. Physical-phone verification is deferred to Phase 9. |
 | 2 — Creator publishing & monetization setup       | Not started           | —               | —          | —                                        | — |
 | 3 — Discovery core                                | Not started           | —               | —          | —                                        | — |
 | 4 — Channel, follow, playback & ads               | Not started           | —               | —          | —                                        | — |
@@ -224,6 +224,8 @@ This tracker is the source of truth for demo-app phase completion. At the end of
 
 [phase-0-api-review]: ./Phases/Phase%200%20-%20API%20Review.md
 [phase-0-ux-decisions]: ./Phases/Phase%200%20-%20UX%20Decisions.md
+[phase-1-api-review]: ./Phases/Phase%201%20-%20API%20Review.md
+[phase-1-ux-decisions]: ./Phases/Phase%201%20-%20UX%20Decisions.md
 
 **Detail highlights:**
 - **P0:** decide working-tree location (native WSL vs in-repo) + WSL build/run checklist; **scaffold the full source tree per "Source code tree layout"** — melos workspace, all `core/loom_*` packages, every `features/fan/*` and `features/creator/*` package as an empty skeleton with `CHARTER.md` + barrel + `pubspec.yaml`, and shared `analysis_options.yaml` with boundary lints; `loom_local_store` + seed v1; design tokens + nav shell + **role switcher**; DI composition root in `apps/loom_demo`; prove the contract→fake→UI flow with one slice (creator content list from `CreatorMetadataApi` fake) running on the Flutter Android emulator.

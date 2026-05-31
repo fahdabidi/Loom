@@ -1,5 +1,5 @@
 import 'package:loom_api_contracts/loom_api_contracts.dart';
-import 'package:loom_local_store/loom_local_store.dart';
+import 'package:loom_local_store/loom_local_store.dart' show DemoLocalStore;
 
 /// Implements [CreatorMetadataApi] over [DemoLocalStore].
 ///
@@ -59,6 +59,58 @@ class CreatorMetadataFake implements CreatorMetadataApi {
           )
           .toList(growable: false),
       nextCursor: nextCursor,
+    );
+  }
+
+  @override
+  Future<CreatorChannelManifest> createChannelProfile({
+    required String channelId,
+    required String displayName,
+    required String handle,
+    required String description,
+    required String category,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.createChannelProfile(
+      channelId: channelId,
+      displayName: displayName,
+      handle: handle,
+      description: description,
+      category: category,
+      idempotencyKey: idempotencyKey,
+    );
+    return CreatorChannelManifest(
+      channelId: record.channelId,
+      displayName: record.displayName,
+      handle: record.handle,
+      description: record.description,
+      category: record.category,
+      createdAt: record.createdAt,
+    );
+  }
+
+  @override
+  Future<HostingContract> attachHostingContract({
+    required String channelId,
+    required String provider,
+    required String termsVersion,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.attachHostingContract(
+      channelId: channelId,
+      provider: provider,
+      termsVersion: termsVersion,
+      idempotencyKey: idempotencyKey,
+    );
+    return HostingContract(
+      id: record.id,
+      channelId: record.channelId,
+      provider: record.provider,
+      status: record.status,
+      termsVersion: record.termsVersion,
+      acceptedAt: record.acceptedAt,
     );
   }
 }

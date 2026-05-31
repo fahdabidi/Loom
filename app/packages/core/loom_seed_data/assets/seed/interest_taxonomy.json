@@ -1,0 +1,62 @@
+[
+  {
+    "id": "home_energy",
+    "label": "Home energy",
+    "category": "Sustainable living"
+  },
+  {
+    "id": "solar_storage",
+    "label": "Solar storage",
+    "category": "Sustainable living"
+  },
+  {
+    "id": "urban_gardening",
+    "label": "Urban gardening",
+    "category": "Sustainable living"
+  },
+  {
+    "id": "fermentation",
+    "label": "Fermentation",
+    "category": "Food craft"
+  },
+  {
+    "id": "weeknight_cooking",
+    "label": "Weeknight cooking",
+    "category": "Food craft"
+  },
+  {
+    "id": "food_safety",
+    "label": "Food safety",
+    "category": "Food craft"
+  },
+  {
+    "id": "mobility",
+    "label": "Mobility",
+    "category": "Movement"
+  },
+  {
+    "id": "strength_basics",
+    "label": "Strength basics",
+    "category": "Movement"
+  },
+  {
+    "id": "joint_friendly_cardio",
+    "label": "Joint-friendly cardio",
+    "category": "Movement"
+  },
+  {
+    "id": "personal_finance",
+    "label": "Personal finance",
+    "category": "Life systems"
+  },
+  {
+    "id": "family_learning",
+    "label": "Family learning",
+    "category": "Life systems"
+  },
+  {
+    "id": "creator_tools",
+    "label": "Creator tools",
+    "category": "Life systems"
+  }
+]

@@ -11,9 +11,10 @@ Creator channel creation, handle/profile setup, and managed hosting acceptance.
 
 ## Owned screens
 
-Defined in Phase 1.
+- `CreatorOnboardingScreen`
+- Channel create/profile form
+- Managed hosting acceptance
 
 ## Forbidden imports
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
-

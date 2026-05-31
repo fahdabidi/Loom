@@ -1,5 +1,9 @@
+export 'components/channel_setup_form.dart';
 export 'components/content_tile.dart';
 export 'components/feed_card.dart';
+export 'components/interest_chip_grid.dart';
+export 'components/onboarding_scaffold.dart';
+export 'components/persona_selector.dart';
 export 'components/shell/nav_scaffold.dart';
 export 'components/shell/role_switcher.dart';
 export 'tokens/colors.dart';

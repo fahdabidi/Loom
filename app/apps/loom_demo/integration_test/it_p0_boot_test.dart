@@ -13,12 +13,7 @@ void main() {
 
     await tester.tap(find.text('Creator Studio'));
     await tester.pumpAndSettle();
-    expect(
-      find.text(
-        'Creator Studio scaffold is ready. Phase 1 adds channel onboarding.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Create your channel'), findsOneWidget);
 
     await tester.tap(find.text('Fan App'));
     await tester.pumpAndSettle();

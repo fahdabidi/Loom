@@ -16,3 +16,7 @@ dependencies:
     path: ../../../core/loom_app_shell
   loom_design_system:
     path: ../../../core/loom_design_system
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

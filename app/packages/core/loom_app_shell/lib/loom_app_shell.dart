@@ -20,19 +20,61 @@ extension RoleScopeLabel on RoleScope {
 typedef RoleSurfaceBuilder = Widget Function(BuildContext context);
 
 CreatorMetadataApi? _creatorMetadataApi;
+FanPassportApi? _fanPassportApi;
+FanVaultApi? _fanVaultApi;
+CreatorChannelRegistryApi? _creatorChannelRegistryApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
 }
 
+void registerFanPassportApi(FanPassportApi api) {
+  _fanPassportApi = api;
+}
+
+void registerFanVaultApi(FanVaultApi api) {
+  _fanVaultApi = api;
+}
+
+void registerCreatorChannelRegistryApi(CreatorChannelRegistryApi api) {
+  _creatorChannelRegistryApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
+  _fanPassportApi = null;
+  _fanVaultApi = null;
+  _creatorChannelRegistryApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
   final api = _creatorMetadataApi;
   if (api == null) {
     throw StateError('CreatorMetadataApi has not been registered.');
+  }
+  return api;
+}
+
+FanPassportApi resolveFanPassportApi() {
+  final api = _fanPassportApi;
+  if (api == null) {
+    throw StateError('FanPassportApi has not been registered.');
+  }
+  return api;
+}
+
+FanVaultApi resolveFanVaultApi() {
+  final api = _fanVaultApi;
+  if (api == null) {
+    throw StateError('FanVaultApi has not been registered.');
+  }
+  return api;
+}
+
+CreatorChannelRegistryApi resolveCreatorChannelRegistryApi() {
+  final api = _creatorChannelRegistryApi;
+  if (api == null) {
+    throw StateError('CreatorChannelRegistryApi has not been registered.');
   }
   return api;
 }

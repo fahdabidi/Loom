@@ -8,6 +8,7 @@ void main() {
 
     expect(find.text('Fan App'), findsWidgets);
     expect(find.text('Solar Sarah'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Load more'), 160);
     expect(find.text('Load more'), findsOneWidget);
   });
 }

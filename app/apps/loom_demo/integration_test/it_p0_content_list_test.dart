@@ -15,6 +15,7 @@ void main() {
       findsOneWidget,
     );
 
+    await tester.scrollUntilVisible(find.text('Load more'), 160);
     await tester.tap(find.text('Load more'));
     await tester.pumpAndSettle();
 

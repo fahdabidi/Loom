@@ -36,11 +36,30 @@ class SeedContent {
   final double perfVelocity;
 }
 
+class SeedInterestToken {
+  const SeedInterestToken({
+    required this.id,
+    required this.label,
+    required this.category,
+  });
+
+  final String id;
+  final String label;
+  final String category;
+}
+
 class SeedWorld {
-  const SeedWorld({required this.creators, required this.content});
+  const SeedWorld({
+    required this.creators,
+    required this.content,
+    required this.interestTaxonomy,
+    required this.managedHostingProvider,
+  });
 
   final List<SeedCreator> creators;
   final List<SeedContent> content;
+  final List<SeedInterestToken> interestTaxonomy;
+  final String managedHostingProvider;
 }
 
 final SeedWorld seedV1 = SeedWorld(
@@ -234,4 +253,63 @@ final SeedWorld seedV1 = SeedWorld(
       perfVelocity: 0.71,
     ),
   ],
+  interestTaxonomy: const [
+    SeedInterestToken(
+      id: 'home_energy',
+      label: 'Home energy',
+      category: 'Sustainable living',
+    ),
+    SeedInterestToken(
+      id: 'solar_storage',
+      label: 'Solar storage',
+      category: 'Sustainable living',
+    ),
+    SeedInterestToken(
+      id: 'urban_gardening',
+      label: 'Urban gardening',
+      category: 'Sustainable living',
+    ),
+    SeedInterestToken(
+      id: 'fermentation',
+      label: 'Fermentation',
+      category: 'Food craft',
+    ),
+    SeedInterestToken(
+      id: 'weeknight_cooking',
+      label: 'Weeknight cooking',
+      category: 'Food craft',
+    ),
+    SeedInterestToken(
+      id: 'food_safety',
+      label: 'Food safety',
+      category: 'Food craft',
+    ),
+    SeedInterestToken(id: 'mobility', label: 'Mobility', category: 'Movement'),
+    SeedInterestToken(
+      id: 'strength_basics',
+      label: 'Strength basics',
+      category: 'Movement',
+    ),
+    SeedInterestToken(
+      id: 'joint_friendly_cardio',
+      label: 'Joint-friendly cardio',
+      category: 'Movement',
+    ),
+    SeedInterestToken(
+      id: 'personal_finance',
+      label: 'Personal finance',
+      category: 'Life systems',
+    ),
+    SeedInterestToken(
+      id: 'family_learning',
+      label: 'Family learning',
+      category: 'Life systems',
+    ),
+    SeedInterestToken(
+      id: 'creator_tools',
+      label: 'Creator tools',
+      category: 'Life systems',
+    ),
+  ],
+  managedHostingProvider: 'Loom Managed Hosting',
 );

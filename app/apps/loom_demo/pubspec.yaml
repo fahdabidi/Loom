@@ -10,6 +10,10 @@ environment:
 dependencies:
   feature_creator_channel:
     path: ../../packages/features/fan/feature_creator_channel
+  feature_creator_onboarding:
+    path: ../../packages/features/creator/feature_creator_onboarding
+  feature_fan_onboarding:
+    path: ../../packages/features/fan/feature_fan_onboarding
   flutter:
     sdk: flutter
   loom_app_shell:
