@@ -21,6 +21,13 @@ Standard set. Add seed for platform-intent registry + external-provider candidat
 ## 2A. UX reference research & decision output
 Before implementing discovery UX, review reference mockups and design guidance from popular social/video apps such as YouTube, Instagram, TikTok, Facebook, WhatsApp Channels, and adjacent recommendation/search products. Focus on feed cards, why-shown explanations, interest/intention entry points, ranking transparency, feedback affordances, search-as-intent, pagination/load-more patterns, and disclosure without overwhelming the feed.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 3 specifics:
+- Make Home/Discover a modern social feed: compact top bar, bottom nav, horizontal intent/topic chips, visual startup tiles, and thumbnail-first feed cards.
+- Offer an immersive TikTok/Reels-style discovery mode for trending or intent exploration, with near full-height media, floating action icons, and a bottom metadata panel.
+- Keep why-shown and score explanations discoverable but not noisy: show compact badges in the feed and open the full explanation in a bottom sheet.
+- Use icon feedback controls for like, dislike, mute, block, save, and share; debounce visually with optimistic state and keep load-more/pagination skeletons polished.
+- Search should feel like a native social search surface with a focused top field, recent/intent chips, result thumbnails, creator rows, and neutral result labeling.
+
 Create [Phase 3 - UX Decisions.md](./Phase%203%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented discovery UX demonstrates startup tiles, session intent, glass-box feed, feedback, mid-session switching, trending, and neutral search using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

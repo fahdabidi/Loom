@@ -17,6 +17,13 @@ Standard set. Export bundle is written to the app sandbox (and surfaced via shar
 ## 2A. UX reference research & decision output
 Before implementing final export, transparency, reset, and full-demo UX, review reference mockups and design guidance from popular social/export/privacy products such as YouTube/Google Takeout-style export surfaces, Facebook/Meta data download and transparency controls, Instagram/TikTok account data surfaces, WhatsApp export/privacy flows, and adjacent receipt/audit products. Focus on export job status, portability bundle clarity, transparency dashboards, receipt reconciliation, reset-demo controls, scripted demo presentation, and final emulator + physical-phone review flow.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 9 specifics:
+- Export should use a clear job/status pattern: start action, progress state, completed bundle summary, portable contents checklist, and share/open affordance.
+- Transparency surfaces should reconcile fan and creator views with receipt-ledger rows, allocation summaries, and explainers in sheets rather than dense legal text.
+- Reset/demo controls belong in a debug/demo menu, not in the primary social navigation; make the scripted demo path obvious for reviewers without exposing test controls as normal UX.
+- Perform a final visual consistency sweep across top bars, bottom nav, cards, sheets, icon buttons, thumbnails, avatars, empty states, and dark/light surfaces.
+- Phase 9 is the only phase that must validate on both the Flutter Android emulator and a physical Android phone; capture screenshots for the final UX Decisions doc.
+
 Create [Phase 9 - UX Decisions.md](./Phase%209%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the final UX demonstrates export, transparency, reset, author→consume, and the six-step wow demo using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

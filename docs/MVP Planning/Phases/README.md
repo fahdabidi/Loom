@@ -71,6 +71,19 @@ Findings + proposed spec edits are recorded in a sibling `Phase N - API Review.m
 ### UX reference research + decision output (every phase)
 Before implementing or materially changing UX, collect reference mockups, interaction patterns, and design guidance from popular social media products and public design resources. Include, where relevant, YouTube, Instagram, TikTok, Facebook, WhatsApp, and adjacent products whose UX patterns fit the workflow. Use these references to guide Loom's UX choices, but do not copy proprietary branding, visual identity, or copyrighted mockups into the app.
 
+The phase docs already encode the baseline social-app patterns extracted from YouTube, Instagram, TikTok, Facebook/Meta, WhatsApp, and adjacent creator tools. Do not depend on local-only reference folders or saved web archives when executing a phase. Additional public references may be consulted, but the implementation must be executable from the patterns written in the phase docs.
+
+Shared social-app UX baseline:
+- App shell: use a compact top app bar with Loom identity plus icon actions, and a persistent bottom navigation bar for primary destinations, following YouTube/Instagram-style mobile structure. Keep role/account switching in a profile/account menu or bottom sheet instead of a large always-visible segmented control.
+- Feed rhythm: make content visual-first. Use large thumbnails/posters, creator avatar + handle rows, compact metadata, and icon action rows. Avoid plain bordered cards, oversized text-only panels, and generic colored blocks as the primary visual.
+- Discovery: support both dense feed browsing and an immersive vertical/short-form surface. The immersive view should use full-height or near full-height media, floating actions, and a bottom metadata/action panel rather than a form-like layout.
+- Navigation depth: use bottom sheets for details, filters, score explanations, privacy choices, purchase confirmation, and quick actions. Reserve full screens for primary tabs, publish flows, channel pages, and settings dashboards.
+- Onboarding: use progressive, mobile-first steps with chips, avatars, suggested creators, and clear completion states. Keep forms short, split advanced settings into sheets, and make the next action obvious.
+- Creator Studio: use a work-focused dashboard with status cards, compact task lists, preview panels, validation states, and clear publish/monetization controls. It should feel closer to a creator console than a marketing page.
+- Trust, receipts, and privacy: use plain-language rows/cards with status, actor, purpose, date, and "why/how" affordances. Put long explanations in sheets so core flows remain scannable.
+- Visual assets: every feed, channel, player, campaign, and studio preview should include a meaningful media thumbnail, poster, avatar, or generated demo asset. Do not ship a phase where the main social surface is mostly text.
+- Accessibility and polish: keep touch targets at least 44 px, respect safe areas, provide loading skeletons/empty/error states, avoid text overlap at emulator phone widths, and validate with screenshots from the Flutter Android emulator.
+
 Each phase creates or updates a sibling `Phase N - UX Decisions.md` before implementation is considered complete. The doc must include:
 - Reference sources reviewed: links or names of official guidelines, public screenshots, pattern libraries, or product flows.
 - UX patterns extracted: what the phase learned from the references and why those patterns fit or do not fit Loom.

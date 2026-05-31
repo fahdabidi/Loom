@@ -19,6 +19,13 @@ Standard set. No payment SDK — payment intents are simulated and resolved loca
 ## 2A. UX reference research & decision output
 Before implementing wallet and revenue UX, review reference mockups and design guidance from popular social/creator monetization products such as YouTube memberships/analytics, Instagram subscriptions, TikTok creator tools, Facebook/Meta monetization, WhatsApp payments where relevant, and adjacent wallet/dashboard products. Focus on purchase confirmation, membership/no-ad affordances, entitlement status, allocation statements, creator revenue summaries, by-intent breakdowns, trust/receipt presentation, and dense-but-readable dashboard layout.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 6 specifics:
+- Fan wallet should look like a modern subscriptions/payments surface: entitlement rows, membership/no-ad cards, clear status labels, and purchase confirmation in a bottom sheet.
+- Use receipt-ledger presentation for purchases and allocation statements: amount, creator, entitlement, date, state, and "how this supports creators" details.
+- Creator revenue should use a dense Studio dashboard pattern with summary metric cards, source/intent segmented views, compact charts, and recent receipt rows.
+- Keep simulated-money language explicit and visible, but do not let it dominate the UI or make the screen feel like a test harness.
+- Use icon actions and sheets for renewal/cancel/details rather than large text buttons repeated in every row.
+
 Create [Phase 6 - UX Decisions.md](./Phase%206%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented UX demonstrates simulated purchases, entitlements, fan allocation, and creator revenue by source/intent using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

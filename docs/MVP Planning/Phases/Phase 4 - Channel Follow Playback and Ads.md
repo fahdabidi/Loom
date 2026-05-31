@@ -17,6 +17,13 @@ Standard set. Use a bundled sample video asset + a poster image for playback (no
 ## 2A. UX reference research & decision output
 Before implementing channel, follow, playback, and ad UX, review reference mockups and design guidance from popular social/video apps such as YouTube, Instagram, TikTok, Facebook, WhatsApp Channels, and adjacent streaming/player products. Focus on creator home layouts, follow/block controls, relationship visibility, video/post consumption, player chrome, ad-slot treatment, ad disclosure, completion states, and non-behavioral ad-context explanations.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 4 specifics:
+- Build creator channel pages with a banner/header, avatar, handle, follow state, quick actions, and tabbed or segmented content sections like modern channel/profile pages.
+- Make watch/detail pages media-first: player/post body at the top, then creator row, metadata, action icons, summary, related items, and receipts/disclosures in sheets.
+- Put follow, unfollow, block, and relationship visibility actions in familiar profile menus or confirmation sheets; keep destructive actions explicit.
+- Render ads as clearly labeled contextual slots with creator-policy disclosure and no behavioral targeting language; expose the ad receipt through a compact info affordance.
+- Player chrome should be minimal, touch-friendly, and safe-area aware, with loading, paused, completed, and error states visible on the emulator.
+
 Create [Phase 4 - UX Decisions.md](./Phase%204%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented UX demonstrates channel browsing, follow/unfollow/block, content consumption, ad-supported playback, and receipt flows using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

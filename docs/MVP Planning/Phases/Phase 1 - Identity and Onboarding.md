@@ -18,6 +18,12 @@ Standard set from README. New seed assets for the interest taxonomy added to `lo
 ## 2A. UX reference research & decision output
 Before implementing onboarding UX, review reference mockups and design guidance from popular social apps such as YouTube, Instagram, TikTok, Facebook, WhatsApp, and adjacent creator/fan products. Focus on account creation, interest cold-start pickers, follow prompts, privacy defaults, persona/profile switching, creator channel setup, and first-run progressive disclosure.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 1 specifics:
+- Make fan onboarding a progressive mobile flow with a visual welcome, short steps, interest chips, avatar/topic suggestions, and a clear completion state that lands in the feed.
+- Use Instagram/TikTok-style interest and creator suggestion patterns: image/avatar-led tiles, quick follow buttons, and lightweight horizontal rails rather than long text forms.
+- Present privacy, persona, and relationship visibility choices as plain-language cards or bottom sheets with explicit defaults and consequences.
+- Make creator onboarding feel like social profile/channel creation: avatar/header preview, handle validation, channel preview, and managed-hosting consent in a focused sheet.
+
 Create [Phase 1 - UX Decisions.md](./Phase%201%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented onboarding UX demonstrates FE-W1, MISSING-S2, FE-S1A, CE-S1, CE-W1, and CE-W1A using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

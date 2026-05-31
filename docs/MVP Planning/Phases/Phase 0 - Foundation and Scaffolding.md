@@ -22,6 +22,12 @@ No user-facing scope stories. Foundational only. **Proof slice:** a read-only cr
 ## 2A. UX reference research & decision output
 Before implementing the nav shell, role switcher, content-list proof slice, and initial design tokens, review reference mockups and design guidance from popular social/social-video apps such as YouTube, Instagram, TikTok, Facebook, WhatsApp, and adjacent creator/fan products. Focus on role/account switching, mobile navigation, creator/content cards, feed density, loading states, and emulator-friendly mobile layout conventions.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 0 specifics:
+- Build the first app shell around a compact top app bar and persistent bottom navigation, similar to the mobile structure used by YouTube and Instagram.
+- Treat Studio/Fan switching like account/profile switching: expose it through a compact profile chip/menu or bottom sheet, not as the dominant hero element.
+- Make the proof content list media-first with thumbnails/posters, creator avatar/handle rows, summaries, and icon actions so the scaffold already feels like a social feed.
+- Seed the design system with reusable app bar, bottom nav, avatar, media card, chip, icon button, bottom sheet, skeleton, empty, and error-state primitives.
+
 Create [Phase 0 - UX Decisions.md](./Phase%200%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented shell and proof slice demonstrate the Phase 0 workflows using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

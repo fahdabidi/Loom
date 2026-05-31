@@ -19,6 +19,13 @@ Standard set.
 ## 2A. UX reference research & decision output
 Before implementing data-rights and consent UX, review reference mockups and design guidance from popular social/privacy surfaces such as Facebook/Meta privacy controls, Instagram account/privacy settings, YouTube ad personalization/privacy controls, TikTok privacy controls, WhatsApp privacy/permissions flows, and adjacent consent-management products. Focus on consent request review, approve/deny/narrow flows, revocation, defaults by creator/category, data-access receipts, minimal-field disclosure, and how to keep privacy controls understandable on mobile.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 7 specifics:
+- Build fan data rights as a familiar mobile settings/privacy dashboard: grouped rows, toggles, status chips, search/filter where useful, and clear revoke paths.
+- Grant requests should be cards or sheets with actor, requested fields, purpose, retention, reward/value, approve/deny/narrow actions, and a plain-language impact summary.
+- Use bottom sheets for narrowing fields, category defaults, relationship controls, and receipt detail so the primary dashboard stays scannable.
+- Creator audience screens should use aggregate insight panels and permission status labels; never make permissioned audience data look like raw per-fan surveillance.
+- DataAccessReceipts should read like an activity log with actor, fields, purpose, time, and grant source, with clear empty and revoked states.
+
 Create [Phase 7 - UX Decisions.md](./Phase%207%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented UX demonstrates grant requests, narrowing, category defaults, revocation, relationship controls, and DataAccessReceipts using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

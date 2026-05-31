@@ -18,6 +18,13 @@ Standard set. Seed transcripts/summaries for a few of the demo creator's items s
 ## 2A. UX reference research & decision output
 Before implementing archive Q&A UX, review reference mockups and design guidance from popular social/search/AI surfaces such as YouTube search/comments, Instagram/TikTok creator content surfaces, Facebook search/groups, WhatsApp chat patterns, and established cited-answer products. Focus on question entry, answer cards, citations/source previews, creator attribution, confidence/disclosure, receipt visibility, and how AI controls appear without overwhelming content consumption.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 5 specifics:
+- Treat archive Q&A as a social search/chat hybrid: a focused question composer, recent/suggested prompts, answer cards, citation chips, and source preview sheets.
+- Keep cited answers scannable: short answer summary first, expandable details second, then creator/source attribution and receipt status.
+- Use WhatsApp-style message clarity for the question/answer flow without making the surface look like a generic chat app; Loom content and creator provenance should stay prominent.
+- Put AI policy, confidence, and source-royalty disclosure behind clear info chips or sheets so the answer surface remains usable.
+- The summary-first ranking preference should appear as a compact toggle/filter with an obvious why-shown note when it changes discovery ordering.
+
 Create [Phase 5 - UX Decisions.md](./Phase%205%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented UX demonstrates fan archive questions, cited answers, source-attribution receipts, and summary-first ranking controls using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

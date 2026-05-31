@@ -21,6 +21,12 @@ Standard set. Add a tiny local media fixture for ingest simulation (no real tran
 ## 2A. UX reference research & decision output
 Before implementing Creator Studio publishing and monetization UX, review reference mockups and design guidance from popular creator/social products such as YouTube Studio, Instagram, TikTok, Facebook/Meta creator tools, WhatsApp Channels where relevant, and adjacent creator-dashboard products. Focus on publish composers, required summaries/descriptions, catalog import flows, membership tier setup, ad-policy controls, AI enablement controls, validation states, and creator-facing dashboard density.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 2 specifics:
+- Make Creator Studio a compact work dashboard with task/status cards, draft state, channel/content preview, and a visible publish path instead of a sparse form page.
+- Model the publish composer after modern social upload flows: media preview first, title/summary fields next, validation inline, and a sticky publish/save action.
+- Use stepper or bottom-sheet flows for catalog import, membership tiers, ad policy, and AI enablement so advanced controls do not crowd the main Studio surface.
+- Include real or generated media thumbnails/posters for every draft/imported item; do not represent content only with text labels.
+
 Create [Phase 2 - UX Decisions.md](./Phase%202%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented Studio UX demonstrates publishing, import, monetization, ad policy, and AI setup workflows using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement

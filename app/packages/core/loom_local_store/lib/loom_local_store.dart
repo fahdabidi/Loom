@@ -410,9 +410,7 @@ class DemoLocalStore {
     required File databaseFile,
     SeedWorld? seed,
   }) async {
-    final store = DemoLocalStore._(
-      LoomDatabase(NativeDatabase.createInBackground(databaseFile)),
-    );
+    final store = DemoLocalStore._(LoomDatabase(NativeDatabase(databaseFile)));
     await store.resetDemo(seed: seed);
     return store;
   }

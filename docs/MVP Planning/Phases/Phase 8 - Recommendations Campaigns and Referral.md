@@ -20,6 +20,13 @@ Standard set.
 ## 2A. UX reference research & decision output
 Before implementing recommendations, campaigns, and referral UX, review reference mockups and design guidance from popular social/creator products such as YouTube community/recommendation surfaces, Instagram creator collaborations and giveaways, TikTok discovery/campaign patterns, Facebook groups/pages/campaigns, WhatsApp Channels, and adjacent referral/affiliate products. Focus on recommendation disclosures, campaign cards, giveaway entry flows, referral attribution transparency, rewards, sponsor-data offers, and creator-side campaign builders.
 
+Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 8 specifics:
+- Recommendation and campaign surfaces should feel like social feed/community posts: creator avatar, visual campaign media, concise terms, clear CTA, and disclosure badges.
+- Fan giveaway entry should be a short progressive flow with eligibility, consent/data-value offer, reward status, and receipt confirmation, using sheets for detail.
+- Referral attribution must be visible but lightweight: show "recommended by" context, terms/caps in a sheet, and conversion/settlement receipts after action.
+- Creator campaign builders should follow Studio patterns: preview panel, task/status cards, validation, schedule/reward controls, and a final review state before publish.
+- Sponsor-linked data offers must reuse Phase 7 consent card language and never introduce a separate behavioral-targeting UX path.
+
 Create [Phase 8 - UX Decisions.md](./Phase%208%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the implemented UX demonstrates creator recommendations, referral terms, fan participation, campaign entry, sponsor data-for-value, and settlement receipts using the collected guidance.
 
 ## 3. APIs invoked & stubs to implement
