@@ -895,6 +895,4222 @@ class ContentItemsCompanion extends UpdateCompanion<ContentItem> {
   }
 }
 
+class $ContentManifestsTable extends ContentManifests
+    with TableInfo<$ContentManifestsTable, ContentManifest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentManifestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentTypeMeta = const VerificationMeta(
+    'contentType',
+  );
+  @override
+  late final GeneratedColumn<String> contentType = GeneratedColumn<String>(
+    'content_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accessModeMeta = const VerificationMeta(
+    'accessMode',
+  );
+  @override
+  late final GeneratedColumn<String> accessMode = GeneratedColumn<String>(
+    'access_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _monetizationModeMeta = const VerificationMeta(
+    'monetizationMode',
+  );
+  @override
+  late final GeneratedColumn<String> monetizationMode = GeneratedColumn<String>(
+    'monetization_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _thumbnailRefMeta = const VerificationMeta(
+    'thumbnailRef',
+  );
+  @override
+  late final GeneratedColumn<String> thumbnailRef = GeneratedColumn<String>(
+    'thumbnail_ref',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _schemaVersionMeta = const VerificationMeta(
+    'schemaVersion',
+  );
+  @override
+  late final GeneratedColumn<int> schemaVersion = GeneratedColumn<int>(
+    'schema_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    channelId,
+    contentType,
+    title,
+    summary,
+    accessMode,
+    monetizationMode,
+    thumbnailRef,
+    schemaVersion,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_manifests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentManifest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('content_type')) {
+      context.handle(
+        _contentTypeMeta,
+        contentType.isAcceptableOrUnknown(
+          data['content_type']!,
+          _contentTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contentTypeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_summaryMeta);
+    }
+    if (data.containsKey('access_mode')) {
+      context.handle(
+        _accessModeMeta,
+        accessMode.isAcceptableOrUnknown(data['access_mode']!, _accessModeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accessModeMeta);
+    }
+    if (data.containsKey('monetization_mode')) {
+      context.handle(
+        _monetizationModeMeta,
+        monetizationMode.isAcceptableOrUnknown(
+          data['monetization_mode']!,
+          _monetizationModeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_monetizationModeMeta);
+    }
+    if (data.containsKey('thumbnail_ref')) {
+      context.handle(
+        _thumbnailRefMeta,
+        thumbnailRef.isAcceptableOrUnknown(
+          data['thumbnail_ref']!,
+          _thumbnailRefMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_thumbnailRefMeta);
+    }
+    if (data.containsKey('schema_version')) {
+      context.handle(
+        _schemaVersionMeta,
+        schemaVersion.isAcceptableOrUnknown(
+          data['schema_version']!,
+          _schemaVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_schemaVersionMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContentManifest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentManifest(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      contentType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_type'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
+      )!,
+      accessMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}access_mode'],
+      )!,
+      monetizationMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}monetization_mode'],
+      )!,
+      thumbnailRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thumbnail_ref'],
+      )!,
+      schemaVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}schema_version'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentManifestsTable createAlias(String alias) {
+    return $ContentManifestsTable(attachedDatabase, alias);
+  }
+}
+
+class ContentManifest extends DataClass implements Insertable<ContentManifest> {
+  final String id;
+  final String channelId;
+  final String contentType;
+  final String title;
+  final String summary;
+  final String accessMode;
+  final String monetizationMode;
+  final String thumbnailRef;
+  final int schemaVersion;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ContentManifest({
+    required this.id,
+    required this.channelId,
+    required this.contentType,
+    required this.title,
+    required this.summary,
+    required this.accessMode,
+    required this.monetizationMode,
+    required this.thumbnailRef,
+    required this.schemaVersion,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['channel_id'] = Variable<String>(channelId);
+    map['content_type'] = Variable<String>(contentType);
+    map['title'] = Variable<String>(title);
+    map['summary'] = Variable<String>(summary);
+    map['access_mode'] = Variable<String>(accessMode);
+    map['monetization_mode'] = Variable<String>(monetizationMode);
+    map['thumbnail_ref'] = Variable<String>(thumbnailRef);
+    map['schema_version'] = Variable<int>(schemaVersion);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ContentManifestsCompanion toCompanion(bool nullToAbsent) {
+    return ContentManifestsCompanion(
+      id: Value(id),
+      channelId: Value(channelId),
+      contentType: Value(contentType),
+      title: Value(title),
+      summary: Value(summary),
+      accessMode: Value(accessMode),
+      monetizationMode: Value(monetizationMode),
+      thumbnailRef: Value(thumbnailRef),
+      schemaVersion: Value(schemaVersion),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ContentManifest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentManifest(
+      id: serializer.fromJson<String>(json['id']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      contentType: serializer.fromJson<String>(json['contentType']),
+      title: serializer.fromJson<String>(json['title']),
+      summary: serializer.fromJson<String>(json['summary']),
+      accessMode: serializer.fromJson<String>(json['accessMode']),
+      monetizationMode: serializer.fromJson<String>(json['monetizationMode']),
+      thumbnailRef: serializer.fromJson<String>(json['thumbnailRef']),
+      schemaVersion: serializer.fromJson<int>(json['schemaVersion']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'channelId': serializer.toJson<String>(channelId),
+      'contentType': serializer.toJson<String>(contentType),
+      'title': serializer.toJson<String>(title),
+      'summary': serializer.toJson<String>(summary),
+      'accessMode': serializer.toJson<String>(accessMode),
+      'monetizationMode': serializer.toJson<String>(monetizationMode),
+      'thumbnailRef': serializer.toJson<String>(thumbnailRef),
+      'schemaVersion': serializer.toJson<int>(schemaVersion),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ContentManifest copyWith({
+    String? id,
+    String? channelId,
+    String? contentType,
+    String? title,
+    String? summary,
+    String? accessMode,
+    String? monetizationMode,
+    String? thumbnailRef,
+    int? schemaVersion,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ContentManifest(
+    id: id ?? this.id,
+    channelId: channelId ?? this.channelId,
+    contentType: contentType ?? this.contentType,
+    title: title ?? this.title,
+    summary: summary ?? this.summary,
+    accessMode: accessMode ?? this.accessMode,
+    monetizationMode: monetizationMode ?? this.monetizationMode,
+    thumbnailRef: thumbnailRef ?? this.thumbnailRef,
+    schemaVersion: schemaVersion ?? this.schemaVersion,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ContentManifest copyWithCompanion(ContentManifestsCompanion data) {
+    return ContentManifest(
+      id: data.id.present ? data.id.value : this.id,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      contentType: data.contentType.present
+          ? data.contentType.value
+          : this.contentType,
+      title: data.title.present ? data.title.value : this.title,
+      summary: data.summary.present ? data.summary.value : this.summary,
+      accessMode: data.accessMode.present
+          ? data.accessMode.value
+          : this.accessMode,
+      monetizationMode: data.monetizationMode.present
+          ? data.monetizationMode.value
+          : this.monetizationMode,
+      thumbnailRef: data.thumbnailRef.present
+          ? data.thumbnailRef.value
+          : this.thumbnailRef,
+      schemaVersion: data.schemaVersion.present
+          ? data.schemaVersion.value
+          : this.schemaVersion,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentManifest(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('contentType: $contentType, ')
+          ..write('title: $title, ')
+          ..write('summary: $summary, ')
+          ..write('accessMode: $accessMode, ')
+          ..write('monetizationMode: $monetizationMode, ')
+          ..write('thumbnailRef: $thumbnailRef, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    channelId,
+    contentType,
+    title,
+    summary,
+    accessMode,
+    monetizationMode,
+    thumbnailRef,
+    schemaVersion,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentManifest &&
+          other.id == this.id &&
+          other.channelId == this.channelId &&
+          other.contentType == this.contentType &&
+          other.title == this.title &&
+          other.summary == this.summary &&
+          other.accessMode == this.accessMode &&
+          other.monetizationMode == this.monetizationMode &&
+          other.thumbnailRef == this.thumbnailRef &&
+          other.schemaVersion == this.schemaVersion &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ContentManifestsCompanion extends UpdateCompanion<ContentManifest> {
+  final Value<String> id;
+  final Value<String> channelId;
+  final Value<String> contentType;
+  final Value<String> title;
+  final Value<String> summary;
+  final Value<String> accessMode;
+  final Value<String> monetizationMode;
+  final Value<String> thumbnailRef;
+  final Value<int> schemaVersion;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ContentManifestsCompanion({
+    this.id = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.contentType = const Value.absent(),
+    this.title = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.accessMode = const Value.absent(),
+    this.monetizationMode = const Value.absent(),
+    this.thumbnailRef = const Value.absent(),
+    this.schemaVersion = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentManifestsCompanion.insert({
+    required String id,
+    required String channelId,
+    required String contentType,
+    required String title,
+    required String summary,
+    required String accessMode,
+    required String monetizationMode,
+    required String thumbnailRef,
+    required int schemaVersion,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       channelId = Value(channelId),
+       contentType = Value(contentType),
+       title = Value(title),
+       summary = Value(summary),
+       accessMode = Value(accessMode),
+       monetizationMode = Value(monetizationMode),
+       thumbnailRef = Value(thumbnailRef),
+       schemaVersion = Value(schemaVersion),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContentManifest> custom({
+    Expression<String>? id,
+    Expression<String>? channelId,
+    Expression<String>? contentType,
+    Expression<String>? title,
+    Expression<String>? summary,
+    Expression<String>? accessMode,
+    Expression<String>? monetizationMode,
+    Expression<String>? thumbnailRef,
+    Expression<int>? schemaVersion,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (channelId != null) 'channel_id': channelId,
+      if (contentType != null) 'content_type': contentType,
+      if (title != null) 'title': title,
+      if (summary != null) 'summary': summary,
+      if (accessMode != null) 'access_mode': accessMode,
+      if (monetizationMode != null) 'monetization_mode': monetizationMode,
+      if (thumbnailRef != null) 'thumbnail_ref': thumbnailRef,
+      if (schemaVersion != null) 'schema_version': schemaVersion,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentManifestsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? channelId,
+    Value<String>? contentType,
+    Value<String>? title,
+    Value<String>? summary,
+    Value<String>? accessMode,
+    Value<String>? monetizationMode,
+    Value<String>? thumbnailRef,
+    Value<int>? schemaVersion,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ContentManifestsCompanion(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      contentType: contentType ?? this.contentType,
+      title: title ?? this.title,
+      summary: summary ?? this.summary,
+      accessMode: accessMode ?? this.accessMode,
+      monetizationMode: monetizationMode ?? this.monetizationMode,
+      thumbnailRef: thumbnailRef ?? this.thumbnailRef,
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (contentType.present) {
+      map['content_type'] = Variable<String>(contentType.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (accessMode.present) {
+      map['access_mode'] = Variable<String>(accessMode.value);
+    }
+    if (monetizationMode.present) {
+      map['monetization_mode'] = Variable<String>(monetizationMode.value);
+    }
+    if (thumbnailRef.present) {
+      map['thumbnail_ref'] = Variable<String>(thumbnailRef.value);
+    }
+    if (schemaVersion.present) {
+      map['schema_version'] = Variable<int>(schemaVersion.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentManifestsCompanion(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('contentType: $contentType, ')
+          ..write('title: $title, ')
+          ..write('summary: $summary, ')
+          ..write('accessMode: $accessMode, ')
+          ..write('monetizationMode: $monetizationMode, ')
+          ..write('thumbnailRef: $thumbnailRef, ')
+          ..write('schemaVersion: $schemaVersion, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MonetizationManifestsTable extends MonetizationManifests
+    with TableInfo<$MonetizationManifestsTable, MonetizationManifest> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MonetizationManifestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _membershipsEnabledMeta =
+      const VerificationMeta('membershipsEnabled');
+  @override
+  late final GeneratedColumn<bool> membershipsEnabled = GeneratedColumn<bool>(
+    'memberships_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("memberships_enabled" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _memberOnlyContentIdsJsonMeta =
+      const VerificationMeta('memberOnlyContentIdsJson');
+  @override
+  late final GeneratedColumn<String> memberOnlyContentIdsJson =
+      GeneratedColumn<String>(
+        'member_only_content_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    channelId,
+    membershipsEnabled,
+    memberOnlyContentIdsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'monetization_manifests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MonetizationManifest> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('memberships_enabled')) {
+      context.handle(
+        _membershipsEnabledMeta,
+        membershipsEnabled.isAcceptableOrUnknown(
+          data['memberships_enabled']!,
+          _membershipsEnabledMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_membershipsEnabledMeta);
+    }
+    if (data.containsKey('member_only_content_ids_json')) {
+      context.handle(
+        _memberOnlyContentIdsJsonMeta,
+        memberOnlyContentIdsJson.isAcceptableOrUnknown(
+          data['member_only_content_ids_json']!,
+          _memberOnlyContentIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_memberOnlyContentIdsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {channelId};
+  @override
+  MonetizationManifest map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MonetizationManifest(
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      membershipsEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}memberships_enabled'],
+      )!,
+      memberOnlyContentIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}member_only_content_ids_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MonetizationManifestsTable createAlias(String alias) {
+    return $MonetizationManifestsTable(attachedDatabase, alias);
+  }
+}
+
+class MonetizationManifest extends DataClass
+    implements Insertable<MonetizationManifest> {
+  final String channelId;
+  final bool membershipsEnabled;
+  final String memberOnlyContentIdsJson;
+  final DateTime updatedAt;
+  const MonetizationManifest({
+    required this.channelId,
+    required this.membershipsEnabled,
+    required this.memberOnlyContentIdsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['channel_id'] = Variable<String>(channelId);
+    map['memberships_enabled'] = Variable<bool>(membershipsEnabled);
+    map['member_only_content_ids_json'] = Variable<String>(
+      memberOnlyContentIdsJson,
+    );
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  MonetizationManifestsCompanion toCompanion(bool nullToAbsent) {
+    return MonetizationManifestsCompanion(
+      channelId: Value(channelId),
+      membershipsEnabled: Value(membershipsEnabled),
+      memberOnlyContentIdsJson: Value(memberOnlyContentIdsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory MonetizationManifest.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MonetizationManifest(
+      channelId: serializer.fromJson<String>(json['channelId']),
+      membershipsEnabled: serializer.fromJson<bool>(json['membershipsEnabled']),
+      memberOnlyContentIdsJson: serializer.fromJson<String>(
+        json['memberOnlyContentIdsJson'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'channelId': serializer.toJson<String>(channelId),
+      'membershipsEnabled': serializer.toJson<bool>(membershipsEnabled),
+      'memberOnlyContentIdsJson': serializer.toJson<String>(
+        memberOnlyContentIdsJson,
+      ),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  MonetizationManifest copyWith({
+    String? channelId,
+    bool? membershipsEnabled,
+    String? memberOnlyContentIdsJson,
+    DateTime? updatedAt,
+  }) => MonetizationManifest(
+    channelId: channelId ?? this.channelId,
+    membershipsEnabled: membershipsEnabled ?? this.membershipsEnabled,
+    memberOnlyContentIdsJson:
+        memberOnlyContentIdsJson ?? this.memberOnlyContentIdsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  MonetizationManifest copyWithCompanion(MonetizationManifestsCompanion data) {
+    return MonetizationManifest(
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      membershipsEnabled: data.membershipsEnabled.present
+          ? data.membershipsEnabled.value
+          : this.membershipsEnabled,
+      memberOnlyContentIdsJson: data.memberOnlyContentIdsJson.present
+          ? data.memberOnlyContentIdsJson.value
+          : this.memberOnlyContentIdsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MonetizationManifest(')
+          ..write('channelId: $channelId, ')
+          ..write('membershipsEnabled: $membershipsEnabled, ')
+          ..write('memberOnlyContentIdsJson: $memberOnlyContentIdsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    channelId,
+    membershipsEnabled,
+    memberOnlyContentIdsJson,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MonetizationManifest &&
+          other.channelId == this.channelId &&
+          other.membershipsEnabled == this.membershipsEnabled &&
+          other.memberOnlyContentIdsJson == this.memberOnlyContentIdsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class MonetizationManifestsCompanion
+    extends UpdateCompanion<MonetizationManifest> {
+  final Value<String> channelId;
+  final Value<bool> membershipsEnabled;
+  final Value<String> memberOnlyContentIdsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const MonetizationManifestsCompanion({
+    this.channelId = const Value.absent(),
+    this.membershipsEnabled = const Value.absent(),
+    this.memberOnlyContentIdsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MonetizationManifestsCompanion.insert({
+    required String channelId,
+    required bool membershipsEnabled,
+    required String memberOnlyContentIdsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : channelId = Value(channelId),
+       membershipsEnabled = Value(membershipsEnabled),
+       memberOnlyContentIdsJson = Value(memberOnlyContentIdsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<MonetizationManifest> custom({
+    Expression<String>? channelId,
+    Expression<bool>? membershipsEnabled,
+    Expression<String>? memberOnlyContentIdsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (channelId != null) 'channel_id': channelId,
+      if (membershipsEnabled != null) 'memberships_enabled': membershipsEnabled,
+      if (memberOnlyContentIdsJson != null)
+        'member_only_content_ids_json': memberOnlyContentIdsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MonetizationManifestsCompanion copyWith({
+    Value<String>? channelId,
+    Value<bool>? membershipsEnabled,
+    Value<String>? memberOnlyContentIdsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return MonetizationManifestsCompanion(
+      channelId: channelId ?? this.channelId,
+      membershipsEnabled: membershipsEnabled ?? this.membershipsEnabled,
+      memberOnlyContentIdsJson:
+          memberOnlyContentIdsJson ?? this.memberOnlyContentIdsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (membershipsEnabled.present) {
+      map['memberships_enabled'] = Variable<bool>(membershipsEnabled.value);
+    }
+    if (memberOnlyContentIdsJson.present) {
+      map['member_only_content_ids_json'] = Variable<String>(
+        memberOnlyContentIdsJson.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MonetizationManifestsCompanion(')
+          ..write('channelId: $channelId, ')
+          ..write('membershipsEnabled: $membershipsEnabled, ')
+          ..write('memberOnlyContentIdsJson: $memberOnlyContentIdsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CreatorAdPoliciesTable extends CreatorAdPolicies
+    with TableInfo<$CreatorAdPoliciesTable, CreatorAdPolicy> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CreatorAdPoliciesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allowedCategoriesJsonMeta =
+      const VerificationMeta('allowedCategoriesJson');
+  @override
+  late final GeneratedColumn<String> allowedCategoriesJson =
+      GeneratedColumn<String>(
+        'allowed_categories_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _blockedCategoriesJsonMeta =
+      const VerificationMeta('blockedCategoriesJson');
+  @override
+  late final GeneratedColumn<String> blockedCategoriesJson =
+      GeneratedColumn<String>(
+        'blocked_categories_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _formatsJsonMeta = const VerificationMeta(
+    'formatsJson',
+  );
+  @override
+  late final GeneratedColumn<String> formatsJson = GeneratedColumn<String>(
+    'formats_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _surfacesJsonMeta = const VerificationMeta(
+    'surfacesJson',
+  );
+  @override
+  late final GeneratedColumn<String> surfacesJson = GeneratedColumn<String>(
+    'surfaces_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    channelId,
+    allowedCategoriesJson,
+    blockedCategoriesJson,
+    formatsJson,
+    surfacesJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'creator_ad_policies';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CreatorAdPolicy> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('allowed_categories_json')) {
+      context.handle(
+        _allowedCategoriesJsonMeta,
+        allowedCategoriesJson.isAcceptableOrUnknown(
+          data['allowed_categories_json']!,
+          _allowedCategoriesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_allowedCategoriesJsonMeta);
+    }
+    if (data.containsKey('blocked_categories_json')) {
+      context.handle(
+        _blockedCategoriesJsonMeta,
+        blockedCategoriesJson.isAcceptableOrUnknown(
+          data['blocked_categories_json']!,
+          _blockedCategoriesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_blockedCategoriesJsonMeta);
+    }
+    if (data.containsKey('formats_json')) {
+      context.handle(
+        _formatsJsonMeta,
+        formatsJson.isAcceptableOrUnknown(
+          data['formats_json']!,
+          _formatsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_formatsJsonMeta);
+    }
+    if (data.containsKey('surfaces_json')) {
+      context.handle(
+        _surfacesJsonMeta,
+        surfacesJson.isAcceptableOrUnknown(
+          data['surfaces_json']!,
+          _surfacesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_surfacesJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {channelId};
+  @override
+  CreatorAdPolicy map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CreatorAdPolicy(
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      allowedCategoriesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allowed_categories_json'],
+      )!,
+      blockedCategoriesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}blocked_categories_json'],
+      )!,
+      formatsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}formats_json'],
+      )!,
+      surfacesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}surfaces_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CreatorAdPoliciesTable createAlias(String alias) {
+    return $CreatorAdPoliciesTable(attachedDatabase, alias);
+  }
+}
+
+class CreatorAdPolicy extends DataClass implements Insertable<CreatorAdPolicy> {
+  final String channelId;
+  final String allowedCategoriesJson;
+  final String blockedCategoriesJson;
+  final String formatsJson;
+  final String surfacesJson;
+  final DateTime updatedAt;
+  const CreatorAdPolicy({
+    required this.channelId,
+    required this.allowedCategoriesJson,
+    required this.blockedCategoriesJson,
+    required this.formatsJson,
+    required this.surfacesJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['channel_id'] = Variable<String>(channelId);
+    map['allowed_categories_json'] = Variable<String>(allowedCategoriesJson);
+    map['blocked_categories_json'] = Variable<String>(blockedCategoriesJson);
+    map['formats_json'] = Variable<String>(formatsJson);
+    map['surfaces_json'] = Variable<String>(surfacesJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CreatorAdPoliciesCompanion toCompanion(bool nullToAbsent) {
+    return CreatorAdPoliciesCompanion(
+      channelId: Value(channelId),
+      allowedCategoriesJson: Value(allowedCategoriesJson),
+      blockedCategoriesJson: Value(blockedCategoriesJson),
+      formatsJson: Value(formatsJson),
+      surfacesJson: Value(surfacesJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CreatorAdPolicy.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CreatorAdPolicy(
+      channelId: serializer.fromJson<String>(json['channelId']),
+      allowedCategoriesJson: serializer.fromJson<String>(
+        json['allowedCategoriesJson'],
+      ),
+      blockedCategoriesJson: serializer.fromJson<String>(
+        json['blockedCategoriesJson'],
+      ),
+      formatsJson: serializer.fromJson<String>(json['formatsJson']),
+      surfacesJson: serializer.fromJson<String>(json['surfacesJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'channelId': serializer.toJson<String>(channelId),
+      'allowedCategoriesJson': serializer.toJson<String>(allowedCategoriesJson),
+      'blockedCategoriesJson': serializer.toJson<String>(blockedCategoriesJson),
+      'formatsJson': serializer.toJson<String>(formatsJson),
+      'surfacesJson': serializer.toJson<String>(surfacesJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CreatorAdPolicy copyWith({
+    String? channelId,
+    String? allowedCategoriesJson,
+    String? blockedCategoriesJson,
+    String? formatsJson,
+    String? surfacesJson,
+    DateTime? updatedAt,
+  }) => CreatorAdPolicy(
+    channelId: channelId ?? this.channelId,
+    allowedCategoriesJson: allowedCategoriesJson ?? this.allowedCategoriesJson,
+    blockedCategoriesJson: blockedCategoriesJson ?? this.blockedCategoriesJson,
+    formatsJson: formatsJson ?? this.formatsJson,
+    surfacesJson: surfacesJson ?? this.surfacesJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CreatorAdPolicy copyWithCompanion(CreatorAdPoliciesCompanion data) {
+    return CreatorAdPolicy(
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      allowedCategoriesJson: data.allowedCategoriesJson.present
+          ? data.allowedCategoriesJson.value
+          : this.allowedCategoriesJson,
+      blockedCategoriesJson: data.blockedCategoriesJson.present
+          ? data.blockedCategoriesJson.value
+          : this.blockedCategoriesJson,
+      formatsJson: data.formatsJson.present
+          ? data.formatsJson.value
+          : this.formatsJson,
+      surfacesJson: data.surfacesJson.present
+          ? data.surfacesJson.value
+          : this.surfacesJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CreatorAdPolicy(')
+          ..write('channelId: $channelId, ')
+          ..write('allowedCategoriesJson: $allowedCategoriesJson, ')
+          ..write('blockedCategoriesJson: $blockedCategoriesJson, ')
+          ..write('formatsJson: $formatsJson, ')
+          ..write('surfacesJson: $surfacesJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    channelId,
+    allowedCategoriesJson,
+    blockedCategoriesJson,
+    formatsJson,
+    surfacesJson,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CreatorAdPolicy &&
+          other.channelId == this.channelId &&
+          other.allowedCategoriesJson == this.allowedCategoriesJson &&
+          other.blockedCategoriesJson == this.blockedCategoriesJson &&
+          other.formatsJson == this.formatsJson &&
+          other.surfacesJson == this.surfacesJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CreatorAdPoliciesCompanion extends UpdateCompanion<CreatorAdPolicy> {
+  final Value<String> channelId;
+  final Value<String> allowedCategoriesJson;
+  final Value<String> blockedCategoriesJson;
+  final Value<String> formatsJson;
+  final Value<String> surfacesJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CreatorAdPoliciesCompanion({
+    this.channelId = const Value.absent(),
+    this.allowedCategoriesJson = const Value.absent(),
+    this.blockedCategoriesJson = const Value.absent(),
+    this.formatsJson = const Value.absent(),
+    this.surfacesJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CreatorAdPoliciesCompanion.insert({
+    required String channelId,
+    required String allowedCategoriesJson,
+    required String blockedCategoriesJson,
+    required String formatsJson,
+    required String surfacesJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : channelId = Value(channelId),
+       allowedCategoriesJson = Value(allowedCategoriesJson),
+       blockedCategoriesJson = Value(blockedCategoriesJson),
+       formatsJson = Value(formatsJson),
+       surfacesJson = Value(surfacesJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<CreatorAdPolicy> custom({
+    Expression<String>? channelId,
+    Expression<String>? allowedCategoriesJson,
+    Expression<String>? blockedCategoriesJson,
+    Expression<String>? formatsJson,
+    Expression<String>? surfacesJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (channelId != null) 'channel_id': channelId,
+      if (allowedCategoriesJson != null)
+        'allowed_categories_json': allowedCategoriesJson,
+      if (blockedCategoriesJson != null)
+        'blocked_categories_json': blockedCategoriesJson,
+      if (formatsJson != null) 'formats_json': formatsJson,
+      if (surfacesJson != null) 'surfaces_json': surfacesJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CreatorAdPoliciesCompanion copyWith({
+    Value<String>? channelId,
+    Value<String>? allowedCategoriesJson,
+    Value<String>? blockedCategoriesJson,
+    Value<String>? formatsJson,
+    Value<String>? surfacesJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CreatorAdPoliciesCompanion(
+      channelId: channelId ?? this.channelId,
+      allowedCategoriesJson:
+          allowedCategoriesJson ?? this.allowedCategoriesJson,
+      blockedCategoriesJson:
+          blockedCategoriesJson ?? this.blockedCategoriesJson,
+      formatsJson: formatsJson ?? this.formatsJson,
+      surfacesJson: surfacesJson ?? this.surfacesJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (allowedCategoriesJson.present) {
+      map['allowed_categories_json'] = Variable<String>(
+        allowedCategoriesJson.value,
+      );
+    }
+    if (blockedCategoriesJson.present) {
+      map['blocked_categories_json'] = Variable<String>(
+        blockedCategoriesJson.value,
+      );
+    }
+    if (formatsJson.present) {
+      map['formats_json'] = Variable<String>(formatsJson.value);
+    }
+    if (surfacesJson.present) {
+      map['surfaces_json'] = Variable<String>(surfacesJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CreatorAdPoliciesCompanion(')
+          ..write('channelId: $channelId, ')
+          ..write('allowedCategoriesJson: $allowedCategoriesJson, ')
+          ..write('blockedCategoriesJson: $blockedCategoriesJson, ')
+          ..write('formatsJson: $formatsJson, ')
+          ..write('surfacesJson: $surfacesJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MembershipTiersTable extends MembershipTiers
+    with TableInfo<$MembershipTiersTable, MembershipTier> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MembershipTiersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _monthlyPriceCentsMeta = const VerificationMeta(
+    'monthlyPriceCents',
+  );
+  @override
+  late final GeneratedColumn<int> monthlyPriceCents = GeneratedColumn<int>(
+    'monthly_price_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _benefitsJsonMeta = const VerificationMeta(
+    'benefitsJson',
+  );
+  @override
+  late final GeneratedColumn<String> benefitsJson = GeneratedColumn<String>(
+    'benefits_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entitlementCodeMeta = const VerificationMeta(
+    'entitlementCode',
+  );
+  @override
+  late final GeneratedColumn<String> entitlementCode = GeneratedColumn<String>(
+    'entitlement_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    channelId,
+    name,
+    monthlyPriceCents,
+    benefitsJson,
+    entitlementCode,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'membership_tiers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MembershipTier> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('monthly_price_cents')) {
+      context.handle(
+        _monthlyPriceCentsMeta,
+        monthlyPriceCents.isAcceptableOrUnknown(
+          data['monthly_price_cents']!,
+          _monthlyPriceCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_monthlyPriceCentsMeta);
+    }
+    if (data.containsKey('benefits_json')) {
+      context.handle(
+        _benefitsJsonMeta,
+        benefitsJson.isAcceptableOrUnknown(
+          data['benefits_json']!,
+          _benefitsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_benefitsJsonMeta);
+    }
+    if (data.containsKey('entitlement_code')) {
+      context.handle(
+        _entitlementCodeMeta,
+        entitlementCode.isAcceptableOrUnknown(
+          data['entitlement_code']!,
+          _entitlementCodeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_entitlementCodeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MembershipTier map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MembershipTier(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      monthlyPriceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}monthly_price_cents'],
+      )!,
+      benefitsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}benefits_json'],
+      )!,
+      entitlementCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entitlement_code'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $MembershipTiersTable createAlias(String alias) {
+    return $MembershipTiersTable(attachedDatabase, alias);
+  }
+}
+
+class MembershipTier extends DataClass implements Insertable<MembershipTier> {
+  final String id;
+  final String channelId;
+  final String name;
+  final int monthlyPriceCents;
+  final String benefitsJson;
+  final String entitlementCode;
+  final DateTime createdAt;
+  const MembershipTier({
+    required this.id,
+    required this.channelId,
+    required this.name,
+    required this.monthlyPriceCents,
+    required this.benefitsJson,
+    required this.entitlementCode,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['channel_id'] = Variable<String>(channelId);
+    map['name'] = Variable<String>(name);
+    map['monthly_price_cents'] = Variable<int>(monthlyPriceCents);
+    map['benefits_json'] = Variable<String>(benefitsJson);
+    map['entitlement_code'] = Variable<String>(entitlementCode);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  MembershipTiersCompanion toCompanion(bool nullToAbsent) {
+    return MembershipTiersCompanion(
+      id: Value(id),
+      channelId: Value(channelId),
+      name: Value(name),
+      monthlyPriceCents: Value(monthlyPriceCents),
+      benefitsJson: Value(benefitsJson),
+      entitlementCode: Value(entitlementCode),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory MembershipTier.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MembershipTier(
+      id: serializer.fromJson<String>(json['id']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      name: serializer.fromJson<String>(json['name']),
+      monthlyPriceCents: serializer.fromJson<int>(json['monthlyPriceCents']),
+      benefitsJson: serializer.fromJson<String>(json['benefitsJson']),
+      entitlementCode: serializer.fromJson<String>(json['entitlementCode']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'channelId': serializer.toJson<String>(channelId),
+      'name': serializer.toJson<String>(name),
+      'monthlyPriceCents': serializer.toJson<int>(monthlyPriceCents),
+      'benefitsJson': serializer.toJson<String>(benefitsJson),
+      'entitlementCode': serializer.toJson<String>(entitlementCode),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  MembershipTier copyWith({
+    String? id,
+    String? channelId,
+    String? name,
+    int? monthlyPriceCents,
+    String? benefitsJson,
+    String? entitlementCode,
+    DateTime? createdAt,
+  }) => MembershipTier(
+    id: id ?? this.id,
+    channelId: channelId ?? this.channelId,
+    name: name ?? this.name,
+    monthlyPriceCents: monthlyPriceCents ?? this.monthlyPriceCents,
+    benefitsJson: benefitsJson ?? this.benefitsJson,
+    entitlementCode: entitlementCode ?? this.entitlementCode,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  MembershipTier copyWithCompanion(MembershipTiersCompanion data) {
+    return MembershipTier(
+      id: data.id.present ? data.id.value : this.id,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      name: data.name.present ? data.name.value : this.name,
+      monthlyPriceCents: data.monthlyPriceCents.present
+          ? data.monthlyPriceCents.value
+          : this.monthlyPriceCents,
+      benefitsJson: data.benefitsJson.present
+          ? data.benefitsJson.value
+          : this.benefitsJson,
+      entitlementCode: data.entitlementCode.present
+          ? data.entitlementCode.value
+          : this.entitlementCode,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembershipTier(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('name: $name, ')
+          ..write('monthlyPriceCents: $monthlyPriceCents, ')
+          ..write('benefitsJson: $benefitsJson, ')
+          ..write('entitlementCode: $entitlementCode, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    channelId,
+    name,
+    monthlyPriceCents,
+    benefitsJson,
+    entitlementCode,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MembershipTier &&
+          other.id == this.id &&
+          other.channelId == this.channelId &&
+          other.name == this.name &&
+          other.monthlyPriceCents == this.monthlyPriceCents &&
+          other.benefitsJson == this.benefitsJson &&
+          other.entitlementCode == this.entitlementCode &&
+          other.createdAt == this.createdAt);
+}
+
+class MembershipTiersCompanion extends UpdateCompanion<MembershipTier> {
+  final Value<String> id;
+  final Value<String> channelId;
+  final Value<String> name;
+  final Value<int> monthlyPriceCents;
+  final Value<String> benefitsJson;
+  final Value<String> entitlementCode;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const MembershipTiersCompanion({
+    this.id = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.monthlyPriceCents = const Value.absent(),
+    this.benefitsJson = const Value.absent(),
+    this.entitlementCode = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MembershipTiersCompanion.insert({
+    required String id,
+    required String channelId,
+    required String name,
+    required int monthlyPriceCents,
+    required String benefitsJson,
+    required String entitlementCode,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       channelId = Value(channelId),
+       name = Value(name),
+       monthlyPriceCents = Value(monthlyPriceCents),
+       benefitsJson = Value(benefitsJson),
+       entitlementCode = Value(entitlementCode),
+       createdAt = Value(createdAt);
+  static Insertable<MembershipTier> custom({
+    Expression<String>? id,
+    Expression<String>? channelId,
+    Expression<String>? name,
+    Expression<int>? monthlyPriceCents,
+    Expression<String>? benefitsJson,
+    Expression<String>? entitlementCode,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (channelId != null) 'channel_id': channelId,
+      if (name != null) 'name': name,
+      if (monthlyPriceCents != null) 'monthly_price_cents': monthlyPriceCents,
+      if (benefitsJson != null) 'benefits_json': benefitsJson,
+      if (entitlementCode != null) 'entitlement_code': entitlementCode,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MembershipTiersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? channelId,
+    Value<String>? name,
+    Value<int>? monthlyPriceCents,
+    Value<String>? benefitsJson,
+    Value<String>? entitlementCode,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return MembershipTiersCompanion(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      name: name ?? this.name,
+      monthlyPriceCents: monthlyPriceCents ?? this.monthlyPriceCents,
+      benefitsJson: benefitsJson ?? this.benefitsJson,
+      entitlementCode: entitlementCode ?? this.entitlementCode,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (monthlyPriceCents.present) {
+      map['monthly_price_cents'] = Variable<int>(monthlyPriceCents.value);
+    }
+    if (benefitsJson.present) {
+      map['benefits_json'] = Variable<String>(benefitsJson.value);
+    }
+    if (entitlementCode.present) {
+      map['entitlement_code'] = Variable<String>(entitlementCode.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembershipTiersCompanion(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('name: $name, ')
+          ..write('monthlyPriceCents: $monthlyPriceCents, ')
+          ..write('benefitsJson: $benefitsJson, ')
+          ..write('entitlementCode: $entitlementCode, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AiContentPoliciesTable extends AiContentPolicies
+    with TableInfo<$AiContentPoliciesTable, AiContentPolicy> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiContentPoliciesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _archiveQaEnabledMeta = const VerificationMeta(
+    'archiveQaEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> archiveQaEnabled = GeneratedColumn<bool>(
+    'archive_qa_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("archive_qa_enabled" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _summariesEnabledMeta = const VerificationMeta(
+    'summariesEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> summariesEnabled = GeneratedColumn<bool>(
+    'summaries_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("summaries_enabled" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _citationRequiredMeta = const VerificationMeta(
+    'citationRequired',
+  );
+  @override
+  late final GeneratedColumn<bool> citationRequired = GeneratedColumn<bool>(
+    'citation_required',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("citation_required" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    channelId,
+    archiveQaEnabled,
+    summariesEnabled,
+    citationRequired,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_content_policies';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiContentPolicy> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('archive_qa_enabled')) {
+      context.handle(
+        _archiveQaEnabledMeta,
+        archiveQaEnabled.isAcceptableOrUnknown(
+          data['archive_qa_enabled']!,
+          _archiveQaEnabledMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_archiveQaEnabledMeta);
+    }
+    if (data.containsKey('summaries_enabled')) {
+      context.handle(
+        _summariesEnabledMeta,
+        summariesEnabled.isAcceptableOrUnknown(
+          data['summaries_enabled']!,
+          _summariesEnabledMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_summariesEnabledMeta);
+    }
+    if (data.containsKey('citation_required')) {
+      context.handle(
+        _citationRequiredMeta,
+        citationRequired.isAcceptableOrUnknown(
+          data['citation_required']!,
+          _citationRequiredMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_citationRequiredMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {channelId};
+  @override
+  AiContentPolicy map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiContentPolicy(
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      archiveQaEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}archive_qa_enabled'],
+      )!,
+      summariesEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}summaries_enabled'],
+      )!,
+      citationRequired: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}citation_required'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiContentPoliciesTable createAlias(String alias) {
+    return $AiContentPoliciesTable(attachedDatabase, alias);
+  }
+}
+
+class AiContentPolicy extends DataClass implements Insertable<AiContentPolicy> {
+  final String channelId;
+  final bool archiveQaEnabled;
+  final bool summariesEnabled;
+  final bool citationRequired;
+  final DateTime updatedAt;
+  const AiContentPolicy({
+    required this.channelId,
+    required this.archiveQaEnabled,
+    required this.summariesEnabled,
+    required this.citationRequired,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['channel_id'] = Variable<String>(channelId);
+    map['archive_qa_enabled'] = Variable<bool>(archiveQaEnabled);
+    map['summaries_enabled'] = Variable<bool>(summariesEnabled);
+    map['citation_required'] = Variable<bool>(citationRequired);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AiContentPoliciesCompanion toCompanion(bool nullToAbsent) {
+    return AiContentPoliciesCompanion(
+      channelId: Value(channelId),
+      archiveQaEnabled: Value(archiveQaEnabled),
+      summariesEnabled: Value(summariesEnabled),
+      citationRequired: Value(citationRequired),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AiContentPolicy.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiContentPolicy(
+      channelId: serializer.fromJson<String>(json['channelId']),
+      archiveQaEnabled: serializer.fromJson<bool>(json['archiveQaEnabled']),
+      summariesEnabled: serializer.fromJson<bool>(json['summariesEnabled']),
+      citationRequired: serializer.fromJson<bool>(json['citationRequired']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'channelId': serializer.toJson<String>(channelId),
+      'archiveQaEnabled': serializer.toJson<bool>(archiveQaEnabled),
+      'summariesEnabled': serializer.toJson<bool>(summariesEnabled),
+      'citationRequired': serializer.toJson<bool>(citationRequired),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AiContentPolicy copyWith({
+    String? channelId,
+    bool? archiveQaEnabled,
+    bool? summariesEnabled,
+    bool? citationRequired,
+    DateTime? updatedAt,
+  }) => AiContentPolicy(
+    channelId: channelId ?? this.channelId,
+    archiveQaEnabled: archiveQaEnabled ?? this.archiveQaEnabled,
+    summariesEnabled: summariesEnabled ?? this.summariesEnabled,
+    citationRequired: citationRequired ?? this.citationRequired,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AiContentPolicy copyWithCompanion(AiContentPoliciesCompanion data) {
+    return AiContentPolicy(
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      archiveQaEnabled: data.archiveQaEnabled.present
+          ? data.archiveQaEnabled.value
+          : this.archiveQaEnabled,
+      summariesEnabled: data.summariesEnabled.present
+          ? data.summariesEnabled.value
+          : this.summariesEnabled,
+      citationRequired: data.citationRequired.present
+          ? data.citationRequired.value
+          : this.citationRequired,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiContentPolicy(')
+          ..write('channelId: $channelId, ')
+          ..write('archiveQaEnabled: $archiveQaEnabled, ')
+          ..write('summariesEnabled: $summariesEnabled, ')
+          ..write('citationRequired: $citationRequired, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    channelId,
+    archiveQaEnabled,
+    summariesEnabled,
+    citationRequired,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiContentPolicy &&
+          other.channelId == this.channelId &&
+          other.archiveQaEnabled == this.archiveQaEnabled &&
+          other.summariesEnabled == this.summariesEnabled &&
+          other.citationRequired == this.citationRequired &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AiContentPoliciesCompanion extends UpdateCompanion<AiContentPolicy> {
+  final Value<String> channelId;
+  final Value<bool> archiveQaEnabled;
+  final Value<bool> summariesEnabled;
+  final Value<bool> citationRequired;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AiContentPoliciesCompanion({
+    this.channelId = const Value.absent(),
+    this.archiveQaEnabled = const Value.absent(),
+    this.summariesEnabled = const Value.absent(),
+    this.citationRequired = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AiContentPoliciesCompanion.insert({
+    required String channelId,
+    required bool archiveQaEnabled,
+    required bool summariesEnabled,
+    required bool citationRequired,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : channelId = Value(channelId),
+       archiveQaEnabled = Value(archiveQaEnabled),
+       summariesEnabled = Value(summariesEnabled),
+       citationRequired = Value(citationRequired),
+       updatedAt = Value(updatedAt);
+  static Insertable<AiContentPolicy> custom({
+    Expression<String>? channelId,
+    Expression<bool>? archiveQaEnabled,
+    Expression<bool>? summariesEnabled,
+    Expression<bool>? citationRequired,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (channelId != null) 'channel_id': channelId,
+      if (archiveQaEnabled != null) 'archive_qa_enabled': archiveQaEnabled,
+      if (summariesEnabled != null) 'summaries_enabled': summariesEnabled,
+      if (citationRequired != null) 'citation_required': citationRequired,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AiContentPoliciesCompanion copyWith({
+    Value<String>? channelId,
+    Value<bool>? archiveQaEnabled,
+    Value<bool>? summariesEnabled,
+    Value<bool>? citationRequired,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AiContentPoliciesCompanion(
+      channelId: channelId ?? this.channelId,
+      archiveQaEnabled: archiveQaEnabled ?? this.archiveQaEnabled,
+      summariesEnabled: summariesEnabled ?? this.summariesEnabled,
+      citationRequired: citationRequired ?? this.citationRequired,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (archiveQaEnabled.present) {
+      map['archive_qa_enabled'] = Variable<bool>(archiveQaEnabled.value);
+    }
+    if (summariesEnabled.present) {
+      map['summaries_enabled'] = Variable<bool>(summariesEnabled.value);
+    }
+    if (citationRequired.present) {
+      map['citation_required'] = Variable<bool>(citationRequired.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiContentPoliciesCompanion(')
+          ..write('channelId: $channelId, ')
+          ..write('archiveQaEnabled: $archiveQaEnabled, ')
+          ..write('summariesEnabled: $summariesEnabled, ')
+          ..write('citationRequired: $citationRequired, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ImportJobsTable extends ImportJobs
+    with TableInfo<$ImportJobsTable, ImportJob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportJobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourcePlatformMeta = const VerificationMeta(
+    'sourcePlatform',
+  );
+  @override
+  late final GeneratedColumn<String> sourcePlatform = GeneratedColumn<String>(
+    'source_platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+    'state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pollCountMeta = const VerificationMeta(
+    'pollCount',
+  );
+  @override
+  late final GeneratedColumn<int> pollCount = GeneratedColumn<int>(
+    'poll_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemsJsonMeta = const VerificationMeta(
+    'itemsJson',
+  );
+  @override
+  late final GeneratedColumn<String> itemsJson = GeneratedColumn<String>(
+    'items_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    channelId,
+    sourcePlatform,
+    state,
+    pollCount,
+    itemsJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'import_jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ImportJob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('source_platform')) {
+      context.handle(
+        _sourcePlatformMeta,
+        sourcePlatform.isAcceptableOrUnknown(
+          data['source_platform']!,
+          _sourcePlatformMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourcePlatformMeta);
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('poll_count')) {
+      context.handle(
+        _pollCountMeta,
+        pollCount.isAcceptableOrUnknown(data['poll_count']!, _pollCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pollCountMeta);
+    }
+    if (data.containsKey('items_json')) {
+      context.handle(
+        _itemsJsonMeta,
+        itemsJson.isAcceptableOrUnknown(data['items_json']!, _itemsJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemsJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ImportJob map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportJob(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      sourcePlatform: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_platform'],
+      )!,
+      state: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      )!,
+      pollCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poll_count'],
+      )!,
+      itemsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}items_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ImportJobsTable createAlias(String alias) {
+    return $ImportJobsTable(attachedDatabase, alias);
+  }
+}
+
+class ImportJob extends DataClass implements Insertable<ImportJob> {
+  final String id;
+  final String channelId;
+  final String sourcePlatform;
+  final String state;
+  final int pollCount;
+  final String itemsJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ImportJob({
+    required this.id,
+    required this.channelId,
+    required this.sourcePlatform,
+    required this.state,
+    required this.pollCount,
+    required this.itemsJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['channel_id'] = Variable<String>(channelId);
+    map['source_platform'] = Variable<String>(sourcePlatform);
+    map['state'] = Variable<String>(state);
+    map['poll_count'] = Variable<int>(pollCount);
+    map['items_json'] = Variable<String>(itemsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ImportJobsCompanion toCompanion(bool nullToAbsent) {
+    return ImportJobsCompanion(
+      id: Value(id),
+      channelId: Value(channelId),
+      sourcePlatform: Value(sourcePlatform),
+      state: Value(state),
+      pollCount: Value(pollCount),
+      itemsJson: Value(itemsJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ImportJob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportJob(
+      id: serializer.fromJson<String>(json['id']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      sourcePlatform: serializer.fromJson<String>(json['sourcePlatform']),
+      state: serializer.fromJson<String>(json['state']),
+      pollCount: serializer.fromJson<int>(json['pollCount']),
+      itemsJson: serializer.fromJson<String>(json['itemsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'channelId': serializer.toJson<String>(channelId),
+      'sourcePlatform': serializer.toJson<String>(sourcePlatform),
+      'state': serializer.toJson<String>(state),
+      'pollCount': serializer.toJson<int>(pollCount),
+      'itemsJson': serializer.toJson<String>(itemsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ImportJob copyWith({
+    String? id,
+    String? channelId,
+    String? sourcePlatform,
+    String? state,
+    int? pollCount,
+    String? itemsJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ImportJob(
+    id: id ?? this.id,
+    channelId: channelId ?? this.channelId,
+    sourcePlatform: sourcePlatform ?? this.sourcePlatform,
+    state: state ?? this.state,
+    pollCount: pollCount ?? this.pollCount,
+    itemsJson: itemsJson ?? this.itemsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ImportJob copyWithCompanion(ImportJobsCompanion data) {
+    return ImportJob(
+      id: data.id.present ? data.id.value : this.id,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      sourcePlatform: data.sourcePlatform.present
+          ? data.sourcePlatform.value
+          : this.sourcePlatform,
+      state: data.state.present ? data.state.value : this.state,
+      pollCount: data.pollCount.present ? data.pollCount.value : this.pollCount,
+      itemsJson: data.itemsJson.present ? data.itemsJson.value : this.itemsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportJob(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('sourcePlatform: $sourcePlatform, ')
+          ..write('state: $state, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    channelId,
+    sourcePlatform,
+    state,
+    pollCount,
+    itemsJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportJob &&
+          other.id == this.id &&
+          other.channelId == this.channelId &&
+          other.sourcePlatform == this.sourcePlatform &&
+          other.state == this.state &&
+          other.pollCount == this.pollCount &&
+          other.itemsJson == this.itemsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ImportJobsCompanion extends UpdateCompanion<ImportJob> {
+  final Value<String> id;
+  final Value<String> channelId;
+  final Value<String> sourcePlatform;
+  final Value<String> state;
+  final Value<int> pollCount;
+  final Value<String> itemsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ImportJobsCompanion({
+    this.id = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.sourcePlatform = const Value.absent(),
+    this.state = const Value.absent(),
+    this.pollCount = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ImportJobsCompanion.insert({
+    required String id,
+    required String channelId,
+    required String sourcePlatform,
+    required String state,
+    required int pollCount,
+    required String itemsJson,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       channelId = Value(channelId),
+       sourcePlatform = Value(sourcePlatform),
+       state = Value(state),
+       pollCount = Value(pollCount),
+       itemsJson = Value(itemsJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ImportJob> custom({
+    Expression<String>? id,
+    Expression<String>? channelId,
+    Expression<String>? sourcePlatform,
+    Expression<String>? state,
+    Expression<int>? pollCount,
+    Expression<String>? itemsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (channelId != null) 'channel_id': channelId,
+      if (sourcePlatform != null) 'source_platform': sourcePlatform,
+      if (state != null) 'state': state,
+      if (pollCount != null) 'poll_count': pollCount,
+      if (itemsJson != null) 'items_json': itemsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ImportJobsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? channelId,
+    Value<String>? sourcePlatform,
+    Value<String>? state,
+    Value<int>? pollCount,
+    Value<String>? itemsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ImportJobsCompanion(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      sourcePlatform: sourcePlatform ?? this.sourcePlatform,
+      state: state ?? this.state,
+      pollCount: pollCount ?? this.pollCount,
+      itemsJson: itemsJson ?? this.itemsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (sourcePlatform.present) {
+      map['source_platform'] = Variable<String>(sourcePlatform.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (pollCount.present) {
+      map['poll_count'] = Variable<int>(pollCount.value);
+    }
+    if (itemsJson.present) {
+      map['items_json'] = Variable<String>(itemsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportJobsCompanion(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('sourcePlatform: $sourcePlatform, ')
+          ..write('state: $state, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExternalContentRefsTable extends ExternalContentRefs
+    with TableInfo<$ExternalContentRefsTable, ExternalContentRef> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExternalContentRefsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _jobIdMeta = const VerificationMeta('jobId');
+  @override
+  late final GeneratedColumn<String> jobId = GeneratedColumn<String>(
+    'job_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourcePlatformMeta = const VerificationMeta(
+    'sourcePlatform',
+  );
+  @override
+  late final GeneratedColumn<String> sourcePlatform = GeneratedColumn<String>(
+    'source_platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _externalIdMeta = const VerificationMeta(
+    'externalId',
+  );
+  @override
+  late final GeneratedColumn<String> externalId = GeneratedColumn<String>(
+    'external_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    jobId,
+    channelId,
+    sourcePlatform,
+    externalId,
+    contentId,
+    title,
+    summary,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'external_content_refs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExternalContentRef> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('job_id')) {
+      context.handle(
+        _jobIdMeta,
+        jobId.isAcceptableOrUnknown(data['job_id']!, _jobIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jobIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('source_platform')) {
+      context.handle(
+        _sourcePlatformMeta,
+        sourcePlatform.isAcceptableOrUnknown(
+          data['source_platform']!,
+          _sourcePlatformMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourcePlatformMeta);
+    }
+    if (data.containsKey('external_id')) {
+      context.handle(
+        _externalIdMeta,
+        externalId.isAcceptableOrUnknown(data['external_id']!, _externalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_externalIdMeta);
+    }
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_summaryMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExternalContentRef map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExternalContentRef(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      jobId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}job_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      sourcePlatform: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_platform'],
+      )!,
+      externalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_id'],
+      )!,
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExternalContentRefsTable createAlias(String alias) {
+    return $ExternalContentRefsTable(attachedDatabase, alias);
+  }
+}
+
+class ExternalContentRef extends DataClass
+    implements Insertable<ExternalContentRef> {
+  final String id;
+  final String jobId;
+  final String channelId;
+  final String sourcePlatform;
+  final String externalId;
+  final String contentId;
+  final String title;
+  final String summary;
+  final DateTime createdAt;
+  const ExternalContentRef({
+    required this.id,
+    required this.jobId,
+    required this.channelId,
+    required this.sourcePlatform,
+    required this.externalId,
+    required this.contentId,
+    required this.title,
+    required this.summary,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['job_id'] = Variable<String>(jobId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['source_platform'] = Variable<String>(sourcePlatform);
+    map['external_id'] = Variable<String>(externalId);
+    map['content_id'] = Variable<String>(contentId);
+    map['title'] = Variable<String>(title);
+    map['summary'] = Variable<String>(summary);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ExternalContentRefsCompanion toCompanion(bool nullToAbsent) {
+    return ExternalContentRefsCompanion(
+      id: Value(id),
+      jobId: Value(jobId),
+      channelId: Value(channelId),
+      sourcePlatform: Value(sourcePlatform),
+      externalId: Value(externalId),
+      contentId: Value(contentId),
+      title: Value(title),
+      summary: Value(summary),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ExternalContentRef.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExternalContentRef(
+      id: serializer.fromJson<String>(json['id']),
+      jobId: serializer.fromJson<String>(json['jobId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      sourcePlatform: serializer.fromJson<String>(json['sourcePlatform']),
+      externalId: serializer.fromJson<String>(json['externalId']),
+      contentId: serializer.fromJson<String>(json['contentId']),
+      title: serializer.fromJson<String>(json['title']),
+      summary: serializer.fromJson<String>(json['summary']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'jobId': serializer.toJson<String>(jobId),
+      'channelId': serializer.toJson<String>(channelId),
+      'sourcePlatform': serializer.toJson<String>(sourcePlatform),
+      'externalId': serializer.toJson<String>(externalId),
+      'contentId': serializer.toJson<String>(contentId),
+      'title': serializer.toJson<String>(title),
+      'summary': serializer.toJson<String>(summary),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ExternalContentRef copyWith({
+    String? id,
+    String? jobId,
+    String? channelId,
+    String? sourcePlatform,
+    String? externalId,
+    String? contentId,
+    String? title,
+    String? summary,
+    DateTime? createdAt,
+  }) => ExternalContentRef(
+    id: id ?? this.id,
+    jobId: jobId ?? this.jobId,
+    channelId: channelId ?? this.channelId,
+    sourcePlatform: sourcePlatform ?? this.sourcePlatform,
+    externalId: externalId ?? this.externalId,
+    contentId: contentId ?? this.contentId,
+    title: title ?? this.title,
+    summary: summary ?? this.summary,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ExternalContentRef copyWithCompanion(ExternalContentRefsCompanion data) {
+    return ExternalContentRef(
+      id: data.id.present ? data.id.value : this.id,
+      jobId: data.jobId.present ? data.jobId.value : this.jobId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      sourcePlatform: data.sourcePlatform.present
+          ? data.sourcePlatform.value
+          : this.sourcePlatform,
+      externalId: data.externalId.present
+          ? data.externalId.value
+          : this.externalId,
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      title: data.title.present ? data.title.value : this.title,
+      summary: data.summary.present ? data.summary.value : this.summary,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalContentRef(')
+          ..write('id: $id, ')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('sourcePlatform: $sourcePlatform, ')
+          ..write('externalId: $externalId, ')
+          ..write('contentId: $contentId, ')
+          ..write('title: $title, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    jobId,
+    channelId,
+    sourcePlatform,
+    externalId,
+    contentId,
+    title,
+    summary,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExternalContentRef &&
+          other.id == this.id &&
+          other.jobId == this.jobId &&
+          other.channelId == this.channelId &&
+          other.sourcePlatform == this.sourcePlatform &&
+          other.externalId == this.externalId &&
+          other.contentId == this.contentId &&
+          other.title == this.title &&
+          other.summary == this.summary &&
+          other.createdAt == this.createdAt);
+}
+
+class ExternalContentRefsCompanion extends UpdateCompanion<ExternalContentRef> {
+  final Value<String> id;
+  final Value<String> jobId;
+  final Value<String> channelId;
+  final Value<String> sourcePlatform;
+  final Value<String> externalId;
+  final Value<String> contentId;
+  final Value<String> title;
+  final Value<String> summary;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ExternalContentRefsCompanion({
+    this.id = const Value.absent(),
+    this.jobId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.sourcePlatform = const Value.absent(),
+    this.externalId = const Value.absent(),
+    this.contentId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExternalContentRefsCompanion.insert({
+    required String id,
+    required String jobId,
+    required String channelId,
+    required String sourcePlatform,
+    required String externalId,
+    required String contentId,
+    required String title,
+    required String summary,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       jobId = Value(jobId),
+       channelId = Value(channelId),
+       sourcePlatform = Value(sourcePlatform),
+       externalId = Value(externalId),
+       contentId = Value(contentId),
+       title = Value(title),
+       summary = Value(summary),
+       createdAt = Value(createdAt);
+  static Insertable<ExternalContentRef> custom({
+    Expression<String>? id,
+    Expression<String>? jobId,
+    Expression<String>? channelId,
+    Expression<String>? sourcePlatform,
+    Expression<String>? externalId,
+    Expression<String>? contentId,
+    Expression<String>? title,
+    Expression<String>? summary,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (jobId != null) 'job_id': jobId,
+      if (channelId != null) 'channel_id': channelId,
+      if (sourcePlatform != null) 'source_platform': sourcePlatform,
+      if (externalId != null) 'external_id': externalId,
+      if (contentId != null) 'content_id': contentId,
+      if (title != null) 'title': title,
+      if (summary != null) 'summary': summary,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExternalContentRefsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? jobId,
+    Value<String>? channelId,
+    Value<String>? sourcePlatform,
+    Value<String>? externalId,
+    Value<String>? contentId,
+    Value<String>? title,
+    Value<String>? summary,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ExternalContentRefsCompanion(
+      id: id ?? this.id,
+      jobId: jobId ?? this.jobId,
+      channelId: channelId ?? this.channelId,
+      sourcePlatform: sourcePlatform ?? this.sourcePlatform,
+      externalId: externalId ?? this.externalId,
+      contentId: contentId ?? this.contentId,
+      title: title ?? this.title,
+      summary: summary ?? this.summary,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (jobId.present) {
+      map['job_id'] = Variable<String>(jobId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (sourcePlatform.present) {
+      map['source_platform'] = Variable<String>(sourcePlatform.value);
+    }
+    if (externalId.present) {
+      map['external_id'] = Variable<String>(externalId.value);
+    }
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalContentRefsCompanion(')
+          ..write('id: $id, ')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('sourcePlatform: $sourcePlatform, ')
+          ..write('externalId: $externalId, ')
+          ..write('contentId: $contentId, ')
+          ..write('title: $title, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContentPerfTable extends ContentPerf
+    with TableInfo<$ContentPerfTable, ContentPerfData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContentPerfTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _velocityMeta = const VerificationMeta(
+    'velocity',
+  );
+  @override
+  late final GeneratedColumn<double> velocity = GeneratedColumn<double>(
+    'velocity',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completionRateMeta = const VerificationMeta(
+    'completionRate',
+  );
+  @override
+  late final GeneratedColumn<double> completionRate = GeneratedColumn<double>(
+    'completion_rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _savesMeta = const VerificationMeta('saves');
+  @override
+  late final GeneratedColumn<int> saves = GeneratedColumn<int>(
+    'saves',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sharesMeta = const VerificationMeta('shares');
+  @override
+  late final GeneratedColumn<int> shares = GeneratedColumn<int>(
+    'shares',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    contentId,
+    velocity,
+    completionRate,
+    saves,
+    shares,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'content_perf';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContentPerfData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('velocity')) {
+      context.handle(
+        _velocityMeta,
+        velocity.isAcceptableOrUnknown(data['velocity']!, _velocityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_velocityMeta);
+    }
+    if (data.containsKey('completion_rate')) {
+      context.handle(
+        _completionRateMeta,
+        completionRate.isAcceptableOrUnknown(
+          data['completion_rate']!,
+          _completionRateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_completionRateMeta);
+    }
+    if (data.containsKey('saves')) {
+      context.handle(
+        _savesMeta,
+        saves.isAcceptableOrUnknown(data['saves']!, _savesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_savesMeta);
+    }
+    if (data.containsKey('shares')) {
+      context.handle(
+        _sharesMeta,
+        shares.isAcceptableOrUnknown(data['shares']!, _sharesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sharesMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {contentId};
+  @override
+  ContentPerfData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContentPerfData(
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      velocity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}velocity'],
+      )!,
+      completionRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}completion_rate'],
+      )!,
+      saves: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}saves'],
+      )!,
+      shares: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}shares'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContentPerfTable createAlias(String alias) {
+    return $ContentPerfTable(attachedDatabase, alias);
+  }
+}
+
+class ContentPerfData extends DataClass implements Insertable<ContentPerfData> {
+  final String contentId;
+  final double velocity;
+  final double completionRate;
+  final int saves;
+  final int shares;
+  final DateTime updatedAt;
+  const ContentPerfData({
+    required this.contentId,
+    required this.velocity,
+    required this.completionRate,
+    required this.saves,
+    required this.shares,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['content_id'] = Variable<String>(contentId);
+    map['velocity'] = Variable<double>(velocity);
+    map['completion_rate'] = Variable<double>(completionRate);
+    map['saves'] = Variable<int>(saves);
+    map['shares'] = Variable<int>(shares);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ContentPerfCompanion toCompanion(bool nullToAbsent) {
+    return ContentPerfCompanion(
+      contentId: Value(contentId),
+      velocity: Value(velocity),
+      completionRate: Value(completionRate),
+      saves: Value(saves),
+      shares: Value(shares),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ContentPerfData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContentPerfData(
+      contentId: serializer.fromJson<String>(json['contentId']),
+      velocity: serializer.fromJson<double>(json['velocity']),
+      completionRate: serializer.fromJson<double>(json['completionRate']),
+      saves: serializer.fromJson<int>(json['saves']),
+      shares: serializer.fromJson<int>(json['shares']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'contentId': serializer.toJson<String>(contentId),
+      'velocity': serializer.toJson<double>(velocity),
+      'completionRate': serializer.toJson<double>(completionRate),
+      'saves': serializer.toJson<int>(saves),
+      'shares': serializer.toJson<int>(shares),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ContentPerfData copyWith({
+    String? contentId,
+    double? velocity,
+    double? completionRate,
+    int? saves,
+    int? shares,
+    DateTime? updatedAt,
+  }) => ContentPerfData(
+    contentId: contentId ?? this.contentId,
+    velocity: velocity ?? this.velocity,
+    completionRate: completionRate ?? this.completionRate,
+    saves: saves ?? this.saves,
+    shares: shares ?? this.shares,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ContentPerfData copyWithCompanion(ContentPerfCompanion data) {
+    return ContentPerfData(
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      velocity: data.velocity.present ? data.velocity.value : this.velocity,
+      completionRate: data.completionRate.present
+          ? data.completionRate.value
+          : this.completionRate,
+      saves: data.saves.present ? data.saves.value : this.saves,
+      shares: data.shares.present ? data.shares.value : this.shares,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentPerfData(')
+          ..write('contentId: $contentId, ')
+          ..write('velocity: $velocity, ')
+          ..write('completionRate: $completionRate, ')
+          ..write('saves: $saves, ')
+          ..write('shares: $shares, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    contentId,
+    velocity,
+    completionRate,
+    saves,
+    shares,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContentPerfData &&
+          other.contentId == this.contentId &&
+          other.velocity == this.velocity &&
+          other.completionRate == this.completionRate &&
+          other.saves == this.saves &&
+          other.shares == this.shares &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ContentPerfCompanion extends UpdateCompanion<ContentPerfData> {
+  final Value<String> contentId;
+  final Value<double> velocity;
+  final Value<double> completionRate;
+  final Value<int> saves;
+  final Value<int> shares;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ContentPerfCompanion({
+    this.contentId = const Value.absent(),
+    this.velocity = const Value.absent(),
+    this.completionRate = const Value.absent(),
+    this.saves = const Value.absent(),
+    this.shares = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContentPerfCompanion.insert({
+    required String contentId,
+    required double velocity,
+    required double completionRate,
+    required int saves,
+    required int shares,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : contentId = Value(contentId),
+       velocity = Value(velocity),
+       completionRate = Value(completionRate),
+       saves = Value(saves),
+       shares = Value(shares),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContentPerfData> custom({
+    Expression<String>? contentId,
+    Expression<double>? velocity,
+    Expression<double>? completionRate,
+    Expression<int>? saves,
+    Expression<int>? shares,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (contentId != null) 'content_id': contentId,
+      if (velocity != null) 'velocity': velocity,
+      if (completionRate != null) 'completion_rate': completionRate,
+      if (saves != null) 'saves': saves,
+      if (shares != null) 'shares': shares,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContentPerfCompanion copyWith({
+    Value<String>? contentId,
+    Value<double>? velocity,
+    Value<double>? completionRate,
+    Value<int>? saves,
+    Value<int>? shares,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ContentPerfCompanion(
+      contentId: contentId ?? this.contentId,
+      velocity: velocity ?? this.velocity,
+      completionRate: completionRate ?? this.completionRate,
+      saves: saves ?? this.saves,
+      shares: shares ?? this.shares,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (velocity.present) {
+      map['velocity'] = Variable<double>(velocity.value);
+    }
+    if (completionRate.present) {
+      map['completion_rate'] = Variable<double>(completionRate.value);
+    }
+    if (saves.present) {
+      map['saves'] = Variable<int>(saves.value);
+    }
+    if (shares.present) {
+      map['shares'] = Variable<int>(shares.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContentPerfCompanion(')
+          ..write('contentId: $contentId, ')
+          ..write('velocity: $velocity, ')
+          ..write('completionRate: $completionRate, ')
+          ..write('saves: $saves, ')
+          ..write('shares: $shares, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EntitlementDefinitionsTable extends EntitlementDefinitions
+    with TableInfo<$EntitlementDefinitionsTable, EntitlementDefinition> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntitlementDefinitionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tierIdMeta = const VerificationMeta('tierId');
+  @override
+  late final GeneratedColumn<String> tierId = GeneratedColumn<String>(
+    'tier_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    channelId,
+    tierId,
+    code,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entitlement_definitions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EntitlementDefinition> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('tier_id')) {
+      context.handle(
+        _tierIdMeta,
+        tierId.isAcceptableOrUnknown(data['tier_id']!, _tierIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tierIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EntitlementDefinition map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EntitlementDefinition(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      tierId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $EntitlementDefinitionsTable createAlias(String alias) {
+    return $EntitlementDefinitionsTable(attachedDatabase, alias);
+  }
+}
+
+class EntitlementDefinition extends DataClass
+    implements Insertable<EntitlementDefinition> {
+  final String id;
+  final String channelId;
+  final String tierId;
+  final String code;
+  final DateTime createdAt;
+  const EntitlementDefinition({
+    required this.id,
+    required this.channelId,
+    required this.tierId,
+    required this.code,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['channel_id'] = Variable<String>(channelId);
+    map['tier_id'] = Variable<String>(tierId);
+    map['code'] = Variable<String>(code);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  EntitlementDefinitionsCompanion toCompanion(bool nullToAbsent) {
+    return EntitlementDefinitionsCompanion(
+      id: Value(id),
+      channelId: Value(channelId),
+      tierId: Value(tierId),
+      code: Value(code),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory EntitlementDefinition.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EntitlementDefinition(
+      id: serializer.fromJson<String>(json['id']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      tierId: serializer.fromJson<String>(json['tierId']),
+      code: serializer.fromJson<String>(json['code']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'channelId': serializer.toJson<String>(channelId),
+      'tierId': serializer.toJson<String>(tierId),
+      'code': serializer.toJson<String>(code),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  EntitlementDefinition copyWith({
+    String? id,
+    String? channelId,
+    String? tierId,
+    String? code,
+    DateTime? createdAt,
+  }) => EntitlementDefinition(
+    id: id ?? this.id,
+    channelId: channelId ?? this.channelId,
+    tierId: tierId ?? this.tierId,
+    code: code ?? this.code,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  EntitlementDefinition copyWithCompanion(
+    EntitlementDefinitionsCompanion data,
+  ) {
+    return EntitlementDefinition(
+      id: data.id.present ? data.id.value : this.id,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      tierId: data.tierId.present ? data.tierId.value : this.tierId,
+      code: data.code.present ? data.code.value : this.code,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntitlementDefinition(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('tierId: $tierId, ')
+          ..write('code: $code, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, channelId, tierId, code, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EntitlementDefinition &&
+          other.id == this.id &&
+          other.channelId == this.channelId &&
+          other.tierId == this.tierId &&
+          other.code == this.code &&
+          other.createdAt == this.createdAt);
+}
+
+class EntitlementDefinitionsCompanion
+    extends UpdateCompanion<EntitlementDefinition> {
+  final Value<String> id;
+  final Value<String> channelId;
+  final Value<String> tierId;
+  final Value<String> code;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const EntitlementDefinitionsCompanion({
+    this.id = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.tierId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EntitlementDefinitionsCompanion.insert({
+    required String id,
+    required String channelId,
+    required String tierId,
+    required String code,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       channelId = Value(channelId),
+       tierId = Value(tierId),
+       code = Value(code),
+       createdAt = Value(createdAt);
+  static Insertable<EntitlementDefinition> custom({
+    Expression<String>? id,
+    Expression<String>? channelId,
+    Expression<String>? tierId,
+    Expression<String>? code,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (channelId != null) 'channel_id': channelId,
+      if (tierId != null) 'tier_id': tierId,
+      if (code != null) 'code': code,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EntitlementDefinitionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? channelId,
+    Value<String>? tierId,
+    Value<String>? code,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return EntitlementDefinitionsCompanion(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      tierId: tierId ?? this.tierId,
+      code: code ?? this.code,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (tierId.present) {
+      map['tier_id'] = Variable<String>(tierId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntitlementDefinitionsCompanion(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('tierId: $tierId, ')
+          ..write('code: $code, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $FanPassportsTable extends FanPassports
     with TableInfo<$FanPassportsTable, FanPassport> {
   @override
@@ -5103,6 +9319,24 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   $LoomDatabaseManager get managers => $LoomDatabaseManager(this);
   late final $CreatorsTable creators = $CreatorsTable(this);
   late final $ContentItemsTable contentItems = $ContentItemsTable(this);
+  late final $ContentManifestsTable contentManifests = $ContentManifestsTable(
+    this,
+  );
+  late final $MonetizationManifestsTable monetizationManifests =
+      $MonetizationManifestsTable(this);
+  late final $CreatorAdPoliciesTable creatorAdPolicies =
+      $CreatorAdPoliciesTable(this);
+  late final $MembershipTiersTable membershipTiers = $MembershipTiersTable(
+    this,
+  );
+  late final $AiContentPoliciesTable aiContentPolicies =
+      $AiContentPoliciesTable(this);
+  late final $ImportJobsTable importJobs = $ImportJobsTable(this);
+  late final $ExternalContentRefsTable externalContentRefs =
+      $ExternalContentRefsTable(this);
+  late final $ContentPerfTable contentPerf = $ContentPerfTable(this);
+  late final $EntitlementDefinitionsTable entitlementDefinitions =
+      $EntitlementDefinitionsTable(this);
   late final $FanPassportsTable fanPassports = $FanPassportsTable(this);
   late final $PersonasTable personas = $PersonasTable(this);
   late final $FollowsTable follows = $FollowsTable(this);
@@ -5132,6 +9366,15 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     creators,
     contentItems,
+    contentManifests,
+    monetizationManifests,
+    creatorAdPolicies,
+    membershipTiers,
+    aiContentPolicies,
+    importJobs,
+    externalContentRefs,
+    contentPerf,
+    entitlementDefinitions,
     fanPassports,
     personas,
     follows,
@@ -5927,6 +10170,2241 @@ typedef $$ContentItemsTableProcessedTableManager =
       (ContentItem, $$ContentItemsTableReferences),
       ContentItem,
       PrefetchHooks Function({bool creatorId})
+    >;
+typedef $$ContentManifestsTableCreateCompanionBuilder =
+    ContentManifestsCompanion Function({
+      required String id,
+      required String channelId,
+      required String contentType,
+      required String title,
+      required String summary,
+      required String accessMode,
+      required String monetizationMode,
+      required String thumbnailRef,
+      required int schemaVersion,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ContentManifestsTableUpdateCompanionBuilder =
+    ContentManifestsCompanion Function({
+      Value<String> id,
+      Value<String> channelId,
+      Value<String> contentType,
+      Value<String> title,
+      Value<String> summary,
+      Value<String> accessMode,
+      Value<String> monetizationMode,
+      Value<String> thumbnailRef,
+      Value<int> schemaVersion,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ContentManifestsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accessMode => $composableBuilder(
+    column: $table.accessMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get monetizationMode => $composableBuilder(
+    column: $table.monetizationMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentManifestsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accessMode => $composableBuilder(
+    column: $table.accessMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get monetizationMode => $composableBuilder(
+    column: $table.monetizationMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentManifestsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ContentManifestsTable> {
+  $$ContentManifestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get contentType => $composableBuilder(
+    column: $table.contentType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<String> get accessMode => $composableBuilder(
+    column: $table.accessMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get monetizationMode => $composableBuilder(
+    column: $table.monetizationMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get schemaVersion => $composableBuilder(
+    column: $table.schemaVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ContentManifestsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ContentManifestsTable,
+          ContentManifest,
+          $$ContentManifestsTableFilterComposer,
+          $$ContentManifestsTableOrderingComposer,
+          $$ContentManifestsTableAnnotationComposer,
+          $$ContentManifestsTableCreateCompanionBuilder,
+          $$ContentManifestsTableUpdateCompanionBuilder,
+          (
+            ContentManifest,
+            BaseReferences<
+              _$LoomDatabase,
+              $ContentManifestsTable,
+              ContentManifest
+            >,
+          ),
+          ContentManifest,
+          PrefetchHooks Function()
+        > {
+  $$ContentManifestsTableTableManager(
+    _$LoomDatabase db,
+    $ContentManifestsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentManifestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentManifestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentManifestsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> contentType = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> summary = const Value.absent(),
+                Value<String> accessMode = const Value.absent(),
+                Value<String> monetizationMode = const Value.absent(),
+                Value<String> thumbnailRef = const Value.absent(),
+                Value<int> schemaVersion = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentManifestsCompanion(
+                id: id,
+                channelId: channelId,
+                contentType: contentType,
+                title: title,
+                summary: summary,
+                accessMode: accessMode,
+                monetizationMode: monetizationMode,
+                thumbnailRef: thumbnailRef,
+                schemaVersion: schemaVersion,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String channelId,
+                required String contentType,
+                required String title,
+                required String summary,
+                required String accessMode,
+                required String monetizationMode,
+                required String thumbnailRef,
+                required int schemaVersion,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentManifestsCompanion.insert(
+                id: id,
+                channelId: channelId,
+                contentType: contentType,
+                title: title,
+                summary: summary,
+                accessMode: accessMode,
+                monetizationMode: monetizationMode,
+                thumbnailRef: thumbnailRef,
+                schemaVersion: schemaVersion,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentManifestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ContentManifestsTable,
+      ContentManifest,
+      $$ContentManifestsTableFilterComposer,
+      $$ContentManifestsTableOrderingComposer,
+      $$ContentManifestsTableAnnotationComposer,
+      $$ContentManifestsTableCreateCompanionBuilder,
+      $$ContentManifestsTableUpdateCompanionBuilder,
+      (
+        ContentManifest,
+        BaseReferences<_$LoomDatabase, $ContentManifestsTable, ContentManifest>,
+      ),
+      ContentManifest,
+      PrefetchHooks Function()
+    >;
+typedef $$MonetizationManifestsTableCreateCompanionBuilder =
+    MonetizationManifestsCompanion Function({
+      required String channelId,
+      required bool membershipsEnabled,
+      required String memberOnlyContentIdsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$MonetizationManifestsTableUpdateCompanionBuilder =
+    MonetizationManifestsCompanion Function({
+      Value<String> channelId,
+      Value<bool> membershipsEnabled,
+      Value<String> memberOnlyContentIdsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$MonetizationManifestsTableFilterComposer
+    extends Composer<_$LoomDatabase, $MonetizationManifestsTable> {
+  $$MonetizationManifestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get membershipsEnabled => $composableBuilder(
+    column: $table.membershipsEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get memberOnlyContentIdsJson => $composableBuilder(
+    column: $table.memberOnlyContentIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MonetizationManifestsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $MonetizationManifestsTable> {
+  $$MonetizationManifestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get membershipsEnabled => $composableBuilder(
+    column: $table.membershipsEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get memberOnlyContentIdsJson => $composableBuilder(
+    column: $table.memberOnlyContentIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MonetizationManifestsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $MonetizationManifestsTable> {
+  $$MonetizationManifestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<bool> get membershipsEnabled => $composableBuilder(
+    column: $table.membershipsEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get memberOnlyContentIdsJson => $composableBuilder(
+    column: $table.memberOnlyContentIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$MonetizationManifestsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $MonetizationManifestsTable,
+          MonetizationManifest,
+          $$MonetizationManifestsTableFilterComposer,
+          $$MonetizationManifestsTableOrderingComposer,
+          $$MonetizationManifestsTableAnnotationComposer,
+          $$MonetizationManifestsTableCreateCompanionBuilder,
+          $$MonetizationManifestsTableUpdateCompanionBuilder,
+          (
+            MonetizationManifest,
+            BaseReferences<
+              _$LoomDatabase,
+              $MonetizationManifestsTable,
+              MonetizationManifest
+            >,
+          ),
+          MonetizationManifest,
+          PrefetchHooks Function()
+        > {
+  $$MonetizationManifestsTableTableManager(
+    _$LoomDatabase db,
+    $MonetizationManifestsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MonetizationManifestsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$MonetizationManifestsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$MonetizationManifestsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> channelId = const Value.absent(),
+                Value<bool> membershipsEnabled = const Value.absent(),
+                Value<String> memberOnlyContentIdsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MonetizationManifestsCompanion(
+                channelId: channelId,
+                membershipsEnabled: membershipsEnabled,
+                memberOnlyContentIdsJson: memberOnlyContentIdsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String channelId,
+                required bool membershipsEnabled,
+                required String memberOnlyContentIdsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MonetizationManifestsCompanion.insert(
+                channelId: channelId,
+                membershipsEnabled: membershipsEnabled,
+                memberOnlyContentIdsJson: memberOnlyContentIdsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MonetizationManifestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $MonetizationManifestsTable,
+      MonetizationManifest,
+      $$MonetizationManifestsTableFilterComposer,
+      $$MonetizationManifestsTableOrderingComposer,
+      $$MonetizationManifestsTableAnnotationComposer,
+      $$MonetizationManifestsTableCreateCompanionBuilder,
+      $$MonetizationManifestsTableUpdateCompanionBuilder,
+      (
+        MonetizationManifest,
+        BaseReferences<
+          _$LoomDatabase,
+          $MonetizationManifestsTable,
+          MonetizationManifest
+        >,
+      ),
+      MonetizationManifest,
+      PrefetchHooks Function()
+    >;
+typedef $$CreatorAdPoliciesTableCreateCompanionBuilder =
+    CreatorAdPoliciesCompanion Function({
+      required String channelId,
+      required String allowedCategoriesJson,
+      required String blockedCategoriesJson,
+      required String formatsJson,
+      required String surfacesJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CreatorAdPoliciesTableUpdateCompanionBuilder =
+    CreatorAdPoliciesCompanion Function({
+      Value<String> channelId,
+      Value<String> allowedCategoriesJson,
+      Value<String> blockedCategoriesJson,
+      Value<String> formatsJson,
+      Value<String> surfacesJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$CreatorAdPoliciesTableFilterComposer
+    extends Composer<_$LoomDatabase, $CreatorAdPoliciesTable> {
+  $$CreatorAdPoliciesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allowedCategoriesJson => $composableBuilder(
+    column: $table.allowedCategoriesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get blockedCategoriesJson => $composableBuilder(
+    column: $table.blockedCategoriesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formatsJson => $composableBuilder(
+    column: $table.formatsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CreatorAdPoliciesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $CreatorAdPoliciesTable> {
+  $$CreatorAdPoliciesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allowedCategoriesJson => $composableBuilder(
+    column: $table.allowedCategoriesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get blockedCategoriesJson => $composableBuilder(
+    column: $table.blockedCategoriesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formatsJson => $composableBuilder(
+    column: $table.formatsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CreatorAdPoliciesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $CreatorAdPoliciesTable> {
+  $$CreatorAdPoliciesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get allowedCategoriesJson => $composableBuilder(
+    column: $table.allowedCategoriesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get blockedCategoriesJson => $composableBuilder(
+    column: $table.blockedCategoriesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get formatsJson => $composableBuilder(
+    column: $table.formatsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CreatorAdPoliciesTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $CreatorAdPoliciesTable,
+          CreatorAdPolicy,
+          $$CreatorAdPoliciesTableFilterComposer,
+          $$CreatorAdPoliciesTableOrderingComposer,
+          $$CreatorAdPoliciesTableAnnotationComposer,
+          $$CreatorAdPoliciesTableCreateCompanionBuilder,
+          $$CreatorAdPoliciesTableUpdateCompanionBuilder,
+          (
+            CreatorAdPolicy,
+            BaseReferences<
+              _$LoomDatabase,
+              $CreatorAdPoliciesTable,
+              CreatorAdPolicy
+            >,
+          ),
+          CreatorAdPolicy,
+          PrefetchHooks Function()
+        > {
+  $$CreatorAdPoliciesTableTableManager(
+    _$LoomDatabase db,
+    $CreatorAdPoliciesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CreatorAdPoliciesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CreatorAdPoliciesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CreatorAdPoliciesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> channelId = const Value.absent(),
+                Value<String> allowedCategoriesJson = const Value.absent(),
+                Value<String> blockedCategoriesJson = const Value.absent(),
+                Value<String> formatsJson = const Value.absent(),
+                Value<String> surfacesJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CreatorAdPoliciesCompanion(
+                channelId: channelId,
+                allowedCategoriesJson: allowedCategoriesJson,
+                blockedCategoriesJson: blockedCategoriesJson,
+                formatsJson: formatsJson,
+                surfacesJson: surfacesJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String channelId,
+                required String allowedCategoriesJson,
+                required String blockedCategoriesJson,
+                required String formatsJson,
+                required String surfacesJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CreatorAdPoliciesCompanion.insert(
+                channelId: channelId,
+                allowedCategoriesJson: allowedCategoriesJson,
+                blockedCategoriesJson: blockedCategoriesJson,
+                formatsJson: formatsJson,
+                surfacesJson: surfacesJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CreatorAdPoliciesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $CreatorAdPoliciesTable,
+      CreatorAdPolicy,
+      $$CreatorAdPoliciesTableFilterComposer,
+      $$CreatorAdPoliciesTableOrderingComposer,
+      $$CreatorAdPoliciesTableAnnotationComposer,
+      $$CreatorAdPoliciesTableCreateCompanionBuilder,
+      $$CreatorAdPoliciesTableUpdateCompanionBuilder,
+      (
+        CreatorAdPolicy,
+        BaseReferences<
+          _$LoomDatabase,
+          $CreatorAdPoliciesTable,
+          CreatorAdPolicy
+        >,
+      ),
+      CreatorAdPolicy,
+      PrefetchHooks Function()
+    >;
+typedef $$MembershipTiersTableCreateCompanionBuilder =
+    MembershipTiersCompanion Function({
+      required String id,
+      required String channelId,
+      required String name,
+      required int monthlyPriceCents,
+      required String benefitsJson,
+      required String entitlementCode,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$MembershipTiersTableUpdateCompanionBuilder =
+    MembershipTiersCompanion Function({
+      Value<String> id,
+      Value<String> channelId,
+      Value<String> name,
+      Value<int> monthlyPriceCents,
+      Value<String> benefitsJson,
+      Value<String> entitlementCode,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$MembershipTiersTableFilterComposer
+    extends Composer<_$LoomDatabase, $MembershipTiersTable> {
+  $$MembershipTiersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get benefitsJson => $composableBuilder(
+    column: $table.benefitsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entitlementCode => $composableBuilder(
+    column: $table.entitlementCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MembershipTiersTableOrderingComposer
+    extends Composer<_$LoomDatabase, $MembershipTiersTable> {
+  $$MembershipTiersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get benefitsJson => $composableBuilder(
+    column: $table.benefitsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entitlementCode => $composableBuilder(
+    column: $table.entitlementCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MembershipTiersTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $MembershipTiersTable> {
+  $$MembershipTiersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get benefitsJson => $composableBuilder(
+    column: $table.benefitsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entitlementCode => $composableBuilder(
+    column: $table.entitlementCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$MembershipTiersTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $MembershipTiersTable,
+          MembershipTier,
+          $$MembershipTiersTableFilterComposer,
+          $$MembershipTiersTableOrderingComposer,
+          $$MembershipTiersTableAnnotationComposer,
+          $$MembershipTiersTableCreateCompanionBuilder,
+          $$MembershipTiersTableUpdateCompanionBuilder,
+          (
+            MembershipTier,
+            BaseReferences<
+              _$LoomDatabase,
+              $MembershipTiersTable,
+              MembershipTier
+            >,
+          ),
+          MembershipTier,
+          PrefetchHooks Function()
+        > {
+  $$MembershipTiersTableTableManager(
+    _$LoomDatabase db,
+    $MembershipTiersTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MembershipTiersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MembershipTiersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MembershipTiersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> monthlyPriceCents = const Value.absent(),
+                Value<String> benefitsJson = const Value.absent(),
+                Value<String> entitlementCode = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipTiersCompanion(
+                id: id,
+                channelId: channelId,
+                name: name,
+                monthlyPriceCents: monthlyPriceCents,
+                benefitsJson: benefitsJson,
+                entitlementCode: entitlementCode,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String channelId,
+                required String name,
+                required int monthlyPriceCents,
+                required String benefitsJson,
+                required String entitlementCode,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipTiersCompanion.insert(
+                id: id,
+                channelId: channelId,
+                name: name,
+                monthlyPriceCents: monthlyPriceCents,
+                benefitsJson: benefitsJson,
+                entitlementCode: entitlementCode,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MembershipTiersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $MembershipTiersTable,
+      MembershipTier,
+      $$MembershipTiersTableFilterComposer,
+      $$MembershipTiersTableOrderingComposer,
+      $$MembershipTiersTableAnnotationComposer,
+      $$MembershipTiersTableCreateCompanionBuilder,
+      $$MembershipTiersTableUpdateCompanionBuilder,
+      (
+        MembershipTier,
+        BaseReferences<_$LoomDatabase, $MembershipTiersTable, MembershipTier>,
+      ),
+      MembershipTier,
+      PrefetchHooks Function()
+    >;
+typedef $$AiContentPoliciesTableCreateCompanionBuilder =
+    AiContentPoliciesCompanion Function({
+      required String channelId,
+      required bool archiveQaEnabled,
+      required bool summariesEnabled,
+      required bool citationRequired,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AiContentPoliciesTableUpdateCompanionBuilder =
+    AiContentPoliciesCompanion Function({
+      Value<String> channelId,
+      Value<bool> archiveQaEnabled,
+      Value<bool> summariesEnabled,
+      Value<bool> citationRequired,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$AiContentPoliciesTableFilterComposer
+    extends Composer<_$LoomDatabase, $AiContentPoliciesTable> {
+  $$AiContentPoliciesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get archiveQaEnabled => $composableBuilder(
+    column: $table.archiveQaEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get summariesEnabled => $composableBuilder(
+    column: $table.summariesEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get citationRequired => $composableBuilder(
+    column: $table.citationRequired,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AiContentPoliciesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AiContentPoliciesTable> {
+  $$AiContentPoliciesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get archiveQaEnabled => $composableBuilder(
+    column: $table.archiveQaEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get summariesEnabled => $composableBuilder(
+    column: $table.summariesEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get citationRequired => $composableBuilder(
+    column: $table.citationRequired,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AiContentPoliciesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AiContentPoliciesTable> {
+  $$AiContentPoliciesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<bool> get archiveQaEnabled => $composableBuilder(
+    column: $table.archiveQaEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get summariesEnabled => $composableBuilder(
+    column: $table.summariesEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get citationRequired => $composableBuilder(
+    column: $table.citationRequired,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AiContentPoliciesTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AiContentPoliciesTable,
+          AiContentPolicy,
+          $$AiContentPoliciesTableFilterComposer,
+          $$AiContentPoliciesTableOrderingComposer,
+          $$AiContentPoliciesTableAnnotationComposer,
+          $$AiContentPoliciesTableCreateCompanionBuilder,
+          $$AiContentPoliciesTableUpdateCompanionBuilder,
+          (
+            AiContentPolicy,
+            BaseReferences<
+              _$LoomDatabase,
+              $AiContentPoliciesTable,
+              AiContentPolicy
+            >,
+          ),
+          AiContentPolicy,
+          PrefetchHooks Function()
+        > {
+  $$AiContentPoliciesTableTableManager(
+    _$LoomDatabase db,
+    $AiContentPoliciesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiContentPoliciesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiContentPoliciesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiContentPoliciesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> channelId = const Value.absent(),
+                Value<bool> archiveQaEnabled = const Value.absent(),
+                Value<bool> summariesEnabled = const Value.absent(),
+                Value<bool> citationRequired = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AiContentPoliciesCompanion(
+                channelId: channelId,
+                archiveQaEnabled: archiveQaEnabled,
+                summariesEnabled: summariesEnabled,
+                citationRequired: citationRequired,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String channelId,
+                required bool archiveQaEnabled,
+                required bool summariesEnabled,
+                required bool citationRequired,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AiContentPoliciesCompanion.insert(
+                channelId: channelId,
+                archiveQaEnabled: archiveQaEnabled,
+                summariesEnabled: summariesEnabled,
+                citationRequired: citationRequired,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AiContentPoliciesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AiContentPoliciesTable,
+      AiContentPolicy,
+      $$AiContentPoliciesTableFilterComposer,
+      $$AiContentPoliciesTableOrderingComposer,
+      $$AiContentPoliciesTableAnnotationComposer,
+      $$AiContentPoliciesTableCreateCompanionBuilder,
+      $$AiContentPoliciesTableUpdateCompanionBuilder,
+      (
+        AiContentPolicy,
+        BaseReferences<
+          _$LoomDatabase,
+          $AiContentPoliciesTable,
+          AiContentPolicy
+        >,
+      ),
+      AiContentPolicy,
+      PrefetchHooks Function()
+    >;
+typedef $$ImportJobsTableCreateCompanionBuilder =
+    ImportJobsCompanion Function({
+      required String id,
+      required String channelId,
+      required String sourcePlatform,
+      required String state,
+      required int pollCount,
+      required String itemsJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ImportJobsTableUpdateCompanionBuilder =
+    ImportJobsCompanion Function({
+      Value<String> id,
+      Value<String> channelId,
+      Value<String> sourcePlatform,
+      Value<String> state,
+      Value<int> pollCount,
+      Value<String> itemsJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ImportJobsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ImportJobsTable> {
+  $$ImportJobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ImportJobsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ImportJobsTable> {
+  $$ImportJobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ImportJobsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ImportJobsTable> {
+  $$ImportJobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<int> get pollCount =>
+      $composableBuilder(column: $table.pollCount, builder: (column) => column);
+
+  GeneratedColumn<String> get itemsJson =>
+      $composableBuilder(column: $table.itemsJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ImportJobsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ImportJobsTable,
+          ImportJob,
+          $$ImportJobsTableFilterComposer,
+          $$ImportJobsTableOrderingComposer,
+          $$ImportJobsTableAnnotationComposer,
+          $$ImportJobsTableCreateCompanionBuilder,
+          $$ImportJobsTableUpdateCompanionBuilder,
+          (
+            ImportJob,
+            BaseReferences<_$LoomDatabase, $ImportJobsTable, ImportJob>,
+          ),
+          ImportJob,
+          PrefetchHooks Function()
+        > {
+  $$ImportJobsTableTableManager(_$LoomDatabase db, $ImportJobsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportJobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ImportJobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ImportJobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> sourcePlatform = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<int> pollCount = const Value.absent(),
+                Value<String> itemsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ImportJobsCompanion(
+                id: id,
+                channelId: channelId,
+                sourcePlatform: sourcePlatform,
+                state: state,
+                pollCount: pollCount,
+                itemsJson: itemsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String channelId,
+                required String sourcePlatform,
+                required String state,
+                required int pollCount,
+                required String itemsJson,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ImportJobsCompanion.insert(
+                id: id,
+                channelId: channelId,
+                sourcePlatform: sourcePlatform,
+                state: state,
+                pollCount: pollCount,
+                itemsJson: itemsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ImportJobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ImportJobsTable,
+      ImportJob,
+      $$ImportJobsTableFilterComposer,
+      $$ImportJobsTableOrderingComposer,
+      $$ImportJobsTableAnnotationComposer,
+      $$ImportJobsTableCreateCompanionBuilder,
+      $$ImportJobsTableUpdateCompanionBuilder,
+      (ImportJob, BaseReferences<_$LoomDatabase, $ImportJobsTable, ImportJob>),
+      ImportJob,
+      PrefetchHooks Function()
+    >;
+typedef $$ExternalContentRefsTableCreateCompanionBuilder =
+    ExternalContentRefsCompanion Function({
+      required String id,
+      required String jobId,
+      required String channelId,
+      required String sourcePlatform,
+      required String externalId,
+      required String contentId,
+      required String title,
+      required String summary,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ExternalContentRefsTableUpdateCompanionBuilder =
+    ExternalContentRefsCompanion Function({
+      Value<String> id,
+      Value<String> jobId,
+      Value<String> channelId,
+      Value<String> sourcePlatform,
+      Value<String> externalId,
+      Value<String> contentId,
+      Value<String> title,
+      Value<String> summary,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$ExternalContentRefsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ExternalContentRefsTable> {
+  $$ExternalContentRefsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ExternalContentRefsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ExternalContentRefsTable> {
+  $$ExternalContentRefsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExternalContentRefsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ExternalContentRefsTable> {
+  $$ExternalContentRefsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get jobId =>
+      $composableBuilder(column: $table.jobId, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourcePlatform => $composableBuilder(
+    column: $table.sourcePlatform,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentId =>
+      $composableBuilder(column: $table.contentId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$ExternalContentRefsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ExternalContentRefsTable,
+          ExternalContentRef,
+          $$ExternalContentRefsTableFilterComposer,
+          $$ExternalContentRefsTableOrderingComposer,
+          $$ExternalContentRefsTableAnnotationComposer,
+          $$ExternalContentRefsTableCreateCompanionBuilder,
+          $$ExternalContentRefsTableUpdateCompanionBuilder,
+          (
+            ExternalContentRef,
+            BaseReferences<
+              _$LoomDatabase,
+              $ExternalContentRefsTable,
+              ExternalContentRef
+            >,
+          ),
+          ExternalContentRef,
+          PrefetchHooks Function()
+        > {
+  $$ExternalContentRefsTableTableManager(
+    _$LoomDatabase db,
+    $ExternalContentRefsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExternalContentRefsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExternalContentRefsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ExternalContentRefsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> jobId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> sourcePlatform = const Value.absent(),
+                Value<String> externalId = const Value.absent(),
+                Value<String> contentId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> summary = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalContentRefsCompanion(
+                id: id,
+                jobId: jobId,
+                channelId: channelId,
+                sourcePlatform: sourcePlatform,
+                externalId: externalId,
+                contentId: contentId,
+                title: title,
+                summary: summary,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String jobId,
+                required String channelId,
+                required String sourcePlatform,
+                required String externalId,
+                required String contentId,
+                required String title,
+                required String summary,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalContentRefsCompanion.insert(
+                id: id,
+                jobId: jobId,
+                channelId: channelId,
+                sourcePlatform: sourcePlatform,
+                externalId: externalId,
+                contentId: contentId,
+                title: title,
+                summary: summary,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ExternalContentRefsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ExternalContentRefsTable,
+      ExternalContentRef,
+      $$ExternalContentRefsTableFilterComposer,
+      $$ExternalContentRefsTableOrderingComposer,
+      $$ExternalContentRefsTableAnnotationComposer,
+      $$ExternalContentRefsTableCreateCompanionBuilder,
+      $$ExternalContentRefsTableUpdateCompanionBuilder,
+      (
+        ExternalContentRef,
+        BaseReferences<
+          _$LoomDatabase,
+          $ExternalContentRefsTable,
+          ExternalContentRef
+        >,
+      ),
+      ExternalContentRef,
+      PrefetchHooks Function()
+    >;
+typedef $$ContentPerfTableCreateCompanionBuilder =
+    ContentPerfCompanion Function({
+      required String contentId,
+      required double velocity,
+      required double completionRate,
+      required int saves,
+      required int shares,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ContentPerfTableUpdateCompanionBuilder =
+    ContentPerfCompanion Function({
+      Value<String> contentId,
+      Value<double> velocity,
+      Value<double> completionRate,
+      Value<int> saves,
+      Value<int> shares,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ContentPerfTableFilterComposer
+    extends Composer<_$LoomDatabase, $ContentPerfTable> {
+  $$ContentPerfTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get velocity => $composableBuilder(
+    column: $table.velocity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get completionRate => $composableBuilder(
+    column: $table.completionRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get saves => $composableBuilder(
+    column: $table.saves,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get shares => $composableBuilder(
+    column: $table.shares,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContentPerfTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ContentPerfTable> {
+  $$ContentPerfTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get contentId => $composableBuilder(
+    column: $table.contentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get velocity => $composableBuilder(
+    column: $table.velocity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get completionRate => $composableBuilder(
+    column: $table.completionRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get saves => $composableBuilder(
+    column: $table.saves,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get shares => $composableBuilder(
+    column: $table.shares,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContentPerfTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ContentPerfTable> {
+  $$ContentPerfTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get contentId =>
+      $composableBuilder(column: $table.contentId, builder: (column) => column);
+
+  GeneratedColumn<double> get velocity =>
+      $composableBuilder(column: $table.velocity, builder: (column) => column);
+
+  GeneratedColumn<double> get completionRate => $composableBuilder(
+    column: $table.completionRate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get saves =>
+      $composableBuilder(column: $table.saves, builder: (column) => column);
+
+  GeneratedColumn<int> get shares =>
+      $composableBuilder(column: $table.shares, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ContentPerfTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ContentPerfTable,
+          ContentPerfData,
+          $$ContentPerfTableFilterComposer,
+          $$ContentPerfTableOrderingComposer,
+          $$ContentPerfTableAnnotationComposer,
+          $$ContentPerfTableCreateCompanionBuilder,
+          $$ContentPerfTableUpdateCompanionBuilder,
+          (
+            ContentPerfData,
+            BaseReferences<_$LoomDatabase, $ContentPerfTable, ContentPerfData>,
+          ),
+          ContentPerfData,
+          PrefetchHooks Function()
+        > {
+  $$ContentPerfTableTableManager(_$LoomDatabase db, $ContentPerfTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContentPerfTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContentPerfTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContentPerfTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> contentId = const Value.absent(),
+                Value<double> velocity = const Value.absent(),
+                Value<double> completionRate = const Value.absent(),
+                Value<int> saves = const Value.absent(),
+                Value<int> shares = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContentPerfCompanion(
+                contentId: contentId,
+                velocity: velocity,
+                completionRate: completionRate,
+                saves: saves,
+                shares: shares,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String contentId,
+                required double velocity,
+                required double completionRate,
+                required int saves,
+                required int shares,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContentPerfCompanion.insert(
+                contentId: contentId,
+                velocity: velocity,
+                completionRate: completionRate,
+                saves: saves,
+                shares: shares,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContentPerfTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ContentPerfTable,
+      ContentPerfData,
+      $$ContentPerfTableFilterComposer,
+      $$ContentPerfTableOrderingComposer,
+      $$ContentPerfTableAnnotationComposer,
+      $$ContentPerfTableCreateCompanionBuilder,
+      $$ContentPerfTableUpdateCompanionBuilder,
+      (
+        ContentPerfData,
+        BaseReferences<_$LoomDatabase, $ContentPerfTable, ContentPerfData>,
+      ),
+      ContentPerfData,
+      PrefetchHooks Function()
+    >;
+typedef $$EntitlementDefinitionsTableCreateCompanionBuilder =
+    EntitlementDefinitionsCompanion Function({
+      required String id,
+      required String channelId,
+      required String tierId,
+      required String code,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$EntitlementDefinitionsTableUpdateCompanionBuilder =
+    EntitlementDefinitionsCompanion Function({
+      Value<String> id,
+      Value<String> channelId,
+      Value<String> tierId,
+      Value<String> code,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$EntitlementDefinitionsTableFilterComposer
+    extends Composer<_$LoomDatabase, $EntitlementDefinitionsTable> {
+  $$EntitlementDefinitionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EntitlementDefinitionsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $EntitlementDefinitionsTable> {
+  $$EntitlementDefinitionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EntitlementDefinitionsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $EntitlementDefinitionsTable> {
+  $$EntitlementDefinitionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get tierId =>
+      $composableBuilder(column: $table.tierId, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$EntitlementDefinitionsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $EntitlementDefinitionsTable,
+          EntitlementDefinition,
+          $$EntitlementDefinitionsTableFilterComposer,
+          $$EntitlementDefinitionsTableOrderingComposer,
+          $$EntitlementDefinitionsTableAnnotationComposer,
+          $$EntitlementDefinitionsTableCreateCompanionBuilder,
+          $$EntitlementDefinitionsTableUpdateCompanionBuilder,
+          (
+            EntitlementDefinition,
+            BaseReferences<
+              _$LoomDatabase,
+              $EntitlementDefinitionsTable,
+              EntitlementDefinition
+            >,
+          ),
+          EntitlementDefinition,
+          PrefetchHooks Function()
+        > {
+  $$EntitlementDefinitionsTableTableManager(
+    _$LoomDatabase db,
+    $EntitlementDefinitionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntitlementDefinitionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$EntitlementDefinitionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$EntitlementDefinitionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> tierId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntitlementDefinitionsCompanion(
+                id: id,
+                channelId: channelId,
+                tierId: tierId,
+                code: code,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String channelId,
+                required String tierId,
+                required String code,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => EntitlementDefinitionsCompanion.insert(
+                id: id,
+                channelId: channelId,
+                tierId: tierId,
+                code: code,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EntitlementDefinitionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $EntitlementDefinitionsTable,
+      EntitlementDefinition,
+      $$EntitlementDefinitionsTableFilterComposer,
+      $$EntitlementDefinitionsTableOrderingComposer,
+      $$EntitlementDefinitionsTableAnnotationComposer,
+      $$EntitlementDefinitionsTableCreateCompanionBuilder,
+      $$EntitlementDefinitionsTableUpdateCompanionBuilder,
+      (
+        EntitlementDefinition,
+        BaseReferences<
+          _$LoomDatabase,
+          $EntitlementDefinitionsTable,
+          EntitlementDefinition
+        >,
+      ),
+      EntitlementDefinition,
+      PrefetchHooks Function()
     >;
 typedef $$FanPassportsTableCreateCompanionBuilder =
     FanPassportsCompanion Function({
@@ -9969,6 +16447,27 @@ class $LoomDatabaseManager {
       $$CreatorsTableTableManager(_db, _db.creators);
   $$ContentItemsTableTableManager get contentItems =>
       $$ContentItemsTableTableManager(_db, _db.contentItems);
+  $$ContentManifestsTableTableManager get contentManifests =>
+      $$ContentManifestsTableTableManager(_db, _db.contentManifests);
+  $$MonetizationManifestsTableTableManager get monetizationManifests =>
+      $$MonetizationManifestsTableTableManager(_db, _db.monetizationManifests);
+  $$CreatorAdPoliciesTableTableManager get creatorAdPolicies =>
+      $$CreatorAdPoliciesTableTableManager(_db, _db.creatorAdPolicies);
+  $$MembershipTiersTableTableManager get membershipTiers =>
+      $$MembershipTiersTableTableManager(_db, _db.membershipTiers);
+  $$AiContentPoliciesTableTableManager get aiContentPolicies =>
+      $$AiContentPoliciesTableTableManager(_db, _db.aiContentPolicies);
+  $$ImportJobsTableTableManager get importJobs =>
+      $$ImportJobsTableTableManager(_db, _db.importJobs);
+  $$ExternalContentRefsTableTableManager get externalContentRefs =>
+      $$ExternalContentRefsTableTableManager(_db, _db.externalContentRefs);
+  $$ContentPerfTableTableManager get contentPerf =>
+      $$ContentPerfTableTableManager(_db, _db.contentPerf);
+  $$EntitlementDefinitionsTableTableManager get entitlementDefinitions =>
+      $$EntitlementDefinitionsTableTableManager(
+        _db,
+        _db.entitlementDefinitions,
+      );
   $$FanPassportsTableTableManager get fanPassports =>
       $$FanPassportsTableTableManager(_db, _db.fanPassports);
   $$PersonasTableTableManager get personas =>

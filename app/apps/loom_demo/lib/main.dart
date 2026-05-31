@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
+import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_app_shell/loom_app_shell.dart';
@@ -24,6 +25,10 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerFanPassportApi(FanPassportFake(store));
   registerFanVaultApi(FanVaultFake(store));
   registerCreatorChannelRegistryApi(CreatorChannelRegistryFake(store));
+  registerContentHostApi(ContentHostFake(store));
+  registerMigrationExportApi(MigrationExportFake(store));
+  registerEntitlementLedgerApi(EntitlementLedgerFake(store));
+  registerAiGatewayApi(const AiGatewayFake());
 }
 
 Future<Widget> buildLoomDemoAppForTest() async {
@@ -48,8 +53,34 @@ class LoomDemoApp extends StatelessWidget {
       theme: buildLoomTheme(),
       home: LoomDemoShell(
         fanBuilder: (_) => const FanAppSurface(),
-        studioBuilder: (_) => const CreatorOnboardingScreen(),
+        studioBuilder: (_) => const CreatorStudioSurface(),
       ),
+    );
+  }
+}
+
+class CreatorStudioSurface extends StatefulWidget {
+  const CreatorStudioSurface({super.key});
+
+  @override
+  State<CreatorStudioSurface> createState() => _CreatorStudioSurfaceState();
+}
+
+class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
+  static const _phaseOneChannelId = 'channel_p1-creator-channel-loom-home-lab';
+
+  bool _showPublishingSetup = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showPublishingSetup) {
+      return const CreatorPublishingSetupScreen(channelId: _phaseOneChannelId);
+    }
+
+    return CreatorOnboardingScreen(
+      onOpenPublishingSetup: () {
+        setState(() => _showPublishingSetup = true);
+      },
     );
   }
 }

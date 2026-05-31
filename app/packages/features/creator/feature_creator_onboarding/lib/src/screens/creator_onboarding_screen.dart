@@ -5,7 +5,9 @@ import 'package:loom_design_system/loom_design_system.dart';
 import '../state/creator_onboarding_controller.dart';
 
 class CreatorOnboardingScreen extends StatefulWidget {
-  const CreatorOnboardingScreen({super.key});
+  const CreatorOnboardingScreen({this.onOpenPublishingSetup, super.key});
+
+  final VoidCallback? onOpenPublishingSetup;
 
   @override
   State<CreatorOnboardingScreen> createState() =>
@@ -80,6 +82,7 @@ class _CreatorOnboardingScreenState extends State<CreatorOnboardingScreen> {
             handleController: _handleController,
             descriptionController: _descriptionController,
             verticalController: _verticalController,
+            onOpenPublishingSetup: widget.onOpenPublishingSetup,
           ),
         );
       },
@@ -170,6 +173,7 @@ class _PrimaryAction extends StatelessWidget {
     required this.handleController,
     required this.descriptionController,
     required this.verticalController,
+    required this.onOpenPublishingSetup,
   });
 
   final CreatorOnboardingController controller;
@@ -177,6 +181,7 @@ class _PrimaryAction extends StatelessWidget {
   final TextEditingController handleController;
   final TextEditingController descriptionController;
   final TextEditingController verticalController;
+  final VoidCallback? onOpenPublishingSetup;
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +210,16 @@ class _PrimaryAction extends StatelessWidget {
           label: const Text('Accept managed hosting'),
         );
       case CreatorOnboardingStep.complete:
-        return const SizedBox.shrink();
+        final callback = onOpenPublishingSetup;
+        if (callback == null) {
+          return const SizedBox.shrink();
+        }
+        return FilledButton.icon(
+          key: const ValueKey('creator_open_publishing_setup_button'),
+          onPressed: callback,
+          icon: const Icon(Icons.dashboard_customize_outlined),
+          label: const Text('Open publishing setup'),
+        );
     }
   }
 }

@@ -221,4 +221,76 @@ class _FakeCreatorMetadataApi implements CreatorMetadataApi {
   }) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<ContentManifest>> contentManifests(String channelId) async {
+    return const [];
+  }
+
+  @override
+  Future<CreatorAdPolicy?> creatorAdPolicy(String channelId) async => null;
+
+  @override
+  Future<List<MembershipTier>> defineMembershipTiers({
+    required String channelId,
+    required List<MembershipTierDraft> tiers,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AIContentPolicy?> aiContentPolicy(String channelId) async => null;
+
+  @override
+  Future<List<MembershipTier>> membershipTiers(String channelId) async {
+    return const [];
+  }
+
+  @override
+  Future<ContentManifest> publishContent({
+    required String channelId,
+    required ContentType contentType,
+    required String title,
+    required String summary,
+    required String thumbnailRef,
+    required ContentAccessMode accessMode,
+    required MonetizationMode monetizationMode,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AIContentPolicy> setAIContentPolicy({
+    required String channelId,
+    required bool archiveQaEnabled,
+    required bool summariesEnabled,
+    required bool citationRequired,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<CreatorAdPolicy> setCreatorAdPolicy({
+    required String channelId,
+    required List<String> allowedCategories,
+    required List<String> blockedCategories,
+    required List<String> formats,
+    required List<String> surfaces,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MonetizationManifest> updateMonetizationManifest({
+    required String channelId,
+    required bool membershipsEnabled,
+    required List<String> memberOnlyContentIds,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
 }

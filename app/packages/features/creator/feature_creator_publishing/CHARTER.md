@@ -12,9 +12,9 @@ Creator publish composer, required summaries, catalog import, and content manife
 
 ## Owned screens
 
-Defined in Phase 2.
+- `CreatorPublishingSetupScreen`
+- `CreatorPublishingController`
 
 ## Forbidden imports
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
-

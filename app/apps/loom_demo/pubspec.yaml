@@ -12,6 +12,8 @@ dependencies:
     path: ../../packages/features/fan/feature_creator_channel
   feature_creator_onboarding:
     path: ../../packages/features/creator/feature_creator_onboarding
+  feature_creator_publishing:
+    path: ../../packages/features/creator/feature_creator_publishing
   feature_fan_onboarding:
     path: ../../packages/features/fan/feature_fan_onboarding
   flutter:

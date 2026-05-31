@@ -23,6 +23,10 @@ CreatorMetadataApi? _creatorMetadataApi;
 FanPassportApi? _fanPassportApi;
 FanVaultApi? _fanVaultApi;
 CreatorChannelRegistryApi? _creatorChannelRegistryApi;
+ContentHostApi? _contentHostApi;
+MigrationExportApi? _migrationExportApi;
+EntitlementLedgerApi? _entitlementLedgerApi;
+AiGatewayApi? _aiGatewayApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
@@ -40,11 +44,31 @@ void registerCreatorChannelRegistryApi(CreatorChannelRegistryApi api) {
   _creatorChannelRegistryApi = api;
 }
 
+void registerContentHostApi(ContentHostApi api) {
+  _contentHostApi = api;
+}
+
+void registerMigrationExportApi(MigrationExportApi api) {
+  _migrationExportApi = api;
+}
+
+void registerEntitlementLedgerApi(EntitlementLedgerApi api) {
+  _entitlementLedgerApi = api;
+}
+
+void registerAiGatewayApi(AiGatewayApi api) {
+  _aiGatewayApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
   _fanVaultApi = null;
   _creatorChannelRegistryApi = null;
+  _contentHostApi = null;
+  _migrationExportApi = null;
+  _entitlementLedgerApi = null;
+  _aiGatewayApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
@@ -75,6 +99,38 @@ CreatorChannelRegistryApi resolveCreatorChannelRegistryApi() {
   final api = _creatorChannelRegistryApi;
   if (api == null) {
     throw StateError('CreatorChannelRegistryApi has not been registered.');
+  }
+  return api;
+}
+
+ContentHostApi resolveContentHostApi() {
+  final api = _contentHostApi;
+  if (api == null) {
+    throw StateError('ContentHostApi has not been registered.');
+  }
+  return api;
+}
+
+MigrationExportApi resolveMigrationExportApi() {
+  final api = _migrationExportApi;
+  if (api == null) {
+    throw StateError('MigrationExportApi has not been registered.');
+  }
+  return api;
+}
+
+EntitlementLedgerApi resolveEntitlementLedgerApi() {
+  final api = _entitlementLedgerApi;
+  if (api == null) {
+    throw StateError('EntitlementLedgerApi has not been registered.');
+  }
+  return api;
+}
+
+AiGatewayApi resolveAiGatewayApi() {
+  final api = _aiGatewayApi;
+  if (api == null) {
+    throw StateError('AiGatewayApi has not been registered.');
   }
   return api;
 }
