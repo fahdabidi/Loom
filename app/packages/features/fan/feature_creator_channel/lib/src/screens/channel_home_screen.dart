@@ -8,6 +8,7 @@ class CreatorChannelHomeScreen extends StatefulWidget {
     required this.channelId,
     required this.onOpenContent,
     required this.onBack,
+    this.onAskArchive,
     this.passportId = 'passport_demo_fan',
     super.key,
   });
@@ -16,6 +17,7 @@ class CreatorChannelHomeScreen extends StatefulWidget {
   final String passportId;
   final ValueChanged<String> onOpenContent;
   final VoidCallback onBack;
+  final ValueChanged<String>? onAskArchive;
 
   @override
   State<CreatorChannelHomeScreen> createState() =>
@@ -113,6 +115,15 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _AdPolicyNote(policy: home.adPolicy),
+              if (widget.onAskArchive != null) ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  key: const ValueKey('p5_open_archive_qa_button'),
+                  onPressed: () => widget.onAskArchive?.call(home.creatorId),
+                  icon: const Icon(Icons.auto_awesome_rounded),
+                  label: const Text('Ask archive'),
+                ),
+              ],
               const SizedBox(height: 18),
               _Section(
                 title: 'Videos',

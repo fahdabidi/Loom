@@ -177,6 +177,28 @@ class _FakeVaultApi implements FanVaultApi {
   }
 
   @override
+  Future<RankPreference> getRankPreference(String passportId) async {
+    return RankPreference(
+      passportId: passportId,
+      summaryFirst: false,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<RankPreference> putRankPreference({
+    required String passportId,
+    required bool summaryFirst,
+    required String idempotencyKey,
+  }) async {
+    return RankPreference(
+      passportId: passportId,
+      summaryFirst: summaryFirst,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
   Future<InterestProfile> putDislikes({
     required String passportId,
     required List<String> dislikedInterestIds,

@@ -6,13 +6,19 @@ class DiscoveryController extends ChangeNotifier {
   DiscoveryController({
     RecommendationReferralApi? recommendationApi,
     SearchApi? searchApi,
+    FanVaultApi? fanVaultApi,
+    AiGatewayApi? aiGatewayApi,
     this.passportId = 'passport_demo_fan',
   }) : _recommendationApi =
            recommendationApi ?? resolveRecommendationReferralApi(),
-       _searchApi = searchApi ?? resolveSearchApi();
+       _searchApi = searchApi ?? resolveSearchApi(),
+       _fanVaultApi = fanVaultApi ?? resolveFanVaultApi(),
+       _aiGatewayApi = aiGatewayApi ?? resolveAiGatewayApi();
 
   final RecommendationReferralApi _recommendationApi;
   final SearchApi _searchApi;
+  final FanVaultApi _fanVaultApi;
+  final AiGatewayApi _aiGatewayApi;
   final String passportId;
 
   bool loading = false;
@@ -24,6 +30,8 @@ class DiscoveryController extends ChangeNotifier {
   String? _nextCursor;
   List<SearchResult> searchResults = const [];
   String searchQuery = '';
+  RankPreference? rankPreference;
+  int? summaryRankCandidateCount;
 
   bool get hasMore => _nextCursor != null;
 
@@ -35,6 +43,7 @@ class DiscoveryController extends ChangeNotifier {
       startupTiles = await _recommendationApi.getStartupTiles(
         passportId: passportId,
       );
+      rankPreference = await _fanVaultApi.getRankPreference(passportId);
       if (startupTiles.isNotEmpty) {
         await selectIntent(startupTiles.first);
       }
@@ -73,7 +82,9 @@ class DiscoveryController extends ChangeNotifier {
       sessionIntentId: session.id,
       pageSize: 5,
     );
-    feedItems = page.items;
+    final ranked = await _applySummaryPreference(page.items);
+    feedItems = ranked.items;
+    summaryRankCandidateCount = ranked.candidateCount;
     _nextCursor = page.nextCursor;
     notifyListeners();
   }
@@ -91,7 +102,10 @@ class DiscoveryController extends ChangeNotifier {
         cursor: _nextCursor,
         pageSize: 5,
       );
-      feedItems = [...feedItems, ...page.items];
+      final ranked = await _applySummaryPreference(page.items);
+      feedItems = [...feedItems, ...ranked.items];
+      summaryRankCandidateCount =
+          (summaryRankCandidateCount ?? 0) + ranked.candidateCount;
       _nextCursor = page.nextCursor;
     } finally {
       loadingMore = false;
@@ -126,5 +140,37 @@ class DiscoveryController extends ChangeNotifier {
     final page = await _searchApi.search(passportId: passportId, query: query);
     searchResults = page.items;
     notifyListeners();
+  }
+
+  Future<void> setSummaryFirst(bool enabled) async {
+    rankPreference = await _fanVaultApi.putRankPreference(
+      passportId: passportId,
+      summaryFirst: enabled,
+      idempotencyKey: 'p5-rank-$passportId-$enabled',
+    );
+    await refreshFeed();
+  }
+
+  Future<SummaryRankResult> _applySummaryPreference(
+    List<FeedItem> items,
+  ) async {
+    final preference =
+        rankPreference ??
+        RankPreference(
+          passportId: passportId,
+          summaryFirst: false,
+          updatedAt: DateTime.now().toUtc(),
+        );
+    if (!preference.summaryFirst) {
+      return SummaryRankResult(
+        preference: preference,
+        items: items,
+        candidateCount: items.length,
+      );
+    }
+    return _aiGatewayApi.rankBySummary(
+      preference: preference,
+      candidates: items,
+    );
   }
 }

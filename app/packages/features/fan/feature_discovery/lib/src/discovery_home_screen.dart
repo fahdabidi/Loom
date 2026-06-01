@@ -56,6 +56,17 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
             const SizedBox(height: 16),
             _IntentRail(controller: _controller),
             const SizedBox(height: 14),
+            ByoAgentToggle(
+              enabled: _controller.rankPreference?.summaryFirst ?? false,
+              onChanged: _controller.setSummaryFirst,
+            ),
+            if (_controller.rankPreference?.summaryFirst ?? false) ...[
+              const SizedBox(height: 10),
+              _SummaryRankNote(
+                candidateCount: _controller.summaryRankCandidateCount ?? 0,
+              ),
+            ],
+            const SizedBox(height: 14),
             if (_controller.sessionIntent != null)
               _DisclosureCard(sessionIntent: _controller.sessionIntent!),
             if (_controller.searchResults.isNotEmpty) ...[
@@ -212,6 +223,41 @@ class _SearchFieldState extends State<_SearchField> {
           icon: const Icon(Icons.arrow_forward_rounded),
           onPressed: () => widget.controller.search(_textController.text),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryRankNote extends StatelessWidget {
+  const _SummaryRankNote({required this.candidateCount});
+
+  final int candidateCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('p5_summary_rank_note'),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: LoomColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: LoomColors.line),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.auto_awesome_rounded, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Summary used for relevance across $candidateCount existing candidates. Title deemphasized; candidate set unchanged.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: LoomColors.mutedInk,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

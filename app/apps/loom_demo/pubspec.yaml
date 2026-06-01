@@ -8,6 +8,8 @@ environment:
   sdk: ^3.11.5
 
 dependencies:
+  feature_ai_qa:
+    path: ../../packages/features/fan/feature_ai_qa
   feature_creator_channel:
     path: ../../packages/features/fan/feature_creator_channel
   feature_creator_onboarding:

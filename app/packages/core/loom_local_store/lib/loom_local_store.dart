@@ -95,6 +95,29 @@ class AiContentPolicies extends Table {
   Set<Column<Object>> get primaryKey => {channelId};
 }
 
+class Transcripts extends Table {
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get segmentsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {contentId};
+}
+
+class AiSessions extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get question => text()();
+  TextColumn get answer => text()();
+  TextColumn get citationContentIdsJson => text()();
+  TextColumn get memoryPolicy => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class ImportJobs extends Table {
   TextColumn get id => text()();
   TextColumn get channelId => text()();
@@ -211,6 +234,15 @@ class FanInterestProfiles extends Table {
   Set<Column<Object>> get primaryKey => {passportId};
 }
 
+class FanRankingPreferences extends Table {
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  BoolColumn get summaryFirst => boolean()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {passportId};
+}
+
 class PlatformIntents extends Table {
   TextColumn get id => text()();
   TextColumn get label => text()();
@@ -309,7 +341,7 @@ class Receipts extends Table {
   TextColumn get type => text()();
   TextColumn get passportId => text().references(FanPassports, #id)();
   TextColumn get contentId => text().references(ContentItems, #id)();
-  TextColumn get authorizationId => text().references(PlaybackTokens, #id)();
+  TextColumn get authorizationId => text()();
   TextColumn get summary => text()();
   DateTimeColumn get createdAt => dateTime()();
 
@@ -388,6 +420,8 @@ class KvMeta extends Table {
     CreatorAdPolicies,
     MembershipTiers,
     AiContentPolicies,
+    Transcripts,
+    AiSessions,
     ImportJobs,
     ExternalContentRefs,
     ContentPerf,
@@ -398,6 +432,7 @@ class KvMeta extends Table {
     ConsentGrants,
     InterestTaxonomy,
     FanInterestProfiles,
+    FanRankingPreferences,
     PlatformIntents,
     SessionIntents,
     FanFeedback,
@@ -418,7 +453,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -459,6 +494,11 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(adInventory);
         await m.createTable(playbackTokens);
         await m.createTable(receipts);
+      }
+      if (from < 6) {
+        await m.createTable(transcripts);
+        await m.createTable(aiSessions);
+        await m.createTable(fanRankingPreferences);
       }
     },
   );
@@ -758,6 +798,59 @@ class AiContentPolicyRecord {
   final DateTime updatedAt;
 }
 
+class TranscriptSegmentRecord {
+  const TranscriptSegmentRecord({required this.startLabel, required this.text});
+
+  final String startLabel;
+  final String text;
+}
+
+class TranscriptRecord {
+  const TranscriptRecord({
+    required this.contentId,
+    required this.segments,
+    required this.updatedAt,
+  });
+
+  final String contentId;
+  final List<TranscriptSegmentRecord> segments;
+  final DateTime updatedAt;
+}
+
+class AiSessionRecord {
+  const AiSessionRecord({
+    required this.id,
+    required this.passportId,
+    required this.creatorId,
+    required this.question,
+    required this.answer,
+    required this.citationContentIds,
+    required this.memoryPolicy,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String creatorId;
+  final String question;
+  final String answer;
+  final List<String> citationContentIds;
+  final String memoryPolicy;
+  final DateTime createdAt;
+}
+
+class RankPreferenceRecord {
+  const RankPreferenceRecord({
+    required this.passportId,
+    required this.summaryFirst,
+    required this.updatedAt,
+  });
+
+  final String passportId;
+  final bool summaryFirst;
+  final DateTime updatedAt;
+}
+
 class ExternalContentRefRecord {
   const ExternalContentRefRecord({
     required this.id,
@@ -1029,6 +1122,8 @@ class DemoLocalStore {
       await _db.delete(_db.receipts).go();
       await _db.delete(_db.playbackTokens).go();
       await _db.delete(_db.adInventory).go();
+      await _db.delete(_db.aiSessions).go();
+      await _db.delete(_db.transcripts).go();
       await _db.delete(_db.fanFeedback).go();
       await _db.delete(_db.sessionIntents).go();
       await _db.delete(_db.externalProviderCandidates).go();
@@ -1047,6 +1142,7 @@ class DemoLocalStore {
       await _db.delete(_db.channelManifests).go();
       await _db.delete(_db.creatorChannels).go();
       await _db.delete(_db.adPreferences).go();
+      await _db.delete(_db.fanRankingPreferences).go();
       await _db.delete(_db.fanInterestProfiles).go();
       await _db.delete(_db.interestTaxonomy).go();
       await _db.delete(_db.consentGrants).go();
@@ -1145,6 +1241,17 @@ class DemoLocalStore {
         );
 
         batch.insertAll(
+          _db.transcripts,
+          world.content.map(
+            (content) => TranscriptsCompanion.insert(
+              contentId: content.id,
+              segmentsJson: jsonEncode(_transcriptSegmentsForContent(content)),
+              updatedAt: _now(),
+            ),
+          ),
+        );
+
+        batch.insertAll(
           _db.searchIndexEntries,
           world.content.map((content) {
             final creator = world.creators.firstWhere(
@@ -1237,6 +1344,62 @@ class DemoLocalStore {
             .get();
 
     return rows.map(_mapContent).toList(growable: false);
+  }
+
+  Future<List<TranscriptRecord>> transcriptsForCreator(String creatorId) async {
+    final content = await publicCatalogForCreator(creatorId);
+    if (content.isEmpty) {
+      return const [];
+    }
+    final contentIds = content.map((item) => item.id).toSet();
+    final rows = await _db.select(_db.transcripts).get();
+    return rows
+        .where((row) => contentIds.contains(row.contentId))
+        .map(_mapTranscript)
+        .toList(growable: false);
+  }
+
+  Future<AiSessionRecord> createAiSession({
+    required String passportId,
+    required String creatorId,
+    required String question,
+    required String answer,
+    required List<String> citationContentIds,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'ai_session');
+    if (existing != null) {
+      final session = await aiSession(existing);
+      if (session != null) {
+        return session;
+      }
+    }
+
+    await ensureDemoPassport(passportId: passportId);
+    final id = 'ai_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.aiSessions)
+        .insertOnConflictUpdate(
+          AiSessionsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            creatorId: creatorId,
+            question: question,
+            answer: answer,
+            citationContentIdsJson: jsonEncode(citationContentIds),
+            memoryPolicy: 'session_only',
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'ai_session', id);
+    return (await aiSession(id))!;
+  }
+
+  Future<AiSessionRecord?> aiSession(String id) async {
+    final row = await (_db.select(
+      _db.aiSessions,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapAiSession(row);
   }
 
   Future<String?> metaValue(String key) async {
@@ -1704,6 +1867,40 @@ class DemoLocalStore {
       personalizedAds: row.personalizedAds,
       updatedAt: row.updatedAt,
     );
+  }
+
+  Future<RankPreferenceRecord> rankingPreference(String passportId) async {
+    await _ensureRankingPreference(passportId);
+    final row = await (_db.select(
+      _db.fanRankingPreferences,
+    )..where((tbl) => tbl.passportId.equals(passportId))).getSingle();
+    return _mapRankPreference(row);
+  }
+
+  Future<RankPreferenceRecord> putRankingPreference({
+    required String passportId,
+    required bool summaryFirst,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'ranking_preference',
+    );
+    if (existing != null) {
+      return rankingPreference(existing);
+    }
+
+    await _ensureRankingPreference(passportId);
+    await (_db.update(
+      _db.fanRankingPreferences,
+    )..where((tbl) => tbl.passportId.equals(passportId))).write(
+      FanRankingPreferencesCompanion(
+        summaryFirst: Value(summaryFirst),
+        updatedAt: Value(_now()),
+      ),
+    );
+    await _saveIdempotency(idempotencyKey, 'ranking_preference', passportId);
+    return rankingPreference(passportId);
   }
 
   Future<FollowRecord> createFollow({
@@ -2715,6 +2912,20 @@ class DemoLocalStore {
         );
   }
 
+  Future<void> _ensureRankingPreference(String passportId) async {
+    await ensureDemoPassport(passportId: passportId);
+    await _db
+        .into(_db.fanRankingPreferences)
+        .insert(
+          FanRankingPreferencesCompanion.insert(
+            passportId: passportId,
+            summaryFirst: false,
+            updatedAt: _now(),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+
   Future<void> _applyFeedbackToProfile({
     required String passportId,
     required String creatorId,
@@ -2950,6 +3161,35 @@ AiContentPolicyRecord _mapAiContentPolicy(AiContentPolicy row) {
   );
 }
 
+TranscriptRecord _mapTranscript(Transcript row) {
+  return TranscriptRecord(
+    contentId: row.contentId,
+    segments: _decodeTranscriptSegments(row.segmentsJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
+AiSessionRecord _mapAiSession(AiSession row) {
+  return AiSessionRecord(
+    id: row.id,
+    passportId: row.passportId,
+    creatorId: row.creatorId,
+    question: row.question,
+    answer: row.answer,
+    citationContentIds: _decodeStringList(row.citationContentIdsJson),
+    memoryPolicy: row.memoryPolicy,
+    createdAt: row.createdAt,
+  );
+}
+
+RankPreferenceRecord _mapRankPreference(FanRankingPreference row) {
+  return RankPreferenceRecord(
+    passportId: row.passportId,
+    summaryFirst: row.summaryFirst,
+    updatedAt: row.updatedAt,
+  );
+}
+
 ImportJobRecord _mapImportJob(
   ImportJob row,
   List<ExternalContentRefRecord> references,
@@ -3118,6 +3358,23 @@ Map<String, Object?> _decodeStringMap(String value) {
   return decoded.cast<String, Object?>();
 }
 
+List<TranscriptSegmentRecord> _decodeTranscriptSegments(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (segment) => TranscriptSegmentRecord(
+          startLabel: '${segment['startLabel'] ?? '00:00'}',
+          text: '${segment['text'] ?? ''}',
+        ),
+      )
+      .where((segment) => segment.text.isNotEmpty)
+      .toList(growable: false);
+}
+
 List<ReceiptsCompanion> _receiptCompanionsForToken(PlaybackTokenRecord token) {
   final adPlan = token.adPlan;
   final hasAd = adPlan['hasAd'] == true;
@@ -3142,6 +3399,21 @@ List<ReceiptsCompanion> _receiptCompanionsForToken(PlaybackTokenRecord token) {
             'Contextual ad impression: ${adPlan['brandName']} (${adPlan['category']}).',
         createdAt: _now(),
       ),
+  ];
+}
+
+List<Map<String, String>> _transcriptSegmentsForContent(SeedContent content) {
+  return [
+    {
+      'startLabel': '00:12',
+      'text':
+          '${content.title}: ${content.summary} This segment gives the practical setup and context.',
+    },
+    {
+      'startLabel': content.contentType == 'video' ? '03:40' : 'section 2',
+      'text':
+          'Creator-approved source note for ${content.id}; useful for cited archive answers and summary-first relevance.',
+    },
   ];
 }
 

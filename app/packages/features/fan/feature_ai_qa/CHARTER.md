@@ -9,12 +9,12 @@ Fan archive Q&A, cited answers, source attribution, and AI usage receipts.
 - AI Gateway API
 - Creator Metadata API
 - Receipt Ledger API
+- Fan Vault API
 
 ## Owned screens
 
-Defined in Phase 5.
+- `ArchiveQaScreen`
 
 ## Forbidden imports
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
-

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:feature_ai_qa/feature_ai_qa.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
@@ -30,7 +31,7 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerContentHostApi(ContentHostFake(store));
   registerMigrationExportApi(MigrationExportFake(store));
   registerEntitlementLedgerApi(EntitlementLedgerFake(store));
-  registerAiGatewayApi(const AiGatewayFake());
+  registerAiGatewayApi(AiGatewayFake(store));
   registerExternalRecommendationProviderApi(
     ExternalRecommendationProviderFake(store),
   );
@@ -105,11 +106,19 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showOnboarding = false;
   String? _channelId;
   String? _contentId;
+  String? _qaCreatorId;
 
   @override
   Widget build(BuildContext context) {
     if (_showOnboarding) {
       return const FanOnboardingScreen();
+    }
+    final qaCreatorId = _qaCreatorId;
+    if (qaCreatorId != null) {
+      return ArchiveQaScreen(
+        creatorId: qaCreatorId,
+        onBack: () => setState(() => _qaCreatorId = null),
+      );
     }
     final contentId = _contentId;
     if (contentId != null) {
@@ -125,6 +134,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
         channelId: channelId,
         onBack: () => setState(() => _channelId = null),
         onOpenContent: (id) => setState(() => _contentId = id),
+        onAskArchive: (id) => setState(() => _qaCreatorId = id),
       );
     }
 

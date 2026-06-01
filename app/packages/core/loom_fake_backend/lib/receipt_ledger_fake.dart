@@ -42,7 +42,7 @@ class ReceiptLedgerFake implements ReceiptLedgerApi {
 ReceiptRecord _toRecord(ReceiptView view) {
   return ReceiptRecord(
     id: view.id,
-    type: view.type == ReceiptType.adImpression ? 'adImpression' : 'playback',
+    type: _receiptTypeValue(view.type),
     passportId: view.passportId,
     contentId: view.contentId,
     authorizationId: view.authorizationId,
@@ -54,13 +54,38 @@ ReceiptRecord _toRecord(ReceiptView view) {
 ReceiptView _mapReceipt(ReceiptRecord record) {
   return ReceiptView(
     id: record.id,
-    type: record.type == 'adImpression'
-        ? ReceiptType.adImpression
-        : ReceiptType.playback,
+    type: _receiptType(record.type),
     passportId: record.passportId,
     contentId: record.contentId,
     authorizationId: record.authorizationId,
     summary: record.summary,
     createdAt: record.createdAt,
   );
+}
+
+String _receiptTypeValue(ReceiptType type) {
+  switch (type) {
+    case ReceiptType.playback:
+      return 'playback';
+    case ReceiptType.adImpression:
+      return 'adImpression';
+    case ReceiptType.aiUsage:
+      return 'aiUsage';
+    case ReceiptType.sourceAttribution:
+      return 'sourceAttribution';
+  }
+}
+
+ReceiptType _receiptType(String value) {
+  switch (value) {
+    case 'playback':
+      return ReceiptType.playback;
+    case 'adImpression':
+      return ReceiptType.adImpression;
+    case 'aiUsage':
+      return ReceiptType.aiUsage;
+    case 'sourceAttribution':
+      return ReceiptType.sourceAttribution;
+  }
+  return ReceiptType.playback;
 }
