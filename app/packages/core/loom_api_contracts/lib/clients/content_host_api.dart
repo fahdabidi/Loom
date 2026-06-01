@@ -16,6 +16,8 @@ abstract class ContentHostApi {
     required String idempotencyKey,
   });
 
+  Future<PlaybackAsset> getPlaybackAsset(String contentId);
+
   Future<ContentPerformanceMetadata> getContentPerformanceMetadata(
     String contentId,
   );

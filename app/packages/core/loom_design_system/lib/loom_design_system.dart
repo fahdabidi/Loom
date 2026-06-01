@@ -1,9 +1,13 @@
+export 'components/ad_slot.dart';
 export 'components/channel_setup_form.dart';
 export 'components/content_tile.dart';
+export 'components/creator_channel_header.dart';
 export 'components/feed_card.dart';
 export 'components/interest_chip_grid.dart';
 export 'components/onboarding_scaffold.dart';
 export 'components/persona_selector.dart';
+export 'components/player_chrome.dart';
+export 'components/post_view.dart';
 export 'components/shell/nav_scaffold.dart';
 export 'components/shell/role_switcher.dart';
 export 'components/studio/ad_policy_editor.dart';

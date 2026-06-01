@@ -26,7 +26,15 @@ Future<Finder> findDiscoveryKey(WidgetTester tester, String key) async {
     }
   }
 
-  final scrollable = find.byKey(const ValueKey('p3_discovery_scroll'));
+  final scrollableCandidates = [
+    find.byKey(const ValueKey('p3_discovery_scroll')),
+    find.byKey(const ValueKey('p4_channel_home')),
+    find.byKey(const ValueKey('p4_player_screen')),
+  ];
+  final scrollable = scrollableCandidates.firstWhere(
+    (candidate) => candidate.evaluate().isNotEmpty,
+    orElse: () => scrollableCandidates.first,
+  );
   for (var attempt = 0; attempt < 12 && finder.evaluate().isEmpty; attempt++) {
     await tester.drag(scrollable, const Offset(0, -280), warnIfMissed: false);
     await tester.pumpAndSettle();

@@ -2,15 +2,18 @@
 
 ## Scope
 
-Fan-facing creator channel screens. Phase 0 owns the proof slice that renders a paginated public catalog from `CreatorMetadataApi`.
+Fan-facing creator channel screens: channel home, follow controls, creator blocking, and content launch.
 
 ## Allowed contracts
 
 - `CreatorMetadataApi.getPublicCatalog`
+- `CreatorMetadataApi.getChannelHome`
+- `FanPassportApi`
 
 ## Owned screens
 
 - `CreatorContentListScreen`
+- `CreatorChannelHomeScreen`
 
 ## Allowed imports
 
@@ -25,4 +28,3 @@ Fan-facing creator channel screens. Phase 0 owns the proof slice that renders a 
 - `loom_fake_backend`
 - `loom_local_store`
 - `loom_seed_data`
-

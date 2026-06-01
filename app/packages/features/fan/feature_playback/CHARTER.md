@@ -9,12 +9,12 @@ Video/post playback, playback authorization, ad-supported playback, and completi
 - Playback Authorization API
 - Content Host API
 - Receipt Ledger API
+- Creator Metadata API
 
 ## Owned screens
 
-Defined in Phase 4.
+- PlaybackScreen
 
 ## Forbidden imports
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
-

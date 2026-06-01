@@ -2,6 +2,7 @@ import '../models/creator_metadata/content_summary_view.dart';
 import '../models/creator_metadata/creator_channel_manifest.dart';
 import '../models/creator_metadata/hosting_contract.dart';
 import '../models/creator_metadata/phase2_models.dart';
+import '../models/creator_metadata/phase4_models.dart';
 import '../models/shared/page.dart';
 
 abstract class CreatorMetadataApi {
@@ -10,6 +11,13 @@ abstract class CreatorMetadataApi {
     String? cursor,
     int limit = 10,
   });
+
+  Future<ChannelHome> getChannelHome({
+    required String channelId,
+    required String passportId,
+  });
+
+  Future<ContentDetail> getContentDetail(String contentId);
 
   Future<CreatorChannelManifest> createChannelProfile({
     required String channelId,

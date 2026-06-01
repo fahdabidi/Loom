@@ -7,5 +7,7 @@ export 'external_recommendation_provider_fake.dart';
 export 'fan_passport_fake.dart';
 export 'fan_vault_fake.dart';
 export 'migration_export_fake.dart';
+export 'playback_authorization_fake.dart';
+export 'receipt_ledger_fake.dart';
 export 'recommendation_referral_fake.dart';
 export 'search_fake.dart';

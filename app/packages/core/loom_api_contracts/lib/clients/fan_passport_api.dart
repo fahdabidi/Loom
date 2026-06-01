@@ -30,6 +30,18 @@ abstract class FanPassportApi {
     required String idempotencyKey,
   });
 
+  Future<FollowView?> unfollow({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  });
+
+  Future<FollowView> blockCreator({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  });
+
   Future<ConsentGrant> createConsentGrant({
     required String passportId,
     required String grantType,

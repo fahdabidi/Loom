@@ -88,6 +88,36 @@ class FanPassportFake implements FanPassportApi {
   }
 
   @override
+  Future<FollowView?> unfollow({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.unfollowCreator(
+      passportId: passportId,
+      creatorId: creatorId,
+      idempotencyKey: idempotencyKey,
+    );
+    return record == null ? null : _mapFollow(record);
+  }
+
+  @override
+  Future<FollowView> blockCreator({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.blockCreator(
+      passportId: passportId,
+      creatorId: creatorId,
+      idempotencyKey: idempotencyKey,
+    );
+    return _mapFollow(record);
+  }
+
+  @override
   Future<ConsentGrant> createConsentGrant({
     required String passportId,
     required String grantType,

@@ -45,6 +45,29 @@ class ContentHostFake implements ContentHostApi {
   }
 
   @override
+  Future<PlaybackAsset> getPlaybackAsset(String contentId) async {
+    await Future<void>.delayed(latency);
+    final content = await _store.contentById(contentId);
+    if (content == null) {
+      throw ApiError(
+        code: 'content_not_found',
+        message: 'No content exists for contentId=$contentId',
+      );
+    }
+    return PlaybackAsset(
+      assetId: 'asset_${_slug(content.id)}',
+      channelId: content.creatorId,
+      contentType: content.contentType == 'video'
+          ? ContentType.video
+          : ContentType.post,
+      fileName:
+          '${_slug(content.title)}.${content.contentType == 'video' ? 'mp4' : 'md'}',
+      thumbnailRef: content.thumbnailRef,
+      createdAt: content.createdAt,
+    );
+  }
+
+  @override
   Future<ContentPerformanceMetadata> getContentPerformanceMetadata(
     String contentId,
   ) async {

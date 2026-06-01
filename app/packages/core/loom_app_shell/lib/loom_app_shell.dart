@@ -30,6 +30,8 @@ AiGatewayApi? _aiGatewayApi;
 RecommendationReferralApi? _recommendationReferralApi;
 ExternalRecommendationProviderApi? _externalRecommendationProviderApi;
 SearchApi? _searchApi;
+PlaybackAuthorizationApi? _playbackAuthorizationApi;
+ReceiptLedgerApi? _receiptLedgerApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
@@ -77,6 +79,14 @@ void registerSearchApi(SearchApi api) {
   _searchApi = api;
 }
 
+void registerPlaybackAuthorizationApi(PlaybackAuthorizationApi api) {
+  _playbackAuthorizationApi = api;
+}
+
+void registerReceiptLedgerApi(ReceiptLedgerApi api) {
+  _receiptLedgerApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
@@ -89,6 +99,8 @@ void resetAppShellDependencies() {
   _recommendationReferralApi = null;
   _externalRecommendationProviderApi = null;
   _searchApi = null;
+  _playbackAuthorizationApi = null;
+  _receiptLedgerApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
@@ -177,6 +189,22 @@ SearchApi resolveSearchApi() {
   final api = _searchApi;
   if (api == null) {
     throw StateError('SearchApi has not been registered.');
+  }
+  return api;
+}
+
+PlaybackAuthorizationApi resolvePlaybackAuthorizationApi() {
+  final api = _playbackAuthorizationApi;
+  if (api == null) {
+    throw StateError('PlaybackAuthorizationApi has not been registered.');
+  }
+  return api;
+}
+
+ReceiptLedgerApi resolveReceiptLedgerApi() {
+  final api = _receiptLedgerApi;
+  if (api == null) {
+    throw StateError('ReceiptLedgerApi has not been registered.');
   }
   return api;
 }

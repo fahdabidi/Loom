@@ -86,10 +86,37 @@ class _FakePassportApi implements FanPassportApi {
   }
 
   @override
+  Future<FollowView> blockCreator({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    return FollowView(
+      id: 'follow_blocked',
+      passportId: passportId,
+      creatorId: creatorId,
+      creatorDisplayName: 'Solar Sarah',
+      visibility: FollowVisibility.private,
+      blocked: true,
+      createdAt: DateTime.utc(2026),
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
   Future<FanPassportClaim?> getPassport(String passportId) async => null;
 
   @override
   Future<List<FollowView>> listFollows(String passportId) async => const [];
+
+  @override
+  Future<FollowView?> unfollow({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    return null;
+  }
 
   @override
   Future<Persona> setPersona({
@@ -197,6 +224,40 @@ class _FakeCreatorMetadataApi implements CreatorMetadataApi {
         ),
       ],
       nextCursor: null,
+    );
+  }
+
+  @override
+  Future<ChannelHome> getChannelHome({
+    required String channelId,
+    required String passportId,
+  }) async {
+    return const ChannelHome(
+      creatorId: 'creator_solar_sarah',
+      displayName: 'Solar Sarah',
+      handle: 'solar-sarah',
+      vertical: 'home-energy',
+      avatarRef: 'seed://avatar',
+      isFollowed: false,
+      isBlocked: false,
+      visibilityLabel: 'private',
+      content: [],
+      adPolicy: null,
+    );
+  }
+
+  @override
+  Future<ContentDetail> getContentDetail(String contentId) async {
+    return ContentDetail(
+      id: contentId,
+      creatorId: 'creator_solar_sarah',
+      creatorDisplayName: 'Solar Sarah',
+      title: 'Solar test',
+      summary: 'Summary',
+      body: 'Body',
+      thumbnailRef: 'seed://thumb',
+      contentType: ContentType.video,
+      createdAt: DateTime.utc(2026),
     );
   }
 

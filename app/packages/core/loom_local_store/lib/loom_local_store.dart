@@ -278,6 +278,45 @@ class SearchIndexEntries extends Table {
   Set<Column<Object>> get primaryKey => {contentId};
 }
 
+class AdInventory extends Table {
+  TextColumn get id => text()();
+  TextColumn get brandName => text()();
+  TextColumn get category => text()();
+  TextColumn get format => text()();
+  TextColumn get surfacesJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class PlaybackTokens extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get token => text()();
+  TextColumn get adPlanJson => text()();
+  BoolColumn get completed => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get expiresAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class Receipts extends Table {
+  TextColumn get id => text()();
+  TextColumn get type => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get authorizationId => text().references(PlaybackTokens, #id)();
+  TextColumn get summary => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class AdPreferences extends Table {
   TextColumn get passportId => text().references(FanPassports, #id)();
   BoolColumn get personalizedAds => boolean()();
@@ -364,6 +403,9 @@ class KvMeta extends Table {
     FanFeedback,
     ExternalProviderCandidates,
     SearchIndexEntries,
+    AdInventory,
+    PlaybackTokens,
+    Receipts,
     AdPreferences,
     CreatorChannels,
     ChannelManifests,
@@ -376,7 +418,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -412,6 +454,11 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(fanFeedback);
         await m.createTable(externalProviderCandidates);
         await m.createTable(searchIndexEntries);
+      }
+      if (from < 5) {
+        await m.createTable(adInventory);
+        await m.createTable(playbackTokens);
+        await m.createTable(receipts);
       }
     },
   );
@@ -877,6 +924,66 @@ class SearchIndexEntryRecord {
   final DateTime updatedAt;
 }
 
+class AdInventoryRecord {
+  const AdInventoryRecord({
+    required this.id,
+    required this.brandName,
+    required this.category,
+    required this.format,
+    required this.surfaces,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String brandName;
+  final String category;
+  final String format;
+  final List<String> surfaces;
+  final DateTime updatedAt;
+}
+
+class PlaybackTokenRecord {
+  const PlaybackTokenRecord({
+    required this.id,
+    required this.passportId,
+    required this.contentId,
+    required this.token,
+    required this.adPlan,
+    required this.completed,
+    required this.createdAt,
+    required this.expiresAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String contentId;
+  final String token;
+  final Map<String, Object?> adPlan;
+  final bool completed;
+  final DateTime createdAt;
+  final DateTime expiresAt;
+}
+
+class ReceiptRecord {
+  const ReceiptRecord({
+    required this.id,
+    required this.type,
+    required this.passportId,
+    required this.contentId,
+    required this.authorizationId,
+    required this.summary,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String type;
+  final String passportId;
+  final String contentId;
+  final String authorizationId;
+  final String summary;
+  final DateTime createdAt;
+}
+
 class EntitlementDefinitionRecord {
   const EntitlementDefinitionRecord({
     required this.id,
@@ -919,6 +1026,9 @@ class DemoLocalStore {
     final world = seed ?? seedV1;
 
     await _db.transaction(() async {
+      await _db.delete(_db.receipts).go();
+      await _db.delete(_db.playbackTokens).go();
+      await _db.delete(_db.adInventory).go();
       await _db.delete(_db.fanFeedback).go();
       await _db.delete(_db.sessionIntents).go();
       await _db.delete(_db.externalProviderCandidates).go();
@@ -990,6 +1100,21 @@ class DemoLocalStore {
         );
 
         batch.insertAll(
+          _db.creatorAdPolicies,
+          world.creators.map((creator) {
+            final allowed = _defaultAdCategoriesForCreator(creator.id);
+            return CreatorAdPoliciesCompanion.insert(
+              channelId: creator.id,
+              allowedCategoriesJson: jsonEncode(allowed),
+              blockedCategoriesJson: jsonEncode(['gambling']),
+              formatsJson: jsonEncode(['pre_roll', 'sponsor_card']),
+              surfacesJson: jsonEncode(['watch', 'post_detail']),
+              updatedAt: _now(),
+            );
+          }),
+        );
+
+        batch.insertAll(
           _db.platformIntents,
           _platformIntentSeeds.map(
             (intent) => PlatformIntentsCompanion.insert(
@@ -1045,6 +1170,20 @@ class DemoLocalStore {
               updatedAt: _now(),
             );
           }),
+        );
+
+        batch.insertAll(
+          _db.adInventory,
+          _adInventorySeeds.map(
+            (ad) => AdInventoryCompanion.insert(
+              id: ad.id,
+              brandName: ad.brandName,
+              category: ad.category,
+              format: ad.format,
+              surfacesJson: jsonEncode(ad.surfaces),
+              updatedAt: _now(),
+            ),
+          ),
         );
 
         batch.insertAll(_db.kvMeta, [
@@ -1655,6 +1794,87 @@ class DemoLocalStore {
       );
     }
     return records;
+  }
+
+  Future<FollowRecord?> followForPassportCreator({
+    required String passportId,
+    required String creatorId,
+  }) async {
+    final row =
+        await (_db.select(_db.follows)..where(
+              (tbl) =>
+                  tbl.passportId.equals(passportId) &
+                  tbl.creatorId.equals(creatorId),
+            ))
+            .getSingleOrNull();
+    if (row == null) {
+      return null;
+    }
+    final creator = await creatorById(row.creatorId);
+    return _mapFollow(row, creatorDisplayName: creator?.displayName ?? '');
+  }
+
+  Future<FollowRecord?> unfollowCreator({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'unfollow');
+    if (existing != null) {
+      return followById(existing);
+    }
+
+    final follow = await followForPassportCreator(
+      passportId: passportId,
+      creatorId: creatorId,
+    );
+    if (follow == null) {
+      return null;
+    }
+    await (_db.delete(
+      _db.follows,
+    )..where((tbl) => tbl.id.equals(follow.id))).go();
+    await _saveIdempotency(idempotencyKey, 'unfollow', follow.id);
+    return null;
+  }
+
+  Future<FollowRecord> blockCreator({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'block_creator');
+    if (existing != null) {
+      final follow = await followById(existing);
+      if (follow != null) {
+        return follow;
+      }
+    }
+
+    await ensureDemoPassport(passportId: passportId);
+    final follow =
+        await followForPassportCreator(
+          passportId: passportId,
+          creatorId: creatorId,
+        ) ??
+        await createFollow(
+          passportId: passportId,
+          creatorId: creatorId,
+          visibility: 'private',
+          idempotencyKey: 'block-follow-$passportId-$creatorId',
+        );
+    await (_db.update(
+      _db.follows,
+    )..where((tbl) => tbl.id.equals(follow.id))).write(
+      FollowsCompanion(blocked: const Value(true), updatedAt: Value(_now())),
+    );
+    await _applyFeedbackToProfile(
+      passportId: passportId,
+      creatorId: creatorId,
+      action: 'block_creator',
+    );
+    await _saveIdempotency(idempotencyKey, 'block_creator', follow.id);
+    return (await followById(follow.id))!;
   }
 
   Future<CreatorChannelRecord> createChannel({
@@ -2286,6 +2506,167 @@ class DemoLocalStore {
     );
   }
 
+  Future<List<AdInventoryRecord>> adInventory({
+    required List<String> allowedCategories,
+    required List<String> blockedCategories,
+    String surface = 'watch',
+  }) async {
+    final rows = await _db.select(_db.adInventory).get();
+    final allowed = allowedCategories.toSet();
+    final blocked = blockedCategories.toSet();
+    final ads =
+        rows
+            .map(_mapAdInventory)
+            .where(
+              (ad) =>
+                  ad.surfaces.contains(surface) &&
+                  (allowed.isEmpty || allowed.contains(ad.category)) &&
+                  !blocked.contains(ad.category),
+            )
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    return ads;
+  }
+
+  Future<PlaybackTokenRecord> createPlaybackToken({
+    required String passportId,
+    required String contentId,
+    required Map<String, Object?> adPlan,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'playback_token');
+    if (existing != null) {
+      final token = await playbackToken(existing);
+      if (token != null) {
+        return token;
+      }
+    }
+
+    await ensureDemoPassport(passportId: passportId);
+    final id = 'playback_${_slug(idempotencyKey)}';
+    final now = _now();
+    await _db
+        .into(_db.playbackTokens)
+        .insertOnConflictUpdate(
+          PlaybackTokensCompanion.insert(
+            id: id,
+            passportId: passportId,
+            contentId: contentId,
+            token: 'token_${_slug(id)}',
+            adPlanJson: jsonEncode(adPlan),
+            completed: false,
+            createdAt: now,
+            expiresAt: now.add(const Duration(hours: 2)),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'playback_token', id);
+    return (await playbackToken(id))!;
+  }
+
+  Future<PlaybackTokenRecord?> playbackToken(String id) async {
+    final row = await (_db.select(
+      _db.playbackTokens,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapPlaybackToken(row);
+  }
+
+  Future<List<ReceiptRecord>> completePlayback({
+    required String authorizationId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'playback_completion',
+    );
+    if (existing != null) {
+      return receiptsForAuthorization(existing);
+    }
+
+    final token = await playbackToken(authorizationId);
+    if (token == null) {
+      throw StateError('No playback authorization exists for $authorizationId');
+    }
+
+    await _db.transaction(() async {
+      await (_db.update(_db.playbackTokens)
+            ..where((tbl) => tbl.id.equals(authorizationId)))
+          .write(const PlaybackTokensCompanion(completed: Value(true)));
+      final receipts = _receiptCompanionsForToken(token);
+      await _db.batch((batch) {
+        batch.insertAllOnConflictUpdate(_db.receipts, receipts);
+      });
+      await _saveIdempotency(
+        idempotencyKey,
+        'playback_completion',
+        authorizationId,
+      );
+    });
+    return receiptsForAuthorization(authorizationId);
+  }
+
+  Future<List<ReceiptRecord>> ingestReceipts({
+    required List<ReceiptRecord> records,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'receipts');
+    if (existing != null) {
+      return receiptsForPassport(existing);
+    }
+    await _db.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        _db.receipts,
+        records.map(
+          (record) => ReceiptsCompanion.insert(
+            id: record.id,
+            type: record.type,
+            passportId: record.passportId,
+            contentId: record.contentId,
+            authorizationId: record.authorizationId,
+            summary: record.summary,
+            createdAt: record.createdAt,
+          ),
+        ),
+      );
+    });
+    if (records.isNotEmpty) {
+      await _saveIdempotency(
+        idempotencyKey,
+        'receipts',
+        records.first.passportId,
+      );
+    }
+    return records;
+  }
+
+  Future<List<ReceiptRecord>> receiptsForAuthorization(
+    String authorizationId,
+  ) async {
+    final rows =
+        await (_db.select(_db.receipts)
+              ..where((tbl) => tbl.authorizationId.equals(authorizationId))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.type)]))
+            .get();
+    return rows.map(_mapReceipt).toList(growable: false);
+  }
+
+  Future<List<ReceiptRecord>> receiptsForPassport(String passportId) async {
+    final rows =
+        await (_db.select(_db.receipts)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapReceipt).toList(growable: false);
+  }
+
+  Future<List<ReceiptRecord>> receiptsForContent(String contentId) async {
+    final rows =
+        await (_db.select(_db.receipts)
+              ..where((tbl) => tbl.contentId.equals(contentId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapReceipt).toList(growable: false);
+  }
+
   Future<void> _ensureCreatorForChannel({
     required String channelId,
     required String displayName,
@@ -2673,6 +3054,42 @@ SearchIndexEntryRecord _mapSearchIndexEntry(SearchIndexEntry row) {
   );
 }
 
+AdInventoryRecord _mapAdInventory(AdInventoryData row) {
+  return AdInventoryRecord(
+    id: row.id,
+    brandName: row.brandName,
+    category: row.category,
+    format: row.format,
+    surfaces: _decodeStringList(row.surfacesJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
+PlaybackTokenRecord _mapPlaybackToken(PlaybackToken row) {
+  return PlaybackTokenRecord(
+    id: row.id,
+    passportId: row.passportId,
+    contentId: row.contentId,
+    token: row.token,
+    adPlan: _decodeStringMap(row.adPlanJson),
+    completed: row.completed,
+    createdAt: row.createdAt,
+    expiresAt: row.expiresAt,
+  );
+}
+
+ReceiptRecord _mapReceipt(Receipt row) {
+  return ReceiptRecord(
+    id: row.id,
+    type: row.type,
+    passportId: row.passportId,
+    contentId: row.contentId,
+    authorizationId: row.authorizationId,
+    summary: row.summary,
+    createdAt: row.createdAt,
+  );
+}
+
 EntitlementDefinitionRecord _mapEntitlementDefinition(
   EntitlementDefinition row,
 ) {
@@ -2691,6 +3108,41 @@ List<String> _decodeStringList(String value) {
     return const [];
   }
   return decoded.whereType<String>().toList(growable: false);
+}
+
+Map<String, Object?> _decodeStringMap(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! Map) {
+    return const {};
+  }
+  return decoded.cast<String, Object?>();
+}
+
+List<ReceiptsCompanion> _receiptCompanionsForToken(PlaybackTokenRecord token) {
+  final adPlan = token.adPlan;
+  final hasAd = adPlan['hasAd'] == true;
+  return [
+    ReceiptsCompanion.insert(
+      id: 'receipt_playback_${_slug(token.id)}',
+      type: 'playback',
+      passportId: token.passportId,
+      contentId: token.contentId,
+      authorizationId: token.id,
+      summary: 'Playback completed for ${token.contentId}.',
+      createdAt: _now(),
+    ),
+    if (hasAd)
+      ReceiptsCompanion.insert(
+        id: 'receipt_ad_${_slug(token.id)}',
+        type: 'adImpression',
+        passportId: token.passportId,
+        contentId: token.contentId,
+        authorizationId: token.id,
+        summary:
+            'Contextual ad impression: ${adPlan['brandName']} (${adPlan['category']}).',
+        createdAt: _now(),
+      ),
+  ];
 }
 
 class _PlatformIntentSeed {
@@ -2740,6 +3192,53 @@ const _platformIntentSeeds = [
   ),
 ];
 
+class _AdInventorySeed {
+  const _AdInventorySeed({
+    required this.id,
+    required this.brandName,
+    required this.category,
+    required this.format,
+    required this.surfaces,
+  });
+
+  final String id;
+  final String brandName;
+  final String category;
+  final String format;
+  final List<String> surfaces;
+}
+
+const _adInventorySeeds = [
+  _AdInventorySeed(
+    id: 'ad_home_001',
+    brandName: 'Gridwise Home',
+    category: 'home_energy',
+    format: 'pre_roll',
+    surfaces: ['watch'],
+  ),
+  _AdInventorySeed(
+    id: 'ad_food_001',
+    brandName: 'Ferment Supply Co',
+    category: 'fermentation',
+    format: 'sponsor_card',
+    surfaces: ['watch', 'post_detail'],
+  ),
+  _AdInventorySeed(
+    id: 'ad_motion_001',
+    brandName: 'JointKind Studio',
+    category: 'mobility',
+    format: 'pre_roll',
+    surfaces: ['watch'],
+  ),
+  _AdInventorySeed(
+    id: 'ad_blocked_gambling',
+    brandName: 'Blocked Odds',
+    category: 'gambling',
+    format: 'pre_roll',
+    surfaces: ['watch'],
+  ),
+];
+
 List<String> _interestIdsForCreatorId(String creatorId) {
   if (creatorId.contains('solar')) {
     return const ['home_energy', 'solar_storage', 'personal_finance'];
@@ -2749,6 +3248,19 @@ List<String> _interestIdsForCreatorId(String creatorId) {
   }
   if (creatorId.contains('motion')) {
     return const ['mobility', 'strength_basics', 'joint_friendly_cardio'];
+  }
+  return const ['creator_tools'];
+}
+
+List<String> _defaultAdCategoriesForCreator(String creatorId) {
+  if (creatorId.contains('solar')) {
+    return const ['home_energy', 'personal_finance'];
+  }
+  if (creatorId.contains('ferment')) {
+    return const ['fermentation', 'food_safety'];
+  }
+  if (creatorId.contains('motion')) {
+    return const ['mobility', 'joint_friendly_cardio'];
   }
   return const ['creator_tools'];
 }

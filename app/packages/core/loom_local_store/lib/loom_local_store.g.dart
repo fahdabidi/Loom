@@ -9799,6 +9799,1422 @@ class SearchIndexEntriesCompanion extends UpdateCompanion<SearchIndexEntry> {
   }
 }
 
+class $AdInventoryTable extends AdInventory
+    with TableInfo<$AdInventoryTable, AdInventoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AdInventoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _brandNameMeta = const VerificationMeta(
+    'brandName',
+  );
+  @override
+  late final GeneratedColumn<String> brandName = GeneratedColumn<String>(
+    'brand_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _formatMeta = const VerificationMeta('format');
+  @override
+  late final GeneratedColumn<String> format = GeneratedColumn<String>(
+    'format',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _surfacesJsonMeta = const VerificationMeta(
+    'surfacesJson',
+  );
+  @override
+  late final GeneratedColumn<String> surfacesJson = GeneratedColumn<String>(
+    'surfaces_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    brandName,
+    category,
+    format,
+    surfacesJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ad_inventory';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AdInventoryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('brand_name')) {
+      context.handle(
+        _brandNameMeta,
+        brandName.isAcceptableOrUnknown(data['brand_name']!, _brandNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_brandNameMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('format')) {
+      context.handle(
+        _formatMeta,
+        format.isAcceptableOrUnknown(data['format']!, _formatMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_formatMeta);
+    }
+    if (data.containsKey('surfaces_json')) {
+      context.handle(
+        _surfacesJsonMeta,
+        surfacesJson.isAcceptableOrUnknown(
+          data['surfaces_json']!,
+          _surfacesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_surfacesJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AdInventoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AdInventoryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      brandName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand_name'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      format: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}format'],
+      )!,
+      surfacesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}surfaces_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AdInventoryTable createAlias(String alias) {
+    return $AdInventoryTable(attachedDatabase, alias);
+  }
+}
+
+class AdInventoryData extends DataClass implements Insertable<AdInventoryData> {
+  final String id;
+  final String brandName;
+  final String category;
+  final String format;
+  final String surfacesJson;
+  final DateTime updatedAt;
+  const AdInventoryData({
+    required this.id,
+    required this.brandName,
+    required this.category,
+    required this.format,
+    required this.surfacesJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['brand_name'] = Variable<String>(brandName);
+    map['category'] = Variable<String>(category);
+    map['format'] = Variable<String>(format);
+    map['surfaces_json'] = Variable<String>(surfacesJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AdInventoryCompanion toCompanion(bool nullToAbsent) {
+    return AdInventoryCompanion(
+      id: Value(id),
+      brandName: Value(brandName),
+      category: Value(category),
+      format: Value(format),
+      surfacesJson: Value(surfacesJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AdInventoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AdInventoryData(
+      id: serializer.fromJson<String>(json['id']),
+      brandName: serializer.fromJson<String>(json['brandName']),
+      category: serializer.fromJson<String>(json['category']),
+      format: serializer.fromJson<String>(json['format']),
+      surfacesJson: serializer.fromJson<String>(json['surfacesJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'brandName': serializer.toJson<String>(brandName),
+      'category': serializer.toJson<String>(category),
+      'format': serializer.toJson<String>(format),
+      'surfacesJson': serializer.toJson<String>(surfacesJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AdInventoryData copyWith({
+    String? id,
+    String? brandName,
+    String? category,
+    String? format,
+    String? surfacesJson,
+    DateTime? updatedAt,
+  }) => AdInventoryData(
+    id: id ?? this.id,
+    brandName: brandName ?? this.brandName,
+    category: category ?? this.category,
+    format: format ?? this.format,
+    surfacesJson: surfacesJson ?? this.surfacesJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AdInventoryData copyWithCompanion(AdInventoryCompanion data) {
+    return AdInventoryData(
+      id: data.id.present ? data.id.value : this.id,
+      brandName: data.brandName.present ? data.brandName.value : this.brandName,
+      category: data.category.present ? data.category.value : this.category,
+      format: data.format.present ? data.format.value : this.format,
+      surfacesJson: data.surfacesJson.present
+          ? data.surfacesJson.value
+          : this.surfacesJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdInventoryData(')
+          ..write('id: $id, ')
+          ..write('brandName: $brandName, ')
+          ..write('category: $category, ')
+          ..write('format: $format, ')
+          ..write('surfacesJson: $surfacesJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, brandName, category, format, surfacesJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AdInventoryData &&
+          other.id == this.id &&
+          other.brandName == this.brandName &&
+          other.category == this.category &&
+          other.format == this.format &&
+          other.surfacesJson == this.surfacesJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AdInventoryCompanion extends UpdateCompanion<AdInventoryData> {
+  final Value<String> id;
+  final Value<String> brandName;
+  final Value<String> category;
+  final Value<String> format;
+  final Value<String> surfacesJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AdInventoryCompanion({
+    this.id = const Value.absent(),
+    this.brandName = const Value.absent(),
+    this.category = const Value.absent(),
+    this.format = const Value.absent(),
+    this.surfacesJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AdInventoryCompanion.insert({
+    required String id,
+    required String brandName,
+    required String category,
+    required String format,
+    required String surfacesJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       brandName = Value(brandName),
+       category = Value(category),
+       format = Value(format),
+       surfacesJson = Value(surfacesJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<AdInventoryData> custom({
+    Expression<String>? id,
+    Expression<String>? brandName,
+    Expression<String>? category,
+    Expression<String>? format,
+    Expression<String>? surfacesJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (brandName != null) 'brand_name': brandName,
+      if (category != null) 'category': category,
+      if (format != null) 'format': format,
+      if (surfacesJson != null) 'surfaces_json': surfacesJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AdInventoryCompanion copyWith({
+    Value<String>? id,
+    Value<String>? brandName,
+    Value<String>? category,
+    Value<String>? format,
+    Value<String>? surfacesJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AdInventoryCompanion(
+      id: id ?? this.id,
+      brandName: brandName ?? this.brandName,
+      category: category ?? this.category,
+      format: format ?? this.format,
+      surfacesJson: surfacesJson ?? this.surfacesJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (brandName.present) {
+      map['brand_name'] = Variable<String>(brandName.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (format.present) {
+      map['format'] = Variable<String>(format.value);
+    }
+    if (surfacesJson.present) {
+      map['surfaces_json'] = Variable<String>(surfacesJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdInventoryCompanion(')
+          ..write('id: $id, ')
+          ..write('brandName: $brandName, ')
+          ..write('category: $category, ')
+          ..write('format: $format, ')
+          ..write('surfacesJson: $surfacesJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PlaybackTokensTable extends PlaybackTokens
+    with TableInfo<$PlaybackTokensTable, PlaybackToken> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlaybackTokensTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES content_items (id)',
+    ),
+  );
+  static const VerificationMeta _tokenMeta = const VerificationMeta('token');
+  @override
+  late final GeneratedColumn<String> token = GeneratedColumn<String>(
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _adPlanJsonMeta = const VerificationMeta(
+    'adPlanJson',
+  );
+  @override
+  late final GeneratedColumn<String> adPlanJson = GeneratedColumn<String>(
+    'ad_plan_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedMeta = const VerificationMeta(
+    'completed',
+  );
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+    'completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("completed" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expiresAtMeta = const VerificationMeta(
+    'expiresAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiresAt = GeneratedColumn<DateTime>(
+    'expires_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    contentId,
+    token,
+    adPlanJson,
+    completed,
+    createdAt,
+    expiresAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'playback_tokens';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlaybackToken> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('token')) {
+      context.handle(
+        _tokenMeta,
+        token.isAcceptableOrUnknown(data['token']!, _tokenMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tokenMeta);
+    }
+    if (data.containsKey('ad_plan_json')) {
+      context.handle(
+        _adPlanJsonMeta,
+        adPlanJson.isAcceptableOrUnknown(
+          data['ad_plan_json']!,
+          _adPlanJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_adPlanJsonMeta);
+    }
+    if (data.containsKey('completed')) {
+      context.handle(
+        _completedMeta,
+        completed.isAcceptableOrUnknown(data['completed']!, _completedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_completedMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('expires_at')) {
+      context.handle(
+        _expiresAtMeta,
+        expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_expiresAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlaybackToken map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlaybackToken(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      adPlanJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ad_plan_json'],
+      )!,
+      completed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}completed'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      expiresAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expires_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlaybackTokensTable createAlias(String alias) {
+    return $PlaybackTokensTable(attachedDatabase, alias);
+  }
+}
+
+class PlaybackToken extends DataClass implements Insertable<PlaybackToken> {
+  final String id;
+  final String passportId;
+  final String contentId;
+  final String token;
+  final String adPlanJson;
+  final bool completed;
+  final DateTime createdAt;
+  final DateTime expiresAt;
+  const PlaybackToken({
+    required this.id,
+    required this.passportId,
+    required this.contentId,
+    required this.token,
+    required this.adPlanJson,
+    required this.completed,
+    required this.createdAt,
+    required this.expiresAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['content_id'] = Variable<String>(contentId);
+    map['token'] = Variable<String>(token);
+    map['ad_plan_json'] = Variable<String>(adPlanJson);
+    map['completed'] = Variable<bool>(completed);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['expires_at'] = Variable<DateTime>(expiresAt);
+    return map;
+  }
+
+  PlaybackTokensCompanion toCompanion(bool nullToAbsent) {
+    return PlaybackTokensCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      contentId: Value(contentId),
+      token: Value(token),
+      adPlanJson: Value(adPlanJson),
+      completed: Value(completed),
+      createdAt: Value(createdAt),
+      expiresAt: Value(expiresAt),
+    );
+  }
+
+  factory PlaybackToken.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlaybackToken(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      contentId: serializer.fromJson<String>(json['contentId']),
+      token: serializer.fromJson<String>(json['token']),
+      adPlanJson: serializer.fromJson<String>(json['adPlanJson']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      expiresAt: serializer.fromJson<DateTime>(json['expiresAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'contentId': serializer.toJson<String>(contentId),
+      'token': serializer.toJson<String>(token),
+      'adPlanJson': serializer.toJson<String>(adPlanJson),
+      'completed': serializer.toJson<bool>(completed),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'expiresAt': serializer.toJson<DateTime>(expiresAt),
+    };
+  }
+
+  PlaybackToken copyWith({
+    String? id,
+    String? passportId,
+    String? contentId,
+    String? token,
+    String? adPlanJson,
+    bool? completed,
+    DateTime? createdAt,
+    DateTime? expiresAt,
+  }) => PlaybackToken(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    contentId: contentId ?? this.contentId,
+    token: token ?? this.token,
+    adPlanJson: adPlanJson ?? this.adPlanJson,
+    completed: completed ?? this.completed,
+    createdAt: createdAt ?? this.createdAt,
+    expiresAt: expiresAt ?? this.expiresAt,
+  );
+  PlaybackToken copyWithCompanion(PlaybackTokensCompanion data) {
+    return PlaybackToken(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      token: data.token.present ? data.token.value : this.token,
+      adPlanJson: data.adPlanJson.present
+          ? data.adPlanJson.value
+          : this.adPlanJson,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaybackToken(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('token: $token, ')
+          ..write('adPlanJson: $adPlanJson, ')
+          ..write('completed: $completed, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('expiresAt: $expiresAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    contentId,
+    token,
+    adPlanJson,
+    completed,
+    createdAt,
+    expiresAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlaybackToken &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.contentId == this.contentId &&
+          other.token == this.token &&
+          other.adPlanJson == this.adPlanJson &&
+          other.completed == this.completed &&
+          other.createdAt == this.createdAt &&
+          other.expiresAt == this.expiresAt);
+}
+
+class PlaybackTokensCompanion extends UpdateCompanion<PlaybackToken> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> contentId;
+  final Value<String> token;
+  final Value<String> adPlanJson;
+  final Value<bool> completed;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> expiresAt;
+  final Value<int> rowid;
+  const PlaybackTokensCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.contentId = const Value.absent(),
+    this.token = const Value.absent(),
+    this.adPlanJson = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlaybackTokensCompanion.insert({
+    required String id,
+    required String passportId,
+    required String contentId,
+    required String token,
+    required String adPlanJson,
+    required bool completed,
+    required DateTime createdAt,
+    required DateTime expiresAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       contentId = Value(contentId),
+       token = Value(token),
+       adPlanJson = Value(adPlanJson),
+       completed = Value(completed),
+       createdAt = Value(createdAt),
+       expiresAt = Value(expiresAt);
+  static Insertable<PlaybackToken> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? contentId,
+    Expression<String>? token,
+    Expression<String>? adPlanJson,
+    Expression<bool>? completed,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? expiresAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (contentId != null) 'content_id': contentId,
+      if (token != null) 'token': token,
+      if (adPlanJson != null) 'ad_plan_json': adPlanJson,
+      if (completed != null) 'completed': completed,
+      if (createdAt != null) 'created_at': createdAt,
+      if (expiresAt != null) 'expires_at': expiresAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlaybackTokensCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? contentId,
+    Value<String>? token,
+    Value<String>? adPlanJson,
+    Value<bool>? completed,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? expiresAt,
+    Value<int>? rowid,
+  }) {
+    return PlaybackTokensCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      contentId: contentId ?? this.contentId,
+      token: token ?? this.token,
+      adPlanJson: adPlanJson ?? this.adPlanJson,
+      completed: completed ?? this.completed,
+      createdAt: createdAt ?? this.createdAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (token.present) {
+      map['token'] = Variable<String>(token.value);
+    }
+    if (adPlanJson.present) {
+      map['ad_plan_json'] = Variable<String>(adPlanJson.value);
+    }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (expiresAt.present) {
+      map['expires_at'] = Variable<DateTime>(expiresAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaybackTokensCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('token: $token, ')
+          ..write('adPlanJson: $adPlanJson, ')
+          ..write('completed: $completed, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReceiptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES content_items (id)',
+    ),
+  );
+  static const VerificationMeta _authorizationIdMeta = const VerificationMeta(
+    'authorizationId',
+  );
+  @override
+  late final GeneratedColumn<String> authorizationId = GeneratedColumn<String>(
+    'authorization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES playback_tokens (id)',
+    ),
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    type,
+    passportId,
+    contentId,
+    authorizationId,
+    summary,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'receipts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Receipt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('authorization_id')) {
+      context.handle(
+        _authorizationIdMeta,
+        authorizationId.isAcceptableOrUnknown(
+          data['authorization_id']!,
+          _authorizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_authorizationIdMeta);
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_summaryMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Receipt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Receipt(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      authorizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}authorization_id'],
+      )!,
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReceiptsTable createAlias(String alias) {
+    return $ReceiptsTable(attachedDatabase, alias);
+  }
+}
+
+class Receipt extends DataClass implements Insertable<Receipt> {
+  final String id;
+  final String type;
+  final String passportId;
+  final String contentId;
+  final String authorizationId;
+  final String summary;
+  final DateTime createdAt;
+  const Receipt({
+    required this.id,
+    required this.type,
+    required this.passportId,
+    required this.contentId,
+    required this.authorizationId,
+    required this.summary,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['type'] = Variable<String>(type);
+    map['passport_id'] = Variable<String>(passportId);
+    map['content_id'] = Variable<String>(contentId);
+    map['authorization_id'] = Variable<String>(authorizationId);
+    map['summary'] = Variable<String>(summary);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ReceiptsCompanion toCompanion(bool nullToAbsent) {
+    return ReceiptsCompanion(
+      id: Value(id),
+      type: Value(type),
+      passportId: Value(passportId),
+      contentId: Value(contentId),
+      authorizationId: Value(authorizationId),
+      summary: Value(summary),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Receipt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Receipt(
+      id: serializer.fromJson<String>(json['id']),
+      type: serializer.fromJson<String>(json['type']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      contentId: serializer.fromJson<String>(json['contentId']),
+      authorizationId: serializer.fromJson<String>(json['authorizationId']),
+      summary: serializer.fromJson<String>(json['summary']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'type': serializer.toJson<String>(type),
+      'passportId': serializer.toJson<String>(passportId),
+      'contentId': serializer.toJson<String>(contentId),
+      'authorizationId': serializer.toJson<String>(authorizationId),
+      'summary': serializer.toJson<String>(summary),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Receipt copyWith({
+    String? id,
+    String? type,
+    String? passportId,
+    String? contentId,
+    String? authorizationId,
+    String? summary,
+    DateTime? createdAt,
+  }) => Receipt(
+    id: id ?? this.id,
+    type: type ?? this.type,
+    passportId: passportId ?? this.passportId,
+    contentId: contentId ?? this.contentId,
+    authorizationId: authorizationId ?? this.authorizationId,
+    summary: summary ?? this.summary,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Receipt copyWithCompanion(ReceiptsCompanion data) {
+    return Receipt(
+      id: data.id.present ? data.id.value : this.id,
+      type: data.type.present ? data.type.value : this.type,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      authorizationId: data.authorizationId.present
+          ? data.authorizationId.value
+          : this.authorizationId,
+      summary: data.summary.present ? data.summary.value : this.summary,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Receipt(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('authorizationId: $authorizationId, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    type,
+    passportId,
+    contentId,
+    authorizationId,
+    summary,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Receipt &&
+          other.id == this.id &&
+          other.type == this.type &&
+          other.passportId == this.passportId &&
+          other.contentId == this.contentId &&
+          other.authorizationId == this.authorizationId &&
+          other.summary == this.summary &&
+          other.createdAt == this.createdAt);
+}
+
+class ReceiptsCompanion extends UpdateCompanion<Receipt> {
+  final Value<String> id;
+  final Value<String> type;
+  final Value<String> passportId;
+  final Value<String> contentId;
+  final Value<String> authorizationId;
+  final Value<String> summary;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ReceiptsCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.contentId = const Value.absent(),
+    this.authorizationId = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReceiptsCompanion.insert({
+    required String id,
+    required String type,
+    required String passportId,
+    required String contentId,
+    required String authorizationId,
+    required String summary,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       type = Value(type),
+       passportId = Value(passportId),
+       contentId = Value(contentId),
+       authorizationId = Value(authorizationId),
+       summary = Value(summary),
+       createdAt = Value(createdAt);
+  static Insertable<Receipt> custom({
+    Expression<String>? id,
+    Expression<String>? type,
+    Expression<String>? passportId,
+    Expression<String>? contentId,
+    Expression<String>? authorizationId,
+    Expression<String>? summary,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (type != null) 'type': type,
+      if (passportId != null) 'passport_id': passportId,
+      if (contentId != null) 'content_id': contentId,
+      if (authorizationId != null) 'authorization_id': authorizationId,
+      if (summary != null) 'summary': summary,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReceiptsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? type,
+    Value<String>? passportId,
+    Value<String>? contentId,
+    Value<String>? authorizationId,
+    Value<String>? summary,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ReceiptsCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      passportId: passportId ?? this.passportId,
+      contentId: contentId ?? this.contentId,
+      authorizationId: authorizationId ?? this.authorizationId,
+      summary: summary ?? this.summary,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (authorizationId.present) {
+      map['authorization_id'] = Variable<String>(authorizationId.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReceiptsCompanion(')
+          ..write('id: $id, ')
+          ..write('type: $type, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('authorizationId: $authorizationId, ')
+          ..write('summary: $summary, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AdPreferencesTable extends AdPreferences
     with TableInfo<$AdPreferencesTable, AdPreference> {
   @override
@@ -11877,6 +13293,9 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
       $ExternalProviderCandidatesTable(this);
   late final $SearchIndexEntriesTable searchIndexEntries =
       $SearchIndexEntriesTable(this);
+  late final $AdInventoryTable adInventory = $AdInventoryTable(this);
+  late final $PlaybackTokensTable playbackTokens = $PlaybackTokensTable(this);
+  late final $ReceiptsTable receipts = $ReceiptsTable(this);
   late final $AdPreferencesTable adPreferences = $AdPreferencesTable(this);
   late final $CreatorChannelsTable creatorChannels = $CreatorChannelsTable(
     this,
@@ -11917,6 +13336,9 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     fanFeedback,
     externalProviderCandidates,
     searchIndexEntries,
+    adInventory,
+    playbackTokens,
+    receipts,
     adPreferences,
     creatorChannels,
     channelManifests,
@@ -12647,6 +14069,46 @@ final class $$ContentItemsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$PlaybackTokensTable, List<PlaybackToken>>
+  _playbackTokensRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.playbackTokens,
+    aliasName: $_aliasNameGenerator(
+      db.contentItems.id,
+      db.playbackTokens.contentId,
+    ),
+  );
+
+  $$PlaybackTokensTableProcessedTableManager get playbackTokensRefs {
+    final manager = $$PlaybackTokensTableTableManager(
+      $_db,
+      $_db.playbackTokens,
+    ).filter((f) => f.contentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_playbackTokensRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReceiptsTable, List<Receipt>> _receiptsRefsTable(
+    _$LoomDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.receipts,
+    aliasName: $_aliasNameGenerator(db.contentItems.id, db.receipts.contentId),
+  );
+
+  $$ReceiptsTableProcessedTableManager get receiptsRefs {
+    final manager = $$ReceiptsTableTableManager(
+      $_db,
+      $_db.receipts,
+    ).filter((f) => f.contentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_receiptsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$ContentItemsTableFilterComposer
@@ -12784,6 +14246,56 @@ class $$ContentItemsTableFilterComposer
           }) => $$SearchIndexEntriesTableFilterComposer(
             $db: $db,
             $table: $db.searchIndexEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> playbackTokensRefs(
+    Expression<bool> Function($$PlaybackTokensTableFilterComposer f) f,
+  ) {
+    final $$PlaybackTokensTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableFilterComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> receiptsRefs(
+    Expression<bool> Function($$ReceiptsTableFilterComposer f) f,
+  ) {
+    final $$ReceiptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableFilterComposer(
+            $db: $db,
+            $table: $db.receipts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -13000,6 +14512,56 @@ class $$ContentItemsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> playbackTokensRefs<T extends Object>(
+    Expression<T> Function($$PlaybackTokensTableAnnotationComposer a) f,
+  ) {
+    final $$PlaybackTokensTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableAnnotationComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> receiptsRefs<T extends Object>(
+    Expression<T> Function($$ReceiptsTableAnnotationComposer a) f,
+  ) {
+    final $$ReceiptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ContentItemsTableTableManager
@@ -13020,6 +14582,8 @@ class $$ContentItemsTableTableManager
             bool fanFeedbackRefs,
             bool externalProviderCandidatesRefs,
             bool searchIndexEntriesRefs,
+            bool playbackTokensRefs,
+            bool receiptsRefs,
           })
         > {
   $$ContentItemsTableTableManager(_$LoomDatabase db, $ContentItemsTable table)
@@ -13091,6 +14655,8 @@ class $$ContentItemsTableTableManager
                 fanFeedbackRefs = false,
                 externalProviderCandidatesRefs = false,
                 searchIndexEntriesRefs = false,
+                playbackTokensRefs = false,
+                receiptsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -13099,6 +14665,8 @@ class $$ContentItemsTableTableManager
                     if (externalProviderCandidatesRefs)
                       db.externalProviderCandidates,
                     if (searchIndexEntriesRefs) db.searchIndexEntries,
+                    if (playbackTokensRefs) db.playbackTokens,
+                    if (receiptsRefs) db.receipts,
                   ],
                   addJoins:
                       <
@@ -13199,6 +14767,48 @@ class $$ContentItemsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (playbackTokensRefs)
+                        await $_getPrefetchedData<
+                          ContentItem,
+                          $ContentItemsTable,
+                          PlaybackToken
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContentItemsTableReferences
+                              ._playbackTokensRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).playbackTokensRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (receiptsRefs)
+                        await $_getPrefetchedData<
+                          ContentItem,
+                          $ContentItemsTable,
+                          Receipt
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContentItemsTableReferences
+                              ._receiptsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).receiptsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -13224,6 +14834,8 @@ typedef $$ContentItemsTableProcessedTableManager =
         bool fanFeedbackRefs,
         bool externalProviderCandidatesRefs,
         bool searchIndexEntriesRefs,
+        bool playbackTokensRefs,
+        bool receiptsRefs,
       })
     >;
 typedef $$ContentManifestsTableCreateCompanionBuilder =
@@ -15610,6 +17222,46 @@ final class $$FanPassportsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$PlaybackTokensTable, List<PlaybackToken>>
+  _playbackTokensRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.playbackTokens,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.playbackTokens.passportId,
+    ),
+  );
+
+  $$PlaybackTokensTableProcessedTableManager get playbackTokensRefs {
+    final manager = $$PlaybackTokensTableTableManager(
+      $_db,
+      $_db.playbackTokens,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_playbackTokensRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReceiptsTable, List<Receipt>> _receiptsRefsTable(
+    _$LoomDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.receipts,
+    aliasName: $_aliasNameGenerator(db.fanPassports.id, db.receipts.passportId),
+  );
+
+  $$ReceiptsTableProcessedTableManager get receiptsRefs {
+    final manager = $$ReceiptsTableTableManager(
+      $_db,
+      $_db.receipts,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_receiptsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$AdPreferencesTable, List<AdPreference>>
   _adPreferencesRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
     db.adPreferences,
@@ -15802,6 +17454,56 @@ class $$FanPassportsTableFilterComposer
           }) => $$FanFeedbackTableFilterComposer(
             $db: $db,
             $table: $db.fanFeedback,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> playbackTokensRefs(
+    Expression<bool> Function($$PlaybackTokensTableFilterComposer f) f,
+  ) {
+    final $$PlaybackTokensTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableFilterComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> receiptsRefs(
+    Expression<bool> Function($$ReceiptsTableFilterComposer f) f,
+  ) {
+    final $$ReceiptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableFilterComposer(
+            $db: $db,
+            $table: $db.receipts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16043,6 +17745,56 @@ class $$FanPassportsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> playbackTokensRefs<T extends Object>(
+    Expression<T> Function($$PlaybackTokensTableAnnotationComposer a) f,
+  ) {
+    final $$PlaybackTokensTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableAnnotationComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> receiptsRefs<T extends Object>(
+    Expression<T> Function($$ReceiptsTableAnnotationComposer a) f,
+  ) {
+    final $$ReceiptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> adPreferencesRefs<T extends Object>(
     Expression<T> Function($$AdPreferencesTableAnnotationComposer a) f,
   ) {
@@ -16089,6 +17841,8 @@ class $$FanPassportsTableTableManager
             bool fanInterestProfilesRefs,
             bool sessionIntentsRefs,
             bool fanFeedbackRefs,
+            bool playbackTokensRefs,
+            bool receiptsRefs,
             bool adPreferencesRefs,
           })
         > {
@@ -16147,6 +17901,8 @@ class $$FanPassportsTableTableManager
                 fanInterestProfilesRefs = false,
                 sessionIntentsRefs = false,
                 fanFeedbackRefs = false,
+                playbackTokensRefs = false,
+                receiptsRefs = false,
                 adPreferencesRefs = false,
               }) {
                 return PrefetchHooks(
@@ -16158,6 +17914,8 @@ class $$FanPassportsTableTableManager
                     if (fanInterestProfilesRefs) db.fanInterestProfiles,
                     if (sessionIntentsRefs) db.sessionIntents,
                     if (fanFeedbackRefs) db.fanFeedback,
+                    if (playbackTokensRefs) db.playbackTokens,
+                    if (receiptsRefs) db.receipts,
                     if (adPreferencesRefs) db.adPreferences,
                   ],
                   addJoins: null,
@@ -16289,6 +18047,48 @@ class $$FanPassportsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (playbackTokensRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          PlaybackToken
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._playbackTokensRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).playbackTokensRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (receiptsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          Receipt
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._receiptsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).receiptsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (adPreferencesRefs)
                         await $_getPrefetchedData<
                           FanPassport,
@@ -16337,6 +18137,8 @@ typedef $$FanPassportsTableProcessedTableManager =
         bool fanInterestProfilesRefs,
         bool sessionIntentsRefs,
         bool fanFeedbackRefs,
+        bool playbackTokensRefs,
+        bool receiptsRefs,
         bool adPreferencesRefs,
       })
     >;
@@ -20410,6 +22212,1352 @@ typedef $$SearchIndexEntriesTableProcessedTableManager =
       SearchIndexEntry,
       PrefetchHooks Function({bool contentId, bool creatorId})
     >;
+typedef $$AdInventoryTableCreateCompanionBuilder =
+    AdInventoryCompanion Function({
+      required String id,
+      required String brandName,
+      required String category,
+      required String format,
+      required String surfacesJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AdInventoryTableUpdateCompanionBuilder =
+    AdInventoryCompanion Function({
+      Value<String> id,
+      Value<String> brandName,
+      Value<String> category,
+      Value<String> format,
+      Value<String> surfacesJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$AdInventoryTableFilterComposer
+    extends Composer<_$LoomDatabase, $AdInventoryTable> {
+  $$AdInventoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brandName => $composableBuilder(
+    column: $table.brandName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AdInventoryTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AdInventoryTable> {
+  $$AdInventoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brandName => $composableBuilder(
+    column: $table.brandName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get format => $composableBuilder(
+    column: $table.format,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AdInventoryTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AdInventoryTable> {
+  $$AdInventoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get brandName =>
+      $composableBuilder(column: $table.brandName, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get format =>
+      $composableBuilder(column: $table.format, builder: (column) => column);
+
+  GeneratedColumn<String> get surfacesJson => $composableBuilder(
+    column: $table.surfacesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AdInventoryTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AdInventoryTable,
+          AdInventoryData,
+          $$AdInventoryTableFilterComposer,
+          $$AdInventoryTableOrderingComposer,
+          $$AdInventoryTableAnnotationComposer,
+          $$AdInventoryTableCreateCompanionBuilder,
+          $$AdInventoryTableUpdateCompanionBuilder,
+          (
+            AdInventoryData,
+            BaseReferences<_$LoomDatabase, $AdInventoryTable, AdInventoryData>,
+          ),
+          AdInventoryData,
+          PrefetchHooks Function()
+        > {
+  $$AdInventoryTableTableManager(_$LoomDatabase db, $AdInventoryTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AdInventoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AdInventoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AdInventoryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> brandName = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> format = const Value.absent(),
+                Value<String> surfacesJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AdInventoryCompanion(
+                id: id,
+                brandName: brandName,
+                category: category,
+                format: format,
+                surfacesJson: surfacesJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String brandName,
+                required String category,
+                required String format,
+                required String surfacesJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AdInventoryCompanion.insert(
+                id: id,
+                brandName: brandName,
+                category: category,
+                format: format,
+                surfacesJson: surfacesJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AdInventoryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AdInventoryTable,
+      AdInventoryData,
+      $$AdInventoryTableFilterComposer,
+      $$AdInventoryTableOrderingComposer,
+      $$AdInventoryTableAnnotationComposer,
+      $$AdInventoryTableCreateCompanionBuilder,
+      $$AdInventoryTableUpdateCompanionBuilder,
+      (
+        AdInventoryData,
+        BaseReferences<_$LoomDatabase, $AdInventoryTable, AdInventoryData>,
+      ),
+      AdInventoryData,
+      PrefetchHooks Function()
+    >;
+typedef $$PlaybackTokensTableCreateCompanionBuilder =
+    PlaybackTokensCompanion Function({
+      required String id,
+      required String passportId,
+      required String contentId,
+      required String token,
+      required String adPlanJson,
+      required bool completed,
+      required DateTime createdAt,
+      required DateTime expiresAt,
+      Value<int> rowid,
+    });
+typedef $$PlaybackTokensTableUpdateCompanionBuilder =
+    PlaybackTokensCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> contentId,
+      Value<String> token,
+      Value<String> adPlanJson,
+      Value<bool> completed,
+      Value<DateTime> createdAt,
+      Value<DateTime> expiresAt,
+      Value<int> rowid,
+    });
+
+final class $$PlaybackTokensTableReferences
+    extends
+        BaseReferences<_$LoomDatabase, $PlaybackTokensTable, PlaybackToken> {
+  $$PlaybackTokensTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.playbackTokens.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContentItemsTable _contentIdTable(_$LoomDatabase db) =>
+      db.contentItems.createAlias(
+        $_aliasNameGenerator(db.playbackTokens.contentId, db.contentItems.id),
+      );
+
+  $$ContentItemsTableProcessedTableManager get contentId {
+    final $_column = $_itemColumn<String>('content_id')!;
+
+    final manager = $$ContentItemsTableTableManager(
+      $_db,
+      $_db.contentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ReceiptsTable, List<Receipt>> _receiptsRefsTable(
+    _$LoomDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.receipts,
+    aliasName: $_aliasNameGenerator(
+      db.playbackTokens.id,
+      db.receipts.authorizationId,
+    ),
+  );
+
+  $$ReceiptsTableProcessedTableManager get receiptsRefs {
+    final manager = $$ReceiptsTableTableManager($_db, $_db.receipts).filter(
+      (f) => f.authorizationId.id.sqlEquals($_itemColumn<String>('id')!),
+    );
+
+    final cache = $_typedResult.readTableOrNull(_receiptsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PlaybackTokensTableFilterComposer
+    extends Composer<_$LoomDatabase, $PlaybackTokensTable> {
+  $$PlaybackTokensTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get token => $composableBuilder(
+    column: $table.token,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adPlanJson => $composableBuilder(
+    column: $table.adPlanJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableFilterComposer get contentId {
+    final $$ContentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> receiptsRefs(
+    Expression<bool> Function($$ReceiptsTableFilterComposer f) f,
+  ) {
+    final $$ReceiptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.authorizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableFilterComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlaybackTokensTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PlaybackTokensTable> {
+  $$PlaybackTokensTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get token => $composableBuilder(
+    column: $table.token,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get adPlanJson => $composableBuilder(
+    column: $table.adPlanJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableOrderingComposer get contentId {
+    final $$ContentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlaybackTokensTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PlaybackTokensTable> {
+  $$PlaybackTokensTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => column);
+
+  GeneratedColumn<String> get adPlanJson => $composableBuilder(
+    column: $table.adPlanJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get expiresAt =>
+      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableAnnotationComposer get contentId {
+    final $$ContentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> receiptsRefs<T extends Object>(
+    Expression<T> Function($$ReceiptsTableAnnotationComposer a) f,
+  ) {
+    final $$ReceiptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.authorizationId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlaybackTokensTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PlaybackTokensTable,
+          PlaybackToken,
+          $$PlaybackTokensTableFilterComposer,
+          $$PlaybackTokensTableOrderingComposer,
+          $$PlaybackTokensTableAnnotationComposer,
+          $$PlaybackTokensTableCreateCompanionBuilder,
+          $$PlaybackTokensTableUpdateCompanionBuilder,
+          (PlaybackToken, $$PlaybackTokensTableReferences),
+          PlaybackToken,
+          PrefetchHooks Function({
+            bool passportId,
+            bool contentId,
+            bool receiptsRefs,
+          })
+        > {
+  $$PlaybackTokensTableTableManager(
+    _$LoomDatabase db,
+    $PlaybackTokensTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlaybackTokensTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlaybackTokensTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlaybackTokensTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> contentId = const Value.absent(),
+                Value<String> token = const Value.absent(),
+                Value<String> adPlanJson = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> expiresAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlaybackTokensCompanion(
+                id: id,
+                passportId: passportId,
+                contentId: contentId,
+                token: token,
+                adPlanJson: adPlanJson,
+                completed: completed,
+                createdAt: createdAt,
+                expiresAt: expiresAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String contentId,
+                required String token,
+                required String adPlanJson,
+                required bool completed,
+                required DateTime createdAt,
+                required DateTime expiresAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PlaybackTokensCompanion.insert(
+                id: id,
+                passportId: passportId,
+                contentId: contentId,
+                token: token,
+                adPlanJson: adPlanJson,
+                completed: completed,
+                createdAt: createdAt,
+                expiresAt: expiresAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PlaybackTokensTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({passportId = false, contentId = false, receiptsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [if (receiptsRefs) db.receipts],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (passportId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.passportId,
+                                    referencedTable:
+                                        $$PlaybackTokensTableReferences
+                                            ._passportIdTable(db),
+                                    referencedColumn:
+                                        $$PlaybackTokensTableReferences
+                                            ._passportIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (contentId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contentId,
+                                    referencedTable:
+                                        $$PlaybackTokensTableReferences
+                                            ._contentIdTable(db),
+                                    referencedColumn:
+                                        $$PlaybackTokensTableReferences
+                                            ._contentIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (receiptsRefs)
+                        await $_getPrefetchedData<
+                          PlaybackToken,
+                          $PlaybackTokensTable,
+                          Receipt
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlaybackTokensTableReferences
+                              ._receiptsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlaybackTokensTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).receiptsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.authorizationId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$PlaybackTokensTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PlaybackTokensTable,
+      PlaybackToken,
+      $$PlaybackTokensTableFilterComposer,
+      $$PlaybackTokensTableOrderingComposer,
+      $$PlaybackTokensTableAnnotationComposer,
+      $$PlaybackTokensTableCreateCompanionBuilder,
+      $$PlaybackTokensTableUpdateCompanionBuilder,
+      (PlaybackToken, $$PlaybackTokensTableReferences),
+      PlaybackToken,
+      PrefetchHooks Function({
+        bool passportId,
+        bool contentId,
+        bool receiptsRefs,
+      })
+    >;
+typedef $$ReceiptsTableCreateCompanionBuilder =
+    ReceiptsCompanion Function({
+      required String id,
+      required String type,
+      required String passportId,
+      required String contentId,
+      required String authorizationId,
+      required String summary,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ReceiptsTableUpdateCompanionBuilder =
+    ReceiptsCompanion Function({
+      Value<String> id,
+      Value<String> type,
+      Value<String> passportId,
+      Value<String> contentId,
+      Value<String> authorizationId,
+      Value<String> summary,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$ReceiptsTableReferences
+    extends BaseReferences<_$LoomDatabase, $ReceiptsTable, Receipt> {
+  $$ReceiptsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.receipts.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContentItemsTable _contentIdTable(_$LoomDatabase db) =>
+      db.contentItems.createAlias(
+        $_aliasNameGenerator(db.receipts.contentId, db.contentItems.id),
+      );
+
+  $$ContentItemsTableProcessedTableManager get contentId {
+    final $_column = $_itemColumn<String>('content_id')!;
+
+    final manager = $$ContentItemsTableTableManager(
+      $_db,
+      $_db.contentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PlaybackTokensTable _authorizationIdTable(_$LoomDatabase db) =>
+      db.playbackTokens.createAlias(
+        $_aliasNameGenerator(db.receipts.authorizationId, db.playbackTokens.id),
+      );
+
+  $$PlaybackTokensTableProcessedTableManager get authorizationId {
+    final $_column = $_itemColumn<String>('authorization_id')!;
+
+    final manager = $$PlaybackTokensTableTableManager(
+      $_db,
+      $_db.playbackTokens,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_authorizationIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReceiptsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ReceiptsTable> {
+  $$ReceiptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableFilterComposer get contentId {
+    final $$ContentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlaybackTokensTableFilterComposer get authorizationId {
+    final $$PlaybackTokensTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.authorizationId,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableFilterComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReceiptsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ReceiptsTable> {
+  $$ReceiptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableOrderingComposer get contentId {
+    final $$ContentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlaybackTokensTableOrderingComposer get authorizationId {
+    final $$PlaybackTokensTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.authorizationId,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableOrderingComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReceiptsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ReceiptsTable> {
+  $$ReceiptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableAnnotationComposer get contentId {
+    final $$ContentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlaybackTokensTableAnnotationComposer get authorizationId {
+    final $$PlaybackTokensTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.authorizationId,
+      referencedTable: $db.playbackTokens,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlaybackTokensTableAnnotationComposer(
+            $db: $db,
+            $table: $db.playbackTokens,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReceiptsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ReceiptsTable,
+          Receipt,
+          $$ReceiptsTableFilterComposer,
+          $$ReceiptsTableOrderingComposer,
+          $$ReceiptsTableAnnotationComposer,
+          $$ReceiptsTableCreateCompanionBuilder,
+          $$ReceiptsTableUpdateCompanionBuilder,
+          (Receipt, $$ReceiptsTableReferences),
+          Receipt,
+          PrefetchHooks Function({
+            bool passportId,
+            bool contentId,
+            bool authorizationId,
+          })
+        > {
+  $$ReceiptsTableTableManager(_$LoomDatabase db, $ReceiptsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReceiptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReceiptsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReceiptsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> contentId = const Value.absent(),
+                Value<String> authorizationId = const Value.absent(),
+                Value<String> summary = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReceiptsCompanion(
+                id: id,
+                type: type,
+                passportId: passportId,
+                contentId: contentId,
+                authorizationId: authorizationId,
+                summary: summary,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String type,
+                required String passportId,
+                required String contentId,
+                required String authorizationId,
+                required String summary,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ReceiptsCompanion.insert(
+                id: id,
+                type: type,
+                passportId: passportId,
+                contentId: contentId,
+                authorizationId: authorizationId,
+                summary: summary,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReceiptsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                passportId = false,
+                contentId = false,
+                authorizationId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (passportId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.passportId,
+                                    referencedTable: $$ReceiptsTableReferences
+                                        ._passportIdTable(db),
+                                    referencedColumn: $$ReceiptsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (contentId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contentId,
+                                    referencedTable: $$ReceiptsTableReferences
+                                        ._contentIdTable(db),
+                                    referencedColumn: $$ReceiptsTableReferences
+                                        ._contentIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (authorizationId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.authorizationId,
+                                    referencedTable: $$ReceiptsTableReferences
+                                        ._authorizationIdTable(db),
+                                    referencedColumn: $$ReceiptsTableReferences
+                                        ._authorizationIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ReceiptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ReceiptsTable,
+      Receipt,
+      $$ReceiptsTableFilterComposer,
+      $$ReceiptsTableOrderingComposer,
+      $$ReceiptsTableAnnotationComposer,
+      $$ReceiptsTableCreateCompanionBuilder,
+      $$ReceiptsTableUpdateCompanionBuilder,
+      (Receipt, $$ReceiptsTableReferences),
+      Receipt,
+      PrefetchHooks Function({
+        bool passportId,
+        bool contentId,
+        bool authorizationId,
+      })
+    >;
 typedef $$AdPreferencesTableCreateCompanionBuilder =
     AdPreferencesCompanion Function({
       required String passportId,
@@ -22222,6 +25370,12 @@ class $LoomDatabaseManager {
       );
   $$SearchIndexEntriesTableTableManager get searchIndexEntries =>
       $$SearchIndexEntriesTableTableManager(_db, _db.searchIndexEntries);
+  $$AdInventoryTableTableManager get adInventory =>
+      $$AdInventoryTableTableManager(_db, _db.adInventory);
+  $$PlaybackTokensTableTableManager get playbackTokens =>
+      $$PlaybackTokensTableTableManager(_db, _db.playbackTokens);
+  $$ReceiptsTableTableManager get receipts =>
+      $$ReceiptsTableTableManager(_db, _db.receipts);
   $$AdPreferencesTableTableManager get adPreferences =>
       $$AdPreferencesTableTableManager(_db, _db.adPreferences);
   $$CreatorChannelsTableTableManager get creatorChannels =>

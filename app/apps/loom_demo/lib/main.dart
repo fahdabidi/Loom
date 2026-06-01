@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
+import 'package:feature_playback/feature_playback.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_fake_backend/loom_fake_backend.dart';
@@ -34,6 +36,8 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   );
   registerRecommendationReferralApi(RecommendationReferralFake(store));
   registerSearchApi(SearchFake(store));
+  registerPlaybackAuthorizationApi(PlaybackAuthorizationFake(store));
+  registerReceiptLedgerApi(ReceiptLedgerFake(store));
 }
 
 Future<Widget> buildLoomDemoAppForTest() async {
@@ -99,15 +103,35 @@ class FanAppSurface extends StatefulWidget {
 
 class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showOnboarding = false;
+  String? _channelId;
+  String? _contentId;
 
   @override
   Widget build(BuildContext context) {
     if (_showOnboarding) {
       return const FanOnboardingScreen();
     }
+    final contentId = _contentId;
+    if (contentId != null) {
+      return PlaybackScreen(
+        contentId: contentId,
+        onBack: () => setState(() => _contentId = null),
+      );
+    }
+
+    final channelId = _channelId;
+    if (channelId != null) {
+      return CreatorChannelHomeScreen(
+        channelId: channelId,
+        onBack: () => setState(() => _channelId = null),
+        onOpenContent: (id) => setState(() => _contentId = id),
+      );
+    }
 
     return DiscoveryHomeScreen(
       onStartOnboarding: () => setState(() => _showOnboarding = true),
+      onOpenCreator: (id) => setState(() => _channelId = id),
+      onOpenContent: (id) => setState(() => _contentId = id),
     );
   }
 }

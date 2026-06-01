@@ -18,6 +18,8 @@ dependencies:
     path: ../../packages/features/fan/feature_discovery
   feature_fan_onboarding:
     path: ../../packages/features/fan/feature_fan_onboarding
+  feature_playback:
+    path: ../../packages/features/fan/feature_playback
   flutter:
     sdk: flutter
   loom_app_shell:

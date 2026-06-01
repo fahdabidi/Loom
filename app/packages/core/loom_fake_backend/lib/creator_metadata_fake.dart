@@ -69,6 +69,74 @@ class CreatorMetadataFake implements CreatorMetadataApi {
   }
 
   @override
+  Future<ChannelHome> getChannelHome({
+    required String channelId,
+    required String passportId,
+  }) async {
+    await Future<void>.delayed(latency);
+    await _store.ensureDemoPassport(passportId: passportId);
+    final creator = await _store.creatorById(channelId);
+    if (creator == null) {
+      throw ApiError(
+        code: 'creator_not_found',
+        message: 'No creator exists for channelId=$channelId',
+      );
+    }
+    final records = await _store.publicCatalogForCreator(channelId);
+    final follow = await _store.followForPassportCreator(
+      passportId: passportId,
+      creatorId: channelId,
+    );
+    final policy = await _store.creatorAdPolicy(channelId);
+    return ChannelHome(
+      creatorId: creator.id,
+      displayName: creator.displayName,
+      handle: creator.handle,
+      vertical: creator.vertical,
+      avatarRef: creator.avatarRef,
+      isFollowed: follow != null && !follow.blocked,
+      isBlocked: follow?.blocked ?? false,
+      visibilityLabel: follow?.visibility ?? 'private',
+      content: records
+          .map((record) => _mapContentSummary(record, creator))
+          .toList(growable: false),
+      adPolicy: policy == null ? null : _mapCreatorAdPolicy(policy),
+    );
+  }
+
+  @override
+  Future<ContentDetail> getContentDetail(String contentId) async {
+    await Future<void>.delayed(latency);
+    final content = await _store.contentById(contentId);
+    if (content == null) {
+      throw ApiError(
+        code: 'content_not_found',
+        message: 'No content exists for contentId=$contentId',
+      );
+    }
+    final creator = await _store.creatorById(content.creatorId);
+    if (creator == null) {
+      throw ApiError(
+        code: 'creator_not_found',
+        message: 'No creator exists for ${content.creatorId}',
+      );
+    }
+    return ContentDetail(
+      id: content.id,
+      creatorId: content.creatorId,
+      creatorDisplayName: creator.displayName,
+      title: content.title,
+      summary: content.summary,
+      body: '${content.summary}\n\nCreator-approved detail for demo playback.',
+      thumbnailRef: content.thumbnailRef,
+      contentType: content.contentType == 'video'
+          ? ContentType.video
+          : ContentType.post,
+      createdAt: content.createdAt,
+    );
+  }
+
+  @override
   Future<CreatorChannelManifest> createChannelProfile({
     required String channelId,
     required String displayName,
@@ -288,6 +356,23 @@ ContentManifest _mapContentManifest(ContentManifestRecord record) {
     schemaVersion: record.schemaVersion,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+  );
+}
+
+ContentSummaryView _mapContentSummary(
+  ContentRecord record,
+  CreatorRecord creator,
+) {
+  return ContentSummaryView(
+    id: record.id,
+    creatorId: record.creatorId,
+    creatorDisplayName: creator.displayName,
+    title: record.title,
+    summary: record.summary,
+    thumbnailRef: record.thumbnailRef,
+    contentType: record.contentType == 'video'
+        ? ContentType.video
+        : ContentType.post,
   );
 }
 

@@ -5,9 +5,16 @@ import 'package:loom_design_system/loom_design_system.dart';
 import 'discovery_controller.dart';
 
 class DiscoveryHomeScreen extends StatefulWidget {
-  const DiscoveryHomeScreen({required this.onStartOnboarding, super.key});
+  const DiscoveryHomeScreen({
+    required this.onStartOnboarding,
+    this.onOpenCreator,
+    this.onOpenContent,
+    super.key,
+  });
 
   final VoidCallback onStartOnboarding;
+  final ValueChanged<String>? onOpenCreator;
+  final ValueChanged<String>? onOpenContent;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -67,7 +74,16 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
                 key: ValueKey('p3_feed_card_${item.tile.contentId}'),
                 item: item,
                 onWhy: () => _showWhySheet(context, item),
-                onOpen: () => _showContentSheet(context, item),
+                onOpen: () {
+                  final onOpenContent = widget.onOpenContent;
+                  if (onOpenContent == null) {
+                    _showContentSheet(context, item);
+                    return;
+                  }
+                  onOpenContent(item.tile.contentId);
+                },
+                onOpenCreator: () =>
+                    widget.onOpenCreator?.call(item.tile.creatorId),
                 onFeedback: (action) =>
                     _controller.submitFeedback(item, action),
               ),
@@ -464,6 +480,7 @@ class _DiscoveryFeedCard extends StatelessWidget {
     required this.item,
     required this.onWhy,
     required this.onOpen,
+    required this.onOpenCreator,
     required this.onFeedback,
     super.key,
   });
@@ -471,6 +488,7 @@ class _DiscoveryFeedCard extends StatelessWidget {
   final FeedItem item;
   final VoidCallback onWhy;
   final VoidCallback onOpen;
+  final VoidCallback? onOpenCreator;
   final ValueChanged<FeedbackAction> onFeedback;
 
   @override
@@ -487,16 +505,26 @@ class _DiscoveryFeedCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _CreatorAvatar(name: item.tile.creatorName),
+                  InkWell(
+                    key: ValueKey(
+                      'p4_open_channel_${item.tile.creatorId}_${item.tile.contentId}',
+                    ),
+                    onTap: onOpenCreator,
+                    borderRadius: BorderRadius.circular(999),
+                    child: _CreatorAvatar(name: item.tile.creatorName),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.tile.creatorName,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(fontWeight: FontWeight.w900),
+                        InkWell(
+                          onTap: onOpenCreator,
+                          child: Text(
+                            item.tile.creatorName,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(fontWeight: FontWeight.w900),
+                          ),
                         ),
                         const SizedBox(height: 3),
                         Text(
