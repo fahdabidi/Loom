@@ -170,6 +170,97 @@ class EntitlementDefinitions extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class Wallets extends Table {
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get currency => text()();
+  IntColumn get simulatedBalanceCents => integer()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {passportId};
+}
+
+class PaymentIntents extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get kind => text()();
+  TextColumn get creatorId => text().nullable()();
+  TextColumn get creatorName => text().nullable()();
+  TextColumn get tierId => text().nullable()();
+  TextColumn get tierName => text().nullable()();
+  IntColumn get amountCents => integer()();
+  TextColumn get currency => text()();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get confirmedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class EntitlementGrants extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get code => text()();
+  TextColumn get creatorId => text().nullable()();
+  TextColumn get sourcePaymentIntentId => text()();
+  BoolColumn get active => boolean()();
+  DateTimeColumn get grantedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class Subscriptions extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get creatorId => text()();
+  TextColumn get creatorName => text()();
+  TextColumn get tierId => text()();
+  TextColumn get tierName => text()();
+  IntColumn get monthlyPriceCents => integer()();
+  BoolColumn get active => boolean()();
+  DateTimeColumn get startedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SettlementRuns extends Table {
+  TextColumn get id => text()();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class PayoutStatements extends Table {
+  TextColumn get id => text()();
+  TextColumn get runId => text()();
+  TextColumn get creatorId => text()();
+  TextColumn get creatorName => text()();
+  IntColumn get totalCents => integer()();
+  TextColumn get bySourceJson => text()();
+  TextColumn get byIntentJson => text()();
+  TextColumn get recentReceiptsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class AllocationStatements extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  IntColumn get totalCents => integer()();
+  TextColumn get allocationsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class FanPassports extends Table {
   TextColumn get id => text()();
   TextColumn get displayName => text()();
@@ -426,6 +517,13 @@ class KvMeta extends Table {
     ExternalContentRefs,
     ContentPerf,
     EntitlementDefinitions,
+    Wallets,
+    PaymentIntents,
+    EntitlementGrants,
+    Subscriptions,
+    SettlementRuns,
+    PayoutStatements,
+    AllocationStatements,
     FanPassports,
     Personas,
     Follows,
@@ -453,7 +551,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -499,6 +597,15 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(transcripts);
         await m.createTable(aiSessions);
         await m.createTable(fanRankingPreferences);
+      }
+      if (from < 7) {
+        await m.createTable(wallets);
+        await m.createTable(paymentIntents);
+        await m.createTable(entitlementGrants);
+        await m.createTable(subscriptions);
+        await m.createTable(settlementRuns);
+        await m.createTable(payoutStatements);
+        await m.createTable(allocationStatements);
       }
     },
   );
@@ -1093,6 +1200,160 @@ class EntitlementDefinitionRecord {
   final DateTime createdAt;
 }
 
+class WalletRecord {
+  const WalletRecord({
+    required this.passportId,
+    required this.currency,
+    required this.simulatedBalanceCents,
+    required this.hasNoAdsPremium,
+    required this.subscriptions,
+    required this.updatedAt,
+  });
+
+  final String passportId;
+  final String currency;
+  final int simulatedBalanceCents;
+  final bool hasNoAdsPremium;
+  final List<SubscriptionRecord> subscriptions;
+  final DateTime updatedAt;
+}
+
+class PaymentIntentRecord {
+  const PaymentIntentRecord({
+    required this.id,
+    required this.passportId,
+    required this.kind,
+    required this.amountCents,
+    required this.currency,
+    required this.status,
+    required this.createdAt,
+    this.creatorId,
+    this.creatorName,
+    this.tierId,
+    this.tierName,
+    this.confirmedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String kind;
+  final String? creatorId;
+  final String? creatorName;
+  final String? tierId;
+  final String? tierName;
+  final int amountCents;
+  final String currency;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? confirmedAt;
+}
+
+class SubscriptionRecord {
+  const SubscriptionRecord({
+    required this.id,
+    required this.passportId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.tierId,
+    required this.tierName,
+    required this.monthlyPriceCents,
+    required this.active,
+    required this.startedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String creatorId;
+  final String creatorName;
+  final String tierId;
+  final String tierName;
+  final int monthlyPriceCents;
+  final bool active;
+  final DateTime startedAt;
+}
+
+class EntitlementGrantRecord {
+  const EntitlementGrantRecord({
+    required this.id,
+    required this.passportId,
+    required this.code,
+    required this.sourcePaymentIntentId,
+    required this.active,
+    required this.grantedAt,
+    this.creatorId,
+  });
+
+  final String id;
+  final String passportId;
+  final String code;
+  final String? creatorId;
+  final String sourcePaymentIntentId;
+  final bool active;
+  final DateTime grantedAt;
+}
+
+class RevenueBreakdownRecord {
+  const RevenueBreakdownRecord({
+    required this.label,
+    required this.amountCents,
+  });
+
+  final String label;
+  final int amountCents;
+}
+
+class AllocationLineRecord {
+  const AllocationLineRecord({
+    required this.creatorId,
+    required this.creatorName,
+    required this.amountCents,
+    required this.reason,
+  });
+
+  final String creatorId;
+  final String creatorName;
+  final int amountCents;
+  final String reason;
+}
+
+class CreatorPayoutStatementRecord {
+  const CreatorPayoutStatementRecord({
+    required this.id,
+    required this.creatorId,
+    required this.creatorName,
+    required this.totalCents,
+    required this.bySource,
+    required this.byIntent,
+    required this.recentReceipts,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String creatorId;
+  final String creatorName;
+  final int totalCents;
+  final List<RevenueBreakdownRecord> bySource;
+  final List<RevenueBreakdownRecord> byIntent;
+  final List<ReceiptRecord> recentReceipts;
+  final DateTime updatedAt;
+}
+
+class FanAllocationStatementRecord {
+  const FanAllocationStatementRecord({
+    required this.id,
+    required this.passportId,
+    required this.totalCents,
+    required this.allocations,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final int totalCents;
+  final List<AllocationLineRecord> allocations;
+  final DateTime updatedAt;
+}
+
 class DemoLocalStore {
   DemoLocalStore._(this._db);
 
@@ -1119,6 +1380,13 @@ class DemoLocalStore {
     final world = seed ?? seedV1;
 
     await _db.transaction(() async {
+      await _db.delete(_db.allocationStatements).go();
+      await _db.delete(_db.payoutStatements).go();
+      await _db.delete(_db.settlementRuns).go();
+      await _db.delete(_db.entitlementGrants).go();
+      await _db.delete(_db.subscriptions).go();
+      await _db.delete(_db.paymentIntents).go();
+      await _db.delete(_db.wallets).go();
       await _db.delete(_db.receipts).go();
       await _db.delete(_db.playbackTokens).go();
       await _db.delete(_db.adInventory).go();
@@ -1194,6 +1462,87 @@ class DemoLocalStore {
             ),
           ),
         );
+
+        batch.insertAll(_db.fanPassports, [
+          FanPassportsCompanion.insert(
+            id: 'passport_demo_fan',
+            displayName: 'Demo Fan',
+            activePersonaId: 'persona_passport-demo-fan',
+            createdAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(_db.personas, [
+          PersonasCompanion.insert(
+            id: 'persona_passport-demo-fan',
+            passportId: 'passport_demo_fan',
+            label: 'Everyday fan',
+            isActive: true,
+          ),
+        ]);
+
+        batch.insertAll(_db.fanInterestProfiles, [
+          FanInterestProfilesCompanion.insert(
+            passportId: 'passport_demo_fan',
+            interestIdsJson: jsonEncode([
+              'home_energy',
+              'solar_storage',
+              'creator_tools',
+            ]),
+            dislikedInterestIdsJson: '[]',
+            dislikedCreatorIdsJson: '[]',
+            mutedProviderIdsJson: '[]',
+            updatedAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(_db.adPreferences, [
+          AdPreferencesCompanion.insert(
+            passportId: 'passport_demo_fan',
+            personalizedAds: false,
+            updatedAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(_db.fanRankingPreferences, [
+          FanRankingPreferencesCompanion.insert(
+            passportId: 'passport_demo_fan',
+            summaryFirst: false,
+            updatedAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(_db.wallets, [
+          WalletsCompanion.insert(
+            passportId: 'passport_demo_fan',
+            currency: 'USD',
+            simulatedBalanceCents: 50000,
+            updatedAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(_db.receipts, [
+          ReceiptsCompanion.insert(
+            id: 'receipt_seed_membership_creator-solar-sarah',
+            type: 'membership',
+            passportId: 'passport_demo_fan',
+            contentId: 'content_solar_001',
+            authorizationId: 'seed_revenue_creator_solar_sarah',
+            summary:
+                'Historical membership support for Solar Sarah from Learn intent.',
+            createdAt: _now().subtract(const Duration(days: 7)),
+          ),
+          ReceiptsCompanion.insert(
+            id: 'receipt_seed_premium_no_ad',
+            type: 'premiumNoAd',
+            passportId: 'passport_demo_fan',
+            contentId: 'content_solar_002',
+            authorizationId: 'seed_revenue_no_ad_pool',
+            summary:
+                'Historical premium no-ad pool allocation across creator watch time.',
+            createdAt: _now().subtract(const Duration(days: 5)),
+          ),
+        ]);
 
         batch.insertAll(
           _db.creatorAdPolicies,
@@ -2686,6 +3035,464 @@ class DemoLocalStore {
     return rows.map(_mapEntitlementDefinition).toList(growable: false);
   }
 
+  Future<WalletRecord> wallet(String passportId) async {
+    await _ensureWallet(passportId);
+    final row = await (_db.select(
+      _db.wallets,
+    )..where((tbl) => tbl.passportId.equals(passportId))).getSingle();
+    final subscriptions = await subscriptionsForPassport(passportId);
+    final entitlementCodes = await activeEntitlementCodes(passportId);
+    return WalletRecord(
+      passportId: row.passportId,
+      currency: row.currency,
+      simulatedBalanceCents: row.simulatedBalanceCents,
+      hasNoAdsPremium: entitlementCodes.contains('premium_no_ads'),
+      subscriptions: subscriptions,
+      updatedAt: row.updatedAt,
+    );
+  }
+
+  Future<PaymentIntentRecord> createPaymentIntent({
+    required String passportId,
+    required String kind,
+    String? creatorId,
+    String? tierId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'payment_intent');
+    if (existing != null) {
+      final intent = await paymentIntentById(existing);
+      if (intent != null) {
+        return intent;
+      }
+    }
+
+    await _ensureWallet(passportId);
+    final now = _now();
+    final id = 'pi_${_slug(idempotencyKey)}';
+    String? resolvedCreatorId;
+    String? resolvedCreatorName;
+    String? resolvedTierId;
+    String? resolvedTierName;
+    var amountCents = 499;
+
+    if (kind == 'creatorMembership') {
+      resolvedCreatorId = creatorId ?? 'creator_solar_sarah';
+      final creator = await creatorById(resolvedCreatorId);
+      resolvedCreatorName = creator?.displayName ?? 'Solar Sarah';
+      final tiers = await membershipTiers(resolvedCreatorId);
+      MembershipTierRecord? tier;
+      for (final candidate in tiers) {
+        if (candidate.id == tierId) {
+          tier = candidate;
+          break;
+        }
+      }
+      tier ??= tiers.isEmpty
+          ? MembershipTierRecord(
+              id: 'tier_solar_supporter',
+              channelId: resolvedCreatorId,
+              name: 'Solar Supporter',
+              monthlyPriceCents: 799,
+              benefits: const [
+                'Member-only posts',
+                'Early archive Q&A',
+                'Supporter badge',
+              ],
+              entitlementCode: 'membership:creator_solar_sarah',
+              createdAt: now,
+            )
+          : tiers.first;
+      resolvedTierId = tier.id;
+      resolvedTierName = tier.name;
+      amountCents = tier.monthlyPriceCents;
+    }
+
+    await _db
+        .into(_db.paymentIntents)
+        .insertOnConflictUpdate(
+          PaymentIntentsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            kind: kind,
+            creatorId: Value(resolvedCreatorId),
+            creatorName: Value(resolvedCreatorName),
+            tierId: Value(resolvedTierId),
+            tierName: Value(resolvedTierName),
+            amountCents: amountCents,
+            currency: 'USD',
+            status: 'requiresConfirmation',
+            createdAt: now,
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'payment_intent', id);
+    return (await paymentIntentById(id))!;
+  }
+
+  Future<PaymentIntentRecord> confirmPaymentIntent({
+    required String paymentIntentId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'payment_confirmation',
+    );
+    if (existing != null) {
+      return (await paymentIntentById(existing))!;
+    }
+
+    final intent = await paymentIntentById(paymentIntentId);
+    if (intent == null) {
+      throw StateError('No payment intent exists for $paymentIntentId');
+    }
+    if (intent.status == 'succeeded') {
+      await _saveIdempotency(
+        idempotencyKey,
+        'payment_confirmation',
+        paymentIntentId,
+      );
+      return intent;
+    }
+
+    final now = _now();
+    await _db.transaction(() async {
+      await (_db.update(
+        _db.paymentIntents,
+      )..where((tbl) => tbl.id.equals(paymentIntentId))).write(
+        PaymentIntentsCompanion(
+          status: const Value('succeeded'),
+          confirmedAt: Value(now),
+        ),
+      );
+      final walletRow = await (_db.select(
+        _db.wallets,
+      )..where((tbl) => tbl.passportId.equals(intent.passportId))).getSingle();
+      await (_db.update(
+        _db.wallets,
+      )..where((tbl) => tbl.passportId.equals(intent.passportId))).write(
+        WalletsCompanion(
+          simulatedBalanceCents: Value(
+            walletRow.simulatedBalanceCents - intent.amountCents,
+          ),
+          updatedAt: Value(now),
+        ),
+      );
+
+      if (intent.kind == 'noAdsPremium') {
+        await _insertEntitlementGrant(
+          passportId: intent.passportId,
+          code: 'premium_no_ads',
+          sourcePaymentIntentId: intent.id,
+          idempotencyKey: 'grant_${intent.id}_premium',
+        );
+      } else {
+        final creatorId = intent.creatorId ?? 'creator_solar_sarah';
+        final creatorName = intent.creatorName ?? 'Solar Sarah';
+        final tierId = intent.tierId ?? 'tier_solar_supporter';
+        final tierName = intent.tierName ?? 'Solar Supporter';
+        await _insertEntitlementGrant(
+          passportId: intent.passportId,
+          code: 'membership:$creatorId',
+          creatorId: creatorId,
+          sourcePaymentIntentId: intent.id,
+          idempotencyKey: 'grant_${intent.id}_membership',
+        );
+        await _db
+            .into(_db.subscriptions)
+            .insertOnConflictUpdate(
+              SubscriptionsCompanion.insert(
+                id: 'sub_${_slug(intent.passportId)}_${_slug(creatorId)}',
+                passportId: intent.passportId,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                tierId: tierId,
+                tierName: tierName,
+                monthlyPriceCents: intent.amountCents,
+                active: true,
+                startedAt: now,
+              ),
+            );
+      }
+
+      final contentId = await _receiptContentIdForCreator(intent.creatorId);
+      await _db.batch((batch) {
+        batch.insertAllOnConflictUpdate(_db.receipts, [
+          ReceiptsCompanion.insert(
+            id: 'receipt_payment_${_slug(intent.id)}',
+            type: 'payment',
+            passportId: intent.passportId,
+            contentId: contentId,
+            authorizationId: intent.id,
+            summary:
+                'Simulated ${intent.kind == 'noAdsPremium' ? 'no-ad premium' : 'creator membership'} payment confirmed.',
+            createdAt: now,
+          ),
+          ReceiptsCompanion.insert(
+            id: intent.kind == 'noAdsPremium'
+                ? 'receipt_no_ad_${_slug(intent.id)}'
+                : 'receipt_membership_${_slug(intent.id)}',
+            type: intent.kind == 'noAdsPremium' ? 'premiumNoAd' : 'membership',
+            passportId: intent.passportId,
+            contentId: contentId,
+            authorizationId: intent.id,
+            summary: intent.kind == 'noAdsPremium'
+                ? 'Premium no-ad entitlement is active across eligible playback.'
+                : 'Creator membership is active for ${intent.creatorName ?? 'the creator'}.',
+            createdAt: now,
+          ),
+        ]);
+      });
+      await _saveIdempotency(
+        idempotencyKey,
+        'payment_confirmation',
+        paymentIntentId,
+      );
+    });
+
+    return (await paymentIntentById(paymentIntentId))!;
+  }
+
+  Future<PaymentIntentRecord?> paymentIntentById(String id) async {
+    final row = await (_db.select(
+      _db.paymentIntents,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapPaymentIntent(row);
+  }
+
+  Future<List<PaymentIntentRecord>> confirmedPaymentIntents({
+    String? creatorId,
+  }) async {
+    final query = _db.select(_db.paymentIntents)
+      ..where((tbl) => tbl.status.equals('succeeded'));
+    if (creatorId != null) {
+      query.where((tbl) => tbl.creatorId.equals(creatorId));
+    }
+    final rows = await query.get();
+    return rows.map(_mapPaymentIntent).toList(growable: false);
+  }
+
+  Future<List<SubscriptionRecord>> subscriptionsForPassport(
+    String passportId,
+  ) async {
+    final rows =
+        await (_db.select(_db.subscriptions)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.creatorName)]))
+            .get();
+    return rows.map(_mapSubscription).toList(growable: false);
+  }
+
+  Future<EntitlementGrantRecord> grantEntitlement({
+    required String passportId,
+    required String code,
+    required String sourcePaymentIntentId,
+    required String idempotencyKey,
+    String? creatorId,
+  }) async {
+    await _ensureWallet(passportId);
+    return _insertEntitlementGrant(
+      passportId: passportId,
+      code: code,
+      creatorId: creatorId,
+      sourcePaymentIntentId: sourcePaymentIntentId,
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
+  Future<EntitlementGrantRecord> _insertEntitlementGrant({
+    required String passportId,
+    required String code,
+    required String sourcePaymentIntentId,
+    required String idempotencyKey,
+    String? creatorId,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'entitlement_grant',
+    );
+    if (existing != null) {
+      final grant = await entitlementGrantById(existing);
+      if (grant != null) {
+        return grant;
+      }
+    }
+
+    final id =
+        'grant_${_slug(passportId)}_${_slug(code)}_${_slug(sourcePaymentIntentId)}';
+    await _db
+        .into(_db.entitlementGrants)
+        .insertOnConflictUpdate(
+          EntitlementGrantsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            code: code,
+            creatorId: Value(creatorId),
+            sourcePaymentIntentId: sourcePaymentIntentId,
+            active: true,
+            grantedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'entitlement_grant', id);
+    return (await entitlementGrantById(id))!;
+  }
+
+  Future<EntitlementGrantRecord?> entitlementGrantById(String id) async {
+    final row = await (_db.select(
+      _db.entitlementGrants,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapEntitlementGrant(row);
+  }
+
+  Future<Set<String>> activeEntitlementCodes(String passportId) async {
+    final rows =
+        await (_db.select(_db.entitlementGrants)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..where((tbl) => tbl.active.equals(true)))
+            .get();
+    return rows.map((row) => row.code).toSet();
+  }
+
+  Future<List<EntitlementGrantRecord>> activeEntitlements({
+    required String passportId,
+    required List<String> codes,
+  }) async {
+    final rows =
+        await (_db.select(_db.entitlementGrants)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..where((tbl) => tbl.active.equals(true)))
+            .get();
+    final allowed = codes.toSet();
+    return rows
+        .where((row) => allowed.contains(row.code))
+        .map(_mapEntitlementGrant)
+        .toList(growable: false);
+  }
+
+  Future<String> runSettlement({required String idempotencyKey}) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'settlement_run');
+    if (existing != null) {
+      return existing;
+    }
+
+    final runId = 'settlement_${_slug(idempotencyKey)}';
+    final now = _now();
+    await _db.transaction(() async {
+      await _db
+          .into(_db.settlementRuns)
+          .insertOnConflictUpdate(
+            SettlementRunsCompanion.insert(
+              id: runId,
+              status: 'complete',
+              createdAt: now,
+            ),
+          );
+
+      final creators = await this.creators();
+      for (final creator in creators) {
+        final statement = await _computeCreatorPayout(
+          runId: runId,
+          creator: creator,
+        );
+        await _db
+            .into(_db.payoutStatements)
+            .insertOnConflictUpdate(
+              PayoutStatementsCompanion.insert(
+                id: statement.id,
+                runId: runId,
+                creatorId: statement.creatorId,
+                creatorName: statement.creatorName,
+                totalCents: statement.totalCents,
+                bySourceJson: jsonEncode(
+                  statement.bySource.map(_breakdownToJson).toList(),
+                ),
+                byIntentJson: jsonEncode(
+                  statement.byIntent.map(_breakdownToJson).toList(),
+                ),
+                recentReceiptsJson: jsonEncode(
+                  statement.recentReceipts.map(_receiptToJson).toList(),
+                ),
+                updatedAt: statement.updatedAt,
+              ),
+            );
+      }
+
+      final passports = await _db.select(_db.fanPassports).get();
+      for (final passport in passports) {
+        final statement = await _computeAllocationStatement(passport.id);
+        await _db
+            .into(_db.allocationStatements)
+            .insertOnConflictUpdate(
+              AllocationStatementsCompanion.insert(
+                id: statement.id,
+                passportId: statement.passportId,
+                totalCents: statement.totalCents,
+                allocationsJson: jsonEncode(
+                  statement.allocations.map(_allocationToJson).toList(),
+                ),
+                updatedAt: statement.updatedAt,
+              ),
+            );
+      }
+      await _saveIdempotency(idempotencyKey, 'settlement_run', runId);
+    });
+    return runId;
+  }
+
+  Future<CreatorPayoutStatementRecord> creatorPayoutStatement(
+    String creatorId,
+  ) async {
+    final row =
+        await (_db.select(_db.payoutStatements)
+              ..where((tbl) => tbl.creatorId.equals(creatorId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .getSingleOrNull();
+    if (row != null) {
+      return _mapPayoutStatement(row);
+    }
+    await runSettlement(idempotencyKey: 'auto_settlement_$creatorId');
+    final fallback =
+        await (_db.select(_db.payoutStatements)
+              ..where((tbl) => tbl.creatorId.equals(creatorId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .getSingleOrNull();
+    if (fallback != null) {
+      return _mapPayoutStatement(fallback);
+    }
+    final creator = await creatorById(creatorId);
+    return CreatorPayoutStatementRecord(
+      id: 'payout_empty_${_slug(creatorId)}',
+      creatorId: creatorId,
+      creatorName: creator?.displayName ?? creatorId,
+      totalCents: 0,
+      bySource: const [],
+      byIntent: const [],
+      recentReceipts: const [],
+      updatedAt: _now(),
+    );
+  }
+
+  Future<FanAllocationStatementRecord> allocationStatement(
+    String passportId,
+  ) async {
+    final row =
+        await (_db.select(_db.allocationStatements)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .getSingleOrNull();
+    if (row != null) {
+      return _mapAllocationStatement(row);
+    }
+    await runSettlement(idempotencyKey: 'auto_allocation_$passportId');
+    final fallback =
+        await (_db.select(_db.allocationStatements)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .getSingleOrNull();
+    return fallback == null
+        ? await _computeAllocationStatement(passportId)
+        : _mapAllocationStatement(fallback);
+  }
+
   Future<ContentPerformanceRecord> contentPerformance(String contentId) async {
     final row = await (_db.select(
       _db.contentPerf,
@@ -2862,6 +3669,131 @@ class DemoLocalStore {
               ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
             .get();
     return rows.map(_mapReceipt).toList(growable: false);
+  }
+
+  Future<void> _ensureWallet(String passportId) async {
+    await ensureDemoPassport(passportId: passportId);
+    await _db
+        .into(_db.wallets)
+        .insert(
+          WalletsCompanion.insert(
+            passportId: passportId,
+            currency: 'USD',
+            simulatedBalanceCents: 50000,
+            updatedAt: _now(),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+
+  Future<String> _receiptContentIdForCreator(String? creatorId) async {
+    if (creatorId != null) {
+      final creatorContent =
+          await (_db.select(_db.contentItems)
+                ..where((tbl) => tbl.creatorId.equals(creatorId))
+                ..limit(1))
+              .getSingleOrNull();
+      if (creatorContent != null) {
+        return creatorContent.id;
+      }
+    }
+    final first = await (_db.select(
+      _db.contentItems,
+    )..limit(1)).getSingleOrNull();
+    return first?.id ?? 'content_solar_001';
+  }
+
+  Future<List<ReceiptRecord>> _receiptsForCreator(String creatorId) async {
+    final contentRows = await (_db.select(
+      _db.contentItems,
+    )..where((tbl) => tbl.creatorId.equals(creatorId))).get();
+    final contentIds = contentRows.map((row) => row.id).toSet();
+    final rows = await (_db.select(
+      _db.receipts,
+    )..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])).get();
+    return rows
+        .where((row) => contentIds.contains(row.contentId))
+        .map(_mapReceipt)
+        .toList(growable: false);
+  }
+
+  Future<CreatorPayoutStatementRecord> _computeCreatorPayout({
+    required String runId,
+    required CreatorRecord creator,
+  }) async {
+    final intents = await confirmedPaymentIntents(creatorId: creator.id);
+    final membershipPayments = intents
+        .where((intent) => intent.kind == 'creatorMembership')
+        .fold<int>(0, (total, intent) => total + intent.amountCents);
+    final receipts = await _receiptsForCreator(creator.id);
+    final seededMembership =
+        receipts.any(
+          (receipt) =>
+              receipt.id == 'receipt_seed_membership_creator-solar-sarah',
+        )
+        ? 799
+        : 0;
+    final noAdPool =
+        creator.id == 'creator_solar_sarah' &&
+            receipts.any((receipt) => receipt.type == 'premiumNoAd')
+        ? 200
+        : 0;
+    final membershipTotal = membershipPayments + seededMembership;
+    final total = membershipTotal + noAdPool;
+    final bySource = [
+      if (membershipTotal > 0)
+        RevenueBreakdownRecord(
+          label: 'Memberships',
+          amountCents: membershipTotal,
+        ),
+      if (noAdPool > 0)
+        RevenueBreakdownRecord(label: 'No-ad pool', amountCents: noAdPool),
+    ];
+    final byIntent = [
+      if (membershipTotal > 0)
+        RevenueBreakdownRecord(label: 'Support', amountCents: membershipTotal),
+      if (noAdPool > 0)
+        RevenueBreakdownRecord(label: 'Watch', amountCents: noAdPool),
+    ];
+    return CreatorPayoutStatementRecord(
+      id: 'payout_${_slug(runId)}_${_slug(creator.id)}',
+      creatorId: creator.id,
+      creatorName: creator.displayName,
+      totalCents: total,
+      bySource: bySource,
+      byIntent: byIntent,
+      recentReceipts: receipts.take(6).toList(growable: false),
+      updatedAt: _now(),
+    );
+  }
+
+  Future<FanAllocationStatementRecord> _computeAllocationStatement(
+    String passportId,
+  ) async {
+    await _ensureWallet(passportId);
+    final subscriptions = await subscriptionsForPassport(passportId);
+    final allocations = subscriptions
+        .where((subscription) => subscription.active)
+        .map(
+          (subscription) => AllocationLineRecord(
+            creatorId: subscription.creatorId,
+            creatorName: subscription.creatorName,
+            amountCents: subscription.monthlyPriceCents,
+            reason:
+                '${subscription.tierName} membership funds member posts, archive Q&A, and creator-owned hosting.',
+          ),
+        )
+        .toList(growable: false);
+    return FanAllocationStatementRecord(
+      id: 'allocation_${_slug(passportId)}',
+      passportId: passportId,
+      totalCents: allocations.fold<int>(
+        0,
+        (total, line) => total + line.amountCents,
+      ),
+      allocations: allocations,
+      updatedAt: _now(),
+    );
   }
 
   Future<void> _ensureCreatorForChannel({
@@ -3342,12 +4274,164 @@ EntitlementDefinitionRecord _mapEntitlementDefinition(
   );
 }
 
+PaymentIntentRecord _mapPaymentIntent(PaymentIntent row) {
+  return PaymentIntentRecord(
+    id: row.id,
+    passportId: row.passportId,
+    kind: row.kind,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    tierId: row.tierId,
+    tierName: row.tierName,
+    amountCents: row.amountCents,
+    currency: row.currency,
+    status: row.status,
+    createdAt: row.createdAt,
+    confirmedAt: row.confirmedAt,
+  );
+}
+
+SubscriptionRecord _mapSubscription(Subscription row) {
+  return SubscriptionRecord(
+    id: row.id,
+    passportId: row.passportId,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    tierId: row.tierId,
+    tierName: row.tierName,
+    monthlyPriceCents: row.monthlyPriceCents,
+    active: row.active,
+    startedAt: row.startedAt,
+  );
+}
+
+EntitlementGrantRecord _mapEntitlementGrant(EntitlementGrant row) {
+  return EntitlementGrantRecord(
+    id: row.id,
+    passportId: row.passportId,
+    code: row.code,
+    creatorId: row.creatorId,
+    sourcePaymentIntentId: row.sourcePaymentIntentId,
+    active: row.active,
+    grantedAt: row.grantedAt,
+  );
+}
+
+CreatorPayoutStatementRecord _mapPayoutStatement(PayoutStatement row) {
+  return CreatorPayoutStatementRecord(
+    id: row.id,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    totalCents: row.totalCents,
+    bySource: _decodeBreakdowns(row.bySourceJson),
+    byIntent: _decodeBreakdowns(row.byIntentJson),
+    recentReceipts: _decodeReceiptRecords(row.recentReceiptsJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
+FanAllocationStatementRecord _mapAllocationStatement(AllocationStatement row) {
+  return FanAllocationStatementRecord(
+    id: row.id,
+    passportId: row.passportId,
+    totalCents: row.totalCents,
+    allocations: _decodeAllocations(row.allocationsJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
 List<String> _decodeStringList(String value) {
   final decoded = jsonDecode(value);
   if (decoded is! List) {
     return const [];
   }
   return decoded.whereType<String>().toList(growable: false);
+}
+
+List<RevenueBreakdownRecord> _decodeBreakdowns(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (item) => RevenueBreakdownRecord(
+          label: '${item['label'] ?? ''}',
+          amountCents: (item['amountCents'] as num?)?.toInt() ?? 0,
+        ),
+      )
+      .where((item) => item.label.isNotEmpty)
+      .toList(growable: false);
+}
+
+List<ReceiptRecord> _decodeReceiptRecords(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(_receiptFromJson)
+      .toList(growable: false);
+}
+
+List<AllocationLineRecord> _decodeAllocations(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (item) => AllocationLineRecord(
+          creatorId: '${item['creatorId'] ?? ''}',
+          creatorName: '${item['creatorName'] ?? ''}',
+          amountCents: (item['amountCents'] as num?)?.toInt() ?? 0,
+          reason: '${item['reason'] ?? ''}',
+        ),
+      )
+      .where((item) => item.creatorId.isNotEmpty)
+      .toList(growable: false);
+}
+
+Map<String, Object?> _breakdownToJson(RevenueBreakdownRecord record) {
+  return {'label': record.label, 'amountCents': record.amountCents};
+}
+
+Map<String, Object?> _allocationToJson(AllocationLineRecord record) {
+  return {
+    'creatorId': record.creatorId,
+    'creatorName': record.creatorName,
+    'amountCents': record.amountCents,
+    'reason': record.reason,
+  };
+}
+
+Map<String, Object?> _receiptToJson(ReceiptRecord record) {
+  return {
+    'id': record.id,
+    'type': record.type,
+    'passportId': record.passportId,
+    'contentId': record.contentId,
+    'authorizationId': record.authorizationId,
+    'summary': record.summary,
+    'createdAt': record.createdAt.toIso8601String(),
+  };
+}
+
+ReceiptRecord _receiptFromJson(Map<String, Object?> item) {
+  return ReceiptRecord(
+    id: '${item['id'] ?? ''}',
+    type: '${item['type'] ?? 'payment'}',
+    passportId: '${item['passportId'] ?? ''}',
+    contentId: '${item['contentId'] ?? ''}',
+    authorizationId: '${item['authorizationId'] ?? ''}',
+    summary: '${item['summary'] ?? ''}',
+    createdAt:
+        DateTime.tryParse('${item['createdAt'] ?? ''}') ??
+        DateTime.utc(2026, 5, 31, 12),
+  );
 }
 
 Map<String, Object?> _decodeStringMap(String value) {

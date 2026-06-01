@@ -22,8 +22,10 @@ class PlaybackScreen extends StatefulWidget {
 class _PlaybackScreenState extends State<PlaybackScreen> {
   late final CreatorMetadataApi _metadataApi;
   late final PlaybackAuthorizationApi _playbackApi;
+  late final EntitlementLedgerApi _entitlementApi;
   ContentDetail? _detail;
   PlaybackAuthorization? _authorization;
+  EntitlementState _entitlementState = EntitlementState.adSupported;
   List<ReceiptView> _receipts = const [];
   bool _loading = true;
   bool _complete = false;
@@ -33,11 +35,19 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
     super.initState();
     _metadataApi = resolveCreatorMetadataApi();
     _playbackApi = resolvePlaybackAuthorizationApi();
+    _entitlementApi = resolveEntitlementLedgerApi();
     _load();
   }
 
   Future<void> _load() async {
     final detail = await _metadataApi.getContentDetail(widget.contentId);
+    final entitlements = await _entitlementApi.checkEntitlements(
+      passportId: widget.passportId,
+      codes: const ['premium_no_ads'],
+    );
+    final entitlementState = entitlements.has('premium_no_ads')
+        ? EntitlementState.noAdsPremium
+        : EntitlementState.adSupported;
     final authorization = await _playbackApi.authorize(
       passportId: widget.passportId,
       contentId: widget.contentId,
@@ -46,8 +56,9 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
         intentLabel: 'Watch',
         allowedCategories: ['home_energy', 'fermentation', 'mobility'],
       ),
-      entitlementState: EntitlementState.adSupported,
-      idempotencyKey: 'p4-auth-${widget.passportId}-${widget.contentId}',
+      entitlementState: entitlementState,
+      idempotencyKey:
+          'p4-auth-${widget.passportId}-${widget.contentId}-${entitlementState.name}',
     );
     if (!mounted) {
       return;
@@ -55,6 +66,7 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
     setState(() {
       _detail = detail;
       _authorization = authorization;
+      _entitlementState = entitlementState;
       _loading = false;
     });
   }
@@ -128,6 +140,28 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
             brandName: authorization.adPlan.brandName,
             category: authorization.adPlan.category,
             disclosure: authorization.adPlan.disclosure,
+          )
+        else if (_entitlementState == EntitlementState.noAdsPremium)
+          Container(
+            key: const ValueKey('p6_no_ad_playback_state'),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF8F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFCDEBE4)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.workspace_premium_rounded),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'No-ad premium active for this playback.',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
           ),
         const SizedBox(height: 14),
         Text(

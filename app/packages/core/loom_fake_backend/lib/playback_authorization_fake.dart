@@ -115,11 +115,18 @@ AdPlan _adPlanFromJson(Map<String, Object?> json) {
 }
 
 ReceiptView _mapReceipt(ReceiptRecord record) {
+  final type = switch (record.type) {
+    'adImpression' => ReceiptType.adImpression,
+    'aiUsage' => ReceiptType.aiUsage,
+    'sourceAttribution' => ReceiptType.sourceAttribution,
+    'payment' => ReceiptType.payment,
+    'membership' => ReceiptType.membership,
+    'premiumNoAd' => ReceiptType.premiumNoAd,
+    _ => ReceiptType.playback,
+  };
   return ReceiptView(
     id: record.id,
-    type: record.type == 'adImpression'
-        ? ReceiptType.adImpression
-        : ReceiptType.playback,
+    type: type,
     passportId: record.passportId,
     contentId: record.contentId,
     authorizationId: record.authorizationId,

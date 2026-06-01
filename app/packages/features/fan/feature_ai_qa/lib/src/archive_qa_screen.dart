@@ -281,6 +281,12 @@ String _receiptLabel(ReceiptType type) {
       return 'Playback receipt';
     case ReceiptType.adImpression:
       return 'Ad receipt';
+    case ReceiptType.payment:
+      return 'Payment receipt';
+    case ReceiptType.membership:
+      return 'Membership receipt';
+    case ReceiptType.premiumNoAd:
+      return 'No-ad premium receipt';
   }
 }
 

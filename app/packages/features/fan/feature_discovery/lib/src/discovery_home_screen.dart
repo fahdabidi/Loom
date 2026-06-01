@@ -9,12 +9,14 @@ class DiscoveryHomeScreen extends StatefulWidget {
     required this.onStartOnboarding,
     this.onOpenCreator,
     this.onOpenContent,
+    this.onOpenWallet,
     super.key,
   });
 
   final VoidCallback onStartOnboarding;
   final ValueChanged<String>? onOpenCreator;
   final ValueChanged<String>? onOpenContent;
+  final VoidCallback? onOpenWallet;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -50,7 +52,10 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
           key: const ValueKey('p3_discovery_scroll'),
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
           children: [
-            _DiscoveryToolbar(onStartOnboarding: widget.onStartOnboarding),
+            _DiscoveryToolbar(
+              onStartOnboarding: widget.onStartOnboarding,
+              onOpenWallet: widget.onOpenWallet,
+            ),
             const SizedBox(height: 14),
             _SearchField(controller: _controller),
             const SizedBox(height: 16),
@@ -122,9 +127,13 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
 }
 
 class _DiscoveryToolbar extends StatelessWidget {
-  const _DiscoveryToolbar({required this.onStartOnboarding});
+  const _DiscoveryToolbar({
+    required this.onStartOnboarding,
+    required this.onOpenWallet,
+  });
 
   final VoidCallback onStartOnboarding;
+  final VoidCallback? onOpenWallet;
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +179,14 @@ class _DiscoveryToolbar extends StatelessWidget {
             key: const ValueKey('start_fan_onboarding_button'),
             onPressed: onStartOnboarding,
             icon: const Icon(Icons.person_add_alt_1_rounded),
+          ),
+        ),
+        Tooltip(
+          message: 'Wallet',
+          child: IconButton(
+            key: const ValueKey('p6_open_wallet_button'),
+            onPressed: onOpenWallet,
+            icon: const Icon(Icons.account_balance_wallet_rounded),
           ),
         ),
         Tooltip(

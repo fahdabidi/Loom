@@ -32,6 +32,8 @@ ExternalRecommendationProviderApi? _externalRecommendationProviderApi;
 SearchApi? _searchApi;
 PlaybackAuthorizationApi? _playbackAuthorizationApi;
 ReceiptLedgerApi? _receiptLedgerApi;
+FanWalletApi? _fanWalletApi;
+SettlementEngineApi? _settlementEngineApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
@@ -87,6 +89,14 @@ void registerReceiptLedgerApi(ReceiptLedgerApi api) {
   _receiptLedgerApi = api;
 }
 
+void registerFanWalletApi(FanWalletApi api) {
+  _fanWalletApi = api;
+}
+
+void registerSettlementEngineApi(SettlementEngineApi api) {
+  _settlementEngineApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
@@ -101,6 +111,8 @@ void resetAppShellDependencies() {
   _searchApi = null;
   _playbackAuthorizationApi = null;
   _receiptLedgerApi = null;
+  _fanWalletApi = null;
+  _settlementEngineApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
@@ -205,6 +217,22 @@ ReceiptLedgerApi resolveReceiptLedgerApi() {
   final api = _receiptLedgerApi;
   if (api == null) {
     throw StateError('ReceiptLedgerApi has not been registered.');
+  }
+  return api;
+}
+
+FanWalletApi resolveFanWalletApi() {
+  final api = _fanWalletApi;
+  if (api == null) {
+    throw StateError('FanWalletApi has not been registered.');
+  }
+  return api;
+}
+
+SettlementEngineApi resolveSettlementEngineApi() {
+  final api = _settlementEngineApi;
+  if (api == null) {
+    throw StateError('SettlementEngineApi has not been registered.');
   }
   return api;
 }

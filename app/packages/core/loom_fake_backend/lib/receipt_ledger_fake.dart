@@ -73,6 +73,12 @@ String _receiptTypeValue(ReceiptType type) {
       return 'aiUsage';
     case ReceiptType.sourceAttribution:
       return 'sourceAttribution';
+    case ReceiptType.payment:
+      return 'payment';
+    case ReceiptType.membership:
+      return 'membership';
+    case ReceiptType.premiumNoAd:
+      return 'premiumNoAd';
   }
 }
 
@@ -86,6 +92,12 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.aiUsage;
     case 'sourceAttribution':
       return ReceiptType.sourceAttribution;
+    case 'payment':
+      return ReceiptType.payment;
+    case 'membership':
+      return ReceiptType.membership;
+    case 'premiumNoAd':
+      return ReceiptType.premiumNoAd;
   }
   return ReceiptType.playback;
 }

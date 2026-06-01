@@ -16,12 +16,16 @@ dependencies:
     path: ../../packages/features/creator/feature_creator_onboarding
   feature_creator_publishing:
     path: ../../packages/features/creator/feature_creator_publishing
+  feature_creator_revenue:
+    path: ../../packages/features/creator/feature_creator_revenue
   feature_discovery:
     path: ../../packages/features/fan/feature_discovery
   feature_fan_onboarding:
     path: ../../packages/features/fan/feature_fan_onboarding
   feature_playback:
     path: ../../packages/features/fan/feature_playback
+  feature_wallet:
+    path: ../../packages/features/fan/feature_wallet
   flutter:
     sdk: flutter
   loom_app_shell:

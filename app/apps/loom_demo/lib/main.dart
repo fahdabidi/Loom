@@ -4,9 +4,11 @@ import 'package:feature_ai_qa/feature_ai_qa.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
+import 'package:feature_creator_revenue/feature_creator_revenue.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
 import 'package:feature_playback/feature_playback.dart';
+import 'package:feature_wallet/feature_wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_fake_backend/loom_fake_backend.dart';
@@ -39,6 +41,8 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerSearchApi(SearchFake(store));
   registerPlaybackAuthorizationApi(PlaybackAuthorizationFake(store));
   registerReceiptLedgerApi(ReceiptLedgerFake(store));
+  registerFanWalletApi(FanWalletFake(store));
+  registerSettlementEngineApi(SettlementEngineFake(store));
 }
 
 Future<Widget> buildLoomDemoAppForTest() async {
@@ -80,17 +84,42 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   static const _phaseOneChannelId = 'channel_p1-creator-channel-loom-home-lab';
 
   bool _showPublishingSetup = false;
+  bool _showRevenue = false;
 
   @override
   Widget build(BuildContext context) {
+    if (_showRevenue) {
+      return CreatorRevenueDashboardScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showRevenue = false),
+      );
+    }
     if (_showPublishingSetup) {
       return const CreatorPublishingSetupScreen(channelId: _phaseOneChannelId);
     }
 
-    return CreatorOnboardingScreen(
-      onOpenPublishingSetup: () {
-        setState(() => _showPublishingSetup = true);
-      },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              key: const ValueKey('p6_open_revenue_dashboard_button'),
+              onPressed: () => setState(() => _showRevenue = true),
+              icon: const Icon(Icons.query_stats_rounded),
+              label: const Text('Open revenue dashboard'),
+            ),
+          ),
+        ),
+        Expanded(
+          child: CreatorOnboardingScreen(
+            onOpenPublishingSetup: () {
+              setState(() => _showPublishingSetup = true);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -104,6 +133,7 @@ class FanAppSurface extends StatefulWidget {
 
 class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showOnboarding = false;
+  bool _showWallet = false;
   String? _channelId;
   String? _contentId;
   String? _qaCreatorId;
@@ -112,6 +142,9 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   Widget build(BuildContext context) {
     if (_showOnboarding) {
       return const FanOnboardingScreen();
+    }
+    if (_showWallet) {
+      return WalletScreen(onBack: () => setState(() => _showWallet = false));
     }
     final qaCreatorId = _qaCreatorId;
     if (qaCreatorId != null) {
@@ -142,6 +175,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       onStartOnboarding: () => setState(() => _showOnboarding = true),
       onOpenCreator: (id) => setState(() => _channelId = id),
       onOpenContent: (id) => setState(() => _contentId = id),
+      onOpenWallet: () => setState(() => _showWallet = true),
     );
   }
 }

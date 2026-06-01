@@ -6250,6 +6250,3338 @@ class EntitlementDefinitionsCompanion
   }
 }
 
+class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WalletsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _simulatedBalanceCentsMeta =
+      const VerificationMeta('simulatedBalanceCents');
+  @override
+  late final GeneratedColumn<int> simulatedBalanceCents = GeneratedColumn<int>(
+    'simulated_balance_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    passportId,
+    currency,
+    simulatedBalanceCents,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'wallets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Wallet> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    if (data.containsKey('simulated_balance_cents')) {
+      context.handle(
+        _simulatedBalanceCentsMeta,
+        simulatedBalanceCents.isAcceptableOrUnknown(
+          data['simulated_balance_cents']!,
+          _simulatedBalanceCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_simulatedBalanceCentsMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {passportId};
+  @override
+  Wallet map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Wallet(
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      simulatedBalanceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}simulated_balance_cents'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WalletsTable createAlias(String alias) {
+    return $WalletsTable(attachedDatabase, alias);
+  }
+}
+
+class Wallet extends DataClass implements Insertable<Wallet> {
+  final String passportId;
+  final String currency;
+  final int simulatedBalanceCents;
+  final DateTime updatedAt;
+  const Wallet({
+    required this.passportId,
+    required this.currency,
+    required this.simulatedBalanceCents,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['passport_id'] = Variable<String>(passportId);
+    map['currency'] = Variable<String>(currency);
+    map['simulated_balance_cents'] = Variable<int>(simulatedBalanceCents);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  WalletsCompanion toCompanion(bool nullToAbsent) {
+    return WalletsCompanion(
+      passportId: Value(passportId),
+      currency: Value(currency),
+      simulatedBalanceCents: Value(simulatedBalanceCents),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Wallet.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Wallet(
+      passportId: serializer.fromJson<String>(json['passportId']),
+      currency: serializer.fromJson<String>(json['currency']),
+      simulatedBalanceCents: serializer.fromJson<int>(
+        json['simulatedBalanceCents'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'passportId': serializer.toJson<String>(passportId),
+      'currency': serializer.toJson<String>(currency),
+      'simulatedBalanceCents': serializer.toJson<int>(simulatedBalanceCents),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Wallet copyWith({
+    String? passportId,
+    String? currency,
+    int? simulatedBalanceCents,
+    DateTime? updatedAt,
+  }) => Wallet(
+    passportId: passportId ?? this.passportId,
+    currency: currency ?? this.currency,
+    simulatedBalanceCents: simulatedBalanceCents ?? this.simulatedBalanceCents,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Wallet copyWithCompanion(WalletsCompanion data) {
+    return Wallet(
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      simulatedBalanceCents: data.simulatedBalanceCents.present
+          ? data.simulatedBalanceCents.value
+          : this.simulatedBalanceCents,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Wallet(')
+          ..write('passportId: $passportId, ')
+          ..write('currency: $currency, ')
+          ..write('simulatedBalanceCents: $simulatedBalanceCents, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(passportId, currency, simulatedBalanceCents, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Wallet &&
+          other.passportId == this.passportId &&
+          other.currency == this.currency &&
+          other.simulatedBalanceCents == this.simulatedBalanceCents &&
+          other.updatedAt == this.updatedAt);
+}
+
+class WalletsCompanion extends UpdateCompanion<Wallet> {
+  final Value<String> passportId;
+  final Value<String> currency;
+  final Value<int> simulatedBalanceCents;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const WalletsCompanion({
+    this.passportId = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.simulatedBalanceCents = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WalletsCompanion.insert({
+    required String passportId,
+    required String currency,
+    required int simulatedBalanceCents,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : passportId = Value(passportId),
+       currency = Value(currency),
+       simulatedBalanceCents = Value(simulatedBalanceCents),
+       updatedAt = Value(updatedAt);
+  static Insertable<Wallet> custom({
+    Expression<String>? passportId,
+    Expression<String>? currency,
+    Expression<int>? simulatedBalanceCents,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (passportId != null) 'passport_id': passportId,
+      if (currency != null) 'currency': currency,
+      if (simulatedBalanceCents != null)
+        'simulated_balance_cents': simulatedBalanceCents,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WalletsCompanion copyWith({
+    Value<String>? passportId,
+    Value<String>? currency,
+    Value<int>? simulatedBalanceCents,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return WalletsCompanion(
+      passportId: passportId ?? this.passportId,
+      currency: currency ?? this.currency,
+      simulatedBalanceCents:
+          simulatedBalanceCents ?? this.simulatedBalanceCents,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (simulatedBalanceCents.present) {
+      map['simulated_balance_cents'] = Variable<int>(
+        simulatedBalanceCents.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WalletsCompanion(')
+          ..write('passportId: $passportId, ')
+          ..write('currency: $currency, ')
+          ..write('simulatedBalanceCents: $simulatedBalanceCents, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PaymentIntentsTable extends PaymentIntents
+    with TableInfo<$PaymentIntentsTable, PaymentIntent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PaymentIntentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorIdMeta = const VerificationMeta(
+    'creatorId',
+  );
+  @override
+  late final GeneratedColumn<String> creatorId = GeneratedColumn<String>(
+    'creator_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _creatorNameMeta = const VerificationMeta(
+    'creatorName',
+  );
+  @override
+  late final GeneratedColumn<String> creatorName = GeneratedColumn<String>(
+    'creator_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tierIdMeta = const VerificationMeta('tierId');
+  @override
+  late final GeneratedColumn<String> tierId = GeneratedColumn<String>(
+    'tier_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _tierNameMeta = const VerificationMeta(
+    'tierName',
+  );
+  @override
+  late final GeneratedColumn<String> tierName = GeneratedColumn<String>(
+    'tier_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _amountCentsMeta = const VerificationMeta(
+    'amountCents',
+  );
+  @override
+  late final GeneratedColumn<int> amountCents = GeneratedColumn<int>(
+    'amount_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _confirmedAtMeta = const VerificationMeta(
+    'confirmedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> confirmedAt = GeneratedColumn<DateTime>(
+    'confirmed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    kind,
+    creatorId,
+    creatorName,
+    tierId,
+    tierName,
+    amountCents,
+    currency,
+    status,
+    createdAt,
+    confirmedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'payment_intents';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PaymentIntent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('creator_id')) {
+      context.handle(
+        _creatorIdMeta,
+        creatorId.isAcceptableOrUnknown(data['creator_id']!, _creatorIdMeta),
+      );
+    }
+    if (data.containsKey('creator_name')) {
+      context.handle(
+        _creatorNameMeta,
+        creatorName.isAcceptableOrUnknown(
+          data['creator_name']!,
+          _creatorNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tier_id')) {
+      context.handle(
+        _tierIdMeta,
+        tierId.isAcceptableOrUnknown(data['tier_id']!, _tierIdMeta),
+      );
+    }
+    if (data.containsKey('tier_name')) {
+      context.handle(
+        _tierNameMeta,
+        tierName.isAcceptableOrUnknown(data['tier_name']!, _tierNameMeta),
+      );
+    }
+    if (data.containsKey('amount_cents')) {
+      context.handle(
+        _amountCentsMeta,
+        amountCents.isAcceptableOrUnknown(
+          data['amount_cents']!,
+          _amountCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountCentsMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('confirmed_at')) {
+      context.handle(
+        _confirmedAtMeta,
+        confirmedAt.isAcceptableOrUnknown(
+          data['confirmed_at']!,
+          _confirmedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PaymentIntent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PaymentIntent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      creatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_id'],
+      ),
+      creatorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_name'],
+      ),
+      tierId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_id'],
+      ),
+      tierName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_name'],
+      ),
+      amountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      confirmedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}confirmed_at'],
+      ),
+    );
+  }
+
+  @override
+  $PaymentIntentsTable createAlias(String alias) {
+    return $PaymentIntentsTable(attachedDatabase, alias);
+  }
+}
+
+class PaymentIntent extends DataClass implements Insertable<PaymentIntent> {
+  final String id;
+  final String passportId;
+  final String kind;
+  final String? creatorId;
+  final String? creatorName;
+  final String? tierId;
+  final String? tierName;
+  final int amountCents;
+  final String currency;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? confirmedAt;
+  const PaymentIntent({
+    required this.id,
+    required this.passportId,
+    required this.kind,
+    this.creatorId,
+    this.creatorName,
+    this.tierId,
+    this.tierName,
+    required this.amountCents,
+    required this.currency,
+    required this.status,
+    required this.createdAt,
+    this.confirmedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || creatorId != null) {
+      map['creator_id'] = Variable<String>(creatorId);
+    }
+    if (!nullToAbsent || creatorName != null) {
+      map['creator_name'] = Variable<String>(creatorName);
+    }
+    if (!nullToAbsent || tierId != null) {
+      map['tier_id'] = Variable<String>(tierId);
+    }
+    if (!nullToAbsent || tierName != null) {
+      map['tier_name'] = Variable<String>(tierName);
+    }
+    map['amount_cents'] = Variable<int>(amountCents);
+    map['currency'] = Variable<String>(currency);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || confirmedAt != null) {
+      map['confirmed_at'] = Variable<DateTime>(confirmedAt);
+    }
+    return map;
+  }
+
+  PaymentIntentsCompanion toCompanion(bool nullToAbsent) {
+    return PaymentIntentsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      kind: Value(kind),
+      creatorId: creatorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creatorId),
+      creatorName: creatorName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creatorName),
+      tierId: tierId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tierId),
+      tierName: tierName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tierName),
+      amountCents: Value(amountCents),
+      currency: Value(currency),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      confirmedAt: confirmedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(confirmedAt),
+    );
+  }
+
+  factory PaymentIntent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PaymentIntent(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      creatorId: serializer.fromJson<String?>(json['creatorId']),
+      creatorName: serializer.fromJson<String?>(json['creatorName']),
+      tierId: serializer.fromJson<String?>(json['tierId']),
+      tierName: serializer.fromJson<String?>(json['tierName']),
+      amountCents: serializer.fromJson<int>(json['amountCents']),
+      currency: serializer.fromJson<String>(json['currency']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      confirmedAt: serializer.fromJson<DateTime?>(json['confirmedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'kind': serializer.toJson<String>(kind),
+      'creatorId': serializer.toJson<String?>(creatorId),
+      'creatorName': serializer.toJson<String?>(creatorName),
+      'tierId': serializer.toJson<String?>(tierId),
+      'tierName': serializer.toJson<String?>(tierName),
+      'amountCents': serializer.toJson<int>(amountCents),
+      'currency': serializer.toJson<String>(currency),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'confirmedAt': serializer.toJson<DateTime?>(confirmedAt),
+    };
+  }
+
+  PaymentIntent copyWith({
+    String? id,
+    String? passportId,
+    String? kind,
+    Value<String?> creatorId = const Value.absent(),
+    Value<String?> creatorName = const Value.absent(),
+    Value<String?> tierId = const Value.absent(),
+    Value<String?> tierName = const Value.absent(),
+    int? amountCents,
+    String? currency,
+    String? status,
+    DateTime? createdAt,
+    Value<DateTime?> confirmedAt = const Value.absent(),
+  }) => PaymentIntent(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    kind: kind ?? this.kind,
+    creatorId: creatorId.present ? creatorId.value : this.creatorId,
+    creatorName: creatorName.present ? creatorName.value : this.creatorName,
+    tierId: tierId.present ? tierId.value : this.tierId,
+    tierName: tierName.present ? tierName.value : this.tierName,
+    amountCents: amountCents ?? this.amountCents,
+    currency: currency ?? this.currency,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    confirmedAt: confirmedAt.present ? confirmedAt.value : this.confirmedAt,
+  );
+  PaymentIntent copyWithCompanion(PaymentIntentsCompanion data) {
+    return PaymentIntent(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      creatorName: data.creatorName.present
+          ? data.creatorName.value
+          : this.creatorName,
+      tierId: data.tierId.present ? data.tierId.value : this.tierId,
+      tierName: data.tierName.present ? data.tierName.value : this.tierName,
+      amountCents: data.amountCents.present
+          ? data.amountCents.value
+          : this.amountCents,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      confirmedAt: data.confirmedAt.present
+          ? data.confirmedAt.value
+          : this.confirmedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PaymentIntent(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('kind: $kind, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('tierId: $tierId, ')
+          ..write('tierName: $tierName, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('currency: $currency, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('confirmedAt: $confirmedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    kind,
+    creatorId,
+    creatorName,
+    tierId,
+    tierName,
+    amountCents,
+    currency,
+    status,
+    createdAt,
+    confirmedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PaymentIntent &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.kind == this.kind &&
+          other.creatorId == this.creatorId &&
+          other.creatorName == this.creatorName &&
+          other.tierId == this.tierId &&
+          other.tierName == this.tierName &&
+          other.amountCents == this.amountCents &&
+          other.currency == this.currency &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.confirmedAt == this.confirmedAt);
+}
+
+class PaymentIntentsCompanion extends UpdateCompanion<PaymentIntent> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> kind;
+  final Value<String?> creatorId;
+  final Value<String?> creatorName;
+  final Value<String?> tierId;
+  final Value<String?> tierName;
+  final Value<int> amountCents;
+  final Value<String> currency;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> confirmedAt;
+  final Value<int> rowid;
+  const PaymentIntentsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.creatorName = const Value.absent(),
+    this.tierId = const Value.absent(),
+    this.tierName = const Value.absent(),
+    this.amountCents = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.confirmedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PaymentIntentsCompanion.insert({
+    required String id,
+    required String passportId,
+    required String kind,
+    this.creatorId = const Value.absent(),
+    this.creatorName = const Value.absent(),
+    this.tierId = const Value.absent(),
+    this.tierName = const Value.absent(),
+    required int amountCents,
+    required String currency,
+    required String status,
+    required DateTime createdAt,
+    this.confirmedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       kind = Value(kind),
+       amountCents = Value(amountCents),
+       currency = Value(currency),
+       status = Value(status),
+       createdAt = Value(createdAt);
+  static Insertable<PaymentIntent> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? kind,
+    Expression<String>? creatorId,
+    Expression<String>? creatorName,
+    Expression<String>? tierId,
+    Expression<String>? tierName,
+    Expression<int>? amountCents,
+    Expression<String>? currency,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? confirmedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (kind != null) 'kind': kind,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (creatorName != null) 'creator_name': creatorName,
+      if (tierId != null) 'tier_id': tierId,
+      if (tierName != null) 'tier_name': tierName,
+      if (amountCents != null) 'amount_cents': amountCents,
+      if (currency != null) 'currency': currency,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (confirmedAt != null) 'confirmed_at': confirmedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PaymentIntentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? kind,
+    Value<String?>? creatorId,
+    Value<String?>? creatorName,
+    Value<String?>? tierId,
+    Value<String?>? tierName,
+    Value<int>? amountCents,
+    Value<String>? currency,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? confirmedAt,
+    Value<int>? rowid,
+  }) {
+    return PaymentIntentsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      kind: kind ?? this.kind,
+      creatorId: creatorId ?? this.creatorId,
+      creatorName: creatorName ?? this.creatorName,
+      tierId: tierId ?? this.tierId,
+      tierName: tierName ?? this.tierName,
+      amountCents: amountCents ?? this.amountCents,
+      currency: currency ?? this.currency,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (creatorName.present) {
+      map['creator_name'] = Variable<String>(creatorName.value);
+    }
+    if (tierId.present) {
+      map['tier_id'] = Variable<String>(tierId.value);
+    }
+    if (tierName.present) {
+      map['tier_name'] = Variable<String>(tierName.value);
+    }
+    if (amountCents.present) {
+      map['amount_cents'] = Variable<int>(amountCents.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (confirmedAt.present) {
+      map['confirmed_at'] = Variable<DateTime>(confirmedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PaymentIntentsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('kind: $kind, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('tierId: $tierId, ')
+          ..write('tierName: $tierName, ')
+          ..write('amountCents: $amountCents, ')
+          ..write('currency: $currency, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('confirmedAt: $confirmedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EntitlementGrantsTable extends EntitlementGrants
+    with TableInfo<$EntitlementGrantsTable, EntitlementGrant> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntitlementGrantsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorIdMeta = const VerificationMeta(
+    'creatorId',
+  );
+  @override
+  late final GeneratedColumn<String> creatorId = GeneratedColumn<String>(
+    'creator_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourcePaymentIntentIdMeta =
+      const VerificationMeta('sourcePaymentIntentId');
+  @override
+  late final GeneratedColumn<String> sourcePaymentIntentId =
+      GeneratedColumn<String>(
+        'source_payment_intent_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _grantedAtMeta = const VerificationMeta(
+    'grantedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> grantedAt = GeneratedColumn<DateTime>(
+    'granted_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    code,
+    creatorId,
+    sourcePaymentIntentId,
+    active,
+    grantedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entitlement_grants';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EntitlementGrant> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('creator_id')) {
+      context.handle(
+        _creatorIdMeta,
+        creatorId.isAcceptableOrUnknown(data['creator_id']!, _creatorIdMeta),
+      );
+    }
+    if (data.containsKey('source_payment_intent_id')) {
+      context.handle(
+        _sourcePaymentIntentIdMeta,
+        sourcePaymentIntentId.isAcceptableOrUnknown(
+          data['source_payment_intent_id']!,
+          _sourcePaymentIntentIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourcePaymentIntentIdMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('granted_at')) {
+      context.handle(
+        _grantedAtMeta,
+        grantedAt.isAcceptableOrUnknown(data['granted_at']!, _grantedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_grantedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EntitlementGrant map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EntitlementGrant(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      )!,
+      creatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_id'],
+      ),
+      sourcePaymentIntentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_payment_intent_id'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      grantedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}granted_at'],
+      )!,
+    );
+  }
+
+  @override
+  $EntitlementGrantsTable createAlias(String alias) {
+    return $EntitlementGrantsTable(attachedDatabase, alias);
+  }
+}
+
+class EntitlementGrant extends DataClass
+    implements Insertable<EntitlementGrant> {
+  final String id;
+  final String passportId;
+  final String code;
+  final String? creatorId;
+  final String sourcePaymentIntentId;
+  final bool active;
+  final DateTime grantedAt;
+  const EntitlementGrant({
+    required this.id,
+    required this.passportId,
+    required this.code,
+    this.creatorId,
+    required this.sourcePaymentIntentId,
+    required this.active,
+    required this.grantedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['code'] = Variable<String>(code);
+    if (!nullToAbsent || creatorId != null) {
+      map['creator_id'] = Variable<String>(creatorId);
+    }
+    map['source_payment_intent_id'] = Variable<String>(sourcePaymentIntentId);
+    map['active'] = Variable<bool>(active);
+    map['granted_at'] = Variable<DateTime>(grantedAt);
+    return map;
+  }
+
+  EntitlementGrantsCompanion toCompanion(bool nullToAbsent) {
+    return EntitlementGrantsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      code: Value(code),
+      creatorId: creatorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creatorId),
+      sourcePaymentIntentId: Value(sourcePaymentIntentId),
+      active: Value(active),
+      grantedAt: Value(grantedAt),
+    );
+  }
+
+  factory EntitlementGrant.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EntitlementGrant(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      code: serializer.fromJson<String>(json['code']),
+      creatorId: serializer.fromJson<String?>(json['creatorId']),
+      sourcePaymentIntentId: serializer.fromJson<String>(
+        json['sourcePaymentIntentId'],
+      ),
+      active: serializer.fromJson<bool>(json['active']),
+      grantedAt: serializer.fromJson<DateTime>(json['grantedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'code': serializer.toJson<String>(code),
+      'creatorId': serializer.toJson<String?>(creatorId),
+      'sourcePaymentIntentId': serializer.toJson<String>(sourcePaymentIntentId),
+      'active': serializer.toJson<bool>(active),
+      'grantedAt': serializer.toJson<DateTime>(grantedAt),
+    };
+  }
+
+  EntitlementGrant copyWith({
+    String? id,
+    String? passportId,
+    String? code,
+    Value<String?> creatorId = const Value.absent(),
+    String? sourcePaymentIntentId,
+    bool? active,
+    DateTime? grantedAt,
+  }) => EntitlementGrant(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    code: code ?? this.code,
+    creatorId: creatorId.present ? creatorId.value : this.creatorId,
+    sourcePaymentIntentId: sourcePaymentIntentId ?? this.sourcePaymentIntentId,
+    active: active ?? this.active,
+    grantedAt: grantedAt ?? this.grantedAt,
+  );
+  EntitlementGrant copyWithCompanion(EntitlementGrantsCompanion data) {
+    return EntitlementGrant(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      code: data.code.present ? data.code.value : this.code,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      sourcePaymentIntentId: data.sourcePaymentIntentId.present
+          ? data.sourcePaymentIntentId.value
+          : this.sourcePaymentIntentId,
+      active: data.active.present ? data.active.value : this.active,
+      grantedAt: data.grantedAt.present ? data.grantedAt.value : this.grantedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntitlementGrant(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('code: $code, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('sourcePaymentIntentId: $sourcePaymentIntentId, ')
+          ..write('active: $active, ')
+          ..write('grantedAt: $grantedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    code,
+    creatorId,
+    sourcePaymentIntentId,
+    active,
+    grantedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EntitlementGrant &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.code == this.code &&
+          other.creatorId == this.creatorId &&
+          other.sourcePaymentIntentId == this.sourcePaymentIntentId &&
+          other.active == this.active &&
+          other.grantedAt == this.grantedAt);
+}
+
+class EntitlementGrantsCompanion extends UpdateCompanion<EntitlementGrant> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> code;
+  final Value<String?> creatorId;
+  final Value<String> sourcePaymentIntentId;
+  final Value<bool> active;
+  final Value<DateTime> grantedAt;
+  final Value<int> rowid;
+  const EntitlementGrantsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.code = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.sourcePaymentIntentId = const Value.absent(),
+    this.active = const Value.absent(),
+    this.grantedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EntitlementGrantsCompanion.insert({
+    required String id,
+    required String passportId,
+    required String code,
+    this.creatorId = const Value.absent(),
+    required String sourcePaymentIntentId,
+    required bool active,
+    required DateTime grantedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       code = Value(code),
+       sourcePaymentIntentId = Value(sourcePaymentIntentId),
+       active = Value(active),
+       grantedAt = Value(grantedAt);
+  static Insertable<EntitlementGrant> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? code,
+    Expression<String>? creatorId,
+    Expression<String>? sourcePaymentIntentId,
+    Expression<bool>? active,
+    Expression<DateTime>? grantedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (code != null) 'code': code,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (sourcePaymentIntentId != null)
+        'source_payment_intent_id': sourcePaymentIntentId,
+      if (active != null) 'active': active,
+      if (grantedAt != null) 'granted_at': grantedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EntitlementGrantsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? code,
+    Value<String?>? creatorId,
+    Value<String>? sourcePaymentIntentId,
+    Value<bool>? active,
+    Value<DateTime>? grantedAt,
+    Value<int>? rowid,
+  }) {
+    return EntitlementGrantsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      code: code ?? this.code,
+      creatorId: creatorId ?? this.creatorId,
+      sourcePaymentIntentId:
+          sourcePaymentIntentId ?? this.sourcePaymentIntentId,
+      active: active ?? this.active,
+      grantedAt: grantedAt ?? this.grantedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (sourcePaymentIntentId.present) {
+      map['source_payment_intent_id'] = Variable<String>(
+        sourcePaymentIntentId.value,
+      );
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (grantedAt.present) {
+      map['granted_at'] = Variable<DateTime>(grantedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntitlementGrantsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('code: $code, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('sourcePaymentIntentId: $sourcePaymentIntentId, ')
+          ..write('active: $active, ')
+          ..write('grantedAt: $grantedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SubscriptionsTable extends Subscriptions
+    with TableInfo<$SubscriptionsTable, Subscription> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SubscriptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _creatorIdMeta = const VerificationMeta(
+    'creatorId',
+  );
+  @override
+  late final GeneratedColumn<String> creatorId = GeneratedColumn<String>(
+    'creator_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorNameMeta = const VerificationMeta(
+    'creatorName',
+  );
+  @override
+  late final GeneratedColumn<String> creatorName = GeneratedColumn<String>(
+    'creator_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tierIdMeta = const VerificationMeta('tierId');
+  @override
+  late final GeneratedColumn<String> tierId = GeneratedColumn<String>(
+    'tier_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tierNameMeta = const VerificationMeta(
+    'tierName',
+  );
+  @override
+  late final GeneratedColumn<String> tierName = GeneratedColumn<String>(
+    'tier_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _monthlyPriceCentsMeta = const VerificationMeta(
+    'monthlyPriceCents',
+  );
+  @override
+  late final GeneratedColumn<int> monthlyPriceCents = GeneratedColumn<int>(
+    'monthly_price_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    creatorId,
+    creatorName,
+    tierId,
+    tierName,
+    monthlyPriceCents,
+    active,
+    startedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'subscriptions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Subscription> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('creator_id')) {
+      context.handle(
+        _creatorIdMeta,
+        creatorId.isAcceptableOrUnknown(data['creator_id']!, _creatorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_creatorIdMeta);
+    }
+    if (data.containsKey('creator_name')) {
+      context.handle(
+        _creatorNameMeta,
+        creatorName.isAcceptableOrUnknown(
+          data['creator_name']!,
+          _creatorNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_creatorNameMeta);
+    }
+    if (data.containsKey('tier_id')) {
+      context.handle(
+        _tierIdMeta,
+        tierId.isAcceptableOrUnknown(data['tier_id']!, _tierIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tierIdMeta);
+    }
+    if (data.containsKey('tier_name')) {
+      context.handle(
+        _tierNameMeta,
+        tierName.isAcceptableOrUnknown(data['tier_name']!, _tierNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tierNameMeta);
+    }
+    if (data.containsKey('monthly_price_cents')) {
+      context.handle(
+        _monthlyPriceCentsMeta,
+        monthlyPriceCents.isAcceptableOrUnknown(
+          data['monthly_price_cents']!,
+          _monthlyPriceCentsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_monthlyPriceCentsMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Subscription map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Subscription(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      creatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_id'],
+      )!,
+      creatorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_name'],
+      )!,
+      tierId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_id'],
+      )!,
+      tierName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tier_name'],
+      )!,
+      monthlyPriceCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}monthly_price_cents'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SubscriptionsTable createAlias(String alias) {
+    return $SubscriptionsTable(attachedDatabase, alias);
+  }
+}
+
+class Subscription extends DataClass implements Insertable<Subscription> {
+  final String id;
+  final String passportId;
+  final String creatorId;
+  final String creatorName;
+  final String tierId;
+  final String tierName;
+  final int monthlyPriceCents;
+  final bool active;
+  final DateTime startedAt;
+  const Subscription({
+    required this.id,
+    required this.passportId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.tierId,
+    required this.tierName,
+    required this.monthlyPriceCents,
+    required this.active,
+    required this.startedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['creator_id'] = Variable<String>(creatorId);
+    map['creator_name'] = Variable<String>(creatorName);
+    map['tier_id'] = Variable<String>(tierId);
+    map['tier_name'] = Variable<String>(tierName);
+    map['monthly_price_cents'] = Variable<int>(monthlyPriceCents);
+    map['active'] = Variable<bool>(active);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    return map;
+  }
+
+  SubscriptionsCompanion toCompanion(bool nullToAbsent) {
+    return SubscriptionsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      creatorId: Value(creatorId),
+      creatorName: Value(creatorName),
+      tierId: Value(tierId),
+      tierName: Value(tierName),
+      monthlyPriceCents: Value(monthlyPriceCents),
+      active: Value(active),
+      startedAt: Value(startedAt),
+    );
+  }
+
+  factory Subscription.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Subscription(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      creatorId: serializer.fromJson<String>(json['creatorId']),
+      creatorName: serializer.fromJson<String>(json['creatorName']),
+      tierId: serializer.fromJson<String>(json['tierId']),
+      tierName: serializer.fromJson<String>(json['tierName']),
+      monthlyPriceCents: serializer.fromJson<int>(json['monthlyPriceCents']),
+      active: serializer.fromJson<bool>(json['active']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'creatorId': serializer.toJson<String>(creatorId),
+      'creatorName': serializer.toJson<String>(creatorName),
+      'tierId': serializer.toJson<String>(tierId),
+      'tierName': serializer.toJson<String>(tierName),
+      'monthlyPriceCents': serializer.toJson<int>(monthlyPriceCents),
+      'active': serializer.toJson<bool>(active),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+    };
+  }
+
+  Subscription copyWith({
+    String? id,
+    String? passportId,
+    String? creatorId,
+    String? creatorName,
+    String? tierId,
+    String? tierName,
+    int? monthlyPriceCents,
+    bool? active,
+    DateTime? startedAt,
+  }) => Subscription(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    creatorId: creatorId ?? this.creatorId,
+    creatorName: creatorName ?? this.creatorName,
+    tierId: tierId ?? this.tierId,
+    tierName: tierName ?? this.tierName,
+    monthlyPriceCents: monthlyPriceCents ?? this.monthlyPriceCents,
+    active: active ?? this.active,
+    startedAt: startedAt ?? this.startedAt,
+  );
+  Subscription copyWithCompanion(SubscriptionsCompanion data) {
+    return Subscription(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      creatorName: data.creatorName.present
+          ? data.creatorName.value
+          : this.creatorName,
+      tierId: data.tierId.present ? data.tierId.value : this.tierId,
+      tierName: data.tierName.present ? data.tierName.value : this.tierName,
+      monthlyPriceCents: data.monthlyPriceCents.present
+          ? data.monthlyPriceCents.value
+          : this.monthlyPriceCents,
+      active: data.active.present ? data.active.value : this.active,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Subscription(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('tierId: $tierId, ')
+          ..write('tierName: $tierName, ')
+          ..write('monthlyPriceCents: $monthlyPriceCents, ')
+          ..write('active: $active, ')
+          ..write('startedAt: $startedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    creatorId,
+    creatorName,
+    tierId,
+    tierName,
+    monthlyPriceCents,
+    active,
+    startedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Subscription &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.creatorId == this.creatorId &&
+          other.creatorName == this.creatorName &&
+          other.tierId == this.tierId &&
+          other.tierName == this.tierName &&
+          other.monthlyPriceCents == this.monthlyPriceCents &&
+          other.active == this.active &&
+          other.startedAt == this.startedAt);
+}
+
+class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> creatorId;
+  final Value<String> creatorName;
+  final Value<String> tierId;
+  final Value<String> tierName;
+  final Value<int> monthlyPriceCents;
+  final Value<bool> active;
+  final Value<DateTime> startedAt;
+  final Value<int> rowid;
+  const SubscriptionsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.creatorName = const Value.absent(),
+    this.tierId = const Value.absent(),
+    this.tierName = const Value.absent(),
+    this.monthlyPriceCents = const Value.absent(),
+    this.active = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SubscriptionsCompanion.insert({
+    required String id,
+    required String passportId,
+    required String creatorId,
+    required String creatorName,
+    required String tierId,
+    required String tierName,
+    required int monthlyPriceCents,
+    required bool active,
+    required DateTime startedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       creatorId = Value(creatorId),
+       creatorName = Value(creatorName),
+       tierId = Value(tierId),
+       tierName = Value(tierName),
+       monthlyPriceCents = Value(monthlyPriceCents),
+       active = Value(active),
+       startedAt = Value(startedAt);
+  static Insertable<Subscription> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? creatorId,
+    Expression<String>? creatorName,
+    Expression<String>? tierId,
+    Expression<String>? tierName,
+    Expression<int>? monthlyPriceCents,
+    Expression<bool>? active,
+    Expression<DateTime>? startedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (creatorName != null) 'creator_name': creatorName,
+      if (tierId != null) 'tier_id': tierId,
+      if (tierName != null) 'tier_name': tierName,
+      if (monthlyPriceCents != null) 'monthly_price_cents': monthlyPriceCents,
+      if (active != null) 'active': active,
+      if (startedAt != null) 'started_at': startedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SubscriptionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? creatorId,
+    Value<String>? creatorName,
+    Value<String>? tierId,
+    Value<String>? tierName,
+    Value<int>? monthlyPriceCents,
+    Value<bool>? active,
+    Value<DateTime>? startedAt,
+    Value<int>? rowid,
+  }) {
+    return SubscriptionsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      creatorId: creatorId ?? this.creatorId,
+      creatorName: creatorName ?? this.creatorName,
+      tierId: tierId ?? this.tierId,
+      tierName: tierName ?? this.tierName,
+      monthlyPriceCents: monthlyPriceCents ?? this.monthlyPriceCents,
+      active: active ?? this.active,
+      startedAt: startedAt ?? this.startedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (creatorName.present) {
+      map['creator_name'] = Variable<String>(creatorName.value);
+    }
+    if (tierId.present) {
+      map['tier_id'] = Variable<String>(tierId.value);
+    }
+    if (tierName.present) {
+      map['tier_name'] = Variable<String>(tierName.value);
+    }
+    if (monthlyPriceCents.present) {
+      map['monthly_price_cents'] = Variable<int>(monthlyPriceCents.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SubscriptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('tierId: $tierId, ')
+          ..write('tierName: $tierName, ')
+          ..write('monthlyPriceCents: $monthlyPriceCents, ')
+          ..write('active: $active, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SettlementRunsTable extends SettlementRuns
+    with TableInfo<$SettlementRunsTable, SettlementRun> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SettlementRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, status, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'settlement_runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SettlementRun> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SettlementRun map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SettlementRun(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SettlementRunsTable createAlias(String alias) {
+    return $SettlementRunsTable(attachedDatabase, alias);
+  }
+}
+
+class SettlementRun extends DataClass implements Insertable<SettlementRun> {
+  final String id;
+  final String status;
+  final DateTime createdAt;
+  const SettlementRun({
+    required this.id,
+    required this.status,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  SettlementRunsCompanion toCompanion(bool nullToAbsent) {
+    return SettlementRunsCompanion(
+      id: Value(id),
+      status: Value(status),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SettlementRun.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SettlementRun(
+      id: serializer.fromJson<String>(json['id']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  SettlementRun copyWith({String? id, String? status, DateTime? createdAt}) =>
+      SettlementRun(
+        id: id ?? this.id,
+        status: status ?? this.status,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  SettlementRun copyWithCompanion(SettlementRunsCompanion data) {
+    return SettlementRun(
+      id: data.id.present ? data.id.value : this.id,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettlementRun(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, status, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SettlementRun &&
+          other.id == this.id &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt);
+}
+
+class SettlementRunsCompanion extends UpdateCompanion<SettlementRun> {
+  final Value<String> id;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const SettlementRunsCompanion({
+    this.id = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SettlementRunsCompanion.insert({
+    required String id,
+    required String status,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       status = Value(status),
+       createdAt = Value(createdAt);
+  static Insertable<SettlementRun> custom({
+    Expression<String>? id,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SettlementRunsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return SettlementRunsCompanion(
+      id: id ?? this.id,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SettlementRunsCompanion(')
+          ..write('id: $id, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PayoutStatementsTable extends PayoutStatements
+    with TableInfo<$PayoutStatementsTable, PayoutStatement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PayoutStatementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _runIdMeta = const VerificationMeta('runId');
+  @override
+  late final GeneratedColumn<String> runId = GeneratedColumn<String>(
+    'run_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorIdMeta = const VerificationMeta(
+    'creatorId',
+  );
+  @override
+  late final GeneratedColumn<String> creatorId = GeneratedColumn<String>(
+    'creator_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorNameMeta = const VerificationMeta(
+    'creatorName',
+  );
+  @override
+  late final GeneratedColumn<String> creatorName = GeneratedColumn<String>(
+    'creator_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalCentsMeta = const VerificationMeta(
+    'totalCents',
+  );
+  @override
+  late final GeneratedColumn<int> totalCents = GeneratedColumn<int>(
+    'total_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bySourceJsonMeta = const VerificationMeta(
+    'bySourceJson',
+  );
+  @override
+  late final GeneratedColumn<String> bySourceJson = GeneratedColumn<String>(
+    'by_source_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _byIntentJsonMeta = const VerificationMeta(
+    'byIntentJson',
+  );
+  @override
+  late final GeneratedColumn<String> byIntentJson = GeneratedColumn<String>(
+    'by_intent_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recentReceiptsJsonMeta =
+      const VerificationMeta('recentReceiptsJson');
+  @override
+  late final GeneratedColumn<String> recentReceiptsJson =
+      GeneratedColumn<String>(
+        'recent_receipts_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    runId,
+    creatorId,
+    creatorName,
+    totalCents,
+    bySourceJson,
+    byIntentJson,
+    recentReceiptsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'payout_statements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PayoutStatement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('run_id')) {
+      context.handle(
+        _runIdMeta,
+        runId.isAcceptableOrUnknown(data['run_id']!, _runIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_runIdMeta);
+    }
+    if (data.containsKey('creator_id')) {
+      context.handle(
+        _creatorIdMeta,
+        creatorId.isAcceptableOrUnknown(data['creator_id']!, _creatorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_creatorIdMeta);
+    }
+    if (data.containsKey('creator_name')) {
+      context.handle(
+        _creatorNameMeta,
+        creatorName.isAcceptableOrUnknown(
+          data['creator_name']!,
+          _creatorNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_creatorNameMeta);
+    }
+    if (data.containsKey('total_cents')) {
+      context.handle(
+        _totalCentsMeta,
+        totalCents.isAcceptableOrUnknown(data['total_cents']!, _totalCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalCentsMeta);
+    }
+    if (data.containsKey('by_source_json')) {
+      context.handle(
+        _bySourceJsonMeta,
+        bySourceJson.isAcceptableOrUnknown(
+          data['by_source_json']!,
+          _bySourceJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_bySourceJsonMeta);
+    }
+    if (data.containsKey('by_intent_json')) {
+      context.handle(
+        _byIntentJsonMeta,
+        byIntentJson.isAcceptableOrUnknown(
+          data['by_intent_json']!,
+          _byIntentJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_byIntentJsonMeta);
+    }
+    if (data.containsKey('recent_receipts_json')) {
+      context.handle(
+        _recentReceiptsJsonMeta,
+        recentReceiptsJson.isAcceptableOrUnknown(
+          data['recent_receipts_json']!,
+          _recentReceiptsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recentReceiptsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PayoutStatement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PayoutStatement(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      runId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}run_id'],
+      )!,
+      creatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_id'],
+      )!,
+      creatorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_name'],
+      )!,
+      totalCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_cents'],
+      )!,
+      bySourceJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}by_source_json'],
+      )!,
+      byIntentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}by_intent_json'],
+      )!,
+      recentReceiptsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recent_receipts_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PayoutStatementsTable createAlias(String alias) {
+    return $PayoutStatementsTable(attachedDatabase, alias);
+  }
+}
+
+class PayoutStatement extends DataClass implements Insertable<PayoutStatement> {
+  final String id;
+  final String runId;
+  final String creatorId;
+  final String creatorName;
+  final int totalCents;
+  final String bySourceJson;
+  final String byIntentJson;
+  final String recentReceiptsJson;
+  final DateTime updatedAt;
+  const PayoutStatement({
+    required this.id,
+    required this.runId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.totalCents,
+    required this.bySourceJson,
+    required this.byIntentJson,
+    required this.recentReceiptsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['run_id'] = Variable<String>(runId);
+    map['creator_id'] = Variable<String>(creatorId);
+    map['creator_name'] = Variable<String>(creatorName);
+    map['total_cents'] = Variable<int>(totalCents);
+    map['by_source_json'] = Variable<String>(bySourceJson);
+    map['by_intent_json'] = Variable<String>(byIntentJson);
+    map['recent_receipts_json'] = Variable<String>(recentReceiptsJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PayoutStatementsCompanion toCompanion(bool nullToAbsent) {
+    return PayoutStatementsCompanion(
+      id: Value(id),
+      runId: Value(runId),
+      creatorId: Value(creatorId),
+      creatorName: Value(creatorName),
+      totalCents: Value(totalCents),
+      bySourceJson: Value(bySourceJson),
+      byIntentJson: Value(byIntentJson),
+      recentReceiptsJson: Value(recentReceiptsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PayoutStatement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PayoutStatement(
+      id: serializer.fromJson<String>(json['id']),
+      runId: serializer.fromJson<String>(json['runId']),
+      creatorId: serializer.fromJson<String>(json['creatorId']),
+      creatorName: serializer.fromJson<String>(json['creatorName']),
+      totalCents: serializer.fromJson<int>(json['totalCents']),
+      bySourceJson: serializer.fromJson<String>(json['bySourceJson']),
+      byIntentJson: serializer.fromJson<String>(json['byIntentJson']),
+      recentReceiptsJson: serializer.fromJson<String>(
+        json['recentReceiptsJson'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'runId': serializer.toJson<String>(runId),
+      'creatorId': serializer.toJson<String>(creatorId),
+      'creatorName': serializer.toJson<String>(creatorName),
+      'totalCents': serializer.toJson<int>(totalCents),
+      'bySourceJson': serializer.toJson<String>(bySourceJson),
+      'byIntentJson': serializer.toJson<String>(byIntentJson),
+      'recentReceiptsJson': serializer.toJson<String>(recentReceiptsJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PayoutStatement copyWith({
+    String? id,
+    String? runId,
+    String? creatorId,
+    String? creatorName,
+    int? totalCents,
+    String? bySourceJson,
+    String? byIntentJson,
+    String? recentReceiptsJson,
+    DateTime? updatedAt,
+  }) => PayoutStatement(
+    id: id ?? this.id,
+    runId: runId ?? this.runId,
+    creatorId: creatorId ?? this.creatorId,
+    creatorName: creatorName ?? this.creatorName,
+    totalCents: totalCents ?? this.totalCents,
+    bySourceJson: bySourceJson ?? this.bySourceJson,
+    byIntentJson: byIntentJson ?? this.byIntentJson,
+    recentReceiptsJson: recentReceiptsJson ?? this.recentReceiptsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PayoutStatement copyWithCompanion(PayoutStatementsCompanion data) {
+    return PayoutStatement(
+      id: data.id.present ? data.id.value : this.id,
+      runId: data.runId.present ? data.runId.value : this.runId,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      creatorName: data.creatorName.present
+          ? data.creatorName.value
+          : this.creatorName,
+      totalCents: data.totalCents.present
+          ? data.totalCents.value
+          : this.totalCents,
+      bySourceJson: data.bySourceJson.present
+          ? data.bySourceJson.value
+          : this.bySourceJson,
+      byIntentJson: data.byIntentJson.present
+          ? data.byIntentJson.value
+          : this.byIntentJson,
+      recentReceiptsJson: data.recentReceiptsJson.present
+          ? data.recentReceiptsJson.value
+          : this.recentReceiptsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PayoutStatement(')
+          ..write('id: $id, ')
+          ..write('runId: $runId, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('bySourceJson: $bySourceJson, ')
+          ..write('byIntentJson: $byIntentJson, ')
+          ..write('recentReceiptsJson: $recentReceiptsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    runId,
+    creatorId,
+    creatorName,
+    totalCents,
+    bySourceJson,
+    byIntentJson,
+    recentReceiptsJson,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PayoutStatement &&
+          other.id == this.id &&
+          other.runId == this.runId &&
+          other.creatorId == this.creatorId &&
+          other.creatorName == this.creatorName &&
+          other.totalCents == this.totalCents &&
+          other.bySourceJson == this.bySourceJson &&
+          other.byIntentJson == this.byIntentJson &&
+          other.recentReceiptsJson == this.recentReceiptsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PayoutStatementsCompanion extends UpdateCompanion<PayoutStatement> {
+  final Value<String> id;
+  final Value<String> runId;
+  final Value<String> creatorId;
+  final Value<String> creatorName;
+  final Value<int> totalCents;
+  final Value<String> bySourceJson;
+  final Value<String> byIntentJson;
+  final Value<String> recentReceiptsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const PayoutStatementsCompanion({
+    this.id = const Value.absent(),
+    this.runId = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.creatorName = const Value.absent(),
+    this.totalCents = const Value.absent(),
+    this.bySourceJson = const Value.absent(),
+    this.byIntentJson = const Value.absent(),
+    this.recentReceiptsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PayoutStatementsCompanion.insert({
+    required String id,
+    required String runId,
+    required String creatorId,
+    required String creatorName,
+    required int totalCents,
+    required String bySourceJson,
+    required String byIntentJson,
+    required String recentReceiptsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       runId = Value(runId),
+       creatorId = Value(creatorId),
+       creatorName = Value(creatorName),
+       totalCents = Value(totalCents),
+       bySourceJson = Value(bySourceJson),
+       byIntentJson = Value(byIntentJson),
+       recentReceiptsJson = Value(recentReceiptsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<PayoutStatement> custom({
+    Expression<String>? id,
+    Expression<String>? runId,
+    Expression<String>? creatorId,
+    Expression<String>? creatorName,
+    Expression<int>? totalCents,
+    Expression<String>? bySourceJson,
+    Expression<String>? byIntentJson,
+    Expression<String>? recentReceiptsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (runId != null) 'run_id': runId,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (creatorName != null) 'creator_name': creatorName,
+      if (totalCents != null) 'total_cents': totalCents,
+      if (bySourceJson != null) 'by_source_json': bySourceJson,
+      if (byIntentJson != null) 'by_intent_json': byIntentJson,
+      if (recentReceiptsJson != null)
+        'recent_receipts_json': recentReceiptsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PayoutStatementsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? runId,
+    Value<String>? creatorId,
+    Value<String>? creatorName,
+    Value<int>? totalCents,
+    Value<String>? bySourceJson,
+    Value<String>? byIntentJson,
+    Value<String>? recentReceiptsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PayoutStatementsCompanion(
+      id: id ?? this.id,
+      runId: runId ?? this.runId,
+      creatorId: creatorId ?? this.creatorId,
+      creatorName: creatorName ?? this.creatorName,
+      totalCents: totalCents ?? this.totalCents,
+      bySourceJson: bySourceJson ?? this.bySourceJson,
+      byIntentJson: byIntentJson ?? this.byIntentJson,
+      recentReceiptsJson: recentReceiptsJson ?? this.recentReceiptsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (runId.present) {
+      map['run_id'] = Variable<String>(runId.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (creatorName.present) {
+      map['creator_name'] = Variable<String>(creatorName.value);
+    }
+    if (totalCents.present) {
+      map['total_cents'] = Variable<int>(totalCents.value);
+    }
+    if (bySourceJson.present) {
+      map['by_source_json'] = Variable<String>(bySourceJson.value);
+    }
+    if (byIntentJson.present) {
+      map['by_intent_json'] = Variable<String>(byIntentJson.value);
+    }
+    if (recentReceiptsJson.present) {
+      map['recent_receipts_json'] = Variable<String>(recentReceiptsJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PayoutStatementsCompanion(')
+          ..write('id: $id, ')
+          ..write('runId: $runId, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('creatorName: $creatorName, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('bySourceJson: $bySourceJson, ')
+          ..write('byIntentJson: $byIntentJson, ')
+          ..write('recentReceiptsJson: $recentReceiptsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AllocationStatementsTable extends AllocationStatements
+    with TableInfo<$AllocationStatementsTable, AllocationStatement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AllocationStatementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _totalCentsMeta = const VerificationMeta(
+    'totalCents',
+  );
+  @override
+  late final GeneratedColumn<int> totalCents = GeneratedColumn<int>(
+    'total_cents',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allocationsJsonMeta = const VerificationMeta(
+    'allocationsJson',
+  );
+  @override
+  late final GeneratedColumn<String> allocationsJson = GeneratedColumn<String>(
+    'allocations_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    totalCents,
+    allocationsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'allocation_statements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AllocationStatement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('total_cents')) {
+      context.handle(
+        _totalCentsMeta,
+        totalCents.isAcceptableOrUnknown(data['total_cents']!, _totalCentsMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalCentsMeta);
+    }
+    if (data.containsKey('allocations_json')) {
+      context.handle(
+        _allocationsJsonMeta,
+        allocationsJson.isAcceptableOrUnknown(
+          data['allocations_json']!,
+          _allocationsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_allocationsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AllocationStatement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AllocationStatement(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      totalCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_cents'],
+      )!,
+      allocationsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}allocations_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AllocationStatementsTable createAlias(String alias) {
+    return $AllocationStatementsTable(attachedDatabase, alias);
+  }
+}
+
+class AllocationStatement extends DataClass
+    implements Insertable<AllocationStatement> {
+  final String id;
+  final String passportId;
+  final int totalCents;
+  final String allocationsJson;
+  final DateTime updatedAt;
+  const AllocationStatement({
+    required this.id,
+    required this.passportId,
+    required this.totalCents,
+    required this.allocationsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['total_cents'] = Variable<int>(totalCents);
+    map['allocations_json'] = Variable<String>(allocationsJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AllocationStatementsCompanion toCompanion(bool nullToAbsent) {
+    return AllocationStatementsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      totalCents: Value(totalCents),
+      allocationsJson: Value(allocationsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AllocationStatement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AllocationStatement(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      totalCents: serializer.fromJson<int>(json['totalCents']),
+      allocationsJson: serializer.fromJson<String>(json['allocationsJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'totalCents': serializer.toJson<int>(totalCents),
+      'allocationsJson': serializer.toJson<String>(allocationsJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AllocationStatement copyWith({
+    String? id,
+    String? passportId,
+    int? totalCents,
+    String? allocationsJson,
+    DateTime? updatedAt,
+  }) => AllocationStatement(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    totalCents: totalCents ?? this.totalCents,
+    allocationsJson: allocationsJson ?? this.allocationsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AllocationStatement copyWithCompanion(AllocationStatementsCompanion data) {
+    return AllocationStatement(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      totalCents: data.totalCents.present
+          ? data.totalCents.value
+          : this.totalCents,
+      allocationsJson: data.allocationsJson.present
+          ? data.allocationsJson.value
+          : this.allocationsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationStatement(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, passportId, totalCents, allocationsJson, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AllocationStatement &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.totalCents == this.totalCents &&
+          other.allocationsJson == this.allocationsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AllocationStatementsCompanion
+    extends UpdateCompanion<AllocationStatement> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<int> totalCents;
+  final Value<String> allocationsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AllocationStatementsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.totalCents = const Value.absent(),
+    this.allocationsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AllocationStatementsCompanion.insert({
+    required String id,
+    required String passportId,
+    required int totalCents,
+    required String allocationsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       totalCents = Value(totalCents),
+       allocationsJson = Value(allocationsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<AllocationStatement> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<int>? totalCents,
+    Expression<String>? allocationsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (totalCents != null) 'total_cents': totalCents,
+      if (allocationsJson != null) 'allocations_json': allocationsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AllocationStatementsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<int>? totalCents,
+    Value<String>? allocationsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AllocationStatementsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      totalCents: totalCents ?? this.totalCents,
+      allocationsJson: allocationsJson ?? this.allocationsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (totalCents.present) {
+      map['total_cents'] = Variable<int>(totalCents.value);
+    }
+    if (allocationsJson.present) {
+      map['allocations_json'] = Variable<String>(allocationsJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AllocationStatementsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('totalCents: $totalCents, ')
+          ..write('allocationsJson: $allocationsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PersonasTable extends Personas with TableInfo<$PersonasTable, Persona> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -14373,6 +17705,17 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   late final $ContentPerfTable contentPerf = $ContentPerfTable(this);
   late final $EntitlementDefinitionsTable entitlementDefinitions =
       $EntitlementDefinitionsTable(this);
+  late final $WalletsTable wallets = $WalletsTable(this);
+  late final $PaymentIntentsTable paymentIntents = $PaymentIntentsTable(this);
+  late final $EntitlementGrantsTable entitlementGrants =
+      $EntitlementGrantsTable(this);
+  late final $SubscriptionsTable subscriptions = $SubscriptionsTable(this);
+  late final $SettlementRunsTable settlementRuns = $SettlementRunsTable(this);
+  late final $PayoutStatementsTable payoutStatements = $PayoutStatementsTable(
+    this,
+  );
+  late final $AllocationStatementsTable allocationStatements =
+      $AllocationStatementsTable(this);
   late final $PersonasTable personas = $PersonasTable(this);
   late final $FollowsTable follows = $FollowsTable(this);
   late final $ConsentGrantsTable consentGrants = $ConsentGrantsTable(this);
@@ -14427,6 +17770,13 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     externalContentRefs,
     contentPerf,
     entitlementDefinitions,
+    wallets,
+    paymentIntents,
+    entitlementGrants,
+    subscriptions,
+    settlementRuns,
+    payoutStatements,
+    allocationStatements,
     personas,
     follows,
     consentGrants,
@@ -17697,6 +21047,119 @@ final class $$FanPassportsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$WalletsTable, List<Wallet>> _walletsRefsTable(
+    _$LoomDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.wallets,
+    aliasName: $_aliasNameGenerator(db.fanPassports.id, db.wallets.passportId),
+  );
+
+  $$WalletsTableProcessedTableManager get walletsRefs {
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_walletsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PaymentIntentsTable, List<PaymentIntent>>
+  _paymentIntentsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.paymentIntents,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.paymentIntents.passportId,
+    ),
+  );
+
+  $$PaymentIntentsTableProcessedTableManager get paymentIntentsRefs {
+    final manager = $$PaymentIntentsTableTableManager(
+      $_db,
+      $_db.paymentIntents,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_paymentIntentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$EntitlementGrantsTable, List<EntitlementGrant>>
+  _entitlementGrantsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.entitlementGrants,
+        aliasName: $_aliasNameGenerator(
+          db.fanPassports.id,
+          db.entitlementGrants.passportId,
+        ),
+      );
+
+  $$EntitlementGrantsTableProcessedTableManager get entitlementGrantsRefs {
+    final manager = $$EntitlementGrantsTableTableManager(
+      $_db,
+      $_db.entitlementGrants,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _entitlementGrantsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SubscriptionsTable, List<Subscription>>
+  _subscriptionsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.subscriptions,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.subscriptions.passportId,
+    ),
+  );
+
+  $$SubscriptionsTableProcessedTableManager get subscriptionsRefs {
+    final manager = $$SubscriptionsTableTableManager(
+      $_db,
+      $_db.subscriptions,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_subscriptionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $AllocationStatementsTable,
+    List<AllocationStatement>
+  >
+  _allocationStatementsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.allocationStatements,
+        aliasName: $_aliasNameGenerator(
+          db.fanPassports.id,
+          db.allocationStatements.passportId,
+        ),
+      );
+
+  $$AllocationStatementsTableProcessedTableManager
+  get allocationStatementsRefs {
+    final manager = $$AllocationStatementsTableTableManager(
+      $_db,
+      $_db.allocationStatements,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _allocationStatementsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$PersonasTable, List<Persona>> _personasRefsTable(
     _$LoomDatabase db,
   ) => MultiTypedResultKey.fromTable(
@@ -17960,6 +21423,131 @@ class $$FanPassportsTableFilterComposer
           }) => $$AiSessionsTableFilterComposer(
             $db: $db,
             $table: $db.aiSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> walletsRefs(
+    Expression<bool> Function($$WalletsTableFilterComposer f) f,
+  ) {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> paymentIntentsRefs(
+    Expression<bool> Function($$PaymentIntentsTableFilterComposer f) f,
+  ) {
+    final $$PaymentIntentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.paymentIntents,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentIntentsTableFilterComposer(
+            $db: $db,
+            $table: $db.paymentIntents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> entitlementGrantsRefs(
+    Expression<bool> Function($$EntitlementGrantsTableFilterComposer f) f,
+  ) {
+    final $$EntitlementGrantsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.entitlementGrants,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitlementGrantsTableFilterComposer(
+            $db: $db,
+            $table: $db.entitlementGrants,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> subscriptionsRefs(
+    Expression<bool> Function($$SubscriptionsTableFilterComposer f) f,
+  ) {
+    final $$SubscriptionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> allocationStatementsRefs(
+    Expression<bool> Function($$AllocationStatementsTableFilterComposer f) f,
+  ) {
+    final $$AllocationStatementsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.allocationStatements,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AllocationStatementsTableFilterComposer(
+            $db: $db,
+            $table: $db.allocationStatements,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18301,6 +21889,133 @@ class $$FanPassportsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> walletsRefs<T extends Object>(
+    Expression<T> Function($$WalletsTableAnnotationComposer a) f,
+  ) {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> paymentIntentsRefs<T extends Object>(
+    Expression<T> Function($$PaymentIntentsTableAnnotationComposer a) f,
+  ) {
+    final $$PaymentIntentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.paymentIntents,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentIntentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.paymentIntents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> entitlementGrantsRefs<T extends Object>(
+    Expression<T> Function($$EntitlementGrantsTableAnnotationComposer a) f,
+  ) {
+    final $$EntitlementGrantsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.entitlementGrants,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$EntitlementGrantsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.entitlementGrants,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> subscriptionsRefs<T extends Object>(
+    Expression<T> Function($$SubscriptionsTableAnnotationComposer a) f,
+  ) {
+    final $$SubscriptionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> allocationStatementsRefs<T extends Object>(
+    Expression<T> Function($$AllocationStatementsTableAnnotationComposer a) f,
+  ) {
+    final $$AllocationStatementsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.allocationStatements,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$AllocationStatementsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.allocationStatements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> personasRefs<T extends Object>(
     Expression<T> Function($$PersonasTableAnnotationComposer a) f,
   ) {
@@ -18569,6 +22284,11 @@ class $$FanPassportsTableTableManager
           FanPassport,
           PrefetchHooks Function({
             bool aiSessionsRefs,
+            bool walletsRefs,
+            bool paymentIntentsRefs,
+            bool entitlementGrantsRefs,
+            bool subscriptionsRefs,
+            bool allocationStatementsRefs,
             bool personasRefs,
             bool followsRefs,
             bool consentGrantsRefs,
@@ -18631,6 +22351,11 @@ class $$FanPassportsTableTableManager
           prefetchHooksCallback:
               ({
                 aiSessionsRefs = false,
+                walletsRefs = false,
+                paymentIntentsRefs = false,
+                entitlementGrantsRefs = false,
+                subscriptionsRefs = false,
+                allocationStatementsRefs = false,
                 personasRefs = false,
                 followsRefs = false,
                 consentGrantsRefs = false,
@@ -18646,6 +22371,11 @@ class $$FanPassportsTableTableManager
                   db: db,
                   explicitlyWatchedTables: [
                     if (aiSessionsRefs) db.aiSessions,
+                    if (walletsRefs) db.wallets,
+                    if (paymentIntentsRefs) db.paymentIntents,
+                    if (entitlementGrantsRefs) db.entitlementGrants,
+                    if (subscriptionsRefs) db.subscriptions,
+                    if (allocationStatementsRefs) db.allocationStatements,
                     if (personasRefs) db.personas,
                     if (followsRefs) db.follows,
                     if (consentGrantsRefs) db.consentGrants,
@@ -18675,6 +22405,111 @@ class $$FanPassportsTableTableManager
                                 table,
                                 p0,
                               ).aiSessionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (walletsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          Wallet
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._walletsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).walletsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (paymentIntentsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          PaymentIntent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._paymentIntentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).paymentIntentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (entitlementGrantsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          EntitlementGrant
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._entitlementGrantsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).entitlementGrantsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (subscriptionsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          Subscription
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._subscriptionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).subscriptionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (allocationStatementsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          AllocationStatement
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._allocationStatementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).allocationStatementsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.passportId == item.id,
@@ -18913,6 +22748,11 @@ typedef $$FanPassportsTableProcessedTableManager =
       FanPassport,
       PrefetchHooks Function({
         bool aiSessionsRefs,
+        bool walletsRefs,
+        bool paymentIntentsRefs,
+        bool entitlementGrantsRefs,
+        bool subscriptionsRefs,
+        bool allocationStatementsRefs,
         bool personasRefs,
         bool followsRefs,
         bool consentGrantsRefs,
@@ -20384,6 +24224,2356 @@ typedef $$EntitlementDefinitionsTableProcessedTableManager =
       ),
       EntitlementDefinition,
       PrefetchHooks Function()
+    >;
+typedef $$WalletsTableCreateCompanionBuilder =
+    WalletsCompanion Function({
+      required String passportId,
+      required String currency,
+      required int simulatedBalanceCents,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$WalletsTableUpdateCompanionBuilder =
+    WalletsCompanion Function({
+      Value<String> passportId,
+      Value<String> currency,
+      Value<int> simulatedBalanceCents,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$WalletsTableReferences
+    extends BaseReferences<_$LoomDatabase, $WalletsTable, Wallet> {
+  $$WalletsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.wallets.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WalletsTableFilterComposer
+    extends Composer<_$LoomDatabase, $WalletsTable> {
+  $$WalletsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get simulatedBalanceCents => $composableBuilder(
+    column: $table.simulatedBalanceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WalletsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $WalletsTable> {
+  $$WalletsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get simulatedBalanceCents => $composableBuilder(
+    column: $table.simulatedBalanceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WalletsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $WalletsTable> {
+  $$WalletsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<int> get simulatedBalanceCents => $composableBuilder(
+    column: $table.simulatedBalanceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WalletsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $WalletsTable,
+          Wallet,
+          $$WalletsTableFilterComposer,
+          $$WalletsTableOrderingComposer,
+          $$WalletsTableAnnotationComposer,
+          $$WalletsTableCreateCompanionBuilder,
+          $$WalletsTableUpdateCompanionBuilder,
+          (Wallet, $$WalletsTableReferences),
+          Wallet,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$WalletsTableTableManager(_$LoomDatabase db, $WalletsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WalletsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WalletsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WalletsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> passportId = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<int> simulatedBalanceCents = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WalletsCompanion(
+                passportId: passportId,
+                currency: currency,
+                simulatedBalanceCents: simulatedBalanceCents,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String passportId,
+                required String currency,
+                required int simulatedBalanceCents,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => WalletsCompanion.insert(
+                passportId: passportId,
+                currency: currency,
+                simulatedBalanceCents: simulatedBalanceCents,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$WalletsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable: $$WalletsTableReferences
+                                    ._passportIdTable(db),
+                                referencedColumn: $$WalletsTableReferences
+                                    ._passportIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WalletsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $WalletsTable,
+      Wallet,
+      $$WalletsTableFilterComposer,
+      $$WalletsTableOrderingComposer,
+      $$WalletsTableAnnotationComposer,
+      $$WalletsTableCreateCompanionBuilder,
+      $$WalletsTableUpdateCompanionBuilder,
+      (Wallet, $$WalletsTableReferences),
+      Wallet,
+      PrefetchHooks Function({bool passportId})
+    >;
+typedef $$PaymentIntentsTableCreateCompanionBuilder =
+    PaymentIntentsCompanion Function({
+      required String id,
+      required String passportId,
+      required String kind,
+      Value<String?> creatorId,
+      Value<String?> creatorName,
+      Value<String?> tierId,
+      Value<String?> tierName,
+      required int amountCents,
+      required String currency,
+      required String status,
+      required DateTime createdAt,
+      Value<DateTime?> confirmedAt,
+      Value<int> rowid,
+    });
+typedef $$PaymentIntentsTableUpdateCompanionBuilder =
+    PaymentIntentsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> kind,
+      Value<String?> creatorId,
+      Value<String?> creatorName,
+      Value<String?> tierId,
+      Value<String?> tierName,
+      Value<int> amountCents,
+      Value<String> currency,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime?> confirmedAt,
+      Value<int> rowid,
+    });
+
+final class $$PaymentIntentsTableReferences
+    extends
+        BaseReferences<_$LoomDatabase, $PaymentIntentsTable, PaymentIntent> {
+  $$PaymentIntentsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.paymentIntents.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PaymentIntentsTableFilterComposer
+    extends Composer<_$LoomDatabase, $PaymentIntentsTable> {
+  $$PaymentIntentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierName => $composableBuilder(
+    column: $table.tierName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get confirmedAt => $composableBuilder(
+    column: $table.confirmedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PaymentIntentsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PaymentIntentsTable> {
+  $$PaymentIntentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tierName => $composableBuilder(
+    column: $table.tierName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get confirmedAt => $composableBuilder(
+    column: $table.confirmedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PaymentIntentsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PaymentIntentsTable> {
+  $$PaymentIntentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tierId =>
+      $composableBuilder(column: $table.tierId, builder: (column) => column);
+
+  GeneratedColumn<String> get tierName =>
+      $composableBuilder(column: $table.tierName, builder: (column) => column);
+
+  GeneratedColumn<int> get amountCents => $composableBuilder(
+    column: $table.amountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get confirmedAt => $composableBuilder(
+    column: $table.confirmedAt,
+    builder: (column) => column,
+  );
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PaymentIntentsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PaymentIntentsTable,
+          PaymentIntent,
+          $$PaymentIntentsTableFilterComposer,
+          $$PaymentIntentsTableOrderingComposer,
+          $$PaymentIntentsTableAnnotationComposer,
+          $$PaymentIntentsTableCreateCompanionBuilder,
+          $$PaymentIntentsTableUpdateCompanionBuilder,
+          (PaymentIntent, $$PaymentIntentsTableReferences),
+          PaymentIntent,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$PaymentIntentsTableTableManager(
+    _$LoomDatabase db,
+    $PaymentIntentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PaymentIntentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PaymentIntentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PaymentIntentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> creatorId = const Value.absent(),
+                Value<String?> creatorName = const Value.absent(),
+                Value<String?> tierId = const Value.absent(),
+                Value<String?> tierName = const Value.absent(),
+                Value<int> amountCents = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> confirmedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PaymentIntentsCompanion(
+                id: id,
+                passportId: passportId,
+                kind: kind,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                tierId: tierId,
+                tierName: tierName,
+                amountCents: amountCents,
+                currency: currency,
+                status: status,
+                createdAt: createdAt,
+                confirmedAt: confirmedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String kind,
+                Value<String?> creatorId = const Value.absent(),
+                Value<String?> creatorName = const Value.absent(),
+                Value<String?> tierId = const Value.absent(),
+                Value<String?> tierName = const Value.absent(),
+                required int amountCents,
+                required String currency,
+                required String status,
+                required DateTime createdAt,
+                Value<DateTime?> confirmedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PaymentIntentsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                kind: kind,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                tierId: tierId,
+                tierName: tierName,
+                amountCents: amountCents,
+                currency: currency,
+                status: status,
+                createdAt: createdAt,
+                confirmedAt: confirmedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PaymentIntentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable: $$PaymentIntentsTableReferences
+                                    ._passportIdTable(db),
+                                referencedColumn:
+                                    $$PaymentIntentsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PaymentIntentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PaymentIntentsTable,
+      PaymentIntent,
+      $$PaymentIntentsTableFilterComposer,
+      $$PaymentIntentsTableOrderingComposer,
+      $$PaymentIntentsTableAnnotationComposer,
+      $$PaymentIntentsTableCreateCompanionBuilder,
+      $$PaymentIntentsTableUpdateCompanionBuilder,
+      (PaymentIntent, $$PaymentIntentsTableReferences),
+      PaymentIntent,
+      PrefetchHooks Function({bool passportId})
+    >;
+typedef $$EntitlementGrantsTableCreateCompanionBuilder =
+    EntitlementGrantsCompanion Function({
+      required String id,
+      required String passportId,
+      required String code,
+      Value<String?> creatorId,
+      required String sourcePaymentIntentId,
+      required bool active,
+      required DateTime grantedAt,
+      Value<int> rowid,
+    });
+typedef $$EntitlementGrantsTableUpdateCompanionBuilder =
+    EntitlementGrantsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> code,
+      Value<String?> creatorId,
+      Value<String> sourcePaymentIntentId,
+      Value<bool> active,
+      Value<DateTime> grantedAt,
+      Value<int> rowid,
+    });
+
+final class $$EntitlementGrantsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $EntitlementGrantsTable,
+          EntitlementGrant
+        > {
+  $$EntitlementGrantsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(
+          db.entitlementGrants.passportId,
+          db.fanPassports.id,
+        ),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$EntitlementGrantsTableFilterComposer
+    extends Composer<_$LoomDatabase, $EntitlementGrantsTable> {
+  $$EntitlementGrantsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourcePaymentIntentId => $composableBuilder(
+    column: $table.sourcePaymentIntentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get grantedAt => $composableBuilder(
+    column: $table.grantedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EntitlementGrantsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $EntitlementGrantsTable> {
+  $$EntitlementGrantsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourcePaymentIntentId => $composableBuilder(
+    column: $table.sourcePaymentIntentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get grantedAt => $composableBuilder(
+    column: $table.grantedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EntitlementGrantsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $EntitlementGrantsTable> {
+  $$EntitlementGrantsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get sourcePaymentIntentId => $composableBuilder(
+    column: $table.sourcePaymentIntentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get grantedAt =>
+      $composableBuilder(column: $table.grantedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$EntitlementGrantsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $EntitlementGrantsTable,
+          EntitlementGrant,
+          $$EntitlementGrantsTableFilterComposer,
+          $$EntitlementGrantsTableOrderingComposer,
+          $$EntitlementGrantsTableAnnotationComposer,
+          $$EntitlementGrantsTableCreateCompanionBuilder,
+          $$EntitlementGrantsTableUpdateCompanionBuilder,
+          (EntitlementGrant, $$EntitlementGrantsTableReferences),
+          EntitlementGrant,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$EntitlementGrantsTableTableManager(
+    _$LoomDatabase db,
+    $EntitlementGrantsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntitlementGrantsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EntitlementGrantsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EntitlementGrantsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> code = const Value.absent(),
+                Value<String?> creatorId = const Value.absent(),
+                Value<String> sourcePaymentIntentId = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<DateTime> grantedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EntitlementGrantsCompanion(
+                id: id,
+                passportId: passportId,
+                code: code,
+                creatorId: creatorId,
+                sourcePaymentIntentId: sourcePaymentIntentId,
+                active: active,
+                grantedAt: grantedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String code,
+                Value<String?> creatorId = const Value.absent(),
+                required String sourcePaymentIntentId,
+                required bool active,
+                required DateTime grantedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => EntitlementGrantsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                code: code,
+                creatorId: creatorId,
+                sourcePaymentIntentId: sourcePaymentIntentId,
+                active: active,
+                grantedAt: grantedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EntitlementGrantsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable:
+                                    $$EntitlementGrantsTableReferences
+                                        ._passportIdTable(db),
+                                referencedColumn:
+                                    $$EntitlementGrantsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EntitlementGrantsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $EntitlementGrantsTable,
+      EntitlementGrant,
+      $$EntitlementGrantsTableFilterComposer,
+      $$EntitlementGrantsTableOrderingComposer,
+      $$EntitlementGrantsTableAnnotationComposer,
+      $$EntitlementGrantsTableCreateCompanionBuilder,
+      $$EntitlementGrantsTableUpdateCompanionBuilder,
+      (EntitlementGrant, $$EntitlementGrantsTableReferences),
+      EntitlementGrant,
+      PrefetchHooks Function({bool passportId})
+    >;
+typedef $$SubscriptionsTableCreateCompanionBuilder =
+    SubscriptionsCompanion Function({
+      required String id,
+      required String passportId,
+      required String creatorId,
+      required String creatorName,
+      required String tierId,
+      required String tierName,
+      required int monthlyPriceCents,
+      required bool active,
+      required DateTime startedAt,
+      Value<int> rowid,
+    });
+typedef $$SubscriptionsTableUpdateCompanionBuilder =
+    SubscriptionsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> creatorId,
+      Value<String> creatorName,
+      Value<String> tierId,
+      Value<String> tierName,
+      Value<int> monthlyPriceCents,
+      Value<bool> active,
+      Value<DateTime> startedAt,
+      Value<int> rowid,
+    });
+
+final class $$SubscriptionsTableReferences
+    extends BaseReferences<_$LoomDatabase, $SubscriptionsTable, Subscription> {
+  $$SubscriptionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.subscriptions.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SubscriptionsTableFilterComposer
+    extends Composer<_$LoomDatabase, $SubscriptionsTable> {
+  $$SubscriptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tierName => $composableBuilder(
+    column: $table.tierName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SubscriptionsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $SubscriptionsTable> {
+  $$SubscriptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tierId => $composableBuilder(
+    column: $table.tierId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tierName => $composableBuilder(
+    column: $table.tierName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SubscriptionsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $SubscriptionsTable> {
+  $$SubscriptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tierId =>
+      $composableBuilder(column: $table.tierId, builder: (column) => column);
+
+  GeneratedColumn<String> get tierName =>
+      $composableBuilder(column: $table.tierName, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyPriceCents => $composableBuilder(
+    column: $table.monthlyPriceCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SubscriptionsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $SubscriptionsTable,
+          Subscription,
+          $$SubscriptionsTableFilterComposer,
+          $$SubscriptionsTableOrderingComposer,
+          $$SubscriptionsTableAnnotationComposer,
+          $$SubscriptionsTableCreateCompanionBuilder,
+          $$SubscriptionsTableUpdateCompanionBuilder,
+          (Subscription, $$SubscriptionsTableReferences),
+          Subscription,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$SubscriptionsTableTableManager(_$LoomDatabase db, $SubscriptionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SubscriptionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SubscriptionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SubscriptionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> creatorId = const Value.absent(),
+                Value<String> creatorName = const Value.absent(),
+                Value<String> tierId = const Value.absent(),
+                Value<String> tierName = const Value.absent(),
+                Value<int> monthlyPriceCents = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SubscriptionsCompanion(
+                id: id,
+                passportId: passportId,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                tierId: tierId,
+                tierName: tierName,
+                monthlyPriceCents: monthlyPriceCents,
+                active: active,
+                startedAt: startedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String creatorId,
+                required String creatorName,
+                required String tierId,
+                required String tierName,
+                required int monthlyPriceCents,
+                required bool active,
+                required DateTime startedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SubscriptionsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                tierId: tierId,
+                tierName: tierName,
+                monthlyPriceCents: monthlyPriceCents,
+                active: active,
+                startedAt: startedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SubscriptionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable: $$SubscriptionsTableReferences
+                                    ._passportIdTable(db),
+                                referencedColumn: $$SubscriptionsTableReferences
+                                    ._passportIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SubscriptionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $SubscriptionsTable,
+      Subscription,
+      $$SubscriptionsTableFilterComposer,
+      $$SubscriptionsTableOrderingComposer,
+      $$SubscriptionsTableAnnotationComposer,
+      $$SubscriptionsTableCreateCompanionBuilder,
+      $$SubscriptionsTableUpdateCompanionBuilder,
+      (Subscription, $$SubscriptionsTableReferences),
+      Subscription,
+      PrefetchHooks Function({bool passportId})
+    >;
+typedef $$SettlementRunsTableCreateCompanionBuilder =
+    SettlementRunsCompanion Function({
+      required String id,
+      required String status,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$SettlementRunsTableUpdateCompanionBuilder =
+    SettlementRunsCompanion Function({
+      Value<String> id,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$SettlementRunsTableFilterComposer
+    extends Composer<_$LoomDatabase, $SettlementRunsTable> {
+  $$SettlementRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SettlementRunsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $SettlementRunsTable> {
+  $$SettlementRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SettlementRunsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $SettlementRunsTable> {
+  $$SettlementRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$SettlementRunsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $SettlementRunsTable,
+          SettlementRun,
+          $$SettlementRunsTableFilterComposer,
+          $$SettlementRunsTableOrderingComposer,
+          $$SettlementRunsTableAnnotationComposer,
+          $$SettlementRunsTableCreateCompanionBuilder,
+          $$SettlementRunsTableUpdateCompanionBuilder,
+          (
+            SettlementRun,
+            BaseReferences<_$LoomDatabase, $SettlementRunsTable, SettlementRun>,
+          ),
+          SettlementRun,
+          PrefetchHooks Function()
+        > {
+  $$SettlementRunsTableTableManager(
+    _$LoomDatabase db,
+    $SettlementRunsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SettlementRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SettlementRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SettlementRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SettlementRunsCompanion(
+                id: id,
+                status: status,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String status,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SettlementRunsCompanion.insert(
+                id: id,
+                status: status,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SettlementRunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $SettlementRunsTable,
+      SettlementRun,
+      $$SettlementRunsTableFilterComposer,
+      $$SettlementRunsTableOrderingComposer,
+      $$SettlementRunsTableAnnotationComposer,
+      $$SettlementRunsTableCreateCompanionBuilder,
+      $$SettlementRunsTableUpdateCompanionBuilder,
+      (
+        SettlementRun,
+        BaseReferences<_$LoomDatabase, $SettlementRunsTable, SettlementRun>,
+      ),
+      SettlementRun,
+      PrefetchHooks Function()
+    >;
+typedef $$PayoutStatementsTableCreateCompanionBuilder =
+    PayoutStatementsCompanion Function({
+      required String id,
+      required String runId,
+      required String creatorId,
+      required String creatorName,
+      required int totalCents,
+      required String bySourceJson,
+      required String byIntentJson,
+      required String recentReceiptsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PayoutStatementsTableUpdateCompanionBuilder =
+    PayoutStatementsCompanion Function({
+      Value<String> id,
+      Value<String> runId,
+      Value<String> creatorId,
+      Value<String> creatorName,
+      Value<int> totalCents,
+      Value<String> bySourceJson,
+      Value<String> byIntentJson,
+      Value<String> recentReceiptsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$PayoutStatementsTableFilterComposer
+    extends Composer<_$LoomDatabase, $PayoutStatementsTable> {
+  $$PayoutStatementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get runId => $composableBuilder(
+    column: $table.runId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bySourceJson => $composableBuilder(
+    column: $table.bySourceJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get byIntentJson => $composableBuilder(
+    column: $table.byIntentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recentReceiptsJson => $composableBuilder(
+    column: $table.recentReceiptsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PayoutStatementsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PayoutStatementsTable> {
+  $$PayoutStatementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get runId => $composableBuilder(
+    column: $table.runId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bySourceJson => $composableBuilder(
+    column: $table.bySourceJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get byIntentJson => $composableBuilder(
+    column: $table.byIntentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recentReceiptsJson => $composableBuilder(
+    column: $table.recentReceiptsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PayoutStatementsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PayoutStatementsTable> {
+  $$PayoutStatementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get runId =>
+      $composableBuilder(column: $table.runId, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorName => $composableBuilder(
+    column: $table.creatorName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get bySourceJson => $composableBuilder(
+    column: $table.bySourceJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get byIntentJson => $composableBuilder(
+    column: $table.byIntentJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recentReceiptsJson => $composableBuilder(
+    column: $table.recentReceiptsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$PayoutStatementsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PayoutStatementsTable,
+          PayoutStatement,
+          $$PayoutStatementsTableFilterComposer,
+          $$PayoutStatementsTableOrderingComposer,
+          $$PayoutStatementsTableAnnotationComposer,
+          $$PayoutStatementsTableCreateCompanionBuilder,
+          $$PayoutStatementsTableUpdateCompanionBuilder,
+          (
+            PayoutStatement,
+            BaseReferences<
+              _$LoomDatabase,
+              $PayoutStatementsTable,
+              PayoutStatement
+            >,
+          ),
+          PayoutStatement,
+          PrefetchHooks Function()
+        > {
+  $$PayoutStatementsTableTableManager(
+    _$LoomDatabase db,
+    $PayoutStatementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PayoutStatementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PayoutStatementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PayoutStatementsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> runId = const Value.absent(),
+                Value<String> creatorId = const Value.absent(),
+                Value<String> creatorName = const Value.absent(),
+                Value<int> totalCents = const Value.absent(),
+                Value<String> bySourceJson = const Value.absent(),
+                Value<String> byIntentJson = const Value.absent(),
+                Value<String> recentReceiptsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PayoutStatementsCompanion(
+                id: id,
+                runId: runId,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                totalCents: totalCents,
+                bySourceJson: bySourceJson,
+                byIntentJson: byIntentJson,
+                recentReceiptsJson: recentReceiptsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String runId,
+                required String creatorId,
+                required String creatorName,
+                required int totalCents,
+                required String bySourceJson,
+                required String byIntentJson,
+                required String recentReceiptsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PayoutStatementsCompanion.insert(
+                id: id,
+                runId: runId,
+                creatorId: creatorId,
+                creatorName: creatorName,
+                totalCents: totalCents,
+                bySourceJson: bySourceJson,
+                byIntentJson: byIntentJson,
+                recentReceiptsJson: recentReceiptsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PayoutStatementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PayoutStatementsTable,
+      PayoutStatement,
+      $$PayoutStatementsTableFilterComposer,
+      $$PayoutStatementsTableOrderingComposer,
+      $$PayoutStatementsTableAnnotationComposer,
+      $$PayoutStatementsTableCreateCompanionBuilder,
+      $$PayoutStatementsTableUpdateCompanionBuilder,
+      (
+        PayoutStatement,
+        BaseReferences<_$LoomDatabase, $PayoutStatementsTable, PayoutStatement>,
+      ),
+      PayoutStatement,
+      PrefetchHooks Function()
+    >;
+typedef $$AllocationStatementsTableCreateCompanionBuilder =
+    AllocationStatementsCompanion Function({
+      required String id,
+      required String passportId,
+      required int totalCents,
+      required String allocationsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AllocationStatementsTableUpdateCompanionBuilder =
+    AllocationStatementsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<int> totalCents,
+      Value<String> allocationsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$AllocationStatementsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $AllocationStatementsTable,
+          AllocationStatement
+        > {
+  $$AllocationStatementsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(
+          db.allocationStatements.passportId,
+          db.fanPassports.id,
+        ),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AllocationStatementsTableFilterComposer
+    extends Composer<_$LoomDatabase, $AllocationStatementsTable> {
+  $$AllocationStatementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationStatementsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AllocationStatementsTable> {
+  $$AllocationStatementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationStatementsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AllocationStatementsTable> {
+  $$AllocationStatementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get totalCents => $composableBuilder(
+    column: $table.totalCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get allocationsJson => $composableBuilder(
+    column: $table.allocationsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AllocationStatementsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AllocationStatementsTable,
+          AllocationStatement,
+          $$AllocationStatementsTableFilterComposer,
+          $$AllocationStatementsTableOrderingComposer,
+          $$AllocationStatementsTableAnnotationComposer,
+          $$AllocationStatementsTableCreateCompanionBuilder,
+          $$AllocationStatementsTableUpdateCompanionBuilder,
+          (AllocationStatement, $$AllocationStatementsTableReferences),
+          AllocationStatement,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$AllocationStatementsTableTableManager(
+    _$LoomDatabase db,
+    $AllocationStatementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AllocationStatementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AllocationStatementsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$AllocationStatementsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<int> totalCents = const Value.absent(),
+                Value<String> allocationsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationStatementsCompanion(
+                id: id,
+                passportId: passportId,
+                totalCents: totalCents,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required int totalCents,
+                required String allocationsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AllocationStatementsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                totalCents: totalCents,
+                allocationsJson: allocationsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AllocationStatementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable:
+                                    $$AllocationStatementsTableReferences
+                                        ._passportIdTable(db),
+                                referencedColumn:
+                                    $$AllocationStatementsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AllocationStatementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AllocationStatementsTable,
+      AllocationStatement,
+      $$AllocationStatementsTableFilterComposer,
+      $$AllocationStatementsTableOrderingComposer,
+      $$AllocationStatementsTableAnnotationComposer,
+      $$AllocationStatementsTableCreateCompanionBuilder,
+      $$AllocationStatementsTableUpdateCompanionBuilder,
+      (AllocationStatement, $$AllocationStatementsTableReferences),
+      AllocationStatement,
+      PrefetchHooks Function({bool passportId})
     >;
 typedef $$PersonasTableCreateCompanionBuilder =
     PersonasCompanion Function({
@@ -27698,6 +33888,20 @@ class $LoomDatabaseManager {
         _db,
         _db.entitlementDefinitions,
       );
+  $$WalletsTableTableManager get wallets =>
+      $$WalletsTableTableManager(_db, _db.wallets);
+  $$PaymentIntentsTableTableManager get paymentIntents =>
+      $$PaymentIntentsTableTableManager(_db, _db.paymentIntents);
+  $$EntitlementGrantsTableTableManager get entitlementGrants =>
+      $$EntitlementGrantsTableTableManager(_db, _db.entitlementGrants);
+  $$SubscriptionsTableTableManager get subscriptions =>
+      $$SubscriptionsTableTableManager(_db, _db.subscriptions);
+  $$SettlementRunsTableTableManager get settlementRuns =>
+      $$SettlementRunsTableTableManager(_db, _db.settlementRuns);
+  $$PayoutStatementsTableTableManager get payoutStatements =>
+      $$PayoutStatementsTableTableManager(_db, _db.payoutStatements);
+  $$AllocationStatementsTableTableManager get allocationStatements =>
+      $$AllocationStatementsTableTableManager(_db, _db.allocationStatements);
   $$PersonasTableTableManager get personas =>
       $$PersonasTableTableManager(_db, _db.personas);
   $$FollowsTableTableManager get follows =>

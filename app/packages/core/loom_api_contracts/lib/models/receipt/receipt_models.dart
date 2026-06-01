@@ -1,4 +1,12 @@
-enum ReceiptType { playback, adImpression, aiUsage, sourceAttribution }
+enum ReceiptType {
+  playback,
+  adImpression,
+  aiUsage,
+  sourceAttribution,
+  payment,
+  membership,
+  premiumNoAd,
+}
 
 class ReceiptView {
   const ReceiptView({
