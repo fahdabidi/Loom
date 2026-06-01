@@ -22,6 +22,7 @@ typedef RoleSurfaceBuilder = Widget Function(BuildContext context);
 CreatorMetadataApi? _creatorMetadataApi;
 FanPassportApi? _fanPassportApi;
 FanVaultApi? _fanVaultApi;
+CreatorAudienceApi? _creatorAudienceApi;
 CreatorChannelRegistryApi? _creatorChannelRegistryApi;
 ContentHostApi? _contentHostApi;
 MigrationExportApi? _migrationExportApi;
@@ -45,6 +46,10 @@ void registerFanPassportApi(FanPassportApi api) {
 
 void registerFanVaultApi(FanVaultApi api) {
   _fanVaultApi = api;
+}
+
+void registerCreatorAudienceApi(CreatorAudienceApi api) {
+  _creatorAudienceApi = api;
 }
 
 void registerCreatorChannelRegistryApi(CreatorChannelRegistryApi api) {
@@ -101,6 +106,7 @@ void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
   _fanVaultApi = null;
+  _creatorAudienceApi = null;
   _creatorChannelRegistryApi = null;
   _contentHostApi = null;
   _migrationExportApi = null;
@@ -135,6 +141,14 @@ FanVaultApi resolveFanVaultApi() {
   final api = _fanVaultApi;
   if (api == null) {
     throw StateError('FanVaultApi has not been registered.');
+  }
+  return api;
+}
+
+CreatorAudienceApi resolveCreatorAudienceApi() {
+  final api = _creatorAudienceApi;
+  if (api == null) {
+    throw StateError('CreatorAudienceApi has not been registered.');
   }
   return api;
 }

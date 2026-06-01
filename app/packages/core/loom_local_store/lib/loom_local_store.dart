@@ -304,6 +304,75 @@ class ConsentGrants extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class AudienceGrantRequests extends Table {
+  TextColumn get id => text()();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get creatorName => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get fieldsJson => text()();
+  TextColumn get purpose => text()();
+  TextColumn get retention => text()();
+  TextColumn get valueExchange => text()();
+  TextColumn get state => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class DataConsentGrants extends Table {
+  TextColumn get id => text()();
+  TextColumn get requestId => text().references(AudienceGrantRequests, #id)();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get creatorName => text()();
+  TextColumn get fieldsJson => text()();
+  TextColumn get purpose => text()();
+  TextColumn get retention => text()();
+  TextColumn get valueExchange => text()();
+  TextColumn get state => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class CategoryDefaults extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get category => text()();
+  TextColumn get state => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class DataAccessReceipts extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get creatorName => text()();
+  TextColumn get grantId => text().references(DataConsentGrants, #id)();
+  TextColumn get fieldsJson => text()();
+  TextColumn get purpose => text()();
+  DateTimeColumn get accessedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class Tombstones extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class InterestTaxonomy extends Table {
   TextColumn get id => text()();
   TextColumn get label => text()();
@@ -528,6 +597,11 @@ class KvMeta extends Table {
     Personas,
     Follows,
     ConsentGrants,
+    AudienceGrantRequests,
+    DataConsentGrants,
+    CategoryDefaults,
+    DataAccessReceipts,
+    Tombstones,
     InterestTaxonomy,
     FanInterestProfiles,
     FanRankingPreferences,
@@ -551,7 +625,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -606,6 +680,13 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(settlementRuns);
         await m.createTable(payoutStatements);
         await m.createTable(allocationStatements);
+      }
+      if (from < 8) {
+        await m.createTable(audienceGrantRequests);
+        await m.createTable(dataConsentGrants);
+        await m.createTable(categoryDefaults);
+        await m.createTable(dataAccessReceipts);
+        await m.createTable(tombstones);
       }
     },
   );
@@ -711,6 +792,146 @@ class ConsentGrantRecord {
   final String passportId;
   final String grantType;
   final DateTime createdAt;
+}
+
+class DataGrantRequestRecord {
+  const DataGrantRequestRecord({
+    required this.id,
+    required this.creatorId,
+    required this.creatorName,
+    required this.passportId,
+    required this.fields,
+    required this.purpose,
+    required this.retention,
+    required this.valueExchange,
+    required this.state,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String creatorId;
+  final String creatorName;
+  final String passportId;
+  final List<String> fields;
+  final String purpose;
+  final String retention;
+  final String valueExchange;
+  final String state;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}
+
+class DataConsentGrantRecord {
+  const DataConsentGrantRecord({
+    required this.id,
+    required this.requestId,
+    required this.passportId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.fields,
+    required this.purpose,
+    required this.retention,
+    required this.valueExchange,
+    required this.state,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String requestId;
+  final String passportId;
+  final String creatorId;
+  final String creatorName;
+  final List<String> fields;
+  final String purpose;
+  final String retention;
+  final String valueExchange;
+  final String state;
+  final DateTime updatedAt;
+}
+
+class CategoryDefaultRecord {
+  const CategoryDefaultRecord({
+    required this.id,
+    required this.passportId,
+    required this.category,
+    required this.state,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String category;
+  final String state;
+  final DateTime updatedAt;
+}
+
+class DataAccessReceiptRecord {
+  const DataAccessReceiptRecord({
+    required this.id,
+    required this.passportId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.grantId,
+    required this.fields,
+    required this.purpose,
+    required this.accessedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String creatorId;
+  final String creatorName;
+  final String grantId;
+  final List<String> fields;
+  final String purpose;
+  final DateTime accessedAt;
+}
+
+class TombstoneRequestRecord {
+  const TombstoneRequestRecord({
+    required this.id,
+    required this.passportId,
+    required this.creatorId,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String creatorId;
+  final DateTime createdAt;
+}
+
+class PermissionedInterestDataRecord {
+  const PermissionedInterestDataRecord({
+    required this.creatorId,
+    required this.passportId,
+    required this.fields,
+    required this.values,
+    required this.receipt,
+  });
+
+  final String creatorId;
+  final String passportId;
+  final List<String> fields;
+  final Map<String, List<String>> values;
+  final DataAccessReceiptRecord receipt;
+}
+
+class AudienceInsightRecord {
+  const AudienceInsightRecord({
+    required this.creatorId,
+    required this.approvedFanCount,
+    required this.topCategories,
+    required this.permissionStatus,
+    required this.updatedAt,
+  });
+
+  final String creatorId;
+  final int approvedFanCount;
+  final List<String> topCategories;
+  final String permissionStatus;
+  final DateTime updatedAt;
 }
 
 class InterestTokenRecord {
@@ -1413,6 +1634,11 @@ class DemoLocalStore {
       await _db.delete(_db.fanRankingPreferences).go();
       await _db.delete(_db.fanInterestProfiles).go();
       await _db.delete(_db.interestTaxonomy).go();
+      await _db.delete(_db.dataAccessReceipts).go();
+      await _db.delete(_db.dataConsentGrants).go();
+      await _db.delete(_db.audienceGrantRequests).go();
+      await _db.delete(_db.categoryDefaults).go();
+      await _db.delete(_db.tombstones).go();
       await _db.delete(_db.consentGrants).go();
       await _db.delete(_db.follows).go();
       await _db.delete(_db.personas).go();
@@ -1928,6 +2154,418 @@ class DemoLocalStore {
     return _mapConsent(row);
   }
 
+  Future<DataGrantRequestRecord> createDataGrantRequest({
+    required String creatorId,
+    required String passportId,
+    required List<String> fields,
+    required String purpose,
+    required String retention,
+    required String valueExchange,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'data_grant_request',
+    );
+    if (existing != null) {
+      final request = await dataGrantRequestById(existing);
+      if (request != null) {
+        return request;
+      }
+    }
+
+    await ensureDemoPassport(passportId: passportId);
+    final creator = await creatorById(creatorId);
+    final now = _now();
+    final id = 'data_request_${_slug(idempotencyKey)}';
+    final defaultState = await categoryDefaultState(
+      passportId: passportId,
+      category: creator?.vertical ?? 'creator',
+    );
+    final state = defaultState == 'denied' ? 'denied' : 'pending';
+    await _db
+        .into(_db.audienceGrantRequests)
+        .insertOnConflictUpdate(
+          AudienceGrantRequestsCompanion.insert(
+            id: id,
+            creatorId: creatorId,
+            creatorName: creator?.displayName ?? creatorId,
+            passportId: passportId,
+            fieldsJson: jsonEncode(fields),
+            purpose: purpose,
+            retention: retention,
+            valueExchange: valueExchange,
+            state: state,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'data_grant_request', id);
+    return (await dataGrantRequestById(id))!;
+  }
+
+  Future<DataGrantRequestRecord?> dataGrantRequestById(String id) async {
+    final row = await (_db.select(
+      _db.audienceGrantRequests,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapDataGrantRequest(row);
+  }
+
+  Future<List<DataGrantRequestRecord>> pendingGrantRequests(
+    String passportId,
+  ) async {
+    final rows =
+        await (_db.select(_db.audienceGrantRequests)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..where((tbl) => tbl.state.equals('pending'))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapDataGrantRequest).toList(growable: false);
+  }
+
+  Future<DataConsentGrantRecord> reviewDataGrantRequest({
+    required String requestId,
+    required String passportId,
+    required String state,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'data_grant');
+    if (existing != null) {
+      final grant = await dataConsentGrantById(existing);
+      if (grant != null) {
+        return grant;
+      }
+    }
+
+    final request = await dataGrantRequestById(requestId);
+    if (request == null) {
+      throw StateError('No data grant request exists for $requestId');
+    }
+    final allowedFields = request.fields.toSet();
+    final fields = state == 'approved'
+        ? approvedFields
+              .where((field) => allowedFields.contains(field))
+              .toList(growable: false)
+        : const <String>[];
+    final id = 'data_grant_${_slug(requestId)}_${_slug(passportId)}';
+    final now = _now();
+    await _db.transaction(() async {
+      await _db
+          .into(_db.dataConsentGrants)
+          .insertOnConflictUpdate(
+            DataConsentGrantsCompanion.insert(
+              id: id,
+              requestId: requestId,
+              passportId: passportId,
+              creatorId: request.creatorId,
+              creatorName: request.creatorName,
+              fieldsJson: jsonEncode(fields),
+              purpose: request.purpose,
+              retention: request.retention,
+              valueExchange: request.valueExchange,
+              state: state,
+              updatedAt: now,
+            ),
+          );
+      await (_db.update(
+        _db.audienceGrantRequests,
+      )..where((tbl) => tbl.id.equals(requestId))).write(
+        AudienceGrantRequestsCompanion(
+          state: Value(state),
+          updatedAt: Value(now),
+        ),
+      );
+      await _saveIdempotency(idempotencyKey, 'data_grant', id);
+    });
+    return (await dataConsentGrantById(id))!;
+  }
+
+  Future<DataConsentGrantRecord?> dataConsentGrantById(String id) async {
+    final row = await (_db.select(
+      _db.dataConsentGrants,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapDataConsentGrant(row);
+  }
+
+  Future<DataConsentGrantRecord> narrowDataGrant({
+    required String grantId,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'data_grant');
+    if (existing != null) {
+      final grant = await dataConsentGrantById(existing);
+      if (grant != null) {
+        return grant;
+      }
+    }
+    final grant = await dataConsentGrantById(grantId);
+    if (grant == null) {
+      throw StateError('No data consent grant exists for $grantId');
+    }
+    final narrowed = approvedFields
+        .where((field) => grant.fields.contains(field))
+        .toList(growable: false);
+    await (_db.update(
+      _db.dataConsentGrants,
+    )..where((tbl) => tbl.id.equals(grantId))).write(
+      DataConsentGrantsCompanion(
+        fieldsJson: Value(jsonEncode(narrowed)),
+        state: const Value('approved'),
+        updatedAt: Value(_now()),
+      ),
+    );
+    await _saveIdempotency(idempotencyKey, 'data_grant', grantId);
+    return (await dataConsentGrantById(grantId))!;
+  }
+
+  Future<DataConsentGrantRecord> revokeDataGrant({
+    required String grantId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'data_grant');
+    if (existing != null) {
+      final grant = await dataConsentGrantById(existing);
+      if (grant != null) {
+        return grant;
+      }
+    }
+    await (_db.update(
+      _db.dataConsentGrants,
+    )..where((tbl) => tbl.id.equals(grantId))).write(
+      DataConsentGrantsCompanion(
+        state: const Value('revoked'),
+        updatedAt: Value(_now()),
+      ),
+    );
+    await _saveIdempotency(idempotencyKey, 'data_grant', grantId);
+    return (await dataConsentGrantById(grantId))!;
+  }
+
+  Future<CategoryDefaultRecord> setCategoryDefault({
+    required String passportId,
+    required String category,
+    required String state,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'category_default',
+    );
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.categoryDefaults,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapCategoryDefault(row);
+      }
+    }
+    await ensureDemoPassport(passportId: passportId);
+    final id = 'category_default_${_slug(passportId)}_${_slug(category)}';
+    await _db
+        .into(_db.categoryDefaults)
+        .insertOnConflictUpdate(
+          CategoryDefaultsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            category: category,
+            state: state,
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'category_default', id);
+    final row = await (_db.select(
+      _db.categoryDefaults,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    return _mapCategoryDefault(row);
+  }
+
+  Future<String?> categoryDefaultState({
+    required String passportId,
+    required String category,
+  }) async {
+    final row =
+        await (_db.select(_db.categoryDefaults)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..where((tbl) => tbl.category.equals(category)))
+            .getSingleOrNull();
+    return row?.state;
+  }
+
+  Future<TombstoneRequestRecord> requestTombstone({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'tombstone');
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.tombstones,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapTombstone(row);
+      }
+    }
+    await ensureDemoPassport(passportId: passportId);
+    final id = 'tombstone_${_slug(passportId)}_${_slug(creatorId)}';
+    await _db
+        .into(_db.tombstones)
+        .insertOnConflictUpdate(
+          TombstonesCompanion.insert(
+            id: id,
+            passportId: passportId,
+            creatorId: creatorId,
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'tombstone', id);
+    return _mapTombstone(
+      await (_db.select(
+        _db.tombstones,
+      )..where((tbl) => tbl.id.equals(id))).getSingle(),
+    );
+  }
+
+  Future<PermissionedInterestDataRecord> queryPermissionedInterestData({
+    required String creatorId,
+    required String passportId,
+    required String purpose,
+    required String idempotencyKey,
+  }) async {
+    final rows =
+        await (_db.select(_db.dataConsentGrants)
+              ..where((tbl) => tbl.creatorId.equals(creatorId))
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..where((tbl) => tbl.state.equals('approved'))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+            .get();
+    if (rows.isEmpty) {
+      return PermissionedInterestDataRecord(
+        creatorId: creatorId,
+        passportId: passportId,
+        fields: const [],
+        values: const {},
+        receipt: DataAccessReceiptRecord(
+          id: 'receipt_none_${_slug(passportId)}_${_slug(creatorId)}',
+          passportId: passportId,
+          creatorId: creatorId,
+          creatorName: creatorId,
+          grantId: 'none',
+          fields: const [],
+          purpose: purpose,
+          accessedAt: _now(),
+        ),
+      );
+    }
+    final grant = _mapDataConsentGrant(rows.first);
+    final profile = await interestProfile(passportId);
+    final values = <String, List<String>>{};
+    if (grant.fields.contains('interest_categories')) {
+      values['interest_categories'] = profile.interests
+          .map((interest) => interest.category)
+          .toSet()
+          .toList(growable: false);
+    }
+    if (grant.fields.contains('interest_tokens')) {
+      values['interest_tokens'] = profile.interests
+          .map((interest) => interest.label)
+          .toList(growable: false);
+    }
+    final receipt = await _createDataAccessReceipt(
+      passportId: passportId,
+      creatorId: creatorId,
+      creatorName: grant.creatorName,
+      grantId: grant.id,
+      fields: grant.fields,
+      purpose: purpose,
+      idempotencyKey: idempotencyKey,
+    );
+    return PermissionedInterestDataRecord(
+      creatorId: creatorId,
+      passportId: passportId,
+      fields: grant.fields,
+      values: values,
+      receipt: receipt,
+    );
+  }
+
+  Future<DataAccessReceiptRecord> _createDataAccessReceipt({
+    required String passportId,
+    required String creatorId,
+    required String creatorName,
+    required String grantId,
+    required List<String> fields,
+    required String purpose,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'data_access_receipt',
+    );
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.dataAccessReceipts,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapDataAccessReceipt(row);
+      }
+    }
+    final id = 'data_access_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.dataAccessReceipts)
+        .insertOnConflictUpdate(
+          DataAccessReceiptsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            creatorId: creatorId,
+            creatorName: creatorName,
+            grantId: grantId,
+            fieldsJson: jsonEncode(fields),
+            purpose: purpose,
+            accessedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'data_access_receipt', id);
+    final row = await (_db.select(
+      _db.dataAccessReceipts,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    return _mapDataAccessReceipt(row);
+  }
+
+  Future<List<DataAccessReceiptRecord>> dataAccessReceiptsForPassport(
+    String passportId,
+  ) async {
+    final rows =
+        await (_db.select(_db.dataAccessReceipts)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.accessedAt)]))
+            .get();
+    return rows.map(_mapDataAccessReceipt).toList(growable: false);
+  }
+
+  Future<AudienceInsightRecord> audienceInsight(String creatorId) async {
+    final rows =
+        await (_db.select(_db.dataConsentGrants)
+              ..where((tbl) => tbl.creatorId.equals(creatorId))
+              ..where((tbl) => tbl.state.equals('approved')))
+            .get();
+    final categories = <String>{};
+    for (final row in rows) {
+      final profile = await interestProfile(row.passportId);
+      categories.addAll(profile.interests.map((interest) => interest.category));
+    }
+    return AudienceInsightRecord(
+      creatorId: creatorId,
+      approvedFanCount: rows.map((row) => row.passportId).toSet().length,
+      topCategories: categories.take(4).toList(growable: false),
+      permissionStatus: rows.isEmpty
+          ? 'No approved grants'
+          : 'Approved fields only',
+      updatedAt: _now(),
+    );
+  }
+
   Future<List<InterestTokenRecord>> interestTaxonomy() async {
     final rows =
         await (_db.select(_db.interestTaxonomy)..orderBy([
@@ -2216,6 +2854,29 @@ class DemoLocalStore {
       personalizedAds: row.personalizedAds,
       updatedAt: row.updatedAt,
     );
+  }
+
+  Future<AdPreferencesRecord> putAdPreferences({
+    required String passportId,
+    required bool personalizedAds,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'ad_preferences');
+    if (existing != null) {
+      return adPreferences(existing);
+    }
+    await ensureDemoPassport(passportId: passportId);
+    await _db
+        .into(_db.adPreferences)
+        .insertOnConflictUpdate(
+          AdPreferencesCompanion.insert(
+            passportId: passportId,
+            personalizedAds: personalizedAds,
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'ad_preferences', passportId);
+    return adPreferences(passportId);
   }
 
   Future<RankPreferenceRecord> rankingPreference(String passportId) async {
@@ -3977,6 +4638,70 @@ ConsentGrantRecord _mapConsent(ConsentGrant row) {
     id: row.id,
     passportId: row.passportId,
     grantType: row.grantType,
+    createdAt: row.createdAt,
+  );
+}
+
+DataGrantRequestRecord _mapDataGrantRequest(AudienceGrantRequest row) {
+  return DataGrantRequestRecord(
+    id: row.id,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    passportId: row.passportId,
+    fields: _decodeStringList(row.fieldsJson),
+    purpose: row.purpose,
+    retention: row.retention,
+    valueExchange: row.valueExchange,
+    state: row.state,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  );
+}
+
+DataConsentGrantRecord _mapDataConsentGrant(DataConsentGrant row) {
+  return DataConsentGrantRecord(
+    id: row.id,
+    requestId: row.requestId,
+    passportId: row.passportId,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    fields: _decodeStringList(row.fieldsJson),
+    purpose: row.purpose,
+    retention: row.retention,
+    valueExchange: row.valueExchange,
+    state: row.state,
+    updatedAt: row.updatedAt,
+  );
+}
+
+CategoryDefaultRecord _mapCategoryDefault(CategoryDefault row) {
+  return CategoryDefaultRecord(
+    id: row.id,
+    passportId: row.passportId,
+    category: row.category,
+    state: row.state,
+    updatedAt: row.updatedAt,
+  );
+}
+
+DataAccessReceiptRecord _mapDataAccessReceipt(DataAccessReceipt row) {
+  return DataAccessReceiptRecord(
+    id: row.id,
+    passportId: row.passportId,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    grantId: row.grantId,
+    fields: _decodeStringList(row.fieldsJson),
+    purpose: row.purpose,
+    accessedAt: row.accessedAt,
+  );
+}
+
+TombstoneRequestRecord _mapTombstone(Tombstone row) {
+  return TombstoneRequestRecord(
+    id: row.id,
+    passportId: row.passportId,
+    creatorId: row.creatorId,
     createdAt: row.createdAt,
   );
 }

@@ -140,6 +140,62 @@ class _FakePassportApi implements FanPassportApi {
   }) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<DataConsentGrant> reviewDataGrantRequest({
+    required String requestId,
+    required String passportId,
+    required ConsentGrantState state,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<DataConsentGrant> narrowGrant({
+    required String grantId,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<DataConsentGrant> revokeGrant({
+    required String grantId,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<CategoryDefault> setCategoryDefault({
+    required String passportId,
+    required String category,
+    required ConsentGrantState state,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<FollowView> revokeDirectContact({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<TombstoneRequest> requestTombstone({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeVaultApi implements FanVaultApi {
@@ -172,6 +228,19 @@ class _FakeVaultApi implements FanVaultApi {
     return AdPreferences(
       passportId: passportId,
       personalizedAds: false,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<AdPreferences> putAdPreferences({
+    required String passportId,
+    required bool personalizedAds,
+    required String idempotencyKey,
+  }) async {
+    return AdPreferences(
+      passportId: passportId,
+      personalizedAds: personalizedAds,
       updatedAt: DateTime.utc(2026),
     );
   }

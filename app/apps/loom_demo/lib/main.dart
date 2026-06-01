@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:feature_ai_qa/feature_ai_qa.dart';
+import 'package:feature_creator_audience/feature_creator_audience.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_creator_revenue/feature_creator_revenue.dart';
+import 'package:feature_data_rights/feature_data_rights.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
 import 'package:feature_playback/feature_playback.dart';
@@ -29,6 +31,7 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerCreatorMetadataApi(CreatorMetadataFake(store));
   registerFanPassportApi(FanPassportFake(store));
   registerFanVaultApi(FanVaultFake(store));
+  registerCreatorAudienceApi(CreatorAudienceFake(store));
   registerCreatorChannelRegistryApi(CreatorChannelRegistryFake(store));
   registerContentHostApi(ContentHostFake(store));
   registerMigrationExportApi(MigrationExportFake(store));
@@ -85,6 +88,7 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
 
   bool _showPublishingSetup = false;
   bool _showRevenue = false;
+  bool _showAudience = false;
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +96,12 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       return CreatorRevenueDashboardScreen(
         creatorId: 'creator_solar_sarah',
         onBack: () => setState(() => _showRevenue = false),
+      );
+    }
+    if (_showAudience) {
+      return AudienceInsightsScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showAudience = false),
       );
     }
     if (_showPublishingSetup) {
@@ -102,14 +112,26 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              key: const ValueKey('p6_open_revenue_dashboard_button'),
-              onPressed: () => setState(() => _showRevenue = true),
-              icon: const Icon(Icons.query_stats_rounded),
-              label: const Text('Open revenue dashboard'),
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const ValueKey('p6_open_revenue_dashboard_button'),
+                  onPressed: () => setState(() => _showRevenue = true),
+                  icon: const Icon(Icons.payments_rounded),
+                  label: const Text('Revenue'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.tonalIcon(
+                  key: const ValueKey('p7_open_audience_button'),
+                  onPressed: () => setState(() => _showAudience = true),
+                  icon: const Icon(Icons.groups_2_rounded),
+                  label: const Text('Audience'),
+                ),
+              ),
+            ],
           ),
         ),
         Expanded(
@@ -134,6 +156,7 @@ class FanAppSurface extends StatefulWidget {
 class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showOnboarding = false;
   bool _showWallet = false;
+  bool _showDataRights = false;
   String? _channelId;
   String? _contentId;
   String? _qaCreatorId;
@@ -145,6 +168,11 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
     }
     if (_showWallet) {
       return WalletScreen(onBack: () => setState(() => _showWallet = false));
+    }
+    if (_showDataRights) {
+      return DataRightsDashboardScreen(
+        onBack: () => setState(() => _showDataRights = false),
+      );
     }
     final qaCreatorId = _qaCreatorId;
     if (qaCreatorId != null) {
@@ -176,6 +204,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       onOpenCreator: (id) => setState(() => _channelId = id),
       onOpenContent: (id) => setState(() => _contentId = id),
       onOpenWallet: () => setState(() => _showWallet = true),
+      onOpenDataRights: () => setState(() => _showDataRights = true),
     );
   }
 }

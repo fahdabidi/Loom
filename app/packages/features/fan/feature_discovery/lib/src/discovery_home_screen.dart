@@ -10,6 +10,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
     this.onOpenCreator,
     this.onOpenContent,
     this.onOpenWallet,
+    this.onOpenDataRights,
     super.key,
   });
 
@@ -17,6 +18,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
   final ValueChanged<String>? onOpenCreator;
   final ValueChanged<String>? onOpenContent;
   final VoidCallback? onOpenWallet;
+  final VoidCallback? onOpenDataRights;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -55,6 +57,7 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
             _DiscoveryToolbar(
               onStartOnboarding: widget.onStartOnboarding,
               onOpenWallet: widget.onOpenWallet,
+              onOpenDataRights: widget.onOpenDataRights,
             ),
             const SizedBox(height: 14),
             _SearchField(controller: _controller),
@@ -130,10 +133,12 @@ class _DiscoveryToolbar extends StatelessWidget {
   const _DiscoveryToolbar({
     required this.onStartOnboarding,
     required this.onOpenWallet,
+    required this.onOpenDataRights,
   });
 
   final VoidCallback onStartOnboarding;
   final VoidCallback? onOpenWallet;
+  final VoidCallback? onOpenDataRights;
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +192,14 @@ class _DiscoveryToolbar extends StatelessWidget {
             key: const ValueKey('p6_open_wallet_button'),
             onPressed: onOpenWallet,
             icon: const Icon(Icons.account_balance_wallet_rounded),
+          ),
+        ),
+        Tooltip(
+          message: 'Data rights',
+          child: IconButton(
+            key: const ValueKey('p7_open_data_rights_button'),
+            onPressed: onOpenDataRights,
+            icon: const Icon(Icons.verified_user_outlined),
           ),
         ),
         Tooltip(

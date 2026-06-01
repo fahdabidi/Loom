@@ -76,6 +76,25 @@ class FanVaultFake implements FanVaultApi {
   }
 
   @override
+  Future<AdPreferences> putAdPreferences({
+    required String passportId,
+    required bool personalizedAds,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.putAdPreferences(
+      passportId: passportId,
+      personalizedAds: personalizedAds,
+      idempotencyKey: idempotencyKey,
+    );
+    return AdPreferences(
+      passportId: record.passportId,
+      personalizedAds: record.personalizedAds,
+      updatedAt: record.updatedAt,
+    );
+  }
+
+  @override
   Future<RankPreference> getRankPreference(String passportId) async {
     await Future<void>.delayed(latency);
     return _mapRankPreference(await _store.rankingPreference(passportId));

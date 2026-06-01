@@ -1,3 +1,4 @@
+import '../models/data_rights/data_rights_models.dart';
 import '../models/fan_passport/consent_grant.dart';
 import '../models/fan_passport/fan_passport_claim.dart';
 import '../models/fan_passport/follow_view.dart';
@@ -45,6 +46,44 @@ abstract class FanPassportApi {
   Future<ConsentGrant> createConsentGrant({
     required String passportId,
     required String grantType,
+    required String idempotencyKey,
+  });
+
+  Future<DataConsentGrant> reviewDataGrantRequest({
+    required String requestId,
+    required String passportId,
+    required ConsentGrantState state,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  });
+
+  Future<DataConsentGrant> narrowGrant({
+    required String grantId,
+    required List<String> approvedFields,
+    required String idempotencyKey,
+  });
+
+  Future<DataConsentGrant> revokeGrant({
+    required String grantId,
+    required String idempotencyKey,
+  });
+
+  Future<CategoryDefault> setCategoryDefault({
+    required String passportId,
+    required String category,
+    required ConsentGrantState state,
+    required String idempotencyKey,
+  });
+
+  Future<FollowView> revokeDirectContact({
+    required String passportId,
+    required String creatorId,
+    required String idempotencyKey,
+  });
+
+  Future<TombstoneRequest> requestTombstone({
+    required String passportId,
+    required String creatorId,
     required String idempotencyKey,
   });
 
