@@ -35,3 +35,23 @@ class ContentPerformanceMetadata {
   final int shares;
   final DateTime updatedAt;
 }
+
+class TrendingStats {
+  const TrendingStats({
+    required this.contentId,
+    required this.velocity,
+    required this.completionRate,
+    required this.saves,
+    required this.shares,
+    required this.rankLabel,
+    required this.updatedAt,
+  });
+
+  final String contentId;
+  final double velocity;
+  final double completionRate;
+  final int saves;
+  final int shares;
+  final String rankLabel;
+  final DateTime updatedAt;
+}

@@ -19,4 +19,6 @@ abstract class ContentHostApi {
   Future<ContentPerformanceMetadata> getContentPerformanceMetadata(
     String contentId,
   );
+
+  Future<TrendingStats> getTrendingStats(String contentId);
 }

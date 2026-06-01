@@ -27,6 +27,9 @@ ContentHostApi? _contentHostApi;
 MigrationExportApi? _migrationExportApi;
 EntitlementLedgerApi? _entitlementLedgerApi;
 AiGatewayApi? _aiGatewayApi;
+RecommendationReferralApi? _recommendationReferralApi;
+ExternalRecommendationProviderApi? _externalRecommendationProviderApi;
+SearchApi? _searchApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
@@ -60,6 +63,20 @@ void registerAiGatewayApi(AiGatewayApi api) {
   _aiGatewayApi = api;
 }
 
+void registerRecommendationReferralApi(RecommendationReferralApi api) {
+  _recommendationReferralApi = api;
+}
+
+void registerExternalRecommendationProviderApi(
+  ExternalRecommendationProviderApi api,
+) {
+  _externalRecommendationProviderApi = api;
+}
+
+void registerSearchApi(SearchApi api) {
+  _searchApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
@@ -69,6 +86,9 @@ void resetAppShellDependencies() {
   _migrationExportApi = null;
   _entitlementLedgerApi = null;
   _aiGatewayApi = null;
+  _recommendationReferralApi = null;
+  _externalRecommendationProviderApi = null;
+  _searchApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
@@ -131,6 +151,32 @@ AiGatewayApi resolveAiGatewayApi() {
   final api = _aiGatewayApi;
   if (api == null) {
     throw StateError('AiGatewayApi has not been registered.');
+  }
+  return api;
+}
+
+RecommendationReferralApi resolveRecommendationReferralApi() {
+  final api = _recommendationReferralApi;
+  if (api == null) {
+    throw StateError('RecommendationReferralApi has not been registered.');
+  }
+  return api;
+}
+
+ExternalRecommendationProviderApi resolveExternalRecommendationProviderApi() {
+  final api = _externalRecommendationProviderApi;
+  if (api == null) {
+    throw StateError(
+      'ExternalRecommendationProviderApi has not been registered.',
+    );
+  }
+  return api;
+}
+
+SearchApi resolveSearchApi() {
+  final api = _searchApi;
+  if (api == null) {
+    throw StateError('SearchApi has not been registered.');
   }
   return api;
 }

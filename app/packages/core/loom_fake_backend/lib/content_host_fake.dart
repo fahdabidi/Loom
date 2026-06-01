@@ -59,6 +59,26 @@ class ContentHostFake implements ContentHostApi {
       updatedAt: record.updatedAt,
     );
   }
+
+  @override
+  Future<TrendingStats> getTrendingStats(String contentId) async {
+    await Future<void>.delayed(latency);
+    final record = await _store.contentPerformance(contentId);
+    final rankLabel = record.velocity >= 0.85
+        ? 'Rising fast'
+        : record.velocity >= 0.7
+        ? 'Steady lift'
+        : 'Niche momentum';
+    return TrendingStats(
+      contentId: record.contentId,
+      velocity: record.velocity,
+      completionRate: record.completionRate,
+      saves: record.saves,
+      shares: record.shares,
+      rankLabel: rankLabel,
+      updatedAt: record.updatedAt,
+    );
+  }
 }
 
 String _slug(String value) {

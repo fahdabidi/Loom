@@ -211,6 +211,73 @@ class FanInterestProfiles extends Table {
   Set<Column<Object>> get primaryKey => {passportId};
 }
 
+class PlatformIntents extends Table {
+  TextColumn get id => text()();
+  TextColumn get label => text()();
+  TextColumn get description => text()();
+  TextColumn get interestIdsJson => text()();
+  IntColumn get displayOrder => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SessionIntents extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get platformIntentId => text().references(PlatformIntents, #id)();
+  TextColumn get selectedInterestIdsJson => text()();
+  BoolColumn get active => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class FanFeedback extends Table {
+  TextColumn get id => text()();
+  TextColumn get sessionIntentId => text().references(SessionIntents, #id)();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get action => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class ExternalProviderCandidates extends Table {
+  TextColumn get id => text()();
+  TextColumn get providerId => text()();
+  TextColumn get providerLabel => text()();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get interestIdsJson => text()();
+  RealColumn get score => real()();
+  TextColumn get reason => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SearchIndexEntries extends Table {
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get creatorId => text().references(Creators, #id)();
+  TextColumn get creatorName => text()();
+  TextColumn get title => text()();
+  TextColumn get summary => text()();
+  TextColumn get contentType => text()();
+  TextColumn get thumbnailRef => text()();
+  TextColumn get searchText => text()();
+  TextColumn get interestIdsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {contentId};
+}
+
 class AdPreferences extends Table {
   TextColumn get passportId => text().references(FanPassports, #id)();
   BoolColumn get personalizedAds => boolean()();
@@ -292,6 +359,11 @@ class KvMeta extends Table {
     ConsentGrants,
     InterestTaxonomy,
     FanInterestProfiles,
+    PlatformIntents,
+    SessionIntents,
+    FanFeedback,
+    ExternalProviderCandidates,
+    SearchIndexEntries,
     AdPreferences,
     CreatorChannels,
     ChannelManifests,
@@ -304,7 +376,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -333,6 +405,13 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(externalContentRefs);
         await m.createTable(contentPerf);
         await m.createTable(entitlementDefinitions);
+      }
+      if (from < 4) {
+        await m.createTable(platformIntents);
+        await m.createTable(sessionIntents);
+        await m.createTable(fanFeedback);
+        await m.createTable(externalProviderCandidates);
+        await m.createTable(searchIndexEntries);
       }
     },
   );
@@ -694,6 +773,110 @@ class ContentPerformanceRecord {
   final DateTime updatedAt;
 }
 
+class PlatformIntentRecord {
+  const PlatformIntentRecord({
+    required this.id,
+    required this.label,
+    required this.description,
+    required this.interestIds,
+    required this.displayOrder,
+  });
+
+  final String id;
+  final String label;
+  final String description;
+  final List<String> interestIds;
+  final int displayOrder;
+}
+
+class SessionIntentRecord {
+  const SessionIntentRecord({
+    required this.id,
+    required this.passportId,
+    required this.platformIntentId,
+    required this.selectedInterestIds,
+    required this.active,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String platformIntentId;
+  final List<String> selectedInterestIds;
+  final bool active;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}
+
+class FanFeedbackRecord {
+  const FanFeedbackRecord({
+    required this.id,
+    required this.sessionIntentId,
+    required this.passportId,
+    required this.contentId,
+    required this.creatorId,
+    required this.action,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String sessionIntentId;
+  final String passportId;
+  final String contentId;
+  final String creatorId;
+  final String action;
+  final DateTime createdAt;
+}
+
+class ExternalProviderCandidateRecord {
+  const ExternalProviderCandidateRecord({
+    required this.id,
+    required this.providerId,
+    required this.providerLabel,
+    required this.contentId,
+    required this.interestIds,
+    required this.score,
+    required this.reason,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String providerId;
+  final String providerLabel;
+  final String contentId;
+  final List<String> interestIds;
+  final double score;
+  final String reason;
+  final DateTime updatedAt;
+}
+
+class SearchIndexEntryRecord {
+  const SearchIndexEntryRecord({
+    required this.contentId,
+    required this.creatorId,
+    required this.creatorName,
+    required this.title,
+    required this.summary,
+    required this.contentType,
+    required this.thumbnailRef,
+    required this.searchText,
+    required this.interestIds,
+    required this.updatedAt,
+  });
+
+  final String contentId;
+  final String creatorId;
+  final String creatorName;
+  final String title;
+  final String summary;
+  final String contentType;
+  final String thumbnailRef;
+  final String searchText;
+  final List<String> interestIds;
+  final DateTime updatedAt;
+}
+
 class EntitlementDefinitionRecord {
   const EntitlementDefinitionRecord({
     required this.id,
@@ -736,6 +919,11 @@ class DemoLocalStore {
     final world = seed ?? seedV1;
 
     await _db.transaction(() async {
+      await _db.delete(_db.fanFeedback).go();
+      await _db.delete(_db.sessionIntents).go();
+      await _db.delete(_db.externalProviderCandidates).go();
+      await _db.delete(_db.searchIndexEntries).go();
+      await _db.delete(_db.platformIntents).go();
       await _db.delete(_db.entitlementDefinitions).go();
       await _db.delete(_db.contentPerf).go();
       await _db.delete(_db.externalContentRefs).go();
@@ -801,6 +989,64 @@ class DemoLocalStore {
           ),
         );
 
+        batch.insertAll(
+          _db.platformIntents,
+          _platformIntentSeeds.map(
+            (intent) => PlatformIntentsCompanion.insert(
+              id: intent.id,
+              label: intent.label,
+              description: intent.description,
+              interestIdsJson: jsonEncode(intent.interestIds),
+              displayOrder: intent.displayOrder,
+            ),
+          ),
+        );
+
+        batch.insertAll(
+          _db.externalProviderCandidates,
+          world.content.map((content) {
+            final interestIds = _interestIdsForCreatorId(content.creatorId);
+            return ExternalProviderCandidatesCompanion.insert(
+              id: 'candidate_${content.id}',
+              providerId: 'loom_bridge',
+              providerLabel: 'Loom import bridge',
+              contentId: content.id,
+              interestIdsJson: jsonEncode(interestIds),
+              score: content.perfVelocity,
+              reason: 'Seeded from cross-platform activity and creator fit.',
+              updatedAt: _now(),
+            );
+          }),
+        );
+
+        batch.insertAll(
+          _db.searchIndexEntries,
+          world.content.map((content) {
+            final creator = world.creators.firstWhere(
+              (candidate) => candidate.id == content.creatorId,
+            );
+            return SearchIndexEntriesCompanion.insert(
+              contentId: content.id,
+              creatorId: content.creatorId,
+              creatorName: creator.displayName,
+              title: content.title,
+              summary: content.summary,
+              contentType: content.contentType,
+              thumbnailRef: content.thumbnailRef,
+              searchText: _searchTextForContent(
+                content.title,
+                content.summary,
+                creator.displayName,
+                creator.vertical,
+              ),
+              interestIdsJson: jsonEncode(
+                _interestIdsForCreatorId(content.creatorId),
+              ),
+              updatedAt: _now(),
+            );
+          }),
+        );
+
         batch.insertAll(_db.kvMeta, [
           KvMetaCompanion.insert(key: 'seedVersion', value: 'v1'),
           KvMetaCompanion.insert(key: 'storage', value: 'drift-sqlite'),
@@ -820,6 +1066,30 @@ class DemoLocalStore {
     return row == null ? null : _mapCreator(row);
   }
 
+  Future<List<CreatorRecord>> creators() async {
+    final rows = await (_db.select(
+      _db.creators,
+    )..orderBy([(tbl) => OrderingTerm.asc(tbl.displayName)])).get();
+    return rows.map(_mapCreator).toList(growable: false);
+  }
+
+  Future<ContentRecord?> contentById(String id) async {
+    final row = await (_db.select(
+      _db.contentItems,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapContent(row);
+  }
+
+  Future<List<ContentRecord>> publicCatalog() async {
+    final rows =
+        await (_db.select(_db.contentItems)..orderBy([
+              (tbl) => OrderingTerm.desc(tbl.perfVelocity),
+              (tbl) => OrderingTerm.desc(tbl.createdAt),
+            ]))
+            .get();
+    return rows.map(_mapContent).toList(growable: false);
+  }
+
   Future<List<ContentRecord>> publicCatalogForCreator(String creatorId) async {
     final rows =
         await (_db.select(_db.contentItems)
@@ -827,20 +1097,7 @@ class DemoLocalStore {
               ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]))
             .get();
 
-    return rows
-        .map(
-          (row) => ContentRecord(
-            id: row.id,
-            creatorId: row.creatorId,
-            contentType: row.contentType,
-            title: row.title,
-            summary: row.summary,
-            thumbnailRef: row.thumbnailRef,
-            createdAt: row.createdAt,
-            perfVelocity: row.perfVelocity,
-          ),
-        )
-        .toList(growable: false);
+    return rows.map(_mapContent).toList(growable: false);
   }
 
   Future<String?> metaValue(String key) async {
@@ -900,6 +1157,43 @@ class DemoLocalStore {
       _db.fanPassports,
     )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
     return row == null ? null : _mapPassport(row);
+  }
+
+  Future<FanPassportRecord> ensureDemoPassport({
+    String passportId = 'passport_demo_fan',
+  }) async {
+    final existing = await fanPassportById(passportId);
+    if (existing != null) {
+      return existing;
+    }
+
+    final personaId = 'persona_${_slug(passportId)}';
+    final now = _now();
+    await _db.transaction(() async {
+      await _db
+          .into(_db.fanPassports)
+          .insertOnConflictUpdate(
+            FanPassportsCompanion.insert(
+              id: passportId,
+              displayName: 'Demo Fan',
+              activePersonaId: personaId,
+              createdAt: now,
+            ),
+          );
+      await _db
+          .into(_db.personas)
+          .insertOnConflictUpdate(
+            PersonasCompanion.insert(
+              id: personaId,
+              passportId: passportId,
+              label: 'Everyday fan',
+              isActive: true,
+            ),
+          );
+      await _ensureInterestProfile(passportId);
+      await _ensureAdPreferences(passportId);
+    });
+    return (await fanPassportById(passportId))!;
   }
 
   Future<PersonaRecord> setPersona({
@@ -1051,6 +1345,214 @@ class DemoLocalStore {
     );
     await _saveIdempotency(idempotencyKey, 'interest_profile', passportId);
     return interestProfile(passportId);
+  }
+
+  Future<List<PlatformIntentRecord>> platformIntents() async {
+    final rows = await (_db.select(
+      _db.platformIntents,
+    )..orderBy([(tbl) => OrderingTerm.asc(tbl.displayOrder)])).get();
+    return rows.map(_mapPlatformIntent).toList(growable: false);
+  }
+
+  Future<PlatformIntentRecord?> platformIntentById(String id) async {
+    final row = await (_db.select(
+      _db.platformIntents,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapPlatformIntent(row);
+  }
+
+  Future<SessionIntentRecord> createSessionIntent({
+    required String passportId,
+    required String platformIntentId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'session_intent');
+    if (existing != null) {
+      final session = await sessionIntentById(existing);
+      if (session != null) {
+        return session;
+      }
+    }
+
+    await ensureDemoPassport(passportId: passportId);
+    final intent = await platformIntentById(platformIntentId);
+    if (intent == null) {
+      throw StateError('No platform intent exists for $platformIntentId');
+    }
+
+    final id = 'session_${_slug(idempotencyKey)}';
+    final now = _now();
+    await _db.transaction(() async {
+      await (_db.update(_db.sessionIntents)
+            ..where((tbl) => tbl.passportId.equals(passportId)))
+          .write(const SessionIntentsCompanion(active: Value(false)));
+      await _db
+          .into(_db.sessionIntents)
+          .insertOnConflictUpdate(
+            SessionIntentsCompanion.insert(
+              id: id,
+              passportId: passportId,
+              platformIntentId: platformIntentId,
+              selectedInterestIdsJson: jsonEncode(intent.interestIds),
+              active: true,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await _saveIdempotency(idempotencyKey, 'session_intent', id);
+    });
+    return (await sessionIntentById(id))!;
+  }
+
+  Future<SessionIntentRecord?> sessionIntentById(String id) async {
+    final row = await (_db.select(
+      _db.sessionIntents,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapSessionIntent(row);
+  }
+
+  Future<SessionIntentRecord> switchSessionIntent({
+    required String sessionIntentId,
+    required String platformIntentId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'session_intent_switch',
+    );
+    if (existing != null) {
+      final session = await sessionIntentById(existing);
+      if (session != null) {
+        return session;
+      }
+    }
+
+    final intent = await platformIntentById(platformIntentId);
+    if (intent == null) {
+      throw StateError('No platform intent exists for $platformIntentId');
+    }
+
+    await (_db.update(
+      _db.sessionIntents,
+    )..where((tbl) => tbl.id.equals(sessionIntentId))).write(
+      SessionIntentsCompanion(
+        platformIntentId: Value(platformIntentId),
+        selectedInterestIdsJson: Value(jsonEncode(intent.interestIds)),
+        active: const Value(true),
+        updatedAt: Value(_now()),
+      ),
+    );
+    await _saveIdempotency(
+      idempotencyKey,
+      'session_intent_switch',
+      sessionIntentId,
+    );
+    return (await sessionIntentById(sessionIntentId))!;
+  }
+
+  Future<FanFeedbackRecord> recordFeedback({
+    required String sessionIntentId,
+    required String contentId,
+    required String action,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'fan_feedback');
+    if (existing != null) {
+      final feedback = await feedbackById(existing);
+      if (feedback != null) {
+        return feedback;
+      }
+    }
+
+    final session = await sessionIntentById(sessionIntentId);
+    if (session == null) {
+      throw StateError('No session intent exists for $sessionIntentId');
+    }
+    final content = await contentById(contentId);
+    if (content == null) {
+      throw StateError('No content exists for $contentId');
+    }
+
+    final id = 'feedback_${_slug(idempotencyKey)}';
+    await _db.transaction(() async {
+      await _db
+          .into(_db.fanFeedback)
+          .insertOnConflictUpdate(
+            FanFeedbackCompanion.insert(
+              id: id,
+              sessionIntentId: sessionIntentId,
+              passportId: session.passportId,
+              contentId: contentId,
+              creatorId: content.creatorId,
+              action: action,
+              createdAt: _now(),
+            ),
+          );
+      await _applyFeedbackToProfile(
+        passportId: session.passportId,
+        creatorId: content.creatorId,
+        action: action,
+      );
+      await _saveIdempotency(idempotencyKey, 'fan_feedback', id);
+    });
+    return (await feedbackById(id))!;
+  }
+
+  Future<FanFeedbackRecord?> feedbackById(String id) async {
+    final row = await (_db.select(
+      _db.fanFeedback,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapFanFeedback(row);
+  }
+
+  Future<List<FanFeedbackRecord>> feedbackForPassport(String passportId) async {
+    final rows =
+        await (_db.select(_db.fanFeedback)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapFanFeedback).toList(growable: false);
+  }
+
+  Future<List<ExternalProviderCandidateRecord>> externalCandidates({
+    required List<String> interestIds,
+    int limit = 8,
+  }) async {
+    final rows = await _db.select(_db.externalProviderCandidates).get();
+    final ranked =
+        rows
+            .map(_mapExternalProviderCandidate)
+            .where(
+              (candidate) =>
+                  interestIds.isEmpty ||
+                  candidate.interestIds.any(interestIds.contains),
+            )
+            .toList()
+          ..sort((a, b) => b.score.compareTo(a.score));
+    return ranked.take(limit).toList(growable: false);
+  }
+
+  Future<List<SearchIndexEntryRecord>> searchIndex({
+    required String query,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    final normalized = query.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return const [];
+    }
+
+    final terms = normalized.split(RegExp(r'\s+'));
+    final rows = await _db.select(_db.searchIndexEntries).get();
+    final ranked =
+        rows
+            .map(_mapSearchIndexEntry)
+            .where(
+              (entry) => terms.every((term) => entry.searchText.contains(term)),
+            )
+            .toList()
+          ..sort((a, b) => a.title.compareTo(b.title));
+    return ranked.skip(offset).take(limit).toList(growable: false);
   }
 
   Future<AdPreferencesRecord> adPreferences(String passportId) async {
@@ -1832,6 +2334,34 @@ class DemoLocalStore {
         );
   }
 
+  Future<void> _applyFeedbackToProfile({
+    required String passportId,
+    required String creatorId,
+    required String action,
+  }) async {
+    await _ensureInterestProfile(passportId);
+    final profile = await interestProfile(passportId);
+    final dislikedCreatorIds = profile.dislikedCreatorIds.toSet();
+    final mutedProviderIds = profile.mutedProviderIds.toSet();
+
+    if (action == 'block_creator') {
+      dislikedCreatorIds.add(creatorId);
+    }
+    if (action == 'mute_creator' || action == 'block_creator') {
+      mutedProviderIds.add(creatorId);
+    }
+
+    await (_db.update(
+      _db.fanInterestProfiles,
+    )..where((tbl) => tbl.passportId.equals(passportId))).write(
+      FanInterestProfilesCompanion(
+        dislikedCreatorIdsJson: Value(jsonEncode(dislikedCreatorIds.toList())),
+        mutedProviderIdsJson: Value(jsonEncode(mutedProviderIds.toList())),
+        updatedAt: Value(_now()),
+      ),
+    );
+  }
+
   Future<String?> _idempotentTarget(String key, String targetType) async {
     final row = await (_db.select(
       _db.idempotencyRecords,
@@ -1884,6 +2414,19 @@ CreatorRecord _mapCreator(Creator row) {
     displayName: row.displayName,
     vertical: row.vertical,
     avatarRef: row.avatarRef,
+  );
+}
+
+ContentRecord _mapContent(ContentItem row) {
+  return ContentRecord(
+    id: row.id,
+    creatorId: row.creatorId,
+    contentType: row.contentType,
+    title: row.title,
+    summary: row.summary,
+    thumbnailRef: row.thumbnailRef,
+    createdAt: row.createdAt,
+    perfVelocity: row.perfVelocity,
   );
 }
 
@@ -2066,6 +2609,70 @@ ContentPerformanceRecord _mapContentPerformance(ContentPerfData row) {
   );
 }
 
+PlatformIntentRecord _mapPlatformIntent(PlatformIntent row) {
+  return PlatformIntentRecord(
+    id: row.id,
+    label: row.label,
+    description: row.description,
+    interestIds: _decodeStringList(row.interestIdsJson),
+    displayOrder: row.displayOrder,
+  );
+}
+
+SessionIntentRecord _mapSessionIntent(SessionIntent row) {
+  return SessionIntentRecord(
+    id: row.id,
+    passportId: row.passportId,
+    platformIntentId: row.platformIntentId,
+    selectedInterestIds: _decodeStringList(row.selectedInterestIdsJson),
+    active: row.active,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  );
+}
+
+FanFeedbackRecord _mapFanFeedback(FanFeedbackData row) {
+  return FanFeedbackRecord(
+    id: row.id,
+    sessionIntentId: row.sessionIntentId,
+    passportId: row.passportId,
+    contentId: row.contentId,
+    creatorId: row.creatorId,
+    action: row.action,
+    createdAt: row.createdAt,
+  );
+}
+
+ExternalProviderCandidateRecord _mapExternalProviderCandidate(
+  ExternalProviderCandidate row,
+) {
+  return ExternalProviderCandidateRecord(
+    id: row.id,
+    providerId: row.providerId,
+    providerLabel: row.providerLabel,
+    contentId: row.contentId,
+    interestIds: _decodeStringList(row.interestIdsJson),
+    score: row.score,
+    reason: row.reason,
+    updatedAt: row.updatedAt,
+  );
+}
+
+SearchIndexEntryRecord _mapSearchIndexEntry(SearchIndexEntry row) {
+  return SearchIndexEntryRecord(
+    contentId: row.contentId,
+    creatorId: row.creatorId,
+    creatorName: row.creatorName,
+    title: row.title,
+    summary: row.summary,
+    contentType: row.contentType,
+    thumbnailRef: row.thumbnailRef,
+    searchText: row.searchText,
+    interestIds: _decodeStringList(row.interestIdsJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
 EntitlementDefinitionRecord _mapEntitlementDefinition(
   EntitlementDefinition row,
 ) {
@@ -2084,6 +2691,75 @@ List<String> _decodeStringList(String value) {
     return const [];
   }
   return decoded.whereType<String>().toList(growable: false);
+}
+
+class _PlatformIntentSeed {
+  const _PlatformIntentSeed({
+    required this.id,
+    required this.label,
+    required this.description,
+    required this.interestIds,
+    required this.displayOrder,
+  });
+
+  final String id;
+  final String label;
+  final String description;
+  final List<String> interestIds;
+  final int displayOrder;
+}
+
+const _platformIntentSeeds = [
+  _PlatformIntentSeed(
+    id: 'intent_for_you',
+    label: 'For you',
+    description: 'Balanced creator-led recommendations with explainable fit.',
+    interestIds: ['home_energy', 'fermentation', 'mobility'],
+    displayOrder: 0,
+  ),
+  _PlatformIntentSeed(
+    id: 'intent_learn',
+    label: 'Learn',
+    description: 'Useful how-to posts and videos with clear summaries first.',
+    interestIds: ['solar_storage', 'food_safety', 'strength_basics'],
+    displayOrder: 1,
+  ),
+  _PlatformIntentSeed(
+    id: 'intent_trending',
+    label: 'Trending',
+    description: 'High-velocity posts with visible performance context.',
+    interestIds: ['home_energy', 'food_safety', 'joint_friendly_cardio'],
+    displayOrder: 2,
+  ),
+  _PlatformIntentSeed(
+    id: 'intent_reset',
+    label: 'Reset',
+    description: 'A neutral exploration mode that ignores ad targeting.',
+    interestIds: ['personal_finance', 'family_learning', 'creator_tools'],
+    displayOrder: 3,
+  ),
+];
+
+List<String> _interestIdsForCreatorId(String creatorId) {
+  if (creatorId.contains('solar')) {
+    return const ['home_energy', 'solar_storage', 'personal_finance'];
+  }
+  if (creatorId.contains('ferment')) {
+    return const ['fermentation', 'food_safety', 'weeknight_cooking'];
+  }
+  if (creatorId.contains('motion')) {
+    return const ['mobility', 'strength_basics', 'joint_friendly_cardio'];
+  }
+  return const ['creator_tools'];
+}
+
+String _searchTextForContent(
+  String title,
+  String summary,
+  String creatorName,
+  String vertical,
+) {
+  return '$title $summary $creatorName $vertical'.toLowerCase();
 }
 
 List<_ImportItem> _decodeImportItems(String value) {
