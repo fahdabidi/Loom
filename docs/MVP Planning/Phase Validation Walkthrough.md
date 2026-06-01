@@ -12,6 +12,13 @@ This is the manual validation playbook for the Demo App while implementation con
 
 Physical Android phone validation is deferred until Phase 9. Phases 0 through 8 are validated on the Flutter Android emulator.
 
+## Parallel Validation Protocol
+
+- Use the currently installed emulator build unless I explicitly say a new build is installed.
+- Continue validating the phase you are on while implementation moves ahead. A failed row does not block the next implementation phase unless the app cannot launch or the role switcher/navigation is unusable.
+- When reporting an issue, include the phase number and the exact row or action. I will keep implementing forward and patch validation issues in parallel.
+- After I install a new build, repeat only the rows affected by the change unless I ask for a broader regression pass.
+
 ## Current Phase Availability
 
 | Phase | Validation type | Current state | Primary entry point |
@@ -24,8 +31,8 @@ Physical Android phone validation is deferred until Phase 9. Phases 0 through 8 
 | 5 | Medium UX checkpoint | Complete | Fan App archive Q&A |
 | 6 | Medium UX checkpoint | Complete | Fan wallet and Creator revenue dashboard |
 | 7 | High UX checkpoint | Complete | Fan data rights and Creator audience |
-| 8 | Medium UX checkpoint | In implementation / validation | Recommendations, referral, and campaigns |
-| 9 | Final full-app validation | Pending implementation | Export, transparency, reset, emulator, physical phone |
+| 8 | Medium UX checkpoint | Complete / ready for validation | Recommendations, referral, and campaigns |
+| 9 | Final full-app validation | In implementation / validation | Export, transparency, reset, emulator, physical phone |
 
 ## Phase 0 - Foundation And Shell
 
