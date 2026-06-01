@@ -32,6 +32,8 @@ class DiscoveryController extends ChangeNotifier {
   String searchQuery = '';
   RankPreference? rankPreference;
   int? summaryRankCandidateCount;
+  DiscoveryReceipt? latestDiscoveryReceipt;
+  String? recommendationMessage;
 
   bool get hasMore => _nextCursor != null;
 
@@ -128,6 +130,19 @@ class DiscoveryController extends ChangeNotifier {
     if (action != FeedbackAction.like) {
       await refreshFeed();
     }
+  }
+
+  Future<void> recordRecommendedDiscovery(FeedItem item) async {
+    if (!item.providerLabel.startsWith('Recommended by ')) {
+      return;
+    }
+    latestDiscoveryReceipt = await _recommendationApi.recordDiscovery(
+      manifestId: item.providerId,
+      passportId: passportId,
+      idempotencyKey: 'p8-discovery-${item.providerId}-$passportId',
+    );
+    recommendationMessage = '${item.providerLabel} receipt recorded.';
+    notifyListeners();
   }
 
   Future<void> search(String query) async {

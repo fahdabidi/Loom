@@ -287,6 +287,14 @@ String _receiptLabel(ReceiptType type) {
       return 'Membership receipt';
     case ReceiptType.premiumNoAd:
       return 'No-ad premium receipt';
+    case ReceiptType.discovery:
+      return 'Discovery receipt';
+    case ReceiptType.referral:
+      return 'Referral receipt';
+    case ReceiptType.campaignEntry:
+      return 'Campaign-entry receipt';
+    case ReceiptType.reward:
+      return 'Reward receipt';
   }
 }
 

@@ -22,9 +22,9 @@ Physical Android phone validation is deferred until Phase 9. Phases 0 through 8 
 | 3 | Major UX checkpoint | Complete | Fan App discovery feed |
 | 4 | Medium UX checkpoint | Complete | Fan creator channel and playback |
 | 5 | Medium UX checkpoint | Complete | Fan App archive Q&A |
-| 6 | Medium UX checkpoint | Pending implementation | Fan wallet and Creator revenue dashboard |
-| 7 | High UX checkpoint | Pending implementation | Fan data rights and Creator audience |
-| 8 | Medium UX checkpoint | Pending implementation | Recommendations, referral, and campaigns |
+| 6 | Medium UX checkpoint | Complete | Fan wallet and Creator revenue dashboard |
+| 7 | High UX checkpoint | Complete | Fan data rights and Creator audience |
+| 8 | Medium UX checkpoint | In implementation / validation | Recommendations, referral, and campaigns |
 | 9 | Final full-app validation | Pending implementation | Export, transparency, reset, emulator, physical phone |
 
 ## Phase 0 - Foundation And Shell
@@ -236,16 +236,17 @@ Goal: validate creator recommendations, referral transparency, campaign setup, g
 | 1 | Open Creator recommendation builder. | Builder follows Studio patterns with preview, status, validation, and publish state. |  |
 | 2 | Publish a recommendation. | Recommendation publishes with disclosure-ready metadata. |  |
 | 3 | Publish or review referral terms. | Terms, window, caps, and destination creator are clear. |  |
-| 4 | Open campaign builder. | Campaign setup uses preview, reward, eligibility, schedule, and final review. |  |
-| 5 | Publish giveaway campaign. | Campaign appears ready for fan participation. |  |
+| 4 | Settle the demo referral. | Creator revenue shows referral source revenue and a referral receipt. |  |
+| 5 | Open campaign builder. | Campaign setup uses preview, reward, eligibility, schedule, and final review. |  |
+| 6 | Publish giveaway campaign. | Campaign appears ready for fan participation. |  |
 
 ### Fan Discovery And Participation
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Open Fan discovery after recommendation publish. | Recommendation appears with "recommended by" context and lightweight disclosure. |  |
-| 2 | Open referral details. | Terms/caps are available in a sheet or detail view without overwhelming the feed. |  |
-| 3 | Convert through recommendation. | Referral attribution receipt is emitted and visible where expected. |  |
+| 2 | Record the recommendation as seen. | Discovery receipt appears near the recommendation card. |  |
+| 3 | Convert through recommendation from Creator Studio. | Referral attribution receipt is emitted and visible in creator revenue. |  |
 | 4 | Open giveaway campaign card. | Card feels like a social/community post with visual media, concise terms, and clear CTA. |  |
 | 5 | Enter giveaway. | Entry flow confirms eligibility, consent/data-value offer if present, reward status, and receipt. |  |
 | 6 | Accept sponsor data-for-value offer if present. | Flow reuses Phase 7 consent language and does not introduce behavioral-targeting copy. |  |

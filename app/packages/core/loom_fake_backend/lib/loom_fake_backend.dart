@@ -1,4 +1,5 @@
 export 'ai_gateway_fake.dart';
+export 'campaign_fake.dart';
 export 'content_host_fake.dart';
 export 'creator_audience_fake.dart';
 export 'creator_channel_registry_fake.dart';
@@ -14,3 +15,4 @@ export 'receipt_ledger_fake.dart';
 export 'recommendation_referral_fake.dart';
 export 'search_fake.dart';
 export 'settlement_engine_fake.dart';
+export 'sponsor_campaign_fake.dart';

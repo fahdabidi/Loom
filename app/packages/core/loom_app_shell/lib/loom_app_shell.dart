@@ -25,6 +25,7 @@ FanVaultApi? _fanVaultApi;
 CreatorAudienceApi? _creatorAudienceApi;
 CreatorChannelRegistryApi? _creatorChannelRegistryApi;
 ContentHostApi? _contentHostApi;
+CampaignApi? _campaignApi;
 MigrationExportApi? _migrationExportApi;
 EntitlementLedgerApi? _entitlementLedgerApi;
 AiGatewayApi? _aiGatewayApi;
@@ -35,6 +36,7 @@ PlaybackAuthorizationApi? _playbackAuthorizationApi;
 ReceiptLedgerApi? _receiptLedgerApi;
 FanWalletApi? _fanWalletApi;
 SettlementEngineApi? _settlementEngineApi;
+SponsorCampaignApi? _sponsorCampaignApi;
 
 void registerCreatorMetadataApi(CreatorMetadataApi api) {
   _creatorMetadataApi = api;
@@ -58,6 +60,10 @@ void registerCreatorChannelRegistryApi(CreatorChannelRegistryApi api) {
 
 void registerContentHostApi(ContentHostApi api) {
   _contentHostApi = api;
+}
+
+void registerCampaignApi(CampaignApi api) {
+  _campaignApi = api;
 }
 
 void registerMigrationExportApi(MigrationExportApi api) {
@@ -102,6 +108,10 @@ void registerSettlementEngineApi(SettlementEngineApi api) {
   _settlementEngineApi = api;
 }
 
+void registerSponsorCampaignApi(SponsorCampaignApi api) {
+  _sponsorCampaignApi = api;
+}
+
 void resetAppShellDependencies() {
   _creatorMetadataApi = null;
   _fanPassportApi = null;
@@ -109,6 +119,7 @@ void resetAppShellDependencies() {
   _creatorAudienceApi = null;
   _creatorChannelRegistryApi = null;
   _contentHostApi = null;
+  _campaignApi = null;
   _migrationExportApi = null;
   _entitlementLedgerApi = null;
   _aiGatewayApi = null;
@@ -119,6 +130,7 @@ void resetAppShellDependencies() {
   _receiptLedgerApi = null;
   _fanWalletApi = null;
   _settlementEngineApi = null;
+  _sponsorCampaignApi = null;
 }
 
 CreatorMetadataApi resolveCreatorMetadataApi() {
@@ -169,10 +181,26 @@ ContentHostApi resolveContentHostApi() {
   return api;
 }
 
+CampaignApi resolveCampaignApi() {
+  final api = _campaignApi;
+  if (api == null) {
+    throw StateError('CampaignApi has not been registered.');
+  }
+  return api;
+}
+
 MigrationExportApi resolveMigrationExportApi() {
   final api = _migrationExportApi;
   if (api == null) {
     throw StateError('MigrationExportApi has not been registered.');
+  }
+  return api;
+}
+
+SponsorCampaignApi resolveSponsorCampaignApi() {
+  final api = _sponsorCampaignApi;
+  if (api == null) {
+    throw StateError('SponsorCampaignApi has not been registered.');
   }
   return api;
 }

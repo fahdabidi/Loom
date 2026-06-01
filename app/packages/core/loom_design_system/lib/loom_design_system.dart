@@ -1,5 +1,6 @@
 export 'components/ad_slot.dart';
 export 'components/byo_agent_toggle.dart';
+export 'components/campaign_card.dart';
 export 'components/category_default_control.dart';
 export 'components/channel_setup_form.dart';
 export 'components/citation_link.dart';
@@ -21,9 +22,11 @@ export 'components/shell/nav_scaffold.dart';
 export 'components/shell/role_switcher.dart';
 export 'components/studio/ad_policy_editor.dart';
 export 'components/studio/audience_panel.dart';
+export 'components/studio/campaign_builder.dart';
 export 'components/studio/import_wizard.dart';
 export 'components/studio/monetization_editor.dart';
 export 'components/studio/publish_composer.dart';
+export 'components/studio/recommendation_builder.dart';
 export 'components/studio/revenue_dashboard.dart';
 export 'components/wallet_row.dart';
 export 'tokens/colors.dart';

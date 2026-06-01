@@ -79,6 +79,14 @@ String _receiptTypeValue(ReceiptType type) {
       return 'membership';
     case ReceiptType.premiumNoAd:
       return 'premiumNoAd';
+    case ReceiptType.discovery:
+      return 'discovery';
+    case ReceiptType.referral:
+      return 'referral';
+    case ReceiptType.campaignEntry:
+      return 'campaignEntry';
+    case ReceiptType.reward:
+      return 'reward';
   }
 }
 
@@ -98,6 +106,14 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.membership;
     case 'premiumNoAd':
       return ReceiptType.premiumNoAd;
+    case 'discovery':
+      return ReceiptType.discovery;
+    case 'referral':
+      return ReceiptType.referral;
+    case 'campaignEntry':
+      return ReceiptType.campaignEntry;
+    case 'reward':
+      return ReceiptType.reward;
   }
   return ReceiptType.playback;
 }

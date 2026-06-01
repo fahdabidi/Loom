@@ -4105,7 +4105,8 @@ class DemoLocalStore {
     final row =
         await (_db.select(_db.payoutStatements)
               ..where((tbl) => tbl.creatorId.equals(creatorId))
-              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
             .getSingleOrNull();
     if (row != null) {
       return _mapPayoutStatement(row);
@@ -4114,7 +4115,8 @@ class DemoLocalStore {
     final fallback =
         await (_db.select(_db.payoutStatements)
               ..where((tbl) => tbl.creatorId.equals(creatorId))
-              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)]))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.updatedAt)])
+              ..limit(1))
             .getSingleOrNull();
     if (fallback != null) {
       return _mapPayoutStatement(fallback);
@@ -4399,8 +4401,10 @@ class DemoLocalStore {
             receipts.any((receipt) => receipt.type == 'premiumNoAd')
         ? 200
         : 0;
+    final referralTotal =
+        receipts.where((receipt) => receipt.type == 'referral').length * 350;
     final membershipTotal = membershipPayments + seededMembership;
-    final total = membershipTotal + noAdPool;
+    final total = membershipTotal + noAdPool + referralTotal;
     final bySource = [
       if (membershipTotal > 0)
         RevenueBreakdownRecord(
@@ -4409,12 +4413,16 @@ class DemoLocalStore {
         ),
       if (noAdPool > 0)
         RevenueBreakdownRecord(label: 'No-ad pool', amountCents: noAdPool),
+      if (referralTotal > 0)
+        RevenueBreakdownRecord(label: 'Referrals', amountCents: referralTotal),
     ];
     final byIntent = [
       if (membershipTotal > 0)
         RevenueBreakdownRecord(label: 'Support', amountCents: membershipTotal),
       if (noAdPool > 0)
         RevenueBreakdownRecord(label: 'Watch', amountCents: noAdPool),
+      if (referralTotal > 0)
+        RevenueBreakdownRecord(label: 'Discovery', amountCents: referralTotal),
     ];
     return CreatorPayoutStatementRecord(
       id: 'payout_${_slug(runId)}_${_slug(creator.id)}',

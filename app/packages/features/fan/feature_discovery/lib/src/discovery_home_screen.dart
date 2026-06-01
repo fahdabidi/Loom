@@ -11,6 +11,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
     this.onOpenContent,
     this.onOpenWallet,
     this.onOpenDataRights,
+    this.onOpenCampaigns,
     super.key,
   });
 
@@ -19,6 +20,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
   final ValueChanged<String>? onOpenContent;
   final VoidCallback? onOpenWallet;
   final VoidCallback? onOpenDataRights;
+  final VoidCallback? onOpenCampaigns;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -58,8 +60,19 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               onStartOnboarding: widget.onStartOnboarding,
               onOpenWallet: widget.onOpenWallet,
               onOpenDataRights: widget.onOpenDataRights,
+              onOpenCampaigns: widget.onOpenCampaigns,
             ),
             const SizedBox(height: 14),
+            if (_controller.recommendationMessage != null) ...[
+              DataDashboardRow(
+                key: const ValueKey('p8_discovery_receipt'),
+                icon: Icons.receipt_long_rounded,
+                title: _controller.recommendationMessage!,
+                subtitle:
+                    'Recommended content stays labeled before attribution is recorded.',
+              ),
+              const SizedBox(height: 12),
+            ],
             _SearchField(controller: _controller),
             const SizedBox(height: 16),
             _IntentRail(controller: _controller),
@@ -105,7 +118,24 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
                     widget.onOpenCreator?.call(item.tile.creatorId),
                 onFeedback: (action) =>
                     _controller.submitFeedback(item, action),
+                onRecordDiscovery:
+                    item.providerLabel.startsWith('Recommended by ')
+                    ? () => _controller.recordRecommendedDiscovery(item)
+                    : null,
               ),
+              if (_controller.latestDiscoveryReceipt?.contentId ==
+                  item.tile.contentId) ...[
+                const SizedBox(height: 10),
+                DataDashboardRow(
+                  key: const ValueKey('p8_discovery_receipt'),
+                  icon: Icons.receipt_long_rounded,
+                  title:
+                      _controller.recommendationMessage ??
+                      'Discovery receipt recorded.',
+                  subtitle:
+                      'Recommendation attribution is visible before conversion.',
+                ),
+              ],
               const SizedBox(height: 14),
             ],
             if (_controller.hasMore)
@@ -134,48 +164,26 @@ class _DiscoveryToolbar extends StatelessWidget {
     required this.onStartOnboarding,
     required this.onOpenWallet,
     required this.onOpenDataRights,
+    required this.onOpenCampaigns,
   });
 
   final VoidCallback onStartOnboarding;
   final VoidCallback? onOpenWallet;
   final VoidCallback? onOpenDataRights;
+  final VoidCallback? onOpenCampaigns;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 46,
-          height: 46,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: LoomColors.ink,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Text(
-            'L',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-          ),
-        ),
-        const SizedBox(width: 12),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Loom',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-              ),
-              Text(
-                'Transparent discovery',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: LoomColors.mutedInk,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          child: Text(
+            'Discover',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
         ),
         Tooltip(
@@ -200,6 +208,14 @@ class _DiscoveryToolbar extends StatelessWidget {
             key: const ValueKey('p7_open_data_rights_button'),
             onPressed: onOpenDataRights,
             icon: const Icon(Icons.verified_user_outlined),
+          ),
+        ),
+        Tooltip(
+          message: 'Campaigns',
+          child: IconButton(
+            key: const ValueKey('p8_open_campaigns_button'),
+            onPressed: onOpenCampaigns,
+            icon: const Icon(Icons.emoji_events_outlined),
           ),
         ),
         Tooltip(
@@ -558,6 +574,7 @@ class _DiscoveryFeedCard extends StatelessWidget {
     required this.onOpen,
     required this.onOpenCreator,
     required this.onFeedback,
+    this.onRecordDiscovery,
     super.key,
   });
 
@@ -566,6 +583,7 @@ class _DiscoveryFeedCard extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback? onOpenCreator;
   final ValueChanged<FeedbackAction> onFeedback;
+  final VoidCallback? onRecordDiscovery;
 
   @override
   Widget build(BuildContext context) {
@@ -602,6 +620,33 @@ class _DiscoveryFeedCard extends StatelessWidget {
                                 ?.copyWith(fontWeight: FontWeight.w900),
                           ),
                         ),
+                        if (item.providerLabel != 'Loom native graph') ...[
+                          const SizedBox(height: 5),
+                          Container(
+                            key: ValueKey(
+                              'p8_recommendation_disclosure_${item.tile.contentId}',
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAF8F5),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: const Color(0xFFCDEBE4),
+                              ),
+                            ),
+                            child: Text(
+                              item.providerLabel,
+                              style: const TextStyle(
+                                color: Color(0xFF167A55),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 3),
                         Text(
                           item.tile.title,
@@ -630,7 +675,10 @@ class _DiscoveryFeedCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
-              child: Row(
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   _ActionChip(
                     icon: item.tile.contentTypeLabel == 'Video'
@@ -659,7 +707,17 @@ class _DiscoveryFeedCard extends StatelessWidget {
                     label: 'Mute creator',
                     onTap: () => onFeedback(FeedbackAction.muteCreator),
                   ),
-                  const Spacer(),
+                  if (onRecordDiscovery != null)
+                    Tooltip(
+                      message: 'Record discovery receipt',
+                      child: IconButton(
+                        key: ValueKey(
+                          'p8_record_discovery_${item.tile.contentId}',
+                        ),
+                        onPressed: onRecordDiscovery,
+                        icon: const Icon(Icons.receipt_long_rounded, size: 20),
+                      ),
+                    ),
                   TextButton.icon(
                     key: ValueKey('p3_why_button_${item.tile.contentId}'),
                     onPressed: onWhy,

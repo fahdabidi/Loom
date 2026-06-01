@@ -35,6 +35,9 @@ Future<Finder> findDiscoveryKey(WidgetTester tester, String key) async {
     find.byKey(const ValueKey('p6_revenue_dashboard')),
     find.byKey(const ValueKey('p7_data_rights_screen')),
     find.byKey(const ValueKey('p7_audience_screen')),
+    find.byKey(const ValueKey('p8_campaign_entry_screen')),
+    find.byKey(const ValueKey('p8_campaign_builder_screen')),
+    find.byKey(const ValueKey('p8_recommendation_builder_screen')),
   ];
   final scrollable = scrollableCandidates.firstWhere(
     (candidate) => candidate.evaluate().isNotEmpty,

@@ -130,6 +130,14 @@ String _receiptTitle(ReceiptType type) {
       return 'Source receipt';
     case ReceiptType.playback:
       return 'Playback receipt';
+    case ReceiptType.discovery:
+      return 'Discovery receipt';
+    case ReceiptType.referral:
+      return 'Referral receipt';
+    case ReceiptType.campaignEntry:
+      return 'Campaign-entry receipt';
+    case ReceiptType.reward:
+      return 'Reward receipt';
   }
 }
 

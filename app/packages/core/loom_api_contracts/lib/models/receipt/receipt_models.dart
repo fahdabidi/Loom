@@ -6,6 +6,10 @@ enum ReceiptType {
   payment,
   membership,
   premiumNoAd,
+  discovery,
+  referral,
+  campaignEntry,
+  reward,
 }
 
 class ReceiptView {

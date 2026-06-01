@@ -8,6 +8,7 @@ import 'package:loom_local_store/loom_local_store.dart'
         DemoLocalStore,
         FanFeedbackRecord,
         PlatformIntentRecord,
+        ReceiptRecord,
         SessionIntentRecord;
 
 class RecommendationReferralFake implements RecommendationReferralApi {
@@ -19,6 +20,13 @@ class RecommendationReferralFake implements RecommendationReferralApi {
   final DemoLocalStore _store;
   final Duration latency;
   int feedRequestCount = 0;
+  final Map<String, RecommendationManifest> _manifestsByKey = {};
+  final Map<String, ReferralTerms> _termsByKey = {};
+  final Map<String, DiscoveryReceipt> _discoveriesByKey = {};
+  final Map<String, CreatorReferralReceipt> _referralsByKey = {};
+  final Map<String, RecommendationManifest> _manifestsById = {};
+  final Map<String, ReferralTerms> _termsById = {};
+  final Map<String, DiscoveryReceipt> _discoveriesById = {};
 
   @override
   Future<List<PlatformIntent>> getStartupTiles({
@@ -108,8 +116,45 @@ class RecommendationReferralFake implements RecommendationReferralApi {
     };
 
     final content = await _store.publicCatalog();
+    final contentById = {for (final item in content) item.id: item};
+    final recommendedContentIds = <String>{};
     final ranked = <FeedItem>[];
+    for (final manifest in _manifestsById.values) {
+      final item = contentById[manifest.contentId];
+      final creator = creators[manifest.destinationCreatorId];
+      if (item == null || creator == null) {
+        continue;
+      }
+      if (suppressedContentIds.contains(item.id) ||
+          blockedCreatorIds.contains(item.creatorId)) {
+        continue;
+      }
+      recommendedContentIds.add(item.id);
+      ranked.add(
+        FeedItem(
+          tile: _mapTile(item, creator),
+          score: 1.25,
+          providerId: manifest.id,
+          providerLabel: manifest.disclosureLabel,
+          isExternalCandidate: false,
+          trendingLabel: 'Creator pick',
+          explanation: ContentScoreExplanation(
+            summary:
+                '${manifest.sourceCreatorName} recommended ${manifest.destinationCreatorName}; referral terms and source are visible.',
+            matchedSignals: [
+              'Creator recommendation: ${manifest.note}',
+              'Referral disclosure: ${manifest.disclosureLabel}',
+            ],
+            suppressedSignals: const ['Hidden affiliate boost', 'Paid ranking'],
+            trendingVelocity: item.perfVelocity,
+          ),
+        ),
+      );
+    }
     for (final item in content) {
+      if (recommendedContentIds.contains(item.id)) {
+        continue;
+      }
       if (suppressedContentIds.contains(item.id) ||
           blockedCreatorIds.contains(item.creatorId)) {
         continue;
@@ -183,6 +228,181 @@ class RecommendationReferralFake implements RecommendationReferralApi {
       idempotencyKey: idempotencyKey,
     );
     return _mapFeedback(record);
+  }
+
+  @override
+  Future<RecommendationManifest> publishRecommendationManifest({
+    required String sourceCreatorId,
+    required String destinationCreatorId,
+    required String contentId,
+    required String note,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final existing = _manifestsByKey[idempotencyKey];
+    if (existing != null) {
+      return existing;
+    }
+    final creators = {
+      for (final creator in await _store.creators()) creator.id: creator,
+    };
+    final destination = creators[destinationCreatorId];
+    if (destination == null) {
+      throw StateError(
+        'No destination creator exists for $destinationCreatorId',
+      );
+    }
+    final sourceName = _creatorName(creators, sourceCreatorId);
+    final manifest = RecommendationManifest(
+      id: 'rec_${_slug(sourceCreatorId)}_${_slug(destinationCreatorId)}_${_manifestsByKey.length + 1}',
+      sourceCreatorId: sourceCreatorId,
+      sourceCreatorName: sourceName,
+      destinationCreatorId: destinationCreatorId,
+      destinationCreatorName: destination.displayName,
+      contentId: contentId,
+      title: '${destination.displayName} creator pick',
+      note: note,
+      disclosureLabel: 'Recommended by $sourceName',
+      version: 1,
+      publishedAt: _now(),
+    );
+    _manifestsByKey[idempotencyKey] = manifest;
+    _manifestsById[manifest.id] = manifest;
+    return manifest;
+  }
+
+  @override
+  Future<ReferralTerms> publishReferralTerms({
+    required String sourceCreatorId,
+    required String destinationCreatorId,
+    required int windowDays,
+    required int capCents,
+    required int rewardCents,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final existing = _termsByKey[idempotencyKey];
+    if (existing != null) {
+      return existing;
+    }
+    final terms = ReferralTerms(
+      id: 'terms_${_slug(sourceCreatorId)}_${_slug(destinationCreatorId)}_${_termsByKey.length + 1}',
+      sourceCreatorId: sourceCreatorId,
+      destinationCreatorId: destinationCreatorId,
+      windowDays: windowDays,
+      capCents: capCents,
+      rewardCents: rewardCents,
+      version: 1,
+      publishedAt: _now(),
+    );
+    _termsByKey[idempotencyKey] = terms;
+    _termsById[terms.id] = terms;
+    return terms;
+  }
+
+  @override
+  Future<DiscoveryReceipt> recordDiscovery({
+    required String manifestId,
+    required String passportId,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final existing = _discoveriesByKey[idempotencyKey];
+    if (existing != null) {
+      return existing;
+    }
+    final manifest = _manifestsById[manifestId];
+    if (manifest == null) {
+      throw StateError('No recommendation manifest exists for $manifestId');
+    }
+    final receipt = DiscoveryReceipt(
+      id: 'disc_${_slug(manifestId)}_${_discoveriesByKey.length + 1}',
+      manifestId: manifest.id,
+      passportId: passportId,
+      sourceCreatorId: manifest.sourceCreatorId,
+      destinationCreatorId: manifest.destinationCreatorId,
+      contentId: manifest.contentId,
+      disclosure: manifest.disclosureLabel,
+      createdAt: _now(),
+    );
+    _discoveriesByKey[idempotencyKey] = receipt;
+    _discoveriesById[receipt.id] = receipt;
+    await _store.ingestReceipts(
+      idempotencyKey: 'receipt-$idempotencyKey',
+      records: [
+        ReceiptRecord(
+          id: 'receipt_${receipt.id}',
+          type: 'discovery',
+          passportId: passportId,
+          contentId: manifest.contentId,
+          authorizationId: receipt.id,
+          summary: '${manifest.disclosureLabel} discovery viewed.',
+          createdAt: receipt.createdAt,
+        ),
+      ],
+    );
+    return receipt;
+  }
+
+  @override
+  Future<CreatorReferralReceipt> recordReferralConversion({
+    required String discoveryReceiptId,
+    required String termsId,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    final existing = _referralsByKey[idempotencyKey];
+    if (existing != null) {
+      return existing;
+    }
+    final discovery = _discoveriesById[discoveryReceiptId];
+    final terms = _termsById[termsId];
+    if (discovery == null) {
+      throw StateError('No discovery receipt exists for $discoveryReceiptId');
+    }
+    if (terms == null) {
+      throw StateError('No referral terms exist for $termsId');
+    }
+    final sourceContentId = await _firstContentIdForCreator(
+      discovery.sourceCreatorId,
+    );
+    final receipt = CreatorReferralReceipt(
+      id: 'ref_${_slug(discoveryReceiptId)}_${_referralsByKey.length + 1}',
+      termsId: terms.id,
+      discoveryReceiptId: discovery.id,
+      passportId: discovery.passportId,
+      sourceCreatorId: discovery.sourceCreatorId,
+      destinationCreatorId: discovery.destinationCreatorId,
+      amountCents: terms.rewardCents,
+      createdAt: _now(),
+    );
+    _referralsByKey[idempotencyKey] = receipt;
+    await _store.ingestReceipts(
+      idempotencyKey: 'receipt-$idempotencyKey',
+      records: [
+        ReceiptRecord(
+          id: 'receipt_${receipt.id}',
+          type: 'referral',
+          passportId: receipt.passportId,
+          contentId: sourceContentId,
+          authorizationId: receipt.id,
+          summary:
+              'Referral conversion credited ${receipt.amountCents} cents from ${receipt.destinationCreatorId}.',
+          createdAt: receipt.createdAt,
+        ),
+      ],
+    );
+    return receipt;
+  }
+
+  Future<String> _firstContentIdForCreator(String creatorId) async {
+    final content = await _store.publicCatalog();
+    for (final item in content) {
+      if (item.creatorId == creatorId) {
+        return item.id;
+      }
+    }
+    return 'content_solar_001';
   }
 }
 
@@ -318,4 +538,18 @@ String _rankLabel(double velocity) {
     return 'Steady lift';
   }
   return 'Niche momentum';
+}
+
+String _creatorName(Map<String, CreatorRecord> creators, String creatorId) {
+  return creators[creatorId]?.displayName ?? creatorId.replaceAll('_', ' ');
+}
+
+DateTime _now() => DateTime.now().toUtc();
+
+String _slug(String value) {
+  final cleaned = value
+      .toLowerCase()
+      .replaceAll(RegExp('[^a-z0-9]+'), '-')
+      .replaceAll(RegExp('^-+|-+\$'), '');
+  return cleaned.isEmpty ? 'item' : cleaned;
 }

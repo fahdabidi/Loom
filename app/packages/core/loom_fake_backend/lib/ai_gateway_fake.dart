@@ -233,6 +233,14 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.aiUsage;
     case 'sourceAttribution':
       return ReceiptType.sourceAttribution;
+    case 'discovery':
+      return ReceiptType.discovery;
+    case 'referral':
+      return ReceiptType.referral;
+    case 'campaignEntry':
+      return ReceiptType.campaignEntry;
+    case 'reward':
+      return ReceiptType.reward;
   }
   return ReceiptType.playback;
 }

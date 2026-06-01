@@ -97,6 +97,14 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.membership;
     case 'premiumNoAd':
       return ReceiptType.premiumNoAd;
+    case 'discovery':
+      return ReceiptType.discovery;
+    case 'referral':
+      return ReceiptType.referral;
+    case 'campaignEntry':
+      return ReceiptType.campaignEntry;
+    case 'reward':
+      return ReceiptType.reward;
     case 'playback':
     default:
       return ReceiptType.playback;

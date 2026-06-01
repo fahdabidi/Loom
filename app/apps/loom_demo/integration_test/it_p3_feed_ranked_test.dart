@@ -9,6 +9,7 @@ void main() {
 
   testWidgets('it_p3_feed_ranked', (tester) async {
     await openDiscoveryHome(tester);
+    await findDiscoveryKey(tester, 'p3_feed_card_content_solar_001');
 
     expect(find.text('Solar Sarah'), findsWidgets);
     expect(

@@ -122,6 +122,10 @@ ReceiptView _mapReceipt(ReceiptRecord record) {
     'payment' => ReceiptType.payment,
     'membership' => ReceiptType.membership,
     'premiumNoAd' => ReceiptType.premiumNoAd,
+    'discovery' => ReceiptType.discovery,
+    'referral' => ReceiptType.referral,
+    'campaignEntry' => ReceiptType.campaignEntry,
+    'reward' => ReceiptType.reward,
     _ => ReceiptType.playback,
   };
   return ReceiptView(

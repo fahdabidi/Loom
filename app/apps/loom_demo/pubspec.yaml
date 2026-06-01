@@ -10,14 +10,20 @@ environment:
 dependencies:
   feature_ai_qa:
     path: ../../packages/features/fan/feature_ai_qa
+  feature_campaigns:
+    path: ../../packages/features/fan/feature_campaigns
   feature_creator_audience:
     path: ../../packages/features/creator/feature_creator_audience
+  feature_creator_campaigns:
+    path: ../../packages/features/creator/feature_creator_campaigns
   feature_creator_channel:
     path: ../../packages/features/fan/feature_creator_channel
   feature_creator_onboarding:
     path: ../../packages/features/creator/feature_creator_onboarding
   feature_creator_publishing:
     path: ../../packages/features/creator/feature_creator_publishing
+  feature_creator_recommendations:
+    path: ../../packages/features/creator/feature_creator_recommendations
   feature_creator_revenue:
     path: ../../packages/features/creator/feature_creator_revenue
   feature_data_rights:
