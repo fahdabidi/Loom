@@ -5,6 +5,7 @@ import 'package:feature_campaigns/feature_campaigns.dart';
 import 'package:feature_creator_audience/feature_creator_audience.dart';
 import 'package:feature_creator_campaigns/feature_creator_campaigns.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
+import 'package:feature_creator_export/feature_creator_export.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_creator_recommendations/feature_creator_recommendations.dart';
@@ -96,6 +97,7 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   bool _showAudience = false;
   bool _showRecommendations = false;
   bool _showCampaigns = false;
+  bool _showExport = false;
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +121,12 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
     if (_showCampaigns) {
       return CreatorCampaignBuilderScreen(
         onBack: () => setState(() => _showCampaigns = false),
+      );
+    }
+    if (_showExport) {
+      return CreatorExportWizardScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showExport = false),
       );
     }
     if (_showPublishingSetup) {
@@ -174,6 +182,16 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  key: const ValueKey('p9_open_export_button'),
+                  onPressed: () => setState(() => _showExport = true),
+                  icon: const Icon(Icons.archive_rounded),
+                  label: const Text('Export and transparency'),
+                ),
               ),
             ],
           ),

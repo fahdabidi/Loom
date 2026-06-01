@@ -132,6 +132,20 @@ class ImportJobs extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class ExportJobs extends Table {
+  TextColumn get id => text()();
+  TextColumn get creatorId => text()();
+  TextColumn get state => text()();
+  IntColumn get pollCount => integer()();
+  TextColumn get bundleRef => text()();
+  TextColumn get bundleJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class ExternalContentRefs extends Table {
   TextColumn get id => text()();
   TextColumn get jobId => text()();
@@ -583,6 +597,7 @@ class KvMeta extends Table {
     Transcripts,
     AiSessions,
     ImportJobs,
+    ExportJobs,
     ExternalContentRefs,
     ContentPerf,
     EntitlementDefinitions,
@@ -625,7 +640,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -687,6 +702,9 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(categoryDefaults);
         await m.createTable(dataAccessReceipts);
         await m.createTable(tombstones);
+      }
+      if (from < 9) {
+        await m.createTable(exportJobs);
       }
     },
   );
@@ -1223,6 +1241,28 @@ class ImportJobRecord {
   final DateTime updatedAt;
 }
 
+class ExportJobRecord {
+  const ExportJobRecord({
+    required this.id,
+    required this.creatorId,
+    required this.state,
+    required this.pollCount,
+    required this.bundleRef,
+    required this.bundleJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String creatorId;
+  final String state;
+  final int pollCount;
+  final String bundleRef;
+  final String bundleJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}
+
 class ContentPerformanceRecord {
   const ContentPerformanceRecord({
     required this.contentId,
@@ -1621,6 +1661,7 @@ class DemoLocalStore {
       await _db.delete(_db.entitlementDefinitions).go();
       await _db.delete(_db.contentPerf).go();
       await _db.delete(_db.externalContentRefs).go();
+      await _db.delete(_db.exportJobs).go();
       await _db.delete(_db.importJobs).go();
       await _db.delete(_db.aiContentPolicies).go();
       await _db.delete(_db.membershipTiers).go();
@@ -3645,6 +3686,71 @@ class DemoLocalStore {
     return (await importJob(id))!;
   }
 
+  Future<ExportJobRecord> startExportJob({
+    required String creatorId,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'export_job');
+    if (existing != null) {
+      final job = await exportJob(existing);
+      if (job != null) {
+        return job;
+      }
+    }
+
+    final id = 'export_${_slug(idempotencyKey)}';
+    final now = _now();
+    await _db
+        .into(_db.exportJobs)
+        .insertOnConflictUpdate(
+          ExportJobsCompanion.insert(
+            id: id,
+            creatorId: creatorId,
+            state: 'queued',
+            pollCount: 0,
+            bundleRef: '',
+            bundleJson: '',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'export_job', id);
+    return (await exportJob(id))!;
+  }
+
+  Future<ExportJobRecord?> exportJob(String id) async {
+    final row = await (_db.select(
+      _db.exportJobs,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapExportJob(row);
+  }
+
+  Future<ExportJobRecord> advanceExportJob({
+    required String id,
+    required String bundleRef,
+    required String bundleJson,
+  }) async {
+    final row = await (_db.select(
+      _db.exportJobs,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    if (row.state == 'complete') {
+      return (await exportJob(id))!;
+    }
+
+    final nextPoll = row.pollCount + 1;
+    final complete = nextPoll >= 2;
+    await (_db.update(_db.exportJobs)..where((tbl) => tbl.id.equals(id))).write(
+      ExportJobsCompanion(
+        state: Value(complete ? 'complete' : 'processing'),
+        pollCount: Value(nextPoll),
+        bundleRef: complete ? Value(bundleRef) : const Value.absent(),
+        bundleJson: complete ? Value(bundleJson) : const Value.absent(),
+        updatedAt: Value(_now()),
+      ),
+    );
+    return (await exportJob(id))!;
+  }
+
   Future<List<EntitlementDefinitionRecord>> registerEntitlements({
     required String channelId,
     required List<MembershipTierRecord> tiers,
@@ -4865,6 +4971,19 @@ ImportJobRecord _mapImportJob(
     sourcePlatform: row.sourcePlatform,
     state: row.state,
     references: references,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  );
+}
+
+ExportJobRecord _mapExportJob(ExportJob row) {
+  return ExportJobRecord(
+    id: row.id,
+    creatorId: row.creatorId,
+    state: row.state,
+    pollCount: row.pollCount,
+    bundleRef: row.bundleRef,
+    bundleJson: row.bundleJson,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

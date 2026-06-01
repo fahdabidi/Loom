@@ -4902,6 +4902,518 @@ class ImportJobsCompanion extends UpdateCompanion<ImportJob> {
   }
 }
 
+class $ExportJobsTable extends ExportJobs
+    with TableInfo<$ExportJobsTable, ExportJob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExportJobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _creatorIdMeta = const VerificationMeta(
+    'creatorId',
+  );
+  @override
+  late final GeneratedColumn<String> creatorId = GeneratedColumn<String>(
+    'creator_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+    'state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pollCountMeta = const VerificationMeta(
+    'pollCount',
+  );
+  @override
+  late final GeneratedColumn<int> pollCount = GeneratedColumn<int>(
+    'poll_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bundleRefMeta = const VerificationMeta(
+    'bundleRef',
+  );
+  @override
+  late final GeneratedColumn<String> bundleRef = GeneratedColumn<String>(
+    'bundle_ref',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bundleJsonMeta = const VerificationMeta(
+    'bundleJson',
+  );
+  @override
+  late final GeneratedColumn<String> bundleJson = GeneratedColumn<String>(
+    'bundle_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    creatorId,
+    state,
+    pollCount,
+    bundleRef,
+    bundleJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'export_jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExportJob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('creator_id')) {
+      context.handle(
+        _creatorIdMeta,
+        creatorId.isAcceptableOrUnknown(data['creator_id']!, _creatorIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_creatorIdMeta);
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stateMeta);
+    }
+    if (data.containsKey('poll_count')) {
+      context.handle(
+        _pollCountMeta,
+        pollCount.isAcceptableOrUnknown(data['poll_count']!, _pollCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pollCountMeta);
+    }
+    if (data.containsKey('bundle_ref')) {
+      context.handle(
+        _bundleRefMeta,
+        bundleRef.isAcceptableOrUnknown(data['bundle_ref']!, _bundleRefMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bundleRefMeta);
+    }
+    if (data.containsKey('bundle_json')) {
+      context.handle(
+        _bundleJsonMeta,
+        bundleJson.isAcceptableOrUnknown(data['bundle_json']!, _bundleJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bundleJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExportJob map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExportJob(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      creatorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_id'],
+      )!,
+      state: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      )!,
+      pollCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poll_count'],
+      )!,
+      bundleRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bundle_ref'],
+      )!,
+      bundleJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bundle_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExportJobsTable createAlias(String alias) {
+    return $ExportJobsTable(attachedDatabase, alias);
+  }
+}
+
+class ExportJob extends DataClass implements Insertable<ExportJob> {
+  final String id;
+  final String creatorId;
+  final String state;
+  final int pollCount;
+  final String bundleRef;
+  final String bundleJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ExportJob({
+    required this.id,
+    required this.creatorId,
+    required this.state,
+    required this.pollCount,
+    required this.bundleRef,
+    required this.bundleJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['creator_id'] = Variable<String>(creatorId);
+    map['state'] = Variable<String>(state);
+    map['poll_count'] = Variable<int>(pollCount);
+    map['bundle_ref'] = Variable<String>(bundleRef);
+    map['bundle_json'] = Variable<String>(bundleJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ExportJobsCompanion toCompanion(bool nullToAbsent) {
+    return ExportJobsCompanion(
+      id: Value(id),
+      creatorId: Value(creatorId),
+      state: Value(state),
+      pollCount: Value(pollCount),
+      bundleRef: Value(bundleRef),
+      bundleJson: Value(bundleJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ExportJob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExportJob(
+      id: serializer.fromJson<String>(json['id']),
+      creatorId: serializer.fromJson<String>(json['creatorId']),
+      state: serializer.fromJson<String>(json['state']),
+      pollCount: serializer.fromJson<int>(json['pollCount']),
+      bundleRef: serializer.fromJson<String>(json['bundleRef']),
+      bundleJson: serializer.fromJson<String>(json['bundleJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'creatorId': serializer.toJson<String>(creatorId),
+      'state': serializer.toJson<String>(state),
+      'pollCount': serializer.toJson<int>(pollCount),
+      'bundleRef': serializer.toJson<String>(bundleRef),
+      'bundleJson': serializer.toJson<String>(bundleJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ExportJob copyWith({
+    String? id,
+    String? creatorId,
+    String? state,
+    int? pollCount,
+    String? bundleRef,
+    String? bundleJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ExportJob(
+    id: id ?? this.id,
+    creatorId: creatorId ?? this.creatorId,
+    state: state ?? this.state,
+    pollCount: pollCount ?? this.pollCount,
+    bundleRef: bundleRef ?? this.bundleRef,
+    bundleJson: bundleJson ?? this.bundleJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ExportJob copyWithCompanion(ExportJobsCompanion data) {
+    return ExportJob(
+      id: data.id.present ? data.id.value : this.id,
+      creatorId: data.creatorId.present ? data.creatorId.value : this.creatorId,
+      state: data.state.present ? data.state.value : this.state,
+      pollCount: data.pollCount.present ? data.pollCount.value : this.pollCount,
+      bundleRef: data.bundleRef.present ? data.bundleRef.value : this.bundleRef,
+      bundleJson: data.bundleJson.present
+          ? data.bundleJson.value
+          : this.bundleJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExportJob(')
+          ..write('id: $id, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('state: $state, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('bundleRef: $bundleRef, ')
+          ..write('bundleJson: $bundleJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    creatorId,
+    state,
+    pollCount,
+    bundleRef,
+    bundleJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExportJob &&
+          other.id == this.id &&
+          other.creatorId == this.creatorId &&
+          other.state == this.state &&
+          other.pollCount == this.pollCount &&
+          other.bundleRef == this.bundleRef &&
+          other.bundleJson == this.bundleJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ExportJobsCompanion extends UpdateCompanion<ExportJob> {
+  final Value<String> id;
+  final Value<String> creatorId;
+  final Value<String> state;
+  final Value<int> pollCount;
+  final Value<String> bundleRef;
+  final Value<String> bundleJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ExportJobsCompanion({
+    this.id = const Value.absent(),
+    this.creatorId = const Value.absent(),
+    this.state = const Value.absent(),
+    this.pollCount = const Value.absent(),
+    this.bundleRef = const Value.absent(),
+    this.bundleJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExportJobsCompanion.insert({
+    required String id,
+    required String creatorId,
+    required String state,
+    required int pollCount,
+    required String bundleRef,
+    required String bundleJson,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       creatorId = Value(creatorId),
+       state = Value(state),
+       pollCount = Value(pollCount),
+       bundleRef = Value(bundleRef),
+       bundleJson = Value(bundleJson),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ExportJob> custom({
+    Expression<String>? id,
+    Expression<String>? creatorId,
+    Expression<String>? state,
+    Expression<int>? pollCount,
+    Expression<String>? bundleRef,
+    Expression<String>? bundleJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (creatorId != null) 'creator_id': creatorId,
+      if (state != null) 'state': state,
+      if (pollCount != null) 'poll_count': pollCount,
+      if (bundleRef != null) 'bundle_ref': bundleRef,
+      if (bundleJson != null) 'bundle_json': bundleJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExportJobsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? creatorId,
+    Value<String>? state,
+    Value<int>? pollCount,
+    Value<String>? bundleRef,
+    Value<String>? bundleJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ExportJobsCompanion(
+      id: id ?? this.id,
+      creatorId: creatorId ?? this.creatorId,
+      state: state ?? this.state,
+      pollCount: pollCount ?? this.pollCount,
+      bundleRef: bundleRef ?? this.bundleRef,
+      bundleJson: bundleJson ?? this.bundleJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (creatorId.present) {
+      map['creator_id'] = Variable<String>(creatorId.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (pollCount.present) {
+      map['poll_count'] = Variable<int>(pollCount.value);
+    }
+    if (bundleRef.present) {
+      map['bundle_ref'] = Variable<String>(bundleRef.value);
+    }
+    if (bundleJson.present) {
+      map['bundle_json'] = Variable<String>(bundleJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExportJobsCompanion(')
+          ..write('id: $id, ')
+          ..write('creatorId: $creatorId, ')
+          ..write('state: $state, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('bundleRef: $bundleRef, ')
+          ..write('bundleJson: $bundleJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ExternalContentRefsTable extends ExternalContentRefs
     with TableInfo<$ExternalContentRefsTable, ExternalContentRef> {
   @override
@@ -20270,6 +20782,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   late final $FanPassportsTable fanPassports = $FanPassportsTable(this);
   late final $AiSessionsTable aiSessions = $AiSessionsTable(this);
   late final $ImportJobsTable importJobs = $ImportJobsTable(this);
+  late final $ExportJobsTable exportJobs = $ExportJobsTable(this);
   late final $ExternalContentRefsTable externalContentRefs =
       $ExternalContentRefsTable(this);
   late final $ContentPerfTable contentPerf = $ContentPerfTable(this);
@@ -20347,6 +20860,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     fanPassports,
     aiSessions,
     importJobs,
+    exportJobs,
     externalContentRefs,
     contentPerf,
     entitlementDefinitions,
@@ -26970,6 +27484,262 @@ typedef $$ImportJobsTableProcessedTableManager =
       $$ImportJobsTableUpdateCompanionBuilder,
       (ImportJob, BaseReferences<_$LoomDatabase, $ImportJobsTable, ImportJob>),
       ImportJob,
+      PrefetchHooks Function()
+    >;
+typedef $$ExportJobsTableCreateCompanionBuilder =
+    ExportJobsCompanion Function({
+      required String id,
+      required String creatorId,
+      required String state,
+      required int pollCount,
+      required String bundleRef,
+      required String bundleJson,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ExportJobsTableUpdateCompanionBuilder =
+    ExportJobsCompanion Function({
+      Value<String> id,
+      Value<String> creatorId,
+      Value<String> state,
+      Value<int> pollCount,
+      Value<String> bundleRef,
+      Value<String> bundleJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ExportJobsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ExportJobsTable> {
+  $$ExportJobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bundleRef => $composableBuilder(
+    column: $table.bundleRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ExportJobsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ExportJobsTable> {
+  $$ExportJobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorId => $composableBuilder(
+    column: $table.creatorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bundleRef => $composableBuilder(
+    column: $table.bundleRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExportJobsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ExportJobsTable> {
+  $$ExportJobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get creatorId =>
+      $composableBuilder(column: $table.creatorId, builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<int> get pollCount =>
+      $composableBuilder(column: $table.pollCount, builder: (column) => column);
+
+  GeneratedColumn<String> get bundleRef =>
+      $composableBuilder(column: $table.bundleRef, builder: (column) => column);
+
+  GeneratedColumn<String> get bundleJson => $composableBuilder(
+    column: $table.bundleJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ExportJobsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ExportJobsTable,
+          ExportJob,
+          $$ExportJobsTableFilterComposer,
+          $$ExportJobsTableOrderingComposer,
+          $$ExportJobsTableAnnotationComposer,
+          $$ExportJobsTableCreateCompanionBuilder,
+          $$ExportJobsTableUpdateCompanionBuilder,
+          (
+            ExportJob,
+            BaseReferences<_$LoomDatabase, $ExportJobsTable, ExportJob>,
+          ),
+          ExportJob,
+          PrefetchHooks Function()
+        > {
+  $$ExportJobsTableTableManager(_$LoomDatabase db, $ExportJobsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExportJobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExportJobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExportJobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> creatorId = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<int> pollCount = const Value.absent(),
+                Value<String> bundleRef = const Value.absent(),
+                Value<String> bundleJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExportJobsCompanion(
+                id: id,
+                creatorId: creatorId,
+                state: state,
+                pollCount: pollCount,
+                bundleRef: bundleRef,
+                bundleJson: bundleJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String creatorId,
+                required String state,
+                required int pollCount,
+                required String bundleRef,
+                required String bundleJson,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ExportJobsCompanion.insert(
+                id: id,
+                creatorId: creatorId,
+                state: state,
+                pollCount: pollCount,
+                bundleRef: bundleRef,
+                bundleJson: bundleJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ExportJobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ExportJobsTable,
+      ExportJob,
+      $$ExportJobsTableFilterComposer,
+      $$ExportJobsTableOrderingComposer,
+      $$ExportJobsTableAnnotationComposer,
+      $$ExportJobsTableCreateCompanionBuilder,
+      $$ExportJobsTableUpdateCompanionBuilder,
+      (ExportJob, BaseReferences<_$LoomDatabase, $ExportJobsTable, ExportJob>),
+      ExportJob,
       PrefetchHooks Function()
     >;
 typedef $$ExternalContentRefsTableCreateCompanionBuilder =
@@ -40104,6 +40874,8 @@ class $LoomDatabaseManager {
       $$AiSessionsTableTableManager(_db, _db.aiSessions);
   $$ImportJobsTableTableManager get importJobs =>
       $$ImportJobsTableTableManager(_db, _db.importJobs);
+  $$ExportJobsTableTableManager get exportJobs =>
+      $$ExportJobsTableTableManager(_db, _db.exportJobs);
   $$ExternalContentRefsTableTableManager get externalContentRefs =>
       $$ExternalContentRefsTableTableManager(_db, _db.externalContentRefs);
   $$ContentPerfTableTableManager get contentPerf =>

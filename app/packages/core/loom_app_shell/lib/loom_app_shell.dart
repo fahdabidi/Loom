@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_design_system/loom_design_system.dart';
@@ -295,6 +297,29 @@ class LoomDemoShell extends StatefulWidget {
 
 class _LoomDemoShellState extends State<LoomDemoShell> {
   RoleScope _role = RoleScope.fanApp;
+  int _resetEpoch = 0;
+  bool _resetting = false;
+
+  Future<void> _resetDemo() async {
+    if (_resetting) {
+      return;
+    }
+    setState(() => _resetting = true);
+    await resolveMigrationExportApi().resetDemo(
+      idempotencyKey: 'p9-reset-${DateTime.now().microsecondsSinceEpoch}',
+    );
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _role = RoleScope.fanApp;
+      _resetEpoch += 1;
+      _resetting = false;
+    });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Demo reset to seed v1')));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -324,19 +349,47 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
           _role = RoleScope.values[index];
         });
       },
-      trailing: RoleSwitcher(
-        labels: labels,
-        selectedIndex: selectedIndex,
-        onChanged: (index) {
-          setState(() {
-            _role = RoleScope.values[index];
-          });
-        },
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PopupMenuButton<String>(
+            key: const ValueKey('p9_demo_menu_button'),
+            tooltip: 'Demo tools',
+            icon: _resetting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.more_horiz_rounded),
+            onSelected: (value) {
+              if (value == 'reset') {
+                unawaited(_resetDemo());
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                key: ValueKey('p9_reset_demo_menu_item'),
+                value: 'reset',
+                child: Text('Reset demo'),
+              ),
+            ],
+          ),
+          RoleSwitcher(
+            labels: labels,
+            selectedIndex: selectedIndex,
+            onChanged: (index) {
+              setState(() {
+                _role = RoleScope.values[index];
+              });
+            },
+          ),
+        ],
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 180),
         child: KeyedSubtree(
-          key: ValueKey<RoleScope>(_role),
+          key: ValueKey<String>('${_role.name}-$_resetEpoch'),
           child: _role == RoleScope.fanApp
               ? widget.fanBuilder(context)
               : widget.studioBuilder(context),

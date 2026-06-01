@@ -20,7 +20,7 @@ void main() {
       find.byKey(const ValueKey('p6_allocation_statement')),
       findsOneWidget,
     );
-    expect(find.text('Solar Sarah'), findsOneWidget);
+    expect(find.text('Solar Sarah'), findsWidgets);
     expect(find.text('\$7.99'), findsWidgets);
   });
 }

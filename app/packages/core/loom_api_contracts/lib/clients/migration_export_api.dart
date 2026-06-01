@@ -8,4 +8,13 @@ abstract class MigrationExportApi {
   });
 
   Future<ImportJob> getImportJob(String jobId);
+
+  Future<ExportJob> createExportJob({
+    required String creatorId,
+    required String idempotencyKey,
+  });
+
+  Future<ExportJob> getExportJob(String jobId);
+
+  Future<void> resetDemo({required String idempotencyKey});
 }

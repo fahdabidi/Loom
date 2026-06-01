@@ -38,13 +38,23 @@ Future<Finder> findDiscoveryKey(WidgetTester tester, String key) async {
     find.byKey(const ValueKey('p8_campaign_entry_screen')),
     find.byKey(const ValueKey('p8_campaign_builder_screen')),
     find.byKey(const ValueKey('p8_recommendation_builder_screen')),
+    find.byKey(const ValueKey('p9_export_screen')),
   ];
   final scrollable = scrollableCandidates.firstWhere(
     (candidate) => candidate.evaluate().isNotEmpty,
     orElse: () => scrollableCandidates.first,
   );
+  if (finder.evaluate().isNotEmpty) {
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    return finder;
+  }
   for (var attempt = 0; attempt < 12 && finder.evaluate().isEmpty; attempt++) {
     await tester.drag(scrollable, const Offset(0, -280), warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  for (var attempt = 0; attempt < 12 && finder.evaluate().isEmpty; attempt++) {
+    await tester.drag(scrollable, const Offset(0, 280), warnIfMissed: false);
     await tester.pumpAndSettle();
   }
   expect(finder, findsOneWidget);

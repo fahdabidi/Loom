@@ -231,6 +231,23 @@ class _WalletScreenState extends State<WalletScreen> {
                   .toList(growable: false) ??
               const [],
         ),
+        const SizedBox(height: 18),
+        SupportedCreatorsView(
+          totalLabel: allocation == null
+              ? 'No settled allocation yet'
+              : '${_money(allocation.totalCents)} reconciled from receipts',
+          rows:
+              allocation?.allocations
+                  .map(
+                    (line) => SupportedCreatorRow(
+                      creatorName: line.creatorName,
+                      reason: line.reason,
+                      amountLabel: _money(line.amountCents),
+                    ),
+                  )
+                  .toList(growable: false) ??
+              const [],
+        ),
         if (_lastIntent != null) ...[
           const SizedBox(height: 14),
           ReceiptStatement(
