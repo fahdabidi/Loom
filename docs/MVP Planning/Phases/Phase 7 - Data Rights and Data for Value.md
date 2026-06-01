@@ -1,6 +1,6 @@
 # Phase 7 — Data Rights & Data-for-Value
 
-**Surface:** both · **UX gate:** HIGH · **On green:** STOP for manual UX validation
+**Surface:** both · **UX gate:** HIGH · **On green:** continue; manual UX validation runs in parallel
 **Shared conventions:** [README.md](./README.md).
 
 ## 0. Prerequisite gate (validate Phase 6 done)
@@ -69,4 +69,4 @@ README baseline. Unit tests: firewall stricter-of (incl. conflicting constraints
 Creator can request interest data; fan can approve/deny/narrow + set category defaults + revoke; firewall enforces stricter-of and minimal exposure; DataAccessReceipts on access; all checks green; API Review filed; UX Decisions doc filed. Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 7 status, completion date, API review link/name, and gate evidence before marking this phase complete. Commit all Phase 7 changes to git and record the commit SHA in the tracker before proceeding.
 
 ## 11. Next phase
-**STOP for manual UX validation (HIGH).** The consent model shapes Passport/Vault/Audience/Firewall contracts and the data-for-value UX. Get human sign-off on: grant-request review UX, category defaults, dashboard clarity, relationship controls. After sign-off, proceed to [Phase 8 — Recommendations, Campaigns & Referral](./Phase%208%20-%20Recommendations%20Campaigns%20and%20Referral.md).
+**Manual UX validation checkpoint (HIGH).** The consent model shapes Passport/Vault/Audience/Firewall contracts and the data-for-value UX. Keep the app available for human review of grant-request review UX, category defaults, dashboard clarity, and relationship controls while implementation proceeds to [Phase 8 — Recommendations, Campaigns & Referral](./Phase%208%20-%20Recommendations%20Campaigns%20and%20Referral.md).

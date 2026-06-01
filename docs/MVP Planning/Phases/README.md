@@ -6,7 +6,7 @@ Per-phase implementation specs for the Demo App (Creator Studio + Fan App).
 - **Story/workflow IDs** reference [../MVP User Stories Scope.md](../MVP%20User%20Stories%20Scope.md)
 - **API surfaces** reference [../../API/01-api-surface-inventory.md](../../API/01-api-surface-inventory.md) and `../../API/OpenAPI/**`
 
-Each phase doc is self-contained and follows the same section structure. An executing agent works **one phase at a time**, runs the gates in order, and either auto-proceeds or stops for manual UX validation.
+Each phase doc is self-contained and follows the same section structure. An executing agent works through the phases in order, runs automated gates, leaves the app ready for manual UX validation, and proceeds unless the user explicitly pauses or redirects.
 
 ## Index
 
@@ -109,10 +109,11 @@ One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflo
 - All automated checks green; integration tests pass.
 - API Review filed; spec gaps logged.
 - UX Decisions doc filed with reference research, key decisions, and workflow walkthrough.
-- UX checkpoint handled per the phase's "Next phase" section.
+- UX checkpoint is available through [../Phase Validation Walkthrough.md](../Phase%20Validation%20Walkthrough.md); human validation may continue in parallel.
 - All changes for the phase are committed to git after validation, and the commit SHA is recorded in the Phase completion tracker.
 
-### Auto-proceed vs STOP for manual UX validation
-- **STOP for human UX sign-off** before the next phase: **Phases 1, 2, 3, 7, 9** (UX choices here have API/downstream implications).
-- **AUTO-PROCEED** on green: **Phases 0, 4, 5, 6, 8** — after committing the completed phase and recording the commit SHA, the phase doc instructs the agent to immediately begin the next phase.
-Each phase doc restates its own decision.
+### Auto-proceed and Parallel Manual UX Validation
+- Human UX validation is especially important for **Phases 1, 2, 3, 7, 9** because UX choices have API/downstream implications.
+- Implementation still proceeds after automated gates pass, unless the user explicitly pauses or redirects.
+- Validation findings are handled as follow-up fixes while later implementation continues where possible.
+Each phase doc restates its own checkpoint.

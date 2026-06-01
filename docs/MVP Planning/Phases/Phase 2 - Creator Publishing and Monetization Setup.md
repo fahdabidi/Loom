@@ -1,6 +1,6 @@
 # Phase 2 — Creator Publishing & Monetization Setup
 
-**Surface:** Creator Studio · **UX gate:** HIGH · **On green:** STOP for manual UX validation
+**Surface:** Creator Studio · **UX gate:** HIGH · **On green:** continue; manual UX validation runs in parallel
 **Shared conventions:** [README.md](./README.md). This doc adds Phase-2 specifics.
 
 ## 0. Prerequisite gate (validate Phase 1 done)
@@ -74,4 +74,4 @@ README baseline. Unit tests: summary-required validation, manifest version bump,
 Creator can publish video + post (summary required), import a catalog, define memberships, set an ad policy, and enable AI — all on the Flutter Android emulator, idempotent, versioned; all checks green; API Review filed; UX Decisions doc filed. Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 2 status, completion date, API review link/name, and gate evidence before marking this phase complete. Commit all Phase 2 changes to git and record the commit SHA in the tracker before proceeding.
 
 ## 11. Next phase
-**STOP for manual UX validation.** The publish composer (esp. the **required-summary** UX and ad-policy editor) shapes `ContentManifest`/`CreatorAdPolicy`/monetization write APIs. Get human sign-off on: composer flow, summary capture (manual vs AI-draft), ad-policy editor, membership setup. After sign-off, proceed to [Phase 3 — Discovery Core](./Phase%203%20-%20Discovery%20Core.md).
+**Manual UX validation checkpoint.** The publish composer (esp. the **required-summary** UX and ad-policy editor) shapes `ContentManifest`/`CreatorAdPolicy`/monetization write APIs. Keep the app available for human review of composer flow, summary capture (manual vs AI-draft), ad-policy editor, and membership setup while implementation proceeds to [Phase 3 — Discovery Core](./Phase%203%20-%20Discovery%20Core.md).

@@ -1,6 +1,6 @@
 # Phase 3 — Discovery Core
 
-**Surface:** Fan App · **UX gate:** MAJOR · **On green:** STOP for manual UX validation
+**Surface:** Fan App · **UX gate:** MAJOR · **On green:** continue; manual UX validation runs in parallel
 **Shared conventions:** [README.md](./README.md). This is the largest, highest-API-risk phase.
 
 ## 0. Prerequisite gate (validate Phase 2 done)
@@ -73,4 +73,4 @@ README baseline. Unit tests: scoring/explanation determinism, dislike suppressio
 Tiles → session intent → glass-box feed with why-shown, feedback, mid-session switch, trending-backed Entertainment intent, and neutral search all work on the Flutter Android emulator; feed is single-call + paginated; all checks green; API Review filed (esp. the N+1/batching/payload findings); UX Decisions doc filed. Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 3 status, completion date, API review link/name, and gate evidence before marking this phase complete. Commit all Phase 3 changes to git and record the commit SHA in the tracker before proceeding.
 
 ## 11. Next phase
-**STOP for manual UX validation (MAJOR).** Discovery UX dictates candidate **batching**, **pagination**, and **score-explanation payload** shape — the most consequential API decisions in the app. Get human sign-off on: tile design, disclosure card, feed card (summary + why-shown), feedback affordances, intent switching, search. After sign-off, proceed to [Phase 4 — Channel, Follow, Playback & Ads](./Phase%204%20-%20Channel%20Follow%20Playback%20and%20Ads.md).
+**Manual UX validation checkpoint (MAJOR).** Discovery UX dictates candidate **batching**, **pagination**, and **score-explanation payload** shape — the most consequential API decisions in the app. Keep the app available for human review of tile design, disclosure card, feed card (summary + why-shown), feedback affordances, intent switching, and search while implementation proceeds to [Phase 4 — Channel, Follow, Playback & Ads](./Phase%204%20-%20Channel%20Follow%20Playback%20and%20Ads.md).

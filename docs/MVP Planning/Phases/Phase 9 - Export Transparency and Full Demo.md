@@ -73,4 +73,4 @@ README baseline across the whole workspace. Unit tests: export-bundle assembly/c
 - Commit all Phase 9 changes to git and record the commit SHA in the Phase completion tracker before milestone sign-off.
 
 ## 11. Next phase
-**STOP for FINAL manual UX validation and milestone sign-off.** This is the last phase — no auto-proceed. Present the full-app demo for review; on sign-off, the Demo App milestone is complete and the next milestone (e.g., real-HTTP provider swap, or standalone Creator Studio/Fan apps) can be planned.
+**Final manual UX validation checkpoint and milestone sign-off.** This is the last implementation phase. Present the full-app demo for review after automated gates pass; any feedback can be handled in follow-up commits while the Demo App remains runnable for validation.
