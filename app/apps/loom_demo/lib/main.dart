@@ -36,8 +36,109 @@ import 'package:url_launcher/url_launcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await configureDemoDependencies();
-  runApp(const LoomDemoApp());
+  runApp(const LoomDemoBootstrap());
+}
+
+class LoomDemoBootstrap extends StatefulWidget {
+  const LoomDemoBootstrap({super.key});
+
+  @override
+  State<LoomDemoBootstrap> createState() => _LoomDemoBootstrapState();
+}
+
+class _LoomDemoBootstrapState extends State<LoomDemoBootstrap> {
+  late final Future<DemoLocalStore> _storeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _storeFuture = configureDemoDependencies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DemoLocalStore>(
+      future: _storeFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return MaterialApp(
+            title: 'Loom Demo',
+            debugShowCheckedModeBanner: false,
+            theme: buildLoomTheme(),
+            home: _StartupErrorScreen(error: snapshot.error),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.done) {
+          return const LoomDemoApp();
+        }
+        return MaterialApp(
+          title: 'Loom Demo',
+          debugShowCheckedModeBanner: false,
+          theme: buildLoomTheme(),
+          home: const _StartupLoadingScreen(),
+        );
+      },
+    );
+  }
+}
+
+class _StartupLoadingScreen extends StatelessWidget {
+  const _StartupLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading Loom'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StartupErrorScreen extends StatelessWidget {
+  const _StartupErrorScreen({required this.error});
+
+  final Object? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 42),
+                const SizedBox(height: 16),
+                Text(
+                  'Loom could not start',
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$error',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<DemoLocalStore> configureDemoDependencies({
