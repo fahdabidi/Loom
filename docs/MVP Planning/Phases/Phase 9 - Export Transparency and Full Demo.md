@@ -1,10 +1,10 @@
 # Phase 9 — Export / Portability + Transparency + Full Demo
 
-**Surface:** both · **UX gate:** FINAL (full-app) · **On green:** STOP for final UX sign-off — milestone complete
+**Surface:** both · **UX gate:** FINAL emulator full-app · **On green:** auto → Phase 10 for launch + phone validation
 **Shared conventions:** [README.md](./README.md).
 
 ## 0. Prerequisite gate (validate Phase 8 done)
-README gate + confirm **all** prior phases green (Phases 0–8 integration tests pass on the Flutter Android emulator) and the app runs the full surface on both the emulator and a physical Android phone. This phase closes the loop and runs the whole-app audits.
+README gate + confirm **all** prior phases green (Phases 0–8 integration tests pass on the Flutter Android emulator) and the app runs the full surface on the emulator. This phase closes the export/transparency loop and runs the whole-app emulator audits. Physical Android phone validation is now deferred to Phase 10.
 
 ## 1. Workflows & user stories in this phase
 - **CE-S8 / CE-W6** — Creator exports everything (metadata + content catalog + receipts).
@@ -15,14 +15,14 @@ README gate + confirm **all** prior phases green (Phases 0–8 integration tests
 Standard set. Export bundle is written to the app sandbox (and surfaced via share) — no cloud.
 
 ## 2A. UX reference research & decision output
-Before implementing final export, transparency, reset, and full-demo UX, review reference mockups and design guidance from popular social/export/privacy products such as YouTube/Google Takeout-style export surfaces, Facebook/Meta data download and transparency controls, Instagram/TikTok account data surfaces, WhatsApp export/privacy flows, and adjacent receipt/audit products. Focus on export job status, portability bundle clarity, transparency dashboards, receipt reconciliation, reset-demo controls, scripted demo presentation, and final emulator + physical-phone review flow.
+Before implementing final export, transparency, reset, and full-demo UX, review reference mockups and design guidance from popular social/export/privacy products such as YouTube/Google Takeout-style export surfaces, Facebook/Meta data download and transparency controls, Instagram/TikTok account data surfaces, WhatsApp export/privacy flows, and adjacent receipt/audit products. Focus on export job status, portability bundle clarity, transparency dashboards, receipt reconciliation, reset-demo controls, scripted demo presentation, and final emulator review flow.
 
 Apply the shared social-app UX baseline from [README.md](./README.md), plus these Phase 9 specifics:
 - Export should use a clear job/status pattern: start action, progress state, completed bundle summary, portable contents checklist, and share/open affordance.
 - Transparency surfaces should reconcile fan and creator views with receipt-ledger rows, allocation summaries, and explainers in sheets rather than dense legal text.
 - Reset/demo controls belong in a debug/demo menu, not in the primary social navigation; make the scripted demo path obvious for reviewers without exposing test controls as normal UX.
 - Perform a final visual consistency sweep across top bars, bottom nav, cards, sheets, icon buttons, thumbnails, avatars, empty states, and dark/light surfaces.
-- Phase 9 is the only phase that must validate on both the Flutter Android emulator and a physical Android phone; capture screenshots for the final UX Decisions doc.
+- Phase 9 validates the full export/transparency demo on the Flutter Android emulator. Phase 10 is the physical Android phone validation phase.
 
 Create [Phase 9 - UX Decisions.md](./Phase%209%20-%20UX%20Decisions.md) summarizing references reviewed, UX patterns extracted, key UX and implementation decisions, and a walkthrough of how the final UX demonstrates export, transparency, reset, author→consume, and the six-step wow demo using the collected guidance.
 
@@ -67,10 +67,10 @@ README baseline across the whole workspace. Unit tests: export-bundle assembly/c
 - Creator export produces a complete, portable bundle.
 - Transparency surfaces reconcile with receipts.
 - Whole-app provenance + efficiency audits pass; consolidated API Review delivered with all spec changes applied.
-- The author→consume loop and six-step wow demo run end-to-end, fully offline, on the Android emulator **and** a physical phone.
+- The author→consume loop and six-step wow demo run end-to-end, fully offline, on the Android emulator. Physical-phone validation is completed in Phase 10.
 - `Phase 9 - UX Decisions.md` filed with final reference research, key UX/implementation decisions, and full-demo workflow walkthrough.
-- Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 9 status, completion date, consolidated API review link/name, and final gate evidence before marking the milestone complete.
+- Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 9 status, completion date, consolidated API review link/name, and emulator gate evidence before marking Phase 9 complete.
 - Commit all Phase 9 changes to git and record the commit SHA in the Phase completion tracker before milestone sign-off.
 
 ## 11. Next phase
-**Final manual UX validation checkpoint and milestone sign-off.** This is the last implementation phase. Present the full-app demo for review after automated gates pass; any feedback can be handled in follow-up commits while the Demo App remains runnable for validation.
+Proceed to [Phase 10 — Launch Audience Re-acquisition and Onboarding.md](./Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md) for the launch acquisition loop, UX hardening, final manual UX validation, and physical Android phone sign-off.

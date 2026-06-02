@@ -21,7 +21,8 @@ Each phase doc is self-contained and follows the same section structure. An exec
 | 6 | [Phase 6 - Wallet and Revenue Dashboard.md](./Phase%206%20-%20Wallet%20and%20Revenue%20Dashboard.md) | med | **auto → 7** |
 | 7 | [Phase 7 - Data Rights and Data for Value.md](./Phase%207%20-%20Data%20Rights%20and%20Data%20for%20Value.md) | HIGH | **STOP for UX** |
 | 8 | [Phase 8 - Recommendations Campaigns and Referral.md](./Phase%208%20-%20Recommendations%20Campaigns%20and%20Referral.md) | med | **auto → 9** |
-| 9 | [Phase 9 - Export Transparency and Full Demo.md](./Phase%209%20-%20Export%20Transparency%20and%20Full%20Demo.md) | FINAL | **STOP for UX** |
+| 9 | [Phase 9 - Export Transparency and Full Demo.md](./Phase%209%20-%20Export%20Transparency%20and%20Full%20Demo.md) | FINAL emulator | **auto → 10** |
+| 10 | [Phase 10 — Launch Audience Re-acquisition and Onboarding.md](./Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md) | FINAL launch + phone | **STOP for final UX** |
 
 ---
 
@@ -43,7 +44,7 @@ All commands run inside **WSL Ubuntu bash**. Never use PowerShell or Windows pat
 | List devices | `flutter devices` |
 | Launch emulator | `flutter emulators --launch <emulator_id>` |
 | Install on emulator | `adb -s <emulator_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
-| Install on phone (Phase 9 only) | `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
+| Install on phone (Phase 10 only) | `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
 
 `melos run *` scripts are defined in `app/melos.yaml` during Phase 0.
 
@@ -53,7 +54,7 @@ Before any new work, run and confirm **green**:
 2. `melos run lint:boundaries` → 0 violations
 3. `melos run test` → all pass
 4. Prior phase's integration tests pass (`melos run test:integration`)
-5. App boots on the Flutter Android emulator with no runtime errors. Physical-phone boot/install is required only in Phase 9.
+5. App boots on the Flutter Android emulator with no runtime errors. Physical-phone boot/install is required only in Phase 10.
 6. Prior phase "Definition of done" fully checked
 7. Prior phase changes are committed to git, and the commit SHA is recorded in the Phase completion tracker. Do not begin a new phase with uncommitted changes from the prior phase.
 If any item fails → fix the prior phase first; do not start new work.
@@ -102,10 +103,10 @@ Each phase creates or updates a sibling `Phase N - UX Decisions.md` before imple
 `melos run analyze` + `melos run lint:boundaries` + `melos run test` all green; new state/mappers have unit tests; `flutter build apk --debug` succeeds.
 
 ### Integration tests (every phase)
-One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflow-id>`. Each asserts the workflow's **end state** from the scope doc. Run on the Flutter Android emulator via `melos run test:integration` for Phases 0–8; rerun the full suite on a physical Android phone in Phase 9.
+One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflow-id>`. Each asserts the workflow's **end state** from the scope doc. Run on the Flutter Android emulator via `melos run test:integration` for Phases 0–9; rerun the full suite on a physical Android phone in Phase 10.
 
 ### Definition of done (every phase)
-- Every scope story/workflow in the phase is demonstrable in-app on the Flutter Android emulator. Phase 9 also requires physical Android phone demonstration.
+- Every scope story/workflow in the phase is demonstrable in-app on the Flutter Android emulator. Phase 10 also requires physical Android phone demonstration.
 - All automated checks green; integration tests pass.
 - API Review filed; spec gaps logged.
 - UX Decisions doc filed with reference research, key decisions, and workflow walkthrough.
@@ -113,7 +114,7 @@ One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflo
 - All changes for the phase are committed to git after validation, and the commit SHA is recorded in the Phase completion tracker.
 
 ### Auto-proceed and Parallel Manual UX Validation
-- Human UX validation is especially important for **Phases 1, 2, 3, 7, 9** because UX choices have API/downstream implications.
+- Human UX validation is especially important for **Phases 1, 2, 3, 7, 9, 10** because UX choices have API/downstream implications.
 - Implementation still proceeds after automated gates pass, unless the user explicitly pauses or redirects.
 - Validation findings are handled as follow-up fixes while later implementation continues where possible.
 Each phase doc restates its own checkpoint.

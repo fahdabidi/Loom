@@ -1,34 +1,35 @@
 # Phase 10 — Launch: Audience Re-acquisition & Onboarding
 
 **Surface:** both · **UX gate:** med · **On green:** END (post-MVP launch phase)
-**Shared conventions:** [../MVP Planning/Phases/README.md](../MVP%20Planning/Phases/README.md).
+**Shared conventions:** [README.md](./README.md).
 
-> **Status:** Proposed phase. Written in the existing Phase-doc format so it can be promoted verbatim
-> into `docs/MVP Planning/Phases/` when it enters the build queue. It closes the gaps identified in
-> [MVP Gap Analysis — Launch Scope](./MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) so the standalone
-> demo can tell the [Launch Playbook](./Loom%20Launch%20Playbook.md) story. **No backend; every new
-> capability is an in-memory fake. Vertical-agnostic — reuses existing mixed seed creators.**
+> **Status:** Ready for execution. It closes the gaps identified in
+> [MVP Gap Analysis — Launch Scope](../../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) so the standalone
+> demo can tell the [Launch Playbook](../../Go-To-Market/Loom%20Launch%20Playbook.md) story. **No backend; new
+> capabilities use typed API clients backed by the in-app fake backend over the local store for app runs,
+> with in-memory Drift only for tests. Vertical-agnostic — reuses existing mixed seed creators.**
 >
-> New story IDs introduced here (to be added to `MVP User Stories Scope.md` and Product Docs 02/03/15/21):
-> **CE-S7** (creator re-acquisition funnel), **CE-S8** (conversion-yield analytics),
+> New story IDs introduced here (added to `MVP User Stories Scope.md` and Product Docs 02/03/15/21):
+> **CE-S10** (creator re-acquisition funnel), **CE-S11** (conversion-yield analytics),
 > **FE-S13** (starter-pack onboarding).
 >
 > This phase also carries the **UX hardening** items **U1–U7** from the
-> [Gap Analysis §D](./MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) (design-guidance vs. build), since
+> [Gap Analysis §D](../../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) (design-guidance vs. build), since
 > there is no later phase to absorb them. They are scoped in §1, §2A, §5, and the Definition of Done below.
 
-## 0. Prerequisite gate (validate Phase 9 done)
-README gate + confirm the full Phase 0–9 demo is green: author→consume loop, recommendations &
-referral (Phase 8), wallet/settlement (Phase 6), data-for-value (Phase 7), and export (Phase 9). The
-recommendation graph must be populated (Phase 8) because starter packs reuse it.
+## 0. Prerequisite gate (validate Phase 9 emulator gates)
+README gate + confirm the full Phase 0–9 demo is green on the Flutter Android emulator: author→consume
+loop, recommendations & referral (Phase 8), wallet/settlement (Phase 6), data-for-value (Phase 7), and
+export (Phase 9). The recommendation graph must be populated (Phase 8) because starter packs reuse it.
+Phase 10 is now the physical-phone validation gate for the completed launch demo.
 
 ## 1. Workflows & user stories in this phase
-- **CE-S7 / new** — Creator runs the re-acquisition funnel: pick an announcement template, get a
+- **CE-S10 / new** — Creator runs the re-acquisition funnel: pick an announcement template, get a
   link-in-bio page + QR code, and a shareable follow-capture landing (cross-post is a stub). *(The
   follower graph is **not** imported — this drives manual re-follows.)*
 - **FE-S13 / new** — Fan arriving via a creator's link follows that creator **+ their recommended
   creators in one tap** (starter pack) and lands on a non-empty feed.
-- **CE-S8 / new** — Creator views the conversion funnel: audience reached → re-followed → member/
+- **CE-S11 / new** — Creator views the conversion funnel: audience reached → re-followed → member/
   premium (**conversion yield**).
 - **CE-S2B (finish)** — Creator catalog-import UI (Phase 2 leftover): import own public-metadata
   references, usable before any fans exist.
@@ -84,7 +85,8 @@ Create `Phase 10 - UX Decisions.md` summarizing references, patterns extracted, 
 walkthrough of the launch loop.
 
 ## 3. APIs invoked & stubs to implement
-*(Contracts must be added to the API inventory first — see Gap Analysis §B.)*
+*(Contracts have been added to the API inventory; implement typed clients, fakes, and UI against those
+surfaces, then file the Phase 10 API Review.)*
 - **Fan Follow Capture API (new):** `createCaptureLink`, `resolveCaptureLink`, `recordReFollow`. Fake:
   `FanFollowCaptureFake`.
 - **Creator Announcement Templates API (new):** `listTemplates`, `renderAnnouncement`,
@@ -171,10 +173,12 @@ catalog import, ad-policy console, creator-side AI preview, and membership setup
 onboarding suggests multiple creators (U4); funnel/breakdowns are visual (U5); the unstubbed editors
 have preview + validation (U6); media is richer-generated (U2); loading/empty/error states exist and are
 applied (U3); feed-style pagination is available with Load-more retained for tests (U7);**
-everything works fully offline with in-memory fakes; the demo stays vertical-agnostic; all checks green;
-API Review filed; `Phase 10 - UX Decisions.md` filed. Append the launch loop to the wow-demo narrative
-in [../MVP Planning/Demo App Implementation Plan.md](../MVP%20Planning/Demo%20App%20Implementation%20Plan.md)
-and update the Phase completion tracker with status, date, API review link, and commit SHA.
+everything works fully offline through typed API clients backed by the in-app fake backend over local
+Drift/SQLite for app runs and in-memory Drift for tests; the demo stays vertical-agnostic; all checks
+green; final physical Android phone install/launch and key full-demo flows pass; API Review filed;
+`Phase 10 - UX Decisions.md` filed. Append the launch loop to the wow-demo narrative in
+[../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) and update the Phase
+completion tracker with status, date, API review link, and commit SHA.
 
 ## 11. Next phase
 END of the MVP + launch demo. Optional follow-ups (not in this phase): full extension marketplace,

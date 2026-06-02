@@ -3,7 +3,7 @@
 Status: Draft for review
 Type: Gap analysis (go-to-market → MVP delivery)
 Companion to: [Loom Launch Playbook](./Loom%20Launch%20Playbook.md)
-Proposed remediation: [Phase 10 — Launch: Audience Re-acquisition & Onboarding](./Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)
+Proposed remediation: [Phase 10 — Launch: Audience Re-acquisition & Onboarding](../MVP%20Planning/Phases/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)
 
 ## Purpose
 
@@ -118,7 +118,8 @@ Phases 0–9 do **not** scope (a), (c), or (h), and leave (b) and (f) partially 
 
 **Recommendation:** add a single new phase — **Phase 10 — Launch: Audience Re-acquisition &
 Onboarding** (see the companion doc) — that scopes (a) + (c) + (h) and closes the (b)/(f) partials, all
-as standalone in-memory fakes, keeping the demo vertical-agnostic.
+through typed API clients backed by the in-app fake backend over the local store, keeping the demo
+vertical-agnostic.
 
 ## §D — UX implementation gaps (design guidance vs. what was built)
 

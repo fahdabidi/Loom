@@ -10,7 +10,7 @@ This is the manual validation playbook for the Demo App while implementation con
 4. Mark each row as `Pass`, `Fail`, or `Needs change` in the Result column.
 5. For every issue, send the issue template at the bottom of this doc with the phase, screen, action, expected result, actual result, and screenshot if useful.
 
-Physical Android phone validation is deferred until Phase 9. Phases 0 through 8 are validated on the Flutter Android emulator.
+Physical Android phone validation is deferred until Phase 10. Phases 0 through 9 are validated on the Flutter Android emulator.
 
 ## Parallel Validation Protocol
 
@@ -32,7 +32,8 @@ Physical Android phone validation is deferred until Phase 9. Phases 0 through 8 
 | 6 | Medium UX checkpoint | Complete | Fan wallet and Creator revenue dashboard |
 | 7 | High UX checkpoint | Complete | Fan data rights and Creator audience |
 | 8 | Medium UX checkpoint | Complete / ready for validation | Recommendations, referral, and campaigns |
-| 9 | Final full-app validation | In implementation / validation | Export, transparency, reset, emulator, physical phone |
+| 9 | Export/transparency full-app emulator validation | Complete / ready for validation | Export, transparency, reset, emulator |
+| 10 | Final launch + physical-phone validation | Not started | Re-acquisition, starter pack, conversion analytics, UX hardening, physical phone |
 
 ## Phase 0 - Foundation And Shell
 
@@ -260,7 +261,7 @@ Goal: validate creator recommendations, referral transparency, campaign setup, g
 
 ## Phase 9 - Export, Transparency, And Full Demo
 
-Goal: validate export/portability, transparency surfaces, demo reset, full author-to-consume flow, emulator run, and physical-phone run.
+Goal: validate export/portability, transparency surfaces, demo reset, full author-to-consume flow, and emulator run.
 
 ### Export And Transparency
 
@@ -281,7 +282,40 @@ Goal: validate export/portability, transparency surfaces, demo reset, full autho
 | 3 | Reset demo from debug/demo menu. | App returns to seeded baseline without stale authored state. |  |
 | 4 | Relaunch after reset. | App starts cleanly and seed world is restored. |  |
 | 5 | Validate on emulator. | APK installs, launches, and full demo works on the Flutter Android emulator. |  |
-| 6 | Validate on physical Android phone. | APK installs, launches, and key full-demo flows work on physical hardware. |  |
+
+## Phase 10 - Launch Audience Re-Acquisition And Onboarding
+
+Goal: validate the launch acquisition loop, starter-pack onboarding, conversion analytics, creator utility consoles, UX hardening, and physical-phone run.
+
+### Re-Acquisition And Starter Pack
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Creator Studio Launch / Grow area. | Creator sees announcement templates, link-in-bio preview, QR card, and capture-link controls. |  |
+| 2 | Render or copy an announcement. | Copy is honest about inviting fans to re-follow on Loom and never implies follower import. |  |
+| 3 | Open the creator capture link. | Fan lands on a creator-branded follow-capture page. |  |
+| 4 | Confirm starter pack. | Fan follows the source creator plus recommended creators in one tap, with toggleable selections. |  |
+| 5 | Land in Fan App feed. | Feed is non-empty and reflects the starter-pack follows. |  |
+
+### Launch Analytics And Utility Consoles
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Creator conversion analytics. | Funnel shows reached → re-followed → member/premium with aggregate-only values. |  |
+| 2 | Review creator catalog import. | Import UI has preview, validation, and usable imported public references. |  |
+| 3 | Review ad-policy console. | Creator can allow/block categories or brands and playback consumes the latest policy. |  |
+| 4 | Review creator archive-AI preview. | Creator can ask their own archive and receive cited answers before fans arrive. |  |
+| 5 | Review membership setup. | Tier editor has preview, validation, and saved tier state. |  |
+
+### Final UX And Phone Validation
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open immersive discovery surface. | Full-height media surface renders with floating actions and bottom metadata/action panel. |  |
+| 2 | Check loading, empty, and error states where reachable. | States use reusable polished components and avoid raw test scaffolding. |  |
+| 3 | Review media assets across feed, channel, player, campaign, and starter-pack surfaces. | Main social surfaces are visual-first and not mostly text or generic placeholders. |  |
+| 4 | Run the full launch demo on emulator. | Re-acquisition → starter pack → consume → conversion analytics → export/reset works end to end. |  |
+| 5 | Validate on physical Android phone. | APK installs, launches, and key full-demo flows work on physical hardware. |  |
 
 ## Cross-Phase Visual Regression Pass
 

@@ -1106,7 +1106,7 @@ The following stories are required by the MVP pitch but do not yet exist in the 
 The following stories were identified by the go-to-market analysis as **missing** but **required to
 deliver the launch scope** (creator-led audience re-acquisition, one-tap onboarding, and conversion
 visibility). They are tracked for implementation in
-**[Phase 10 — Launch: Audience Re-acquisition & Onboarding](../Go-To-Market/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)**.
+**[Phase 10 — Launch: Audience Re-acquisition & Onboarding](./Phases/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)**.
 
 **Source:** [MVP Gap Analysis — Launch Scope](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A · companion to the [Loom Launch Playbook](../Go-To-Market/Loom%20Launch%20Playbook.md).
 
@@ -1116,7 +1116,7 @@ visibility). They are tracked for implementation in
 
 ---
 
-### CE-S7: Creator runs the audience re-acquisition funnel **[IN — launch scope]**
+### CE-S10: Creator runs the audience re-acquisition funnel **[IN — launch scope]**
 
 As a creator, I want announcement templates, a link-in-bio page, a QR code, and a shareable
 follow-capture landing so I can drive my **existing** audience to re-follow me on Loom — because my
@@ -1148,7 +1148,7 @@ End state:
 
 ---
 
-### CE-S8: Creator views conversion yield **[IN — launch scope]**
+### CE-S11: Creator views conversion yield **[IN — launch scope]**
 
 As a creator, I want to see how many of the people I drove to Loom actually re-followed, subscribed,
 or went premium — my **conversion yield** — so I can judge whether my launch push is working.
