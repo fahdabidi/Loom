@@ -12,6 +12,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
     this.onOpenWallet,
     this.onOpenDataRights,
     this.onOpenCampaigns,
+    this.onOpenCaptureLink,
     super.key,
   });
 
@@ -21,6 +22,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
   final VoidCallback? onOpenWallet;
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
+  final VoidCallback? onOpenCaptureLink;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -61,6 +63,7 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               onOpenWallet: widget.onOpenWallet,
               onOpenDataRights: widget.onOpenDataRights,
               onOpenCampaigns: widget.onOpenCampaigns,
+              onOpenCaptureLink: widget.onOpenCaptureLink,
             ),
             const SizedBox(height: 14),
             if (_controller.recommendationMessage != null) ...[
@@ -165,12 +168,14 @@ class _DiscoveryToolbar extends StatelessWidget {
     required this.onOpenWallet,
     required this.onOpenDataRights,
     required this.onOpenCampaigns,
+    required this.onOpenCaptureLink,
   });
 
   final VoidCallback onStartOnboarding;
   final VoidCallback? onOpenWallet;
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
+  final VoidCallback? onOpenCaptureLink;
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +197,14 @@ class _DiscoveryToolbar extends StatelessWidget {
             key: const ValueKey('start_fan_onboarding_button'),
             onPressed: onStartOnboarding,
             icon: const Icon(Icons.person_add_alt_1_rounded),
+          ),
+        ),
+        Tooltip(
+          message: 'Creator invite',
+          child: IconButton.filledTonal(
+            key: const ValueKey('p12_open_capture_link_button'),
+            onPressed: onOpenCaptureLink,
+            icon: const Icon(Icons.link_rounded),
           ),
         ),
         Tooltip(

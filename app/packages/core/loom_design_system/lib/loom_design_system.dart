@@ -21,6 +21,8 @@ export 'components/qr_card.dart';
 export 'components/receipt_statement.dart';
 export 'components/shell/nav_scaffold.dart';
 export 'components/shell/role_switcher.dart';
+export 'components/starter_pack_member_row.dart';
+export 'components/starter_pack_sheet.dart';
 export 'components/studio/ad_policy_editor.dart';
 export 'components/studio/audience_panel.dart';
 export 'components/studio/campaign_builder.dart';

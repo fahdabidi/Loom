@@ -23,6 +23,7 @@ class _FanOnboardingScreenState extends State<FanOnboardingScreen> {
       passportApi: resolveFanPassportApi(),
       vaultApi: resolveFanVaultApi(),
       creatorMetadataApi: resolveCreatorMetadataApi(),
+      starterPackApi: resolveStarterPackApi(),
     )..load();
   }
 
@@ -121,11 +122,11 @@ class _BodyForStep extends StatelessWidget {
           ],
         );
       case FanOnboardingStep.firstFollow:
-        return _CreatorFollowPreview(
-          creatorName:
-              controller.recommendedCreatorName ?? 'the seeded creator',
+        return _SuggestedCreatorPack(
+          members: controller.recommendedCreators,
+          selectedIds: controller.selectedRecommendedCreatorIds,
           visibility: controller.selectedVisibility.label,
-          onFollow: controller.createFirstFollow,
+          onToggle: controller.toggleRecommendedCreator,
         );
       case FanOnboardingStep.complete:
         final follow = controller.follow;
@@ -156,7 +157,8 @@ class _BodyForStep extends StatelessWidget {
             if (follow != null) ...[
               _CompletionRow(
                 icon: Icons.person_add_alt_1_rounded,
-                text: 'Following ${follow.creatorDisplayName}',
+                text:
+                    'Following ${controller.firstFollows.length} starter creators',
               ),
               _CompletionRow(
                 icon: Icons.visibility_rounded,
@@ -204,8 +206,10 @@ class _PrimaryAction extends StatelessWidget {
       case FanOnboardingStep.firstFollow:
         return FilledButton(
           key: const ValueKey('fan_first_follow_button'),
-          onPressed: controller.createFirstFollow,
-          child: const Text('Follow creator'),
+          onPressed: controller.selectedRecommendedCreatorIds.isEmpty
+              ? null
+              : controller.createFirstFollow,
+          child: const Text('Follow selected'),
         );
       case FanOnboardingStep.complete:
         return OutlinedButton(
@@ -325,88 +329,58 @@ class _SelectionMeter extends StatelessWidget {
   }
 }
 
-class _CreatorFollowPreview extends StatelessWidget {
-  const _CreatorFollowPreview({
-    required this.creatorName,
+class _SuggestedCreatorPack extends StatelessWidget {
+  const _SuggestedCreatorPack({
+    required this.members,
+    required this.selectedIds,
     required this.visibility,
-    required this.onFollow,
+    required this.onToggle,
   });
 
-  final String creatorName;
+  final List<StarterPackMember> members;
+  final Set<String> selectedIds;
   final String visibility;
-  final VoidCallback onFollow;
+  final ValueChanged<String> onToggle;
 
   @override
   Widget build(BuildContext context) {
-    const radius = BorderRadius.all(Radius.circular(22));
-
-    return Semantics(
-      button: true,
-      label: 'Follow $creatorName',
-      child: Material(
-        color: LoomColors.surface,
-        borderRadius: radius,
-        child: InkWell(
-          key: const ValueKey('fan_first_follow_card'),
-          onTap: onFollow,
-          borderRadius: radius,
-          child: Container(
-            padding: const EdgeInsets.all(LoomSpacing.lg),
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              border: Border.all(color: LoomColors.line),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0F6B55), Color(0xFFF2C94C)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'SS',
-                    style: TextStyle(
-                      color: LoomColors.surface,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: LoomSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        creatorName,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w900),
-                      ),
-                      const SizedBox(height: LoomSpacing.xs),
-                      Text(
-                        'First follow - $visibility visibility',
-                        style: const TextStyle(
-                          color: LoomColors.mutedInk,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: LoomColors.mutedInk,
-                ),
-              ],
-            ),
-          ),
+    if (members.isEmpty) {
+      return const _OnboardingHeroCard(
+        icon: Icons.person_add_alt_1_rounded,
+        title: 'Suggested creators are loading.',
+        body: 'The first follow step uses the starter-pack graph.',
+      );
+    }
+    return Column(
+      key: const ValueKey('fan_suggested_creator_pack'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _OnboardingHeroCard(
+          icon: Icons.group_add_rounded,
+          title: 'Start with a creator-led pack.',
+          body:
+              'Rows are default-selected like modern starter packs. Each follow uses $visibility visibility.',
         ),
-      ),
+        const SizedBox(height: LoomSpacing.md),
+        for (final member in members) ...[
+          StarterPackMemberRow(
+            member: StarterPackMemberView(
+              channelId: member.channelId,
+              displayName: member.displayName,
+              handle: member.handle,
+              reason:
+                  member.recommendationReason ??
+                  'The source creator for your starter pack.',
+              avatarRef: member.avatarRef,
+              isSourceCreator: member.role == StarterPackMemberRole.source,
+              alreadyFollowing: member.alreadyFollowing,
+            ),
+            selected: selectedIds.contains(member.channelId),
+            onToggle: () => onToggle(member.channelId),
+          ),
+          const SizedBox(height: LoomSpacing.sm),
+        ],
+      ],
     );
   }
 }
@@ -450,7 +424,7 @@ String _titleForStep(FanOnboardingStep step) {
     FanOnboardingStep.welcome => 'Set up your fan passport',
     FanOnboardingStep.interests => 'Pick at least 10 interests',
     FanOnboardingStep.privacy => 'Set first-follow privacy',
-    FanOnboardingStep.firstFollow => 'Follow a creator',
+    FanOnboardingStep.firstFollow => 'Follow suggested creators',
     FanOnboardingStep.complete => 'Fan passport ready',
   };
 }

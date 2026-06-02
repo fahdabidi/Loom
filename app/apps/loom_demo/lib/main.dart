@@ -256,6 +256,7 @@ class FanAppSurface extends StatefulWidget {
 
 class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showOnboarding = false;
+  bool _showCaptureLanding = false;
   bool _showWallet = false;
   bool _showDataRights = false;
   bool _showCampaigns = false;
@@ -267,6 +268,13 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   Widget build(BuildContext context) {
     if (_showOnboarding) {
       return const FanOnboardingScreen();
+    }
+    if (_showCaptureLanding) {
+      return FanCaptureLandingScreen(
+        captureToken: 'cap_creator_solar_sarah_launch',
+        onDone: () => setState(() => _showCaptureLanding = false),
+        onBack: () => setState(() => _showCaptureLanding = false),
+      );
     }
     if (_showWallet) {
       return WalletScreen(onBack: () => setState(() => _showWallet = false));
@@ -313,6 +321,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       onOpenWallet: () => setState(() => _showWallet = true),
       onOpenDataRights: () => setState(() => _showDataRights = true),
       onOpenCampaigns: () => setState(() => _showCampaigns = true),
+      onOpenCaptureLink: () => setState(() => _showCaptureLanding = true),
     );
   }
 }

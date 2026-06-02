@@ -8,13 +8,16 @@ class FanOnboardingController extends ChangeNotifier {
     required FanPassportApi passportApi,
     required FanVaultApi vaultApi,
     required CreatorMetadataApi creatorMetadataApi,
+    required StarterPackApi starterPackApi,
   }) : _passportApi = passportApi,
        _vaultApi = vaultApi,
-       _creatorMetadataApi = creatorMetadataApi;
+       _creatorMetadataApi = creatorMetadataApi,
+       _starterPackApi = starterPackApi;
 
   final FanPassportApi _passportApi;
   final FanVaultApi _vaultApi;
   final CreatorMetadataApi _creatorMetadataApi;
+  final StarterPackApi _starterPackApi;
 
   FanOnboardingStep step = FanOnboardingStep.welcome;
   bool isLoading = false;
@@ -27,6 +30,9 @@ class FanOnboardingController extends ChangeNotifier {
   FollowView? follow;
   String? recommendedCreatorId;
   String? recommendedCreatorName;
+  List<StarterPackMember> recommendedCreators = const [];
+  Set<String> selectedRecommendedCreatorIds = <String>{};
+  List<FollowView> firstFollows = const [];
   int taxonomyFetchCount = 0;
   int interestBatchWriteCount = 0;
 
@@ -56,6 +62,20 @@ class FanOnboardingController extends ChangeNotifier {
       if (page.items.isNotEmpty) {
         recommendedCreatorId = page.items.first.creatorId;
         recommendedCreatorName = page.items.first.creatorDisplayName;
+      }
+      final starterPack = await _starterPackApi.getStarterPack(
+        channelId: 'creator_solar_sarah',
+        passportId: 'passport_demo_fan',
+        limit: 4,
+      );
+      recommendedCreators = starterPack.members;
+      selectedRecommendedCreatorIds = starterPack.members
+          .where((member) => member.defaultSelected || member.alreadyFollowing)
+          .map((member) => member.channelId)
+          .toSet();
+      if (starterPack.members.isNotEmpty) {
+        recommendedCreatorId = starterPack.members.first.channelId;
+        recommendedCreatorName = starterPack.members.first.displayName;
       }
     });
   }
@@ -116,19 +136,49 @@ class FanOnboardingController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleRecommendedCreator(String creatorId) {
+    final member = _recommendedCreatorById(creatorId);
+    if (member == null || member.alreadyFollowing) {
+      return;
+    }
+    final next = Set<String>.from(selectedRecommendedCreatorIds);
+    if (!next.add(creatorId)) {
+      next.remove(creatorId);
+    }
+    selectedRecommendedCreatorIds = next;
+    notifyListeners();
+  }
+
+  StarterPackMember? _recommendedCreatorById(String creatorId) {
+    for (final member in recommendedCreators) {
+      if (member.channelId == creatorId) {
+        return member;
+      }
+    }
+    return null;
+  }
+
   Future<void> createFirstFollow() async {
     final currentPassport = passport;
-    final creatorId = recommendedCreatorId;
-    if (currentPassport == null || creatorId == null) {
+    final selectedIds = selectedRecommendedCreatorIds.toList(growable: false)
+      ..sort();
+    if (currentPassport == null || selectedIds.isEmpty) {
       return;
     }
     await _run(() async {
-      follow = await _passportApi.createFollow(
-        passportId: currentPassport.id,
-        creatorId: creatorId,
-        visibility: selectedVisibility,
-        idempotencyKey: 'p1-fan-first-follow-$creatorId',
-      );
+      final created = <FollowView>[];
+      for (final creatorId in selectedIds) {
+        created.add(
+          await _passportApi.createFollow(
+            passportId: currentPassport.id,
+            creatorId: creatorId,
+            visibility: selectedVisibility,
+            idempotencyKey: 'p1-fan-first-follow-$creatorId',
+          ),
+        );
+      }
+      firstFollows = created;
+      follow = created.isEmpty ? null : created.first;
       step = FanOnboardingStep.complete;
     });
   }

@@ -15,7 +15,7 @@ void main() {
     await completeFanOnboarding(tester);
 
     expect(find.text('Fan onboarding complete'), findsOneWidget);
-    expect(find.text('Following Solar Sarah'), findsOneWidget);
+    expect(find.text('Following 4 starter creators'), findsOneWidget);
     expect(find.text('Visibility: Private'), findsOneWidget);
   });
 }

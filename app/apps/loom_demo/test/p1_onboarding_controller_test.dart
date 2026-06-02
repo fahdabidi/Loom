@@ -22,6 +22,7 @@ void main() {
       passportApi: _FakePassportApi(),
       vaultApi: _FakeVaultApi(),
       creatorMetadataApi: _FakeCreatorMetadataApi(),
+      starterPackApi: _FakeStarterPackApi(),
     );
 
     await controller.load();
@@ -35,6 +36,31 @@ void main() {
     expect(controller.interestProfile?.interests.length, 10);
     expect(controller.interestBatchWriteCount, 1);
     expect(controller.taxonomyFetchCount, 1);
+  });
+
+  test('fan onboarding exposes multiple suggested creators', () async {
+    final controller = FanOnboardingController(
+      passportApi: _FakePassportApi(),
+      vaultApi: _FakeVaultApi(),
+      creatorMetadataApi: _FakeCreatorMetadataApi(),
+      starterPackApi: _FakeStarterPackApi(),
+    );
+
+    await controller.load();
+
+    expect(controller.recommendedCreators, hasLength(4));
+    expect(controller.selectedRecommendedCreatorIds, {
+      'creator_solar_sarah',
+      'creator_ferment_fran',
+      'creator_motion_maya',
+      'creator_lena_code',
+    });
+
+    controller.toggleRecommendedCreator('creator_lena_code');
+    expect(
+      controller.selectedRecommendedCreatorIds,
+      isNot(contains('creator_lena_code')),
+    );
   });
 }
 
@@ -441,6 +467,72 @@ class _FakeCreatorMetadataApi implements CreatorMetadataApi {
     required String channelId,
     required bool membershipsEnabled,
     required List<String> memberOnlyContentIds,
+    required String idempotencyKey,
+  }) async {
+    throw UnimplementedError();
+  }
+}
+
+class _FakeStarterPackApi implements StarterPackApi {
+  @override
+  Future<StarterPack> getStarterPack({
+    required String channelId,
+    required String passportId,
+    int limit = 6,
+  }) async {
+    return const StarterPack(
+      sourceChannelId: 'creator_solar_sarah',
+      starterPackToken: 'starter_solar',
+      members: [
+        StarterPackMember(
+          channelId: 'creator_solar_sarah',
+          handle: 'solar-sarah',
+          displayName: 'Solar Sarah',
+          avatarRef: 'seed://solar',
+          role: StarterPackMemberRole.source,
+          defaultSelected: true,
+          alreadyFollowing: false,
+        ),
+        StarterPackMember(
+          channelId: 'creator_ferment_fran',
+          handle: 'ferment-fran',
+          displayName: 'Ferment Fran',
+          avatarRef: 'seed://ferment',
+          role: StarterPackMemberRole.recommended,
+          defaultSelected: true,
+          alreadyFollowing: false,
+          recommendationReason: 'Recommended for food projects.',
+        ),
+        StarterPackMember(
+          channelId: 'creator_motion_maya',
+          handle: 'motion-maya',
+          displayName: 'Motion Maya',
+          avatarRef: 'seed://motion',
+          role: StarterPackMemberRole.recommended,
+          defaultSelected: true,
+          alreadyFollowing: false,
+          recommendationReason: 'Recommended for movement.',
+        ),
+        StarterPackMember(
+          channelId: 'creator_lena_code',
+          handle: 'lena-code',
+          displayName: 'Lena Code',
+          avatarRef: 'seed://code',
+          role: StarterPackMemberRole.recommended,
+          defaultSelected: true,
+          alreadyFollowing: false,
+          recommendationReason: 'Recommended for tool builders.',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<BulkFollowResult> bulkFollow({
+    required String channelId,
+    required String passportId,
+    required List<String> channelIds,
+    required String followVisibility,
     required String idempotencyKey,
   }) async {
     throw UnimplementedError();
