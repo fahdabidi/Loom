@@ -13,6 +13,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
     this.onOpenDataRights,
     this.onOpenCampaigns,
     this.onOpenCaptureLink,
+    this.onOpenSettings,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
   final VoidCallback? onOpenCaptureLink;
+  final VoidCallback? onOpenSettings;
 
   @override
   State<DiscoveryHomeScreen> createState() => _DiscoveryHomeScreenState();
@@ -90,6 +92,7 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
                   onOpenDataRights: widget.onOpenDataRights,
                   onOpenCampaigns: widget.onOpenCampaigns,
                   onOpenCaptureLink: widget.onOpenCaptureLink,
+                  onOpenSettings: widget.onOpenSettings,
                   immersive: _immersive,
                   onToggleImmersive: () =>
                       setState(() => _immersive = !_immersive),
@@ -121,6 +124,7 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               onOpenDataRights: widget.onOpenDataRights,
               onOpenCampaigns: widget.onOpenCampaigns,
               onOpenCaptureLink: widget.onOpenCaptureLink,
+              onOpenSettings: widget.onOpenSettings,
               immersive: _immersive,
               onToggleImmersive: () => setState(() => _immersive = !_immersive),
             ),
@@ -228,6 +232,7 @@ class _DiscoveryToolbar extends StatelessWidget {
     required this.onOpenDataRights,
     required this.onOpenCampaigns,
     required this.onOpenCaptureLink,
+    required this.onOpenSettings,
     required this.immersive,
     required this.onToggleImmersive,
   });
@@ -237,6 +242,7 @@ class _DiscoveryToolbar extends StatelessWidget {
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
   final VoidCallback? onOpenCaptureLink;
+  final VoidCallback? onOpenSettings;
   final bool immersive;
   final VoidCallback onToggleImmersive;
 
@@ -307,9 +313,10 @@ class _DiscoveryToolbar extends StatelessWidget {
           ),
         ),
         Tooltip(
-          message: 'Tune feed',
+          message: 'AI search settings',
           child: IconButton(
-            onPressed: () {},
+            key: const ValueKey('p22_open_ai_search_settings_button'),
+            onPressed: onOpenSettings,
             icon: const Icon(Icons.tune_rounded),
           ),
         ),

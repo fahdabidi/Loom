@@ -19,6 +19,7 @@ import 'package:feature_data_rights/feature_data_rights.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:feature_extensions/feature_extensions.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
+import 'package:feature_fan_settings/feature_fan_settings.dart';
 import 'package:feature_playback/feature_playback.dart';
 import 'package:feature_wallet/feature_wallet.dart';
 import 'package:flutter/material.dart';
@@ -383,6 +384,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showWallet = false;
   bool _showDataRights = false;
   bool _showCampaigns = false;
+  bool _showSettings = false;
   String? _channelId;
   String? _contentId;
   String? _qaCreatorId;
@@ -410,6 +412,11 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
     if (_showCampaigns) {
       return CampaignEntryScreen(
         onBack: () => setState(() => _showCampaigns = false),
+      );
+    }
+    if (_showSettings) {
+      return FanAiSearchSettingsScreen(
+        onBack: () => setState(() => _showSettings = false),
       );
     }
     final qaCreatorId = _qaCreatorId;
@@ -461,6 +468,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       onOpenDataRights: () => setState(() => _showDataRights = true),
       onOpenCampaigns: () => setState(() => _showCampaigns = true),
       onOpenCaptureLink: () => setState(() => _showCaptureLanding = true),
+      onOpenSettings: () => setState(() => _showSettings = true),
     );
   }
 }
