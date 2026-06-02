@@ -46,6 +46,8 @@ adb -s emulator-5554 exec-out screencap -p > data/validation/<phase>-<screen>.pn
 
 Confirm the app reaches the first rendered screen (not stuck on the Flutter splash) before validating. *(Phase 26 only: replace `emulator-5554` with the physical phone's `adb devices` id; the rest is identical.)*
 
+> **Want to validate manually while agents run automated checks?** Automated runs use **`emulator-5554`** (the `PantryVision_API_36` AVD). Run a **second emulator on `emulator-5560`** for your manual work so the two never collide — see [Running a separate manual emulator (parallel to the agent)](#running-a-separate-manual-emulator-parallel-to-the-agent).
+
 ### 2. Find the phase to validate
 
 Check the [Demo App Implementation Plan](./Demo%20App%20Implementation%20Plan.md) "Phase completion tracker" and the **Current Phase Availability** table below for the latest **Complete / ready for validation** phase. Validate that phase plus any phase changed by the most recent build.
@@ -70,6 +72,48 @@ Authoritative final physical Android phone validation is now deferred until Phas
 - Continue validating the phase you are on while implementation moves ahead. A failed row does not block the next implementation phase unless the app cannot launch or the role switcher/navigation is unusable.
 - When logging an issue, write it on the step's `Correction Needed:` line (see the Correction & Completion Protocol below). I will keep implementing forward and patch validation issues in parallel.
 - After I install a new build, repeat only the rows affected by the change unless I ask for a broader regression pass.
+
+## Running a separate manual emulator (parallel to the agent)
+
+Yes — you can run two Android emulators side by side in WSL2 so **you validate manually while AI agents keep
+using the original emulator for automated runs**. Each running emulator gets its own adb serial
+(`emulator-<port>`); commands target one with `-d`/`-s`. Two **writable** instances need **two AVDs** (an AVD
+holds a userdata write-lock, so the same AVD can't boot twice writable).
+
+**Convention:**
+
+| Role | AVD | adb serial | Used by |
+| ---- | --- | ---------- | ------- |
+| Automated | `PantryVision_API_36` | `emulator-5554` | AI agents — `melos run test:integration` is pinned here |
+| Manual | `PantryVision_Manual_API_36` (new) | `emulator-5560` | You |
+
+> **One-time setup** (creating the `PantryVision_Manual_API_36` AVD, and WSL prerequisites) is in the
+> [Prereqs appendix](#appendix--prereqs-one-time-setup). On this machine the manual AVD is already created.
+
+**Launch both (pin ports so serials never swap):**
+
+```bash
+flutter emulators --launch PantryVision_API_36                  # agent → emulator-5554 (launch FIRST)
+emulator -avd PantryVision_Manual_API_36 -port 5560 -no-snapshot-save &   # you → emulator-5560
+adb devices                                                     # expect emulator-5554 AND emulator-5560
+```
+
+**Target each emulator explicitly:**
+
+```bash
+# You (manual) — emulator-5560:
+cd app/apps/loom_demo && flutter run -d emulator-5560
+adb -s emulator-5560 shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1
+adb -s emulator-5560 exec-out screencap -p > data/validation/<phase>-<screen>.png   # run from repo root
+
+# Agents (automated) — emulator-5554 (unchanged):
+melos run test:integration          # pinned to emulator-5554; override with LOOM_EMULATOR if ever needed
+flutter run -d emulator-5554
+```
+
+Because `melos run test:integration` defaults to `emulator-5554`, the agents' automated validation never
+touches your `emulator-5560`, and vice versa. Prefer `-port` (or launch the agent AVD first) so serials stay
+deterministic; if WSLg graphics are flaky, add `-gpu swiftshader_indirect` to the manual launch.
 
 ## Correction & Completion Protocol (for the implementing agent)
 
@@ -182,30 +226,31 @@ Applied Correction:
 | 6    | Tap the suggested creator card itself, not only its button. | Creator card is clickable and follow state completes.                                              |        Complete                         |
 Correction Needed: 
 Applied Correction: 
-| 7    | Review final state.                                         | Final state shows fan onboarding complete, plural starter-creator follows, and private visibility. |        Completed (re-validate)          |
+| 7    | Review final state.                                         | Final state shows fan onboarding complete, plural starter-creator follows, and private visibility. |        Correction Needed                |
 Correction Needed [C-P1-01]: ![alt text](image-2.png) I wanted to update some of the settings. I was expecting to click on the setting tile i.e "Following 5 Starter Creators" to return to that screen and make edits, but there is no back button in this flow and no way to go back. There is also no way to return to the main Fan App Feeds page, i.e there is no "complete" button that takes me back. Also these set of screens are not following the same consistent navigational pattern as the other items in that navigational panel, when i click on the other icons ![alt text](image-3.png) sometimes the navigational panel stays ![alt text](image-4.png) and some times it disapears ![alt text](image-5.png). Lets fix the pattern so that this navigational panel is always present for us to quickly flip to another item in that panel. However this is a secondary panel that scrolls away, keep that behaviour and the user can scroll back to the top of the app to access this panel.
+Updates to Applied Corrections: The navigation patterns are better, but we also need a way to return back quickly to the "feeds" screen ![alt text](image-6.png). There is a "Back to Feed" button in the fan passport setup, but the other screens do not have a "Quick" button to return to the feeds at any given moment. We need a Return to feed in every view when we click the icons in the panel. There is no easy way to return to the feed here ![alt text](image-7.png). There is a "back" button in Wallet, Data Rights, Campaigns and AI Search. Lets label these back buttons as "Return to Feed" and use this pattern across all the panel actions.
 Applied Correction [F-P1-01]: Added editable completion rows for interests/starter creators/privacy, back navigation through onboarding substeps, a Complete action returning to the Fan App feed, and a shared fan secondary action rail on onboarding, wallet, data-rights, campaigns, capture, and AI settings surfaces. files: app/packages/features/fan/feature_fan_onboarding/lib/src/screens/fan_onboarding_screen.dart, app/packages/features/fan/feature_fan_onboarding/lib/src/state/fan_onboarding_controller.dart, app/apps/loom_demo/lib/main.dart, app/apps/loom_demo/integration_test/it_p1_FE-W1_test.dart · commit 9cc6801 · validated: feature_fan_onboarding analyzer, loom_demo analyzer, widget_test, it_p1_FE-W1.
 
 ### Creator Onboarding
 
 | Step | Action                       | Expected result                                                              | Result (Completed or Correction Needed) |
 | ---- | ---------------------------- | ---------------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Open Creator Studio.         | Creator onboarding screen appears with a polished Studio-style channel card. |                                         |
+| 1    | Open Creator Studio.         | Creator onboarding screen appears with a polished Studio-style channel card. |             Correction Needed           |
+Correction Needed: The creator Studio have many buttons already displayed and the organization of the buttons is not clear. ![alt text](image-8.png). Create "Sections" and organize the buttons in proper sections. There is scrolable content after the buttons at the top ![alt text](image-9.png)![alt text](image-10.png), but the "fixed" buttons take up so much "real estate that the "scrolable" section is completely hidden. Replicate the top "Panel" from the Fan App ![alt text](image-11.png) and use that pattern to navigate the different settings for the Creator Studio as opposed to these buttuns. The scrolable content should be the "main screen" for the creator studio where we navigate back to. "create channel" should also be a button in this top panel. Replicate the patterns we have implemented for the Fan App for the panel including the fixes we have applied to its Ux in terms of navigation patterns.  
+Applied Correction: 
+| 2    | Create the creator channel.  | Channel profile is created and the managed-hosting step appears.             |             Completed                   |
 Correction Needed: 
 Applied Correction: 
-| 2    | Create the creator channel.  | Channel profile is created and the managed-hosting step appears.             |                                         |
+| 3    | Review managed-hosting copy. | The value of managed hosting is clear without feeling like legal text.       |             Correction Needed           |
+Correction Needed: It was not clear what "Managed Hosting" will provide.
+Applied Correction: 
+| 4    | Accept managed hosting.      | Completion state appears.                                                    |             Completed                   |
 Correction Needed: 
 Applied Correction: 
-| 3    | Review managed-hosting copy. | The value of managed hosting is clear without feeling like legal text.       |                                         |
-Correction Needed: 
+| 5    | Review final state.          | Channel name, handle, and hosting status are visible.                        |            Correction Needed            |
+Correction Needed: ![alt text](image-12.png) I did not see the channel name apear. I see "Open Publishing Setup"
 Applied Correction: 
-| 4    | Accept managed hosting.      | Completion state appears.                                                    |                                         |
-Correction Needed: 
-Applied Correction: 
-| 5    | Review final state.          | Channel name, handle, and hosting status are visible.                        |                                         |
-Correction Needed: 
-Applied Correction: 
-| 6    | Open publishing setup.       | Phase 2 Studio setup opens.                                                  |                                         |
+| 6    | Open publishing setup.       | Phase 2 Studio setup opens.                                                  |           Completed                     |
 Correction Needed: 
 Applied Correction: 
 
@@ -217,8 +262,8 @@ Goal: validate that Creator Studio setup feels like a modern creator workflow, n
 
 | Step | Action                                 | Expected result                                                                             | Result (Completed or Correction Needed) |
 | ---- | -------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Open Creator Studio.                   | Creator onboarding or completed creator state appears.                                      |                                         |
-Correction Needed: 
+| 1    | Open Creator Studio.                   | Creator onboarding or completed creator state appears.                                      |           Correction Needed             |
+Correction Needed: Nvaigating to the Fan App and then back to Creator Studio resets the Ui back to "Create Creator Channel" wizard state. ![alt text](image-13.png). The previous setup seems to have disapeared.
 Applied Correction: 
 | 2    | Complete creator onboarding if needed. | The publishing setup entry point is visible.                                                |                                         |
 Correction Needed: 
@@ -1022,3 +1067,36 @@ Applied Correction:
 | 6    | Check empty/loading/success/error states where reachable.                           | States feel intentional and not like raw test scaffolding.                               |                                         |
 Correction Needed: 
 Applied Correction: 
+
+
+## Appendix — Prereqs (one-time setup)
+
+These run **once** per machine (in WSL Ubuntu); the repetitive launch/target commands stay in the sections above.
+
+### A. Create the manual emulator AVD (`PantryVision_Manual_API_36`)
+
+A second **writable** emulator needs its own AVD. Create a clean one from the same system image the agent AVD uses (`google_apis` `x86_64`, `pixel_5`):
+
+```bash
+echo "no" | avdmanager create avd -n PantryVision_Manual_API_36 -k "system-images;android-36;google_apis;x86_64" -d pixel_5
+emulator -list-avds          # confirm PantryVision_API_36 AND PantryVision_Manual_API_36
+```
+
+`avdmanager`, `sdkmanager`, and `emulator` live under `/usr/lib/android-sdk/...` and are on `PATH`. Find other installed system images with `sdkmanager --list_installed`.
+*(Prefer a fresh `avdmanager` AVD over cloning the agent AVD folder: copying a live `userdata` while the agent emulator is running can carry over locks/snapshots.)*
+
+### B. WSL memory
+
+Two emulators plus a build are RAM-heavy. WSL2 with **no `~/.wslconfig`** already takes ~50% of host RAM by default (≈31 GB on this machine), which is ample — so **no change is needed here**. Only add a cap if you specifically want to *bound* WSL. Note a value like 16 GB would *reduce* the current ~31 GB and can swap when an agent build+test on `emulator-5554` runs alongside your manual `emulator-5560`:
+
+```ini
+# in your Windows user profile: .wslconfig  (reachable from WSL at /mnt/c/Users/<you>/.wslconfig)
+[wsl2]
+memory=24GB
+```
+
+Apply with `wsl --shutdown` — this stops all WSL distros and any running emulators, so do it when convenient.
+
+### C. KVM (already satisfied)
+
+The emulators use hardware acceleration via `/dev/kvm`; this already works (the agent emulator runs), and multiple instances share it. On a fresh machine that reports no acceleration, enable WSL2 nested virtualization/KVM.

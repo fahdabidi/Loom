@@ -15,8 +15,8 @@ scripts:
     run: melos exec --concurrency=1 --fail-fast --dir-exists=test -- "flutter test"
     description: Run package tests.
   test:integration:
-    run: cd apps/loom_demo && flutter test integration_test -d emulator-5554
-    description: Run Phase integration tests.
+    run: cd apps/loom_demo && flutter test integration_test -d "${LOOM_EMULATOR:-emulator-5554}"
+    description: Run Phase integration tests on the agent emulator (emulator-5554 by default; override with LOOM_EMULATOR, e.g. LOOM_EMULATOR=emulator-5560 for a manual emulator).
   lint:boundaries:
     run: dart run packages/tooling/loom_lints/bin/check_boundaries.dart
     description: Enforce feature and design-system import boundaries.
