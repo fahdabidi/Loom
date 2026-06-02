@@ -2,12 +2,13 @@
 
 ## Scope
 
-Fan-facing creator channel screens: channel home, follow controls, creator blocking, and content launch.
+Fan-facing creator channel screens: channel home, follow controls, creator blocking, content launch, and config-driven channel module layout.
 
 ## Allowed contracts
 
 - `CreatorMetadataApi.getPublicCatalog`
 - `CreatorMetadataApi.getChannelHome`
+- `CreatorExperienceApi.getExperienceConfig`
 - `FanPassportApi`
 
 ## Owned screens

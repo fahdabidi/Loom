@@ -40,6 +40,8 @@ dependencies:
     path: ../../packages/features/fan/feature_data_rights
   feature_discovery:
     path: ../../packages/features/fan/feature_discovery
+  feature_extensions:
+    path: ../../packages/features/fan/feature_extensions
   feature_fan_onboarding:
     path: ../../packages/features/fan/feature_fan_onboarding
   feature_playback:

@@ -233,6 +233,14 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.aiUsage;
     case 'sourceAttribution':
       return ReceiptType.sourceAttribution;
+    case 'payment':
+      return ReceiptType.payment;
+    case 'membership':
+      return ReceiptType.membership;
+    case 'premiumNoAd':
+      return ReceiptType.premiumNoAd;
+    case 'extensionHype':
+      return ReceiptType.extensionHype;
     case 'discovery':
       return ReceiptType.discovery;
     case 'referral':

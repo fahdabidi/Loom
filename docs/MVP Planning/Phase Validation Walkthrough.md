@@ -371,9 +371,78 @@ Goal: validate immersive discovery, richer media, async states, feed-style pagin
 | 4 | If hardware is available, run key launch flows on phone. | Capture/starter pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
 | 5 | If hardware is available, inspect phone layout. | Safe areas, scrolling, text wrapping, and tap targets work without clipping or overlap. |  |
 
+## Phase 15 - Extensions Platform Foundation
+
+Goal: validate that certified extensions, installs, creator configs, and reset behavior exist before live extension UX.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Reset demo and open a gaming creator channel such as NovaClutch. | Channel loads with a distinct gaming theme and installed extension slots. |  |
+| 2 | Review all five gaming creators. | Each has a different theme/banner/module order; no creator appears as a clone of another. |  |
+| 3 | Inspect extension slot copy. | Slot names, versions, approved surfaces, and config summaries are visible and not broken placeholders. |  |
+| 4 | Reset demo again. | Extension slots and creator configs return to seeded baseline. |  |
+
+## Phase 16 - Config-Driven Channel Renderer
+
+Goal: validate the fan channel renderer uses `CreatorExperienceConfig` rather than hardcoded creator UI.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open NovaClutch, EmberHollow, FrameByFrame, DriftAndChill, and IronVael channels. | Theme, banner, first module, and module order visibly differ per creator. |  |
+| 2 | Open a non-gaming creator channel. | The generic renderer still shows identity, ad posture, archive entry, and content without gaming-specific copy. |  |
+| 3 | Review AI archive entry and ad posture copy. | Persona and ad posture read as creator-specific data and remain legible at phone width. |  |
+| 4 | Scroll through all modules. | Unknown or inactive modules render stable safe placeholders, not crashes or raw debug text. |  |
+
+## Phase 17 - Competitive And Economy Extensions
+
+Goal: validate Clip Arena, Pick'Em, and HypeWars render as live fan modules inside creator channels.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open NovaClutch. | Clip Arena, Pick'Em, and HypeWars appear inside the channel module stack. |  |
+| 2 | In Clip Arena, submit a clip and vote the leader. | The leaderboard updates, shows the submitted clip, and vote/reward feedback is visible. |  |
+| 3 | In Pick'Em, choose an option. | The selected pick is shown and the ladder includes the fan standing/points. |  |
+| 4 | In HypeWars, send simulated hype. | Wallet copy remains clearly simulated, meter advances, and contribution feedback is visible. |  |
+| 5 | Compare NovaClutch and FrameByFrame Clip Arena. | Same module renders with different creator-specific prompt/config. |  |
+
+## Phase 18 - Collaborative And Creative Extensions
+
+Goal: validate Quest Log, Build Showcase, and Guild Quest once implemented.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open EmberHollow. | Quest Log and Build Showcase render as live modules with cozy/lore-specific copy. |  |
+| 2 | Add progress to Quest Log. | Progress persists and aggregate progress updates without exposing fan identity beyond the demo fan view. |  |
+| 3 | Submit and vote on Build Showcase. | Submission appears in the showcase and rank/vote affordances remain phone-readable. |  |
+| 4 | Open IronVael. | Guild Quest renders roster/progress state and milestone rewards using the shared runtime pattern. |  |
+
+## Phase 19 - Creator Studio Customize Console
+
+Goal: validate creator controls for channel theme, extension installs, module order, and preview.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Creator Studio customization. | Theme/banner controls, extension list, module order, and preview are reachable from Studio. |  |
+| 2 | Change a theme/banner option. | Preview updates immediately and saved changes persist after navigation. |  |
+| 3 | Install/configure an extension. | Permissions/surfaces are clear, config fields are understandable, and save uses idempotent API behavior. |  |
+| 4 | Reorder modules. | Fan channel preview reflects the new order without layout jumps. |  |
+| 5 | Switch to Fan App and open the creator channel. | Fan-facing channel uses the Studio-authored config. |  |
+
+## Phase 20 - Showcase And Final Phone Validation
+
+Goal: validate the complete customized demo on emulator and physical Android phone.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Run the full customized fan demo on emulator. | Discovery -> creator channel -> extension modules -> playback/Q&A/wallet/export flows work together. |  |
+| 2 | Run the Creator Studio customization path on emulator. | Creator can adjust appearance/extensions and immediately verify in preview/Fan App. |  |
+| 3 | Install the final APK on a physical Android phone. | Install succeeds through adb and app launches to first rendered screen. |  |
+| 4 | Run the full showcase on the phone. | Safe areas, scrolling, text wrapping, tap targets, and async states work on hardware. |  |
+| 5 | Reset demo on phone and emulator. | Both return to seeded baseline without stale extension, wallet, or customization state. |  |
+
 ## Cross-Phase Visual Regression Pass
 
-Run this after Phase 6, Phase 8, Phase 9, Phase 13, Phase 14, or whenever the app shell changes.
+Run this after Phase 6, Phase 8, Phase 9, Phase 13, Phase 14, Phase 17, Phase 19, Phase 20, or whenever the app shell changes.
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |

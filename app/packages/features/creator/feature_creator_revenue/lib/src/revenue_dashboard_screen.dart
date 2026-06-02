@@ -120,6 +120,8 @@ String _receiptTitle(ReceiptType type) {
       return 'Membership receipt';
     case ReceiptType.premiumNoAd:
       return 'No-ad pool receipt';
+    case ReceiptType.extensionHype:
+      return 'Extension hype receipt';
     case ReceiptType.payment:
       return 'Payment receipt';
     case ReceiptType.adImpression:

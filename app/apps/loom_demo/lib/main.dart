@@ -16,11 +16,16 @@ import 'package:feature_creator_recommendations/feature_creator_recommendations.
 import 'package:feature_creator_revenue/feature_creator_revenue.dart';
 import 'package:feature_data_rights/feature_data_rights.dart';
 import 'package:feature_discovery/feature_discovery.dart';
+import 'package:feature_extensions/feature_extensions.dart';
 import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
 import 'package:feature_playback/feature_playback.dart';
 import 'package:feature_wallet/feature_wallet.dart';
 import 'package:flutter/material.dart';
+import 'package:loom_api_contracts/loom_api_contracts.dart'
+    show CreatorExperienceConfig, SurfaceModule;
 import 'package:loom_app_shell/loom_app_shell.dart';
+import 'package:loom_design_system/loom_design_system.dart'
+    show LoomChannelTheme;
 import 'package:loom_fake_backend/loom_fake_backend.dart';
 import 'package:loom_local_store/loom_local_store.dart';
 import 'package:path/path.dart' as p;
@@ -410,6 +415,22 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
         onBack: () => setState(() => _channelId = null),
         onOpenContent: (id) => setState(() => _contentId = id),
         onAskArchive: (id) => setState(() => _qaCreatorId = id),
+        extensionModuleBuilder:
+            (
+              BuildContext context, {
+              required String channelId,
+              required String passportId,
+              required SurfaceModule module,
+              required CreatorExperienceConfig config,
+              required LoomChannelTheme theme,
+            }) {
+              return ExtensionRuntimeModule(
+                channelId: channelId,
+                passportId: passportId,
+                module: module,
+                theme: theme,
+              );
+            },
       );
     }
 

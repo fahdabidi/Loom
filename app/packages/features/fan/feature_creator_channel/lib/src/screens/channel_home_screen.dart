@@ -3,12 +3,23 @@ import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_design_system/loom_design_system.dart';
 
+typedef CreatorChannelExtensionModuleBuilder =
+    Widget? Function(
+      BuildContext context, {
+      required String channelId,
+      required String passportId,
+      required SurfaceModule module,
+      required CreatorExperienceConfig config,
+      required LoomChannelTheme theme,
+    });
+
 class CreatorChannelHomeScreen extends StatefulWidget {
   const CreatorChannelHomeScreen({
     required this.channelId,
     required this.onOpenContent,
     required this.onBack,
     this.onAskArchive,
+    this.extensionModuleBuilder,
     this.passportId = 'passport_demo_fan',
     super.key,
   });
@@ -18,6 +29,7 @@ class CreatorChannelHomeScreen extends StatefulWidget {
   final ValueChanged<String> onOpenContent;
   final VoidCallback onBack;
   final ValueChanged<String>? onAskArchive;
+  final CreatorChannelExtensionModuleBuilder? extensionModuleBuilder;
 
   @override
   State<CreatorChannelHomeScreen> createState() =>
@@ -208,6 +220,16 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
         );
       case 'extension':
         final install = _installedExtensionFor(config, module.extensionId);
+        final liveModule = install == null
+            ? null
+            : widget.extensionModuleBuilder?.call(
+                context,
+                channelId: home.creatorId,
+                passportId: widget.passportId,
+                module: module,
+                config: config,
+                theme: theme,
+              );
         return ChannelSurfaceModule(
           title: module.title,
           subtitle: install == null
@@ -215,13 +237,15 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
               : '${install.name} is approved for ${install.surfaces.join(', ')}',
           icon: Icons.extension_rounded,
           theme: theme,
-          child: ExtensionSlot(
-            name: install?.name ?? module.title,
-            surface: module.surface,
-            version: install?.version ?? 'pending',
-            theme: theme,
-            summary: _extensionSummary(module),
-          ),
+          child:
+              liveModule ??
+              ExtensionSlot(
+                name: install?.name ?? module.title,
+                surface: module.surface,
+                version: install?.version ?? 'pending',
+                theme: theme,
+                summary: _extensionSummary(module),
+              ),
         );
     }
     return ChannelSurfaceModule(

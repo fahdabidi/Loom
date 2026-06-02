@@ -122,6 +122,7 @@ ReceiptView _mapReceipt(ReceiptRecord record) {
     'payment' => ReceiptType.payment,
     'membership' => ReceiptType.membership,
     'premiumNoAd' => ReceiptType.premiumNoAd,
+    'extensionHype' => ReceiptType.extensionHype,
     'discovery' => ReceiptType.discovery,
     'referral' => ReceiptType.referral,
     'campaignEntry' => ReceiptType.campaignEntry,

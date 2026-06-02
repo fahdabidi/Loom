@@ -105,6 +105,8 @@ String _purchaseKindValue(PurchaseKind kind) {
       return 'noAdsPremium';
     case PurchaseKind.creatorMembership:
       return 'creatorMembership';
+    case PurchaseKind.extensionHype:
+      return 'extensionHype';
   }
 }
 
@@ -112,6 +114,8 @@ PurchaseKind _purchaseKind(String value) {
   switch (value) {
     case 'creatorMembership':
       return PurchaseKind.creatorMembership;
+    case 'extensionHype':
+      return PurchaseKind.extensionHype;
     case 'noAdsPremium':
     default:
       return PurchaseKind.noAdsPremium;

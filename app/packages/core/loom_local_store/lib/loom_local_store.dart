@@ -4769,7 +4769,12 @@ class DemoLocalStore {
     String? resolvedTierName;
     var amountCents = 499;
 
-    if (kind == 'creatorMembership') {
+    if (kind == 'extensionHype') {
+      resolvedCreatorId = creatorId ?? 'creator_nova_clutch';
+      final creator = await creatorById(resolvedCreatorId);
+      resolvedCreatorName = creator?.displayName ?? resolvedCreatorId;
+      amountCents = 299;
+    } else if (kind == 'creatorMembership') {
       resolvedCreatorId = creatorId ?? 'creator_solar_sarah';
       final creator = await creatorById(resolvedCreatorId);
       resolvedCreatorName = creator?.displayName ?? 'Solar Sarah';
@@ -4878,7 +4883,7 @@ class DemoLocalStore {
           sourcePaymentIntentId: intent.id,
           idempotencyKey: 'grant_${intent.id}_premium',
         );
-      } else {
+      } else if (intent.kind == 'creatorMembership') {
         final creatorId = intent.creatorId ?? 'creator_solar_sarah';
         final creatorName = intent.creatorName ?? 'Solar Sarah';
         final tierId = intent.tierId ?? 'tier_solar_supporter';
@@ -4908,6 +4913,25 @@ class DemoLocalStore {
       }
 
       final contentId = await _receiptContentIdForCreator(intent.creatorId);
+      final paymentSummary = switch (intent.kind) {
+        'noAdsPremium' => 'Simulated no-ad premium payment confirmed.',
+        'extensionHype' =>
+          'Simulated extension hype payment confirmed for ${intent.creatorName ?? 'the creator'}.',
+        _ => 'Simulated creator membership payment confirmed.',
+      };
+      final benefitType = switch (intent.kind) {
+        'noAdsPremium' => 'premiumNoAd',
+        'extensionHype' => 'extensionHype',
+        _ => 'membership',
+      };
+      final benefitSummary = switch (intent.kind) {
+        'noAdsPremium' =>
+          'Premium no-ad entitlement is active across eligible playback.',
+        'extensionHype' =>
+          'Extension hype contribution is recorded as simulated fan value.',
+        _ =>
+          'Creator membership is active for ${intent.creatorName ?? 'the creator'}.',
+      };
       await _db.batch((batch) {
         batch.insertAllOnConflictUpdate(_db.receipts, [
           ReceiptsCompanion.insert(
@@ -4916,21 +4940,20 @@ class DemoLocalStore {
             passportId: intent.passportId,
             contentId: contentId,
             authorizationId: intent.id,
-            summary:
-                'Simulated ${intent.kind == 'noAdsPremium' ? 'no-ad premium' : 'creator membership'} payment confirmed.',
+            summary: paymentSummary,
             createdAt: now,
           ),
           ReceiptsCompanion.insert(
             id: intent.kind == 'noAdsPremium'
                 ? 'receipt_no_ad_${_slug(intent.id)}'
+                : intent.kind == 'extensionHype'
+                ? 'receipt_extension_hype_${_slug(intent.id)}'
                 : 'receipt_membership_${_slug(intent.id)}',
-            type: intent.kind == 'noAdsPremium' ? 'premiumNoAd' : 'membership',
+            type: benefitType,
             passportId: intent.passportId,
             contentId: contentId,
             authorizationId: intent.id,
-            summary: intent.kind == 'noAdsPremium'
-                ? 'Premium no-ad entitlement is active across eligible playback.'
-                : 'Creator membership is active for ${intent.creatorName ?? 'the creator'}.',
+            summary: benefitSummary,
             createdAt: now,
           ),
         ]);
@@ -5973,6 +5996,7 @@ class DemoLocalStore {
         updatedAt: _now(),
       ),
     );
+    await _applyExtensionRuntimeEvent(session, event);
     if (payload.containsKey('rewardCode') || type == 'reward_earned') {
       await _db
           .into(_db.receipts)
@@ -5991,6 +6015,134 @@ class DemoLocalStore {
     }
     await _saveIdempotency(idempotencyKey, 'extension_event', event.eventId);
     return event;
+  }
+
+  Future<void> _applyExtensionRuntimeEvent(
+    ExtensionSessionRecord session,
+    ExtensionEventRecord event,
+  ) async {
+    final aggregateScope =
+        'channel:${session.channelId}:extension:${session.extensionId}';
+    final now = _now();
+    switch (event.type) {
+      case 'clip_submitted':
+        final clipId = event.payload['clipId'] ?? event.eventId;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'clip:$clipId',
+            value: {
+              'clipId': clipId,
+              'title': event.payload['title'] ?? 'Fan clip',
+              'submitter': event.payload['submitter'] ?? 'Demo fan',
+              'votes': event.payload['votes'] ?? '0',
+              'season': event.payload['season'] ?? 'Current season',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        break;
+      case 'clip_vote':
+        final clipId = event.payload['clipId'] ?? 'featured';
+        final current = await _extensionStateByKey(
+          aggregateScope,
+          'clip:$clipId',
+        );
+        final votes =
+            _parseExtensionInt(current?.value['votes'], fallback: 0) + 1;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'clip:$clipId',
+            value: {
+              'clipId': clipId,
+              'title':
+                  current?.value['title'] ??
+                  event.payload['title'] ??
+                  'Featured clip',
+              'submitter': current?.value['submitter'] ?? 'Demo fan',
+              'votes': '$votes',
+              'season':
+                  current?.value['season'] ??
+                  event.payload['season'] ??
+                  'Current season',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        if (event.payload.containsKey('rewardCode')) {
+          await _upsertExtensionState(
+            ExtensionStateRecord(
+              scopeKey: aggregateScope,
+              key: 'winner',
+              value: {
+                'clipId': clipId,
+                'rewardCode': event.payload['rewardCode']!,
+                'votes': '$votes',
+              },
+              exportBehavior: 'creator_and_fan',
+              updatedAt: now,
+            ),
+          );
+        }
+        break;
+      case 'pick_made':
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'pick:${session.fanId}',
+            value: {
+              'fanId': session.fanId,
+              'name': event.payload['name'] ?? 'You',
+              'pick': event.payload['pick'] ?? 'Undecided',
+              'points': event.payload['points'] ?? '10',
+              'question': event.payload['question'] ?? 'Creator prediction',
+            },
+            exportBehavior: 'fan_owned',
+            updatedAt: now,
+          ),
+        );
+        break;
+      case 'hype_sent':
+        final current = await _extensionStateByKey(
+          aggregateScope,
+          'hype_meter',
+        );
+        final amount = _parseExtensionInt(
+          event.payload['amountCents'],
+          fallback: 299,
+        );
+        final total =
+            _parseExtensionInt(current?.value['totalCents'], fallback: 0) +
+            amount;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'hype_meter',
+            value: {
+              'totalCents': '$total',
+              'lastAmountCents': '$amount',
+              'lastFanId': session.fanId,
+              'paymentIntentId': event.payload['paymentIntentId'] ?? '',
+              'goal': event.payload['goal'] ?? current?.value['goal'] ?? '',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        break;
+    }
+  }
+
+  Future<ExtensionStateRecord?> _extensionStateByKey(
+    String scopeKey,
+    String key,
+  ) async {
+    return (await _extensionStateRecords())
+        .where((entry) => entry.scopeKey == scopeKey && entry.key == key)
+        .firstOrNull;
   }
 
   Future<ExtensionEventRecord?> extensionEvent(String eventId) async {
@@ -8333,10 +8485,20 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           extensionId: 'ext_pickem',
           config: const {
             'question': 'Next map MVP?',
+            'options': 'Nova|Rival captain|Support ace',
             'seedHeadline': 'Map picks',
           },
         ),
-        _moduleSeed('content_rail', 'content', 'Latest VODs', 'feed_module', 3),
+        _moduleSeed(
+          'hypewars',
+          'extension',
+          'HypeWars',
+          'feed_module',
+          3,
+          extensionId: 'ext_hypewars',
+          config: const {'goal': 'Clutch fund', 'goalCents': '20000'},
+        ),
+        _moduleSeed('content_rail', 'content', 'Latest VODs', 'feed_module', 4),
       ],
       updatedAt: now,
     ),
@@ -8420,7 +8582,10 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           'feed_module',
           2,
           extensionId: 'ext_pickem',
-          config: const {'question': 'PB this weekend?'},
+          config: const {
+            'question': 'PB this weekend?',
+            'options': 'PB pace|Safe route|Reset city',
+          },
         ),
         _moduleSeed('content_rail', 'content', 'Run reviews', 'feed_module', 3),
       ],
@@ -8455,7 +8620,10 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           'feed_module',
           1,
           extensionId: 'ext_hypewars',
-          config: const {'goal': 'Unlock community queue'},
+          config: const {
+            'goal': 'Unlock community queue',
+            'goalCents': '15000',
+          },
         ),
         _moduleSeed(
           'build_showcase',
@@ -9210,6 +9378,10 @@ String _normalizeHandle(String handle) {
 String _slug(String value) {
   final slug = _normalizeHandle(value);
   return slug.isEmpty ? 'demo' : slug;
+}
+
+int _parseExtensionInt(String? value, {required int fallback}) {
+  return int.tryParse(value ?? '') ?? fallback;
 }
 
 DateTime _now() => DateTime.utc(2026, 5, 31, 12);

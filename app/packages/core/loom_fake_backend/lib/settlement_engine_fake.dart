@@ -97,6 +97,8 @@ ReceiptType _receiptType(String value) {
       return ReceiptType.membership;
     case 'premiumNoAd':
       return ReceiptType.premiumNoAd;
+    case 'extensionHype':
+      return ReceiptType.extensionHype;
     case 'discovery':
       return ReceiptType.discovery;
     case 'referral':

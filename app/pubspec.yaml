@@ -18,6 +18,7 @@ workspace:
   - packages/features/fan/feature_fan_onboarding
   - packages/features/fan/feature_discovery
   - packages/features/fan/feature_creator_channel
+  - packages/features/fan/feature_extensions
   - packages/features/fan/feature_playback
   - packages/features/fan/feature_ai_qa
   - packages/features/fan/feature_wallet

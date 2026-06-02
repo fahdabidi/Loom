@@ -1,4 +1,4 @@
-enum PurchaseKind { noAdsPremium, creatorMembership }
+enum PurchaseKind { noAdsPremium, creatorMembership, extensionHype }
 
 enum PaymentIntentStatus { requiresConfirmation, succeeded }
 

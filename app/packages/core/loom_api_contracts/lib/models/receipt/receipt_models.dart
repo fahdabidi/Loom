@@ -6,6 +6,7 @@ enum ReceiptType {
   payment,
   membership,
   premiumNoAd,
+  extensionHype,
   discovery,
   referral,
   campaignEntry,

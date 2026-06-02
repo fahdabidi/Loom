@@ -287,6 +287,8 @@ String _receiptLabel(ReceiptType type) {
       return 'Membership receipt';
     case ReceiptType.premiumNoAd:
       return 'No-ad premium receipt';
+    case ReceiptType.extensionHype:
+      return 'Extension hype receipt';
     case ReceiptType.discovery:
       return 'Discovery receipt';
     case ReceiptType.referral:
