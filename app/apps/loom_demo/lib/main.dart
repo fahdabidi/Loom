@@ -7,6 +7,7 @@ import 'package:feature_creator_ai/feature_creator_ai.dart';
 import 'package:feature_creator_audience/feature_creator_audience.dart';
 import 'package:feature_creator_campaigns/feature_creator_campaigns.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
+import 'package:feature_creator_customize/feature_creator_customize.dart';
 import 'package:feature_creator_export/feature_creator_export.dart';
 import 'package:feature_creator_launch/feature_creator_launch.dart';
 import 'package:feature_creator_monetization/feature_creator_monetization.dart';
@@ -128,6 +129,7 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   bool _showAdPolicy = false;
   bool _showCreatorAi = false;
   bool _showMemberships = false;
+  bool _showCustomize = false;
 
   @override
   Widget build(BuildContext context) {
@@ -193,6 +195,12 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       return CreatorMembershipSetupScreen(
         channelId: 'creator_solar_sarah',
         onBack: () => setState(() => _showMemberships = false),
+      );
+    }
+    if (_showCustomize) {
+      return CreatorCustomizeConsoleScreen(
+        creatorId: 'creator_nova_clutch',
+        onBack: () => setState(() => _showCustomize = false),
       );
     }
     if (_showPublishingSetup) {
@@ -315,6 +323,16 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  key: const ValueKey('p19_open_customize_button'),
+                  onPressed: () => setState(() => _showCustomize = true),
+                  icon: const Icon(Icons.dashboard_customize_rounded),
+                  label: const Text('Customize fan experience'),
+                ),
               ),
               const SizedBox(height: 10),
               SizedBox(

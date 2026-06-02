@@ -50,6 +50,24 @@ class StarterPackFake implements StarterPackApi {
   }
 
   @override
+  Future<StarterPack> putStarterPack({
+    required String channelId,
+    required String passportId,
+    required List<String> memberChannelIds,
+    required List<String> defaultSelectedChannelIds,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    await _store.putStarterPack(
+      channelId: channelId,
+      memberIds: memberChannelIds,
+      defaultSelectedIds: defaultSelectedChannelIds,
+      idempotencyKey: idempotencyKey,
+    );
+    return getStarterPack(channelId: channelId, passportId: passportId);
+  }
+
+  @override
   Future<BulkFollowResult> bulkFollow({
     required String channelId,
     required String passportId,

@@ -35,6 +35,7 @@ workspace:
   - packages/features/creator/feature_creator_revenue
   - packages/features/creator/feature_creator_export
   - packages/features/creator/feature_creator_launch
+  - packages/features/creator/feature_creator_customize
   - packages/tooling/loom_lints
 
 melos:

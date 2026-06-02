@@ -7,6 +7,14 @@ abstract class StarterPackApi {
     int limit = 6,
   });
 
+  Future<StarterPack> putStarterPack({
+    required String channelId,
+    required String passportId,
+    required List<String> memberChannelIds,
+    required List<String> defaultSelectedChannelIds,
+    required String idempotencyKey,
+  });
+
   Future<BulkFollowResult> bulkFollow({
     required String channelId,
     required String passportId,

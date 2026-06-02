@@ -5639,6 +5639,51 @@ class DemoLocalStore {
     return starterPack(channelId);
   }
 
+  Future<StarterPackRecord> putStarterPack({
+    required String channelId,
+    required List<String> memberIds,
+    required List<String> defaultSelectedIds,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'starter_pack');
+    if (existing != null) {
+      return starterPack(existing);
+    }
+    final creators = await this.creators();
+    final creatorIds = creators.map((creator) => creator.id).toSet();
+    if (!creatorIds.contains(channelId)) {
+      throw StateError('No channel exists for $channelId');
+    }
+    final normalizedMembers = <String>[
+      channelId,
+      ...memberIds.where((memberId) => memberId != channelId),
+    ].where(creatorIds.contains).toSet().toList(growable: false);
+    if (normalizedMembers.length < 2) {
+      throw StateError('A starter pack must include at least two creators.');
+    }
+    final normalizedDefaultIds = defaultSelectedIds
+        .where(normalizedMembers.contains)
+        .toSet()
+        .toList(growable: false);
+    await _db
+        .into(_db.starterPacks)
+        .insertOnConflictUpdate(
+          StarterPacksCompanion.insert(
+            channelId: channelId,
+            starterPackToken: _starterPackToken(channelId),
+            memberIdsJson: jsonEncode(normalizedMembers),
+            defaultSelectedIdsJson: jsonEncode(
+              normalizedDefaultIds.isEmpty
+                  ? normalizedMembers
+                  : normalizedDefaultIds,
+            ),
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'starter_pack', channelId);
+    return starterPack(channelId);
+  }
+
   Future<BulkFollowJobRecord> bulkFollow({
     required String channelId,
     required String passportId,
