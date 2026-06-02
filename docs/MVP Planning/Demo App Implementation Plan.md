@@ -291,7 +291,7 @@ This tracker is the source of truth for demo-app phase completion. At the end of
 MISSING-S1 (creator ad policy), MISSING-S3 (required publish summary), MISSING-S4 (revenue by intent), MISSING-S5 (catalog import) — from the MVP scope doc — are **in-scope build items** this milestone; their formal user-story text should be added to the relevant Product Docs in parallel.
 
 ## Verification (milestone done when)
-- App builds in WSL and installs/runs on the Flutter Android emulator for Phases 0–13, fully offline, with the role switcher. Phase 20 additionally installs/runs on a physical Android phone.
+- App builds in WSL and installs/runs on the Flutter Android emulator for Phases 0–14, fully offline, with the role switcher. Phase 20 additionally installs/runs on a physical Android phone.
 - Each phase: its stories are demonstrable; UX checkpoint signed off; API Conformance & Efficiency review filed with spec changes applied.
 - Final: the **author→consume** loop and six-step wow demo run end-to-end; a provenance audit shows every screen field sourced from an API response and every request field derivable from prior responses/seed; an efficiency audit shows no chatty calls, working pagination/batching, idempotent writes, no material over-fetch.
 
