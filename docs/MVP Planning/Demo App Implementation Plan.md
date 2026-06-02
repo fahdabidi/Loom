@@ -23,7 +23,7 @@ Source must be organized so **less powerful AI agents can safely change one comp
 
 ## Framework & platform (confirmed: Flutter)
 
-One Dart codebase for Android + iOS; builds APK in **WSL Ubuntu**; runs on the **Flutter Android emulator** for Phases 0–13, then on both the emulator and a **physical phone over adb** in Phase 20; statically typed and agent-friendly; hard module boundaries via a **melos** workspace; trivial **stub→real-HTTP** swap via DI. We validate on Android now; iOS later with no rewrite.
+One Dart codebase for Android + iOS; builds APK in **WSL Ubuntu**; runs on the **Flutter Android emulator** throughout Phases 0–20, with Phase 20 additionally validating on a **physical phone over adb**; statically typed and agent-friendly; hard module boundaries via a **melos** workspace; trivial **stub→real-HTTP** swap via DI. We validate on Android now; iOS later with no rewrite.
 
 **WSL/emulator setup (Phase 0 checklist):** Flutter SDK + Android cmdline-tools/SDK in WSL; launch the Flutter Android emulator in WSL; install/run the debug APK on the emulator. Physical-phone adb setup (USB passthrough with `usbipd-win`, or wireless adb) is a Phase 20 checklist item.
 
