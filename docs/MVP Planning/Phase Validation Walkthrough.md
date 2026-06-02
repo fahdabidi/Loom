@@ -44,11 +44,11 @@ Authoritative final physical Android phone validation is now deferred until Phas
 | 18 | Collaborative/creative extensions | Complete / ready for validation | Quest Log, Build Showcase, Guild Quest |
 | 19 | Creator Studio customization | Complete / ready for validation | Customize console and fan preview |
 | 20 | Customization showcase | Complete / ready for validation after install | Five-world fan showcase and Studio authoring on emulator |
-| 21 | AI search foundation | Pending | Contract/fake/store smoke for AI search and external content |
-| 22 | Fan AI search settings | Pending | Settings, simulated agent/source connections, disclosures |
-| 23 | AI search results | Pending | Creator-preferred merged results and title/source handling |
-| 24 | Embedded external playback | Pending | YouTube player, AI-driven next rail, offline/error states |
-| 25 | Creator external content in feeds | Pending | Studio external content linking and fan feed attribution |
+| 21 | AI search foundation | Complete / ready for validation | Contract/fake/store smoke for AI search and external content |
+| 22 | Fan AI search settings | Complete / ready for validation | Settings, simulated agent/source connections, disclosures |
+| 23 | AI search results | Complete / ready for validation | Creator-preferred merged results and title/source handling |
+| 24 | Embedded external playback | Complete / ready for validation after install | YouTube player, AI-driven next rail, offline/error states |
+| 25 | Creator external content in feeds | Complete / ready for validation after install | Studio external content linking and fan feed attribution |
 | 26 | Final showcase + physical phone | Pending | Full AI-search showcase, emulator regression, physical-phone sign-off |
 
 ## Phase 0 - Foundation And Shell
