@@ -47,7 +47,10 @@ class _CreatorConversionAnalyticsScreenState
   @override
   Widget build(BuildContext context) {
     if (_loading || _funnel == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: LoadingSkeleton(title: 'Loading conversion analytics', rows: 4),
+      );
     }
     final funnel = _funnel!;
     return ListView(

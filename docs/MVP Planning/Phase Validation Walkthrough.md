@@ -10,7 +10,7 @@ This is the manual validation playbook for the Demo App while implementation con
 4. Mark each row as `Pass`, `Fail`, or `Needs change` in the Result column.
 5. For every issue, send the issue template at the bottom of this doc with the phase, screen, action, expected result, actual result, and screenshot if useful.
 
-Physical Android phone validation is deferred until Phase 14. Phases 0 through 13 are validated on the Flutter Android emulator.
+Authoritative final physical Android phone validation is now deferred until Phase 20. Phases 0 through 14 are validated on the Flutter Android emulator unless physical hardware is available for a preliminary smoke pass.
 
 ## Parallel Validation Protocol
 
@@ -33,11 +33,11 @@ Physical Android phone validation is deferred until Phase 14. Phases 0 through 1
 | 7 | High UX checkpoint | Complete | Fan data rights and Creator audience |
 | 8 | Medium UX checkpoint | Complete / ready for validation | Recommendations, referral, and campaigns |
 | 9 | Export/transparency full-app emulator validation | Complete / ready for validation | Export, transparency, reset, emulator |
-| 10 | Launch contracts/data smoke | Not started | App launch and reset after launch API state |
-| 11 | High UX checkpoint | Not started | Creator Studio Launch/Grow |
-| 12 | High UX checkpoint | Not started | Fan capture landing and starter pack |
-| 13 | High UX checkpoint | Not started | Creator conversion analytics and utility consoles |
-| 14 | Final launch + physical-phone validation | Not started | UX hardening, full launch demo, physical phone |
+| 10 | Launch contracts/data smoke | Complete / ready for validation | App launch and reset after launch API state |
+| 11 | High UX checkpoint | Complete / ready for validation | Creator Studio Launch/Grow |
+| 12 | High UX checkpoint | Complete / ready for validation | Fan capture landing and starter pack |
+| 13 | High UX checkpoint | Complete / ready for validation | Creator conversion analytics and utility consoles |
+| 14 | Emulator UX hardening + preliminary phone smoke | Complete / ready for validation | UX hardening, full launch demo, optional physical phone |
 
 ## Phase 0 - Foundation And Shell
 
@@ -65,7 +65,7 @@ Goal: validate the identity foundation, fan interest picker, creator onboarding,
 | 4 | Save interests. | App advances to privacy/persona setup without losing selections. |  |
 | 5 | Continue through privacy defaults. | Defaults are understandable and not overly technical. |  |
 | 6 | Tap the suggested creator card itself, not only its button. | Creator card is clickable and follow state completes. |  |
-| 7 | Review final state. | Final state shows fan onboarding complete, Following Solar Sarah, and private visibility. |  |
+| 7 | Review final state. | Final state shows fan onboarding complete, plural starter-creator follows, and private visibility. |  |
 
 ### Creator Onboarding
 
@@ -333,7 +333,7 @@ Goal: validate creator conversion-yield analytics and completed creator utility 
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
-| 1 | Open Creator conversion analytics. | Funnel shows reached → re-followed → member/premium with aggregate-only values. |  |
+| 1 | Open Creator conversion analytics. | Funnel shows reached -> re-followed -> member/premium with aggregate-only values. |  |
 | 2 | Review funnel visuals at phone width. | Visual is compact, readable, and not row-only. |  |
 | 3 | Inspect supporting trend/source rows if present. | Rows do not expose per-fan behavioral data or universal fan IDs. |  |
 
@@ -349,7 +349,7 @@ Goal: validate creator conversion-yield analytics and completed creator utility 
 
 ## Phase 14 - UX Hardening And Physical Phone Validation
 
-Goal: validate immersive discovery, richer media, async states, feed-style pagination, full launch demo, and physical-phone run.
+Goal: validate immersive discovery, richer media, async states, feed-style pagination, full launch demo, and optional preliminary physical-phone run. Final phone sign-off happens in Phase 20.
 
 ### UX Hardening
 
@@ -365,11 +365,11 @@ Goal: validate immersive discovery, richer media, async states, feed-style pagin
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
-| 1 | Run the full launch demo on emulator. | Re-acquisition → starter pack → consume → conversion analytics → utility console → export/reset works end to end. |  |
+| 1 | Run the full launch demo on emulator. | Re-acquisition -> starter pack -> consume -> conversion analytics -> utility console -> export/reset works end to end. |  |
 | 2 | Reset demo and relaunch on emulator. | App returns to seeded baseline without stale launch state. |  |
-| 3 | Install APK on physical Android phone. | Install succeeds and app launches to first rendered screen. |  |
-| 4 | Run key launch flows on phone. | Capture/start pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
-| 5 | Inspect phone layout. | Safe areas, scrolling, text wrapping, and tap targets work without clipping or overlap. |  |
+| 3 | If physical hardware is available, install APK on Android phone. | Install succeeds and app launches to first rendered screen; otherwise record phone validation as deferred to Phase 20. |  |
+| 4 | If hardware is available, run key launch flows on phone. | Capture/starter pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
+| 5 | If hardware is available, inspect phone layout. | Safe areas, scrolling, text wrapping, and tap targets work without clipping or overlap. |  |
 
 ## Cross-Phase Visual Regression Pass
 

@@ -30,6 +30,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
 
 class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
   late final DiscoveryController _controller;
+  bool _immersive = false;
 
   @override
   void initState() {
@@ -49,10 +50,66 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
       animation: _controller,
       builder: (context, _) {
         if (_controller.loading && _controller.feedItems.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: LoadingSkeleton(
+              title: 'Preparing your discovery feed',
+              rows: 4,
+            ),
+          );
         }
         if (_controller.errorMessage != null) {
-          return Center(child: Text(_controller.errorMessage!));
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: LoomErrorState(
+              title: 'Discovery could not load',
+              body: _controller.errorMessage!,
+              onRetry: _controller.bootstrap,
+            ),
+          );
+        }
+        if (_controller.feedItems.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: LoomEmptyState(
+              icon: Icons.auto_awesome_rounded,
+              title: 'No discovery items yet',
+              body:
+                  'Pick an intent or starter pack to seed a creator-led feed.',
+            ),
+          );
+        }
+        if (_immersive) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+                child: _DiscoveryToolbar(
+                  onStartOnboarding: widget.onStartOnboarding,
+                  onOpenWallet: widget.onOpenWallet,
+                  onOpenDataRights: widget.onOpenDataRights,
+                  onOpenCampaigns: widget.onOpenCampaigns,
+                  onOpenCaptureLink: widget.onOpenCaptureLink,
+                  immersive: _immersive,
+                  onToggleImmersive: () =>
+                      setState(() => _immersive = !_immersive),
+                ),
+              ),
+              Expanded(
+                child: ImmersiveDiscoveryFeed(
+                  items: _controller.feedItems
+                      .map(_mapImmersiveItem)
+                      .toList(growable: false),
+                  hasMore: _controller.hasMore,
+                  loadingMore: _controller.loadingMore,
+                  onLoadMore: _controller.loadMore,
+                  onOpenItem: (item) => widget.onOpenContent?.call(item.id),
+                  onOpenCreator: (item) =>
+                      widget.onOpenCreator?.call(item.creatorId),
+                ),
+              ),
+            ],
+          );
         }
         return ListView(
           key: const ValueKey('p3_discovery_scroll'),
@@ -64,6 +121,8 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               onOpenDataRights: widget.onOpenDataRights,
               onOpenCampaigns: widget.onOpenCampaigns,
               onOpenCaptureLink: widget.onOpenCaptureLink,
+              immersive: _immersive,
+              onToggleImmersive: () => setState(() => _immersive = !_immersive),
             ),
             const SizedBox(height: 14),
             if (_controller.recommendationMessage != null) ...[
@@ -169,6 +228,8 @@ class _DiscoveryToolbar extends StatelessWidget {
     required this.onOpenDataRights,
     required this.onOpenCampaigns,
     required this.onOpenCaptureLink,
+    required this.immersive,
+    required this.onToggleImmersive,
   });
 
   final VoidCallback onStartOnboarding;
@@ -176,6 +237,8 @@ class _DiscoveryToolbar extends StatelessWidget {
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
   final VoidCallback? onOpenCaptureLink;
+  final bool immersive;
+  final VoidCallback onToggleImmersive;
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +260,18 @@ class _DiscoveryToolbar extends StatelessWidget {
             key: const ValueKey('start_fan_onboarding_button'),
             onPressed: onStartOnboarding,
             icon: const Icon(Icons.person_add_alt_1_rounded),
+          ),
+        ),
+        Tooltip(
+          message: immersive ? 'Dense feed' : 'Immersive feed',
+          child: IconButton.filledTonal(
+            key: const ValueKey('p14_toggle_immersive_button'),
+            onPressed: onToggleImmersive,
+            icon: Icon(
+              immersive
+                  ? Icons.view_agenda_rounded
+                  : Icons.smart_display_rounded,
+            ),
           ),
         ),
         Tooltip(
@@ -241,6 +316,19 @@ class _DiscoveryToolbar extends StatelessWidget {
       ],
     );
   }
+}
+
+ImmersiveFeedItemView _mapImmersiveItem(FeedItem item) {
+  return ImmersiveFeedItemView(
+    id: item.tile.contentId,
+    creatorId: item.tile.creatorId,
+    title: item.tile.title,
+    creatorName: item.tile.creatorName,
+    summary: item.tile.summary,
+    posterRef: item.tile.thumbnailRef,
+    providerLabel: item.providerLabel,
+    reason: item.explanation.summary,
+  );
 }
 
 class _SearchField extends StatefulWidget {

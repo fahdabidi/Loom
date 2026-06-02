@@ -47,7 +47,10 @@ class _FanCaptureLandingScreenState extends State<FanCaptureLandingScreen> {
       animation: _controller,
       builder: (context, _) {
         if (_controller.loading && !_controller.hasResolved) {
-          return const Center(child: CircularProgressIndicator());
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: LoadingSkeleton(title: 'Opening creator invite', rows: 4),
+          );
         }
         final error = _controller.errorMessage;
         final landing = _controller.landing;
@@ -56,7 +59,10 @@ class _FanCaptureLandingScreenState extends State<FanCaptureLandingScreen> {
           return _ErrorState(message: error, onBack: widget.onBack);
         }
         if (landing == null || pack == null) {
-          return const Center(child: CircularProgressIndicator());
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: LoadingSkeleton(title: 'Preparing starter pack', rows: 3),
+          );
         }
         return Scaffold(
           appBar: AppBar(
@@ -131,14 +137,11 @@ class _ErrorState extends StatelessWidget {
               ),
         title: const Text('Creator invite'),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            message,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: LoomErrorState(
+          title: 'Creator invite unavailable',
+          body: message,
         ),
       ),
     );

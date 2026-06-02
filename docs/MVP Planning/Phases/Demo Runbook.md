@@ -29,7 +29,19 @@ Use this runbook for the final Phase 9 demo after automated gates pass.
 3. Confirm the app returns to Fan App.
 4. Confirm discovery seed content and session disclosure are visible.
 
+## Launch Loop
+
+Use this loop for Phase 14 emulator validation before the later physical-phone sign-off.
+
+1. Open Fan App discovery and switch to immersive discovery.
+2. Return to dense discovery and open the creator invite.
+3. Confirm the starter pack and verify the fan lands on a populated feed.
+4. Open Solar Sarah playback and verify content/ad presentation.
+5. Switch to Creator Studio and open Conversion to review aggregate launch yield.
+6. Open one utility console: catalog import, ad policy, archive AI, or membership setup.
+7. Open export/reset and confirm the seeded baseline can be restored.
+
 ## Validation Targets
 
 - Flutter Android emulator: install, launch, complete all six steps.
-- Physical Android phone: install, launch, complete launch, role switch, discovery, playback, wallet transparency, and export.
+- Physical Android phone: authoritative final sign-off moved to Phase 20; Phase 14 can run a preliminary phone smoke if hardware is available.
