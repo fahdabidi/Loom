@@ -319,6 +319,72 @@ class _FakeVaultApi implements FanVaultApi {
       updatedAt: DateTime.utc(2026),
     );
   }
+
+  @override
+  Future<FanSearchAgentConfig> getSearchAgentConfig(String passportId) async {
+    return FanSearchAgentConfig(
+      passportId: passportId,
+      provider: AiSearchProvider.anthropicClaude,
+      mcpEndpoint: '',
+      connected: false,
+      preferCreators: true,
+      externalSourcesEnabled: false,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<FanSearchAgentConfig> putSearchAgentConfig({
+    required String passportId,
+    required AiSearchProvider provider,
+    required String mcpEndpoint,
+    required bool connected,
+    required bool preferCreators,
+    required bool externalSourcesEnabled,
+    required String idempotencyKey,
+  }) async {
+    return FanSearchAgentConfig(
+      passportId: passportId,
+      provider: provider,
+      mcpEndpoint: mcpEndpoint,
+      connected: connected,
+      preferCreators: preferCreators,
+      externalSourcesEnabled: externalSourcesEnabled,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
+
+  @override
+  Future<List<ExternalSourceConnection>> getExternalSourceConnections(
+    String passportId,
+  ) async {
+    return [
+      ExternalSourceConnection(
+        passportId: passportId,
+        sourceType: ExternalSourceType.youtube,
+        connected: false,
+        displayName: 'YouTube',
+        updatedAt: DateTime.utc(2026),
+      ),
+    ];
+  }
+
+  @override
+  Future<ExternalSourceConnection> putExternalSourceConnection({
+    required String passportId,
+    required ExternalSourceType sourceType,
+    required bool connected,
+    required String displayName,
+    required String idempotencyKey,
+  }) async {
+    return ExternalSourceConnection(
+      passportId: passportId,
+      sourceType: sourceType,
+      connected: connected,
+      displayName: displayName,
+      updatedAt: DateTime.utc(2026),
+    );
+  }
 }
 
 class _FakeCreatorMetadataApi implements CreatorMetadataApi {

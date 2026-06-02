@@ -39,6 +39,7 @@ AudienceAnalyticsApi? _audienceAnalyticsApi;
 CreatorAnnouncementApi? _creatorAnnouncementApi;
 CrossPostingApi? _crossPostingApi;
 ExternalAccountLinkApi? _externalAccountLinkApi;
+ExternalContentSourceApi? _externalContentSourceApi;
 FanFollowCaptureApi? _fanFollowCaptureApi;
 ImportPublicMetadataApi? _importPublicMetadataApi;
 PremiumNoAdApi? _premiumNoAdApi;
@@ -124,6 +125,10 @@ void registerExternalAccountLinkApi(ExternalAccountLinkApi api) {
   _externalAccountLinkApi = api;
 }
 
+void registerExternalContentSourceApi(ExternalContentSourceApi api) {
+  _externalContentSourceApi = api;
+}
+
 void registerFanFollowCaptureApi(FanFollowCaptureApi api) {
   _fanFollowCaptureApi = api;
 }
@@ -193,6 +198,7 @@ void resetAppShellDependencies() {
   _creatorAnnouncementApi = null;
   _crossPostingApi = null;
   _externalAccountLinkApi = null;
+  _externalContentSourceApi = null;
   _fanFollowCaptureApi = null;
   _importPublicMetadataApi = null;
   _premiumNoAdApi = null;
@@ -355,6 +361,14 @@ ExternalAccountLinkApi resolveExternalAccountLinkApi() {
   final api = _externalAccountLinkApi;
   if (api == null) {
     throw StateError('ExternalAccountLinkApi has not been registered.');
+  }
+  return api;
+}
+
+ExternalContentSourceApi resolveExternalContentSourceApi() {
+  final api = _externalContentSourceApi;
+  if (api == null) {
+    throw StateError('ExternalContentSourceApi has not been registered.');
   }
   return api;
 }

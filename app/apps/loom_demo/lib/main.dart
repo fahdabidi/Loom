@@ -62,6 +62,7 @@ Future<DemoLocalStore> configureDemoDependencies({
   registerCreatorAnnouncementApi(CreatorAnnouncementFake(store));
   registerCrossPostingApi(CrossPostingFake(store));
   registerExternalAccountLinkApi(ExternalAccountLinkFake(store));
+  registerExternalContentSourceApi(ExternalContentSourceFake(store));
   registerFanFollowCaptureApi(FanFollowCaptureFake(store));
   registerImportPublicMetadataApi(ImportPublicMetadataFake(store));
   registerPremiumNoAdApi(PremiumNoAdFake(store));

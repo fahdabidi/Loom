@@ -1,3 +1,4 @@
+import '../models/ai_gateway/ai_search_models.dart';
 import '../models/ai_gateway/archive_models.dart';
 import '../models/ai_gateway/summary_draft.dart';
 import '../models/fan_vault/ranking_preference.dart';
@@ -20,5 +21,11 @@ abstract class AiGatewayApi {
   Future<SummaryRankResult> rankBySummary({
     required RankPreference preference,
     required List<FeedItem> candidates,
+  });
+
+  Future<AiSearchResult> runAiSearch({
+    required String passportId,
+    required String query,
+    int limit = 10,
   });
 }

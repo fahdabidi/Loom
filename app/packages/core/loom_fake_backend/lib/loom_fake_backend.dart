@@ -13,6 +13,7 @@ export 'entitlement_ledger_fake.dart';
 export 'extension_registry_fake.dart';
 export 'extension_runtime_fake.dart';
 export 'external_account_link_fake.dart';
+export 'external_content_source_fake.dart';
 export 'external_recommendation_provider_fake.dart';
 export 'fan_follow_capture_fake.dart';
 export 'fan_passport_fake.dart';

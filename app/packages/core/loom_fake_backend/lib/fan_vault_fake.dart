@@ -2,6 +2,8 @@ import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_local_store/loom_local_store.dart'
     show
         DemoLocalStore,
+        ExternalSourceConnectionRecord,
+        FanSearchAgentConfigRecord,
         InterestProfileRecord,
         InterestTokenRecord,
         RankPreferenceRecord;
@@ -115,6 +117,65 @@ class FanVaultFake implements FanVaultApi {
       ),
     );
   }
+
+  @override
+  Future<FanSearchAgentConfig> getSearchAgentConfig(String passportId) async {
+    await Future<void>.delayed(latency);
+    return _mapSearchAgentConfig(await _store.searchAgentConfig(passportId));
+  }
+
+  @override
+  Future<FanSearchAgentConfig> putSearchAgentConfig({
+    required String passportId,
+    required AiSearchProvider provider,
+    required String mcpEndpoint,
+    required bool connected,
+    required bool preferCreators,
+    required bool externalSourcesEnabled,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    return _mapSearchAgentConfig(
+      await _store.putSearchAgentConfig(
+        passportId: passportId,
+        provider: _providerName(provider),
+        mcpEndpoint: mcpEndpoint,
+        connected: connected,
+        preferCreators: preferCreators,
+        externalSourcesEnabled: externalSourcesEnabled,
+        idempotencyKey: idempotencyKey,
+      ),
+    );
+  }
+
+  @override
+  Future<List<ExternalSourceConnection>> getExternalSourceConnections(
+    String passportId,
+  ) async {
+    await Future<void>.delayed(latency);
+    final records = await _store.externalSourceConnections(passportId);
+    return records.map(_mapExternalSourceConnection).toList(growable: false);
+  }
+
+  @override
+  Future<ExternalSourceConnection> putExternalSourceConnection({
+    required String passportId,
+    required ExternalSourceType sourceType,
+    required bool connected,
+    required String displayName,
+    required String idempotencyKey,
+  }) async {
+    await Future<void>.delayed(latency);
+    return _mapExternalSourceConnection(
+      await _store.putExternalSourceConnection(
+        passportId: passportId,
+        sourceType: _sourceTypeName(sourceType),
+        connected: connected,
+        displayName: displayName,
+        idempotencyKey: idempotencyKey,
+      ),
+    );
+  }
 }
 
 InterestToken _mapToken(InterestTokenRecord record) {
@@ -142,4 +203,82 @@ RankPreference _mapRankPreference(RankPreferenceRecord record) {
     summaryFirst: record.summaryFirst,
     updatedAt: record.updatedAt,
   );
+}
+
+FanSearchAgentConfig _mapSearchAgentConfig(FanSearchAgentConfigRecord record) {
+  return FanSearchAgentConfig(
+    passportId: record.passportId,
+    provider: _provider(record.provider),
+    mcpEndpoint: record.mcpEndpoint,
+    connected: record.connected,
+    preferCreators: record.preferCreators,
+    externalSourcesEnabled: record.externalSourcesEnabled,
+    updatedAt: record.updatedAt,
+  );
+}
+
+ExternalSourceConnection _mapExternalSourceConnection(
+  ExternalSourceConnectionRecord record,
+) {
+  return ExternalSourceConnection(
+    passportId: record.passportId,
+    sourceType: _sourceType(record.sourceType),
+    connected: record.connected,
+    displayName: record.displayName,
+    updatedAt: record.updatedAt,
+  );
+}
+
+String _providerName(AiSearchProvider provider) {
+  switch (provider) {
+    case AiSearchProvider.anthropicClaude:
+      return 'anthropic_claude';
+    case AiSearchProvider.openAi:
+      return 'open_ai';
+    case AiSearchProvider.googleGemini:
+      return 'google_gemini';
+    case AiSearchProvider.custom:
+      return 'custom';
+  }
+}
+
+AiSearchProvider _provider(String value) {
+  switch (value) {
+    case 'open_ai':
+      return AiSearchProvider.openAi;
+    case 'google_gemini':
+      return AiSearchProvider.googleGemini;
+    case 'custom':
+      return AiSearchProvider.custom;
+  }
+  return AiSearchProvider.anthropicClaude;
+}
+
+String _sourceTypeName(ExternalSourceType sourceType) {
+  switch (sourceType) {
+    case ExternalSourceType.youtube:
+      return 'youtube';
+    case ExternalSourceType.twitch:
+      return 'twitch';
+    case ExternalSourceType.discord:
+      return 'discord';
+    case ExternalSourceType.blog:
+      return 'blog';
+    case ExternalSourceType.webpage:
+      return 'webpage';
+  }
+}
+
+ExternalSourceType _sourceType(String value) {
+  switch (value) {
+    case 'twitch':
+      return ExternalSourceType.twitch;
+    case 'discord':
+      return ExternalSourceType.discord;
+    case 'blog':
+      return ExternalSourceType.blog;
+    case 'webpage':
+      return ExternalSourceType.webpage;
+  }
+  return ExternalSourceType.youtube;
 }

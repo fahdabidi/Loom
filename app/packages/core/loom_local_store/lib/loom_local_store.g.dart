@@ -14789,6 +14789,951 @@ class FanRankingPreferencesCompanion
   }
 }
 
+class $FanSearchAgentConfigsTable extends FanSearchAgentConfigs
+    with TableInfo<$FanSearchAgentConfigsTable, FanSearchAgentConfig> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FanSearchAgentConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _providerMeta = const VerificationMeta(
+    'provider',
+  );
+  @override
+  late final GeneratedColumn<String> provider = GeneratedColumn<String>(
+    'provider',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mcpEndpointMeta = const VerificationMeta(
+    'mcpEndpoint',
+  );
+  @override
+  late final GeneratedColumn<String> mcpEndpoint = GeneratedColumn<String>(
+    'mcp_endpoint',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _connectedMeta = const VerificationMeta(
+    'connected',
+  );
+  @override
+  late final GeneratedColumn<bool> connected = GeneratedColumn<bool>(
+    'connected',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("connected" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _preferCreatorsMeta = const VerificationMeta(
+    'preferCreators',
+  );
+  @override
+  late final GeneratedColumn<bool> preferCreators = GeneratedColumn<bool>(
+    'prefer_creators',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("prefer_creators" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _externalSourcesEnabledMeta =
+      const VerificationMeta('externalSourcesEnabled');
+  @override
+  late final GeneratedColumn<bool> externalSourcesEnabled =
+      GeneratedColumn<bool>(
+        'external_sources_enabled',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("external_sources_enabled" IN (0, 1))',
+        ),
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    passportId,
+    provider,
+    mcpEndpoint,
+    connected,
+    preferCreators,
+    externalSourcesEnabled,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fan_search_agent_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FanSearchAgentConfig> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('provider')) {
+      context.handle(
+        _providerMeta,
+        provider.isAcceptableOrUnknown(data['provider']!, _providerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_providerMeta);
+    }
+    if (data.containsKey('mcp_endpoint')) {
+      context.handle(
+        _mcpEndpointMeta,
+        mcpEndpoint.isAcceptableOrUnknown(
+          data['mcp_endpoint']!,
+          _mcpEndpointMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mcpEndpointMeta);
+    }
+    if (data.containsKey('connected')) {
+      context.handle(
+        _connectedMeta,
+        connected.isAcceptableOrUnknown(data['connected']!, _connectedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_connectedMeta);
+    }
+    if (data.containsKey('prefer_creators')) {
+      context.handle(
+        _preferCreatorsMeta,
+        preferCreators.isAcceptableOrUnknown(
+          data['prefer_creators']!,
+          _preferCreatorsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_preferCreatorsMeta);
+    }
+    if (data.containsKey('external_sources_enabled')) {
+      context.handle(
+        _externalSourcesEnabledMeta,
+        externalSourcesEnabled.isAcceptableOrUnknown(
+          data['external_sources_enabled']!,
+          _externalSourcesEnabledMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_externalSourcesEnabledMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {passportId};
+  @override
+  FanSearchAgentConfig map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FanSearchAgentConfig(
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      provider: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provider'],
+      )!,
+      mcpEndpoint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mcp_endpoint'],
+      )!,
+      connected: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}connected'],
+      )!,
+      preferCreators: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}prefer_creators'],
+      )!,
+      externalSourcesEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}external_sources_enabled'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $FanSearchAgentConfigsTable createAlias(String alias) {
+    return $FanSearchAgentConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class FanSearchAgentConfig extends DataClass
+    implements Insertable<FanSearchAgentConfig> {
+  final String passportId;
+  final String provider;
+  final String mcpEndpoint;
+  final bool connected;
+  final bool preferCreators;
+  final bool externalSourcesEnabled;
+  final DateTime updatedAt;
+  const FanSearchAgentConfig({
+    required this.passportId,
+    required this.provider,
+    required this.mcpEndpoint,
+    required this.connected,
+    required this.preferCreators,
+    required this.externalSourcesEnabled,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['passport_id'] = Variable<String>(passportId);
+    map['provider'] = Variable<String>(provider);
+    map['mcp_endpoint'] = Variable<String>(mcpEndpoint);
+    map['connected'] = Variable<bool>(connected);
+    map['prefer_creators'] = Variable<bool>(preferCreators);
+    map['external_sources_enabled'] = Variable<bool>(externalSourcesEnabled);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  FanSearchAgentConfigsCompanion toCompanion(bool nullToAbsent) {
+    return FanSearchAgentConfigsCompanion(
+      passportId: Value(passportId),
+      provider: Value(provider),
+      mcpEndpoint: Value(mcpEndpoint),
+      connected: Value(connected),
+      preferCreators: Value(preferCreators),
+      externalSourcesEnabled: Value(externalSourcesEnabled),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory FanSearchAgentConfig.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FanSearchAgentConfig(
+      passportId: serializer.fromJson<String>(json['passportId']),
+      provider: serializer.fromJson<String>(json['provider']),
+      mcpEndpoint: serializer.fromJson<String>(json['mcpEndpoint']),
+      connected: serializer.fromJson<bool>(json['connected']),
+      preferCreators: serializer.fromJson<bool>(json['preferCreators']),
+      externalSourcesEnabled: serializer.fromJson<bool>(
+        json['externalSourcesEnabled'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'passportId': serializer.toJson<String>(passportId),
+      'provider': serializer.toJson<String>(provider),
+      'mcpEndpoint': serializer.toJson<String>(mcpEndpoint),
+      'connected': serializer.toJson<bool>(connected),
+      'preferCreators': serializer.toJson<bool>(preferCreators),
+      'externalSourcesEnabled': serializer.toJson<bool>(externalSourcesEnabled),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  FanSearchAgentConfig copyWith({
+    String? passportId,
+    String? provider,
+    String? mcpEndpoint,
+    bool? connected,
+    bool? preferCreators,
+    bool? externalSourcesEnabled,
+    DateTime? updatedAt,
+  }) => FanSearchAgentConfig(
+    passportId: passportId ?? this.passportId,
+    provider: provider ?? this.provider,
+    mcpEndpoint: mcpEndpoint ?? this.mcpEndpoint,
+    connected: connected ?? this.connected,
+    preferCreators: preferCreators ?? this.preferCreators,
+    externalSourcesEnabled:
+        externalSourcesEnabled ?? this.externalSourcesEnabled,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  FanSearchAgentConfig copyWithCompanion(FanSearchAgentConfigsCompanion data) {
+    return FanSearchAgentConfig(
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      provider: data.provider.present ? data.provider.value : this.provider,
+      mcpEndpoint: data.mcpEndpoint.present
+          ? data.mcpEndpoint.value
+          : this.mcpEndpoint,
+      connected: data.connected.present ? data.connected.value : this.connected,
+      preferCreators: data.preferCreators.present
+          ? data.preferCreators.value
+          : this.preferCreators,
+      externalSourcesEnabled: data.externalSourcesEnabled.present
+          ? data.externalSourcesEnabled.value
+          : this.externalSourcesEnabled,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FanSearchAgentConfig(')
+          ..write('passportId: $passportId, ')
+          ..write('provider: $provider, ')
+          ..write('mcpEndpoint: $mcpEndpoint, ')
+          ..write('connected: $connected, ')
+          ..write('preferCreators: $preferCreators, ')
+          ..write('externalSourcesEnabled: $externalSourcesEnabled, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    passportId,
+    provider,
+    mcpEndpoint,
+    connected,
+    preferCreators,
+    externalSourcesEnabled,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FanSearchAgentConfig &&
+          other.passportId == this.passportId &&
+          other.provider == this.provider &&
+          other.mcpEndpoint == this.mcpEndpoint &&
+          other.connected == this.connected &&
+          other.preferCreators == this.preferCreators &&
+          other.externalSourcesEnabled == this.externalSourcesEnabled &&
+          other.updatedAt == this.updatedAt);
+}
+
+class FanSearchAgentConfigsCompanion
+    extends UpdateCompanion<FanSearchAgentConfig> {
+  final Value<String> passportId;
+  final Value<String> provider;
+  final Value<String> mcpEndpoint;
+  final Value<bool> connected;
+  final Value<bool> preferCreators;
+  final Value<bool> externalSourcesEnabled;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const FanSearchAgentConfigsCompanion({
+    this.passportId = const Value.absent(),
+    this.provider = const Value.absent(),
+    this.mcpEndpoint = const Value.absent(),
+    this.connected = const Value.absent(),
+    this.preferCreators = const Value.absent(),
+    this.externalSourcesEnabled = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FanSearchAgentConfigsCompanion.insert({
+    required String passportId,
+    required String provider,
+    required String mcpEndpoint,
+    required bool connected,
+    required bool preferCreators,
+    required bool externalSourcesEnabled,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : passportId = Value(passportId),
+       provider = Value(provider),
+       mcpEndpoint = Value(mcpEndpoint),
+       connected = Value(connected),
+       preferCreators = Value(preferCreators),
+       externalSourcesEnabled = Value(externalSourcesEnabled),
+       updatedAt = Value(updatedAt);
+  static Insertable<FanSearchAgentConfig> custom({
+    Expression<String>? passportId,
+    Expression<String>? provider,
+    Expression<String>? mcpEndpoint,
+    Expression<bool>? connected,
+    Expression<bool>? preferCreators,
+    Expression<bool>? externalSourcesEnabled,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (passportId != null) 'passport_id': passportId,
+      if (provider != null) 'provider': provider,
+      if (mcpEndpoint != null) 'mcp_endpoint': mcpEndpoint,
+      if (connected != null) 'connected': connected,
+      if (preferCreators != null) 'prefer_creators': preferCreators,
+      if (externalSourcesEnabled != null)
+        'external_sources_enabled': externalSourcesEnabled,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FanSearchAgentConfigsCompanion copyWith({
+    Value<String>? passportId,
+    Value<String>? provider,
+    Value<String>? mcpEndpoint,
+    Value<bool>? connected,
+    Value<bool>? preferCreators,
+    Value<bool>? externalSourcesEnabled,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return FanSearchAgentConfigsCompanion(
+      passportId: passportId ?? this.passportId,
+      provider: provider ?? this.provider,
+      mcpEndpoint: mcpEndpoint ?? this.mcpEndpoint,
+      connected: connected ?? this.connected,
+      preferCreators: preferCreators ?? this.preferCreators,
+      externalSourcesEnabled:
+          externalSourcesEnabled ?? this.externalSourcesEnabled,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (provider.present) {
+      map['provider'] = Variable<String>(provider.value);
+    }
+    if (mcpEndpoint.present) {
+      map['mcp_endpoint'] = Variable<String>(mcpEndpoint.value);
+    }
+    if (connected.present) {
+      map['connected'] = Variable<bool>(connected.value);
+    }
+    if (preferCreators.present) {
+      map['prefer_creators'] = Variable<bool>(preferCreators.value);
+    }
+    if (externalSourcesEnabled.present) {
+      map['external_sources_enabled'] = Variable<bool>(
+        externalSourcesEnabled.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FanSearchAgentConfigsCompanion(')
+          ..write('passportId: $passportId, ')
+          ..write('provider: $provider, ')
+          ..write('mcpEndpoint: $mcpEndpoint, ')
+          ..write('connected: $connected, ')
+          ..write('preferCreators: $preferCreators, ')
+          ..write('externalSourcesEnabled: $externalSourcesEnabled, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExternalSourceConnectionsTable extends ExternalSourceConnections
+    with TableInfo<$ExternalSourceConnectionsTable, ExternalSourceConnection> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExternalSourceConnectionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _connectedMeta = const VerificationMeta(
+    'connected',
+  );
+  @override
+  late final GeneratedColumn<bool> connected = GeneratedColumn<bool>(
+    'connected',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("connected" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    sourceType,
+    connected,
+    displayName,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'external_source_connections';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExternalSourceConnection> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceTypeMeta);
+    }
+    if (data.containsKey('connected')) {
+      context.handle(
+        _connectedMeta,
+        connected.isAcceptableOrUnknown(data['connected']!, _connectedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_connectedMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExternalSourceConnection map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExternalSourceConnection(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      )!,
+      connected: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}connected'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExternalSourceConnectionsTable createAlias(String alias) {
+    return $ExternalSourceConnectionsTable(attachedDatabase, alias);
+  }
+}
+
+class ExternalSourceConnection extends DataClass
+    implements Insertable<ExternalSourceConnection> {
+  final String id;
+  final String passportId;
+  final String sourceType;
+  final bool connected;
+  final String displayName;
+  final DateTime updatedAt;
+  const ExternalSourceConnection({
+    required this.id,
+    required this.passportId,
+    required this.sourceType,
+    required this.connected,
+    required this.displayName,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['source_type'] = Variable<String>(sourceType);
+    map['connected'] = Variable<bool>(connected);
+    map['display_name'] = Variable<String>(displayName);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ExternalSourceConnectionsCompanion toCompanion(bool nullToAbsent) {
+    return ExternalSourceConnectionsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      sourceType: Value(sourceType),
+      connected: Value(connected),
+      displayName: Value(displayName),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ExternalSourceConnection.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExternalSourceConnection(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      sourceType: serializer.fromJson<String>(json['sourceType']),
+      connected: serializer.fromJson<bool>(json['connected']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'sourceType': serializer.toJson<String>(sourceType),
+      'connected': serializer.toJson<bool>(connected),
+      'displayName': serializer.toJson<String>(displayName),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ExternalSourceConnection copyWith({
+    String? id,
+    String? passportId,
+    String? sourceType,
+    bool? connected,
+    String? displayName,
+    DateTime? updatedAt,
+  }) => ExternalSourceConnection(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    sourceType: sourceType ?? this.sourceType,
+    connected: connected ?? this.connected,
+    displayName: displayName ?? this.displayName,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ExternalSourceConnection copyWithCompanion(
+    ExternalSourceConnectionsCompanion data,
+  ) {
+    return ExternalSourceConnection(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
+      connected: data.connected.present ? data.connected.value : this.connected,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalSourceConnection(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('connected: $connected, ')
+          ..write('displayName: $displayName, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    sourceType,
+    connected,
+    displayName,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExternalSourceConnection &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.sourceType == this.sourceType &&
+          other.connected == this.connected &&
+          other.displayName == this.displayName &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ExternalSourceConnectionsCompanion
+    extends UpdateCompanion<ExternalSourceConnection> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> sourceType;
+  final Value<bool> connected;
+  final Value<String> displayName;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ExternalSourceConnectionsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.connected = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExternalSourceConnectionsCompanion.insert({
+    required String id,
+    required String passportId,
+    required String sourceType,
+    required bool connected,
+    required String displayName,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       sourceType = Value(sourceType),
+       connected = Value(connected),
+       displayName = Value(displayName),
+       updatedAt = Value(updatedAt);
+  static Insertable<ExternalSourceConnection> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? sourceType,
+    Expression<bool>? connected,
+    Expression<String>? displayName,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (sourceType != null) 'source_type': sourceType,
+      if (connected != null) 'connected': connected,
+      if (displayName != null) 'display_name': displayName,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExternalSourceConnectionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? sourceType,
+    Value<bool>? connected,
+    Value<String>? displayName,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ExternalSourceConnectionsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      sourceType: sourceType ?? this.sourceType,
+      connected: connected ?? this.connected,
+      displayName: displayName ?? this.displayName,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (connected.present) {
+      map['connected'] = Variable<bool>(connected.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalSourceConnectionsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('connected: $connected, ')
+          ..write('displayName: $displayName, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PlatformIntentsTable extends PlatformIntents
     with TableInfo<$PlatformIntentsTable, PlatformIntent> {
   @override
@@ -23897,6 +24842,51 @@ class $PublicImportedReferencesTable extends PublicImportedReferences
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _embedKindMeta = const VerificationMeta(
+    'embedKind',
+  );
+  @override
+  late final GeneratedColumn<String> embedKind = GeneratedColumn<String>(
+    'embed_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _accurateMatchLabelMeta =
+      const VerificationMeta('accurateMatchLabel');
+  @override
+  late final GeneratedColumn<String> accurateMatchLabel =
+      GeneratedColumn<String>(
+        'accurate_match_label',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _sourceAttributionMeta = const VerificationMeta(
+    'sourceAttribution',
+  );
+  @override
+  late final GeneratedColumn<String> sourceAttribution =
+      GeneratedColumn<String>(
+        'source_attribution',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _creatorNoteMeta = const VerificationMeta(
+    'creatorNote',
+  );
+  @override
+  late final GeneratedColumn<String> creatorNote = GeneratedColumn<String>(
+    'creator_note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _publishedAtMeta = const VerificationMeta(
     'publishedAt',
   );
@@ -23969,6 +24959,10 @@ class $PublicImportedReferencesTable extends PublicImportedReferences
     description,
     thumbnailRef,
     sourceUrl,
+    embedKind,
+    accurateMatchLabel,
+    sourceAttribution,
+    creatorNote,
     publishedAt,
     rightsBasis,
     searchIndexable,
@@ -24060,6 +25054,39 @@ class $PublicImportedReferencesTable extends PublicImportedReferences
       context.handle(
         _sourceUrlMeta,
         sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
+    if (data.containsKey('embed_kind')) {
+      context.handle(
+        _embedKindMeta,
+        embedKind.isAcceptableOrUnknown(data['embed_kind']!, _embedKindMeta),
+      );
+    }
+    if (data.containsKey('accurate_match_label')) {
+      context.handle(
+        _accurateMatchLabelMeta,
+        accurateMatchLabel.isAcceptableOrUnknown(
+          data['accurate_match_label']!,
+          _accurateMatchLabelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_attribution')) {
+      context.handle(
+        _sourceAttributionMeta,
+        sourceAttribution.isAcceptableOrUnknown(
+          data['source_attribution']!,
+          _sourceAttributionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('creator_note')) {
+      context.handle(
+        _creatorNoteMeta,
+        creatorNote.isAcceptableOrUnknown(
+          data['creator_note']!,
+          _creatorNoteMeta,
+        ),
       );
     }
     if (data.containsKey('published_at')) {
@@ -24160,6 +25187,22 @@ class $PublicImportedReferencesTable extends PublicImportedReferences
         DriftSqlType.string,
         data['${effectivePrefix}source_url'],
       ),
+      embedKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}embed_kind'],
+      ),
+      accurateMatchLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}accurate_match_label'],
+      ),
+      sourceAttribution: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_attribution'],
+      ),
+      creatorNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}creator_note'],
+      ),
       publishedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}published_at'],
@@ -24200,6 +25243,10 @@ class PublicImportedReference extends DataClass
   final String? description;
   final String? thumbnailRef;
   final String? sourceUrl;
+  final String? embedKind;
+  final String? accurateMatchLabel;
+  final String? sourceAttribution;
+  final String? creatorNote;
   final DateTime? publishedAt;
   final String rightsBasis;
   final bool searchIndexable;
@@ -24215,6 +25262,10 @@ class PublicImportedReference extends DataClass
     this.description,
     this.thumbnailRef,
     this.sourceUrl,
+    this.embedKind,
+    this.accurateMatchLabel,
+    this.sourceAttribution,
+    this.creatorNote,
     this.publishedAt,
     required this.rightsBasis,
     required this.searchIndexable,
@@ -24238,6 +25289,18 @@ class PublicImportedReference extends DataClass
     }
     if (!nullToAbsent || sourceUrl != null) {
       map['source_url'] = Variable<String>(sourceUrl);
+    }
+    if (!nullToAbsent || embedKind != null) {
+      map['embed_kind'] = Variable<String>(embedKind);
+    }
+    if (!nullToAbsent || accurateMatchLabel != null) {
+      map['accurate_match_label'] = Variable<String>(accurateMatchLabel);
+    }
+    if (!nullToAbsent || sourceAttribution != null) {
+      map['source_attribution'] = Variable<String>(sourceAttribution);
+    }
+    if (!nullToAbsent || creatorNote != null) {
+      map['creator_note'] = Variable<String>(creatorNote);
     }
     if (!nullToAbsent || publishedAt != null) {
       map['published_at'] = Variable<DateTime>(publishedAt);
@@ -24266,6 +25329,18 @@ class PublicImportedReference extends DataClass
       sourceUrl: sourceUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(sourceUrl),
+      embedKind: embedKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(embedKind),
+      accurateMatchLabel: accurateMatchLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accurateMatchLabel),
+      sourceAttribution: sourceAttribution == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceAttribution),
+      creatorNote: creatorNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creatorNote),
       publishedAt: publishedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(publishedAt),
@@ -24291,6 +25366,14 @@ class PublicImportedReference extends DataClass
       description: serializer.fromJson<String?>(json['description']),
       thumbnailRef: serializer.fromJson<String?>(json['thumbnailRef']),
       sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
+      embedKind: serializer.fromJson<String?>(json['embedKind']),
+      accurateMatchLabel: serializer.fromJson<String?>(
+        json['accurateMatchLabel'],
+      ),
+      sourceAttribution: serializer.fromJson<String?>(
+        json['sourceAttribution'],
+      ),
+      creatorNote: serializer.fromJson<String?>(json['creatorNote']),
       publishedAt: serializer.fromJson<DateTime?>(json['publishedAt']),
       rightsBasis: serializer.fromJson<String>(json['rightsBasis']),
       searchIndexable: serializer.fromJson<bool>(json['searchIndexable']),
@@ -24311,6 +25394,10 @@ class PublicImportedReference extends DataClass
       'description': serializer.toJson<String?>(description),
       'thumbnailRef': serializer.toJson<String?>(thumbnailRef),
       'sourceUrl': serializer.toJson<String?>(sourceUrl),
+      'embedKind': serializer.toJson<String?>(embedKind),
+      'accurateMatchLabel': serializer.toJson<String?>(accurateMatchLabel),
+      'sourceAttribution': serializer.toJson<String?>(sourceAttribution),
+      'creatorNote': serializer.toJson<String?>(creatorNote),
       'publishedAt': serializer.toJson<DateTime?>(publishedAt),
       'rightsBasis': serializer.toJson<String>(rightsBasis),
       'searchIndexable': serializer.toJson<bool>(searchIndexable),
@@ -24329,6 +25416,10 @@ class PublicImportedReference extends DataClass
     Value<String?> description = const Value.absent(),
     Value<String?> thumbnailRef = const Value.absent(),
     Value<String?> sourceUrl = const Value.absent(),
+    Value<String?> embedKind = const Value.absent(),
+    Value<String?> accurateMatchLabel = const Value.absent(),
+    Value<String?> sourceAttribution = const Value.absent(),
+    Value<String?> creatorNote = const Value.absent(),
     Value<DateTime?> publishedAt = const Value.absent(),
     String? rightsBasis,
     bool? searchIndexable,
@@ -24344,6 +25435,14 @@ class PublicImportedReference extends DataClass
     description: description.present ? description.value : this.description,
     thumbnailRef: thumbnailRef.present ? thumbnailRef.value : this.thumbnailRef,
     sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
+    embedKind: embedKind.present ? embedKind.value : this.embedKind,
+    accurateMatchLabel: accurateMatchLabel.present
+        ? accurateMatchLabel.value
+        : this.accurateMatchLabel,
+    sourceAttribution: sourceAttribution.present
+        ? sourceAttribution.value
+        : this.sourceAttribution,
+    creatorNote: creatorNote.present ? creatorNote.value : this.creatorNote,
     publishedAt: publishedAt.present ? publishedAt.value : this.publishedAt,
     rightsBasis: rightsBasis ?? this.rightsBasis,
     searchIndexable: searchIndexable ?? this.searchIndexable,
@@ -24371,6 +25470,16 @@ class PublicImportedReference extends DataClass
           ? data.thumbnailRef.value
           : this.thumbnailRef,
       sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
+      embedKind: data.embedKind.present ? data.embedKind.value : this.embedKind,
+      accurateMatchLabel: data.accurateMatchLabel.present
+          ? data.accurateMatchLabel.value
+          : this.accurateMatchLabel,
+      sourceAttribution: data.sourceAttribution.present
+          ? data.sourceAttribution.value
+          : this.sourceAttribution,
+      creatorNote: data.creatorNote.present
+          ? data.creatorNote.value
+          : this.creatorNote,
       publishedAt: data.publishedAt.present
           ? data.publishedAt.value
           : this.publishedAt,
@@ -24399,6 +25508,10 @@ class PublicImportedReference extends DataClass
           ..write('description: $description, ')
           ..write('thumbnailRef: $thumbnailRef, ')
           ..write('sourceUrl: $sourceUrl, ')
+          ..write('embedKind: $embedKind, ')
+          ..write('accurateMatchLabel: $accurateMatchLabel, ')
+          ..write('sourceAttribution: $sourceAttribution, ')
+          ..write('creatorNote: $creatorNote, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('rightsBasis: $rightsBasis, ')
           ..write('searchIndexable: $searchIndexable, ')
@@ -24419,6 +25532,10 @@ class PublicImportedReference extends DataClass
     description,
     thumbnailRef,
     sourceUrl,
+    embedKind,
+    accurateMatchLabel,
+    sourceAttribution,
+    creatorNote,
     publishedAt,
     rightsBasis,
     searchIndexable,
@@ -24438,6 +25555,10 @@ class PublicImportedReference extends DataClass
           other.description == this.description &&
           other.thumbnailRef == this.thumbnailRef &&
           other.sourceUrl == this.sourceUrl &&
+          other.embedKind == this.embedKind &&
+          other.accurateMatchLabel == this.accurateMatchLabel &&
+          other.sourceAttribution == this.sourceAttribution &&
+          other.creatorNote == this.creatorNote &&
           other.publishedAt == this.publishedAt &&
           other.rightsBasis == this.rightsBasis &&
           other.searchIndexable == this.searchIndexable &&
@@ -24456,6 +25577,10 @@ class PublicImportedReferencesCompanion
   final Value<String?> description;
   final Value<String?> thumbnailRef;
   final Value<String?> sourceUrl;
+  final Value<String?> embedKind;
+  final Value<String?> accurateMatchLabel;
+  final Value<String?> sourceAttribution;
+  final Value<String?> creatorNote;
   final Value<DateTime?> publishedAt;
   final Value<String> rightsBasis;
   final Value<bool> searchIndexable;
@@ -24472,6 +25597,10 @@ class PublicImportedReferencesCompanion
     this.description = const Value.absent(),
     this.thumbnailRef = const Value.absent(),
     this.sourceUrl = const Value.absent(),
+    this.embedKind = const Value.absent(),
+    this.accurateMatchLabel = const Value.absent(),
+    this.sourceAttribution = const Value.absent(),
+    this.creatorNote = const Value.absent(),
     this.publishedAt = const Value.absent(),
     this.rightsBasis = const Value.absent(),
     this.searchIndexable = const Value.absent(),
@@ -24489,6 +25618,10 @@ class PublicImportedReferencesCompanion
     this.description = const Value.absent(),
     this.thumbnailRef = const Value.absent(),
     this.sourceUrl = const Value.absent(),
+    this.embedKind = const Value.absent(),
+    this.accurateMatchLabel = const Value.absent(),
+    this.sourceAttribution = const Value.absent(),
+    this.creatorNote = const Value.absent(),
     this.publishedAt = const Value.absent(),
     required String rightsBasis,
     required bool searchIndexable,
@@ -24515,6 +25648,10 @@ class PublicImportedReferencesCompanion
     Expression<String>? description,
     Expression<String>? thumbnailRef,
     Expression<String>? sourceUrl,
+    Expression<String>? embedKind,
+    Expression<String>? accurateMatchLabel,
+    Expression<String>? sourceAttribution,
+    Expression<String>? creatorNote,
     Expression<DateTime>? publishedAt,
     Expression<String>? rightsBasis,
     Expression<bool>? searchIndexable,
@@ -24532,6 +25669,11 @@ class PublicImportedReferencesCompanion
       if (description != null) 'description': description,
       if (thumbnailRef != null) 'thumbnail_ref': thumbnailRef,
       if (sourceUrl != null) 'source_url': sourceUrl,
+      if (embedKind != null) 'embed_kind': embedKind,
+      if (accurateMatchLabel != null)
+        'accurate_match_label': accurateMatchLabel,
+      if (sourceAttribution != null) 'source_attribution': sourceAttribution,
+      if (creatorNote != null) 'creator_note': creatorNote,
       if (publishedAt != null) 'published_at': publishedAt,
       if (rightsBasis != null) 'rights_basis': rightsBasis,
       if (searchIndexable != null) 'search_indexable': searchIndexable,
@@ -24551,6 +25693,10 @@ class PublicImportedReferencesCompanion
     Value<String?>? description,
     Value<String?>? thumbnailRef,
     Value<String?>? sourceUrl,
+    Value<String?>? embedKind,
+    Value<String?>? accurateMatchLabel,
+    Value<String?>? sourceAttribution,
+    Value<String?>? creatorNote,
     Value<DateTime?>? publishedAt,
     Value<String>? rightsBasis,
     Value<bool>? searchIndexable,
@@ -24568,6 +25714,10 @@ class PublicImportedReferencesCompanion
       description: description ?? this.description,
       thumbnailRef: thumbnailRef ?? this.thumbnailRef,
       sourceUrl: sourceUrl ?? this.sourceUrl,
+      embedKind: embedKind ?? this.embedKind,
+      accurateMatchLabel: accurateMatchLabel ?? this.accurateMatchLabel,
+      sourceAttribution: sourceAttribution ?? this.sourceAttribution,
+      creatorNote: creatorNote ?? this.creatorNote,
       publishedAt: publishedAt ?? this.publishedAt,
       rightsBasis: rightsBasis ?? this.rightsBasis,
       searchIndexable: searchIndexable ?? this.searchIndexable,
@@ -24607,6 +25757,18 @@ class PublicImportedReferencesCompanion
     if (sourceUrl.present) {
       map['source_url'] = Variable<String>(sourceUrl.value);
     }
+    if (embedKind.present) {
+      map['embed_kind'] = Variable<String>(embedKind.value);
+    }
+    if (accurateMatchLabel.present) {
+      map['accurate_match_label'] = Variable<String>(accurateMatchLabel.value);
+    }
+    if (sourceAttribution.present) {
+      map['source_attribution'] = Variable<String>(sourceAttribution.value);
+    }
+    if (creatorNote.present) {
+      map['creator_note'] = Variable<String>(creatorNote.value);
+    }
     if (publishedAt.present) {
       map['published_at'] = Variable<DateTime>(publishedAt.value);
     }
@@ -24640,10 +25802,494 @@ class PublicImportedReferencesCompanion
           ..write('description: $description, ')
           ..write('thumbnailRef: $thumbnailRef, ')
           ..write('sourceUrl: $sourceUrl, ')
+          ..write('embedKind: $embedKind, ')
+          ..write('accurateMatchLabel: $accurateMatchLabel, ')
+          ..write('sourceAttribution: $sourceAttribution, ')
+          ..write('creatorNote: $creatorNote, ')
           ..write('publishedAt: $publishedAt, ')
           ..write('rightsBasis: $rightsBasis, ')
           ..write('searchIndexable: $searchIndexable, ')
           ..write('aiQueryable: $aiQueryable, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AiSearchRunsTable extends AiSearchRuns
+    with TableInfo<$AiSearchRunsTable, AiSearchRun> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AiSearchRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _runIdMeta = const VerificationMeta('runId');
+  @override
+  late final GeneratedColumn<String> runId = GeneratedColumn<String>(
+    'run_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _queryMeta = const VerificationMeta('query');
+  @override
+  late final GeneratedColumn<String> query = GeneratedColumn<String>(
+    'query',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _agentProviderMeta = const VerificationMeta(
+    'agentProvider',
+  );
+  @override
+  late final GeneratedColumn<String> agentProvider = GeneratedColumn<String>(
+    'agent_provider',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resultRefsJsonMeta = const VerificationMeta(
+    'resultRefsJson',
+  );
+  @override
+  late final GeneratedColumn<String> resultRefsJson = GeneratedColumn<String>(
+    'result_refs_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
+    'receipt_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    runId,
+    passportId,
+    query,
+    agentProvider,
+    resultRefsJson,
+    receiptId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ai_search_runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AiSearchRun> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('run_id')) {
+      context.handle(
+        _runIdMeta,
+        runId.isAcceptableOrUnknown(data['run_id']!, _runIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_runIdMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('query')) {
+      context.handle(
+        _queryMeta,
+        query.isAcceptableOrUnknown(data['query']!, _queryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_queryMeta);
+    }
+    if (data.containsKey('agent_provider')) {
+      context.handle(
+        _agentProviderMeta,
+        agentProvider.isAcceptableOrUnknown(
+          data['agent_provider']!,
+          _agentProviderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_agentProviderMeta);
+    }
+    if (data.containsKey('result_refs_json')) {
+      context.handle(
+        _resultRefsJsonMeta,
+        resultRefsJson.isAcceptableOrUnknown(
+          data['result_refs_json']!,
+          _resultRefsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resultRefsJsonMeta);
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_receiptIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {runId};
+  @override
+  AiSearchRun map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AiSearchRun(
+      runId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}run_id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      query: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}query'],
+      )!,
+      agentProvider: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}agent_provider'],
+      )!,
+      resultRefsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_refs_json'],
+      )!,
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AiSearchRunsTable createAlias(String alias) {
+    return $AiSearchRunsTable(attachedDatabase, alias);
+  }
+}
+
+class AiSearchRun extends DataClass implements Insertable<AiSearchRun> {
+  final String runId;
+  final String passportId;
+  final String query;
+  final String agentProvider;
+  final String resultRefsJson;
+  final String receiptId;
+  final DateTime createdAt;
+  const AiSearchRun({
+    required this.runId,
+    required this.passportId,
+    required this.query,
+    required this.agentProvider,
+    required this.resultRefsJson,
+    required this.receiptId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['run_id'] = Variable<String>(runId);
+    map['passport_id'] = Variable<String>(passportId);
+    map['query'] = Variable<String>(query);
+    map['agent_provider'] = Variable<String>(agentProvider);
+    map['result_refs_json'] = Variable<String>(resultRefsJson);
+    map['receipt_id'] = Variable<String>(receiptId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AiSearchRunsCompanion toCompanion(bool nullToAbsent) {
+    return AiSearchRunsCompanion(
+      runId: Value(runId),
+      passportId: Value(passportId),
+      query: Value(query),
+      agentProvider: Value(agentProvider),
+      resultRefsJson: Value(resultRefsJson),
+      receiptId: Value(receiptId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AiSearchRun.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AiSearchRun(
+      runId: serializer.fromJson<String>(json['runId']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      query: serializer.fromJson<String>(json['query']),
+      agentProvider: serializer.fromJson<String>(json['agentProvider']),
+      resultRefsJson: serializer.fromJson<String>(json['resultRefsJson']),
+      receiptId: serializer.fromJson<String>(json['receiptId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'runId': serializer.toJson<String>(runId),
+      'passportId': serializer.toJson<String>(passportId),
+      'query': serializer.toJson<String>(query),
+      'agentProvider': serializer.toJson<String>(agentProvider),
+      'resultRefsJson': serializer.toJson<String>(resultRefsJson),
+      'receiptId': serializer.toJson<String>(receiptId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AiSearchRun copyWith({
+    String? runId,
+    String? passportId,
+    String? query,
+    String? agentProvider,
+    String? resultRefsJson,
+    String? receiptId,
+    DateTime? createdAt,
+  }) => AiSearchRun(
+    runId: runId ?? this.runId,
+    passportId: passportId ?? this.passportId,
+    query: query ?? this.query,
+    agentProvider: agentProvider ?? this.agentProvider,
+    resultRefsJson: resultRefsJson ?? this.resultRefsJson,
+    receiptId: receiptId ?? this.receiptId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AiSearchRun copyWithCompanion(AiSearchRunsCompanion data) {
+    return AiSearchRun(
+      runId: data.runId.present ? data.runId.value : this.runId,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      query: data.query.present ? data.query.value : this.query,
+      agentProvider: data.agentProvider.present
+          ? data.agentProvider.value
+          : this.agentProvider,
+      resultRefsJson: data.resultRefsJson.present
+          ? data.resultRefsJson.value
+          : this.resultRefsJson,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiSearchRun(')
+          ..write('runId: $runId, ')
+          ..write('passportId: $passportId, ')
+          ..write('query: $query, ')
+          ..write('agentProvider: $agentProvider, ')
+          ..write('resultRefsJson: $resultRefsJson, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runId,
+    passportId,
+    query,
+    agentProvider,
+    resultRefsJson,
+    receiptId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AiSearchRun &&
+          other.runId == this.runId &&
+          other.passportId == this.passportId &&
+          other.query == this.query &&
+          other.agentProvider == this.agentProvider &&
+          other.resultRefsJson == this.resultRefsJson &&
+          other.receiptId == this.receiptId &&
+          other.createdAt == this.createdAt);
+}
+
+class AiSearchRunsCompanion extends UpdateCompanion<AiSearchRun> {
+  final Value<String> runId;
+  final Value<String> passportId;
+  final Value<String> query;
+  final Value<String> agentProvider;
+  final Value<String> resultRefsJson;
+  final Value<String> receiptId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const AiSearchRunsCompanion({
+    this.runId = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.query = const Value.absent(),
+    this.agentProvider = const Value.absent(),
+    this.resultRefsJson = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AiSearchRunsCompanion.insert({
+    required String runId,
+    required String passportId,
+    required String query,
+    required String agentProvider,
+    required String resultRefsJson,
+    required String receiptId,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : runId = Value(runId),
+       passportId = Value(passportId),
+       query = Value(query),
+       agentProvider = Value(agentProvider),
+       resultRefsJson = Value(resultRefsJson),
+       receiptId = Value(receiptId),
+       createdAt = Value(createdAt);
+  static Insertable<AiSearchRun> custom({
+    Expression<String>? runId,
+    Expression<String>? passportId,
+    Expression<String>? query,
+    Expression<String>? agentProvider,
+    Expression<String>? resultRefsJson,
+    Expression<String>? receiptId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (runId != null) 'run_id': runId,
+      if (passportId != null) 'passport_id': passportId,
+      if (query != null) 'query': query,
+      if (agentProvider != null) 'agent_provider': agentProvider,
+      if (resultRefsJson != null) 'result_refs_json': resultRefsJson,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AiSearchRunsCompanion copyWith({
+    Value<String>? runId,
+    Value<String>? passportId,
+    Value<String>? query,
+    Value<String>? agentProvider,
+    Value<String>? resultRefsJson,
+    Value<String>? receiptId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return AiSearchRunsCompanion(
+      runId: runId ?? this.runId,
+      passportId: passportId ?? this.passportId,
+      query: query ?? this.query,
+      agentProvider: agentProvider ?? this.agentProvider,
+      resultRefsJson: resultRefsJson ?? this.resultRefsJson,
+      receiptId: receiptId ?? this.receiptId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (runId.present) {
+      map['run_id'] = Variable<String>(runId.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (query.present) {
+      map['query'] = Variable<String>(query.value);
+    }
+    if (agentProvider.present) {
+      map['agent_provider'] = Variable<String>(agentProvider.value);
+    }
+    if (resultRefsJson.present) {
+      map['result_refs_json'] = Variable<String>(resultRefsJson.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AiSearchRunsCompanion(')
+          ..write('runId: $runId, ')
+          ..write('passportId: $passportId, ')
+          ..write('query: $query, ')
+          ..write('agentProvider: $agentProvider, ')
+          ..write('resultRefsJson: $resultRefsJson, ')
+          ..write('receiptId: $receiptId, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -28440,6 +30086,10 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
       $FanInterestProfilesTable(this);
   late final $FanRankingPreferencesTable fanRankingPreferences =
       $FanRankingPreferencesTable(this);
+  late final $FanSearchAgentConfigsTable fanSearchAgentConfigs =
+      $FanSearchAgentConfigsTable(this);
+  late final $ExternalSourceConnectionsTable externalSourceConnections =
+      $ExternalSourceConnectionsTable(this);
   late final $PlatformIntentsTable platformIntents = $PlatformIntentsTable(
     this,
   );
@@ -28469,6 +30119,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
       $PublicMetadataImportJobsTable(this);
   late final $PublicImportedReferencesTable publicImportedReferences =
       $PublicImportedReferencesTable(this);
+  late final $AiSearchRunsTable aiSearchRuns = $AiSearchRunsTable(this);
   late final $CrossPostJobsTable crossPostJobs = $CrossPostJobsTable(this);
   late final $AdDecisionsTable adDecisions = $AdDecisionsTable(this);
   late final $AdImpressionsTable adImpressions = $AdImpressionsTable(this);
@@ -28524,6 +30175,8 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     interestTaxonomy,
     fanInterestProfiles,
     fanRankingPreferences,
+    fanSearchAgentConfigs,
+    externalSourceConnections,
     platformIntents,
     sessionIntents,
     fanFeedback,
@@ -28543,6 +30196,7 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     externalAccounts,
     publicMetadataImportJobs,
     publicImportedReferences,
+    aiSearchRuns,
     crossPostJobs,
     adDecisions,
     adImpressions,
@@ -33731,6 +35385,62 @@ final class $$FanPassportsTableReferences
     );
   }
 
+  static MultiTypedResultKey<
+    $FanSearchAgentConfigsTable,
+    List<FanSearchAgentConfig>
+  >
+  _fanSearchAgentConfigsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.fanSearchAgentConfigs,
+        aliasName: $_aliasNameGenerator(
+          db.fanPassports.id,
+          db.fanSearchAgentConfigs.passportId,
+        ),
+      );
+
+  $$FanSearchAgentConfigsTableProcessedTableManager
+  get fanSearchAgentConfigsRefs {
+    final manager = $$FanSearchAgentConfigsTableTableManager(
+      $_db,
+      $_db.fanSearchAgentConfigs,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _fanSearchAgentConfigsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ExternalSourceConnectionsTable,
+    List<ExternalSourceConnection>
+  >
+  _externalSourceConnectionsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.externalSourceConnections,
+        aliasName: $_aliasNameGenerator(
+          db.fanPassports.id,
+          db.externalSourceConnections.passportId,
+        ),
+      );
+
+  $$ExternalSourceConnectionsTableProcessedTableManager
+  get externalSourceConnectionsRefs {
+    final manager = $$ExternalSourceConnectionsTableTableManager(
+      $_db,
+      $_db.externalSourceConnections,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _externalSourceConnectionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$SessionIntentsTable, List<SessionIntent>>
   _sessionIntentsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
     db.sessionIntents,
@@ -33871,6 +35581,27 @@ final class $$FanPassportsTableReferences
     ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_bulkFollowJobsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AiSearchRunsTable, List<AiSearchRun>>
+  _aiSearchRunsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.aiSearchRuns,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.aiSearchRuns.passportId,
+    ),
+  );
+
+  $$AiSearchRunsTableProcessedTableManager get aiSearchRunsRefs {
+    final manager = $$AiSearchRunsTableTableManager(
+      $_db,
+      $_db.aiSearchRuns,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_aiSearchRunsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -34332,6 +36063,59 @@ class $$FanPassportsTableFilterComposer
     return f(composer);
   }
 
+  Expression<bool> fanSearchAgentConfigsRefs(
+    Expression<bool> Function($$FanSearchAgentConfigsTableFilterComposer f) f,
+  ) {
+    final $$FanSearchAgentConfigsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.fanSearchAgentConfigs,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$FanSearchAgentConfigsTableFilterComposer(
+                $db: $db,
+                $table: $db.fanSearchAgentConfigs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> externalSourceConnectionsRefs(
+    Expression<bool> Function($$ExternalSourceConnectionsTableFilterComposer f)
+    f,
+  ) {
+    final $$ExternalSourceConnectionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.externalSourceConnections,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExternalSourceConnectionsTableFilterComposer(
+                $db: $db,
+                $table: $db.externalSourceConnections,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<bool> sessionIntentsRefs(
     Expression<bool> Function($$SessionIntentsTableFilterComposer f) f,
   ) {
@@ -34498,6 +36282,31 @@ class $$FanPassportsTableFilterComposer
           }) => $$BulkFollowJobsTableFilterComposer(
             $db: $db,
             $table: $db.bulkFollowJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> aiSearchRunsRefs(
+    Expression<bool> Function($$AiSearchRunsTableFilterComposer f) f,
+  ) {
+    final $$AiSearchRunsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.aiSearchRuns,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AiSearchRunsTableFilterComposer(
+            $db: $db,
+            $table: $db.aiSearchRuns,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -34995,6 +36804,59 @@ class $$FanPassportsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> fanSearchAgentConfigsRefs<T extends Object>(
+    Expression<T> Function($$FanSearchAgentConfigsTableAnnotationComposer a) f,
+  ) {
+    final $$FanSearchAgentConfigsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.fanSearchAgentConfigs,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$FanSearchAgentConfigsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.fanSearchAgentConfigs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> externalSourceConnectionsRefs<T extends Object>(
+    Expression<T> Function($$ExternalSourceConnectionsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$ExternalSourceConnectionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.externalSourceConnections,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExternalSourceConnectionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.externalSourceConnections,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> sessionIntentsRefs<T extends Object>(
     Expression<T> Function($$SessionIntentsTableAnnotationComposer a) f,
   ) {
@@ -35170,6 +37032,31 @@ class $$FanPassportsTableAnnotationComposer
     return f(composer);
   }
 
+  Expression<T> aiSearchRunsRefs<T extends Object>(
+    Expression<T> Function($$AiSearchRunsTableAnnotationComposer a) f,
+  ) {
+    final $$AiSearchRunsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.aiSearchRuns,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AiSearchRunsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.aiSearchRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> premiumNoAdEventsRefs<T extends Object>(
     Expression<T> Function($$PremiumNoAdEventsTableAnnotationComposer a) f,
   ) {
@@ -35227,6 +37114,8 @@ class $$FanPassportsTableTableManager
             bool tombstonesRefs,
             bool fanInterestProfilesRefs,
             bool fanRankingPreferencesRefs,
+            bool fanSearchAgentConfigsRefs,
+            bool externalSourceConnectionsRefs,
             bool sessionIntentsRefs,
             bool fanFeedbackRefs,
             bool playbackTokensRefs,
@@ -35234,6 +37123,7 @@ class $$FanPassportsTableTableManager
             bool adPreferencesRefs,
             bool reFollowEventsRefs,
             bool bulkFollowJobsRefs,
+            bool aiSearchRunsRefs,
             bool premiumNoAdEventsRefs,
           })
         > {
@@ -35302,6 +37192,8 @@ class $$FanPassportsTableTableManager
                 tombstonesRefs = false,
                 fanInterestProfilesRefs = false,
                 fanRankingPreferencesRefs = false,
+                fanSearchAgentConfigsRefs = false,
+                externalSourceConnectionsRefs = false,
                 sessionIntentsRefs = false,
                 fanFeedbackRefs = false,
                 playbackTokensRefs = false,
@@ -35309,6 +37201,7 @@ class $$FanPassportsTableTableManager
                 adPreferencesRefs = false,
                 reFollowEventsRefs = false,
                 bulkFollowJobsRefs = false,
+                aiSearchRunsRefs = false,
                 premiumNoAdEventsRefs = false,
               }) {
                 return PrefetchHooks(
@@ -35330,6 +37223,9 @@ class $$FanPassportsTableTableManager
                     if (tombstonesRefs) db.tombstones,
                     if (fanInterestProfilesRefs) db.fanInterestProfiles,
                     if (fanRankingPreferencesRefs) db.fanRankingPreferences,
+                    if (fanSearchAgentConfigsRefs) db.fanSearchAgentConfigs,
+                    if (externalSourceConnectionsRefs)
+                      db.externalSourceConnections,
                     if (sessionIntentsRefs) db.sessionIntents,
                     if (fanFeedbackRefs) db.fanFeedback,
                     if (playbackTokensRefs) db.playbackTokens,
@@ -35337,6 +37233,7 @@ class $$FanPassportsTableTableManager
                     if (adPreferencesRefs) db.adPreferences,
                     if (reFollowEventsRefs) db.reFollowEvents,
                     if (bulkFollowJobsRefs) db.bulkFollowJobs,
+                    if (aiSearchRunsRefs) db.aiSearchRuns,
                     if (premiumNoAdEventsRefs) db.premiumNoAdEvents,
                   ],
                   addJoins: null,
@@ -35678,6 +37575,48 @@ class $$FanPassportsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (fanSearchAgentConfigsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          FanSearchAgentConfig
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._fanSearchAgentConfigsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).fanSearchAgentConfigsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (externalSourceConnectionsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          ExternalSourceConnection
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._externalSourceConnectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).externalSourceConnectionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (sessionIntentsRefs)
                         await $_getPrefetchedData<
                           FanPassport,
@@ -35825,6 +37764,27 @@ class $$FanPassportsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (aiSearchRunsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          AiSearchRun
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._aiSearchRunsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).aiSearchRunsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (premiumNoAdEventsRefs)
                         await $_getPrefetchedData<
                           FanPassport,
@@ -35883,6 +37843,8 @@ typedef $$FanPassportsTableProcessedTableManager =
         bool tombstonesRefs,
         bool fanInterestProfilesRefs,
         bool fanRankingPreferencesRefs,
+        bool fanSearchAgentConfigsRefs,
+        bool externalSourceConnectionsRefs,
         bool sessionIntentsRefs,
         bool fanFeedbackRefs,
         bool playbackTokensRefs,
@@ -35890,6 +37852,7 @@ typedef $$FanPassportsTableProcessedTableManager =
         bool adPreferencesRefs,
         bool reFollowEventsRefs,
         bool bulkFollowJobsRefs,
+        bool aiSearchRunsRefs,
         bool premiumNoAdEventsRefs,
       })
     >;
@@ -44598,6 +46561,764 @@ typedef $$FanRankingPreferencesTableProcessedTableManager =
       FanRankingPreference,
       PrefetchHooks Function({bool passportId})
     >;
+typedef $$FanSearchAgentConfigsTableCreateCompanionBuilder =
+    FanSearchAgentConfigsCompanion Function({
+      required String passportId,
+      required String provider,
+      required String mcpEndpoint,
+      required bool connected,
+      required bool preferCreators,
+      required bool externalSourcesEnabled,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$FanSearchAgentConfigsTableUpdateCompanionBuilder =
+    FanSearchAgentConfigsCompanion Function({
+      Value<String> passportId,
+      Value<String> provider,
+      Value<String> mcpEndpoint,
+      Value<bool> connected,
+      Value<bool> preferCreators,
+      Value<bool> externalSourcesEnabled,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$FanSearchAgentConfigsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $FanSearchAgentConfigsTable,
+          FanSearchAgentConfig
+        > {
+  $$FanSearchAgentConfigsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(
+          db.fanSearchAgentConfigs.passportId,
+          db.fanPassports.id,
+        ),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FanSearchAgentConfigsTableFilterComposer
+    extends Composer<_$LoomDatabase, $FanSearchAgentConfigsTable> {
+  $$FanSearchAgentConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mcpEndpoint => $composableBuilder(
+    column: $table.mcpEndpoint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get connected => $composableBuilder(
+    column: $table.connected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get preferCreators => $composableBuilder(
+    column: $table.preferCreators,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get externalSourcesEnabled => $composableBuilder(
+    column: $table.externalSourcesEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FanSearchAgentConfigsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $FanSearchAgentConfigsTable> {
+  $$FanSearchAgentConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get provider => $composableBuilder(
+    column: $table.provider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mcpEndpoint => $composableBuilder(
+    column: $table.mcpEndpoint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get connected => $composableBuilder(
+    column: $table.connected,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get preferCreators => $composableBuilder(
+    column: $table.preferCreators,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get externalSourcesEnabled => $composableBuilder(
+    column: $table.externalSourcesEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FanSearchAgentConfigsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $FanSearchAgentConfigsTable> {
+  $$FanSearchAgentConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get provider =>
+      $composableBuilder(column: $table.provider, builder: (column) => column);
+
+  GeneratedColumn<String> get mcpEndpoint => $composableBuilder(
+    column: $table.mcpEndpoint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get connected =>
+      $composableBuilder(column: $table.connected, builder: (column) => column);
+
+  GeneratedColumn<bool> get preferCreators => $composableBuilder(
+    column: $table.preferCreators,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get externalSourcesEnabled => $composableBuilder(
+    column: $table.externalSourcesEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FanSearchAgentConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $FanSearchAgentConfigsTable,
+          FanSearchAgentConfig,
+          $$FanSearchAgentConfigsTableFilterComposer,
+          $$FanSearchAgentConfigsTableOrderingComposer,
+          $$FanSearchAgentConfigsTableAnnotationComposer,
+          $$FanSearchAgentConfigsTableCreateCompanionBuilder,
+          $$FanSearchAgentConfigsTableUpdateCompanionBuilder,
+          (FanSearchAgentConfig, $$FanSearchAgentConfigsTableReferences),
+          FanSearchAgentConfig,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$FanSearchAgentConfigsTableTableManager(
+    _$LoomDatabase db,
+    $FanSearchAgentConfigsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FanSearchAgentConfigsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$FanSearchAgentConfigsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$FanSearchAgentConfigsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> passportId = const Value.absent(),
+                Value<String> provider = const Value.absent(),
+                Value<String> mcpEndpoint = const Value.absent(),
+                Value<bool> connected = const Value.absent(),
+                Value<bool> preferCreators = const Value.absent(),
+                Value<bool> externalSourcesEnabled = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FanSearchAgentConfigsCompanion(
+                passportId: passportId,
+                provider: provider,
+                mcpEndpoint: mcpEndpoint,
+                connected: connected,
+                preferCreators: preferCreators,
+                externalSourcesEnabled: externalSourcesEnabled,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String passportId,
+                required String provider,
+                required String mcpEndpoint,
+                required bool connected,
+                required bool preferCreators,
+                required bool externalSourcesEnabled,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => FanSearchAgentConfigsCompanion.insert(
+                passportId: passportId,
+                provider: provider,
+                mcpEndpoint: mcpEndpoint,
+                connected: connected,
+                preferCreators: preferCreators,
+                externalSourcesEnabled: externalSourcesEnabled,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$FanSearchAgentConfigsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable:
+                                    $$FanSearchAgentConfigsTableReferences
+                                        ._passportIdTable(db),
+                                referencedColumn:
+                                    $$FanSearchAgentConfigsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FanSearchAgentConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $FanSearchAgentConfigsTable,
+      FanSearchAgentConfig,
+      $$FanSearchAgentConfigsTableFilterComposer,
+      $$FanSearchAgentConfigsTableOrderingComposer,
+      $$FanSearchAgentConfigsTableAnnotationComposer,
+      $$FanSearchAgentConfigsTableCreateCompanionBuilder,
+      $$FanSearchAgentConfigsTableUpdateCompanionBuilder,
+      (FanSearchAgentConfig, $$FanSearchAgentConfigsTableReferences),
+      FanSearchAgentConfig,
+      PrefetchHooks Function({bool passportId})
+    >;
+typedef $$ExternalSourceConnectionsTableCreateCompanionBuilder =
+    ExternalSourceConnectionsCompanion Function({
+      required String id,
+      required String passportId,
+      required String sourceType,
+      required bool connected,
+      required String displayName,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ExternalSourceConnectionsTableUpdateCompanionBuilder =
+    ExternalSourceConnectionsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> sourceType,
+      Value<bool> connected,
+      Value<String> displayName,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ExternalSourceConnectionsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $ExternalSourceConnectionsTable,
+          ExternalSourceConnection
+        > {
+  $$ExternalSourceConnectionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(
+          db.externalSourceConnections.passportId,
+          db.fanPassports.id,
+        ),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ExternalSourceConnectionsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ExternalSourceConnectionsTable> {
+  $$ExternalSourceConnectionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get connected => $composableBuilder(
+    column: $table.connected,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalSourceConnectionsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ExternalSourceConnectionsTable> {
+  $$ExternalSourceConnectionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get connected => $composableBuilder(
+    column: $table.connected,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalSourceConnectionsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ExternalSourceConnectionsTable> {
+  $$ExternalSourceConnectionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get connected =>
+      $composableBuilder(column: $table.connected, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalSourceConnectionsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ExternalSourceConnectionsTable,
+          ExternalSourceConnection,
+          $$ExternalSourceConnectionsTableFilterComposer,
+          $$ExternalSourceConnectionsTableOrderingComposer,
+          $$ExternalSourceConnectionsTableAnnotationComposer,
+          $$ExternalSourceConnectionsTableCreateCompanionBuilder,
+          $$ExternalSourceConnectionsTableUpdateCompanionBuilder,
+          (
+            ExternalSourceConnection,
+            $$ExternalSourceConnectionsTableReferences,
+          ),
+          ExternalSourceConnection,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$ExternalSourceConnectionsTableTableManager(
+    _$LoomDatabase db,
+    $ExternalSourceConnectionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExternalSourceConnectionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ExternalSourceConnectionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ExternalSourceConnectionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> sourceType = const Value.absent(),
+                Value<bool> connected = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalSourceConnectionsCompanion(
+                id: id,
+                passportId: passportId,
+                sourceType: sourceType,
+                connected: connected,
+                displayName: displayName,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String sourceType,
+                required bool connected,
+                required String displayName,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalSourceConnectionsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                sourceType: sourceType,
+                connected: connected,
+                displayName: displayName,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExternalSourceConnectionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable:
+                                    $$ExternalSourceConnectionsTableReferences
+                                        ._passportIdTable(db),
+                                referencedColumn:
+                                    $$ExternalSourceConnectionsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ExternalSourceConnectionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ExternalSourceConnectionsTable,
+      ExternalSourceConnection,
+      $$ExternalSourceConnectionsTableFilterComposer,
+      $$ExternalSourceConnectionsTableOrderingComposer,
+      $$ExternalSourceConnectionsTableAnnotationComposer,
+      $$ExternalSourceConnectionsTableCreateCompanionBuilder,
+      $$ExternalSourceConnectionsTableUpdateCompanionBuilder,
+      (ExternalSourceConnection, $$ExternalSourceConnectionsTableReferences),
+      ExternalSourceConnection,
+      PrefetchHooks Function({bool passportId})
+    >;
 typedef $$PlatformIntentsTableCreateCompanionBuilder =
     PlatformIntentsCompanion Function({
       required String id,
@@ -52840,6 +55561,10 @@ typedef $$PublicImportedReferencesTableCreateCompanionBuilder =
       Value<String?> description,
       Value<String?> thumbnailRef,
       Value<String?> sourceUrl,
+      Value<String?> embedKind,
+      Value<String?> accurateMatchLabel,
+      Value<String?> sourceAttribution,
+      Value<String?> creatorNote,
       Value<DateTime?> publishedAt,
       required String rightsBasis,
       required bool searchIndexable,
@@ -52858,6 +55583,10 @@ typedef $$PublicImportedReferencesTableUpdateCompanionBuilder =
       Value<String?> description,
       Value<String?> thumbnailRef,
       Value<String?> sourceUrl,
+      Value<String?> embedKind,
+      Value<String?> accurateMatchLabel,
+      Value<String?> sourceAttribution,
+      Value<String?> creatorNote,
       Value<DateTime?> publishedAt,
       Value<String> rightsBasis,
       Value<bool> searchIndexable,
@@ -52965,6 +55694,26 @@ class $$PublicImportedReferencesTableFilterComposer
 
   ColumnFilters<String> get sourceUrl => $composableBuilder(
     column: $table.sourceUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get embedKind => $composableBuilder(
+    column: $table.embedKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accurateMatchLabel => $composableBuilder(
+    column: $table.accurateMatchLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceAttribution => $composableBuilder(
+    column: $table.sourceAttribution,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get creatorNote => $composableBuilder(
+    column: $table.creatorNote,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -53085,6 +55834,26 @@ class $$PublicImportedReferencesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get embedKind => $composableBuilder(
+    column: $table.embedKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accurateMatchLabel => $composableBuilder(
+    column: $table.accurateMatchLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceAttribution => $composableBuilder(
+    column: $table.sourceAttribution,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get creatorNote => $composableBuilder(
+    column: $table.creatorNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
     builder: (column) => ColumnOrderings(column),
@@ -53195,6 +55964,24 @@ class $$PublicImportedReferencesTableAnnotationComposer
 
   GeneratedColumn<String> get sourceUrl =>
       $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get embedKind =>
+      $composableBuilder(column: $table.embedKind, builder: (column) => column);
+
+  GeneratedColumn<String> get accurateMatchLabel => $composableBuilder(
+    column: $table.accurateMatchLabel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceAttribution => $composableBuilder(
+    column: $table.sourceAttribution,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get creatorNote => $composableBuilder(
+    column: $table.creatorNote,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get publishedAt => $composableBuilder(
     column: $table.publishedAt,
@@ -53315,6 +56102,10 @@ class $$PublicImportedReferencesTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> thumbnailRef = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> embedKind = const Value.absent(),
+                Value<String?> accurateMatchLabel = const Value.absent(),
+                Value<String?> sourceAttribution = const Value.absent(),
+                Value<String?> creatorNote = const Value.absent(),
                 Value<DateTime?> publishedAt = const Value.absent(),
                 Value<String> rightsBasis = const Value.absent(),
                 Value<bool> searchIndexable = const Value.absent(),
@@ -53331,6 +56122,10 @@ class $$PublicImportedReferencesTableTableManager
                 description: description,
                 thumbnailRef: thumbnailRef,
                 sourceUrl: sourceUrl,
+                embedKind: embedKind,
+                accurateMatchLabel: accurateMatchLabel,
+                sourceAttribution: sourceAttribution,
+                creatorNote: creatorNote,
                 publishedAt: publishedAt,
                 rightsBasis: rightsBasis,
                 searchIndexable: searchIndexable,
@@ -53349,6 +56144,10 @@ class $$PublicImportedReferencesTableTableManager
                 Value<String?> description = const Value.absent(),
                 Value<String?> thumbnailRef = const Value.absent(),
                 Value<String?> sourceUrl = const Value.absent(),
+                Value<String?> embedKind = const Value.absent(),
+                Value<String?> accurateMatchLabel = const Value.absent(),
+                Value<String?> sourceAttribution = const Value.absent(),
+                Value<String?> creatorNote = const Value.absent(),
                 Value<DateTime?> publishedAt = const Value.absent(),
                 required String rightsBasis,
                 required bool searchIndexable,
@@ -53365,6 +56164,10 @@ class $$PublicImportedReferencesTableTableManager
                 description: description,
                 thumbnailRef: thumbnailRef,
                 sourceUrl: sourceUrl,
+                embedKind: embedKind,
+                accurateMatchLabel: accurateMatchLabel,
+                sourceAttribution: sourceAttribution,
+                creatorNote: creatorNote,
                 publishedAt: publishedAt,
                 rightsBasis: rightsBasis,
                 searchIndexable: searchIndexable,
@@ -53455,6 +56258,367 @@ typedef $$PublicImportedReferencesTableProcessedTableManager =
       (PublicImportedReference, $$PublicImportedReferencesTableReferences),
       PublicImportedReference,
       PrefetchHooks Function({bool jobId, bool channelId})
+    >;
+typedef $$AiSearchRunsTableCreateCompanionBuilder =
+    AiSearchRunsCompanion Function({
+      required String runId,
+      required String passportId,
+      required String query,
+      required String agentProvider,
+      required String resultRefsJson,
+      required String receiptId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$AiSearchRunsTableUpdateCompanionBuilder =
+    AiSearchRunsCompanion Function({
+      Value<String> runId,
+      Value<String> passportId,
+      Value<String> query,
+      Value<String> agentProvider,
+      Value<String> resultRefsJson,
+      Value<String> receiptId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$AiSearchRunsTableReferences
+    extends BaseReferences<_$LoomDatabase, $AiSearchRunsTable, AiSearchRun> {
+  $$AiSearchRunsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.aiSearchRuns.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AiSearchRunsTableFilterComposer
+    extends Composer<_$LoomDatabase, $AiSearchRunsTable> {
+  $$AiSearchRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get runId => $composableBuilder(
+    column: $table.runId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get query => $composableBuilder(
+    column: $table.query,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get agentProvider => $composableBuilder(
+    column: $table.agentProvider,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultRefsJson => $composableBuilder(
+    column: $table.resultRefsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AiSearchRunsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AiSearchRunsTable> {
+  $$AiSearchRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get runId => $composableBuilder(
+    column: $table.runId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get query => $composableBuilder(
+    column: $table.query,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get agentProvider => $composableBuilder(
+    column: $table.agentProvider,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultRefsJson => $composableBuilder(
+    column: $table.resultRefsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AiSearchRunsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AiSearchRunsTable> {
+  $$AiSearchRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get runId =>
+      $composableBuilder(column: $table.runId, builder: (column) => column);
+
+  GeneratedColumn<String> get query =>
+      $composableBuilder(column: $table.query, builder: (column) => column);
+
+  GeneratedColumn<String> get agentProvider => $composableBuilder(
+    column: $table.agentProvider,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resultRefsJson => $composableBuilder(
+    column: $table.resultRefsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AiSearchRunsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AiSearchRunsTable,
+          AiSearchRun,
+          $$AiSearchRunsTableFilterComposer,
+          $$AiSearchRunsTableOrderingComposer,
+          $$AiSearchRunsTableAnnotationComposer,
+          $$AiSearchRunsTableCreateCompanionBuilder,
+          $$AiSearchRunsTableUpdateCompanionBuilder,
+          (AiSearchRun, $$AiSearchRunsTableReferences),
+          AiSearchRun,
+          PrefetchHooks Function({bool passportId})
+        > {
+  $$AiSearchRunsTableTableManager(_$LoomDatabase db, $AiSearchRunsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AiSearchRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AiSearchRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AiSearchRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> runId = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> query = const Value.absent(),
+                Value<String> agentProvider = const Value.absent(),
+                Value<String> resultRefsJson = const Value.absent(),
+                Value<String> receiptId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AiSearchRunsCompanion(
+                runId: runId,
+                passportId: passportId,
+                query: query,
+                agentProvider: agentProvider,
+                resultRefsJson: resultRefsJson,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String runId,
+                required String passportId,
+                required String query,
+                required String agentProvider,
+                required String resultRefsJson,
+                required String receiptId,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AiSearchRunsCompanion.insert(
+                runId: runId,
+                passportId: passportId,
+                query: query,
+                agentProvider: agentProvider,
+                resultRefsJson: resultRefsJson,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AiSearchRunsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable: $$AiSearchRunsTableReferences
+                                    ._passportIdTable(db),
+                                referencedColumn: $$AiSearchRunsTableReferences
+                                    ._passportIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AiSearchRunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AiSearchRunsTable,
+      AiSearchRun,
+      $$AiSearchRunsTableFilterComposer,
+      $$AiSearchRunsTableOrderingComposer,
+      $$AiSearchRunsTableAnnotationComposer,
+      $$AiSearchRunsTableCreateCompanionBuilder,
+      $$AiSearchRunsTableUpdateCompanionBuilder,
+      (AiSearchRun, $$AiSearchRunsTableReferences),
+      AiSearchRun,
+      PrefetchHooks Function({bool passportId})
     >;
 typedef $$CrossPostJobsTableCreateCompanionBuilder =
     CrossPostJobsCompanion Function({
@@ -56687,6 +59851,13 @@ class $LoomDatabaseManager {
       $$FanInterestProfilesTableTableManager(_db, _db.fanInterestProfiles);
   $$FanRankingPreferencesTableTableManager get fanRankingPreferences =>
       $$FanRankingPreferencesTableTableManager(_db, _db.fanRankingPreferences);
+  $$FanSearchAgentConfigsTableTableManager get fanSearchAgentConfigs =>
+      $$FanSearchAgentConfigsTableTableManager(_db, _db.fanSearchAgentConfigs);
+  $$ExternalSourceConnectionsTableTableManager get externalSourceConnections =>
+      $$ExternalSourceConnectionsTableTableManager(
+        _db,
+        _db.externalSourceConnections,
+      );
   $$PlatformIntentsTableTableManager get platformIntents =>
       $$PlatformIntentsTableTableManager(_db, _db.platformIntents);
   $$SessionIntentsTableTableManager get sessionIntents =>
@@ -56735,6 +59906,8 @@ class $LoomDatabaseManager {
         _db,
         _db.publicImportedReferences,
       );
+  $$AiSearchRunsTableTableManager get aiSearchRuns =>
+      $$AiSearchRunsTableTableManager(_db, _db.aiSearchRuns);
   $$CrossPostJobsTableTableManager get crossPostJobs =>
       $$CrossPostJobsTableTableManager(_db, _db.crossPostJobs);
   $$AdDecisionsTableTableManager get adDecisions =>

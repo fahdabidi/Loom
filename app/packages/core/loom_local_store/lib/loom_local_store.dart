@@ -417,6 +417,31 @@ class FanRankingPreferences extends Table {
   Set<Column<Object>> get primaryKey => {passportId};
 }
 
+class FanSearchAgentConfigs extends Table {
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get provider => text()();
+  TextColumn get mcpEndpoint => text()();
+  BoolColumn get connected => boolean()();
+  BoolColumn get preferCreators => boolean()();
+  BoolColumn get externalSourcesEnabled => boolean()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {passportId};
+}
+
+class ExternalSourceConnections extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get sourceType => text()();
+  BoolColumn get connected => boolean()();
+  TextColumn get displayName => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class PlatformIntents extends Table {
   TextColumn get id => text()();
   TextColumn get label => text()();
@@ -669,6 +694,10 @@ class PublicImportedReferences extends Table {
   TextColumn get description => text().nullable()();
   TextColumn get thumbnailRef => text().nullable()();
   TextColumn get sourceUrl => text().nullable()();
+  TextColumn get embedKind => text().nullable()();
+  TextColumn get accurateMatchLabel => text().nullable()();
+  TextColumn get sourceAttribution => text().nullable()();
+  TextColumn get creatorNote => text().nullable()();
   DateTimeColumn get publishedAt => dateTime().nullable()();
   TextColumn get rightsBasis => text()();
   BoolColumn get searchIndexable => boolean()();
@@ -677,6 +706,19 @@ class PublicImportedReferences extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {referenceId};
+}
+
+class AiSearchRuns extends Table {
+  TextColumn get runId => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get query => text()();
+  TextColumn get agentProvider => text()();
+  TextColumn get resultRefsJson => text()();
+  TextColumn get receiptId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {runId};
 }
 
 class CrossPostJobs extends Table {
@@ -820,6 +862,8 @@ class KvMeta extends Table {
     InterestTaxonomy,
     FanInterestProfiles,
     FanRankingPreferences,
+    FanSearchAgentConfigs,
+    ExternalSourceConnections,
     PlatformIntents,
     SessionIntents,
     FanFeedback,
@@ -839,6 +883,7 @@ class KvMeta extends Table {
     ExternalAccounts,
     PublicMetadataImportJobs,
     PublicImportedReferences,
+    AiSearchRuns,
     CrossPostJobs,
     AdDecisions,
     AdImpressions,
@@ -854,7 +899,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -935,6 +980,27 @@ class LoomDatabase extends _$LoomDatabase {
         await m.createTable(adDecisions);
         await m.createTable(adImpressions);
         await m.createTable(premiumNoAdEvents);
+      }
+      if (from < 11) {
+        await m.createTable(fanSearchAgentConfigs);
+        await m.createTable(externalSourceConnections);
+        await m.addColumn(
+          publicImportedReferences,
+          publicImportedReferences.embedKind,
+        );
+        await m.addColumn(
+          publicImportedReferences,
+          publicImportedReferences.accurateMatchLabel,
+        );
+        await m.addColumn(
+          publicImportedReferences,
+          publicImportedReferences.sourceAttribution,
+        );
+        await m.addColumn(
+          publicImportedReferences,
+          publicImportedReferences.creatorNote,
+        );
+        await m.createTable(aiSearchRuns);
       }
     },
   );
@@ -1425,6 +1491,64 @@ class RankPreferenceRecord {
   final String passportId;
   final bool summaryFirst;
   final DateTime updatedAt;
+}
+
+class FanSearchAgentConfigRecord {
+  const FanSearchAgentConfigRecord({
+    required this.passportId,
+    required this.provider,
+    required this.mcpEndpoint,
+    required this.connected,
+    required this.preferCreators,
+    required this.externalSourcesEnabled,
+    required this.updatedAt,
+  });
+
+  final String passportId;
+  final String provider;
+  final String mcpEndpoint;
+  final bool connected;
+  final bool preferCreators;
+  final bool externalSourcesEnabled;
+  final DateTime updatedAt;
+}
+
+class ExternalSourceConnectionRecord {
+  const ExternalSourceConnectionRecord({
+    required this.id,
+    required this.passportId,
+    required this.sourceType,
+    required this.connected,
+    required this.displayName,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String passportId;
+  final String sourceType;
+  final bool connected;
+  final String displayName;
+  final DateTime updatedAt;
+}
+
+class AiSearchRunRecord {
+  const AiSearchRunRecord({
+    required this.runId,
+    required this.passportId,
+    required this.query,
+    required this.agentProvider,
+    required this.resultRefs,
+    required this.receiptId,
+    required this.createdAt,
+  });
+
+  final String runId;
+  final String passportId;
+  final String query;
+  final String agentProvider;
+  final List<String> resultRefs;
+  final String receiptId;
+  final DateTime createdAt;
 }
 
 class ExternalContentRefRecord {
@@ -2230,6 +2354,7 @@ class PublicMetadataImportJobRecord {
 class PublicImportedReferenceRecord {
   const PublicImportedReferenceRecord({
     required this.referenceId,
+    required this.channelId,
     required this.platform,
     required this.externalId,
     required this.title,
@@ -2239,10 +2364,15 @@ class PublicImportedReferenceRecord {
     this.description,
     this.thumbnailRef,
     this.sourceUrl,
+    this.embedKind,
+    this.accurateMatchLabel,
+    this.sourceAttribution,
+    this.creatorNote,
     this.publishedAt,
   });
 
   final String referenceId;
+  final String channelId;
   final String platform;
   final String externalId;
   final String title;
@@ -2252,6 +2382,10 @@ class PublicImportedReferenceRecord {
   final String? description;
   final String? thumbnailRef;
   final String? sourceUrl;
+  final String? embedKind;
+  final String? accurateMatchLabel;
+  final String? sourceAttribution;
+  final String? creatorNote;
   final DateTime? publishedAt;
 }
 
@@ -2435,6 +2569,7 @@ class DemoLocalStore {
     final world = seed ?? seedV1;
 
     await _db.transaction(() async {
+      await _db.delete(_db.aiSearchRuns).go();
       await _db.delete(_db.premiumNoAdEvents).go();
       await _db.delete(_db.adImpressions).go();
       await _db.delete(_db.adDecisions).go();
@@ -2480,6 +2615,8 @@ class DemoLocalStore {
       await _db.delete(_db.channelManifests).go();
       await _db.delete(_db.creatorChannels).go();
       await _db.delete(_db.adPreferences).go();
+      await _db.delete(_db.externalSourceConnections).go();
+      await _db.delete(_db.fanSearchAgentConfigs).go();
       await _db.delete(_db.fanRankingPreferences).go();
       await _db.delete(_db.fanInterestProfiles).go();
       await _db.delete(_db.interestTaxonomy).go();
@@ -2587,6 +2724,23 @@ class DemoLocalStore {
           ),
         ]);
 
+        batch.insertAll(_db.fanSearchAgentConfigs, [
+          FanSearchAgentConfigsCompanion.insert(
+            passportId: 'passport_demo_fan',
+            provider: 'anthropic_claude',
+            mcpEndpoint: '',
+            connected: false,
+            preferCreators: true,
+            externalSourcesEnabled: false,
+            updatedAt: _now(),
+          ),
+        ]);
+
+        batch.insertAll(
+          _db.externalSourceConnections,
+          _defaultExternalSourceConnectionCompanions('passport_demo_fan'),
+        );
+
         batch.insertAll(
           _db.announcementTemplates,
           _announcementTemplateSeeds.map(
@@ -2679,6 +2833,20 @@ class DemoLocalStore {
               ),
             ];
           }),
+        );
+
+        batch.insertAll(
+          _db.publicMetadataImportJobs,
+          world.creators
+              .where((creator) => _isGamingCreatorId(creator.id))
+              .map(_gamingExternalImportJobSeed),
+        );
+
+        batch.insertAll(
+          _db.publicImportedReferences,
+          world.creators
+              .where((creator) => _isGamingCreatorId(creator.id))
+              .expand(_gamingExternalReferenceSeeds),
         );
 
         batch.insertAll(_db.wallets, [
@@ -3878,6 +4046,275 @@ class DemoLocalStore {
     );
     await _saveIdempotency(idempotencyKey, 'ranking_preference', passportId);
     return rankingPreference(passportId);
+  }
+
+  Future<FanSearchAgentConfigRecord> searchAgentConfig(
+    String passportId,
+  ) async {
+    await _ensureSearchAgentConfig(passportId);
+    final row = await (_db.select(
+      _db.fanSearchAgentConfigs,
+    )..where((tbl) => tbl.passportId.equals(passportId))).getSingle();
+    return _mapSearchAgentConfig(row);
+  }
+
+  Future<FanSearchAgentConfigRecord> putSearchAgentConfig({
+    required String passportId,
+    required String provider,
+    required String mcpEndpoint,
+    required bool connected,
+    required bool preferCreators,
+    required bool externalSourcesEnabled,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'search_agent_config',
+    );
+    if (existing != null) {
+      return searchAgentConfig(existing);
+    }
+
+    await _ensureSearchAgentConfig(passportId);
+    await (_db.update(
+      _db.fanSearchAgentConfigs,
+    )..where((tbl) => tbl.passportId.equals(passportId))).write(
+      FanSearchAgentConfigsCompanion(
+        provider: Value(provider),
+        mcpEndpoint: Value(mcpEndpoint),
+        connected: Value(connected),
+        preferCreators: Value(preferCreators),
+        externalSourcesEnabled: Value(externalSourcesEnabled),
+        updatedAt: Value(_now()),
+      ),
+    );
+    await _saveIdempotency(idempotencyKey, 'search_agent_config', passportId);
+    return searchAgentConfig(passportId);
+  }
+
+  Future<List<ExternalSourceConnectionRecord>> externalSourceConnections(
+    String passportId,
+  ) async {
+    await _ensureExternalSourceConnections(passportId);
+    final rows =
+        await (_db.select(_db.externalSourceConnections)
+              ..where((tbl) => tbl.passportId.equals(passportId))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.sourceType)]))
+            .get();
+    return rows.map(_mapExternalSourceConnection).toList(growable: false);
+  }
+
+  Future<ExternalSourceConnectionRecord> putExternalSourceConnection({
+    required String passportId,
+    required String sourceType,
+    required bool connected,
+    required String displayName,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'external_source_connection',
+    );
+    if (existing != null) {
+      final row = await _externalSourceConnectionById(existing);
+      if (row != null) {
+        return row;
+      }
+    }
+
+    await _ensureExternalSourceConnections(passportId);
+    final id = _externalSourceConnectionId(passportId, sourceType);
+    await _db
+        .into(_db.externalSourceConnections)
+        .insertOnConflictUpdate(
+          ExternalSourceConnectionsCompanion.insert(
+            id: id,
+            passportId: passportId,
+            sourceType: sourceType,
+            connected: connected,
+            displayName: displayName,
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'external_source_connection', id);
+    return (await _externalSourceConnectionById(id))!;
+  }
+
+  Future<List<PublicImportedReferenceRecord>> externalContentCandidates({
+    required String query,
+    List<String> platforms = const ['youtube'],
+    bool aiQueryableOnly = true,
+    int limit = 8,
+  }) async {
+    final normalized = query.trim().toLowerCase();
+    final terms = normalized.isEmpty
+        ? const <String>[]
+        : normalized.split(RegExp(r'\s+')).where((term) => term.isNotEmpty);
+    final rows = await _db.select(_db.publicImportedReferences).get();
+    final ranked =
+        rows
+            .where(
+              (row) => platforms.isEmpty || platforms.contains(row.platform),
+            )
+            .where((row) => !aiQueryableOnly || row.aiQueryable)
+            .where(
+              (row) =>
+                  terms.isEmpty ||
+                  terms.any(
+                    (term) =>
+                        row.title.toLowerCase().contains(term) ||
+                        (row.description ?? '').toLowerCase().contains(term) ||
+                        (row.accurateMatchLabel ?? '').toLowerCase().contains(
+                          term,
+                        ),
+                  ),
+            )
+            .map(_mapPublicImportedReference)
+            .toList()
+          ..sort((a, b) => a.title.compareTo(b.title));
+    return ranked.take(limit).toList(growable: false);
+  }
+
+  Future<PublicImportedReferenceRecord?> publicImportedReferenceById(
+    String referenceId,
+  ) async {
+    final row = await (_db.select(
+      _db.publicImportedReferences,
+    )..where((tbl) => tbl.referenceId.equals(referenceId))).getSingleOrNull();
+    return row == null ? null : _mapPublicImportedReference(row);
+  }
+
+  Future<PublicImportedReferenceRecord> upsertExternalReference({
+    required String channelId,
+    required String platform,
+    required String externalId,
+    required String title,
+    required String description,
+    required String thumbnailRef,
+    required String sourceUrl,
+    required String rightsBasis,
+    required bool searchIndexable,
+    required bool aiQueryable,
+    required String sourceAttribution,
+    required String embedKind,
+    String? accurateMatchLabel,
+    String? creatorNote,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'external_reference',
+    );
+    if (existing != null) {
+      final record = await publicImportedReferenceById(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    final accountId = 'ext_${_slug(channelId)}_${_slug(platform)}_linked';
+    final jobId = 'public_import_${_slug(channelId)}_${_slug(idempotencyKey)}';
+    final referenceId =
+        'pubref_${_slug(channelId)}_${_slug(platform)}_${_slug(externalId)}';
+    await _db.transaction(() async {
+      await _db
+          .into(_db.externalAccounts)
+          .insert(
+            ExternalAccountsCompanion.insert(
+              linkId: accountId,
+              channelId: channelId,
+              platform: platform,
+              handle: '@${_slug(channelId)}',
+              profileUrl: Value(
+                'https://$platform.example/${_slug(channelId)}',
+              ),
+              verificationState: 'verified',
+              provenance: 'creator_linked_external_content',
+              linkedAt: _now(),
+            ),
+            mode: InsertMode.insertOrIgnore,
+          );
+      await _db
+          .into(_db.publicMetadataImportJobs)
+          .insertOnConflictUpdate(
+            PublicMetadataImportJobsCompanion.insert(
+              jobId: jobId,
+              channelId: channelId,
+              externalAccountLinkId: accountId,
+              rightsBasis: rightsBasis,
+              status: 'complete',
+              importedCount: 1,
+              skippedCount: 0,
+              message: const Value('Creator-linked external reference.'),
+              pollCount: 1,
+              createdAt: _now(),
+              updatedAt: _now(),
+            ),
+          );
+      await _db
+          .into(_db.publicImportedReferences)
+          .insertOnConflictUpdate(
+            PublicImportedReferencesCompanion.insert(
+              referenceId: referenceId,
+              jobId: jobId,
+              channelId: channelId,
+              platform: platform,
+              externalId: externalId,
+              title: title,
+              description: Value(description),
+              thumbnailRef: Value(thumbnailRef),
+              sourceUrl: Value(sourceUrl),
+              embedKind: Value(embedKind),
+              accurateMatchLabel: Value(accurateMatchLabel),
+              sourceAttribution: Value(sourceAttribution),
+              creatorNote: Value(creatorNote),
+              publishedAt: Value(_now()),
+              rightsBasis: rightsBasis,
+              searchIndexable: searchIndexable,
+              aiQueryable: aiQueryable,
+              createdAt: _now(),
+            ),
+          );
+    });
+    await _saveIdempotency(idempotencyKey, 'external_reference', referenceId);
+    return (await publicImportedReferenceById(referenceId))!;
+  }
+
+  Future<AiSearchRunRecord> recordAiSearchRun({
+    required String passportId,
+    required String query,
+    required String agentProvider,
+    required List<String> resultRefs,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'ai_search_run');
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.aiSearchRuns,
+      )..where((tbl) => tbl.runId.equals(existing))).getSingle();
+      return _mapAiSearchRun(row);
+    }
+
+    final runId = 'aisearch_${_slug(idempotencyKey)}';
+    final receiptId = 'receipt_search_${_slug(runId)}';
+    await _db
+        .into(_db.aiSearchRuns)
+        .insertOnConflictUpdate(
+          AiSearchRunsCompanion.insert(
+            runId: runId,
+            passportId: passportId,
+            query: query,
+            agentProvider: agentProvider,
+            resultRefsJson: jsonEncode(resultRefs),
+            receiptId: receiptId,
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'ai_search_run', runId);
+    return _mapAiSearchRun(
+      await (_db.select(
+        _db.aiSearchRuns,
+      )..where((tbl) => tbl.runId.equals(runId))).getSingle(),
+    );
   }
 
   Future<FollowRecord> createFollow({
@@ -6702,6 +7139,13 @@ class DemoLocalStore {
                 sourceUrl: Value(
                   'https://$platform.example/${item.externalId}',
                 ),
+                embedKind: Value(
+                  platform == 'youtube' ? 'youtube_iframe' : 'link',
+                ),
+                accurateMatchLabel: Value(
+                  'Accurate match for ${item.title.toLowerCase()}',
+                ),
+                sourceAttribution: Value(_sourceAttributionLabel(platform)),
                 publishedAt: Value(_now().subtract(const Duration(days: 4))),
                 rightsBasis: row.rightsBasis,
                 searchIndexable: true,
@@ -7276,6 +7720,44 @@ class DemoLocalStore {
         );
   }
 
+  Future<void> _ensureSearchAgentConfig(String passportId) async {
+    await ensureDemoPassport(passportId: passportId);
+    await _db
+        .into(_db.fanSearchAgentConfigs)
+        .insert(
+          FanSearchAgentConfigsCompanion.insert(
+            passportId: passportId,
+            provider: 'anthropic_claude',
+            mcpEndpoint: '',
+            connected: false,
+            preferCreators: true,
+            externalSourcesEnabled: false,
+            updatedAt: _now(),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+
+  Future<void> _ensureExternalSourceConnections(String passportId) async {
+    await ensureDemoPassport(passportId: passportId);
+    for (final companion in _defaultExternalSourceConnectionCompanions(
+      passportId,
+    )) {
+      await _db
+          .into(_db.externalSourceConnections)
+          .insert(companion, mode: InsertMode.insertOrIgnore);
+    }
+  }
+
+  Future<ExternalSourceConnectionRecord?> _externalSourceConnectionById(
+    String id,
+  ) async {
+    final row = await (_db.select(
+      _db.externalSourceConnections,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapExternalSourceConnection(row);
+  }
+
   Future<void> _applyFeedbackToProfile({
     required String passportId,
     required String creatorId,
@@ -7604,6 +8086,43 @@ RankPreferenceRecord _mapRankPreference(FanRankingPreference row) {
   );
 }
 
+FanSearchAgentConfigRecord _mapSearchAgentConfig(FanSearchAgentConfig row) {
+  return FanSearchAgentConfigRecord(
+    passportId: row.passportId,
+    provider: row.provider,
+    mcpEndpoint: row.mcpEndpoint,
+    connected: row.connected,
+    preferCreators: row.preferCreators,
+    externalSourcesEnabled: row.externalSourcesEnabled,
+    updatedAt: row.updatedAt,
+  );
+}
+
+ExternalSourceConnectionRecord _mapExternalSourceConnection(
+  ExternalSourceConnection row,
+) {
+  return ExternalSourceConnectionRecord(
+    id: row.id,
+    passportId: row.passportId,
+    sourceType: row.sourceType,
+    connected: row.connected,
+    displayName: row.displayName,
+    updatedAt: row.updatedAt,
+  );
+}
+
+AiSearchRunRecord _mapAiSearchRun(AiSearchRun row) {
+  return AiSearchRunRecord(
+    runId: row.runId,
+    passportId: row.passportId,
+    query: row.query,
+    agentProvider: row.agentProvider,
+    resultRefs: _decodeStringList(row.resultRefsJson),
+    receiptId: row.receiptId,
+    createdAt: row.createdAt,
+  );
+}
+
 ImportJobRecord _mapImportJob(
   ImportJob row,
   List<ExternalContentRefRecord> references,
@@ -7870,12 +8389,17 @@ PublicImportedReferenceRecord _mapPublicImportedReference(
 ) {
   return PublicImportedReferenceRecord(
     referenceId: row.referenceId,
+    channelId: row.channelId,
     platform: row.platform,
     externalId: row.externalId,
     title: row.title,
     description: row.description,
     thumbnailRef: row.thumbnailRef,
     sourceUrl: row.sourceUrl,
+    embedKind: row.embedKind,
+    accurateMatchLabel: row.accurateMatchLabel,
+    sourceAttribution: row.sourceAttribution,
+    creatorNote: row.creatorNote,
     publishedAt: row.publishedAt,
     rightsBasis: row.rightsBasis,
     searchIndexable: row.searchIndexable,
@@ -9478,6 +10002,110 @@ List<_ImportItem> _publicMetadataImportItems(String platform) {
       .toList(growable: false);
 }
 
+List<ExternalSourceConnectionsCompanion>
+_defaultExternalSourceConnectionCompanions(String passportId) {
+  return const [
+        ('youtube', 'YouTube'),
+        ('twitch', 'Twitch'),
+        ('discord', 'Discord'),
+        ('blog', 'Creator blogs'),
+        ('webpage', 'Open web'),
+      ]
+      .map((source) {
+        final (sourceType, displayName) = source;
+        return ExternalSourceConnectionsCompanion.insert(
+          id: _externalSourceConnectionId(passportId, sourceType),
+          passportId: passportId,
+          sourceType: sourceType,
+          connected: false,
+          displayName: displayName,
+          updatedAt: _now(),
+        );
+      })
+      .toList(growable: false);
+}
+
+String _externalSourceConnectionId(String passportId, String sourceType) {
+  return 'source_${_slug(passportId)}_${_slug(sourceType)}';
+}
+
+String _sourceAttributionLabel(String platform) {
+  switch (platform) {
+    case 'youtube':
+      return 'YouTube';
+    case 'twitch':
+      return 'Twitch';
+    case 'discord':
+      return 'Discord';
+    case 'blog':
+      return 'Creator blog';
+    case 'webpage':
+      return 'Open web';
+  }
+  return platform;
+}
+
+bool _isGamingCreatorId(String creatorId) {
+  return _gamingCreatorIds.contains(creatorId);
+}
+
+PublicMetadataImportJobsCompanion _gamingExternalImportJobSeed(
+  SeedCreator creator,
+) {
+  final jobId = _gamingExternalImportJobId(creator.id);
+  return PublicMetadataImportJobsCompanion.insert(
+    jobId: jobId,
+    channelId: creator.id,
+    externalAccountLinkId: 'ext_${_slug(creator.id)}_youtube',
+    rightsBasis: 'public_reference_seed',
+    status: 'complete',
+    importedCount: _gamingExternalSeedsForCreator(creator.id).length,
+    skippedCount: 0,
+    message: const Value('Seeded gaming YouTube references.'),
+    pollCount: 1,
+    createdAt: _now(),
+    updatedAt: _now(),
+  );
+}
+
+Iterable<PublicImportedReferencesCompanion> _gamingExternalReferenceSeeds(
+  SeedCreator creator,
+) {
+  final seeds = _gamingExternalSeedsForCreator(creator.id);
+  return seeds.asMap().entries.map((entry) {
+    final index = entry.key + 1;
+    final seed = entry.value;
+    return PublicImportedReferencesCompanion.insert(
+      referenceId: 'pubref_${_slug(creator.id)}_youtube_$index',
+      jobId: _gamingExternalImportJobId(creator.id),
+      channelId: creator.id,
+      platform: 'youtube',
+      externalId: seed.videoId,
+      title: seed.title,
+      description: Value(seed.summary),
+      thumbnailRef: Value(seed.thumbnailRef),
+      sourceUrl: Value('https://www.youtube.com/watch?v=${seed.videoId}'),
+      embedKind: const Value('youtube_iframe'),
+      accurateMatchLabel: Value(seed.accurateMatchLabel),
+      sourceAttribution: const Value('YouTube'),
+      creatorNote: Value(seed.creatorNote),
+      publishedAt: Value(_now().subtract(Duration(days: 10 + index))),
+      rightsBasis: 'public_reference_seed',
+      searchIndexable: true,
+      aiQueryable: true,
+      createdAt: _now(),
+    );
+  });
+}
+
+String _gamingExternalImportJobId(String creatorId) {
+  return 'public_import_seed_${_slug(creatorId)}_youtube';
+}
+
+List<_GamingExternalSeed> _gamingExternalSeedsForCreator(String creatorId) {
+  return _gamingExternalSeeds[creatorId] ?? const [];
+}
+
 List<String> _defaultAdCategoriesForCreator(String creatorId) {
   if (creatorId.contains('solar')) {
     return const ['home_energy', 'personal_finance'];
@@ -9553,6 +10181,75 @@ const _sampleImportItems = [
   },
 ];
 
+const _gamingCreatorIds = {
+  'creator_nova_clutch',
+  'creator_ember_hollow',
+  'creator_frame_by_frame',
+  'creator_drift_and_chill',
+  'creator_iron_vael',
+};
+
+const _youtubePlayableDemoId = 'M7lc1UVf-VE';
+
+const _gamingExternalSeeds = {
+  'creator_nova_clutch': [
+    _GamingExternalSeed(
+      videoId: _youtubePlayableDemoId,
+      title: 'NovaClutch VOD: 1v4 retake without comms chaos',
+      summary:
+          'Public YouTube VOD reference focused on clutch timing, utility discipline, and clean post-round review.',
+      thumbnailRef: 'seed://youtube/nova-clutch-retake',
+      accurateMatchLabel: 'Exact tactical retake breakdown',
+      creatorNote: 'Start here when you want calm clutch review, not hype.',
+    ),
+  ],
+  'creator_ember_hollow': [
+    _GamingExternalSeed(
+      videoId: _youtubePlayableDemoId,
+      title: 'EmberHollow build log: raid-proof starter base',
+      summary:
+          'Public YouTube reference covering compact survival-builder layout choices and defensive upgrade order.',
+      thumbnailRef: 'seed://youtube/ember-hollow-raid-base',
+      accurateMatchLabel: 'Accurate raid-proof base walkthrough',
+      creatorNote:
+          'Good companion video for viewers planning their first wipe.',
+    ),
+  ],
+  'creator_frame_by_frame': [
+    _GamingExternalSeed(
+      videoId: _youtubePlayableDemoId,
+      title: 'FrameByFrame route lab: checkpoint skip explained',
+      summary:
+          'Public YouTube reference that slows a speedrun route down to setup, input timing, and reset risk.',
+      thumbnailRef: 'seed://youtube/frame-by-frame-route-lab',
+      accurateMatchLabel: 'Precise speedrun route explanation',
+      creatorNote: 'The cleanest visual version of the skip discussion.',
+    ),
+  ],
+  'creator_drift_and_chill': [
+    _GamingExternalSeed(
+      videoId: _youtubePlayableDemoId,
+      title: 'DriftAndChill stream cut: cozy chaos lobby night',
+      summary:
+          'Public YouTube reference for a variety-streaming session with low-pressure highlights and community moments.',
+      thumbnailRef: 'seed://youtube/drift-and-chill-lobby',
+      accurateMatchLabel: 'Best match for cozy variety highlights',
+      creatorNote: 'Use this when the feed needs community energy.',
+    ),
+  ],
+  'creator_iron_vael': [
+    _GamingExternalSeed(
+      videoId: _youtubePlayableDemoId,
+      title: 'IronVael raid prep: healer cooldown map',
+      summary:
+          'Public YouTube reference mapping MMO raid cooldown assignments, wipe recovery, and guild callouts.',
+      thumbnailRef: 'seed://youtube/iron-vael-cooldowns',
+      accurateMatchLabel: 'Grounded raid-prep cooldown guide',
+      creatorNote: 'Best for fans who ask what to watch before raid night.',
+    ),
+  ],
+};
+
 class _ImportItem {
   const _ImportItem({
     required this.externalId,
@@ -9567,6 +10264,24 @@ class _ImportItem {
   final String title;
   final String summary;
   final String thumbnailRef;
+}
+
+class _GamingExternalSeed {
+  const _GamingExternalSeed({
+    required this.videoId,
+    required this.title,
+    required this.summary,
+    required this.thumbnailRef,
+    required this.accurateMatchLabel,
+    required this.creatorNote,
+  });
+
+  final String videoId;
+  final String title;
+  final String summary;
+  final String thumbnailRef;
+  final String accurateMatchLabel;
+  final String creatorNote;
 }
 
 String _normalizeHandle(String handle) {
