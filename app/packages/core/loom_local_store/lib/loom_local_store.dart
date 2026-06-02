@@ -6133,6 +6133,113 @@ class DemoLocalStore {
           ),
         );
         break;
+      case 'quest_completed':
+        final questId = event.payload['questId'] ?? 'main';
+        final current = await _extensionStateByKey(
+          aggregateScope,
+          'quest:$questId',
+        );
+        final completions =
+            _parseExtensionInt(current?.value['completions'], fallback: 0) + 1;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'quest:$questId',
+            value: {
+              'questId': questId,
+              'title': event.payload['title'] ?? 'Creator quest',
+              'badge': event.payload['badge'] ?? 'Quest badge',
+              'completions': '$completions',
+              'lastFanId': session.fanId,
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'badge:${session.fanId}:$questId',
+            value: {
+              'fanId': session.fanId,
+              'badge': event.payload['badge'] ?? 'Quest badge',
+              'questId': questId,
+            },
+            exportBehavior: 'fan_owned',
+            updatedAt: now,
+          ),
+        );
+        break;
+      case 'build_submitted':
+        final buildId = event.payload['buildId'] ?? event.eventId;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'build:$buildId',
+            value: {
+              'buildId': buildId,
+              'title': event.payload['title'] ?? 'Fan build',
+              'submitter': event.payload['submitter'] ?? 'Demo fan',
+              'votes': event.payload['votes'] ?? '0',
+              'featured': event.payload['featured'] ?? 'false',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        break;
+      case 'build_vote':
+        final buildId = event.payload['buildId'] ?? 'featured';
+        final current = await _extensionStateByKey(
+          aggregateScope,
+          'build:$buildId',
+        );
+        final votes =
+            _parseExtensionInt(current?.value['votes'], fallback: 0) + 1;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'build:$buildId',
+            value: {
+              'buildId': buildId,
+              'title':
+                  current?.value['title'] ??
+                  event.payload['title'] ??
+                  'Featured build',
+              'submitter': current?.value['submitter'] ?? 'Demo fan',
+              'votes': '$votes',
+              'featured': event.payload['featured'] ?? 'true',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        break;
+      case 'guild_contributed':
+        final current = await _extensionStateByKey(
+          aggregateScope,
+          'guild_progress',
+        );
+        final amount = _parseExtensionInt(event.payload['amount'], fallback: 5);
+        final total =
+            _parseExtensionInt(current?.value['current'], fallback: 0) + amount;
+        await _upsertExtensionState(
+          ExtensionStateRecord(
+            scopeKey: aggregateScope,
+            key: 'guild_progress',
+            value: {
+              'current': '$total',
+              'lastAmount': '$amount',
+              'lastFanId': session.fanId,
+              'target':
+                  event.payload['target'] ?? current?.value['target'] ?? '',
+              'milestone': event.payload['milestone'] ?? '',
+            },
+            exportBehavior: 'creator_and_fan',
+            updatedAt: now,
+          ),
+        );
+        break;
     }
   }
 
@@ -8527,7 +8634,12 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           'feed_module',
           1,
           extensionId: 'ext_quest_log',
-          config: const {'quest': 'Restore the valley shrine'},
+          config: const {
+            'quest': 'Restore the valley shrine',
+            'description':
+                'Finish a cozy build step and unlock the shrine badge.',
+            'badge': 'Shrine keeper',
+          },
         ),
         _moduleSeed(
           'build_showcase',
@@ -8610,6 +8722,7 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         'ext_clip_arena',
         'ext_hypewars',
         'ext_build_showcase',
+        'ext_guild_quest',
       ],
       modules: [
         _moduleSeed('hero', 'hero', 'Chill lobby', 'channel_header', 0),
@@ -8635,11 +8748,24 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           config: const {'prompt': 'Best cozy corner'},
         ),
         _moduleSeed(
+          'guild_quest',
+          'extension',
+          'Guild Quest',
+          'feed_module',
+          3,
+          extensionId: 'ext_guild_quest',
+          config: const {
+            'goal': 'Fill the community queue board',
+            'target': '30',
+            'milestones': 'Queue opened|Bonus co-op stream',
+          },
+        ),
+        _moduleSeed(
           'content_rail',
           'content',
           'Stream archive',
           'feed_module',
-          3,
+          4,
         ),
       ],
       updatedAt: now,
@@ -8663,6 +8789,7 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
         'ext_guild_quest',
         'ext_quest_log',
         'ext_hypewars',
+        'ext_build_showcase',
       ],
       modules: [
         _moduleSeed('hero', 'hero', 'Guild hall', 'channel_header', 0),
@@ -8682,14 +8809,27 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           'feed_module',
           2,
           extensionId: 'ext_quest_log',
-          config: const {'quest': 'First-week guild path'},
+          config: const {
+            'quest': 'First-week guild path',
+            'description': 'Complete a starter raid prep task with the guild.',
+            'badge': 'Raid-ready recruit',
+          },
+        ),
+        _moduleSeed(
+          'build_showcase',
+          'extension',
+          'Build Showcase',
+          'feed_module',
+          3,
+          extensionId: 'ext_build_showcase',
+          config: const {'prompt': 'Raid-ready build board'},
         ),
         _moduleSeed(
           'content_rail',
           'content',
           'Guild archive',
           'feed_module',
-          3,
+          4,
         ),
       ],
       updatedAt: now,
@@ -8942,6 +9082,17 @@ const _extensionInstallSeeds = [
     config: {'seedHeadline': 'Cozy corners'},
   ),
   _ExtensionInstallSeed(
+    channelId: 'creator_drift_and_chill',
+    extensionId: 'ext_guild_quest',
+    approvedPermissions: [
+      'write_progress',
+      'read_roster_status',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'community_panel'],
+    config: {'seedHeadline': 'Queue board'},
+  ),
+  _ExtensionInstallSeed(
     channelId: 'creator_iron_vael',
     extensionId: 'ext_guild_quest',
     approvedPermissions: [
@@ -8962,6 +9113,13 @@ const _extensionInstallSeeds = [
     ],
     approvedSurfaces: ['feed_module', 'community_panel'],
     config: {'seedHeadline': 'First-week path'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_iron_vael',
+    extensionId: 'ext_build_showcase',
+    approvedPermissions: ['write_submission', 'write_fan_vote', 'issue_reward'],
+    approvedSurfaces: ['feed_module', 'gallery_panel'],
+    config: {'seedHeadline': 'Raid builds'},
   ),
   _ExtensionInstallSeed(
     channelId: 'creator_iron_vael',

@@ -144,6 +144,38 @@ class _ExtensionRuntimeModuleState extends State<ExtensionRuntimeModule> {
           statusLabel: _status,
           onSendHype: _sendHype,
         );
+      case 'ext_quest_log':
+        return QuestLogModule(
+          questTitle: _moduleConfig('quest', 'Creator quest'),
+          questDescription: _moduleConfig(
+            'description',
+            'Complete the creator challenge and earn a badge.',
+          ),
+          badges: _questBadges(),
+          completions: _questCompletions(),
+          theme: widget.theme,
+          statusLabel: _status,
+          onCompleteQuest: _completeQuest,
+        );
+      case 'ext_build_showcase':
+        return BuildShowcaseModule(
+          prompt: _moduleConfig('prompt', 'Submit your best fan build.'),
+          submissions: _buildSubmissions(),
+          theme: widget.theme,
+          statusLabel: _status,
+          onSubmitBuild: _submitBuild,
+          onVoteFeatured: _voteFeaturedBuild,
+        );
+      case 'ext_guild_quest':
+        return GuildQuestModule(
+          goalLabel: _moduleConfig('goal', 'Shared guild objective'),
+          current: _guildCurrent(),
+          target: _moduleInt('target', 25),
+          milestones: _guildMilestones(),
+          theme: widget.theme,
+          statusLabel: _status,
+          onContribute: _contributeGuild,
+        );
     }
     return ExtensionSlot(
       name: widget.module.title,
@@ -209,6 +241,52 @@ class _ExtensionRuntimeModuleState extends State<ExtensionRuntimeModule> {
       'paymentIntentId': confirmed.id,
       'goal': _moduleConfig('goal', 'Community hype goal'),
       'rewardCode': 'hypewars_boost',
+    });
+  }
+
+  Future<void> _completeQuest() async {
+    final questId = _moduleConfig('questId', 'main');
+    await _submit(
+      'quest_completed',
+      {
+        'questId': questId,
+        'title': _moduleConfig('quest', 'Creator quest'),
+        'badge': _moduleConfig('badge', 'Quest badge'),
+        'rewardCode': 'quest_badge_$questId',
+      },
+      idempotencyKey:
+          'p18-quest-${widget.passportId}-${widget.channelId}-${widget.module.moduleId}-$questId',
+    );
+  }
+
+  Future<void> _submitBuild() async {
+    final buildId = 'build_${DateTime.now().microsecondsSinceEpoch}';
+    await _submit('build_submitted', {
+      'buildId': buildId,
+      'title': _moduleConfig('seedHeadline', 'Fan showcase build'),
+      'submitter': 'You',
+    });
+  }
+
+  Future<void> _voteFeaturedBuild() async {
+    final leader = _buildSubmissions().firstOrNull;
+    if (leader == null) {
+      return;
+    }
+    await _submit('build_vote', {
+      'buildId': leader.submissionId,
+      'title': leader.title,
+      'featured': 'true',
+      'rewardCode': 'build_showcase_featured_vote',
+    });
+  }
+
+  Future<void> _contributeGuild() async {
+    await _submit('guild_contributed', {
+      'amount': _moduleConfig('contribution', '5'),
+      'target': '${_moduleInt('target', 25)}',
+      'milestone': _moduleConfig('milestone', 'Community milestone'),
+      'rewardCode': 'guild_quest_progress',
     });
   }
 
@@ -280,6 +358,84 @@ class _ExtensionRuntimeModuleState extends State<ExtensionRuntimeModule> {
         .where((entry) => entry.key == 'hype_meter')
         .firstOrNull;
     return _parseInt(state?.value['totalCents'], 0);
+  }
+
+  int _questCompletions() {
+    final questId = _moduleConfig('questId', 'main');
+    final state = _entriesForCurrentExtension()
+        .where((entry) => entry.key == 'quest:$questId')
+        .firstOrNull;
+    return _parseInt(state?.value['completions'], 0);
+  }
+
+  List<String> _questBadges() {
+    final badges = _entriesForCurrentExtension()
+        .where((entry) => entry.key.startsWith('badge:${widget.passportId}:'))
+        .map((entry) => entry.value['badge'] ?? 'Quest badge')
+        .toList(growable: false);
+    if (badges.isNotEmpty) {
+      return badges;
+    }
+    return [_moduleConfig('badge', 'Ready badge')];
+  }
+
+  List<ShowcaseSubmission> _buildSubmissions() {
+    final submissions = _entriesForCurrentExtension()
+        .where((entry) => entry.key.startsWith('build:'))
+        .map(
+          (entry) => ShowcaseSubmission(
+            submissionId: entry.value['buildId'] ?? entry.key.substring(6),
+            title: entry.value['title'] ?? 'Fan build',
+            submitter: entry.value['submitter'] ?? 'Demo fan',
+            votes: _parseInt(entry.value['votes'], 0),
+            featured: entry.value['featured'] == 'true',
+          ),
+        )
+        .toList(growable: false);
+    if (submissions.isNotEmpty) {
+      return submissions..sort((a, b) {
+        if (a.featured != b.featured) {
+          return a.featured ? -1 : 1;
+        }
+        return b.votes.compareTo(a.votes);
+      });
+    }
+    return [
+      ShowcaseSubmission(
+        submissionId: 'seed_showcase',
+        title: _moduleConfig('seedHeadline', 'Featured build'),
+        submitter: 'Seeded fan',
+        votes: 5,
+        featured: true,
+      ),
+      const ShowcaseSubmission(
+        submissionId: 'seed_gallery',
+        title: 'Community gallery pick',
+        submitter: 'Builder crew',
+        votes: 3,
+        featured: false,
+      ),
+    ];
+  }
+
+  int _guildCurrent() {
+    final state = _entriesForCurrentExtension()
+        .where((entry) => entry.key == 'guild_progress')
+        .firstOrNull;
+    return _parseInt(state?.value['current'], 0);
+  }
+
+  List<String> _guildMilestones() {
+    final raw = _moduleConfig('milestones', '');
+    final values = raw
+        .split('|')
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
+        .toList(growable: false);
+    if (values.isNotEmpty) {
+      return values;
+    }
+    return const ['First milestone', 'Final reward'];
   }
 
   List<ExtensionStateEntry> _entriesForCurrentExtension() {
