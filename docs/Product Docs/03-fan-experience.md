@@ -310,6 +310,30 @@ End state:
 
 > Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(c) (MVP scope id **FE-S13**); launch scope, implemented in Phase 12. Also addresses UX item U4 ("suggested creators", plural).
 
+### Story 14: Fan experiences a creator-customized channel
+
+As a fan, I want each creator's channel to feel like their own world — their theme, layout, interactive modules, and AI persona — while I keep one Loom passport, wallet, and follow graph across all of them.
+
+End state:
+
+- Opening a creator channel renders that creator's theme, banner, ordered modules, AI persona, and ad posture from `CreatorExperienceConfig`.
+- Different creators render as distinct experiences through one generic renderer; identity, wallet, and follows are unchanged across them.
+- Customization is per-creator; the fan's portable identity is not.
+
+> Launch/showcase scope (MVP scope id **FE-S14**); implemented in Phase 16. See the gaming showcase in [Phase 15+](../MVP%20Planning/Phases/Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md).
+
+### Story 15: Fan participates in a creator's extension
+
+As a fan, I want to take part in a creator's interactive extension (submit a clip, make a prediction, send hype, complete a quest, submit a build, contribute to a guild goal) and earn rewards or badges.
+
+End state:
+
+- Participation runs through an Extension Runtime session scoped to the install's approved permissions and surfaces.
+- Events are idempotent; rewards/badges issue through the existing reward + receipt path; tip/hype uses the Fan Wallet (simulated).
+- The same extension behaves differently per creator according to its install config.
+
+> Launch/showcase scope (MVP scope id **FE-S15**); implemented in Phases 17–18. See [10 Extensions](./10-creator-plugins-extensions-campaign-layer.md).
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Fan onboarding and first follow

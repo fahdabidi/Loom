@@ -269,6 +269,30 @@ End state:
 - Registry pointers can be updated.
 - Final settlement and disputes remain auditable.
 
+### Story 9: Creator customizes their channel experience
+
+As a creator, I want to choose my channel's theme and banner and arrange the surface modules fans see, so my channel reflects my brand and community rather than a fixed platform layout.
+
+End state:
+
+- Creator sets a channel theme (palette + banner) and an ordered set of surface modules via a Studio console with live preview.
+- Choices persist as a versioned `CreatorExperienceConfig` that a generic fan-app renderer reflects with no per-creator code.
+- Per-creator AI-archive persona and contextual ad posture are part of the config.
+
+> Launch/showcase scope (MVP scope id **CE-S12**); implemented in Phases 16/19. See [10 Extensions](./10-creator-plugins-extensions-campaign-layer.md) and the gaming showcase in [Phase 15+](../MVP%20Planning/Phases/Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md).
+
+### Story 10: Creator installs and configures an experience extension
+
+As a creator, I want to install certified extensions and configure them for my community so I can offer interactive experiences (clip battles, predictions, hype meters, quests, build showcases, guild quests) without waiting for core platform features.
+
+End state:
+
+- Creator installs a certified extension with an explicit scoped-permission grant and configures it.
+- Installs are idempotent and reversible (reconfigure/suspend/remove); changes propagate to the fan channel.
+- Each extension is the same `ExtensionManifest` primitive, differently configured per creator.
+
+> Launch/showcase scope (MVP scope id **CE-S13**); implemented in Phases 17–19. Builds on Story 4 and [10 Extensions](./10-creator-plugins-extensions-campaign-layer.md).
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Creator onboarding to first publish

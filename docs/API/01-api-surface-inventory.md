@@ -48,6 +48,8 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Campaign API | `OpenAPI/campaigns/campaign-api.openapi.yaml` | Campaign manifests, participation, rewards, compliance state, fan data grant offers. | Extension Runtime, Fan Passport, Creator Audience, Receipt Ledger, Trust and Safety |
 | Sponsor Campaign API | `OpenAPI/campaigns/sponsor-campaign-api.openapi.yaml` | Sponsor proposals, fan-interest field requests, data request narrowing, sponsor reporting. | Campaign, Creator Audience, Fan Passport, Receipt Ledger, Settlement |
 
+> **Wired into the demo for the customization showcase (Phases 15–20):** the existing **Extension Registry API** and **Extension Runtime API** (above) now back creator-customized fan experiences — five gaming creators composing different experiences from six certified extensions (one shared `ExtensionManifest` primitive). No new specs are required; a `CreatorExperienceConfig` (theme, banner, ordered surface modules, installed extensions) is owned by the Creator Metadata API. See [MVP User Stories Scope](../MVP%20Planning/MVP%20User%20Stories%20Scope.md) Part K (CE-S12/CE-S13/FE-S14/FE-S15).
+
 ## 6. Ecosystem, Safety, Portability, And Governance
 
 | API surface | Spec | Owns | Key downstream APIs |

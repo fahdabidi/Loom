@@ -1,11 +1,16 @@
 # Phase 14 — UX Hardening & Physical Phone Validation
 
-**Surface:** both · **UX gate:** FINAL launch + phone · **On green:** STOP for final launch-demo sign-off
+**Surface:** both · **UX gate:** emulator UX hardening · **On green:** AUTO → Phase 15
 **Shared conventions:** [README.md](./README.md).
 
-> **Status:** Ready for execution after Phase 13. This is the final launch-demo phase. It closes the
-> remaining cross-cutting UX gaps (**U1**, **U2**, **U3**, **U7**), runs the full launch demo, and validates
-> the APK on a physical Android phone.
+> **Status:** Ready for execution after Phase 13. It closes the remaining cross-cutting UX gaps
+> (**U1**, **U2**, **U3**, **U7**) and runs the launch demo on the emulator.
+>
+> **Sequence update:** the demo no longer ends here — it continues into the
+> [Creator-Customized Fan Experiences](./Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md)
+> sequence (Phases 15–20). The **authoritative final physical-phone validation now happens in Phase 20**
+> (the last phase). The physical-phone steps below may run as a preliminary emulator-focused pass here;
+> Phase 14 is otherwise unchanged.
 
 ## 0. Prerequisite gate (validate Phase 13 done)
 README gate + confirm Phases 10-13 are committed and tracker-recorded. The launch acquisition loop,
@@ -123,5 +128,7 @@ launches, and key flows pass on a physical Android phone; all automated checks a
 emulator evidence, physical-phone device/evidence, and residual manual validation notes.
 
 ## 11. Next phase
-END of the MVP + launch demo. Optional follow-ups: full extension marketplace, live/streaming formats, production
-HTTP clients, deeper vertical-specific launch packs, and inventory cleanup of narrative-only APIs.
+After Phase 14 changes are committed and recorded, **AUTO-PROCEED: immediately begin
+[Phase 15 — Extensions Platform & Customization Foundation](./Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md)**,
+which begins the Creator-Customized Fan Experiences sequence (Phases 15–20). The authoritative final
+physical-phone validation and launch-demo sign-off move to Phase 20.

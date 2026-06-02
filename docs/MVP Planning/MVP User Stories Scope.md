@@ -1163,4 +1163,78 @@ End state:
 
 ---
 
+## Part K — Creator-Customized Fan Experiences (Phases 15–20)
+
+These stories make "creators create their fan experience" a headline of the demo, shown in the **gaming**
+segment across five creators who each compose a different experience from a shared set of certified
+**extensions**. Tracked across
+[Phase 15](./Phases/Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md) through
+[Phase 20](./Phases/Phase%2020%20-%20Customization%20Showcase%20and%20Final%20Validation.md).
+
+**Source:** approved plan "Creator-Customized Fan Experiences (Gaming Showcase)" · builds on the existing
+extension model (`10 Creator Plugins/Extensions/Campaign Layer`; `extension-registry-api` + `extension-runtime-api`).
+
+> Note on scope: **launch/showcase scope**, not part of the original Phase 0–9 MVP. Customization is
+> data-driven (`CreatorExperienceConfig`) and rendered by a generic fan-app renderer; all six extensions
+> are one shared `ExtensionManifest` primitive, configured per creator. Standalone, no backend.
+
+---
+
+### CE-S12: Creator customizes their channel experience **[IN — launch scope]**
+
+As a creator, I want to choose my channel's theme and banner and arrange the surface modules fans see, so
+my channel reflects my brand and community rather than a fixed platform layout.
+
+End state:
+- Creator sets a `ChannelTheme` (palette + banner) and an ordered `surfaceModules[]` via a Studio console with live preview.
+- Choices persist as a versioned `CreatorExperienceConfig`; the generic fan-app renderer reflects them with no per-creator code.
+- Per-creator AI-archive persona and contextual ad posture are part of the config.
+
+**Target product docs:** `02 Creator Experience`, `10 Extensions`. **APIs:** Creator Experience Config (Creator Metadata), Extension Registry (existing specs; wired into the demo in Phase 15).
+
+---
+
+### CE-S13: Creator installs and configures an experience extension **[IN — launch scope]**
+
+As a creator, I want to install certified extensions and configure them for my community, so I can offer
+interactive experiences (clip battles, predictions, hype meters, quests, build showcases, guild quests)
+without waiting for core platform features.
+
+End state:
+- Creator browses certified extensions, installs one with an explicit **scoped-permission grant**, and configures it.
+- Installs are idempotent and reversible (reconfigure/suspend/remove); changes propagate to the fan channel.
+- Each extension is the same `ExtensionManifest` primitive (declared `surfaces`/`permissions`/`riskTier`), differently configured per creator.
+
+**Target product docs:** `02 Creator Experience`, `10 Extensions`. **APIs:** Extension Registry (`installExtension`/`suspendExtension`), Extension Runtime (existing specs; wired into the demo in Phase 15).
+
+---
+
+### FE-S14: Fan experiences a creator-customized channel **[IN — launch scope]**
+
+As a fan, I want each creator's channel to feel like their own world — their theme, layout, interactive
+modules, and AI persona — while I keep one Loom passport, wallet, and follow graph across all of them.
+
+End state:
+- Opening a creator channel renders that creator's theme, banner, ordered modules, AI persona, and ad posture from `CreatorExperienceConfig`.
+- The five gaming creators render as five distinct experiences through one generic renderer.
+- Identity/wallet/follows are unchanged across creators (customization is per-creator, identity is portable).
+
+**Target product docs:** `03 Fan Experience`, `15 Fan Apps`. **APIs:** Creator Experience Config, Extension Registry, AI Gateway, Ad Decision.
+
+---
+
+### FE-S15: Fan participates in a creator's extension **[IN — launch scope]**
+
+As a fan, I want to take part in a creator's interactive extension (submit a clip, make a prediction, send
+hype, complete a quest, submit a build, contribute to a guild goal) and earn rewards or badges.
+
+End state:
+- Participation runs through an Extension Runtime session scoped to the install's approved permissions/surfaces.
+- Events are idempotent; rewards/badges issue through the existing Campaign/Reward + Receipt path; HypeWars uses the Fan Wallet (simulated).
+- The same extension behaves differently per creator according to its install config.
+
+**Target product docs:** `03 Fan Experience`, `10 Extensions`. **APIs:** Extension Runtime, Campaign/Reward, Receipt Ledger, Fan Wallet.
+
+---
+
 *End of MVP User Stories Scope document.*

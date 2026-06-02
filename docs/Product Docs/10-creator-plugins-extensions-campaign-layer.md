@@ -10,6 +10,8 @@ The Creator Plugins / Extensions / Campaign Layer lets creators customize their 
 
 Extensions turn Loom from a fixed social app into an open app ecosystem for creator-owned media businesses. The key product constraint is that extension power must not compromise portability, fan data rights, security, or settlement integrity.
 
+> **Demo showcase:** the gaming showcase in [Phase 15+](../MVP%20Planning/Phases/Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md) exercises this layer end-to-end — five creators each compose a different fan experience from six certified extensions (Clip Arena, Pick'Em, HypeWars, Quest Log, Build Showcase, Guild Quest), all the same `ExtensionManifest` primitive configured per creator. See user stories **CE-S13** (creator installs/configures) and **FE-S15** (fan participates) in [MVP User Stories Scope](../MVP%20Planning/MVP%20User%20Stories%20Scope.md) Part K, plus **CE-S12**/**FE-S14** for the `CreatorExperienceConfig` customization model.
+
 ## 2. Scope
 
 This product area covers:
