@@ -455,6 +455,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
         channelId: channelId,
         onBack: () => setState(() => _channelId = null),
         onOpenContent: (id) => setState(() => _contentId = id),
+        onOpenExternal: (item) => setState(() => _externalPlaybackItem = item),
         onAskArchive: (id) => setState(() => _qaCreatorId = id),
         extensionModuleBuilder:
             (

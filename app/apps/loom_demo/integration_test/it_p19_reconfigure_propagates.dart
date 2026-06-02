@@ -18,6 +18,7 @@ void main() {
       experienceApi: resolveCreatorExperienceApi(),
       registryApi: resolveExtensionRegistryApi(),
       starterPackApi: resolveStarterPackApi(),
+      externalContentApi: resolveExternalContentSourceApi(),
     );
     await controller.load();
     final manifest = controller.catalog.singleWhere(

@@ -19,6 +19,7 @@ class CreatorChannelHomeScreen extends StatefulWidget {
     required this.onOpenContent,
     required this.onBack,
     this.onAskArchive,
+    this.onOpenExternal,
     this.extensionModuleBuilder,
     this.passportId = 'passport_demo_fan',
     super.key,
@@ -29,6 +30,7 @@ class CreatorChannelHomeScreen extends StatefulWidget {
   final ValueChanged<String> onOpenContent;
   final VoidCallback onBack;
   final ValueChanged<String>? onAskArchive;
+  final ValueChanged<AiSearchItem>? onOpenExternal;
   final CreatorChannelExtensionModuleBuilder? extensionModuleBuilder;
 
   @override
@@ -287,6 +289,41 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
                 summary: _extensionSummary(module),
               ),
         );
+      case 'external_content':
+        final tile = _externalTileFor(module);
+        if (tile == null) {
+          return ChannelSurfaceModule(
+            title: module.title,
+            subtitle: 'Creator-linked public reference',
+            icon: Icons.public_rounded,
+            theme: theme,
+            child: const LoomEmptyState(
+              icon: Icons.link_off_rounded,
+              title: 'Linked reference unavailable',
+              body:
+                  'The creator-linked external reference is missing metadata, so the channel kept the module stable.',
+            ),
+          );
+        }
+        return ChannelSurfaceModule(
+          title: module.title,
+          subtitle: 'Creator-linked public reference',
+          icon: Icons.public_rounded,
+          theme: theme,
+          child: ExternalContentFeedTile(
+            tileKey: 'p25_external_content_tile_${tile.id}',
+            sourceLabel: tile.sourceAttribution,
+            originalTitle: tile.originalTitle,
+            summary: tile.summary,
+            thumbnailRef: tile.thumbnailRef,
+            creatorNote: tile.creatorNote,
+            footer:
+                '${_gateLabel(module.config['searchIndexable'], label: 'Search')} - ${_gateLabel(module.config['aiQueryable'], label: 'AI')}',
+            onTap: widget.onOpenExternal == null
+                ? null
+                : () => widget.onOpenExternal?.call(tile),
+          ),
+        );
     }
     return ChannelSurfaceModule(
       title: module.title,
@@ -434,6 +471,76 @@ String _extensionSummary(SurfaceModule module) {
       module.config['prompt'] ??
       module.config['goal'] ??
       'This certified extension is installed and ready for the next interactive phase.';
+}
+
+AiSearchItem? _externalTileFor(SurfaceModule module) {
+  final referenceId = module.config['referenceId'];
+  final externalId = module.config['externalId'];
+  final originalTitle = module.config['originalTitle'];
+  final summary = module.config['summary'];
+  final sourceAttribution = module.config['sourceAttribution'];
+  final sourceUrl = module.config['sourceUrl'];
+  if (referenceId == null ||
+      externalId == null ||
+      originalTitle == null ||
+      summary == null ||
+      sourceAttribution == null ||
+      sourceUrl == null) {
+    return null;
+  }
+  return AiSearchItem(
+    id: referenceId,
+    type: AiSearchItemType.external,
+    originalTitle: originalTitle,
+    summary: summary,
+    thumbnailRef:
+        module.config['thumbnailRef'] ?? 'seed://external/$referenceId',
+    rankReason:
+        'Creator linked this public reference for the channel feed; original source metadata is preserved.',
+    titleRiskSignals: const [],
+    sourceAttribution: sourceAttribution,
+    score: 1,
+    externalTargetRef: ExternalTargetRef(
+      referenceId: referenceId,
+      sourceType: _sourceType(module.config['sourceType']),
+      externalId: externalId,
+    ),
+    embedDescriptor: EmbedDescriptor(
+      kind: _embedKind(module.config['embedKind']),
+      externalId: externalId,
+      sourceUrl: sourceUrl,
+    ),
+    accurateMatchLabel:
+        module.config['accurateMatchLabel'] ??
+        'Creator-linked public reference',
+    creatorNote: module.config['creatorNote'],
+  );
+}
+
+String _gateLabel(String? value, {required String label}) {
+  return '$label ${value == 'true' ? 'on' : 'off'}';
+}
+
+ExternalSourceType _sourceType(String? value) {
+  switch (value) {
+    case 'twitch':
+      return ExternalSourceType.twitch;
+    case 'discord':
+      return ExternalSourceType.discord;
+    case 'blog':
+      return ExternalSourceType.blog;
+    case 'webpage':
+      return ExternalSourceType.webpage;
+  }
+  return ExternalSourceType.youtube;
+}
+
+EmbedKind _embedKind(String? value) {
+  switch (value) {
+    case 'youtube_iframe':
+      return EmbedKind.youtubeIframe;
+  }
+  return EmbedKind.link;
 }
 
 LoomChannelTheme _toLoomTheme(ChannelTheme theme) {

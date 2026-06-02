@@ -33,6 +33,7 @@ class _CreatorCustomizeConsoleScreenState
       experienceApi: resolveCreatorExperienceApi(),
       registryApi: resolveExtensionRegistryApi(),
       starterPackApi: resolveStarterPackApi(),
+      externalContentApi: resolveExternalContentSourceApi(),
     )..load();
   }
 
@@ -118,6 +119,8 @@ class _Editor extends StatelessWidget {
           selectedBannerRef: config.bannerRef,
           onSelect: controller.selectBanner,
         ),
+        const SizedBox(height: LoomSpacing.md),
+        _ExternalLinkComposer(controller: controller),
         const SizedBox(height: LoomSpacing.md),
         StudioModuleArranger(
           modules: config.surfaceModules
@@ -234,6 +237,76 @@ class _CreatorSelector extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExternalLinkComposer extends StatefulWidget {
+  const _ExternalLinkComposer({required this.controller});
+
+  final CreatorCustomizeController controller;
+
+  @override
+  State<_ExternalLinkComposer> createState() => _ExternalLinkComposerState();
+}
+
+class _ExternalLinkComposerState extends State<_ExternalLinkComposer> {
+  late final TextEditingController _inputController;
+  late final TextEditingController _noteController;
+
+  @override
+  void initState() {
+    super.initState();
+    _inputController = TextEditingController(
+      text: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+    );
+    _noteController = TextEditingController(
+      text: 'Creator-picked companion video for the channel feed.',
+    );
+  }
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = widget.controller.externalPreview;
+    return StudioLinkExternalSheet(
+      inputController: _inputController,
+      noteController: _noteController,
+      sourceOptions: const ['YouTube', 'Twitch', 'Discord', 'Blog', 'Webpage'],
+      selectedSource: _sourceTypeLabel(widget.controller.externalSourceType),
+      searchIndexable: widget.controller.externalSearchIndexable,
+      aiQueryable: widget.controller.externalAiQueryable,
+      busy: widget.controller.busy,
+      preview: preview == null
+          ? null
+          : StudioExternalPreview(
+              sourceLabel: preview.sourceAttribution,
+              title: preview.originalTitle,
+              summary: preview.summary,
+              thumbnailRef: preview.thumbnailRef,
+              sourceUrl: preview.sourceUrl,
+              searchIndexable: preview.searchIndexable,
+              aiQueryable: preview.aiQueryable,
+              creatorNote: preview.creatorNote,
+            ),
+      onSelectSource: (label) =>
+          widget.controller.selectExternalSource(_sourceTypeFromLabel(label)),
+      onSearchIndexableChanged: widget.controller.setExternalSearchIndexable,
+      onAiQueryableChanged: widget.controller.setExternalAiQueryable,
+      onResolve: () => widget.controller.resolveExternalLink(
+        input: _inputController.text,
+        creatorNote: _noteController.text,
+      ),
+      onSave: () => widget.controller.linkExternalContent(
+        input: _inputController.text,
+        creatorNote: _noteController.text,
       ),
     );
   }
@@ -361,4 +434,33 @@ class _CustomizeError extends StatelessWidget {
 
 bool _safeSurface(String surface) {
   return surface == 'feed_module' || surface == 'channel_header';
+}
+
+String _sourceTypeLabel(ExternalSourceType sourceType) {
+  switch (sourceType) {
+    case ExternalSourceType.youtube:
+      return 'YouTube';
+    case ExternalSourceType.twitch:
+      return 'Twitch';
+    case ExternalSourceType.discord:
+      return 'Discord';
+    case ExternalSourceType.blog:
+      return 'Blog';
+    case ExternalSourceType.webpage:
+      return 'Webpage';
+  }
+}
+
+ExternalSourceType _sourceTypeFromLabel(String label) {
+  switch (label) {
+    case 'Twitch':
+      return ExternalSourceType.twitch;
+    case 'Discord':
+      return ExternalSourceType.discord;
+    case 'Blog':
+      return ExternalSourceType.blog;
+    case 'Webpage':
+      return ExternalSourceType.webpage;
+  }
+  return ExternalSourceType.youtube;
 }

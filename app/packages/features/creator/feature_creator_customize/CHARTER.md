@@ -2,7 +2,7 @@
 
 ## Scope
 
-Creator Studio fan-experience customization console: creator selection, theme and banner editing, extension install/configure/suspend, module ordering, live preview, and gaming starter-pack assembly.
+Creator Studio fan-experience customization console: creator selection, theme and banner editing, external-content linking, extension install/configure/suspend, module ordering, live preview, and gaming starter-pack assembly.
 
 ## Allowed contracts
 
@@ -10,6 +10,7 @@ Creator Studio fan-experience customization console: creator selection, theme an
 - Creator Experience API
 - Extension Registry API
 - Starter Pack API
+- External Content Source API
 
 ## Owned screens
 
@@ -19,4 +20,4 @@ Creator Studio fan-experience customization console: creator selection, theme an
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
 
-Fan-channel rendering remains owned by `feature_creator_channel`; this feature only writes the configuration and install records the fan renderer consumes.
+Fan-channel rendering remains owned by `feature_creator_channel`; this feature only writes the configuration, external-content reference, and install records the fan renderer consumes.

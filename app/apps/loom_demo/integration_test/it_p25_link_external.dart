@@ -7,7 +7,7 @@ import 'package:loom_demo/main.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('it_p20_starter_pack_onramp', (tester) async {
+  testWidgets('it_p25_link_external', (tester) async {
     resetAppShellDependencies();
     final store = await configureDemoDependencies(persistent: false);
     addTearDown(store.close);
@@ -21,17 +21,17 @@ void main() {
       externalContentApi: resolveExternalContentSourceApi(),
     );
     await controller.load();
-    await controller.assembleGamingStarterPack();
-
-    final result = await resolveStarterPackApi().bulkFollow(
-      channelId: 'creator_nova_clutch',
-      passportId: 'passport_demo_fan',
-      channelIds: controller.starterPack!.members
-          .map((member) => member.channelId)
-          .toList(growable: false),
-      followVisibility: 'public',
-      idempotencyKey: 'p20-starter-pack-follow',
+    await controller.linkExternalContent(
+      input: 'NovaClutch VOD',
+      creatorNote: 'Creator-picked companion video.',
     );
-    expect(result.feedReady, isTrue);
+
+    final config = await resolveCreatorExperienceApi().getExperienceConfig(
+      channelId: 'creator_nova_clutch',
+    );
+    expect(
+      config.surfaceModules.map((module) => module.kind),
+      contains('external_content'),
+    );
   });
 }

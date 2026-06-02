@@ -9,16 +9,19 @@ class CreatorCustomizeController extends ChangeNotifier {
     required CreatorExperienceApi experienceApi,
     required ExtensionRegistryApi registryApi,
     required StarterPackApi starterPackApi,
+    required ExternalContentSourceApi externalContentApi,
   }) : creatorId = initialCreatorId,
        _metadataApi = metadataApi,
        _experienceApi = experienceApi,
        _registryApi = registryApi,
-       _starterPackApi = starterPackApi;
+       _starterPackApi = starterPackApi,
+       _externalContentApi = externalContentApi;
 
   final CreatorMetadataApi _metadataApi;
   final CreatorExperienceApi _experienceApi;
   final ExtensionRegistryApi _registryApi;
   final StarterPackApi _starterPackApi;
+  final ExternalContentSourceApi _externalContentApi;
 
   String creatorId;
   ChannelHome? channelHome;
@@ -26,6 +29,10 @@ class CreatorCustomizeController extends ChangeNotifier {
   CreatorExperienceConfig? draftConfig;
   StarterPack? starterPack;
   List<ExtensionManifest> catalog = const [];
+  ExternalContentCandidate? externalPreview;
+  ExternalSourceType externalSourceType = ExternalSourceType.youtube;
+  bool externalSearchIndexable = true;
+  bool externalAiQueryable = true;
   bool loading = true;
   bool busy = false;
   bool dirty = false;
@@ -328,6 +335,82 @@ class CreatorCustomizeController extends ChangeNotifier {
     });
   }
 
+  void selectExternalSource(ExternalSourceType sourceType) {
+    if (externalSourceType == sourceType) {
+      return;
+    }
+    externalSourceType = sourceType;
+    externalPreview = null;
+    statusMessage =
+        'External source changed to ${_sourceTypeLabel(sourceType)}.';
+    notifyListeners();
+  }
+
+  void setExternalSearchIndexable(bool value) {
+    externalSearchIndexable = value;
+    externalPreview = null;
+    statusMessage = value
+        ? 'Linked references can appear in public search.'
+        : 'Linked references will stay out of public search.';
+    notifyListeners();
+  }
+
+  void setExternalAiQueryable(bool value) {
+    externalAiQueryable = value;
+    externalPreview = null;
+    statusMessage = value
+        ? 'Connected fan agents may include the linked reference.'
+        : 'Connected fan agents will not query the linked reference.';
+    notifyListeners();
+  }
+
+  Future<void> resolveExternalLink({
+    required String input,
+    required String creatorNote,
+  }) async {
+    if (busy || input.trim().isEmpty) {
+      return;
+    }
+    await _runBusy(() async {
+      externalPreview = await _externalContentApi.resolveExternalContentLink(
+        channelId: creatorId,
+        sourceType: externalSourceType,
+        input: input,
+        creatorNote: creatorNote,
+        searchIndexable: externalSearchIndexable,
+        aiQueryable: externalAiQueryable,
+      );
+      statusMessage =
+          'Preview resolved from ${externalPreview!.sourceAttribution}.';
+    });
+  }
+
+  Future<void> linkExternalContent({
+    required String input,
+    required String creatorNote,
+  }) async {
+    if (busy || input.trim().isEmpty) {
+      return;
+    }
+    await _runBusy(() async {
+      final linked = await _externalContentApi.linkCreatorExternalContent(
+        channelId: creatorId,
+        sourceType: externalSourceType,
+        input: input,
+        creatorNote: creatorNote,
+        searchIndexable: externalSearchIndexable,
+        aiQueryable: externalAiQueryable,
+        idempotencyKey:
+            'p25-link-$creatorId-${_sourceTypeLabel(externalSourceType)}-${_stableExternalKey(input)}',
+      );
+      externalPreview = linked;
+      _attachExternalContentModule(linked);
+      await save();
+      statusMessage =
+          'Linked ${linked.sourceAttribution} reference added to the fan feed.';
+    });
+  }
+
   StudioExtensionCatalogItem catalogItem(ExtensionManifest manifest) {
     final installed =
         draftConfig?.installedExtensions.any(
@@ -352,6 +435,33 @@ class CreatorCustomizeController extends ChangeNotifier {
             .firstOrNull
             ?.config ??
         const {};
+  }
+
+  void _attachExternalContentModule(ExternalContentCandidate candidate) {
+    final draft = draftConfig;
+    if (draft == null) {
+      return;
+    }
+    final moduleId =
+        'external_${_stableExternalKey(candidate.targetRef.referenceId)}';
+    final existingModules = draft.surfaceModules
+        .where((module) => module.moduleId != moduleId)
+        .toList(growable: false);
+    final nextModule = SurfaceModule(
+      moduleId: moduleId,
+      kind: 'external_content',
+      title: 'Creator-linked watch',
+      surface: 'feed_module',
+      sortOrder: existingModules.length,
+      enabled: true,
+      config: _externalModuleConfig(candidate),
+    );
+    draftConfig = _copyConfig(
+      draft,
+      surfaceModules: _renumber([...existingModules, nextModule]),
+    );
+    dirty = true;
+    notifyListeners();
   }
 
   void _attachInstalledExtension(
@@ -438,6 +548,75 @@ bool _safeSurface(String surface) {
 
 String _moduleIdFor(String extensionId) {
   return extensionId.replaceFirst('ext_', '');
+}
+
+Map<String, String> _externalModuleConfig(ExternalContentCandidate candidate) {
+  return {
+    'referenceId': candidate.targetRef.referenceId,
+    'sourceType': _sourceTypeValue(candidate.targetRef.sourceType),
+    'externalId': candidate.targetRef.externalId,
+    'originalTitle': candidate.originalTitle,
+    'summary': candidate.summary,
+    'thumbnailRef': candidate.thumbnailRef,
+    'sourceUrl': candidate.sourceUrl,
+    'sourceAttribution': candidate.sourceAttribution,
+    'rightsBasis': candidate.rightsBasis,
+    'embedKind': _embedKindValue(candidate.embedDescriptor.kind),
+    'searchIndexable': '${candidate.searchIndexable}',
+    'aiQueryable': '${candidate.aiQueryable}',
+    if (candidate.accurateMatchLabel != null)
+      'accurateMatchLabel': candidate.accurateMatchLabel!,
+    if (candidate.creatorNote != null) 'creatorNote': candidate.creatorNote!,
+  };
+}
+
+String _sourceTypeValue(ExternalSourceType sourceType) {
+  switch (sourceType) {
+    case ExternalSourceType.youtube:
+      return 'youtube';
+    case ExternalSourceType.twitch:
+      return 'twitch';
+    case ExternalSourceType.discord:
+      return 'discord';
+    case ExternalSourceType.blog:
+      return 'blog';
+    case ExternalSourceType.webpage:
+      return 'webpage';
+  }
+}
+
+String _sourceTypeLabel(ExternalSourceType sourceType) {
+  switch (sourceType) {
+    case ExternalSourceType.youtube:
+      return 'YouTube';
+    case ExternalSourceType.twitch:
+      return 'Twitch';
+    case ExternalSourceType.discord:
+      return 'Discord';
+    case ExternalSourceType.blog:
+      return 'Blog';
+    case ExternalSourceType.webpage:
+      return 'Webpage';
+  }
+}
+
+String _embedKindValue(EmbedKind kind) {
+  switch (kind) {
+    case EmbedKind.youtubeIframe:
+      return 'youtube_iframe';
+    case EmbedKind.link:
+      return 'link';
+  }
+}
+
+String _stableExternalKey(String value) {
+  final normalized = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9-]+'), '-')
+      .replaceAll(RegExp(r'-+'), '-')
+      .replaceAll(RegExp(r'^-|-$'), '');
+  return normalized.isEmpty ? 'external' : normalized;
 }
 
 Map<String, String> _defaultConfigFor(ExtensionManifest manifest) {

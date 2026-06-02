@@ -2,7 +2,7 @@
 
 ## Scope
 
-Fan-facing creator channel screens: channel home, follow controls, creator blocking, content launch, and config-driven channel module layout.
+Fan-facing creator channel screens: channel home, follow controls, creator blocking, content launch, creator-linked external-content tiles, and config-driven channel module layout.
 
 ## Allowed contracts
 

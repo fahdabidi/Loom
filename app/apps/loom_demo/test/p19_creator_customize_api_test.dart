@@ -114,5 +114,6 @@ CreatorCustomizeController _controller(String creatorId) {
     experienceApi: resolveCreatorExperienceApi(),
     registryApi: resolveExtensionRegistryApi(),
     starterPackApi: resolveStarterPackApi(),
+    externalContentApi: resolveExternalContentSourceApi(),
   );
 }

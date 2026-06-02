@@ -66,6 +66,7 @@ export 'components/studio/extension_config_form.dart';
 export 'components/studio/extension_install_sheet.dart';
 export 'components/studio/import_wizard.dart';
 export 'components/studio/launch_panel.dart';
+export 'components/studio/link_external_sheet.dart';
 export 'components/studio/module_arranger.dart';
 export 'components/studio/monetization_editor.dart';
 export 'components/studio/publish_composer.dart';

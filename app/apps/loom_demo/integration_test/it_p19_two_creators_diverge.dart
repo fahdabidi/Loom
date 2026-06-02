@@ -18,6 +18,7 @@ void main() {
       experienceApi: resolveCreatorExperienceApi(),
       registryApi: resolveExtensionRegistryApi(),
       starterPackApi: resolveStarterPackApi(),
+      externalContentApi: resolveExternalContentSourceApi(),
     );
     await nova.load();
     nova.selectTheme(CreatorCustomizeController.themeOptions[0]);
@@ -29,6 +30,7 @@ void main() {
       experienceApi: resolveCreatorExperienceApi(),
       registryApi: resolveExtensionRegistryApi(),
       starterPackApi: resolveStarterPackApi(),
+      externalContentApi: resolveExternalContentSourceApi(),
     );
     await ember.load();
     ember.selectTheme(CreatorCustomizeController.themeOptions[2]);

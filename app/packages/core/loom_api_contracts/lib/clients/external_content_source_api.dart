@@ -11,4 +11,23 @@ abstract class ExternalContentSourceApi {
   Future<ExternalContentCandidate> getExternalContent({
     required String referenceId,
   });
+
+  Future<ExternalContentCandidate> resolveExternalContentLink({
+    required String channelId,
+    required ExternalSourceType sourceType,
+    required String input,
+    required String creatorNote,
+    required bool searchIndexable,
+    required bool aiQueryable,
+  });
+
+  Future<ExternalContentCandidate> linkCreatorExternalContent({
+    required String channelId,
+    required ExternalSourceType sourceType,
+    required String input,
+    required String creatorNote,
+    required bool searchIndexable,
+    required bool aiQueryable,
+    required String idempotencyKey,
+  });
 }
