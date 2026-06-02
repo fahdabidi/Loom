@@ -11,7 +11,7 @@ Creator archive Q&A enablement, AI summaries policy, and AI settings.
 
 ## Owned screens
 
-Phase 2 AI archive enablement is implemented in the shared Studio setup console through design-system components. Dedicated archive Q&A screens are reserved for Phase 5.
+Phase 13 owns `CreatorArchiveAiPreviewScreen`, which lets creators ask their own archive through the AI Gateway fake and inspect cited source rows before fans arrive. Phase 2 AI archive enablement remains available in the shared Studio setup console.
 
 ## Forbidden imports
 

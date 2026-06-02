@@ -12,6 +12,10 @@ dependencies:
     path: ../../packages/features/fan/feature_ai_qa
   feature_campaigns:
     path: ../../packages/features/fan/feature_campaigns
+  feature_creator_ads:
+    path: ../../packages/features/creator/feature_creator_ads
+  feature_creator_ai:
+    path: ../../packages/features/creator/feature_creator_ai
   feature_creator_audience:
     path: ../../packages/features/creator/feature_creator_audience
   feature_creator_campaigns:
@@ -22,6 +26,8 @@ dependencies:
     path: ../../packages/features/creator/feature_creator_export
   feature_creator_launch:
     path: ../../packages/features/creator/feature_creator_launch
+  feature_creator_monetization:
+    path: ../../packages/features/creator/feature_creator_monetization
   feature_creator_onboarding:
     path: ../../packages/features/creator/feature_creator_onboarding
   feature_creator_publishing:

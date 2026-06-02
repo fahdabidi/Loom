@@ -26,7 +26,7 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.byKey(const ValueKey('starter_pack_member_creator_ferment_fran')),
+      find.byKey(const ValueKey('starter_pack_member_creator_city_ferments')),
       findsOneWidget,
     );
   });

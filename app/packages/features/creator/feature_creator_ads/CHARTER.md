@@ -7,11 +7,12 @@ Creator ad-policy setup and sponsor-campaign controls.
 ## Allowed contracts
 
 - Creator Metadata API
+- Ad Decision API
 - Sponsor Campaign API
 
 ## Owned screens
 
-Phase 2 ad-policy setup is implemented in the shared Studio setup console through design-system components. A dedicated ad-policy screen is reserved for later expansion if manual UX validation requires deeper editing.
+Phase 13 owns `CreatorAdPolicyConsoleScreen`, which saves creator ad-policy categories and verifies downstream ad decisions consume the latest saved policy. Phase 2 ad-policy setup remains available in the shared Studio setup console.
 
 ## Forbidden imports
 

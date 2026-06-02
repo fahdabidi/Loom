@@ -2,18 +2,19 @@
 
 ## Scope
 
-Creator audience insights, consented interest-data requests, and audience-data grant status.
+Creator audience insights, consented interest-data requests, audience-data grant status, and aggregate launch conversion analytics.
 
 ## Allowed contracts
 
 - Creator Audience API
+- Audience Analytics API
 - Fan Passport API
 
 ## Owned screens
 
-Defined in Phase 7.
+- `AudienceInsightsScreen`
+- `CreatorConversionAnalyticsScreen`
 
 ## Forbidden imports
 
 Other features, `loom_fake_backend`, `loom_local_store`, and `loom_seed_data`.
-

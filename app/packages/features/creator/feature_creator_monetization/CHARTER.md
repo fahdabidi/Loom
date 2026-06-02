@@ -12,7 +12,7 @@ Creator membership tiers, no-ad eligibility, entitlement setup, and settlement h
 
 ## Owned screens
 
-Phase 2 membership setup is implemented in the shared Studio setup console through design-system components. A dedicated membership screen is reserved for later expansion if manual UX validation requires deeper editing.
+Phase 13 owns `CreatorMembershipSetupScreen`, which validates tier drafts, saves membership definitions, registers entitlement definitions, and previews the resulting tiers. Phase 2 membership setup remains available in the shared Studio setup console.
 
 ## Forbidden imports
 

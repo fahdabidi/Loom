@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:feature_ai_qa/feature_ai_qa.dart';
 import 'package:feature_campaigns/feature_campaigns.dart';
+import 'package:feature_creator_ads/feature_creator_ads.dart';
+import 'package:feature_creator_ai/feature_creator_ai.dart';
 import 'package:feature_creator_audience/feature_creator_audience.dart';
 import 'package:feature_creator_campaigns/feature_creator_campaigns.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_export/feature_creator_export.dart';
 import 'package:feature_creator_launch/feature_creator_launch.dart';
+import 'package:feature_creator_monetization/feature_creator_monetization.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_creator_recommendations/feature_creator_recommendations.dart';
@@ -105,10 +108,15 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   bool _showPublishingSetup = false;
   bool _showRevenue = false;
   bool _showAudience = false;
+  bool _showConversion = false;
   bool _showRecommendations = false;
   bool _showCampaigns = false;
   bool _showExport = false;
   bool _showLaunch = false;
+  bool _showCatalogImport = false;
+  bool _showAdPolicy = false;
+  bool _showCreatorAi = false;
+  bool _showMemberships = false;
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +130,12 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       return AudienceInsightsScreen(
         creatorId: 'creator_solar_sarah',
         onBack: () => setState(() => _showAudience = false),
+      );
+    }
+    if (_showConversion) {
+      return CreatorConversionAnalyticsScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showConversion = false),
       );
     }
     if (_showRecommendations) {
@@ -144,6 +158,30 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       return CreatorLaunchScreen(
         creatorId: 'creator_solar_sarah',
         onBack: () => setState(() => _showLaunch = false),
+      );
+    }
+    if (_showCatalogImport) {
+      return CatalogImportConsoleScreen(
+        channelId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showCatalogImport = false),
+      );
+    }
+    if (_showAdPolicy) {
+      return CreatorAdPolicyConsoleScreen(
+        channelId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showAdPolicy = false),
+      );
+    }
+    if (_showCreatorAi) {
+      return CreatorArchiveAiPreviewScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showCreatorAi = false),
+      );
+    }
+    if (_showMemberships) {
+      return CreatorMembershipSetupScreen(
+        channelId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showMemberships = false),
       );
     }
     if (_showPublishingSetup) {
@@ -223,6 +261,61 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
                 ],
               ),
               const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      key: const ValueKey('p13_open_conversion_button'),
+                      onPressed: () => setState(() => _showConversion = true),
+                      icon: const Icon(Icons.stacked_bar_chart_rounded),
+                      label: const Text('Funnel'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('p13_open_catalog_import_button'),
+                      onPressed: () =>
+                          setState(() => _showCatalogImport = true),
+                      icon: const Icon(Icons.cloud_download_outlined),
+                      label: const Text('Import'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('p13_open_ad_policy_button'),
+                      onPressed: () => setState(() => _showAdPolicy = true),
+                      icon: const Icon(Icons.policy_outlined),
+                      label: const Text('Ads'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('p13_open_creator_ai_button'),
+                      onPressed: () => setState(() => _showCreatorAi = true),
+                      icon: const Icon(Icons.psychology_alt_outlined),
+                      label: const Text('AI'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  key: const ValueKey('p13_open_membership_button'),
+                  onPressed: () => setState(() => _showMemberships = true),
+                  icon: const Icon(Icons.workspace_premium_outlined),
+                  label: const Text('Membership setup'),
+                ),
+              ),
+              const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -271,7 +364,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
     }
     if (_showCaptureLanding) {
       return FanCaptureLandingScreen(
-        captureToken: 'cap_creator_solar_sarah_launch',
+        captureToken: 'cap_creator-solar-sarah_launch',
         onDone: () => setState(() => _showCaptureLanding = false),
         onBack: () => setState(() => _showCaptureLanding = false),
       );

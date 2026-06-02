@@ -8,10 +8,13 @@ Creator publish composer, required summaries, catalog import, and content manife
 
 - Creator Metadata API
 - Content Host API
+- External Account Link API
+- Import Public Metadata API
 - Migration & Export API
 
 ## Owned screens
 
+- `CatalogImportConsoleScreen`
 - `CreatorPublishingSetupScreen`
 - `CreatorPublishingController`
 
