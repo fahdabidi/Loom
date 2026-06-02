@@ -9174,7 +9174,8 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           extensionId: 'ext_hypewars',
           config: const {'goal': 'Clutch fund', 'goalCents': '20000'},
         ),
-        _moduleSeed('content_rail', 'content', 'Latest VODs', 'feed_module', 4),
+        _gamingExternalModuleSeed('creator_nova_clutch', 4),
+        _moduleSeed('content_rail', 'content', 'Latest VODs', 'feed_module', 5),
       ],
       updatedAt: now,
     ),
@@ -9219,12 +9220,13 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           extensionId: 'ext_build_showcase',
           config: const {'prompt': 'Cozy defense build'},
         ),
+        _gamingExternalModuleSeed('creator_ember_hollow', 3),
         _moduleSeed(
           'content_rail',
           'content',
           'Build archive',
           'feed_module',
-          3,
+          4,
         ),
       ],
       updatedAt: now,
@@ -9268,7 +9270,8 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
             'options': 'PB pace|Safe route|Reset city',
           },
         ),
-        _moduleSeed('content_rail', 'content', 'Run reviews', 'feed_module', 3),
+        _gamingExternalModuleSeed('creator_frame_by_frame', 3),
+        _moduleSeed('content_rail', 'content', 'Run reviews', 'feed_module', 4),
       ],
       updatedAt: now,
     ),
@@ -9329,12 +9332,13 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
             'milestones': 'Queue opened|Bonus co-op stream',
           },
         ),
+        _gamingExternalModuleSeed('creator_drift_and_chill', 4),
         _moduleSeed(
           'content_rail',
           'content',
           'Stream archive',
           'feed_module',
-          4,
+          5,
         ),
       ],
       updatedAt: now,
@@ -9393,12 +9397,13 @@ List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
           extensionId: 'ext_build_showcase',
           config: const {'prompt': 'Raid-ready build board'},
         ),
+        _gamingExternalModuleSeed('creator_iron_vael', 4),
         _moduleSeed(
           'content_rail',
           'content',
           'Guild archive',
           'feed_module',
-          4,
+          5,
         ),
       ],
       updatedAt: now,
@@ -9470,6 +9475,47 @@ Map<String, Object?> _moduleSeed(
     'extensionId': extensionId,
     'config': config,
   };
+}
+
+Map<String, Object?> _gamingExternalModuleSeed(
+  String channelId,
+  int sortOrder,
+) {
+  final seed = _gamingExternalSeedsForCreator(channelId).firstOrNull;
+  if (seed == null) {
+    return _moduleSeed(
+      'external_watch',
+      'external_content',
+      'Creator-linked watch',
+      'feed_module',
+      sortOrder,
+      config: const {},
+    );
+  }
+  final referenceId = 'pubref_${_slug(channelId)}_youtube_1';
+  return _moduleSeed(
+    'external_watch',
+    'external_content',
+    'Creator-linked watch',
+    'feed_module',
+    sortOrder,
+    config: {
+      'referenceId': referenceId,
+      'sourceType': 'youtube',
+      'externalId': seed.videoId,
+      'originalTitle': seed.title,
+      'summary': seed.summary,
+      'thumbnailRef': seed.thumbnailRef,
+      'sourceUrl': 'https://www.youtube.com/watch?v=${seed.videoId}',
+      'sourceAttribution': 'YouTube',
+      'rightsBasis': 'public_reference_seed',
+      'embedKind': 'youtube_iframe',
+      'searchIndexable': 'true',
+      'aiQueryable': 'true',
+      'accurateMatchLabel': seed.accurateMatchLabel,
+      'creatorNote': seed.creatorNote,
+    },
+  );
 }
 
 const _extensionManifestSeeds = [

@@ -218,85 +218,90 @@ class ExternalContentFeedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return Material(
       key: ValueKey(tileKey),
-      onTap: onTap,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(LoomSpacing.sm),
-        decoration: BoxDecoration(
-          color: LoomColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: LoomColors.line),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ExternalPoster(
-              thumbnailRef: thumbnailRef,
-              sourceLabel: sourceLabel,
-            ),
-            const SizedBox(width: LoomSpacing.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SourcePill(label: sourceLabel),
-                  const SizedBox(height: LoomSpacing.xs),
-                  Text(
-                    originalTitle,
-                    key: ValueKey('${tileKey}_original_title'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      height: 1.12,
-                    ),
-                  ),
-                  const SizedBox(height: LoomSpacing.xs),
-                  Text(
-                    summary,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: LoomColors.mutedInk,
-                      height: 1.24,
-                    ),
-                  ),
-                  if (creatorNote != null && creatorNote!.isNotEmpty) ...[
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(LoomSpacing.sm),
+          decoration: BoxDecoration(
+            color: LoomColors.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: LoomColors.line),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ExternalPoster(
+                thumbnailRef: thumbnailRef,
+                sourceLabel: sourceLabel,
+              ),
+              const SizedBox(width: LoomSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SourcePill(label: sourceLabel),
                     const SizedBox(height: LoomSpacing.xs),
                     Text(
-                      creatorNote!,
-                      key: ValueKey('${tileKey}_creator_note'),
+                      originalTitle,
+                      key: ValueKey('${tileKey}_original_title'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: LoomColors.ink,
-                        fontWeight: FontWeight.w800,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        height: 1.12,
                       ),
                     ),
-                  ],
-                  if (footer != null) ...[
                     const SizedBox(height: LoomSpacing.xs),
                     Text(
-                      footer!,
-                      maxLines: 1,
+                      summary,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: LoomColors.moss,
-                        fontWeight: FontWeight.w800,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: LoomColors.mutedInk,
+                        height: 1.24,
                       ),
                     ),
+                    if (creatorNote != null && creatorNote!.isNotEmpty) ...[
+                      const SizedBox(height: LoomSpacing.xs),
+                      Text(
+                        creatorNote!,
+                        key: ValueKey('${tileKey}_creator_note'),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: LoomColors.ink,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ],
+                    if (footer != null) ...[
+                      const SizedBox(height: LoomSpacing.xs),
+                      Text(
+                        footer!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: LoomColors.moss,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            if (onTap != null)
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: LoomColors.mutedInk,
-              ),
-          ],
+              if (onTap != null)
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: LoomColors.mutedInk,
+                ),
+            ],
+          ),
         ),
       ),
     );

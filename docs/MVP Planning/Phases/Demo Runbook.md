@@ -54,7 +54,22 @@ Use this loop for Phase 20 emulator validation.
 7. Open the gaming starter-pack flow and confirm it lands the fan in a populated customized segment.
 8. Reset demo and confirm creator configs, extension state, wallet receipts, and starter-pack state return to baseline.
 
+## AI Search And External Content Showcase Loop
+
+Use this loop for Phase 26 emulator validation and final physical-phone sign-off.
+
+1. Open Fan Settings and connect the simulated AI search agent.
+2. Enable external sources and the simulated YouTube connection.
+3. Search for a gaming topic such as `raid`, `clutch`, or `route`.
+4. Confirm merged creator-owned and external results preserve original external titles, thumbnails, source chips, and accurate-match labels.
+5. Open a YouTube external result and confirm the official embedded player is unobscured and has no Loom ads over the embed.
+6. Review "Next from your AI search" and confirm it is Loom/AI-driven context, not platform autoplay.
+7. Open NovaClutch, EmberHollow, FrameByFrame, DriftAndChill, and IronVael.
+8. Confirm each creator channel includes a creator-linked YouTube tile with source attribution and creator note.
+9. Tap one creator-linked YouTube tile and confirm it opens the embedded playback flow.
+10. Reset demo and confirm seeded gaming external tiles return while mutable search/play/link state is cleared.
+
 ## Validation Targets
 
 - Flutter Android emulator: install, launch, complete all six steps.
-- Physical Android phone: authoritative final sign-off moved to Phase 26; earlier phases can run preliminary phone smoke if hardware is available.
+- Physical Android phone: authoritative final Phase 26 sign-off; install the final debug APK, launch to first rendered screen, run the AI-search/external-content showcase with real network playback, capture screenshots, and record device ID/model.

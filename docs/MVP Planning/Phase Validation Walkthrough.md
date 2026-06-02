@@ -514,10 +514,14 @@ Goal: validate the full AI-search + external-content showcase on emulator and co
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Run the full launch + customization + AI-search showcase on emulator. | Re-acquisition, starter pack, five gaming worlds, AI search, external playback, Studio authoring, export, and reset work together. |  |
-| 2 | Install the final APK on a physical Android phone. | `adb install` succeeds and app launches to first rendered screen. |  |
-| 3 | Run the full showcase on the phone. | Safe areas, scrolling, text wrapping, tap targets, async states, and network playback work on hardware. |  |
-| 4 | Capture validation screenshots. | Emulator and physical-phone screenshots are stored under `data/validation/` and remain gitignored. |  |
-| 5 | Reset demo on phone and emulator. | Both return to seeded baseline without stale extension, wallet, customization, search, or external-content state. |  |
+| 2 | Open Fan Settings, connect the simulated agent, enable YouTube, and search a gaming topic. | Mixed creator/external results preserve original external title, source chip, accurate-match label, and no-ad/no-boost disclosure. |  |
+| 3 | Open a YouTube AI-search result. | Official embedded player is unobscured, no Loom ads cover the embed, and AI-driven next rail appears. |  |
+| 4 | Open NovaClutch, EmberHollow, FrameByFrame, DriftAndChill, and IronVael. | Each channel includes a native creator-linked YouTube tile with source attribution and creator note. |  |
+| 5 | Tap one creator-linked YouTube tile. | It opens the same embedded playback flow and preserves original title/source context. |  |
+| 6 | Install the final APK on a physical Android phone and record device ID/model. | `adb install` succeeds and app launches to first rendered screen on hardware. |  |
+| 7 | Run the full showcase on the phone. | Safe areas, scrolling, text wrapping, tap targets, async states, and real network playback work on hardware. |  |
+| 8 | Capture validation screenshots. | Emulator and physical-phone screenshots are stored under `data/validation/` and remain gitignored. |  |
+| 9 | Reset demo on phone and emulator. | Both return to seeded baseline without stale extension, wallet, customization, search, or external-content state. |  |
 
 ## Cross-Phase Visual Regression Pass
 

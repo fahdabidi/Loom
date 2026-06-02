@@ -37,7 +37,9 @@ void main() {
       channelId: 'creator_nova_clutch',
     );
     final module = persisted.surfaceModules.singleWhere(
-      (candidate) => candidate.kind == 'external_content',
+      (candidate) =>
+          candidate.kind == 'external_content' &&
+          candidate.config['creatorNote'] == 'Creator-picked companion video.',
     );
     expect(module.config['sourceAttribution'], 'YouTube');
     expect(module.config['originalTitle'], contains('NovaClutch'));
