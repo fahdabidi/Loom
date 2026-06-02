@@ -24,7 +24,7 @@ import 'package:feature_playback/feature_playback.dart';
 import 'package:feature_wallet/feature_wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_api_contracts/loom_api_contracts.dart'
-    show CreatorExperienceConfig, SurfaceModule;
+    show AiSearchItem, CreatorExperienceConfig, SurfaceModule;
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_design_system/loom_design_system.dart'
     show LoomChannelTheme;
@@ -32,6 +32,7 @@ import 'package:loom_fake_backend/loom_fake_backend.dart';
 import 'package:loom_local_store/loom_local_store.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -388,6 +389,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   String? _channelId;
   String? _contentId;
   String? _qaCreatorId;
+  AiSearchItem? _externalPlaybackItem;
 
   @override
   Widget build(BuildContext context) {
@@ -424,6 +426,19 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       return ArchiveQaScreen(
         creatorId: qaCreatorId,
         onBack: () => setState(() => _qaCreatorId = null),
+      );
+    }
+    final externalPlaybackItem = _externalPlaybackItem;
+    if (externalPlaybackItem != null) {
+      return ExternalPlaybackScreen(
+        initialItem: externalPlaybackItem,
+        onBack: () => setState(() => _externalPlaybackItem = null),
+        launchExternalUrl: (uri) =>
+            launchUrl(uri, mode: LaunchMode.externalApplication),
+        onOpenContent: (id) => setState(() {
+          _externalPlaybackItem = null;
+          _contentId = id;
+        }),
       );
     }
     final contentId = _contentId;
@@ -464,6 +479,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
       onStartOnboarding: () => setState(() => _showOnboarding = true),
       onOpenCreator: (id) => setState(() => _channelId = id),
       onOpenContent: (id) => setState(() => _contentId = id),
+      onOpenExternal: (item) => setState(() => _externalPlaybackItem = item),
       onOpenWallet: () => setState(() => _showWallet = true),
       onOpenDataRights: () => setState(() => _showDataRights = true),
       onOpenCampaigns: () => setState(() => _showCampaigns = true),

@@ -10,3 +10,4 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  youtube_player_iframe: ^6.0.2

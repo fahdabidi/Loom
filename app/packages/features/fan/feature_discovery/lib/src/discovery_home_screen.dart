@@ -9,6 +9,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
     required this.onStartOnboarding,
     this.onOpenCreator,
     this.onOpenContent,
+    this.onOpenExternal,
     this.onOpenWallet,
     this.onOpenDataRights,
     this.onOpenCampaigns,
@@ -20,6 +21,7 @@ class DiscoveryHomeScreen extends StatefulWidget {
   final VoidCallback onStartOnboarding;
   final ValueChanged<String>? onOpenCreator;
   final ValueChanged<String>? onOpenContent;
+  final ValueChanged<AiSearchItem>? onOpenExternal;
   final VoidCallback? onOpenWallet;
   final VoidCallback? onOpenDataRights;
   final VoidCallback? onOpenCampaigns;
@@ -180,6 +182,7 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
                 result: _controller.aiSearchResult!,
                 onOpenContent: widget.onOpenContent,
                 onOpenCreator: widget.onOpenCreator,
+                onOpenExternal: widget.onOpenExternal,
               ),
             ] else if (_controller.searchResults.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -665,11 +668,13 @@ class _AiSearchResults extends StatelessWidget {
     required this.result,
     required this.onOpenContent,
     required this.onOpenCreator,
+    required this.onOpenExternal,
   });
 
   final AiSearchResult result;
   final ValueChanged<String>? onOpenContent;
   final ValueChanged<String>? onOpenCreator;
+  final ValueChanged<AiSearchItem>? onOpenExternal;
 
   @override
   Widget build(BuildContext context) {
@@ -705,6 +710,11 @@ class _AiSearchResults extends StatelessWidget {
                 } else {
                   onOpenCreator?.call(tile.creatorId);
                 }
+                return;
+              }
+              final openExternal = onOpenExternal;
+              if (openExternal != null) {
+                openExternal(item);
                 return;
               }
               _showExternalPreviewSheet(context, item);

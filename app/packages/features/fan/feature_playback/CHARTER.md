@@ -10,10 +10,13 @@ Video/post playback, playback authorization, ad-supported playback, and completi
 - Content Host API
 - Receipt Ledger API
 - Creator Metadata API
+- AI Gateway API
+- External content embed descriptors
 
 ## Owned screens
 
 - PlaybackScreen
+- ExternalPlaybackScreen
 
 ## Forbidden imports
 
