@@ -6,6 +6,7 @@ import 'package:feature_creator_audience/feature_creator_audience.dart';
 import 'package:feature_creator_campaigns/feature_creator_campaigns.dart';
 import 'package:feature_creator_channel/feature_creator_channel.dart';
 import 'package:feature_creator_export/feature_creator_export.dart';
+import 'package:feature_creator_launch/feature_creator_launch.dart';
 import 'package:feature_creator_onboarding/feature_creator_onboarding.dart';
 import 'package:feature_creator_publishing/feature_creator_publishing.dart';
 import 'package:feature_creator_recommendations/feature_creator_recommendations.dart';
@@ -107,6 +108,7 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   bool _showRecommendations = false;
   bool _showCampaigns = false;
   bool _showExport = false;
+  bool _showLaunch = false;
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +138,12 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
       return CreatorExportWizardScreen(
         creatorId: 'creator_solar_sarah',
         onBack: () => setState(() => _showExport = false),
+      );
+    }
+    if (_showLaunch) {
+      return CreatorLaunchScreen(
+        creatorId: 'creator_solar_sarah',
+        onBack: () => setState(() => _showLaunch = false),
       );
     }
     if (_showPublishingSetup) {
@@ -193,12 +201,34 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
                 ],
               ),
               const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      key: const ValueKey('p11_open_launch_button'),
+                      onPressed: () => setState(() => _showLaunch = true),
+                      icon: const Icon(Icons.rocket_launch_rounded),
+                      label: const Text('Launch'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('p9_open_export_button'),
+                      onPressed: () => setState(() => _showExport = true),
+                      icon: const Icon(Icons.archive_rounded),
+                      label: const Text('Export'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  key: const ValueKey('p9_open_export_button'),
+                  key: const ValueKey('p9_open_export_button_full'),
                   onPressed: () => setState(() => _showExport = true),
-                  icon: const Icon(Icons.archive_rounded),
+                  icon: const Icon(Icons.receipt_long_rounded),
                   label: const Text('Export and transparency'),
                 ),
               ),

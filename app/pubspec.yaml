@@ -33,6 +33,7 @@ workspace:
   - packages/features/creator/feature_creator_audience
   - packages/features/creator/feature_creator_revenue
   - packages/features/creator/feature_creator_export
+  - packages/features/creator/feature_creator_launch
   - packages/tooling/loom_lints
 
 melos:
