@@ -842,7 +842,7 @@ class _Poster extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = _paletteFor(item.tile.thumbnailRef);
+    final palette = _posterGradientFor(item.tile.thumbnailRef);
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: DecoratedBox(
@@ -1073,15 +1073,13 @@ void _showContentSheet(BuildContext context, FeedItem item) {
   );
 }
 
-List<Color> _paletteFor(String seed) {
-  if (seed.contains('solar')) {
-    return const [Color(0xFF0F6B55), Color(0xFFF2C94C)];
-  }
-  if (seed.contains('ferment')) {
-    return const [Color(0xFF7C2D46), Color(0xFFEFA94A)];
-  }
-  if (seed.contains('motion')) {
-    return const [Color(0xFF1C508A), Color(0xFF69C7B8)];
-  }
-  return const [LoomColors.charcoal, LoomColors.aqua];
+List<Color> _posterGradientFor(String seed) {
+  final hash = seed.codeUnits.fold<int>(0, (sum, codeUnit) => sum + codeUnit);
+  final palettes = const [
+    [Color(0xFF183A37), Color(0xFFE9C46A)],
+    [Color(0xFF283044), Color(0xFF78A1BB)],
+    [Color(0xFF4A2C2A), Color(0xFFE07A5F)],
+    [Color(0xFF1E3A5F), Color(0xFF90BE6D)],
+  ];
+  return palettes[hash % palettes.length];
 }

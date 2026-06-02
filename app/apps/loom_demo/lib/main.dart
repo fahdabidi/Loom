@@ -32,7 +32,9 @@ Future<void> main() async {
   runApp(const LoomDemoApp());
 }
 
-Future<void> configureDemoDependencies({bool persistent = true}) async {
+Future<DemoLocalStore> configureDemoDependencies({
+  bool persistent = true,
+}) async {
   final store = persistent
       ? await DemoLocalStore.open(databaseFile: await _databaseFile())
       : await DemoLocalStore.seeded();
@@ -68,6 +70,7 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerFanWalletApi(FanWalletFake(store));
   registerSettlementEngineApi(SettlementEngineFake(store));
   registerSponsorCampaignApi(SponsorCampaignFake());
+  return store;
 }
 
 Future<Widget> buildLoomDemoAppForTest() async {
