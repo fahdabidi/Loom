@@ -308,7 +308,7 @@ End state:
 - The fan lands on a non-empty feed seeded by the new follows and interest profile.
 - `FollowVisibilityPolicy` and pairwise creator identity apply to the new follows.
 
-> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(c) (MVP scope id **FE-S13**); launch scope, implemented in Phase 10. Also addresses UX item U4 ("suggested creators", plural).
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(c) (MVP scope id **FE-S13**); launch scope, implemented in Phase 12. Also addresses UX item U4 ("suggested creators", plural).
 
 ## 6. End-to-End Workflows
 

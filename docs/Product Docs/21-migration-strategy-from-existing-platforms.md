@@ -142,7 +142,7 @@ End state:
 - Fans arriving via the link can re-follow; re-follows are recorded as audit events — there is no automatic follower import and no economic receipt tied to a follow.
 - `CreatorAnnouncementTemplatesAPI` and `FanFollowCaptureAPI` back the funnel; `FollowVisibilityPolicy` and pairwise identity apply.
 
-> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(a) (MVP scope id **CE-S10**); launch scope, implemented in Phase 10. Makes the manual-conversion funnel first-class; complements Stories 1 and 3 and Workflow 1.
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(a) (MVP scope id **CE-S10**); launch scope, implemented in Phase 11. Makes the manual-conversion funnel first-class; complements Stories 1 and 3 and Workflow 1.
 
 ## 6. End-to-End Workflows
 

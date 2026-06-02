@@ -245,7 +245,7 @@ End state:
 - Values are aggregate-only and never expose individual fan identity or raw behavior (Audience Data Firewall).
 - `AudienceAnalyticsAPI` exposes the conversion funnel alongside the existing audience analytics.
 
-> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(h) (MVP scope id **CE-S11**); launch scope, implemented in Phase 10.
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(h) (MVP scope id **CE-S11**); launch scope, implemented in Phase 13.
 
 ### Story 7: Creator upgrades hosting control
 

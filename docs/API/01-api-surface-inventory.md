@@ -63,7 +63,7 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 
 ## 7. Launch & Growth
 
-Added from the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §B to support launch scope (creator audience re-acquisition, one-tap onboarding, conversion analytics). Implemented in [Phase 10](../Go-To-Market/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md).
+Added from the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §B to support launch scope (creator audience re-acquisition, one-tap onboarding, conversion analytics). Implemented across [Phase 10](../MVP%20Planning/Phases/Phase%2010%20-%20Launch%20Contracts%20Store%20and%20Fakes.md) through [Phase 14](../MVP%20Planning/Phases/Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md).
 
 | API surface | Spec | Owns | Key downstream APIs |
 | --- | --- | --- | --- |

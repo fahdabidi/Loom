@@ -10,7 +10,7 @@ This is the manual validation playbook for the Demo App while implementation con
 4. Mark each row as `Pass`, `Fail`, or `Needs change` in the Result column.
 5. For every issue, send the issue template at the bottom of this doc with the phase, screen, action, expected result, actual result, and screenshot if useful.
 
-Physical Android phone validation is deferred until Phase 10. Phases 0 through 9 are validated on the Flutter Android emulator.
+Physical Android phone validation is deferred until Phase 14. Phases 0 through 13 are validated on the Flutter Android emulator.
 
 ## Parallel Validation Protocol
 
@@ -33,7 +33,11 @@ Physical Android phone validation is deferred until Phase 10. Phases 0 through 9
 | 7 | High UX checkpoint | Complete | Fan data rights and Creator audience |
 | 8 | Medium UX checkpoint | Complete / ready for validation | Recommendations, referral, and campaigns |
 | 9 | Export/transparency full-app emulator validation | Complete / ready for validation | Export, transparency, reset, emulator |
-| 10 | Final launch + physical-phone validation | Not started | Re-acquisition, starter pack, conversion analytics, UX hardening, physical phone |
+| 10 | Launch contracts/data smoke | Not started | App launch and reset after launch API state |
+| 11 | High UX checkpoint | Not started | Creator Studio Launch/Grow |
+| 12 | High UX checkpoint | Not started | Fan capture landing and starter pack |
+| 13 | High UX checkpoint | Not started | Creator conversion analytics and utility consoles |
+| 14 | Final launch + physical-phone validation | Not started | UX hardening, full launch demo, physical phone |
 
 ## Phase 0 - Foundation And Shell
 
@@ -283,43 +287,93 @@ Goal: validate export/portability, transparency surfaces, demo reset, full autho
 | 4 | Relaunch after reset. | App starts cleanly and seed world is restored. |  |
 | 5 | Validate on emulator. | APK installs, launches, and full demo works on the Flutter Android emulator. |  |
 
-## Phase 10 - Launch Audience Re-Acquisition And Onboarding
+## Phase 10 - Launch Contracts, Store, And Fakes
 
-Goal: validate the launch acquisition loop, starter-pack onboarding, conversion analytics, creator utility consoles, UX hardening, and physical-phone run.
-
-### Re-Acquisition And Starter Pack
+Goal: validate that the app still launches and resets cleanly after launch API contracts, local-store tables, fakes, and seed data are added. This phase has no main UX checkpoint.
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
-| 1 | Open Creator Studio Launch / Grow area. | Creator sees announcement templates, link-in-bio preview, QR card, and capture-link controls. |  |
-| 2 | Render or copy an announcement. | Copy is honest about inviting fans to re-follow on Loom and never implies follower import. |  |
-| 3 | Open the creator capture link. | Fan lands on a creator-branded follow-capture page. |  |
-| 4 | Confirm starter pack. | Fan follows the source creator plus recommended creators in one tap, with toggleable selections. |  |
-| 5 | Land in Fan App feed. | Feed is non-empty and reflects the starter-pack follows. |  |
+| 1 | Launch the app on the emulator. | App reaches the first rendered screen without hanging or showing a schema/reset error. |  |
+| 2 | Switch between Fan App and Creator Studio. | Existing Phase 0-9 surfaces still load. |  |
+| 3 | Reset demo from debug/demo menu. | App resets without errors and returns to seeded baseline. |  |
+| 4 | Relaunch after reset. | App starts cleanly and existing seed world is restored. |  |
 
-### Launch Analytics And Utility Consoles
+## Phase 11 - Creator Launch Funnel
+
+Goal: validate the Creator Studio launch-growth workflow: announcement templates, link-in-bio preview, QR/capture link, external account context, and cross-post stub.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Creator Studio Launch / Grow area. | Creator sees a modern Studio console with launch status, templates, preview, QR/capture link, and external account context. |  |
+| 2 | Choose an announcement template. | Template selection updates preview without layout shift. |  |
+| 3 | Render or copy an announcement. | Copy is honest about inviting fans to re-follow on Loom and never implies follower import. |  |
+| 4 | Review link-in-bio preview. | Preview shows creator identity, primary Loom follow link, and relevant public links. |  |
+| 5 | Review QR/capture link card. | QR/copy controls are clear and capture-link state is visible. |  |
+| 6 | Start simulated cross-post. | Cross-post status is explicitly stubbed/simulated and does not imply real external posting. |  |
+
+## Phase 12 - Fan Starter-Pack Onboarding
+
+Goal: validate fan arrival through a creator capture link, one-tap starter-pack follow, idempotency, and non-empty feed landing.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open a creator capture link. | Fan lands on a creator-branded follow-capture page. |  |
+| 2 | Review starter-pack list. | Source creator and recommended creators show avatars, names/handles, why-recommended context, and selected states. |  |
+| 3 | Toggle one recommended creator off and on. | Selection state is clear and primary action remains stable. |  |
+| 4 | Confirm starter pack. | Fan follows the selected creators in one action. |  |
+| 5 | Land in Fan App feed. | Feed is non-empty and reflects the starter-pack follows. |  |
+| 6 | Re-open the same capture link. | App shows existing/accepted state and does not duplicate follows. |  |
+| 7 | Run existing fan onboarding if reachable. | Suggested creator UX supports multiple creators and Phase 1 completion still works. |  |
+
+## Phase 13 - Conversion Analytics And Creator Utility Consoles
+
+Goal: validate creator conversion-yield analytics and completed creator utility consoles.
+
+### Launch Analytics
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Open Creator conversion analytics. | Funnel shows reached → re-followed → member/premium with aggregate-only values. |  |
-| 2 | Review creator catalog import. | Import UI has preview, validation, and usable imported public references. |  |
-| 3 | Review ad-policy console. | Creator can allow/block categories or brands and playback consumes the latest policy. |  |
+| 2 | Review funnel visuals at phone width. | Visual is compact, readable, and not row-only. |  |
+| 3 | Inspect supporting trend/source rows if present. | Rows do not expose per-fan behavioral data or universal fan IDs. |  |
+
+### Utility Consoles
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Review creator catalog import. | Import UI has preview, validation, job status, and usable imported public references. |  |
+| 2 | Review ad-policy console. | Creator can allow/block categories or brands and saved version is visible. |  |
+| 3 | Play or inspect ad-supported fan content after policy save. | Playback/ad decision reflects the latest creator policy. |  |
 | 4 | Review creator archive-AI preview. | Creator can ask their own archive and receive cited answers before fans arrive. |  |
 | 5 | Review membership setup. | Tier editor has preview, validation, and saved tier state. |  |
 
-### Final UX And Phone Validation
+## Phase 14 - UX Hardening And Physical Phone Validation
+
+Goal: validate immersive discovery, richer media, async states, feed-style pagination, full launch demo, and physical-phone run.
+
+### UX Hardening
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Open immersive discovery surface. | Full-height media surface renders with floating actions and bottom metadata/action panel. |  |
-| 2 | Check loading, empty, and error states where reachable. | States use reusable polished components and avoid raw test scaffolding. |  |
-| 3 | Review media assets across feed, channel, player, campaign, and starter-pack surfaces. | Main social surfaces are visual-first and not mostly text or generic placeholders. |  |
-| 4 | Run the full launch demo on emulator. | Re-acquisition → starter pack → consume → conversion analytics → export/reset works end to end. |  |
-| 5 | Validate on physical Android phone. | APK installs, launches, and key full-demo flows work on physical hardware. |  |
+| 2 | Switch between dense and immersive discovery. | Navigation feels intentional and state does not get stale. |  |
+| 3 | Check loading, empty, and error states where reachable. | States use reusable polished components and avoid raw test scaffolding. |  |
+| 4 | Review media assets across feed, channel, player, campaign, launch, starter-pack, and Studio surfaces. | Main social surfaces are visual-first and not mostly text or generic placeholders. |  |
+| 5 | Trigger feed pagination. | Additional content loads without duplicates or jarring layout shifts; explicit test path still exists. |  |
+
+### Final Launch Demo And Phone
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Run the full launch demo on emulator. | Re-acquisition → starter pack → consume → conversion analytics → utility console → export/reset works end to end. |  |
+| 2 | Reset demo and relaunch on emulator. | App returns to seeded baseline without stale launch state. |  |
+| 3 | Install APK on physical Android phone. | Install succeeds and app launches to first rendered screen. |  |
+| 4 | Run key launch flows on phone. | Capture/start pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
+| 5 | Inspect phone layout. | Safe areas, scrolling, text wrapping, and tap targets work without clipping or overlap. |  |
 
 ## Cross-Phase Visual Regression Pass
 
-Run this after Phase 6, Phase 8, and Phase 9, or whenever the app shell changes.
+Run this after Phase 6, Phase 8, Phase 9, Phase 13, Phase 14, or whenever the app shell changes.
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |

@@ -1105,14 +1105,15 @@ The following stories are required by the MVP pitch but do not yet exist in the 
 
 The following stories were identified by the go-to-market analysis as **missing** but **required to
 deliver the launch scope** (creator-led audience re-acquisition, one-tap onboarding, and conversion
-visibility). They are tracked for implementation in
-**[Phase 10 — Launch: Audience Re-acquisition & Onboarding](./Phases/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)**.
+visibility). They are tracked for implementation across the launch-demo sequence:
+[Phase 10](./Phases/Phase%2010%20-%20Launch%20Contracts%20Store%20and%20Fakes.md) through
+[Phase 14](./Phases/Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md).
 
 **Source:** [MVP Gap Analysis — Launch Scope](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A · companion to the [Loom Launch Playbook](../Go-To-Market/Loom%20Launch%20Playbook.md).
 
 > Note on scope: these extend the original six-step demo with the launch loop. They are **launch
 > scope**, not part of the original Phase 0–9 MVP. The UX-quality gaps from the same analysis (Gap
-> Analysis §D, items U1–U7) are tracked as design-hardening work in Phase 10, **not** as user stories.
+> Analysis §D, items U1–U7) are tracked as design-hardening work across Phases 12-14, **not** as user stories.
 
 ---
 

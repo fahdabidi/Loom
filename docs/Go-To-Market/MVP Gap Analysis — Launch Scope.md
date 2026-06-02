@@ -3,7 +3,7 @@
 Status: Draft for review
 Type: Gap analysis (go-to-market → MVP delivery)
 Companion to: [Loom Launch Playbook](./Loom%20Launch%20Playbook.md)
-Proposed remediation: [Phase 10 — Launch: Audience Re-acquisition & Onboarding](../MVP%20Planning/Phases/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)
+Proposed remediation: [Phases 10-14 launch-demo sequence](../MVP%20Planning/Phases/README.md)
 
 ## Purpose
 
@@ -42,7 +42,7 @@ From the playbook, the launch demo must show:
   new capabilities just need new fakes + seed data.**
 - **Product Docs** (22) are comprehensive; the **API inventory**
   ([docs/API/01-api-surface-inventory.md](../API/01-api-surface-inventory.md)) lists ~27 APIs; **MVP
-  Planning** has 10 phases (0–9) and is explicitly scoped as a mocked demo, and is **vertical-agnostic**
+  Planning** originally had 10 phases (0–9) and is explicitly scoped as a mocked demo, and is **vertical-agnostic**
   (no gaming/esports anywhere — which is fine; gaming is a go-to-market choice, not a demo change).
 - Built and working in the demo: **recommendations + referral (d), campaigns/giveaways (e), and
   data-for-value (g)**. Stubbed: `feature_creator_ads`, `feature_creator_monetization`,
@@ -116,10 +116,16 @@ Phases 0–9 do **not** scope (a), (c), or (h), and leave (b) and (f) partially 
   (creator-side archive-AI preview), `feature_creator_monetization` (membership setup) — all under
   [app/packages/features/creator/](../../app/packages/features/creator/).
 
-**Recommendation:** add a single new phase — **Phase 10 — Launch: Audience Re-acquisition &
-Onboarding** (see the companion doc) — that scopes (a) + (c) + (h) and closes the (b)/(f) partials, all
-through typed API clients backed by the in-app fake backend over the local store, keeping the demo
-vertical-agnostic.
+**Recommendation:** add a focused launch-demo sequence — **Phases 10-14** — rather than expanding
+completed Phases 0-9. The sequence scopes (a) + (c) + (h), closes the (b)/(f) partials, and carries
+the cross-cutting UX remediations through typed API clients backed by the in-app fake backend over
+the local store, keeping the demo vertical-agnostic:
+
+- **Phase 10:** launch contracts, local-store tables, fakes, seed data, and reset/idempotency.
+- **Phase 11:** creator re-acquisition funnel.
+- **Phase 12:** fan starter-pack onboarding.
+- **Phase 13:** conversion analytics and creator utility consoles.
+- **Phase 14:** UX hardening and physical-phone validation.
 
 ## §D — UX implementation gaps (design guidance vs. what was built)
 
@@ -142,9 +148,8 @@ build is acceptable but the guidance supports doing it better). Each was verifie
 
 **Cross-cutting read:** U1–U3 are the biggest "modern social feel" gaps and are *cross-cutting*
 (not launch-specific). U4–U6 sit directly on the Launch-scope surfaces — U4 is the fan starter-pack,
-U5 is the new conversion-yield analytics, and U6 is the very set of stubbed creator editors Phase 10
-must finish. All UX remediations are folded into Phase 10 (see its "UX hardening" scope), since there
-is no later phase to carry them.
+U5 is the new conversion-yield analytics, and U6 is the very set of stubbed creator editors. These
+remediations are distributed across Phases 12-14 so each phase can ship with a reasonable scope.
 
 ## Severity ranking & recommended order
 
@@ -156,5 +161,5 @@ is no later phase to carry them.
    **U2** richer media; **U3** loading/empty/error states.
 3. **Low / none:** (d), (e), (g) — already delivered; **U7** pagination — nice-to-have.
 
-Sequencing note: because the demo is contract-first, **§B (API specs) must land before the §C/Phase-10
-demo work** for each capability — write the contract, then the fake, then the UI.
+Sequencing note: because the demo is contract-first, **§B (API specs) and Phase 10 contract/fake
+foundation must land before the Phase 11-14 UI work** — write the contract, then the fake, then the UI.
