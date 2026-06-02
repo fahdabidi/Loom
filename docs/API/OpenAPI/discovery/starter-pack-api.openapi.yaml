@@ -1,0 +1,165 @@
+openapi: 3.1.0
+info:
+  title: Loom Starter Pack API
+  version: 0.1.0
+  summary: One-tap starter packs that let a newly arriving fan follow a creator and that creator's recommended creators, then land on a populated feed.
+  description: >
+    Backs one-tap onboarding (Product Doc 03 Story 13). A starter pack is assembled from a source
+    creator plus recommended creators drawn from the creator-led recommendation graph. A single confirm
+    performs an idempotent bulk follow through the Fan Passport API, so the fan's first session opens on
+    a non-empty feed instead of an empty one.
+servers:
+  - url: https://starter-pack.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.follow
+  - LoomServiceAuth: []
+x-loom-api-owner: discovery/starter-pack
+x-loom-source: GTM Launch Gap Analysis §B (onboarding); MVP scope id FE-S13
+x-loom-downstream-apis:
+  - ./recommendation-referral-api.openapi.yaml
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../creator/creator-metadata-api.openapi.yaml
+paths:
+  /v1/starter-packs/{channelId}:
+    get:
+      operationId: getStarterPack
+      summary: Resolve a starter pack for a source creator (creator + recommended creators).
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 6
+          description: Maximum recommended creators to include alongside the source creator.
+      responses:
+        '200':
+          description: Starter pack.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StarterPack'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/starter-packs/{channelId}/follows:
+    post:
+      operationId: bulkFollow
+      summary: Follow the selected starter-pack members in one idempotent action.
+      description: Replaying the same idempotency key or re-confirming does not create duplicate follows; members already followed are returned as already_following.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkFollowRequest'
+      responses:
+        '201':
+          description: Bulk follow result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkFollowResult'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    StarterPackMember:
+      type: object
+      required:
+        - channel
+        - role
+        - defaultSelected
+      properties:
+        channel:
+          $ref: '../_shared/components.yaml#/components/schemas/CreatorChannelRef'
+        displayName:
+          type: string
+          nullable: true
+        avatarRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        role:
+          type: string
+          enum:
+            - source
+            - recommended
+        recommendationReason:
+          type: string
+          nullable: true
+          description: Disclosure for recommended members (e.g. editorial, affiliate); null for the source creator.
+        defaultSelected:
+          type: boolean
+        alreadyFollowing:
+          type: boolean
+          default: false
+    StarterPack:
+      type: object
+      required:
+        - sourceChannelId
+        - members
+      properties:
+        sourceChannelId:
+          type: string
+        starterPackToken:
+          type: string
+          nullable: true
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/StarterPackMember'
+    BulkFollowRequest:
+      type: object
+      required:
+        - channelIds
+      properties:
+        channelIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: The subset of starter-pack members the fan confirmed.
+        followVisibility:
+          type: string
+          enum:
+            - public
+            - creator_visible
+            - pseudonymous
+          default: creator_visible
+    BulkFollowResult:
+      type: object
+      required:
+        - followed
+        - alreadyFollowing
+      properties:
+        followed:
+          type: array
+          items:
+            type: string
+        alreadyFollowing:
+          type: array
+          items:
+            type: string
+        feedReady:
+          type: boolean
+          description: True when the resulting follow set is sufficient to render a non-empty initial feed.

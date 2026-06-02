@@ -1,0 +1,217 @@
+openapi: 3.1.0
+info:
+  title: Loom External Account Link API
+  version: 0.1.0
+  summary: Link, verify, and unlink a creator's external platform accounts (YouTube, TikTok, Instagram, X, Substack, Patreon, etc.).
+  description: >
+    Backs the owned-hub and re-acquisition funnel (Product Doc 21 Stories 1 and 6). Linking an external
+    account establishes verified provenance for that platform so the creator can import public metadata,
+    cross-post, and display verified links — it does NOT grant Loom access to the external follower graph,
+    which cannot be exported. Verification is per-platform (handle ownership), not a credential store.
+servers:
+  - url: https://external-link.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/external-account-link
+x-loom-source: GTM Launch Gap Analysis §B (re-acquisition family); Product Doc 21
+x-loom-downstream-apis:
+  - ./creator-metadata-api.openapi.yaml
+  - ./import-public-metadata-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/external-accounts:
+    get:
+      operationId: listExternalAccounts
+      summary: List linked external accounts for a channel.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Linked external accounts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListExternalAccountsResponse'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+    post:
+      operationId: linkExternalAccount
+      summary: Link an external platform account (pending verification).
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkExternalAccountRequest'
+      responses:
+        '201':
+          description: External account linked (verification pending or verified).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAccountLink'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/channels/{channelId}/external-accounts/{linkId}/verify:
+    post:
+      operationId: verifyExternalAccount
+      summary: Confirm ownership of a linked external account.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyExternalAccountRequest'
+      responses:
+        '200':
+          description: Verification result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAccountLink'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/channels/{channelId}/external-accounts/{linkId}:
+    delete:
+      operationId: unlinkExternalAccount
+      summary: Remove a linked external account.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: linkId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Unlinked.
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    ExternalPlatform:
+      type: string
+      enum:
+        - youtube
+        - tiktok
+        - instagram
+        - x
+        - facebook
+        - substack
+        - patreon
+        - discord
+        - twitch
+        - other
+    LinkExternalAccountRequest:
+      type: object
+      required:
+        - platform
+        - handle
+      properties:
+        platform:
+          $ref: '#/components/schemas/ExternalPlatform'
+        handle:
+          type: string
+          description: Public handle or profile id on the external platform.
+        profileUrl:
+          type: string
+          format: uri
+          nullable: true
+    VerifyExternalAccountRequest:
+      type: object
+      required:
+        - method
+      properties:
+        method:
+          type: string
+          enum:
+            - oauth
+            - bio_link_token
+            - posted_code
+          description: Ownership-proof method. The demo simulates verification.
+        evidence:
+          type: string
+          nullable: true
+    ExternalAccountLink:
+      type: object
+      required:
+        - linkId
+        - channelId
+        - platform
+        - handle
+        - verificationState
+      properties:
+        linkId:
+          type: string
+        channelId:
+          type: string
+        platform:
+          $ref: '#/components/schemas/ExternalPlatform'
+        handle:
+          type: string
+        profileUrl:
+          type: string
+          format: uri
+          nullable: true
+        verificationState:
+          type: string
+          enum:
+            - pending
+            - verified
+            - failed
+        linkedAt:
+          type: string
+          format: date-time
+    ListExternalAccountsResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalAccountLink'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

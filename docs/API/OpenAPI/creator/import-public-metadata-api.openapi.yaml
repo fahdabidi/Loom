@@ -1,0 +1,202 @@
+openapi: 3.1.0
+info:
+  title: Loom Import Public Metadata API
+  version: 0.1.0
+  summary: Import public catalog metadata from a linked external platform into a creator's Loom catalog as external content references.
+  description: >
+    Backs single-player utility and catalog import (Product Doc 02 Story 2B; Product Doc 21 Story 2 and
+    Workflow 2). Imports titles, descriptions, thumbnails, links, and timestamps as external content
+    references with rights provenance — it does not re-upload or claim ownership of external media.
+    Imports run as asynchronous jobs and feed the Creator Metadata catalog. AI/search eligibility of
+    imported references is governed separately by the creator's AI and search policies.
+servers:
+  - url: https://import-metadata.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/import-public-metadata
+x-loom-source: GTM Launch Gap Analysis §B (single-player utility); Product Doc 21
+x-loom-downstream-apis:
+  - ./external-account-link-api.openapi.yaml
+  - ./creator-metadata-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/imports:
+    post:
+      operationId: startImport
+      summary: Start an asynchronous public-metadata import from a linked external account.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartImportRequest'
+      responses:
+        '202':
+          description: Import job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/channels/{channelId}/imports/{jobId}:
+    get:
+      operationId: getImportJob
+      summary: Read the status and counts of an import job.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Import job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/channels/{channelId}/imported-references:
+    get:
+      operationId: listImportedReferences
+      summary: List external content references produced by imports.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: jobId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Imported external content references.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListImportedReferencesResponse'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    StartImportRequest:
+      type: object
+      required:
+        - externalAccountLinkId
+        - rightsBasis
+      properties:
+        externalAccountLinkId:
+          type: string
+          description: A verified external account link from the External Account Link API.
+        rightsBasis:
+          type: string
+          enum:
+            - own_public_content
+            - licensed
+            - public_reference_only
+          description: Declared rights basis for importing the public metadata.
+        maxItems:
+          type: integer
+          minimum: 1
+          maximum: 5000
+          default: 500
+    ImportJob:
+      type: object
+      required:
+        - jobId
+        - channelId
+        - status
+      properties:
+        jobId:
+          type: string
+        channelId:
+          type: string
+        status:
+          $ref: '../_shared/components.yaml#/components/schemas/JobStatus'
+        importedCount:
+          type: integer
+          minimum: 0
+        skippedCount:
+          type: integer
+          minimum: 0
+        message:
+          type: string
+          nullable: true
+    ExternalContentReference:
+      type: object
+      required:
+        - referenceId
+        - platform
+        - externalId
+        - title
+        - rightsBasis
+      properties:
+        referenceId:
+          type: string
+        platform:
+          type: string
+        externalId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        thumbnailRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        sourceUrl:
+          type: string
+          format: uri
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        rightsBasis:
+          type: string
+        searchIndexable:
+          type: boolean
+          default: false
+        aiQueryable:
+          type: boolean
+          default: false
+    ListImportedReferencesResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalContentReference'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

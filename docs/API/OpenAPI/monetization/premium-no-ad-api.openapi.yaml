@@ -1,0 +1,128 @@
+openapi: 3.1.0
+info:
+  title: Loom Premium No-Ad API
+  version: 0.1.0
+  summary: Fan global no-ad entitlement status and recording of qualifying no-ad consumption that still supports creators.
+  description: >
+    Surfaces the premium no-ad capability previously dispersed inside Playback Authorization
+    (Product Doc 09; Gap Analysis §B (f)). The no-ad pass is purchased via the Fan Wallet and recorded in
+    the Entitlement Ledger; this surface verifies the entitlement and records each qualifying no-ad view,
+    emitting an economic receipt so settlement can still allocate subscription value to the creator.
+servers:
+  - url: https://premium-no-ad.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.wallet
+  - LoomServiceAuth: []
+x-loom-api-owner: monetization/premium-no-ad
+x-loom-source: GTM Launch Gap Analysis §B (ads); Product Doc 09
+x-loom-downstream-apis:
+  - ./entitlement-ledger-api.openapi.yaml
+  - ./receipt-ledger-api.openapi.yaml
+  - ../identity/fan-wallet-api.openapi.yaml
+paths:
+  /v1/fans/{fanId}/premium-no-ad:
+    get:
+      operationId: getPremiumNoAdStatus
+      summary: Read the fan's global no-ad entitlement status.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Premium no-ad status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumNoAdStatus'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/fans/{fanId}/premium-no-ad/views:
+    post:
+      operationId: recordPremiumNoAdView
+      summary: Record a qualifying no-ad view for an entitled fan (idempotent).
+      description: Records consumption under the no-ad entitlement and emits an economic receipt for settlement allocation. Replaying the idempotency key returns the same result without double-counting.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordPremiumNoAdViewRequest'
+      responses:
+        '201':
+          description: No-ad view recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PremiumNoAdViewResult'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    PremiumNoAdStatus:
+      type: object
+      required:
+        - fanId
+        - active
+      properties:
+        fanId:
+          type: string
+        active:
+          type: boolean
+        entitlementId:
+          type: string
+          nullable: true
+        since:
+          type: string
+          format: date-time
+          nullable: true
+        renewsAt:
+          type: string
+          format: date-time
+          nullable: true
+    RecordPremiumNoAdViewRequest:
+      type: object
+      required:
+        - contentId
+      properties:
+        contentId:
+          type: string
+        channelId:
+          type: string
+          nullable: true
+        sessionIntent:
+          type: string
+          nullable: true
+          description: Session-intent context label for revenue-by-intent attribution (no behavioral data).
+    PremiumNoAdViewResult:
+      type: object
+      required:
+        - contentId
+        - noAdApplied
+      properties:
+        contentId:
+          type: string
+        noAdApplied:
+          type: boolean
+        receipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/EconomicReceipt'
+          nullable: true

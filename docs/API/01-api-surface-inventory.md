@@ -60,3 +60,24 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Provider Exit API | `OpenAPI/portability/provider-exit-api.openapi.yaml` | Provider exit requests, exit status, blockers. | Migration/Export, Provider Registry, Receipt Ledger |
 | Governance API | `OpenAPI/governance/governance-api.openapi.yaml` | API versions, utility fee policy, governance disputes. | Audit, Provider Registry, Certification |
 | Audit API | `OpenAPI/governance/audit-api.openapi.yaml` | Audit probes, evidence bundles, remediation plans. | Receipt Ledger, Provider Registry |
+
+## 7. Launch & Growth
+
+Added from the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §B to support launch scope (creator audience re-acquisition, one-tap onboarding, conversion analytics). Implemented in [Phase 10](../Go-To-Market/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md).
+
+| API surface | Spec | Owns | Key downstream APIs |
+| --- | --- | --- | --- |
+| Creator Announcement API | `OpenAPI/creator/creator-announcement-api.openapi.yaml` | Announcement templates, rendered launch announcements, link-in-bio page (re-acquisition messaging assets). | Fan Follow Capture, Creator Metadata |
+| Fan Follow Capture API | `OpenAPI/creator/fan-follow-capture-api.openapi.yaml` | Creator capture links, follow-capture landing, manual re-follow recording (audit-class; no follower import). | Fan Passport, Creator Audience, Audit |
+| Starter Pack API | `OpenAPI/discovery/starter-pack-api.openapi.yaml` | One-tap starter packs (source creator + recommended creators) and idempotent bulk follow for onboarding. | Recommendation And Referral, Fan Passport, Creator Metadata |
+| Audience Analytics API | `OpenAPI/creator/audience-analytics-api.openapi.yaml` | Aggregate-only conversion (re-acquisition) funnel: reached → re-followed → member → premium. | Fan Passport, Entitlement Ledger, Fan Follow Capture, Creator Audience |
+| External Account Link API | `OpenAPI/creator/external-account-link-api.openapi.yaml` | Link/verify/unlink a creator's external platform accounts (provenance for import, cross-post, verified links — not follower import). | Creator Metadata, Import Public Metadata |
+| Import Public Metadata API | `OpenAPI/creator/import-public-metadata-api.openapi.yaml` | Async import of public catalog metadata into external content references with rights provenance. | External Account Link, Creator Metadata |
+| Cross-Posting API | `OpenAPI/creator/cross-posting-api.openapi.yaml` | Publish announcements/links to linked external platforms with per-target delivery status. | External Account Link, Creator Announcement |
+| Premium No-Ad API | `OpenAPI/monetization/premium-no-ad-api.openapi.yaml` | Global no-ad entitlement status + recording qualifying no-ad consumption (economic receipt for settlement). | Entitlement Ledger, Receipt Ledger, Fan Wallet |
+| Ad Decision API | `OpenAPI/content/ad-decision-api.openapi.yaml` | Contextual, creator-policy ad selection + impression recording. No behavioral targeting. | Creator Metadata, Receipt Ledger, Fraud |
+
+> **Relationship to Playback Authorization:** Premium No-Ad and Ad Decision formalize the ad/no-ad
+> route that Playback Authorization previously owned inline; Playback Authorization delegates to them.
+> **CreatorAdPolicy authoring** remains owned by the Creator Metadata API (business manifests); Ad
+> Decision only *consumes* the policy at selection time.

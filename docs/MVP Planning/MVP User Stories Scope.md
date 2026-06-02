@@ -1101,4 +1101,65 @@ The following stories are required by the MVP pitch but do not yet exist in the 
 
 ---
 
+## Part J — Stories Identified in the GTM Launch Gap Analysis
+
+The following stories were identified by the go-to-market analysis as **missing** but **required to
+deliver the launch scope** (creator-led audience re-acquisition, one-tap onboarding, and conversion
+visibility). They are tracked for implementation in
+**[Phase 10 — Launch: Audience Re-acquisition & Onboarding](../Go-To-Market/Phase%2010%20—%20Launch%20Audience%20Re-acquisition%20and%20Onboarding.md)**.
+
+**Source:** [MVP Gap Analysis — Launch Scope](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A · companion to the [Loom Launch Playbook](../Go-To-Market/Loom%20Launch%20Playbook.md).
+
+> Note on scope: these extend the original six-step demo with the launch loop. They are **launch
+> scope**, not part of the original Phase 0–9 MVP. The UX-quality gaps from the same analysis (Gap
+> Analysis §D, items U1–U7) are tracked as design-hardening work in Phase 10, **not** as user stories.
+
+---
+
+### CE-S7: Creator runs the audience re-acquisition funnel **[IN — launch scope]**
+
+As a creator, I want announcement templates, a link-in-bio page, a QR code, and a shareable
+follow-capture landing so I can drive my **existing** audience to re-follow me on Loom — because my
+follower graph **cannot be imported** from incumbents and must be rebuilt by fans choosing to follow.
+
+End state:
+- Creator picks an announcement template and gets a rendered announcement, a link-in-bio page, and a QR code.
+- A shareable capture link resolves to a creator-branded follow-capture landing.
+- A fan arriving via the link can re-follow; the re-follow is recorded (idempotent) — there is **no** automatic follower import.
+- Capture/re-follow is an audit-class event (no economic receipt tied to a follow); `FollowVisibilityPolicy` applies.
+
+**GTM Gap ref:** §A item (a) — re-acquisition as *manual conversion*. **Target product doc:** `21 Migration Strategy` (refine Stories 1/3 + Workflow 1). **New APIs:** `FanFollowCaptureAPI`, `CreatorAnnouncementTemplatesAPI` (see Gap Analysis §B).
+
+---
+
+### FE-S13: Fan joins via a one-tap starter pack **[IN — launch scope]**
+
+As a fan arriving through a creator's link, I want to follow that creator **and their recommended
+creators in one tap** and land on a populated feed, so my first session is immediately valuable
+instead of an empty feed.
+
+End state:
+- Opening a creator capture link offers a starter pack: the creator + N recommended creators (from the Phase 8 recommendation graph), defaulted on, individually toggleable.
+- One-tap confirm performs a bulk follow (idempotent — re-opening does not duplicate follows).
+- The fan lands on a **non-empty** discovery feed seeded by those follows + interest profile.
+- `FollowVisibilityPolicy` and pairwise identity apply to the new follows.
+
+**GTM Gap ref:** §A item (c) — starter-pack / bulk-follow onboarding (missing entirely; also UX item U4, "suggested creators" plural). **Target product doc:** `03 Fan Experience` (+ surface note in `15 Fan Apps`). **New API:** `StarterPackAPI` / `BulkFollowAPI` (see Gap Analysis §B).
+
+---
+
+### CE-S8: Creator views conversion yield **[IN — launch scope]**
+
+As a creator, I want to see how many of the people I drove to Loom actually re-followed, subscribed,
+or went premium — my **conversion yield** — so I can judge whether my launch push is working.
+
+End state:
+- A funnel view shows audience reached → re-followed → member → premium, sourced from follow + entitlement + capture state.
+- Values are **aggregates only** — never per-fan behavioral rows or universal fan IDs (Audience Data Firewall).
+- The view reuses the Studio dashboard pattern and renders as a compact visual (funnel/bars), not row-only (UX item U5).
+
+**GTM Gap ref:** §A item (h) — conversion analytics (Doc 02 covers revenue-by-intent only). **Target product doc:** `02 Creator Experience` (new story alongside CE-S6/CE-S6A). **New API:** `AudienceAnalyticsAPI` (see Gap Analysis §B).
+
+---
+
 *End of MVP User Stories Scope document.*

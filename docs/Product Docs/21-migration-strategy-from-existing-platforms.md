@@ -131,6 +131,19 @@ End state:
 - Media and metadata references migrate.
 - Registry pointers update.
 
+### Story 6: Creator drives an audience re-acquisition funnel
+
+As a creator, I want announcement templates, a link-in-bio page, a QR code, and a shareable follow-capture landing so I can drive my existing audience to re-follow me on Loom. My follower graph cannot be imported from other platforms, so re-follows must be captured manually.
+
+End state:
+
+- Creator picks an announcement template and gets a rendered announcement, a link-in-bio page, and a QR code.
+- A shareable capture link resolves to a creator-branded follow-capture landing.
+- Fans arriving via the link can re-follow; re-follows are recorded as audit events — there is no automatic follower import and no economic receipt tied to a follow.
+- `CreatorAnnouncementTemplatesAPI` and `FanFollowCaptureAPI` back the funnel; `FollowVisibilityPolicy` and pairwise identity apply.
+
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(a) (MVP scope id **CE-S7**); launch scope, implemented in Phase 10. Makes the manual-conversion funnel first-class; complements Stories 1 and 3 and Workflow 1.
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Existing creator starts owned hub

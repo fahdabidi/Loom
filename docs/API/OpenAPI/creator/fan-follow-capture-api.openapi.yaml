@@ -1,0 +1,205 @@
+openapi: 3.1.0
+info:
+  title: Loom Fan Follow Capture API
+  version: 0.1.0
+  summary: Creator-owned capture links and the follow-capture landing that convert an existing audience into Loom follows.
+  description: >
+    Backs the audience re-acquisition funnel (Product Doc 21 Story 6). A follower graph cannot be
+    imported from incumbents, so a creator shares a capture link; a fan opening it sees a creator-branded
+    landing and can re-follow. Re-follows are recorded as audit events and write the follow through the
+    Fan Passport API downstream — there is no automatic follower import and no economic receipt tied to a
+    follow.
+servers:
+  - url: https://follow-capture.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/follow-capture
+x-loom-source: GTM Launch Gap Analysis §B (re-acquisition family); MVP scope id CE-S7
+x-loom-downstream-apis:
+  - ../identity/fan-passport-api.openapi.yaml
+  - ./creator-audience-api.openapi.yaml
+  - ../governance/audit-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/capture-links:
+    post:
+      operationId: createCaptureLink
+      summary: Create a shareable follow-capture link for a channel.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaptureLinkRequest'
+      responses:
+        '201':
+          description: Capture link created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptureLink'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/capture-links/{token}:
+    get:
+      operationId: resolveCaptureLink
+      summary: Resolve a capture token into a creator-branded follow-capture landing view.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Capture landing view.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptureLandingView'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+  /v1/capture-links/{token}/re-follows:
+    post:
+      operationId: recordReFollow
+      summary: Record a fan re-follow arriving through a capture link (idempotent).
+      description: Writes the follow via the Fan Passport API downstream and emits an audit receipt. Re-opening the link or replaying the key does not create a duplicate follow.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordReFollowRequest'
+      responses:
+        '201':
+          description: Re-follow recorded (or returned unchanged on idempotent replay).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReFollowResult'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    CreateCaptureLinkRequest:
+      type: object
+      properties:
+        channel:
+          type: string
+          enum:
+            - link_in_bio
+            - social_post
+            - email
+            - qr
+            - live_callout
+          description: Origin channel, for conversion attribution only.
+        starterPackEnabled:
+          type: boolean
+          default: true
+          description: Whether the landing offers the creator's starter pack (recommended creators) in addition to the source creator.
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    CaptureLink:
+      type: object
+      required:
+        - token
+        - channelId
+        - url
+      properties:
+        token:
+          type: string
+        channelId:
+          type: string
+        url:
+          type: string
+          format: uri
+        channel:
+          type: string
+          nullable: true
+        qrPayload:
+          type: string
+          nullable: true
+        starterPackEnabled:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+    CaptureLandingView:
+      type: object
+      required:
+        - channel
+        - alreadyFollowing
+      properties:
+        channel:
+          $ref: '../_shared/components.yaml#/components/schemas/CreatorChannelRef'
+        displayName:
+          type: string
+          nullable: true
+        avatarRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        tagline:
+          type: string
+          nullable: true
+        alreadyFollowing:
+          type: boolean
+          description: True if the resolving fan already follows this creator on Loom.
+        starterPackToken:
+          type: string
+          nullable: true
+          description: When present, the Starter Pack API can expand this into the source creator plus recommended creators.
+    RecordReFollowRequest:
+      type: object
+      properties:
+        followVisibility:
+          type: string
+          enum:
+            - public
+            - creator_visible
+            - pseudonymous
+          default: creator_visible
+    ReFollowResult:
+      type: object
+      required:
+        - channelId
+        - followState
+      properties:
+        channelId:
+          type: string
+        followState:
+          type: string
+          enum:
+            - followed
+            - already_following
+        pairwiseCreatorFanId:
+          type: string
+          nullable: true
+        auditReceipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/AuditReceipt'
+          nullable: true

@@ -297,6 +297,19 @@ End state:
 - Entitlement checks work across content types.
 - Saves, reminders, and read/watch state are stored according to fan settings.
 
+### Story 13: Fan joins via a one-tap starter pack
+
+As a fan arriving through a creator's link, I want to follow that creator and their recommended creators in one tap and land on a populated feed, so my first session is valuable instead of empty.
+
+End state:
+
+- Opening a creator capture link offers a starter pack: the source creator plus recommended creators, defaulted on and individually toggleable.
+- `StarterPackAPI` resolves the pack from creator-led recommendations; a single confirm performs an idempotent bulk follow.
+- The fan lands on a non-empty feed seeded by the new follows and interest profile.
+- `FollowVisibilityPolicy` and pairwise creator identity apply to the new follows.
+
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(c) (MVP scope id **FE-S13**); launch scope, implemented in Phase 10. Also addresses UX item U4 ("suggested creators", plural).
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Fan onboarding and first follow

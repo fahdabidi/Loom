@@ -235,6 +235,18 @@ End state:
 - `CreatorPayoutStatement` and the revenue dashboard can break revenue down by session intent in addition to source.
 - Intent breakdown is aggregate and never exposes individual fan identity or raw behavior.
 
+### Story 6B: Creator views audience conversion (re-acquisition) funnel
+
+As a creator, I want to see how many of the people I drove to Loom actually re-followed, subscribed, or went premium — my conversion yield — so I can judge whether my launch and re-acquisition push is working.
+
+End state:
+
+- A funnel view shows audience reached → re-followed → member → premium, sourced from follow, entitlement, and follow-capture state.
+- Values are aggregate-only and never expose individual fan identity or raw behavior (Audience Data Firewall).
+- `AudienceAnalyticsAPI` exposes the conversion funnel alongside the existing audience analytics.
+
+> Identified in the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §A(h) (MVP scope id **CE-S8**); launch scope, implemented in Phase 10.
+
 ### Story 7: Creator upgrades hosting control
 
 As a growing creator, I want to compare hosting and ad provider options so I can improve margins without losing my channel.

@@ -1,0 +1,210 @@
+openapi: 3.1.0
+info:
+  title: Loom Creator Announcement API
+  version: 0.1.0
+  summary: Creator announcement templates, rendered launch announcements, and the link-in-bio page used to drive an existing audience to re-follow on Loom.
+  description: >
+    Backs the creator audience re-acquisition funnel (Product Doc 02 Story 6B context and 21 Story 6).
+    The follower graph cannot be imported from incumbents, so this surface produces the assets a creator
+    uses to invite their existing audience to re-follow manually: announcement copy from templates, a
+    public link-in-bio page, and references to follow-capture links. It does not write follows itself —
+    capture and re-follow are owned by the Fan Follow Capture API.
+servers:
+  - url: https://creator-announce.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.channel
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/announcement
+x-loom-source: GTM Launch Gap Analysis §B (re-acquisition family); MVP scope id CE-S7
+x-loom-downstream-apis:
+  - ./fan-follow-capture-api.openapi.yaml
+  - ./creator-metadata-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/announcement-templates:
+    get:
+      operationId: listAnnouncementTemplates
+      summary: List available announcement templates for re-acquisition messaging.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Announcement templates.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAnnouncementTemplatesResponse'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+  /v1/channels/{channelId}/announcements:
+    post:
+      operationId: renderAnnouncement
+      summary: Render an announcement from a template with the creator's fields and a capture-link reference.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderAnnouncementRequest'
+      responses:
+        '201':
+          description: Rendered announcement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/channels/{channelId}/link-in-bio:
+    get:
+      operationId: getLinkInBio
+      summary: Read the creator's public link-in-bio page (links, capture link, QR payload).
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Link-in-bio page.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkInBio'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    AnnouncementTemplate:
+      type: object
+      required:
+        - templateId
+        - name
+        - channel
+        - body
+      properties:
+        templateId:
+          type: string
+        name:
+          type: string
+        channel:
+          type: string
+          enum:
+            - social_post
+            - email
+            - video_pinned_comment
+            - live_callout
+          description: Where the creator will publish this announcement (cross-post target).
+        body:
+          type: string
+          description: Template body with placeholders such as {creatorName} and {captureLink}.
+        placeholders:
+          type: array
+          items:
+            type: string
+    RenderAnnouncementRequest:
+      type: object
+      required:
+        - templateId
+        - captureLinkToken
+      properties:
+        templateId:
+          type: string
+        captureLinkToken:
+          type: string
+          description: Token of a capture link created via the Fan Follow Capture API.
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+          description: Values for template placeholders.
+    Announcement:
+      type: object
+      required:
+        - announcementId
+        - channelId
+        - channel
+        - renderedBody
+        - captureLinkUrl
+      properties:
+        announcementId:
+          type: string
+        channelId:
+          type: string
+        channel:
+          type: string
+        renderedBody:
+          type: string
+        captureLinkUrl:
+          type: string
+          format: uri
+    LinkInBio:
+      type: object
+      required:
+        - channelId
+        - handle
+        - captureLinkUrl
+      properties:
+        channelId:
+          type: string
+        handle:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        avatarRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        captureLinkUrl:
+          type: string
+          format: uri
+        qrPayload:
+          type: string
+          description: Encoded payload for an offline-generated QR code pointing at the capture link.
+        externalLinks:
+          type: array
+          items:
+            type: object
+            required:
+              - label
+              - url
+            properties:
+              label:
+                type: string
+              url:
+                type: string
+                format: uri
+    ListAnnouncementTemplatesResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnouncementTemplate'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

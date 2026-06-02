@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: Loom Audience Analytics API
+  version: 0.1.0
+  summary: Creator-facing conversion (re-acquisition) funnel and audience analytics, aggregate-only.
+  description: >
+    Backs creator conversion-yield analytics (Product Doc 02 Story 6B). Reports how an existing audience
+    converts after a re-acquisition push: reached → re-followed → member → premium. All values are
+    aggregate-only — never individual fan identity or raw behavior — enforcing the Audience Data Firewall.
+    Complements the Creator Audience API, which owns relationship state, segments, and permissioned
+    interest-data queries.
+servers:
+  - url: https://audience-analytics.loom.example
+security:
+  - LoomUserOAuth:
+      - creator.audience
+  - LoomServiceAuth: []
+x-loom-api-owner: creator/audience-analytics
+x-loom-source: GTM Launch Gap Analysis §B (analytics); MVP scope id CE-S8
+x-loom-downstream-apis:
+  - ../identity/fan-passport-api.openapi.yaml
+  - ../monetization/entitlement-ledger-api.openapi.yaml
+  - ./fan-follow-capture-api.openapi.yaml
+  - ./creator-audience-api.openapi.yaml
+paths:
+  /v1/channels/{channelId}/analytics/conversion-funnel:
+    get:
+      operationId: getConversionFunnel
+      summary: Read the aggregate conversion funnel for a channel over an optional time window.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: startsAt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endsAt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Aggregate conversion funnel.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionFunnel'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    ConversionStage:
+      type: object
+      required:
+        - stage
+        - count
+      properties:
+        stage:
+          type: string
+          enum:
+            - reached
+            - re_followed
+            - member
+            - premium
+        count:
+          type: integer
+          minimum: 0
+        conversionFromPrevious:
+          type: number
+          format: float
+          nullable: true
+          description: Ratio of this stage's count to the previous stage's count (0..1).
+    ConversionFunnel:
+      type: object
+      required:
+        - channelId
+        - aggregateOnly
+        - window
+        - stages
+      properties:
+        channelId:
+          type: string
+        aggregateOnly:
+          type: boolean
+          const: true
+          description: Always true — this surface never returns per-fan rows or universal fan ids.
+        window:
+          $ref: '../_shared/components.yaml#/components/schemas/TimeWindow'
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversionStage'
+        byChannelSource:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Optional reached-count breakdown by capture-link origin channel (link_in_bio, qr, social_post, email).

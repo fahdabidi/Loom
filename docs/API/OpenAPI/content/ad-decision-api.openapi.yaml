@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Loom Ad Decision API
+  version: 0.1.0
+  summary: Contextual, creator-controlled ad selection and impression recording — no behavioral targeting.
+  description: >
+    Surfaces the ad-decision capability previously dispersed inside Playback Authorization
+    (Product Doc 09; Phase 4; Gap Analysis §B (f)). Ads are selected only from the creator's CreatorAdPolicy
+    (allowed categories/brands) combined with the session-intent ad posture. The decision request carries
+    no fan-behavior fields — only contentId, ad posture, and entitlement state — enforcing the
+    no-surveillance rule. Impressions emit an economic receipt for settlement.
+servers:
+  - url: https://ad-decision.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.playback
+  - LoomServiceAuth: []
+x-loom-api-owner: content/ad-decision
+x-loom-source: GTM Launch Gap Analysis §B (ads); Product Doc 09, Phase 4
+x-loom-downstream-apis:
+  - ../creator/creator-metadata-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+  - ../safety/fraud-api.openapi.yaml
+paths:
+  /v1/ad-decisions:
+    post:
+      operationId: decideAds
+      summary: Select contextual ads for a content view from creator policy and session-intent ad posture.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdDecisionRequest'
+      responses:
+        '200':
+          description: Ad decision (may be empty when no-ad entitlement or posture applies).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdDecision'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+  /v1/ad-decisions/{decisionId}/impressions:
+    post:
+      operationId: recordAdImpression
+      summary: Record an ad impression for a prior decision (idempotent).
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: decisionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordAdImpressionRequest'
+      responses:
+        '201':
+          description: Impression recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdImpressionResult'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    AdDecisionRequest:
+      type: object
+      required:
+        - contentId
+        - adPosture
+        - entitlementState
+      properties:
+        contentId:
+          type: string
+        adPosture:
+          type: string
+          enum:
+            - standard
+            - reduced
+            - none
+          description: Session-intent-derived ad load. Carries no behavioral signal.
+        entitlementState:
+          type: string
+          enum:
+            - ad_supported
+            - premium_no_ad
+          description: Whether the fan holds a no-ad entitlement. When premium_no_ad, no ads are returned.
+    SelectedAd:
+      type: object
+      required:
+        - adId
+        - brand
+        - category
+        - disclosure
+        - selectionBasis
+      properties:
+        adId:
+          type: string
+        brand:
+          type: string
+        category:
+          type: string
+        disclosure:
+          type: string
+          description: Fan-visible label explaining the ad is contextual and creator-policy aligned.
+        selectionBasis:
+          type: string
+          enum:
+            - creator_policy_contextual
+          description: Always contextual creator-policy selection — never behavioral targeting.
+    AdDecision:
+      type: object
+      required:
+        - decisionId
+        - contentId
+        - ads
+      properties:
+        decisionId:
+          type: string
+        contentId:
+          type: string
+        ads:
+          type: array
+          items:
+            $ref: '#/components/schemas/SelectedAd'
+        policyVersion:
+          type: string
+          nullable: true
+          description: Version of the CreatorAdPolicy applied.
+    RecordAdImpressionRequest:
+      type: object
+      required:
+        - adId
+      properties:
+        adId:
+          type: string
+        completed:
+          type: boolean
+          default: false
+    AdImpressionResult:
+      type: object
+      required:
+        - adId
+        - recorded
+      properties:
+        adId:
+          type: string
+        recorded:
+          type: boolean
+        receipt:
+          $ref: '../_shared/receipts.yaml#/components/schemas/EconomicReceipt'
+          nullable: true
