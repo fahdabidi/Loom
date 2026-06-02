@@ -32,6 +32,10 @@ void main() {
       find.byKey(const ValueKey('fan_secondary_action_rail')),
       findsOneWidget,
     );
+    expect(
+      find.byKey(const ValueKey('fan_return_to_feed_button')),
+      findsOneWidget,
+    );
 
     final starterCreatorsTile = find.byKey(
       const ValueKey('fan_edit_starter_creators_tile'),
@@ -69,6 +73,16 @@ void main() {
     expect(find.byKey(const ValueKey('p6_wallet_screen')), findsOneWidget);
     expect(
       find.byKey(const ValueKey('fan_secondary_action_rail')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('p6_wallet_back_button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('p6_wallet_back_button')));
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('p0_recommendation_type_row')),
       findsOneWidget,
     );
   });

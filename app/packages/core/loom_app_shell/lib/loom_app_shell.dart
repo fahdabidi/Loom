@@ -588,16 +588,17 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
           ),
         ],
       ),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
-        child: KeyedSubtree(
-          key: ValueKey<String>('${_role.name}-$_resetEpoch'),
-          child: _role == RoleScope.fanApp
-              ? widget.fanBuilder(
-                  context,
-                  RoleSurfaceChrome(searchRequests: _fanSearchRequests),
-                )
-              : widget.studioBuilder(context, const RoleSurfaceChrome()),
+      child: KeyedSubtree(
+        key: ValueKey<String>('surfaces-$_resetEpoch'),
+        child: IndexedStack(
+          index: selectedIndex,
+          children: [
+            widget.fanBuilder(
+              context,
+              RoleSurfaceChrome(searchRequests: _fanSearchRequests),
+            ),
+            widget.studioBuilder(context, const RoleSurfaceChrome()),
+          ],
         ),
       ),
     );

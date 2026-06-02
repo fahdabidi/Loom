@@ -124,7 +124,7 @@ class _BodyForStep extends StatelessWidget {
               title: manifest?.displayName ?? '',
               subtitle: '@${manifest?.handle ?? ''}',
               body:
-                  'Managed hosting keeps demo media ready for playback, receipts, and later monetization phases.',
+                  'Managed hosting prepares the channel for the demo: uploaded media is playable, thumbnails and metadata are available to the feed, and future receipts can point to the same hosted assets.',
               icon: Icons.cloud_done_outlined,
             ),
             const SizedBox(height: LoomSpacing.md),
@@ -134,17 +134,26 @@ class _BodyForStep extends StatelessWidget {
       case CreatorOnboardingStep.complete:
         final channel = controller.channel;
         final contract = controller.hostingContract;
+        final displayName =
+            channel?.displayName ?? 'Creator onboarding complete';
+        final handle = channel == null
+            ? 'Studio workspace ready'
+            : '@${channel.handle}';
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _StudioPreviewCard(
-              title: 'Creator onboarding complete',
-              subtitle: 'Studio workspace ready',
+            _StudioPreviewCard(
+              title: displayName,
+              subtitle: handle,
               body:
-                  'Your channel profile, handle, and hosting contract are ready for publishing setup.',
+                  'Creator onboarding complete. Your channel profile, handle, and hosting contract are ready for publishing setup.',
               icon: Icons.check_circle_rounded,
             ),
             const SizedBox(height: LoomSpacing.md),
+            const _StudioFactRow(
+              icon: Icons.check_circle_outline_rounded,
+              text: 'Creator onboarding complete',
+            ),
             if (channel != null)
               _StudioFactRow(
                 icon: Icons.badge_outlined,
@@ -153,7 +162,7 @@ class _BodyForStep extends StatelessWidget {
             if (channel != null)
               _StudioFactRow(
                 icon: Icons.alternate_email_rounded,
-                text: '@${channel.handle}',
+                text: 'Handle: @${channel.handle}',
               ),
             if (contract != null)
               _StudioFactRow(
@@ -300,15 +309,15 @@ class _StudioChecklist extends StatelessWidget {
       children: [
         _StudioFactRow(
           icon: Icons.play_circle_outline_rounded,
-          text: 'Playback-ready demo hosting',
+          text: 'Demo media stays ready for feed playback',
         ),
         _StudioFactRow(
           icon: Icons.receipt_long_outlined,
-          text: 'Receipts available in later phases',
+          text: 'Receipts and monetization records point to hosted assets',
         ),
         _StudioFactRow(
           icon: Icons.lock_outline_rounded,
-          text: 'Managed terms version: managed-v1',
+          text: 'Loom manages storage, thumbnails, metadata, and demo policy',
         ),
       ],
     );

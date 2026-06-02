@@ -28,7 +28,7 @@ import 'package:loom_api_contracts/loom_api_contracts.dart'
     show AiSearchItem, CreatorExperienceConfig, SurfaceModule;
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_design_system/loom_design_system.dart'
-    show LoomChannelTheme;
+    show LoomChannelTheme, LoomColors;
 import 'package:loom_fake_backend/loom_fake_backend.dart';
 import 'package:loom_local_store/loom_local_store.dart';
 import 'package:path/path.dart' as p;
@@ -237,241 +237,474 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
   bool _showMemberships = false;
   bool _showCustomize = false;
 
-  @override
-  Widget build(BuildContext context) {
-    if (_showRevenue) {
-      return CreatorRevenueDashboardScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showRevenue = false),
-      );
-    }
-    if (_showAudience) {
-      return AudienceInsightsScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showAudience = false),
-      );
-    }
-    if (_showConversion) {
-      return CreatorConversionAnalyticsScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showConversion = false),
-      );
-    }
-    if (_showRecommendations) {
-      return RecommendationBuilderScreen(
-        onBack: () => setState(() => _showRecommendations = false),
-      );
-    }
-    if (_showCampaigns) {
-      return CreatorCampaignBuilderScreen(
-        onBack: () => setState(() => _showCampaigns = false),
-      );
-    }
-    if (_showExport) {
-      return CreatorExportWizardScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showExport = false),
-      );
-    }
-    if (_showLaunch) {
-      return CreatorLaunchScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showLaunch = false),
-      );
-    }
-    if (_showCatalogImport) {
-      return CatalogImportConsoleScreen(
-        channelId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showCatalogImport = false),
-      );
-    }
-    if (_showAdPolicy) {
-      return CreatorAdPolicyConsoleScreen(
-        channelId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showAdPolicy = false),
-      );
-    }
-    if (_showCreatorAi) {
-      return CreatorArchiveAiPreviewScreen(
-        creatorId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showCreatorAi = false),
-      );
-    }
-    if (_showMemberships) {
-      return CreatorMembershipSetupScreen(
-        channelId: 'creator_solar_sarah',
-        onBack: () => setState(() => _showMemberships = false),
-      );
-    }
-    if (_showCustomize) {
-      return CreatorCustomizeConsoleScreen(
-        creatorId: 'creator_nova_clutch',
-        onBack: () => setState(() => _showCustomize = false),
-      );
-    }
-    if (_showPublishingSetup) {
-      return const CreatorPublishingSetupScreen(channelId: _phaseOneChannelId);
-    }
+  void _openStudioHome() {
+    setState(() {
+      _showPublishingSetup = false;
+      _showRevenue = false;
+      _showAudience = false;
+      _showConversion = false;
+      _showRecommendations = false;
+      _showCampaigns = false;
+      _showExport = false;
+      _showLaunch = false;
+      _showCatalogImport = false;
+      _showAdPolicy = false;
+      _showCreatorAi = false;
+      _showMemberships = false;
+      _showCustomize = false;
+    });
+  }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p6_open_revenue_dashboard_button'),
-                      onPressed: () => setState(() => _showRevenue = true),
-                      icon: const Icon(Icons.payments_rounded),
-                      label: const Text('Revenue'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton.tonalIcon(
-                      key: const ValueKey('p7_open_audience_button'),
-                      onPressed: () => setState(() => _showAudience = true),
-                      icon: const Icon(Icons.groups_2_rounded),
-                      label: const Text('Audience'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p8_open_recommendations_button'),
-                      onPressed: () =>
-                          setState(() => _showRecommendations = true),
-                      icon: const Icon(Icons.recommend_rounded),
-                      label: const Text('Recommendations'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton.tonalIcon(
-                      key: const ValueKey('p8_open_campaign_builder_button'),
-                      onPressed: () => setState(() => _showCampaigns = true),
-                      icon: const Icon(Icons.campaign_rounded),
-                      label: const Text('Campaigns'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      key: const ValueKey('p11_open_launch_button'),
-                      onPressed: () => setState(() => _showLaunch = true),
-                      icon: const Icon(Icons.rocket_launch_rounded),
-                      label: const Text('Launch'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p9_open_export_button'),
-                      onPressed: () => setState(() => _showExport = true),
-                      icon: const Icon(Icons.archive_rounded),
-                      label: const Text('Export'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.tonalIcon(
-                      key: const ValueKey('p13_open_conversion_button'),
-                      onPressed: () => setState(() => _showConversion = true),
-                      icon: const Icon(Icons.stacked_bar_chart_rounded),
-                      label: const Text('Funnel'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p13_open_catalog_import_button'),
-                      onPressed: () =>
-                          setState(() => _showCatalogImport = true),
-                      icon: const Icon(Icons.cloud_download_outlined),
-                      label: const Text('Import'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p13_open_ad_policy_button'),
-                      onPressed: () => setState(() => _showAdPolicy = true),
-                      icon: const Icon(Icons.policy_outlined),
-                      label: const Text('Ads'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('p13_open_creator_ai_button'),
-                      onPressed: () => setState(() => _showCreatorAi = true),
-                      icon: const Icon(Icons.psychology_alt_outlined),
-                      label: const Text('AI'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  key: const ValueKey('p19_open_customize_button'),
-                  onPressed: () => setState(() => _showCustomize = true),
-                  icon: const Icon(Icons.dashboard_customize_rounded),
-                  label: const Text('Customize fan experience'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonalIcon(
-                  key: const ValueKey('p13_open_membership_button'),
-                  onPressed: () => setState(() => _showMemberships = true),
-                  icon: const Icon(Icons.workspace_premium_outlined),
-                  label: const Text('Membership setup'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  key: const ValueKey('p9_open_export_button_full'),
-                  onPressed: () => setState(() => _showExport = true),
-                  icon: const Icon(Icons.receipt_long_rounded),
-                  label: const Text('Export and transparency'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: CreatorOnboardingScreen(
-            onOpenPublishingSetup: () {
-              setState(() => _showPublishingSetup = true);
-            },
+  void _openCreatorSurface(_CreatorSurfaceTarget target) {
+    setState(() {
+      _showPublishingSetup = target == _CreatorSurfaceTarget.publishing;
+      _showRevenue = target == _CreatorSurfaceTarget.revenue;
+      _showAudience = target == _CreatorSurfaceTarget.audience;
+      _showConversion = target == _CreatorSurfaceTarget.conversion;
+      _showRecommendations = target == _CreatorSurfaceTarget.recommendations;
+      _showCampaigns = target == _CreatorSurfaceTarget.campaigns;
+      _showExport = target == _CreatorSurfaceTarget.export;
+      _showLaunch = target == _CreatorSurfaceTarget.launch;
+      _showCatalogImport = target == _CreatorSurfaceTarget.catalogImport;
+      _showAdPolicy = target == _CreatorSurfaceTarget.adPolicy;
+      _showCreatorAi = target == _CreatorSurfaceTarget.creatorAi;
+      _showMemberships = target == _CreatorSurfaceTarget.memberships;
+      _showCustomize = target == _CreatorSurfaceTarget.customize;
+    });
+  }
+
+  Widget _withCreatorRail({
+    required _CreatorSurfaceTarget active,
+    required Widget child,
+  }) {
+    return NestedScrollView(
+      key: const ValueKey('creator_subsurface_with_rail'),
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+            child: _CreatorStudioActionRail(
+              active: active,
+              onOpenHome: _openStudioHome,
+              onOpenPublishing: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.publishing),
+              onOpenRevenue: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.revenue),
+              onOpenAudience: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.audience),
+              onOpenConversion: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.conversion),
+              onOpenRecommendations: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.recommendations),
+              onOpenCampaigns: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.campaigns),
+              onOpenExport: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.export),
+              onOpenLaunch: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.launch),
+              onOpenCatalogImport: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.catalogImport),
+              onOpenAdPolicy: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.adPolicy),
+              onOpenCreatorAi: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.creatorAi),
+              onOpenMemberships: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.memberships),
+              onOpenCustomize: () =>
+                  _openCreatorSurface(_CreatorSurfaceTarget.customize),
+            ),
           ),
         ),
       ],
+      body: child,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showRevenue) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.revenue,
+        child: CreatorRevenueDashboardScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showAudience) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.audience,
+        child: AudienceInsightsScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showConversion) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.conversion,
+        child: CreatorConversionAnalyticsScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showRecommendations) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.recommendations,
+        child: RecommendationBuilderScreen(onBack: _openStudioHome),
+      );
+    }
+    if (_showCampaigns) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.campaigns,
+        child: CreatorCampaignBuilderScreen(onBack: _openStudioHome),
+      );
+    }
+    if (_showExport) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.export,
+        child: CreatorExportWizardScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showLaunch) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.launch,
+        child: CreatorLaunchScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showCatalogImport) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.catalogImport,
+        child: CatalogImportConsoleScreen(
+          channelId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showAdPolicy) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.adPolicy,
+        child: CreatorAdPolicyConsoleScreen(
+          channelId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showCreatorAi) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.creatorAi,
+        child: CreatorArchiveAiPreviewScreen(
+          creatorId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showMemberships) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.memberships,
+        child: CreatorMembershipSetupScreen(
+          channelId: 'creator_solar_sarah',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showCustomize) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.customize,
+        child: CreatorCustomizeConsoleScreen(
+          creatorId: 'creator_nova_clutch',
+          onBack: _openStudioHome,
+        ),
+      );
+    }
+    if (_showPublishingSetup) {
+      return _withCreatorRail(
+        active: _CreatorSurfaceTarget.publishing,
+        child: const CreatorPublishingSetupScreen(
+          channelId: _phaseOneChannelId,
+        ),
+      );
+    }
+
+    return _withCreatorRail(
+      active: _CreatorSurfaceTarget.channel,
+      child: CreatorOnboardingScreen(
+        onOpenPublishingSetup: () =>
+            _openCreatorSurface(_CreatorSurfaceTarget.publishing),
+      ),
+    );
+  }
+}
+
+enum _CreatorSurfaceTarget {
+  channel,
+  publishing,
+  revenue,
+  audience,
+  conversion,
+  recommendations,
+  campaigns,
+  export,
+  launch,
+  catalogImport,
+  adPolicy,
+  creatorAi,
+  memberships,
+  customize,
+}
+
+class _CreatorStudioActionRail extends StatelessWidget {
+  const _CreatorStudioActionRail({
+    required this.active,
+    required this.onOpenHome,
+    required this.onOpenPublishing,
+    required this.onOpenRevenue,
+    required this.onOpenAudience,
+    required this.onOpenConversion,
+    required this.onOpenRecommendations,
+    required this.onOpenCampaigns,
+    required this.onOpenExport,
+    required this.onOpenLaunch,
+    required this.onOpenCatalogImport,
+    required this.onOpenAdPolicy,
+    required this.onOpenCreatorAi,
+    required this.onOpenMemberships,
+    required this.onOpenCustomize,
+  });
+
+  final _CreatorSurfaceTarget active;
+  final VoidCallback onOpenHome;
+  final VoidCallback onOpenPublishing;
+  final VoidCallback onOpenRevenue;
+  final VoidCallback onOpenAudience;
+  final VoidCallback onOpenConversion;
+  final VoidCallback onOpenRecommendations;
+  final VoidCallback onOpenCampaigns;
+  final VoidCallback onOpenExport;
+  final VoidCallback onOpenLaunch;
+  final VoidCallback onOpenCatalogImport;
+  final VoidCallback onOpenAdPolicy;
+  final VoidCallback onOpenCreatorAi;
+  final VoidCallback onOpenMemberships;
+  final VoidCallback onOpenCustomize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('creator_studio_action_panel'),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: LoomColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: LoomColors.line),
+      ),
+      child: Column(
+        children: [
+          _CreatorRailSection(
+            label: 'Setup',
+            buttons: [
+              _CreatorRailButton(
+                keyName: 'creator_studio_home_button',
+                tooltip: 'Create channel',
+                icon: Icons.add_circle_outline_rounded,
+                active: active == _CreatorSurfaceTarget.channel,
+                onPressed: onOpenHome,
+              ),
+              _CreatorRailButton(
+                keyName: 'creator_open_publishing_panel_button',
+                tooltip: 'Publishing setup',
+                icon: Icons.dashboard_customize_outlined,
+                active: active == _CreatorSurfaceTarget.publishing,
+                onPressed: onOpenPublishing,
+              ),
+              _CreatorRailButton(
+                keyName: 'p13_open_catalog_import_button',
+                tooltip: 'Catalog import',
+                icon: Icons.cloud_download_outlined,
+                active: active == _CreatorSurfaceTarget.catalogImport,
+                onPressed: onOpenCatalogImport,
+              ),
+              _CreatorRailButton(
+                keyName: 'p13_open_ad_policy_button',
+                tooltip: 'Ad policy',
+                icon: Icons.policy_outlined,
+                active: active == _CreatorSurfaceTarget.adPolicy,
+                onPressed: onOpenAdPolicy,
+              ),
+            ],
+          ),
+          _CreatorRailSection(
+            label: 'Growth',
+            buttons: [
+              _CreatorRailButton(
+                keyName: 'p11_open_launch_button',
+                tooltip: 'Launch',
+                icon: Icons.rocket_launch_rounded,
+                active: active == _CreatorSurfaceTarget.launch,
+                onPressed: onOpenLaunch,
+              ),
+              _CreatorRailButton(
+                keyName: 'p8_open_recommendations_button',
+                tooltip: 'Recommendations',
+                icon: Icons.recommend_rounded,
+                active: active == _CreatorSurfaceTarget.recommendations,
+                onPressed: onOpenRecommendations,
+              ),
+              _CreatorRailButton(
+                keyName: 'p8_open_campaign_builder_button',
+                tooltip: 'Campaigns',
+                icon: Icons.campaign_rounded,
+                active: active == _CreatorSurfaceTarget.campaigns,
+                onPressed: onOpenCampaigns,
+              ),
+              _CreatorRailButton(
+                keyName: 'p13_open_membership_button',
+                tooltip: 'Membership setup',
+                icon: Icons.workspace_premium_outlined,
+                active: active == _CreatorSurfaceTarget.memberships,
+                onPressed: onOpenMemberships,
+              ),
+            ],
+          ),
+          _CreatorRailSection(
+            label: 'Signals',
+            buttons: [
+              _CreatorRailButton(
+                keyName: 'p6_open_revenue_dashboard_button',
+                tooltip: 'Revenue',
+                icon: Icons.payments_rounded,
+                active: active == _CreatorSurfaceTarget.revenue,
+                onPressed: onOpenRevenue,
+              ),
+              _CreatorRailButton(
+                keyName: 'p7_open_audience_button',
+                tooltip: 'Audience',
+                icon: Icons.groups_2_rounded,
+                active: active == _CreatorSurfaceTarget.audience,
+                onPressed: onOpenAudience,
+              ),
+              _CreatorRailButton(
+                keyName: 'p13_open_conversion_button',
+                tooltip: 'Conversion funnel',
+                icon: Icons.stacked_bar_chart_rounded,
+                active: active == _CreatorSurfaceTarget.conversion,
+                onPressed: onOpenConversion,
+              ),
+            ],
+          ),
+          _CreatorRailSection(
+            label: 'Demo',
+            buttons: [
+              _CreatorRailButton(
+                keyName: 'p19_open_customize_button',
+                tooltip: 'Customize fan experience',
+                icon: Icons.dashboard_customize_rounded,
+                active: active == _CreatorSurfaceTarget.customize,
+                onPressed: onOpenCustomize,
+              ),
+              _CreatorRailButton(
+                keyName: 'p9_open_export_button',
+                tooltip: 'Export',
+                icon: Icons.archive_rounded,
+                active: active == _CreatorSurfaceTarget.export,
+                onPressed: onOpenExport,
+              ),
+              _CreatorRailButton(
+                keyName: 'p9_open_export_button_full',
+                tooltip: 'Export and transparency',
+                icon: Icons.receipt_long_rounded,
+                active: active == _CreatorSurfaceTarget.export,
+                onPressed: onOpenExport,
+              ),
+              _CreatorRailButton(
+                keyName: 'p13_open_creator_ai_button',
+                tooltip: 'Creator AI',
+                icon: Icons.psychology_alt_outlined,
+                active: active == _CreatorSurfaceTarget.creatorAi,
+                onPressed: onOpenCreatorAi,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CreatorRailSection extends StatelessWidget {
+  const _CreatorRailSection({required this.label, required this.buttons});
+
+  final String label;
+  final List<Widget> buttons;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 64,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: LoomColors.mutedInk,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Expanded(child: Wrap(spacing: 4, runSpacing: 4, children: buttons)),
+        ],
+      ),
+    );
+  }
+}
+
+class _CreatorRailButton extends StatelessWidget {
+  const _CreatorRailButton({
+    required this.keyName,
+    required this.tooltip,
+    required this.icon,
+    required this.active,
+    required this.onPressed,
+  });
+
+  final String keyName;
+  final String tooltip;
+  final IconData icon;
+  final bool active;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = active
+        ? IconButton.filled(
+            key: ValueKey(keyName),
+            tooltip: tooltip,
+            onPressed: onPressed,
+            constraints: BoxConstraints.tight(const Size.square(40)),
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            icon: Icon(icon),
+          )
+        : IconButton.filledTonal(
+            key: ValueKey(keyName),
+            tooltip: tooltip,
+            onPressed: onPressed,
+            constraints: BoxConstraints.tight(const Size.square(40)),
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            icon: Icon(icon),
+          );
+    return SizedBox.square(dimension: 40, child: button);
   }
 }
 
@@ -541,6 +774,7 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
             child: _FanSecondaryActionRail(
               active: active,
+              onReturnToFeed: _openDiscovery,
               onOpenOnboarding: () =>
                   _openFanSurface(_FanSurfaceTarget.onboarding),
               onOpenImmersive: () => _openDiscovery(immersive: true),
@@ -688,6 +922,7 @@ enum _FanSurfaceTarget {
 class _FanSecondaryActionRail extends StatelessWidget {
   const _FanSecondaryActionRail({
     required this.active,
+    required this.onReturnToFeed,
     required this.onOpenOnboarding,
     required this.onOpenImmersive,
     required this.onOpenCapture,
@@ -698,6 +933,7 @@ class _FanSecondaryActionRail extends StatelessWidget {
   });
 
   final _FanSurfaceTarget active;
+  final VoidCallback onReturnToFeed;
   final VoidCallback onOpenOnboarding;
   final VoidCallback onOpenImmersive;
   final VoidCallback onOpenCapture;
@@ -713,6 +949,13 @@ class _FanSecondaryActionRail extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
+          TextButton.icon(
+            key: const ValueKey('fan_return_to_feed_button'),
+            onPressed: onReturnToFeed,
+            icon: const Icon(Icons.home_rounded),
+            label: const Text('Return to Feed'),
+          ),
+          const SizedBox(width: 6),
           _FanRailButton(
             keyName: 'start_fan_onboarding_button',
             tooltip: 'Start onboarding',

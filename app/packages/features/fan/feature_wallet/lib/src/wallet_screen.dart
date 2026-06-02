@@ -139,11 +139,13 @@ class _WalletScreenState extends State<WalletScreen> {
       children: [
         Row(
           children: [
-            IconButton(
+            TextButton.icon(
               key: const ValueKey('p6_wallet_back_button'),
               onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
+              icon: const Icon(Icons.home_rounded),
+              label: const Text('Return to Feed'),
             ),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'Wallet',

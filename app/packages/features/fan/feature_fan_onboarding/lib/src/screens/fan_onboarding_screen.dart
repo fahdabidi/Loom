@@ -98,15 +98,30 @@ Widget? _secondaryActionFor({
     return TextButton.icon(
       key: const ValueKey('fan_onboarding_feed_back_button'),
       onPressed: onBack,
-      icon: const Icon(Icons.arrow_back_rounded),
-      label: const Text('Back to feed'),
+      icon: const Icon(Icons.home_rounded),
+      label: const Text('Return to Feed'),
     );
   }
-  return OutlinedButton.icon(
-    key: const ValueKey('fan_onboarding_back_button'),
-    onPressed: controller.canGoBack ? controller.goBack : null,
-    icon: const Icon(Icons.arrow_back_rounded),
-    label: const Text('Back'),
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      OutlinedButton.icon(
+        key: const ValueKey('fan_onboarding_back_button'),
+        onPressed: controller.canGoBack ? controller.goBack : null,
+        icon: const Icon(Icons.arrow_back_rounded),
+        label: const Text('Back'),
+      ),
+      if (onBack != null) ...[
+        const SizedBox(height: LoomSpacing.sm),
+        TextButton.icon(
+          key: const ValueKey('fan_onboarding_feed_back_button'),
+          onPressed: onBack,
+          icon: const Icon(Icons.home_rounded),
+          label: const Text('Return to Feed'),
+        ),
+      ],
+    ],
   );
 }
 

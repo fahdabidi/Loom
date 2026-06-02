@@ -235,11 +235,11 @@ class _SettingsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        IconButton.filledTonal(
+        TextButton.icon(
           key: const ValueKey('p22_settings_back_button'),
-          tooltip: 'Back',
           onPressed: onBack,
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Icons.home_rounded),
+          label: const Text('Return to Feed'),
         ),
         const SizedBox(width: 10),
         Expanded(

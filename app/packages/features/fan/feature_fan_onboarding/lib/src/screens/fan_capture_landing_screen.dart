@@ -66,14 +66,17 @@ class _FanCaptureLandingScreenState extends State<FanCaptureLandingScreen> {
         }
         return Scaffold(
           appBar: AppBar(
-            leading: widget.onBack == null
-                ? null
-                : IconButton(
-                    key: const ValueKey('p12_capture_back_button'),
-                    onPressed: widget.onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
+            automaticallyImplyLeading: false,
             title: const Text('Creator invite'),
+            actions: [
+              if (widget.onBack != null)
+                TextButton.icon(
+                  key: const ValueKey('p12_capture_back_button'),
+                  onPressed: widget.onBack,
+                  icon: const Icon(Icons.home_rounded),
+                  label: const Text('Return to Feed'),
+                ),
+            ],
           ),
           body: ListView(
             key: const ValueKey('p12_capture_landing_scroll'),
@@ -129,13 +132,17 @@ class _ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: onBack == null
-            ? null
-            : IconButton(
-                onPressed: onBack,
-                icon: const Icon(Icons.arrow_back_rounded),
-              ),
+        automaticallyImplyLeading: false,
         title: const Text('Creator invite'),
+        actions: [
+          if (onBack != null)
+            TextButton.icon(
+              key: const ValueKey('p12_capture_back_button'),
+              onPressed: onBack,
+              icon: const Icon(Icons.home_rounded),
+              label: const Text('Return to Feed'),
+            ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
