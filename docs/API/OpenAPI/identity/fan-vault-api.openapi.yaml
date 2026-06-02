@@ -18,6 +18,7 @@ x-loom-downstream-apis:
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../discovery/ai-gateway-api.openapi.yaml
   - ../discovery/recommendation-referral-api.openapi.yaml
+  - ../discovery/external-content-source-api.openapi.yaml
 paths:
   /v1/fan-vaults/{fanId}/records:
     get:
@@ -271,6 +272,50 @@ paths:
       responses:
         '204':
           description: Vault record deleted or tombstoned.
+  /v1/fan-vaults/{fanId}/search-agent-config:
+    get:
+      operationId: getFanSearchAgentConfig
+      summary: Read the fan's AI search agent connection + external-source settings.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fan AI search agent config.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanSearchAgentConfig'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+    put:
+      operationId: updateFanSearchAgentConfig
+      summary: Connect/disconnect the fan's AI search agent (MCP) and external sources.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+        - name: fanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFanSearchAgentConfigRequest'
+      responses:
+        '200':
+          description: Updated fan AI search agent config.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FanSearchAgentConfig'
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -756,6 +801,92 @@ components:
         encryptionPublicKey:
           type: string
           nullable: true
+    ExternalSourceConnection:
+      type: object
+      required:
+        - sourceType
+        - connected
+      properties:
+        sourceType:
+          $ref: '../discovery/external-content-source-api.openapi.yaml#/components/schemas/ExternalSourceType'
+        connected:
+          type: boolean
+        displayName:
+          type: string
+          nullable: true
+    FanSearchAgentConfig:
+      type: object
+      required:
+        - fanId
+        - provider
+        - connected
+        - preferCreators
+        - externalSourcesEnabled
+        - updatedAt
+      properties:
+        fanId:
+          type: string
+        provider:
+          type: string
+          enum:
+            - anthropic_claude
+            - openai
+            - google_gemini
+            - custom
+            - none
+          default: none
+        mcpEndpoint:
+          type: string
+          format: uri
+          nullable: true
+          description: The fan's MCP server endpoint for their agent (simulated in the demo).
+        connected:
+          type: boolean
+          default: false
+        preferCreators:
+          type: boolean
+          default: true
+        externalSourcesEnabled:
+          type: boolean
+          default: false
+        connectedSources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalSourceConnection'
+        queryEgressAcknowledged:
+          type: boolean
+          default: false
+          description: Fan acknowledged that search queries are sent to their chosen AI provider (data egress).
+        updatedAt:
+          type: string
+          format: date-time
+    UpdateFanSearchAgentConfigRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum:
+            - anthropic_claude
+            - openai
+            - google_gemini
+            - custom
+            - none
+        mcpEndpoint:
+          type: string
+          format: uri
+          nullable: true
+        connected:
+          type: boolean
+        preferCreators:
+          type: boolean
+        externalSourcesEnabled:
+          type: boolean
+        queryEgressAcknowledged:
+          type: boolean
+        connectedSources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalSourceConnection'
     ListVaultRecordsResponse:
       type: object
       required:

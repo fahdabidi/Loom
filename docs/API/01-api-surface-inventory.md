@@ -37,7 +37,8 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Search API | `OpenAPI/discovery/search-api.openapi.yaml` | Public search, index updates, search audit probes. | Creator Metadata, Content Host, Provider Registry, Audit |
 | Recommendation And Referral API | `OpenAPI/discovery/recommendation-referral-api.openapi.yaml` | Startup content tiles, platform intents, session intents, content scoring explanations, fan content feedback, recommendation mode compatibility, referral terms, creator-led recommendations, recommendation feed, attribution. | Creator Metadata, Content Host, External Recommendation Provider, Fan Passport, Fan Vault, Receipt Ledger, Settlement, Trust and Safety |
 | External Recommendation Provider API | `OpenAPI/discovery/external-recommendation-provider-api.openapi.yaml` | Certified provider candidate retrieval under platform intent, fan interest, dislike, quota, and privacy boundaries. | Provider Registry, Content Host, Trust and Safety |
-| AI Gateway API | `OpenAPI/discovery/ai-gateway-api.openapi.yaml` | Archive Q&A, AI search assistant, creator copilot, AI indexing jobs. | Creator Metadata, Content Host, Fan Vault, Receipt Ledger, Provider Registry, Trust and Safety |
+| AI Gateway API | `OpenAPI/discovery/ai-gateway-api.openapi.yaml` | Archive Q&A, AI search assistant, **fan AI search (`runAiSearch`) merging creator + external with agent ranking**, creator copilot, AI indexing jobs. | Creator Metadata, Content Host, Fan Vault, Receipt Ledger, Provider Registry, Trust and Safety, Search, External Content Source |
+| External Content Source API | `OpenAPI/discovery/external-content-source-api.openapi.yaml` | Generic external content retrieval (YouTube now; twitch/discord/blog/webpage modeled) + compliant embed descriptors; original title/thumbnail unaltered, additive accurate-match label, source attribution. | Trust and Safety, Receipt Ledger |
 
 ## 5. Extensions And Campaigns
 

@@ -19,6 +19,8 @@ x-loom-downstream-apis:
   - ../monetization/receipt-ledger-api.openapi.yaml
   - ../ecosystem/provider-registry-api.openapi.yaml
   - ../safety/trust-safety-api.openapi.yaml
+  - ./search-api.openapi.yaml
+  - ./external-content-source-api.openapi.yaml
 paths:
   /v1/ai/archive-qa:
     post:
@@ -60,6 +62,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AIAnswer'
+  /v1/ai/search:
+    post:
+      operationId: runAiSearch
+      summary: Fan AI search — merge creator (preferred) + external candidates and rank with the fan's connected agent.
+      description: >
+        When the fan has connected an AI search agent, the agent determines final ranking across creator and
+        external (e.g., YouTube) candidates. Creator preference is a fan default, not paid placement; there is
+        no paid ranking and no search ads (neutral search preserved). External items keep their original title
+        and thumbnail unaltered with an additive accurate-match label. Emits a SearchReceipt (audit/utility only)
+        and AI source-use receipts.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiSearchRequest'
+      responses:
+        '200':
+          description: Merged, agent-ranked AI search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiSearchResult'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
   /v1/ai/creator-copilot:
     post:
       operationId: runCreatorCopilot
@@ -226,5 +256,115 @@ components:
             - revoke
             - delete
         policyVersion:
+          type: string
+          nullable: true
+    AiSearchRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+        fanId:
+          type: string
+          nullable: true
+        agentProvider:
+          type: string
+          enum:
+            - anthropic_claude
+            - openai
+            - google_gemini
+            - custom
+            - none
+          default: none
+          description: The fan's connected agent (via MCP). `none` falls back to neutral search ordering.
+        agentConnected:
+          type: boolean
+          default: false
+        preferCreators:
+          type: boolean
+          default: true
+          description: Fan default to prefer creator content on match. A preference, never a paid boost.
+        includeExternalSources:
+          type: boolean
+          default: false
+        externalSourceTypes:
+          type: array
+          items:
+            $ref: './external-content-source-api.openapi.yaml#/components/schemas/ExternalSourceType'
+        usePrivateVault:
+          type: boolean
+          default: false
+    AiSearchItem:
+      type: object
+      required:
+        - kind
+        - originalTitle
+        - rank
+      properties:
+        kind:
+          type: string
+          enum:
+            - creator
+            - external
+        creatorRef:
+          $ref: '../_shared/components.yaml#/components/schemas/ResourceRef'
+          nullable: true
+        externalTarget:
+          $ref: './external-content-source-api.openapi.yaml#/components/schemas/ExternalTargetRef'
+          nullable: true
+        originalTitle:
+          type: string
+          description: Unaltered title (creator's own, or the external platform's — never modified for external).
+        accurateMatchLabel:
+          type: string
+          nullable: true
+          description: Additive AI annotation. For external items it never replaces originalTitle.
+        summary:
+          type: string
+          nullable: true
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+        titleRiskSignals:
+          type: array
+          items:
+            $ref: './external-content-source-api.openapi.yaml#/components/schemas/TitleRiskSignal'
+        rankReason:
+          type: string
+          nullable: true
+        sourceAttribution:
+          type: string
+          nullable: true
+          description: Null for creator/Loom content; platform label (e.g., "YouTube") for external.
+        embedDescriptor:
+          $ref: './external-content-source-api.openapi.yaml#/components/schemas/EmbedDescriptor'
+          nullable: true
+        rank:
+          type: integer
+    AiSearchResult:
+      type: object
+      required:
+        - items
+        - rankedBy
+        - disclosure
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiSearchItem'
+        rankedBy:
+          type: string
+          enum:
+            - fan_agent
+            - neutral_default
+        disclosure:
+          type: string
+          description: e.g., "Ranked by your AI agent. No ads, boosts, or paid placement."
+        searchReceiptId:
+          type: string
+          nullable: true
+        sourceUseReceiptId:
           type: string
           nullable: true

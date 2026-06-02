@@ -1,0 +1,210 @@
+openapi: 3.1.0
+info:
+  title: Loom External Content Source API
+  version: 0.1.0
+  summary: Generic, certified retrieval of external content (YouTube now; twitch/discord/blog/webpage modeled) with compliant embed descriptors for fan AI search and creator-linked feed content.
+  description: >
+    Backs Fan AI Search (Phases 21–24) and creator-linked external feed content (Phase 25). External candidates
+    carry their **original title and thumbnail unmodified** (third-party developer policies require metadata to
+    stay visible and unaltered); an optional `accurateMatchLabel` is an **additive** AI annotation, never a
+    replacement. An `embedDescriptor` tells the client how to play/open the item — the official YouTube IFrame
+    player for `youtube_iframe`, otherwise an external open. Source attribution is always present. This surface
+    does not store or re-syndicate third-party API data beyond references/public previews.
+servers:
+  - url: https://external-content.loom.example
+security:
+  - LoomUserOAuth:
+      - fan.passport
+  - LoomServiceAuth: []
+x-loom-api-owner: discovery/external-content-source
+x-loom-source: GTM Phases 21–26 (Fan AI Search + external content); MVP scope ids FE-S16/FE-S17/FE-S18/CE-S14
+x-loom-downstream-apis:
+  - ../safety/trust-safety-api.openapi.yaml
+  - ../monetization/receipt-ledger-api.openapi.yaml
+paths:
+  /v1/external-content/search:
+    post:
+      operationId: searchExternalContent
+      summary: Search enabled external sources for candidates that can be merged into fan AI search.
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchExternalContentRequest'
+      responses:
+        '200':
+          description: External content candidates (metadata unaltered; additive accurate-match labels).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListExternalContentCandidatesResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+  /v1/external-content/{candidateId}:
+    get:
+      operationId: getExternalContent
+      summary: Resolve a single external content candidate + embed descriptor (e.g., to play or render a tile).
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: External content candidate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalContentCandidate'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+components:
+  securitySchemes:
+    LoomUserOAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomUserOAuth'
+    LoomServiceAuth:
+      $ref: '../_shared/security-schemes.yaml#/components/securitySchemes/LoomServiceAuth'
+  schemas:
+    ExternalSourceType:
+      type: string
+      enum:
+        - youtube
+        - twitch
+        - discord
+        - blog
+        - webpage
+    EmbedDescriptor:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum:
+            - youtube_iframe
+            - link
+          description: youtube_iframe → play with the official in-app YouTube IFrame player; link → open externally.
+        externalId:
+          type: string
+          nullable: true
+          description: Platform content id (e.g., YouTube video id) for the official player.
+        sourceUrl:
+          type: string
+          format: uri
+          nullable: true
+    ExternalTargetRef:
+      type: object
+      required:
+        - sourceType
+      properties:
+        sourceType:
+          $ref: '#/components/schemas/ExternalSourceType'
+        externalId:
+          type: string
+          nullable: true
+        sourceUrl:
+          type: string
+          format: uri
+          nullable: true
+    TitleRiskSignal:
+      type: string
+      enum:
+        - possible_clickbait
+        - possible_ragebait
+        - sensationalized
+        - mismatch_with_summary
+    ExternalContentCandidate:
+      type: object
+      required:
+        - candidateId
+        - sourceType
+        - target
+        - originalTitle
+        - sourceAttribution
+        - embedDescriptor
+        - disclosure
+      properties:
+        candidateId:
+          type: string
+        sourceType:
+          $ref: '#/components/schemas/ExternalSourceType'
+        target:
+          $ref: '#/components/schemas/ExternalTargetRef'
+        originalTitle:
+          type: string
+          description: The platform's title, shown unmodified (developer-policy requirement).
+        summary:
+          type: string
+          nullable: true
+        thumbnailUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: The platform's thumbnail, shown unaltered.
+        accurateMatchLabel:
+          type: string
+          nullable: true
+          description: Additive AI annotation describing why this matched the query. Never replaces originalTitle.
+        titleRiskSignals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TitleRiskSignal'
+        sourceAttribution:
+          type: string
+          description: Human-readable source label (e.g., "YouTube"). Always present; never imply Loom ownership.
+        embedDescriptor:
+          $ref: '#/components/schemas/EmbedDescriptor'
+        disclosure:
+          type: string
+          description: Per-item disclosure shown to the fan (source + that this is an external embed). Always present.
+        rightsBasis:
+          type: string
+          nullable: true
+        searchIndexable:
+          type: boolean
+          default: true
+    SearchExternalContentRequest:
+      type: object
+      required:
+        - query
+        - sourceTypes
+      properties:
+        query:
+          type: string
+        sourceTypes:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ExternalSourceType'
+        quota:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+        fanPseudonymousId:
+          type: string
+          nullable: true
+          description: Scoped pseudonymous id; never a universal fan id.
+        noRawPrivateBehavior:
+          type: boolean
+          default: true
+    ListExternalContentCandidatesResponse:
+      type: object
+      required:
+        - items
+        - page
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalContentCandidate'
+        page:
+          $ref: '../_shared/pagination.yaml#/components/schemas/PageInfo'

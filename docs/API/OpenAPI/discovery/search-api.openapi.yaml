@@ -17,6 +17,7 @@ x-loom-downstream-apis:
   - ../content/content-host-api.openapi.yaml
   - ../ecosystem/provider-registry-api.openapi.yaml
   - ../governance/audit-api.openapi.yaml
+  - ./external-content-source-api.openapi.yaml
 paths:
   /v1/search:
     get:
@@ -42,6 +43,12 @@ paths:
           description: Optional session intent context for audit and UI continuity. It cannot alter neutral search merge order or introduce search ads.
           schema:
             type: string
+        - name: includeExternalSources
+          in: query
+          description: When true, neutrally merge enabled external sources (e.g., YouTube) into results. External inclusion is never paid placement; the fan's agent (via AI Gateway) performs any agent ranking. External titles/thumbnails are returned unaltered with an additive accurate-match label.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Search results.
@@ -132,6 +139,18 @@ components:
           type: integer
         policyVersion:
           type: string
+        externalTarget:
+          $ref: '../discovery/external-content-source-api.openapi.yaml#/components/schemas/ExternalTargetRef'
+          nullable: true
+          description: Present when this result is external (e.g., YouTube); `title` remains the unaltered platform title.
+        accurateMatchLabel:
+          type: string
+          nullable: true
+          description: Additive AI annotation for external results; never replaces the platform title.
+        sourceAttribution:
+          type: string
+          nullable: true
+          description: Null for creator/Loom results; platform label (e.g., "YouTube") for external results.
     IndexUpdateRequest:
       type: object
       required:
