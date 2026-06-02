@@ -6,6 +6,8 @@ import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_app_shell/loom_app_shell.dart';
 import 'package:loom_demo/main.dart';
 
+late ValueNotifier<int> _searchRequests;
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -83,16 +85,33 @@ void main() {
 }
 
 Future<void> _pumpDiscovery(WidgetTester tester) async {
+  _searchRequests = ValueNotifier<int>(0);
   await tester.pumpWidget(
     MaterialApp(
       theme: buildLoomTheme(),
-      home: DiscoveryHomeScreen(onStartOnboarding: () {}),
+      home: Scaffold(
+        appBar: AppBar(
+          actions: [
+            IconButton(
+              key: const ValueKey('shell_search_button'),
+              onPressed: () => _searchRequests.value += 1,
+              icon: const Icon(Icons.search_rounded),
+            ),
+          ],
+        ),
+        body: DiscoveryHomeScreen(
+          searchRequests: _searchRequests,
+          onStartOnboarding: () {},
+        ),
+      ),
     ),
   );
   await tester.pumpAndSettle();
 }
 
 Future<void> _runSearch(WidgetTester tester, String query) async {
+  await tester.tap(find.byKey(const ValueKey('shell_search_button')));
+  await tester.pumpAndSettle();
   await tester.enterText(find.byKey(const ValueKey('p3_search_field')), query);
   await tester.testTextInput.receiveAction(TextInputAction.search);
   await tester.pumpAndSettle();

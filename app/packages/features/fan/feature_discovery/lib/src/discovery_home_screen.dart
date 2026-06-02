@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_design_system/loom_design_system.dart';
@@ -7,6 +8,8 @@ import 'discovery_controller.dart';
 class DiscoveryHomeScreen extends StatefulWidget {
   const DiscoveryHomeScreen({
     required this.onStartOnboarding,
+    this.initialImmersive = false,
+    this.searchRequests,
     this.onOpenCreator,
     this.onOpenContent,
     this.onOpenExternal,
@@ -19,6 +22,8 @@ class DiscoveryHomeScreen extends StatefulWidget {
   });
 
   final VoidCallback onStartOnboarding;
+  final bool initialImmersive;
+  final ValueListenable<int>? searchRequests;
   final ValueChanged<String>? onOpenCreator;
   final ValueChanged<String>? onOpenContent;
   final ValueChanged<AiSearchItem>? onOpenExternal;
@@ -35,17 +40,90 @@ class DiscoveryHomeScreen extends StatefulWidget {
 class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
   late final DiscoveryController _controller;
   bool _immersive = false;
+  bool _showSearchPage = false;
 
   @override
   void initState() {
     super.initState();
+    _immersive = widget.initialImmersive;
     _controller = DiscoveryController()..bootstrap();
+    widget.searchRequests?.addListener(_handleSearchRequest);
+  }
+
+  @override
+  void didUpdateWidget(DiscoveryHomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchRequests == widget.searchRequests) {
+      return;
+    }
+    oldWidget.searchRequests?.removeListener(_handleSearchRequest);
+    widget.searchRequests?.addListener(_handleSearchRequest);
   }
 
   @override
   void dispose() {
+    widget.searchRequests?.removeListener(_handleSearchRequest);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _handleSearchRequest() {
+    if (!mounted) {
+      return;
+    }
+    _showSearchPanel();
+  }
+
+  void _openSearchResults(String query) {
+    final normalized = query.trim();
+    if (normalized.isEmpty) {
+      return;
+    }
+    setState(() => _showSearchPage = true);
+    _controller.search(normalized);
+  }
+
+  Future<void> _showSearchPanel() {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (context) => _SearchPanel(
+        initialQuery: _controller.searchQuery,
+        onSearch: (query) {
+          Navigator.of(context).pop();
+          _openSearchResults(query);
+        },
+      ),
+    );
+  }
+
+  Future<void> _showRecommendationPanel() {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (context) => AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) => _RecommendationPanel(
+          controller: _controller,
+          onOpenSettings: widget.onOpenSettings == null
+              ? null
+              : () {
+                  Navigator.of(context).pop();
+                  widget.onOpenSettings?.call();
+                },
+        ),
+      ),
+    );
   }
 
   @override
@@ -81,6 +159,16 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               body:
                   'Pick an intent or starter pack to seed a creator-led feed.',
             ),
+          );
+        }
+        if (_showSearchPage) {
+          return _DiscoverySearchPage(
+            controller: _controller,
+            onBack: () => setState(() => _showSearchPage = false),
+            onOpenSearchPanel: _showSearchPanel,
+            onOpenContent: widget.onOpenContent,
+            onOpenCreator: widget.onOpenCreator,
+            onOpenExternal: widget.onOpenExternal,
           );
         }
         if (_immersive) {
@@ -141,53 +229,10 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               ),
               const SizedBox(height: 12),
             ],
-            _SearchField(controller: _controller),
-            if (_controller.searchLoading) ...[
-              const SizedBox(height: 12),
-              const DataDashboardRow(
-                key: ValueKey('p23_ai_search_loading'),
-                icon: Icons.manage_search_rounded,
-                title: 'Running search',
-                subtitle:
-                    'Checking your connected agent and matching creator plus external sources.',
-              ),
-            ],
-            if (_controller.searchErrorMessage != null) ...[
-              const SizedBox(height: 12),
-              LoomErrorState(
-                title: 'Search could not run',
-                body: _controller.searchErrorMessage!,
-                onRetry: () => _controller.search(_controller.searchQuery),
-              ),
-            ],
-            const SizedBox(height: 16),
-            _IntentRail(controller: _controller),
-            const SizedBox(height: 14),
-            ByoAgentToggle(
-              enabled: _controller.rankPreference?.summaryFirst ?? false,
-              onChanged: _controller.setSummaryFirst,
+            _RecommendationTypeRow(
+              controller: _controller,
+              onTap: _showRecommendationPanel,
             ),
-            if (_controller.rankPreference?.summaryFirst ?? false) ...[
-              const SizedBox(height: 10),
-              _SummaryRankNote(
-                candidateCount: _controller.summaryRankCandidateCount ?? 0,
-              ),
-            ],
-            const SizedBox(height: 14),
-            if (_controller.sessionIntent != null)
-              _DisclosureCard(sessionIntent: _controller.sessionIntent!),
-            if (_controller.aiSearchResult != null) ...[
-              const SizedBox(height: 16),
-              _AiSearchResults(
-                result: _controller.aiSearchResult!,
-                onOpenContent: widget.onOpenContent,
-                onOpenCreator: widget.onOpenCreator,
-                onOpenExternal: widget.onOpenExternal,
-              ),
-            ] else if (_controller.searchResults.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _SearchResults(results: _controller.searchResults),
-            ],
             const SizedBox(height: 16),
             const _SectionHeader(
               title: 'For you',
@@ -366,22 +411,135 @@ ImmersiveFeedItemView _mapImmersiveItem(FeedItem item) {
   );
 }
 
-class _SearchField extends StatefulWidget {
-  const _SearchField({required this.controller});
+class _DiscoverySearchPage extends StatelessWidget {
+  const _DiscoverySearchPage({
+    required this.controller,
+    required this.onBack,
+    required this.onOpenSearchPanel,
+    required this.onOpenContent,
+    required this.onOpenCreator,
+    required this.onOpenExternal,
+  });
 
   final DiscoveryController controller;
+  final VoidCallback onBack;
+  final VoidCallback onOpenSearchPanel;
+  final ValueChanged<String>? onOpenContent;
+  final ValueChanged<String>? onOpenCreator;
+  final ValueChanged<AiSearchItem>? onOpenExternal;
 
   @override
-  State<_SearchField> createState() => _SearchFieldState();
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return ListView(
+          key: const ValueKey('p0_search_results_page'),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+          children: [
+            Row(
+              children: [
+                IconButton.filledTonal(
+                  key: const ValueKey('p0_search_back_button'),
+                  tooltip: 'Back',
+                  onPressed: onBack,
+                  icon: const Icon(Icons.arrow_back_rounded),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: InkWell(
+                    key: const ValueKey('p0_search_query_bar'),
+                    onTap: onOpenSearchPanel,
+                    borderRadius: BorderRadius.circular(999),
+                    child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: LoomColors.surfaceAlt,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: LoomColors.line),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search_rounded, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              controller.searchQuery.isEmpty
+                                  ? 'Search creators, topics, summaries'
+                                  : controller.searchQuery,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (controller.searchLoading)
+              const DataDashboardRow(
+                key: ValueKey('p23_ai_search_loading'),
+                icon: Icons.manage_search_rounded,
+                title: 'Running search',
+                subtitle:
+                    'Checking your connected agent and matching creator plus external sources.',
+              )
+            else if (controller.searchErrorMessage != null)
+              LoomErrorState(
+                title: 'Search could not run',
+                body: controller.searchErrorMessage!,
+                onRetry: () => controller.search(controller.searchQuery),
+              )
+            else if (controller.aiSearchResult != null)
+              _AiSearchResults(
+                result: controller.aiSearchResult!,
+                onOpenContent: onOpenContent,
+                onOpenCreator: onOpenCreator,
+                onOpenExternal: onOpenExternal,
+              )
+            else if (controller.searchResults.isNotEmpty)
+              _SearchResults(
+                results: controller.searchResults,
+                onOpenContent: onOpenContent,
+                onOpenCreator: onOpenCreator,
+              )
+            else
+              const LoomEmptyState(
+                icon: Icons.search_rounded,
+                title: 'Start a search',
+                body:
+                    'Use the search bar to find creators, topics, summaries, and external matches when your AI agent is connected.',
+              ),
+          ],
+        );
+      },
+    );
+  }
 }
 
-class _SearchFieldState extends State<_SearchField> {
+class _SearchPanel extends StatefulWidget {
+  const _SearchPanel({required this.initialQuery, required this.onSearch});
+
+  final String initialQuery;
+  final ValueChanged<String> onSearch;
+
+  @override
+  State<_SearchPanel> createState() => _SearchPanelState();
+}
+
+class _SearchPanelState extends State<_SearchPanel> {
   late final TextEditingController _textController;
 
   @override
   void initState() {
     super.initState();
-    _textController = TextEditingController();
+    _textController = TextEditingController(text: widget.initialQuery);
   }
 
   @override
@@ -392,19 +550,66 @@ class _SearchFieldState extends State<_SearchField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      key: const ValueKey('p3_search_field'),
-      controller: _textController,
-      textInputAction: TextInputAction.search,
-      onSubmitted: widget.controller.search,
-      decoration: InputDecoration(
-        hintText: 'Search creators, topics, summaries',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: IconButton(
-          tooltip: 'Run search',
-          icon: const Icon(Icons.arrow_forward_rounded),
-          onPressed: () => widget.controller.search(_textController.text),
-        ),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + bottomInset),
+      child: Column(
+        key: const ValueKey('p0_search_panel'),
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 42,
+              height: 4,
+              decoration: BoxDecoration(
+                color: LoomColors.line,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Search Loom',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const ValueKey('p3_search_field'),
+            controller: _textController,
+            autofocus: true,
+            textInputAction: TextInputAction.search,
+            onSubmitted: widget.onSearch,
+            decoration: InputDecoration(
+              hintText: 'Search creators, topics, summaries',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: IconButton(
+                key: const ValueKey('p0_search_sheet_submit'),
+                tooltip: 'Run search',
+                icon: const Icon(Icons.arrow_forward_rounded),
+                onPressed: () => widget.onSearch(_textController.text),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final suggestion in const [
+                'gaming retakes',
+                'solar recipes',
+                'fermentation',
+              ])
+                ActionChip(
+                  label: Text(suggestion),
+                  onPressed: () => widget.onSearch(suggestion),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -538,6 +743,151 @@ class _IntentTile extends StatelessWidget {
   }
 }
 
+class _RecommendationTypeRow extends StatelessWidget {
+  const _RecommendationTypeRow({required this.controller, required this.onTap});
+
+  final DiscoveryController controller;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final session = controller.sessionIntent;
+    final fallbackTile = controller.startupTiles.isEmpty
+        ? null
+        : controller.startupTiles.first;
+    final label = session?.label ?? fallbackTile?.label ?? 'For you';
+    final description =
+        session?.disclosure.body ??
+        fallbackTile?.description ??
+        'Creator-led posts ranked with visible signals.';
+
+    return InkWell(
+      key: const ValueKey('p0_recommendation_type_row'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: LoomColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: LoomColors.line),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.tune_rounded, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Recommendation Type: $label',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: LoomColors.mutedInk),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.keyboard_arrow_down_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendationPanel extends StatelessWidget {
+  const _RecommendationPanel({
+    required this.controller,
+    required this.onOpenSettings,
+  });
+
+  final DiscoveryController controller;
+  final VoidCallback? onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+      child: SingleChildScrollView(
+        key: const ValueKey('p0_recommendation_panel'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: LoomColors.line,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Recommendation Type',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Choose the feed engine and ranking controls for this session.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: LoomColors.mutedInk),
+            ),
+            const SizedBox(height: 16),
+            _IntentRail(controller: controller),
+            const SizedBox(height: 14),
+            ByoAgentToggle(
+              enabled: controller.rankPreference?.summaryFirst ?? false,
+              onChanged: controller.setSummaryFirst,
+            ),
+            if (controller.rankPreference?.summaryFirst ?? false) ...[
+              const SizedBox(height: 10),
+              _SummaryRankNote(
+                candidateCount: controller.summaryRankCandidateCount ?? 0,
+              ),
+            ],
+            if (controller.sessionIntent != null) ...[
+              const SizedBox(height: 14),
+              _DisclosureCard(sessionIntent: controller.sessionIntent!),
+            ],
+            const SizedBox(height: 14),
+            ListTile(
+              key: const ValueKey('p0_recommendation_ai_settings_button'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.manage_search_rounded),
+              title: const Text('AI search settings'),
+              subtitle: const Text(
+                'Connect an agent and choose external sources for search.',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: onOpenSettings,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _DisclosureCard extends StatelessWidget {
   const _DisclosureCard({required this.sessionIntent});
 
@@ -600,9 +950,15 @@ class _DisclosureCard extends StatelessWidget {
 }
 
 class _SearchResults extends StatelessWidget {
-  const _SearchResults({required this.results});
+  const _SearchResults({
+    required this.results,
+    this.onOpenContent,
+    this.onOpenCreator,
+  });
 
   final List<SearchResult> results;
+  final ValueChanged<String>? onOpenContent;
+  final ValueChanged<String>? onOpenCreator;
 
   @override
   Widget build(BuildContext context) {
@@ -643,6 +999,7 @@ class _SearchResults extends StatelessWidget {
             ListTile(
               key: ValueKey('p3_search_result_${result.tile.contentId}'),
               contentPadding: EdgeInsets.zero,
+              onTap: () => onOpenContent?.call(result.tile.contentId),
               leading: CircleAvatar(
                 backgroundColor: LoomColors.ink,
                 child: Text(
@@ -656,6 +1013,11 @@ class _SearchResults extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(result.tile.creatorName),
+              trailing: IconButton(
+                tooltip: 'Open creator',
+                icon: const Icon(Icons.person_outline_rounded),
+                onPressed: () => onOpenCreator?.call(result.tile.creatorId),
+              ),
             ),
         ],
       ),

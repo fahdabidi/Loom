@@ -9,7 +9,8 @@ void main() {
   testWidgets('it_p3_tiles_session_intent', (tester) async {
     await openDiscoveryHome(tester);
 
-    expect(find.text('For you feed'), findsOneWidget);
+    expect(find.textContaining('Recommendation Type: For you'), findsOneWidget);
+    await findDiscoveryKey(tester, 'p3_session_disclosure');
     expect(find.text('Paid placement'), findsWidgets);
 
     await tapDiscoveryKey(tester, 'p3_startup_tile_intent_trending');

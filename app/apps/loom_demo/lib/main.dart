@@ -22,6 +22,7 @@ import 'package:feature_fan_onboarding/feature_fan_onboarding.dart';
 import 'package:feature_fan_settings/feature_fan_settings.dart';
 import 'package:feature_playback/feature_playback.dart';
 import 'package:feature_wallet/feature_wallet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_api_contracts/loom_api_contracts.dart'
     show AiSearchItem, CreatorExperienceConfig, SurfaceModule;
@@ -204,8 +205,9 @@ class LoomDemoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: buildLoomTheme(),
       home: LoomDemoShell(
-        fanBuilder: (_) => const FanAppSurface(),
-        studioBuilder: (_) => const CreatorStudioSurface(),
+        fanBuilder: (_, chrome) =>
+            FanAppSurface(searchRequests: chrome.searchRequests),
+        studioBuilder: (_, _) => const CreatorStudioSurface(),
       ),
     );
   }
@@ -474,7 +476,9 @@ class _CreatorStudioSurfaceState extends State<CreatorStudioSurface> {
 }
 
 class FanAppSurface extends StatefulWidget {
-  const FanAppSurface({super.key});
+  const FanAppSurface({this.searchRequests, super.key});
+
+  final ValueListenable<int>? searchRequests;
 
   @override
   State<FanAppSurface> createState() => _FanAppSurfaceState();
@@ -487,39 +491,117 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
   bool _showDataRights = false;
   bool _showCampaigns = false;
   bool _showSettings = false;
+  bool _openDiscoveryImmersive = false;
   String? _channelId;
   String? _contentId;
   String? _qaCreatorId;
   AiSearchItem? _externalPlaybackItem;
 
+  void _openDiscovery({bool immersive = false}) {
+    setState(() {
+      _showOnboarding = false;
+      _showCaptureLanding = false;
+      _showWallet = false;
+      _showDataRights = false;
+      _showCampaigns = false;
+      _showSettings = false;
+      _channelId = null;
+      _contentId = null;
+      _qaCreatorId = null;
+      _externalPlaybackItem = null;
+      _openDiscoveryImmersive = immersive;
+    });
+  }
+
+  void _openFanSurface(_FanSurfaceTarget target) {
+    setState(() {
+      _showOnboarding = target == _FanSurfaceTarget.onboarding;
+      _showCaptureLanding = target == _FanSurfaceTarget.capture;
+      _showWallet = target == _FanSurfaceTarget.wallet;
+      _showDataRights = target == _FanSurfaceTarget.dataRights;
+      _showCampaigns = target == _FanSurfaceTarget.campaigns;
+      _showSettings = target == _FanSurfaceTarget.settings;
+      _channelId = null;
+      _contentId = null;
+      _qaCreatorId = null;
+      _externalPlaybackItem = null;
+      _openDiscoveryImmersive = false;
+    });
+  }
+
+  Widget _withFanRail({
+    required _FanSurfaceTarget active,
+    required Widget child,
+  }) {
+    return NestedScrollView(
+      key: const ValueKey('fan_subsurface_with_rail'),
+      headerSliverBuilder: (context, innerBoxIsScrolled) => [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+            child: _FanSecondaryActionRail(
+              active: active,
+              onOpenOnboarding: () =>
+                  _openFanSurface(_FanSurfaceTarget.onboarding),
+              onOpenImmersive: () => _openDiscovery(immersive: true),
+              onOpenCapture: () => _openFanSurface(_FanSurfaceTarget.capture),
+              onOpenWallet: () => _openFanSurface(_FanSurfaceTarget.wallet),
+              onOpenDataRights: () =>
+                  _openFanSurface(_FanSurfaceTarget.dataRights),
+              onOpenCampaigns: () =>
+                  _openFanSurface(_FanSurfaceTarget.campaigns),
+              onOpenSettings: () => _openFanSurface(_FanSurfaceTarget.settings),
+            ),
+          ),
+        ),
+      ],
+      body: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_showOnboarding) {
-      return const FanOnboardingScreen();
+      return _withFanRail(
+        active: _FanSurfaceTarget.onboarding,
+        child: FanOnboardingScreen(
+          onDone: () => _openDiscovery(),
+          onBack: () => _openDiscovery(),
+        ),
+      );
     }
     if (_showCaptureLanding) {
-      return FanCaptureLandingScreen(
-        captureToken: 'cap_creator-solar-sarah_launch',
-        onDone: () => setState(() => _showCaptureLanding = false),
-        onBack: () => setState(() => _showCaptureLanding = false),
+      return _withFanRail(
+        active: _FanSurfaceTarget.capture,
+        child: FanCaptureLandingScreen(
+          captureToken: 'cap_creator-solar-sarah_launch',
+          onDone: () => _openDiscovery(),
+          onBack: () => _openDiscovery(),
+        ),
       );
     }
     if (_showWallet) {
-      return WalletScreen(onBack: () => setState(() => _showWallet = false));
+      return _withFanRail(
+        active: _FanSurfaceTarget.wallet,
+        child: WalletScreen(onBack: () => _openDiscovery()),
+      );
     }
     if (_showDataRights) {
-      return DataRightsDashboardScreen(
-        onBack: () => setState(() => _showDataRights = false),
+      return _withFanRail(
+        active: _FanSurfaceTarget.dataRights,
+        child: DataRightsDashboardScreen(onBack: () => _openDiscovery()),
       );
     }
     if (_showCampaigns) {
-      return CampaignEntryScreen(
-        onBack: () => setState(() => _showCampaigns = false),
+      return _withFanRail(
+        active: _FanSurfaceTarget.campaigns,
+        child: CampaignEntryScreen(onBack: () => _openDiscovery()),
       );
     }
     if (_showSettings) {
-      return FanAiSearchSettingsScreen(
-        onBack: () => setState(() => _showSettings = false),
+      return _withFanRail(
+        active: _FanSurfaceTarget.settings,
+        child: FanAiSearchSettingsScreen(onBack: () => _openDiscovery()),
       );
     }
     final qaCreatorId = _qaCreatorId;
@@ -578,15 +660,144 @@ class _FanAppSurfaceState extends State<FanAppSurface> {
     }
 
     return DiscoveryHomeScreen(
-      onStartOnboarding: () => setState(() => _showOnboarding = true),
+      initialImmersive: _openDiscoveryImmersive,
+      searchRequests: widget.searchRequests,
+      onStartOnboarding: () => _openFanSurface(_FanSurfaceTarget.onboarding),
       onOpenCreator: (id) => setState(() => _channelId = id),
       onOpenContent: (id) => setState(() => _contentId = id),
       onOpenExternal: (item) => setState(() => _externalPlaybackItem = item),
-      onOpenWallet: () => setState(() => _showWallet = true),
-      onOpenDataRights: () => setState(() => _showDataRights = true),
-      onOpenCampaigns: () => setState(() => _showCampaigns = true),
-      onOpenCaptureLink: () => setState(() => _showCaptureLanding = true),
-      onOpenSettings: () => setState(() => _showSettings = true),
+      onOpenWallet: () => _openFanSurface(_FanSurfaceTarget.wallet),
+      onOpenDataRights: () => _openFanSurface(_FanSurfaceTarget.dataRights),
+      onOpenCampaigns: () => _openFanSurface(_FanSurfaceTarget.campaigns),
+      onOpenCaptureLink: () => _openFanSurface(_FanSurfaceTarget.capture),
+      onOpenSettings: () => _openFanSurface(_FanSurfaceTarget.settings),
     );
+  }
+}
+
+enum _FanSurfaceTarget {
+  onboarding,
+  immersive,
+  capture,
+  wallet,
+  dataRights,
+  campaigns,
+  settings,
+}
+
+class _FanSecondaryActionRail extends StatelessWidget {
+  const _FanSecondaryActionRail({
+    required this.active,
+    required this.onOpenOnboarding,
+    required this.onOpenImmersive,
+    required this.onOpenCapture,
+    required this.onOpenWallet,
+    required this.onOpenDataRights,
+    required this.onOpenCampaigns,
+    required this.onOpenSettings,
+  });
+
+  final _FanSurfaceTarget active;
+  final VoidCallback onOpenOnboarding;
+  final VoidCallback onOpenImmersive;
+  final VoidCallback onOpenCapture;
+  final VoidCallback onOpenWallet;
+  final VoidCallback onOpenDataRights;
+  final VoidCallback onOpenCampaigns;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      key: const ValueKey('fan_secondary_action_rail'),
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _FanRailButton(
+            keyName: 'start_fan_onboarding_button',
+            tooltip: 'Start onboarding',
+            icon: Icons.person_add_alt_1_rounded,
+            active: active == _FanSurfaceTarget.onboarding,
+            onPressed: onOpenOnboarding,
+          ),
+          _FanRailButton(
+            keyName: 'p14_toggle_immersive_button',
+            tooltip: 'Immersive feed',
+            icon: Icons.smart_display_rounded,
+            active: active == _FanSurfaceTarget.immersive,
+            onPressed: onOpenImmersive,
+          ),
+          _FanRailButton(
+            keyName: 'p12_open_capture_link_button',
+            tooltip: 'Creator invite',
+            icon: Icons.link_rounded,
+            active: active == _FanSurfaceTarget.capture,
+            onPressed: onOpenCapture,
+          ),
+          _FanRailButton(
+            keyName: 'p6_open_wallet_button',
+            tooltip: 'Wallet',
+            icon: Icons.account_balance_wallet_rounded,
+            active: active == _FanSurfaceTarget.wallet,
+            onPressed: onOpenWallet,
+          ),
+          _FanRailButton(
+            keyName: 'p7_open_data_rights_button',
+            tooltip: 'Data rights',
+            icon: Icons.verified_user_outlined,
+            active: active == _FanSurfaceTarget.dataRights,
+            onPressed: onOpenDataRights,
+          ),
+          _FanRailButton(
+            keyName: 'p8_open_campaigns_button',
+            tooltip: 'Campaigns',
+            icon: Icons.emoji_events_outlined,
+            active: active == _FanSurfaceTarget.campaigns,
+            onPressed: onOpenCampaigns,
+          ),
+          _FanRailButton(
+            keyName: 'p22_open_ai_search_settings_button',
+            tooltip: 'AI search settings',
+            icon: Icons.tune_rounded,
+            active: active == _FanSurfaceTarget.settings,
+            onPressed: onOpenSettings,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FanRailButton extends StatelessWidget {
+  const _FanRailButton({
+    required this.keyName,
+    required this.tooltip,
+    required this.icon,
+    required this.active,
+    required this.onPressed,
+  });
+
+  final String keyName;
+  final String tooltip;
+  final IconData icon;
+  final bool active;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = active
+        ? IconButton.filled(
+            key: ValueKey(keyName),
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Icon(icon),
+          )
+        : IconButton.filledTonal(
+            key: ValueKey(keyName),
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Icon(icon),
+          );
+    return Padding(padding: const EdgeInsets.only(right: 8), child: button);
   }
 }

@@ -7,7 +7,10 @@ import '../mappers/interest_token_mapper.dart';
 import '../state/fan_onboarding_controller.dart';
 
 class FanOnboardingScreen extends StatefulWidget {
-  const FanOnboardingScreen({super.key});
+  const FanOnboardingScreen({this.onDone, this.onBack, super.key});
+
+  final VoidCallback? onDone;
+  final VoidCallback? onBack;
 
   @override
   State<FanOnboardingScreen> createState() => _FanOnboardingScreenState();
@@ -53,14 +56,58 @@ class _FanOnboardingScreenState extends State<FanOnboardingScreen> {
                 ),
                 const SizedBox(height: LoomSpacing.md),
               ],
+              _OnboardingNavigationPanel(controller: _controller),
+              const SizedBox(height: LoomSpacing.lg),
               _BodyForStep(controller: _controller),
             ],
           ),
-          primaryAction: _PrimaryAction(controller: _controller),
+          primaryAction: _PrimaryAction(
+            controller: _controller,
+            onDone: widget.onDone,
+          ),
+          secondaryAction: _secondaryActionFor(
+            controller: _controller,
+            onBack: widget.onBack,
+            onDone: widget.onDone,
+          ),
         );
       },
     );
   }
+}
+
+Widget? _secondaryActionFor({
+  required FanOnboardingController controller,
+  required VoidCallback? onBack,
+  required VoidCallback? onDone,
+}) {
+  if (controller.isLoading) {
+    return null;
+  }
+  if (controller.step == FanOnboardingStep.complete && onDone != null) {
+    return OutlinedButton(
+      key: const ValueKey('fan_toggle_visibility_button'),
+      onPressed: controller.toggleFollowVisibility,
+      child: const Text('Toggle follow visibility'),
+    );
+  }
+  if (controller.step == FanOnboardingStep.welcome) {
+    if (onBack == null) {
+      return null;
+    }
+    return TextButton.icon(
+      key: const ValueKey('fan_onboarding_feed_back_button'),
+      onPressed: onBack,
+      icon: const Icon(Icons.arrow_back_rounded),
+      label: const Text('Back to feed'),
+    );
+  }
+  return OutlinedButton.icon(
+    key: const ValueKey('fan_onboarding_back_button'),
+    onPressed: controller.canGoBack ? controller.goBack : null,
+    icon: const Icon(Icons.arrow_back_rounded),
+    label: const Text('Back'),
+  );
 }
 
 class _BodyForStep extends StatelessWidget {
@@ -141,9 +188,11 @@ class _BodyForStep extends StatelessWidget {
             ),
             const SizedBox(height: LoomSpacing.md),
             _CompletionRow(
+              keyValue: 'fan_edit_interests_tile',
               icon: Icons.interests_rounded,
               text:
                   'Interests saved: ${controller.interestProfile?.interests.length ?? 0}',
+              onTap: () => controller.goToStep(FanOnboardingStep.interests),
             ),
             _CompletionRow(
               icon: Icons.sync_alt_rounded,
@@ -156,13 +205,17 @@ class _BodyForStep extends StatelessWidget {
             ),
             if (follow != null) ...[
               _CompletionRow(
+                keyValue: 'fan_edit_starter_creators_tile',
                 icon: Icons.person_add_alt_1_rounded,
                 text:
                     'Following ${controller.firstFollows.length} starter creators',
+                onTap: () => controller.goToStep(FanOnboardingStep.firstFollow),
               ),
               _CompletionRow(
+                keyValue: 'fan_edit_privacy_tile',
                 icon: Icons.visibility_rounded,
                 text: 'Visibility: ${follow.visibility.label}',
+                onTap: () => controller.goToStep(FanOnboardingStep.privacy),
               ),
             ],
           ],
@@ -172,9 +225,10 @@ class _BodyForStep extends StatelessWidget {
 }
 
 class _PrimaryAction extends StatelessWidget {
-  const _PrimaryAction({required this.controller});
+  const _PrimaryAction({required this.controller, required this.onDone});
 
   final FanOnboardingController controller;
+  final VoidCallback? onDone;
 
   @override
   Widget build(BuildContext context) {
@@ -212,12 +266,82 @@ class _PrimaryAction extends StatelessWidget {
           child: const Text('Follow selected'),
         );
       case FanOnboardingStep.complete:
+        final done = onDone;
+        if (done != null) {
+          return FilledButton(
+            key: const ValueKey('fan_complete_onboarding_button'),
+            onPressed: done,
+            child: const Text('Complete'),
+          );
+        }
         return OutlinedButton(
           key: const ValueKey('fan_toggle_visibility_button'),
           onPressed: controller.toggleFollowVisibility,
           child: const Text('Toggle follow visibility'),
         );
     }
+  }
+}
+
+class _OnboardingNavigationPanel extends StatelessWidget {
+  const _OnboardingNavigationPanel({required this.controller});
+
+  final FanOnboardingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('fan_onboarding_nav_panel'),
+      padding: const EdgeInsets.all(LoomSpacing.sm),
+      decoration: BoxDecoration(
+        color: LoomColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: LoomColors.line),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final step in FanOnboardingStep.values) ...[
+              _StepNavChip(
+                step: step,
+                selected: controller.step == step,
+                enabled:
+                    controller.step != step && controller.canNavigateTo(step),
+                onTap: () => controller.goToStep(step),
+              ),
+              if (step != FanOnboardingStep.values.last)
+                const SizedBox(width: LoomSpacing.xs),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StepNavChip extends StatelessWidget {
+  const _StepNavChip({
+    required this.step,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final FanOnboardingStep step;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      key: ValueKey('fan_onboarding_nav_${step.name}'),
+      label: Text(_labelForStep(step)),
+      selected: selected,
+      onSelected: enabled ? (_) => onTap() : null,
+      avatar: Icon(_iconForStep(step), size: 16),
+    );
   }
 }
 
@@ -386,33 +510,47 @@ class _SuggestedCreatorPack extends StatelessWidget {
 }
 
 class _CompletionRow extends StatelessWidget {
-  const _CompletionRow({required this.icon, required this.text});
+  const _CompletionRow({
+    required this.icon,
+    required this.text,
+    this.keyValue,
+    this.onTap,
+  });
 
   final IconData icon;
   final String text;
+  final String? keyValue;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: LoomSpacing.sm),
-      child: Container(
-        padding: const EdgeInsets.all(LoomSpacing.md),
-        decoration: BoxDecoration(
-          color: LoomColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: LoomColors.line),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: LoomColors.ink),
-            const SizedBox(width: LoomSpacing.sm),
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(fontWeight: FontWeight.w800),
+      child: InkWell(
+        key: keyValue == null ? null : ValueKey<String>(keyValue!),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(LoomSpacing.md),
+          decoration: BoxDecoration(
+            color: LoomColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: LoomColors.line),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: LoomColors.ink),
+              const SizedBox(width: LoomSpacing.sm),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
-            ),
-          ],
+              if (onTap != null)
+                const Icon(Icons.chevron_right_rounded, color: LoomColors.ink),
+            ],
+          ),
         ),
       ),
     );
@@ -426,5 +564,25 @@ String _titleForStep(FanOnboardingStep step) {
     FanOnboardingStep.privacy => 'Set first-follow privacy',
     FanOnboardingStep.firstFollow => 'Follow suggested creators',
     FanOnboardingStep.complete => 'Fan passport ready',
+  };
+}
+
+String _labelForStep(FanOnboardingStep step) {
+  return switch (step) {
+    FanOnboardingStep.welcome => 'Passport',
+    FanOnboardingStep.interests => 'Interests',
+    FanOnboardingStep.privacy => 'Privacy',
+    FanOnboardingStep.firstFollow => 'Follows',
+    FanOnboardingStep.complete => 'Done',
+  };
+}
+
+IconData _iconForStep(FanOnboardingStep step) {
+  return switch (step) {
+    FanOnboardingStep.welcome => Icons.person_add_alt_1_rounded,
+    FanOnboardingStep.interests => Icons.interests_rounded,
+    FanOnboardingStep.privacy => Icons.privacy_tip_outlined,
+    FanOnboardingStep.firstFollow => Icons.group_add_rounded,
+    FanOnboardingStep.complete => Icons.check_circle_rounded,
   };
 }

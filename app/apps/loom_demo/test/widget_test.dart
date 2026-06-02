@@ -10,7 +10,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Fan App'), findsWidgets);
-    expect(find.byKey(const ValueKey('p3_session_disclosure')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('p0_recommendation_type_row')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('shell_search_button')), findsOneWidget);
     final scroll = find.byKey(const ValueKey('p3_discovery_scroll'));
     for (
       var attempt = 0;

@@ -10,6 +10,8 @@ void main() {
   testWidgets('it_p3_search_no_ads', (tester) async {
     await openDiscoveryHome(tester);
 
+    await tester.tap(find.byKey(const ValueKey('shell_search_button')));
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('p3_search_field')),
       'kimchi',

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:loom_api_contracts/loom_api_contracts.dart';
 import 'package:loom_design_system/loom_design_system.dart';
@@ -19,7 +20,14 @@ extension RoleScopeLabel on RoleScope {
   }
 }
 
-typedef RoleSurfaceBuilder = Widget Function(BuildContext context);
+typedef RoleSurfaceBuilder =
+    Widget Function(BuildContext context, RoleSurfaceChrome chrome);
+
+class RoleSurfaceChrome {
+  const RoleSurfaceChrome({this.searchRequests});
+
+  final ValueListenable<int>? searchRequests;
+}
 
 CreatorMetadataApi? _creatorMetadataApi;
 FanPassportApi? _fanPassportApi;
@@ -481,6 +489,17 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
   RoleScope _role = RoleScope.fanApp;
   int _resetEpoch = 0;
   bool _resetting = false;
+  final ValueNotifier<int> _fanSearchRequests = ValueNotifier<int>(0);
+
+  @override
+  void dispose() {
+    _fanSearchRequests.dispose();
+    super.dispose();
+  }
+
+  void _requestFanSearch() {
+    _fanSearchRequests.value += 1;
+  }
 
   Future<void> _resetDemo() async {
     if (_resetting) {
@@ -531,6 +550,7 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
           _role = RoleScope.values[index];
         });
       },
+      onSearch: _role == RoleScope.fanApp ? _requestFanSearch : null,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -573,8 +593,11 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
         child: KeyedSubtree(
           key: ValueKey<String>('${_role.name}-$_resetEpoch'),
           child: _role == RoleScope.fanApp
-              ? widget.fanBuilder(context)
-              : widget.studioBuilder(context),
+              ? widget.fanBuilder(
+                  context,
+                  RoleSurfaceChrome(searchRequests: _fanSearchRequests),
+                )
+              : widget.studioBuilder(context, const RoleSurfaceChrome()),
         ),
       ),
     );

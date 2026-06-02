@@ -23,6 +23,7 @@ class LoomNavScaffold extends StatelessWidget {
     required this.destinations,
     required this.onDestinationSelected,
     required this.child,
+    this.onSearch,
     this.trailing,
     super.key,
   });
@@ -33,6 +34,7 @@ class LoomNavScaffold extends StatelessWidget {
   final List<LoomNavItem> destinations;
   final ValueChanged<int> onDestinationSelected;
   final Widget child;
+  final VoidCallback? onSearch;
   final Widget? trailing;
 
   @override
@@ -70,7 +72,12 @@ class LoomNavScaffold extends StatelessWidget {
           ],
         ),
         actions: [
-          const _ShellIconButton(tooltip: 'Search', icon: Icons.search_rounded),
+          _ShellIconButton(
+            key: const ValueKey('shell_search_button'),
+            tooltip: 'Search',
+            icon: Icons.search_rounded,
+            onPressed: onSearch,
+          ),
           const _ShellIconButton(
             tooltip: 'Notifications',
             icon: Icons.notifications_none_rounded,
@@ -138,10 +145,16 @@ class _LoomMark extends StatelessWidget {
 }
 
 class _ShellIconButton extends StatelessWidget {
-  const _ShellIconButton({required this.tooltip, required this.icon});
+  const _ShellIconButton({
+    required this.tooltip,
+    required this.icon,
+    this.onPressed,
+    super.key,
+  });
 
   final String tooltip;
   final IconData icon;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +163,7 @@ class _ShellIconButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2),
         child: IconButton.filledTonal(
-          onPressed: () {},
+          onPressed: onPressed ?? () {},
           icon: Icon(icon),
           style: IconButton.styleFrom(
             backgroundColor: LoomColors.surfaceAlt,

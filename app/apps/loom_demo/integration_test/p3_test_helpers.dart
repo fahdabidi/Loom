@@ -8,12 +8,16 @@ Future<void> openDiscoveryHome(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 800));
   await tester.pumpAndSettle();
 
-  expect(find.byKey(const ValueKey('p3_session_disclosure')), findsOneWidget);
+  expect(
+    find.byKey(const ValueKey('p0_recommendation_type_row')),
+    findsOneWidget,
+  );
 }
 
 Future<Finder> findDiscoveryKey(WidgetTester tester, String key) async {
   final finder = find.byKey(ValueKey(key));
-  if (key.startsWith('p3_startup_tile_')) {
+  if (_isRecommendationPanelKey(key)) {
+    await _openRecommendationPanel(tester);
     final rail = find.byKey(const ValueKey('p3_intent_rail'));
     for (var attempt = 0; attempt < 8 && finder.evaluate().isEmpty; attempt++) {
       await tester.drag(rail, const Offset(-180, 0), warnIfMissed: false);
@@ -24,6 +28,13 @@ Future<Finder> findDiscoveryKey(WidgetTester tester, String key) async {
       await tester.pumpAndSettle();
       return finder;
     }
+  }
+  if (find
+      .byKey(const ValueKey('p0_recommendation_panel'))
+      .evaluate()
+      .isNotEmpty) {
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
   }
 
   final scrollableCandidates = [
@@ -67,5 +78,25 @@ Future<void> tapDiscoveryKey(WidgetTester tester, String key) async {
   final finder = await findDiscoveryKey(tester, key);
   await tester.tap(finder);
   await tester.pump(const Duration(milliseconds: 800));
+  await tester.pumpAndSettle();
+}
+
+bool _isRecommendationPanelKey(String key) {
+  return key.startsWith('p3_startup_tile_') ||
+      key == 'p3_intent_rail' ||
+      key == 'p3_session_disclosure' ||
+      key == 'p5_summary_rank_toggle' ||
+      key == 'p5_summary_rank_note';
+}
+
+Future<void> _openRecommendationPanel(WidgetTester tester) async {
+  if (find
+      .byKey(const ValueKey('p0_recommendation_panel'))
+      .evaluate()
+      .isNotEmpty) {
+    return;
+  }
+  await tester.tap(find.byKey(const ValueKey('p0_recommendation_type_row')));
+  await tester.pump(const Duration(milliseconds: 500));
   await tester.pumpAndSettle();
 }

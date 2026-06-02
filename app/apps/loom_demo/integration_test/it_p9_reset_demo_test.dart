@@ -24,7 +24,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Demo reset to seed v1'), findsOneWidget);
-    expect(find.byKey(const ValueKey('p3_session_disclosure')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('p0_recommendation_type_row')),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('p9_export_screen')), findsNothing);
   });
 }

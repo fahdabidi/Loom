@@ -48,6 +48,8 @@ class FanOnboardingController extends ChangeNotifier {
 
   bool get canSaveInterests => selectedInterestIds.length >= 10 && !isLoading;
 
+  bool get canGoBack => step != FanOnboardingStep.welcome && !isLoading;
+
   Future<void> load() async {
     if (taxonomy.isNotEmpty) {
       return;
@@ -107,6 +109,41 @@ class FanOnboardingController extends ChangeNotifier {
       next.remove(id);
     }
     selectedInterestIds = next;
+    notifyListeners();
+  }
+
+  void goBack() {
+    if (!canGoBack) {
+      return;
+    }
+    step = switch (step) {
+      FanOnboardingStep.welcome => FanOnboardingStep.welcome,
+      FanOnboardingStep.interests => FanOnboardingStep.welcome,
+      FanOnboardingStep.privacy => FanOnboardingStep.interests,
+      FanOnboardingStep.firstFollow => FanOnboardingStep.privacy,
+      FanOnboardingStep.complete => FanOnboardingStep.firstFollow,
+    };
+    notifyListeners();
+  }
+
+  bool canNavigateTo(FanOnboardingStep target) {
+    if (isLoading) {
+      return false;
+    }
+    return switch (target) {
+      FanOnboardingStep.welcome => true,
+      FanOnboardingStep.interests => passport != null,
+      FanOnboardingStep.privacy => interestProfile != null,
+      FanOnboardingStep.firstFollow => interestProfile != null,
+      FanOnboardingStep.complete => firstFollows.isNotEmpty,
+    };
+  }
+
+  void goToStep(FanOnboardingStep target) {
+    if (!canNavigateTo(target)) {
+      return;
+    }
+    step = target;
     notifyListeners();
   }
 

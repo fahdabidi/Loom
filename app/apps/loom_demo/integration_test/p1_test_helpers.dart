@@ -15,6 +15,12 @@ const phase1InterestIds = [
 ];
 
 Future<void> startFanOnboarding(WidgetTester tester) async {
+  final button = find.byKey(const ValueKey('start_fan_onboarding_button'));
+  for (var attempt = 0; attempt < 6 && button.evaluate().isEmpty; attempt++) {
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+  }
+  expect(button, findsOneWidget);
   await tester.tap(find.byKey(const ValueKey('start_fan_onboarding_button')));
   await tester.pumpAndSettle();
 }
