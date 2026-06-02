@@ -42,9 +42,12 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerCreatorAudienceApi(CreatorAudienceFake(store));
   registerCampaignApi(CampaignFake(store));
   registerCreatorChannelRegistryApi(CreatorChannelRegistryFake(store));
+  registerCreatorExperienceApi(CreatorExperienceFake(store));
   registerContentHostApi(ContentHostFake(store));
   registerMigrationExportApi(MigrationExportFake(store));
   registerEntitlementLedgerApi(EntitlementLedgerFake(store));
+  registerExtensionRegistryApi(ExtensionRegistryFake(store));
+  registerExtensionRuntimeApi(ExtensionRuntimeFake(store));
   registerAiGatewayApi(AiGatewayFake(store));
   registerAdDecisionApi(AdDecisionFake(store));
   registerAudienceAnalyticsApi(AudienceAnalyticsFake(store));

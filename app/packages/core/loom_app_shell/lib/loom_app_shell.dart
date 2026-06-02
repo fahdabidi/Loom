@@ -26,10 +26,13 @@ FanPassportApi? _fanPassportApi;
 FanVaultApi? _fanVaultApi;
 CreatorAudienceApi? _creatorAudienceApi;
 CreatorChannelRegistryApi? _creatorChannelRegistryApi;
+CreatorExperienceApi? _creatorExperienceApi;
 ContentHostApi? _contentHostApi;
 CampaignApi? _campaignApi;
 MigrationExportApi? _migrationExportApi;
 EntitlementLedgerApi? _entitlementLedgerApi;
+ExtensionRegistryApi? _extensionRegistryApi;
+ExtensionRuntimeApi? _extensionRuntimeApi;
 AiGatewayApi? _aiGatewayApi;
 AdDecisionApi? _adDecisionApi;
 AudienceAnalyticsApi? _audienceAnalyticsApi;
@@ -69,6 +72,10 @@ void registerCreatorChannelRegistryApi(CreatorChannelRegistryApi api) {
   _creatorChannelRegistryApi = api;
 }
 
+void registerCreatorExperienceApi(CreatorExperienceApi api) {
+  _creatorExperienceApi = api;
+}
+
 void registerContentHostApi(ContentHostApi api) {
   _contentHostApi = api;
 }
@@ -83,6 +90,14 @@ void registerMigrationExportApi(MigrationExportApi api) {
 
 void registerEntitlementLedgerApi(EntitlementLedgerApi api) {
   _entitlementLedgerApi = api;
+}
+
+void registerExtensionRegistryApi(ExtensionRegistryApi api) {
+  _extensionRegistryApi = api;
+}
+
+void registerExtensionRuntimeApi(ExtensionRuntimeApi api) {
+  _extensionRuntimeApi = api;
 }
 
 void registerAiGatewayApi(AiGatewayApi api) {
@@ -165,10 +180,13 @@ void resetAppShellDependencies() {
   _fanVaultApi = null;
   _creatorAudienceApi = null;
   _creatorChannelRegistryApi = null;
+  _creatorExperienceApi = null;
   _contentHostApi = null;
   _campaignApi = null;
   _migrationExportApi = null;
   _entitlementLedgerApi = null;
+  _extensionRegistryApi = null;
+  _extensionRuntimeApi = null;
   _aiGatewayApi = null;
   _adDecisionApi = null;
   _audienceAnalyticsApi = null;
@@ -229,6 +247,14 @@ CreatorChannelRegistryApi resolveCreatorChannelRegistryApi() {
   return api;
 }
 
+CreatorExperienceApi resolveCreatorExperienceApi() {
+  final api = _creatorExperienceApi;
+  if (api == null) {
+    throw StateError('CreatorExperienceApi has not been registered.');
+  }
+  return api;
+}
+
 ContentHostApi resolveContentHostApi() {
   final api = _contentHostApi;
   if (api == null) {
@@ -265,6 +291,22 @@ EntitlementLedgerApi resolveEntitlementLedgerApi() {
   final api = _entitlementLedgerApi;
   if (api == null) {
     throw StateError('EntitlementLedgerApi has not been registered.');
+  }
+  return api;
+}
+
+ExtensionRegistryApi resolveExtensionRegistryApi() {
+  final api = _extensionRegistryApi;
+  if (api == null) {
+    throw StateError('ExtensionRegistryApi has not been registered.');
+  }
+  return api;
+}
+
+ExtensionRuntimeApi resolveExtensionRuntimeApi() {
+  final api = _extensionRuntimeApi;
+  if (api == null) {
+    throw StateError('ExtensionRuntimeApi has not been registered.');
   }
   return api;
 }

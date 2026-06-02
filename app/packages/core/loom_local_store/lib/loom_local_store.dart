@@ -1945,6 +1945,222 @@ class BulkFollowJobRecord {
   final DateTime createdAt;
 }
 
+class ExtensionManifestRecord {
+  const ExtensionManifestRecord({
+    required this.extensionId,
+    required this.name,
+    required this.category,
+    required this.riskTier,
+    required this.surfaces,
+    required this.permissions,
+    required this.exportBehavior,
+    required this.certificationState,
+    required this.latestVersion,
+    required this.description,
+  });
+
+  final String extensionId;
+  final String name;
+  final String category;
+  final String riskTier;
+  final List<String> surfaces;
+  final List<String> permissions;
+  final String exportBehavior;
+  final String certificationState;
+  final String latestVersion;
+  final String description;
+}
+
+class ExtensionInstallRecord {
+  const ExtensionInstallRecord({
+    required this.installId,
+    required this.channelId,
+    required this.extensionId,
+    required this.version,
+    required this.approvedPermissions,
+    required this.approvedSurfaces,
+    required this.config,
+    required this.state,
+    required this.installedAt,
+    required this.updatedAt,
+  });
+
+  final String installId;
+  final String channelId;
+  final String extensionId;
+  final String version;
+  final List<String> approvedPermissions;
+  final List<String> approvedSurfaces;
+  final Map<String, String> config;
+  final String state;
+  final DateTime installedAt;
+  final DateTime updatedAt;
+}
+
+class ExtensionSessionRecord {
+  const ExtensionSessionRecord({
+    required this.sessionId,
+    required this.channelId,
+    required this.extensionId,
+    required this.version,
+    required this.surface,
+    required this.fanId,
+    required this.pairwiseCreatorFanId,
+    required this.state,
+    required this.allowedPermissions,
+    required this.createdAt,
+  });
+
+  final String sessionId;
+  final String channelId;
+  final String extensionId;
+  final String version;
+  final String surface;
+  final String fanId;
+  final String pairwiseCreatorFanId;
+  final String state;
+  final List<String> allowedPermissions;
+  final DateTime createdAt;
+}
+
+class ExtensionEventRecord {
+  const ExtensionEventRecord({
+    required this.eventId,
+    required this.sessionId,
+    required this.type,
+    required this.payload,
+    required this.createdAt,
+    required this.idempotencyKey,
+  });
+
+  final String eventId;
+  final String sessionId;
+  final String type;
+  final Map<String, String> payload;
+  final DateTime createdAt;
+  final String idempotencyKey;
+}
+
+class ExtensionStateRecord {
+  const ExtensionStateRecord({
+    required this.scopeKey,
+    required this.key,
+    required this.value,
+    required this.exportBehavior,
+    required this.updatedAt,
+  });
+
+  final String scopeKey;
+  final String key;
+  final Map<String, String> value;
+  final String exportBehavior;
+  final DateTime updatedAt;
+}
+
+class ExtensionStateExportRecord {
+  const ExtensionStateExportRecord({
+    required this.exportId,
+    required this.channelId,
+    required this.fanId,
+    required this.generatedAt,
+    required this.entries,
+  });
+
+  final String exportId;
+  final String channelId;
+  final String? fanId;
+  final DateTime generatedAt;
+  final List<ExtensionStateRecord> entries;
+}
+
+class ChannelThemeRecord {
+  const ChannelThemeRecord({
+    required this.themeId,
+    required this.name,
+    required this.primaryHex,
+    required this.secondaryHex,
+    required this.backgroundHex,
+    required this.surfaceHex,
+    required this.textHex,
+    required this.accentHex,
+  });
+
+  final String themeId;
+  final String name;
+  final String primaryHex;
+  final String secondaryHex;
+  final String backgroundHex;
+  final String surfaceHex;
+  final String textHex;
+  final String accentHex;
+}
+
+class SurfaceModuleRecord {
+  const SurfaceModuleRecord({
+    required this.moduleId,
+    required this.kind,
+    required this.title,
+    required this.surface,
+    required this.sortOrder,
+    required this.enabled,
+    required this.extensionId,
+    required this.config,
+  });
+
+  final String moduleId;
+  final String kind;
+  final String title;
+  final String surface;
+  final int sortOrder;
+  final bool enabled;
+  final String? extensionId;
+  final Map<String, String> config;
+}
+
+class InstalledExtensionRefRecord {
+  const InstalledExtensionRefRecord({
+    required this.installId,
+    required this.extensionId,
+    required this.name,
+    required this.version,
+    required this.surfaces,
+    required this.state,
+    required this.moduleIds,
+  });
+
+  final String installId;
+  final String extensionId;
+  final String name;
+  final String version;
+  final List<String> surfaces;
+  final String state;
+  final List<String> moduleIds;
+}
+
+class CreatorExperienceConfigRecord {
+  const CreatorExperienceConfigRecord({
+    required this.channelId,
+    required this.theme,
+    required this.bannerRef,
+    required this.surfaceModules,
+    required this.aiPersona,
+    required this.adPosture,
+    required this.installedExtensions,
+    required this.version,
+    required this.updatedAt,
+  });
+
+  final String channelId;
+  final ChannelThemeRecord theme;
+  final String bannerRef;
+  final List<SurfaceModuleRecord> surfaceModules;
+  final String aiPersona;
+  final String adPosture;
+  final List<InstalledExtensionRefRecord> installedExtensions;
+  final int version;
+  final DateTime updatedAt;
+}
+
 class ConversionStageRecord {
   const ConversionStageRecord({
     required this.stage,
@@ -2601,6 +2817,30 @@ class DemoLocalStore {
           KvMetaCompanion.insert(
             key: 'managedHostingProvider',
             value: world.managedHostingProvider,
+          ),
+          KvMetaCompanion.insert(
+            key: _extensionManifestsKvKey,
+            value: jsonEncode(_extensionManifestSeedMaps()),
+          ),
+          KvMetaCompanion.insert(
+            key: _extensionInstallsKvKey,
+            value: jsonEncode(_extensionInstallSeedMaps()),
+          ),
+          KvMetaCompanion.insert(
+            key: _extensionSessionsKvKey,
+            value: jsonEncode(const []),
+          ),
+          KvMetaCompanion.insert(
+            key: _extensionEventsKvKey,
+            value: jsonEncode(const []),
+          ),
+          KvMetaCompanion.insert(
+            key: _extensionStateKvKey,
+            value: jsonEncode(_extensionStateSeedMaps()),
+          ),
+          KvMetaCompanion.insert(
+            key: _creatorExperienceConfigsKvKey,
+            value: jsonEncode(_creatorExperienceConfigSeedMaps()),
           ),
         ]);
       });
@@ -5434,6 +5674,478 @@ class DemoLocalStore {
     return _mapBulkFollowJob(row);
   }
 
+  Future<List<ExtensionManifestRecord>> extensionManifests({
+    String? category,
+    bool certifiedOnly = true,
+  }) async {
+    final records = (await _readKvMapList(_extensionManifestsKvKey))
+        .map(_extensionManifestFromJson)
+        .where(
+          (manifest) =>
+              (category == null || manifest.category == category) &&
+              (!certifiedOnly || manifest.certificationState == 'certified'),
+        )
+        .toList(growable: false);
+    records.sort((a, b) => a.name.compareTo(b.name));
+    return records;
+  }
+
+  Future<ExtensionManifestRecord?> extensionManifest(String extensionId) async {
+    final manifests = await extensionManifests(certifiedOnly: false);
+    return manifests
+        .where((manifest) => manifest.extensionId == extensionId)
+        .firstOrNull;
+  }
+
+  Future<ExtensionManifestRecord> publishExtension({
+    required ExtensionManifestRecord manifest,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'extension_manifest',
+    );
+    if (existing != null) {
+      final record = await extensionManifest(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    final manifests = await extensionManifests(certifiedOnly: false);
+    final next = [
+      for (final current in manifests)
+        if (current.extensionId != manifest.extensionId) current,
+      manifest,
+    ];
+    await _writeKvMapList(
+      _extensionManifestsKvKey,
+      next.map(_extensionManifestToJson).toList(growable: false),
+    );
+    await _saveIdempotency(
+      idempotencyKey,
+      'extension_manifest',
+      manifest.extensionId,
+    );
+    return manifest;
+  }
+
+  Future<List<ExtensionInstallRecord>> extensionInstallsForChannel(
+    String channelId, {
+    bool activeOnly = false,
+  }) async {
+    return (await _extensionInstallRecords())
+        .where(
+          (install) =>
+              install.channelId == channelId &&
+              (!activeOnly || install.state == 'active'),
+        )
+        .toList(growable: false);
+  }
+
+  Future<ExtensionInstallRecord?> extensionInstallById(String installId) async {
+    return (await _extensionInstallRecords())
+        .where((install) => install.installId == installId)
+        .firstOrNull;
+  }
+
+  Future<ExtensionInstallRecord> installExtension({
+    required String channelId,
+    required String extensionId,
+    required String version,
+    required List<String> approvedPermissions,
+    required List<String> approvedSurfaces,
+    required Map<String, String> config,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'extension_install',
+    );
+    if (existing != null) {
+      final record = await extensionInstallById(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    final creator = await creatorById(channelId);
+    if (creator == null) {
+      throw StateError('No channel exists for $channelId');
+    }
+    final manifest = await extensionManifest(extensionId);
+    if (manifest == null || manifest.certificationState != 'certified') {
+      throw StateError('Extension $extensionId is not certified.');
+    }
+    final permissions = approvedPermissions.isEmpty
+        ? manifest.permissions
+        : approvedPermissions;
+    final surfaces = approvedSurfaces.isEmpty
+        ? manifest.surfaces
+        : approvedSurfaces;
+    final deniedPermissions = permissions
+        .where((permission) => !manifest.permissions.contains(permission))
+        .toList(growable: false);
+    final deniedSurfaces = surfaces
+        .where((surface) => !manifest.surfaces.contains(surface))
+        .toList(growable: false);
+    if (deniedPermissions.isNotEmpty || deniedSurfaces.isNotEmpty) {
+      throw StateError(
+        'Extension install request exceeds manifest permissions or surfaces.',
+      );
+    }
+    final now = _now();
+    final install = ExtensionInstallRecord(
+      installId: 'install_${_slug(channelId)}_${_slug(extensionId)}',
+      channelId: channelId,
+      extensionId: extensionId,
+      version: version.isEmpty ? manifest.latestVersion : version,
+      approvedPermissions: permissions,
+      approvedSurfaces: surfaces,
+      config: config,
+      state: 'active',
+      installedAt: now,
+      updatedAt: now,
+    );
+    final installs = await _extensionInstallRecords();
+    await _writeExtensionInstallRecords([
+      for (final current in installs)
+        if (current.installId != install.installId) current,
+      install,
+    ]);
+    await _saveIdempotency(
+      idempotencyKey,
+      'extension_install',
+      install.installId,
+    );
+    return install;
+  }
+
+  Future<ExtensionInstallRecord> suspendExtension({
+    required String channelId,
+    required String extensionId,
+    required String reason,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'extension_install',
+    );
+    if (existing != null) {
+      final record = await extensionInstallById(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    final installs = await _extensionInstallRecords();
+    final current = installs
+        .where(
+          (install) =>
+              install.channelId == channelId &&
+              install.extensionId == extensionId,
+        )
+        .firstOrNull;
+    if (current == null) {
+      throw StateError('Extension $extensionId is not installed.');
+    }
+    final suspended = ExtensionInstallRecord(
+      installId: current.installId,
+      channelId: current.channelId,
+      extensionId: current.extensionId,
+      version: current.version,
+      approvedPermissions: current.approvedPermissions,
+      approvedSurfaces: current.approvedSurfaces,
+      config: {...current.config, 'suspensionReason': reason},
+      state: 'suspended',
+      installedAt: current.installedAt,
+      updatedAt: _now(),
+    );
+    await _writeExtensionInstallRecords([
+      for (final install in installs)
+        if (install.installId == suspended.installId) suspended else install,
+    ]);
+    await _saveIdempotency(
+      idempotencyKey,
+      'extension_install',
+      suspended.installId,
+    );
+    return suspended;
+  }
+
+  Future<ExtensionSessionRecord> createExtensionSession({
+    required String channelId,
+    required String extensionId,
+    required String surface,
+    required String fanId,
+    required String idempotencyKey,
+    String? version,
+    String? pairwiseCreatorFanId,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'extension_session',
+    );
+    if (existing != null) {
+      final session = await extensionSession(existing);
+      if (session != null) {
+        return session;
+      }
+    }
+    final install = (await extensionInstallsForChannel(
+      channelId,
+      activeOnly: true,
+    )).where((candidate) => candidate.extensionId == extensionId).firstOrNull;
+    if (install == null) {
+      throw StateError('Extension $extensionId is not active on $channelId.');
+    }
+    if (!install.approvedSurfaces.contains(surface)) {
+      throw StateError('Extension $extensionId is not approved for $surface.');
+    }
+    final session = ExtensionSessionRecord(
+      sessionId: 'session_${_slug(idempotencyKey)}',
+      channelId: channelId,
+      extensionId: extensionId,
+      version: version ?? install.version,
+      surface: surface,
+      fanId: fanId,
+      pairwiseCreatorFanId:
+          pairwiseCreatorFanId ?? 'pair_${_slug(channelId)}_${_slug(fanId)}',
+      state: 'active',
+      allowedPermissions: install.approvedPermissions,
+      createdAt: _now(),
+    );
+    final sessions = await _extensionSessionRecords();
+    await _writeExtensionSessionRecords([
+      for (final current in sessions)
+        if (current.sessionId != session.sessionId) current,
+      session,
+    ]);
+    await _saveIdempotency(
+      idempotencyKey,
+      'extension_session',
+      session.sessionId,
+    );
+    return session;
+  }
+
+  Future<ExtensionSessionRecord?> extensionSession(String sessionId) async {
+    return (await _extensionSessionRecords())
+        .where((session) => session.sessionId == sessionId)
+        .firstOrNull;
+  }
+
+  Future<ExtensionEventRecord> submitExtensionEvent({
+    required String sessionId,
+    required String type,
+    required Map<String, String> payload,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'extension_event');
+    if (existing != null) {
+      final event = await extensionEvent(existing);
+      if (event != null) {
+        return event;
+      }
+    }
+    final session = await extensionSession(sessionId);
+    if (session == null || session.state != 'active') {
+      throw StateError('Extension session $sessionId is not active.');
+    }
+    final event = ExtensionEventRecord(
+      eventId: 'event_${_slug(idempotencyKey)}',
+      sessionId: sessionId,
+      type: type,
+      payload: payload,
+      createdAt: _now(),
+      idempotencyKey: idempotencyKey,
+    );
+    final events = await _extensionEventRecords();
+    await _writeExtensionEventRecords([
+      for (final current in events)
+        if (current.eventId != event.eventId) current,
+      event,
+    ]);
+    await _upsertExtensionState(
+      ExtensionStateRecord(
+        scopeKey:
+            'channel:${session.channelId}:fan:${session.fanId}:extension:${session.extensionId}',
+        key: 'last_event_${_slug(type)}',
+        value: {'eventId': event.eventId, 'type': type, ...payload},
+        exportBehavior: 'creator_and_fan',
+        updatedAt: _now(),
+      ),
+    );
+    if (payload.containsKey('rewardCode') || type == 'reward_earned') {
+      await _db
+          .into(_db.receipts)
+          .insertOnConflictUpdate(
+            ReceiptsCompanion.insert(
+              id: 'receipt_extension_${_slug(event.eventId)}',
+              type: 'reward',
+              passportId: session.fanId,
+              contentId: session.extensionId,
+              authorizationId: session.sessionId,
+              summary:
+                  'Extension reward ${payload['rewardCode'] ?? type} earned in ${session.extensionId}.',
+              createdAt: _now(),
+            ),
+          );
+    }
+    await _saveIdempotency(idempotencyKey, 'extension_event', event.eventId);
+    return event;
+  }
+
+  Future<ExtensionEventRecord?> extensionEvent(String eventId) async {
+    return (await _extensionEventRecords())
+        .where((event) => event.eventId == eventId)
+        .firstOrNull;
+  }
+
+  Future<ExtensionStateExportRecord> createExtensionStateExport({
+    required String channelId,
+    String? fanId,
+  }) async {
+    final entries = (await _extensionStateRecords())
+        .where(
+          (entry) =>
+              entry.scopeKey.startsWith('channel:$channelId:') &&
+              (fanId == null || entry.scopeKey.contains(':fan:$fanId:')),
+        )
+        .toList(growable: false);
+    return ExtensionStateExportRecord(
+      exportId:
+          'extension_export_${_slug(channelId)}_${_slug(fanId ?? 'creator')}',
+      channelId: channelId,
+      fanId: fanId,
+      generatedAt: _now(),
+      entries: entries,
+    );
+  }
+
+  Future<CreatorExperienceConfigRecord> creatorExperienceConfig(
+    String channelId,
+  ) async {
+    final configs = await _readKvMapList(_creatorExperienceConfigsKvKey);
+    final json = configs
+        .where((item) => item['channelId'] == channelId)
+        .firstOrNull;
+    if (json == null) {
+      final creator = await creatorById(channelId);
+      if (creator == null) {
+        throw StateError('No channel exists for $channelId');
+      }
+      return _defaultExperienceConfigForCreator(creator);
+    }
+    return _creatorExperienceConfigFromJson(
+      json,
+      installs: await extensionInstallsForChannel(channelId),
+      manifests: await extensionManifests(certifiedOnly: false),
+    );
+  }
+
+  Future<CreatorExperienceConfigRecord> putCreatorExperienceConfig({
+    required CreatorExperienceConfigRecord config,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'creator_experience_config',
+    );
+    if (existing != null) {
+      return creatorExperienceConfig(existing);
+    }
+    final configs = await _readKvMapList(_creatorExperienceConfigsKvKey);
+    await _writeKvMapList(_creatorExperienceConfigsKvKey, [
+      for (final item in configs)
+        if (item['channelId'] != config.channelId) item,
+      _creatorExperienceConfigToJson(config),
+    ]);
+    await _saveIdempotency(
+      idempotencyKey,
+      'creator_experience_config',
+      config.channelId,
+    );
+    return creatorExperienceConfig(config.channelId);
+  }
+
+  Future<List<Map<String, Object?>>> _readKvMapList(String key) async {
+    final row = await (_db.select(
+      _db.kvMeta,
+    )..where((tbl) => tbl.key.equals(key))).getSingleOrNull();
+    if (row == null) {
+      return const [];
+    }
+    return _decodeObjectMapList(row.value);
+  }
+
+  Future<void> _writeKvMapList(String key, List<Map<String, Object?>> values) {
+    return _db
+        .into(_db.kvMeta)
+        .insertOnConflictUpdate(
+          KvMetaCompanion.insert(key: key, value: jsonEncode(values)),
+        );
+  }
+
+  Future<List<ExtensionInstallRecord>> _extensionInstallRecords() async {
+    return (await _readKvMapList(
+      _extensionInstallsKvKey,
+    )).map(_extensionInstallFromJson).toList(growable: false);
+  }
+
+  Future<void> _writeExtensionInstallRecords(
+    List<ExtensionInstallRecord> records,
+  ) {
+    return _writeKvMapList(
+      _extensionInstallsKvKey,
+      records.map(_extensionInstallToJson).toList(growable: false),
+    );
+  }
+
+  Future<List<ExtensionSessionRecord>> _extensionSessionRecords() async {
+    return (await _readKvMapList(
+      _extensionSessionsKvKey,
+    )).map(_extensionSessionFromJson).toList(growable: false);
+  }
+
+  Future<void> _writeExtensionSessionRecords(
+    List<ExtensionSessionRecord> records,
+  ) {
+    return _writeKvMapList(
+      _extensionSessionsKvKey,
+      records.map(_extensionSessionToJson).toList(growable: false),
+    );
+  }
+
+  Future<List<ExtensionEventRecord>> _extensionEventRecords() async {
+    return (await _readKvMapList(
+      _extensionEventsKvKey,
+    )).map(_extensionEventFromJson).toList(growable: false);
+  }
+
+  Future<void> _writeExtensionEventRecords(List<ExtensionEventRecord> records) {
+    return _writeKvMapList(
+      _extensionEventsKvKey,
+      records.map(_extensionEventToJson).toList(growable: false),
+    );
+  }
+
+  Future<List<ExtensionStateRecord>> _extensionStateRecords() async {
+    return (await _readKvMapList(
+      _extensionStateKvKey,
+    )).map(_extensionStateFromJson).toList(growable: false);
+  }
+
+  Future<void> _upsertExtensionState(ExtensionStateRecord record) async {
+    final records = await _extensionStateRecords();
+    await _writeKvMapList(
+      _extensionStateKvKey,
+      [
+        for (final current in records)
+          if (current.scopeKey != record.scopeKey || current.key != record.key)
+            current,
+        record,
+      ].map(_extensionStateToJson).toList(growable: false),
+    );
+  }
+
   Future<ConversionFunnelRecord> conversionFunnel({
     required String channelId,
     DateTime? startsAt,
@@ -7164,6 +7876,954 @@ Map<String, Object?> _decodeStringMap(String value) {
   return decoded.cast<String, Object?>();
 }
 
+const _extensionManifestsKvKey = 'extensions.manifests';
+const _extensionInstallsKvKey = 'extensions.installs';
+const _extensionSessionsKvKey = 'extensions.sessions';
+const _extensionEventsKvKey = 'extensions.events';
+const _extensionStateKvKey = 'extensions.state';
+const _creatorExperienceConfigsKvKey = 'creatorExperience.configs';
+
+List<Map<String, Object?>> _decodeObjectMapList(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map((item) => item.cast<String, Object?>())
+      .toList(growable: false);
+}
+
+List<String> _stringListFromObject(Object? value) {
+  if (value is! List) {
+    return const [];
+  }
+  return value.whereType<String>().toList(growable: false);
+}
+
+Map<String, String> _stringMapFromObject(Object? value) {
+  if (value is! Map) {
+    return const {};
+  }
+  return {
+    for (final entry in value.entries) '${entry.key}': '${entry.value ?? ''}',
+  };
+}
+
+Map<String, Object?> _objectMapFromObject(Object? value) {
+  if (value is! Map) {
+    return const {};
+  }
+  return value.cast<String, Object?>();
+}
+
+DateTime _dateFromObject(Object? value) {
+  return DateTime.tryParse('$value') ?? _now();
+}
+
+ExtensionManifestRecord _extensionManifestFromJson(Map<String, Object?> item) {
+  return ExtensionManifestRecord(
+    extensionId: '${item['extensionId'] ?? ''}',
+    name: '${item['name'] ?? ''}',
+    category: '${item['category'] ?? ''}',
+    riskTier: '${item['riskTier'] ?? 'low'}',
+    surfaces: _stringListFromObject(item['surfaces']),
+    permissions: _stringListFromObject(item['permissions']),
+    exportBehavior: '${item['exportBehavior'] ?? 'creator_and_fan'}',
+    certificationState: '${item['certificationState'] ?? 'submitted'}',
+    latestVersion: '${item['latestVersion'] ?? '1.0.0'}',
+    description: '${item['description'] ?? ''}',
+  );
+}
+
+Map<String, Object?> _extensionManifestToJson(ExtensionManifestRecord record) {
+  return {
+    'extensionId': record.extensionId,
+    'name': record.name,
+    'category': record.category,
+    'riskTier': record.riskTier,
+    'surfaces': record.surfaces,
+    'permissions': record.permissions,
+    'exportBehavior': record.exportBehavior,
+    'certificationState': record.certificationState,
+    'latestVersion': record.latestVersion,
+    'description': record.description,
+  };
+}
+
+ExtensionInstallRecord _extensionInstallFromJson(Map<String, Object?> item) {
+  return ExtensionInstallRecord(
+    installId: '${item['installId'] ?? ''}',
+    channelId: '${item['channelId'] ?? ''}',
+    extensionId: '${item['extensionId'] ?? ''}',
+    version: '${item['version'] ?? '1.0.0'}',
+    approvedPermissions: _stringListFromObject(item['approvedPermissions']),
+    approvedSurfaces: _stringListFromObject(item['approvedSurfaces']),
+    config: _stringMapFromObject(item['config']),
+    state: '${item['state'] ?? 'active'}',
+    installedAt: _dateFromObject(item['installedAt']),
+    updatedAt: _dateFromObject(item['updatedAt']),
+  );
+}
+
+Map<String, Object?> _extensionInstallToJson(ExtensionInstallRecord record) {
+  return {
+    'installId': record.installId,
+    'channelId': record.channelId,
+    'extensionId': record.extensionId,
+    'version': record.version,
+    'approvedPermissions': record.approvedPermissions,
+    'approvedSurfaces': record.approvedSurfaces,
+    'config': record.config,
+    'state': record.state,
+    'installedAt': record.installedAt.toIso8601String(),
+    'updatedAt': record.updatedAt.toIso8601String(),
+  };
+}
+
+ExtensionSessionRecord _extensionSessionFromJson(Map<String, Object?> item) {
+  return ExtensionSessionRecord(
+    sessionId: '${item['sessionId'] ?? ''}',
+    channelId: '${item['channelId'] ?? ''}',
+    extensionId: '${item['extensionId'] ?? ''}',
+    version: '${item['version'] ?? '1.0.0'}',
+    surface: '${item['surface'] ?? ''}',
+    fanId: '${item['fanId'] ?? ''}',
+    pairwiseCreatorFanId: '${item['pairwiseCreatorFanId'] ?? ''}',
+    state: '${item['state'] ?? 'active'}',
+    allowedPermissions: _stringListFromObject(item['allowedPermissions']),
+    createdAt: _dateFromObject(item['createdAt']),
+  );
+}
+
+Map<String, Object?> _extensionSessionToJson(ExtensionSessionRecord record) {
+  return {
+    'sessionId': record.sessionId,
+    'channelId': record.channelId,
+    'extensionId': record.extensionId,
+    'version': record.version,
+    'surface': record.surface,
+    'fanId': record.fanId,
+    'pairwiseCreatorFanId': record.pairwiseCreatorFanId,
+    'state': record.state,
+    'allowedPermissions': record.allowedPermissions,
+    'createdAt': record.createdAt.toIso8601String(),
+  };
+}
+
+ExtensionEventRecord _extensionEventFromJson(Map<String, Object?> item) {
+  return ExtensionEventRecord(
+    eventId: '${item['eventId'] ?? ''}',
+    sessionId: '${item['sessionId'] ?? ''}',
+    type: '${item['type'] ?? ''}',
+    payload: _stringMapFromObject(item['payload']),
+    createdAt: _dateFromObject(item['createdAt']),
+    idempotencyKey: '${item['idempotencyKey'] ?? ''}',
+  );
+}
+
+Map<String, Object?> _extensionEventToJson(ExtensionEventRecord record) {
+  return {
+    'eventId': record.eventId,
+    'sessionId': record.sessionId,
+    'type': record.type,
+    'payload': record.payload,
+    'createdAt': record.createdAt.toIso8601String(),
+    'idempotencyKey': record.idempotencyKey,
+  };
+}
+
+ExtensionStateRecord _extensionStateFromJson(Map<String, Object?> item) {
+  return ExtensionStateRecord(
+    scopeKey: '${item['scopeKey'] ?? ''}',
+    key: '${item['key'] ?? ''}',
+    value: _stringMapFromObject(item['value']),
+    exportBehavior: '${item['exportBehavior'] ?? 'creator_and_fan'}',
+    updatedAt: _dateFromObject(item['updatedAt']),
+  );
+}
+
+Map<String, Object?> _extensionStateToJson(ExtensionStateRecord record) {
+  return {
+    'scopeKey': record.scopeKey,
+    'key': record.key,
+    'value': record.value,
+    'exportBehavior': record.exportBehavior,
+    'updatedAt': record.updatedAt.toIso8601String(),
+  };
+}
+
+ChannelThemeRecord _channelThemeFromJson(Map<String, Object?> item) {
+  return ChannelThemeRecord(
+    themeId: '${item['themeId'] ?? 'loom-default'}',
+    name: '${item['name'] ?? 'Loom Default'}',
+    primaryHex: '${item['primaryHex'] ?? '#1B4D3E'}',
+    secondaryHex: '${item['secondaryHex'] ?? '#F2C94C'}',
+    backgroundHex: '${item['backgroundHex'] ?? '#F8FAF8'}',
+    surfaceHex: '${item['surfaceHex'] ?? '#FFFFFF'}',
+    textHex: '${item['textHex'] ?? '#151A17'}',
+    accentHex: '${item['accentHex'] ?? '#E56B2F'}',
+  );
+}
+
+Map<String, Object?> _channelThemeToJson(ChannelThemeRecord record) {
+  return {
+    'themeId': record.themeId,
+    'name': record.name,
+    'primaryHex': record.primaryHex,
+    'secondaryHex': record.secondaryHex,
+    'backgroundHex': record.backgroundHex,
+    'surfaceHex': record.surfaceHex,
+    'textHex': record.textHex,
+    'accentHex': record.accentHex,
+  };
+}
+
+SurfaceModuleRecord _surfaceModuleFromJson(Map<String, Object?> item) {
+  final extensionId = item['extensionId'];
+  return SurfaceModuleRecord(
+    moduleId: '${item['moduleId'] ?? ''}',
+    kind: '${item['kind'] ?? 'content'}',
+    title: '${item['title'] ?? ''}',
+    surface: '${item['surface'] ?? 'feed_module'}',
+    sortOrder: (item['sortOrder'] as num?)?.toInt() ?? 0,
+    enabled: item['enabled'] != false,
+    extensionId: extensionId == null || '$extensionId'.isEmpty
+        ? null
+        : '$extensionId',
+    config: _stringMapFromObject(item['config']),
+  );
+}
+
+Map<String, Object?> _surfaceModuleToJson(SurfaceModuleRecord record) {
+  return {
+    'moduleId': record.moduleId,
+    'kind': record.kind,
+    'title': record.title,
+    'surface': record.surface,
+    'sortOrder': record.sortOrder,
+    'enabled': record.enabled,
+    'extensionId': record.extensionId,
+    'config': record.config,
+  };
+}
+
+CreatorExperienceConfigRecord _creatorExperienceConfigFromJson(
+  Map<String, Object?> item, {
+  required List<ExtensionInstallRecord> installs,
+  required List<ExtensionManifestRecord> manifests,
+}) {
+  final theme = _channelThemeFromJson(_objectMapFromObject(item['theme']));
+  final modules =
+      _stringObjectMapList(
+          item['surfaceModules'],
+        ).map(_surfaceModuleFromJson).toList(growable: false)
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  final installedIds = _stringListFromObject(item['installedExtensionIds']);
+  final manifestsById = {
+    for (final manifest in manifests) manifest.extensionId: manifest,
+  };
+  final installedRefs = installs
+      .where(
+        (install) =>
+            install.state == 'active' &&
+            (installedIds.isEmpty ||
+                installedIds.contains(install.extensionId)),
+      )
+      .map((install) {
+        final manifest = manifestsById[install.extensionId];
+        return InstalledExtensionRefRecord(
+          installId: install.installId,
+          extensionId: install.extensionId,
+          name: manifest?.name ?? install.extensionId,
+          version: install.version,
+          surfaces: install.approvedSurfaces,
+          state: install.state,
+          moduleIds: modules
+              .where((module) => module.extensionId == install.extensionId)
+              .map((module) => module.moduleId)
+              .toList(growable: false),
+        );
+      })
+      .toList(growable: false);
+  return CreatorExperienceConfigRecord(
+    channelId: '${item['channelId'] ?? ''}',
+    theme: theme,
+    bannerRef: '${item['bannerRef'] ?? 'seed://banners/default'}',
+    surfaceModules: modules,
+    aiPersona: '${item['aiPersona'] ?? 'Helpful creator archive guide'}',
+    adPosture: '${item['adPosture'] ?? 'contextual_only'}',
+    installedExtensions: installedRefs,
+    version: (item['version'] as num?)?.toInt() ?? 1,
+    updatedAt: _dateFromObject(item['updatedAt']),
+  );
+}
+
+Map<String, Object?> _creatorExperienceConfigToJson(
+  CreatorExperienceConfigRecord record,
+) {
+  return {
+    'channelId': record.channelId,
+    'theme': _channelThemeToJson(record.theme),
+    'bannerRef': record.bannerRef,
+    'surfaceModules': record.surfaceModules
+        .map(_surfaceModuleToJson)
+        .toList(growable: false),
+    'aiPersona': record.aiPersona,
+    'adPosture': record.adPosture,
+    'installedExtensionIds': record.installedExtensions
+        .map((install) => install.extensionId)
+        .toList(growable: false),
+    'version': record.version,
+    'updatedAt': record.updatedAt.toIso8601String(),
+  };
+}
+
+List<Map<String, Object?>> _stringObjectMapList(Object? value) {
+  if (value is! List) {
+    return const [];
+  }
+  return value
+      .whereType<Map<String, Object?>>()
+      .map((item) => item.cast<String, Object?>())
+      .toList(growable: false);
+}
+
+CreatorExperienceConfigRecord _defaultExperienceConfigForCreator(
+  CreatorRecord creator,
+) {
+  return CreatorExperienceConfigRecord(
+    channelId: creator.id,
+    theme: const ChannelThemeRecord(
+      themeId: 'loom-default',
+      name: 'Loom Default',
+      primaryHex: '#1B4D3E',
+      secondaryHex: '#F2C94C',
+      backgroundHex: '#F8FAF8',
+      surfaceHex: '#FFFFFF',
+      textHex: '#151A17',
+      accentHex: '#E56B2F',
+    ),
+    bannerRef: 'seed://banners/${creator.handle}',
+    surfaceModules: const [
+      SurfaceModuleRecord(
+        moduleId: 'hero',
+        kind: 'hero',
+        title: 'Creator home',
+        surface: 'channel_header',
+        sortOrder: 0,
+        enabled: true,
+        extensionId: null,
+        config: {},
+      ),
+      SurfaceModuleRecord(
+        moduleId: 'content_rail',
+        kind: 'content',
+        title: 'Latest from the archive',
+        surface: 'feed_module',
+        sortOrder: 1,
+        enabled: true,
+        extensionId: null,
+        config: {},
+      ),
+    ],
+    aiPersona: 'Helpful archive guide for ${creator.displayName}.',
+    adPosture: 'contextual_only',
+    installedExtensions: const [],
+    version: 1,
+    updatedAt: _now(),
+  );
+}
+
+List<Map<String, Object?>> _extensionManifestSeedMaps() {
+  return _extensionManifestSeeds
+      .map(_extensionManifestToJson)
+      .toList(growable: false);
+}
+
+List<Map<String, Object?>> _extensionInstallSeedMaps() {
+  final now = _now();
+  return _extensionInstallSeeds
+      .map((seed) {
+        final manifest = _extensionManifestSeeds.firstWhere(
+          (candidate) => candidate.extensionId == seed.extensionId,
+        );
+        return _extensionInstallToJson(
+          ExtensionInstallRecord(
+            installId:
+                'install_${_slug(seed.channelId)}_${_slug(seed.extensionId)}',
+            channelId: seed.channelId,
+            extensionId: seed.extensionId,
+            version: manifest.latestVersion,
+            approvedPermissions: seed.approvedPermissions,
+            approvedSurfaces: seed.approvedSurfaces,
+            config: seed.config,
+            state: 'active',
+            installedAt: now,
+            updatedAt: now,
+          ),
+        );
+      })
+      .toList(growable: false);
+}
+
+List<Map<String, Object?>> _extensionStateSeedMaps() {
+  final now = _now();
+  return _extensionInstallSeeds
+      .map(
+        (seed) => _extensionStateToJson(
+          ExtensionStateRecord(
+            scopeKey: 'channel:${seed.channelId}:extension:${seed.extensionId}',
+            key: 'seed_state',
+            value: {
+              'source': 'seed',
+              'headline': seed.config['seedHeadline'] ?? seed.extensionId,
+            },
+            exportBehavior: 'creator_owned_exportable',
+            updatedAt: now,
+          ),
+        ),
+      )
+      .toList(growable: false);
+}
+
+List<Map<String, Object?>> _creatorExperienceConfigSeedMaps() {
+  final now = _now().toIso8601String();
+  return [
+    _creatorExperienceConfigSeedMap(
+      channelId: 'creator_nova_clutch',
+      theme: _themeSeed(
+        'nova-arena',
+        'Nova Arena',
+        '#16213E',
+        '#E94560',
+        '#F6F8FF',
+        '#FFFFFF',
+        '#111827',
+        '#22C55E',
+      ),
+      bannerRef: 'seed://banners/nova-clutch',
+      aiPersona: 'Tactical coach that explains clutch decisions plainly.',
+      adPosture: 'performance_gear_contextual',
+      installedExtensionIds: const [
+        'ext_clip_arena',
+        'ext_pickem',
+        'ext_hypewars',
+      ],
+      modules: [
+        _moduleSeed('hero', 'hero', 'Match room', 'channel_header', 0),
+        _moduleSeed(
+          'clip_arena',
+          'extension',
+          'Clip Arena',
+          'feed_module',
+          1,
+          extensionId: 'ext_clip_arena',
+          config: const {
+            'cta': 'Vote the clutch',
+            'seedHeadline': 'Ace retakes',
+          },
+        ),
+        _moduleSeed(
+          'pickem',
+          'extension',
+          'Pick\'Em',
+          'feed_module',
+          2,
+          extensionId: 'ext_pickem',
+          config: const {
+            'question': 'Next map MVP?',
+            'seedHeadline': 'Map picks',
+          },
+        ),
+        _moduleSeed('content_rail', 'content', 'Latest VODs', 'feed_module', 3),
+      ],
+      updatedAt: now,
+    ),
+    _creatorExperienceConfigSeedMap(
+      channelId: 'creator_ember_hollow',
+      theme: _themeSeed(
+        'ember-lore',
+        'Ember Lore',
+        '#3F2E24',
+        '#D97706',
+        '#FAF7F2',
+        '#FFFDF8',
+        '#1F1712',
+        '#4F9F69',
+      ),
+      bannerRef: 'seed://banners/ember-hollow',
+      aiPersona: 'Warm lorekeeper for builds, prompts, and survival strategy.',
+      adPosture: 'crafting_and_indie_games_contextual',
+      installedExtensionIds: const ['ext_quest_log', 'ext_build_showcase'],
+      modules: [
+        _moduleSeed('hero', 'hero', 'Campfire hub', 'channel_header', 0),
+        _moduleSeed(
+          'quest_log',
+          'extension',
+          'Quest Log',
+          'feed_module',
+          1,
+          extensionId: 'ext_quest_log',
+          config: const {'quest': 'Restore the valley shrine'},
+        ),
+        _moduleSeed(
+          'build_showcase',
+          'extension',
+          'Build Showcase',
+          'feed_module',
+          2,
+          extensionId: 'ext_build_showcase',
+          config: const {'prompt': 'Cozy defense build'},
+        ),
+        _moduleSeed(
+          'content_rail',
+          'content',
+          'Build archive',
+          'feed_module',
+          3,
+        ),
+      ],
+      updatedAt: now,
+    ),
+    _creatorExperienceConfigSeedMap(
+      channelId: 'creator_frame_by_frame',
+      theme: _themeSeed(
+        'frame-splits',
+        'Frame Splits',
+        '#0B1F2A',
+        '#38BDF8',
+        '#F5FBFF',
+        '#FFFFFF',
+        '#0F172A',
+        '#F97316',
+      ),
+      bannerRef: 'seed://banners/frame-by-frame',
+      aiPersona: 'Precise speedrun analyst focused on splits and route risk.',
+      adPosture: 'hardware_and_training_contextual',
+      installedExtensionIds: const ['ext_clip_arena', 'ext_pickem'],
+      modules: [
+        _moduleSeed('hero', 'hero', 'Run desk', 'channel_header', 0),
+        _moduleSeed(
+          'clip_arena',
+          'extension',
+          'Clip Arena',
+          'feed_module',
+          1,
+          extensionId: 'ext_clip_arena',
+          config: const {'cta': 'Rank the save', 'seedHeadline': 'Split saves'},
+        ),
+        _moduleSeed(
+          'pickem',
+          'extension',
+          'Pick\'Em',
+          'feed_module',
+          2,
+          extensionId: 'ext_pickem',
+          config: const {'question': 'PB this weekend?'},
+        ),
+        _moduleSeed('content_rail', 'content', 'Run reviews', 'feed_module', 3),
+      ],
+      updatedAt: now,
+    ),
+    _creatorExperienceConfigSeedMap(
+      channelId: 'creator_drift_and_chill',
+      theme: _themeSeed(
+        'drift-night',
+        'Drift Night',
+        '#232946',
+        '#B8C1EC',
+        '#F7F7FB',
+        '#FFFFFF',
+        '#121629',
+        '#F4D35E',
+      ),
+      bannerRef: 'seed://banners/drift-and-chill',
+      aiPersona: 'Relaxed variety-stream guide with low-pressure prompts.',
+      adPosture: 'community_and_streaming_contextual',
+      installedExtensionIds: const [
+        'ext_clip_arena',
+        'ext_hypewars',
+        'ext_build_showcase',
+      ],
+      modules: [
+        _moduleSeed('hero', 'hero', 'Chill lobby', 'channel_header', 0),
+        _moduleSeed(
+          'hypewars',
+          'extension',
+          'HypeWars',
+          'feed_module',
+          1,
+          extensionId: 'ext_hypewars',
+          config: const {'goal': 'Unlock community queue'},
+        ),
+        _moduleSeed(
+          'build_showcase',
+          'extension',
+          'Build Showcase',
+          'feed_module',
+          2,
+          extensionId: 'ext_build_showcase',
+          config: const {'prompt': 'Best cozy corner'},
+        ),
+        _moduleSeed(
+          'content_rail',
+          'content',
+          'Stream archive',
+          'feed_module',
+          3,
+        ),
+      ],
+      updatedAt: now,
+    ),
+    _creatorExperienceConfigSeedMap(
+      channelId: 'creator_iron_vael',
+      theme: _themeSeed(
+        'iron-guild',
+        'Iron Guild',
+        '#1F2937',
+        '#9CA3AF',
+        '#F4F5F7',
+        '#FFFFFF',
+        '#111827',
+        '#F59E0B',
+      ),
+      bannerRef: 'seed://banners/iron-vael',
+      aiPersona: 'Guild strategist for raids, builds, and newcomer paths.',
+      adPosture: 'guild_tools_contextual',
+      installedExtensionIds: const [
+        'ext_guild_quest',
+        'ext_quest_log',
+        'ext_hypewars',
+      ],
+      modules: [
+        _moduleSeed('hero', 'hero', 'Guild hall', 'channel_header', 0),
+        _moduleSeed(
+          'guild_quest',
+          'extension',
+          'Guild Quest',
+          'feed_module',
+          1,
+          extensionId: 'ext_guild_quest',
+          config: const {'goal': 'Prepare the next raid wing'},
+        ),
+        _moduleSeed(
+          'quest_log',
+          'extension',
+          'Quest Log',
+          'feed_module',
+          2,
+          extensionId: 'ext_quest_log',
+          config: const {'quest': 'First-week guild path'},
+        ),
+        _moduleSeed(
+          'content_rail',
+          'content',
+          'Guild archive',
+          'feed_module',
+          3,
+        ),
+      ],
+      updatedAt: now,
+    ),
+  ];
+}
+
+Map<String, Object?> _creatorExperienceConfigSeedMap({
+  required String channelId,
+  required Map<String, Object?> theme,
+  required String bannerRef,
+  required String aiPersona,
+  required String adPosture,
+  required List<String> installedExtensionIds,
+  required List<Map<String, Object?>> modules,
+  required String updatedAt,
+}) {
+  return {
+    'channelId': channelId,
+    'theme': theme,
+    'bannerRef': bannerRef,
+    'surfaceModules': modules,
+    'aiPersona': aiPersona,
+    'adPosture': adPosture,
+    'installedExtensionIds': installedExtensionIds,
+    'version': 1,
+    'updatedAt': updatedAt,
+  };
+}
+
+Map<String, Object?> _themeSeed(
+  String themeId,
+  String name,
+  String primaryHex,
+  String secondaryHex,
+  String backgroundHex,
+  String surfaceHex,
+  String textHex,
+  String accentHex,
+) {
+  return {
+    'themeId': themeId,
+    'name': name,
+    'primaryHex': primaryHex,
+    'secondaryHex': secondaryHex,
+    'backgroundHex': backgroundHex,
+    'surfaceHex': surfaceHex,
+    'textHex': textHex,
+    'accentHex': accentHex,
+  };
+}
+
+Map<String, Object?> _moduleSeed(
+  String moduleId,
+  String kind,
+  String title,
+  String surface,
+  int sortOrder, {
+  String? extensionId,
+  Map<String, String> config = const {},
+}) {
+  return {
+    'moduleId': moduleId,
+    'kind': kind,
+    'title': title,
+    'surface': surface,
+    'sortOrder': sortOrder,
+    'enabled': true,
+    'extensionId': extensionId,
+    'config': config,
+  };
+}
+
+const _extensionManifestSeeds = [
+  ExtensionManifestRecord(
+    extensionId: 'ext_clip_arena',
+    name: 'Clip Arena',
+    category: 'competitive',
+    riskTier: 'medium',
+    surfaces: ['feed_module', 'video_overlay'],
+    permissions: ['read_public_clips', 'write_fan_vote', 'issue_reward'],
+    exportBehavior: 'creator_and_fan',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'Fan-voted clip battles and creator-approved leaderboards.',
+  ),
+  ExtensionManifestRecord(
+    extensionId: 'ext_pickem',
+    name: 'Pick\'Em',
+    category: 'competitive',
+    riskTier: 'medium',
+    surfaces: ['feed_module', 'community_panel'],
+    permissions: ['write_prediction', 'read_aggregate_outcome', 'issue_reward'],
+    exportBehavior: 'fan_owned',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'Prediction prompts with aggregate-only outcomes.',
+  ),
+  ExtensionManifestRecord(
+    extensionId: 'ext_hypewars',
+    name: 'HypeWars',
+    category: 'economy',
+    riskTier: 'high',
+    surfaces: ['feed_module', 'channel_header'],
+    permissions: ['read_wallet_status', 'write_tip_event', 'issue_reward'],
+    exportBehavior: 'creator_and_fan',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'A transparent hype meter for tips, boosts, and unlock goals.',
+  ),
+  ExtensionManifestRecord(
+    extensionId: 'ext_quest_log',
+    name: 'Quest Log',
+    category: 'collaborative',
+    riskTier: 'low',
+    surfaces: ['feed_module', 'community_panel'],
+    permissions: ['write_progress', 'read_aggregate_progress', 'issue_reward'],
+    exportBehavior: 'creator_and_fan',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'Creator-authored community quests with badge progress.',
+  ),
+  ExtensionManifestRecord(
+    extensionId: 'ext_build_showcase',
+    name: 'Build Showcase',
+    category: 'creative',
+    riskTier: 'medium',
+    surfaces: ['feed_module', 'gallery_panel'],
+    permissions: ['write_submission', 'write_fan_vote', 'issue_reward'],
+    exportBehavior: 'creator_and_fan',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'Moderated fan build submissions and showcase voting.',
+  ),
+  ExtensionManifestRecord(
+    extensionId: 'ext_guild_quest',
+    name: 'Guild Quest',
+    category: 'collaborative',
+    riskTier: 'medium',
+    surfaces: ['feed_module', 'community_panel'],
+    permissions: ['write_progress', 'read_roster_status', 'issue_reward'],
+    exportBehavior: 'creator_and_fan',
+    certificationState: 'certified',
+    latestVersion: '1.0.0',
+    description: 'Shared guild goals, roster tasks, and milestone badges.',
+  ),
+];
+
+const _extensionInstallSeeds = [
+  _ExtensionInstallSeed(
+    channelId: 'creator_nova_clutch',
+    extensionId: 'ext_clip_arena',
+    approvedPermissions: [
+      'read_public_clips',
+      'write_fan_vote',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'video_overlay'],
+    config: {'seedHeadline': 'Ace retakes'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_nova_clutch',
+    extensionId: 'ext_pickem',
+    approvedPermissions: [
+      'write_prediction',
+      'read_aggregate_outcome',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module'],
+    config: {'seedHeadline': 'Map picks'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_nova_clutch',
+    extensionId: 'ext_hypewars',
+    approvedPermissions: [
+      'read_wallet_status',
+      'write_tip_event',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'channel_header'],
+    config: {'seedHeadline': 'Clutch fund'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_ember_hollow',
+    extensionId: 'ext_quest_log',
+    approvedPermissions: [
+      'write_progress',
+      'read_aggregate_progress',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'community_panel'],
+    config: {'seedHeadline': 'Valley shrine'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_ember_hollow',
+    extensionId: 'ext_build_showcase',
+    approvedPermissions: ['write_submission', 'write_fan_vote', 'issue_reward'],
+    approvedSurfaces: ['feed_module', 'gallery_panel'],
+    config: {'seedHeadline': 'Cozy defense builds'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_frame_by_frame',
+    extensionId: 'ext_clip_arena',
+    approvedPermissions: [
+      'read_public_clips',
+      'write_fan_vote',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'video_overlay'],
+    config: {'seedHeadline': 'Split saves'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_frame_by_frame',
+    extensionId: 'ext_pickem',
+    approvedPermissions: [
+      'write_prediction',
+      'read_aggregate_outcome',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'community_panel'],
+    config: {'seedHeadline': 'PB weekend'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_drift_and_chill',
+    extensionId: 'ext_clip_arena',
+    approvedPermissions: [
+      'read_public_clips',
+      'write_fan_vote',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module'],
+    config: {'seedHeadline': 'Chill queue clips'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_drift_and_chill',
+    extensionId: 'ext_hypewars',
+    approvedPermissions: [
+      'read_wallet_status',
+      'write_tip_event',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'channel_header'],
+    config: {'seedHeadline': 'Community queue goal'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_drift_and_chill',
+    extensionId: 'ext_build_showcase',
+    approvedPermissions: ['write_submission', 'write_fan_vote', 'issue_reward'],
+    approvedSurfaces: ['feed_module', 'gallery_panel'],
+    config: {'seedHeadline': 'Cozy corners'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_iron_vael',
+    extensionId: 'ext_guild_quest',
+    approvedPermissions: [
+      'write_progress',
+      'read_roster_status',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'community_panel'],
+    config: {'seedHeadline': 'Raid wing prep'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_iron_vael',
+    extensionId: 'ext_quest_log',
+    approvedPermissions: [
+      'write_progress',
+      'read_aggregate_progress',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'community_panel'],
+    config: {'seedHeadline': 'First-week path'},
+  ),
+  _ExtensionInstallSeed(
+    channelId: 'creator_iron_vael',
+    extensionId: 'ext_hypewars',
+    approvedPermissions: [
+      'read_wallet_status',
+      'write_tip_event',
+      'issue_reward',
+    ],
+    approvedSurfaces: ['feed_module', 'channel_header'],
+    config: {'seedHeadline': 'Raid boost'},
+  ),
+];
+
+class _ExtensionInstallSeed {
+  const _ExtensionInstallSeed({
+    required this.channelId,
+    required this.extensionId,
+    required this.approvedPermissions,
+    required this.approvedSurfaces,
+    required this.config,
+  });
+
+  final String channelId;
+  final String extensionId;
+  final List<String> approvedPermissions;
+  final List<String> approvedSurfaces;
+  final Map<String, String> config;
+}
+
 List<TranscriptSegmentRecord> _decodeTranscriptSegments(String value) {
   final decoded = jsonDecode(value);
   if (decoded is! List) {
@@ -7370,6 +9030,21 @@ List<String> _interestIdsForCreatorId(String creatorId) {
   if (creatorId.contains('motion')) {
     return const ['mobility', 'strength_basics', 'joint_friendly_cardio'];
   }
+  if (creatorId.contains('nova')) {
+    return const ['fps_esports', 'hollowfall', 'creator_tools'];
+  }
+  if (creatorId.contains('ember')) {
+    return const ['survival_builders', 'hollowfall', 'creator_tools'];
+  }
+  if (creatorId.contains('frame')) {
+    return const ['speedrunning', 'hollowfall', 'creator_tools'];
+  }
+  if (creatorId.contains('drift')) {
+    return const ['variety_streams', 'hollowfall', 'creator_tools'];
+  }
+  if (creatorId.contains('iron')) {
+    return const ['mmo_rpg', 'hollowfall', 'creator_tools'];
+  }
   return const ['creator_tools'];
 }
 
@@ -7441,6 +9116,21 @@ List<String> _defaultAdCategoriesForCreator(String creatorId) {
   }
   if (creatorId.contains('motion')) {
     return const ['mobility', 'joint_friendly_cardio'];
+  }
+  if (creatorId.contains('nova')) {
+    return const ['fps_esports', 'creator_tools'];
+  }
+  if (creatorId.contains('ember')) {
+    return const ['survival_builders', 'creator_tools'];
+  }
+  if (creatorId.contains('frame')) {
+    return const ['speedrunning', 'creator_tools'];
+  }
+  if (creatorId.contains('drift')) {
+    return const ['variety_streams', 'creator_tools'];
+  }
+  if (creatorId.contains('iron')) {
+    return const ['mmo_rpg', 'creator_tools'];
   }
   return const ['creator_tools'];
 }
