@@ -19010,6 +19010,7627 @@ class AdPreferencesCompanion extends UpdateCompanion<AdPreference> {
   }
 }
 
+class $CaptureLinksTable extends CaptureLinks
+    with TableInfo<$CaptureLinksTable, CaptureLink> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CaptureLinksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _tokenMeta = const VerificationMeta('token');
+  @override
+  late final GeneratedColumn<String> token = GeneratedColumn<String>(
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+    'url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelMeta = const VerificationMeta(
+    'channel',
+  );
+  @override
+  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
+    'channel',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _qrPayloadMeta = const VerificationMeta(
+    'qrPayload',
+  );
+  @override
+  late final GeneratedColumn<String> qrPayload = GeneratedColumn<String>(
+    'qr_payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _starterPackEnabledMeta =
+      const VerificationMeta('starterPackEnabled');
+  @override
+  late final GeneratedColumn<bool> starterPackEnabled = GeneratedColumn<bool>(
+    'starter_pack_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("starter_pack_enabled" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expiresAtMeta = const VerificationMeta(
+    'expiresAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiresAt = GeneratedColumn<DateTime>(
+    'expires_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    token,
+    channelId,
+    url,
+    channel,
+    qrPayload,
+    starterPackEnabled,
+    createdAt,
+    expiresAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'capture_links';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CaptureLink> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('token')) {
+      context.handle(
+        _tokenMeta,
+        token.isAcceptableOrUnknown(data['token']!, _tokenMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tokenMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+        _urlMeta,
+        url.isAcceptableOrUnknown(data['url']!, _urlMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('channel')) {
+      context.handle(
+        _channelMeta,
+        channel.isAcceptableOrUnknown(data['channel']!, _channelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelMeta);
+    }
+    if (data.containsKey('qr_payload')) {
+      context.handle(
+        _qrPayloadMeta,
+        qrPayload.isAcceptableOrUnknown(data['qr_payload']!, _qrPayloadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_qrPayloadMeta);
+    }
+    if (data.containsKey('starter_pack_enabled')) {
+      context.handle(
+        _starterPackEnabledMeta,
+        starterPackEnabled.isAcceptableOrUnknown(
+          data['starter_pack_enabled']!,
+          _starterPackEnabledMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_starterPackEnabledMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('expires_at')) {
+      context.handle(
+        _expiresAtMeta,
+        expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {token};
+  @override
+  CaptureLink map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CaptureLink(
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      url: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}url'],
+      )!,
+      channel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel'],
+      )!,
+      qrPayload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}qr_payload'],
+      )!,
+      starterPackEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}starter_pack_enabled'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      expiresAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expires_at'],
+      ),
+    );
+  }
+
+  @override
+  $CaptureLinksTable createAlias(String alias) {
+    return $CaptureLinksTable(attachedDatabase, alias);
+  }
+}
+
+class CaptureLink extends DataClass implements Insertable<CaptureLink> {
+  final String token;
+  final String channelId;
+  final String url;
+  final String channel;
+  final String qrPayload;
+  final bool starterPackEnabled;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+  const CaptureLink({
+    required this.token,
+    required this.channelId,
+    required this.url,
+    required this.channel,
+    required this.qrPayload,
+    required this.starterPackEnabled,
+    required this.createdAt,
+    this.expiresAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['token'] = Variable<String>(token);
+    map['channel_id'] = Variable<String>(channelId);
+    map['url'] = Variable<String>(url);
+    map['channel'] = Variable<String>(channel);
+    map['qr_payload'] = Variable<String>(qrPayload);
+    map['starter_pack_enabled'] = Variable<bool>(starterPackEnabled);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || expiresAt != null) {
+      map['expires_at'] = Variable<DateTime>(expiresAt);
+    }
+    return map;
+  }
+
+  CaptureLinksCompanion toCompanion(bool nullToAbsent) {
+    return CaptureLinksCompanion(
+      token: Value(token),
+      channelId: Value(channelId),
+      url: Value(url),
+      channel: Value(channel),
+      qrPayload: Value(qrPayload),
+      starterPackEnabled: Value(starterPackEnabled),
+      createdAt: Value(createdAt),
+      expiresAt: expiresAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiresAt),
+    );
+  }
+
+  factory CaptureLink.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CaptureLink(
+      token: serializer.fromJson<String>(json['token']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      url: serializer.fromJson<String>(json['url']),
+      channel: serializer.fromJson<String>(json['channel']),
+      qrPayload: serializer.fromJson<String>(json['qrPayload']),
+      starterPackEnabled: serializer.fromJson<bool>(json['starterPackEnabled']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      expiresAt: serializer.fromJson<DateTime?>(json['expiresAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'token': serializer.toJson<String>(token),
+      'channelId': serializer.toJson<String>(channelId),
+      'url': serializer.toJson<String>(url),
+      'channel': serializer.toJson<String>(channel),
+      'qrPayload': serializer.toJson<String>(qrPayload),
+      'starterPackEnabled': serializer.toJson<bool>(starterPackEnabled),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'expiresAt': serializer.toJson<DateTime?>(expiresAt),
+    };
+  }
+
+  CaptureLink copyWith({
+    String? token,
+    String? channelId,
+    String? url,
+    String? channel,
+    String? qrPayload,
+    bool? starterPackEnabled,
+    DateTime? createdAt,
+    Value<DateTime?> expiresAt = const Value.absent(),
+  }) => CaptureLink(
+    token: token ?? this.token,
+    channelId: channelId ?? this.channelId,
+    url: url ?? this.url,
+    channel: channel ?? this.channel,
+    qrPayload: qrPayload ?? this.qrPayload,
+    starterPackEnabled: starterPackEnabled ?? this.starterPackEnabled,
+    createdAt: createdAt ?? this.createdAt,
+    expiresAt: expiresAt.present ? expiresAt.value : this.expiresAt,
+  );
+  CaptureLink copyWithCompanion(CaptureLinksCompanion data) {
+    return CaptureLink(
+      token: data.token.present ? data.token.value : this.token,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      url: data.url.present ? data.url.value : this.url,
+      channel: data.channel.present ? data.channel.value : this.channel,
+      qrPayload: data.qrPayload.present ? data.qrPayload.value : this.qrPayload,
+      starterPackEnabled: data.starterPackEnabled.present
+          ? data.starterPackEnabled.value
+          : this.starterPackEnabled,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaptureLink(')
+          ..write('token: $token, ')
+          ..write('channelId: $channelId, ')
+          ..write('url: $url, ')
+          ..write('channel: $channel, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('starterPackEnabled: $starterPackEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('expiresAt: $expiresAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    token,
+    channelId,
+    url,
+    channel,
+    qrPayload,
+    starterPackEnabled,
+    createdAt,
+    expiresAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CaptureLink &&
+          other.token == this.token &&
+          other.channelId == this.channelId &&
+          other.url == this.url &&
+          other.channel == this.channel &&
+          other.qrPayload == this.qrPayload &&
+          other.starterPackEnabled == this.starterPackEnabled &&
+          other.createdAt == this.createdAt &&
+          other.expiresAt == this.expiresAt);
+}
+
+class CaptureLinksCompanion extends UpdateCompanion<CaptureLink> {
+  final Value<String> token;
+  final Value<String> channelId;
+  final Value<String> url;
+  final Value<String> channel;
+  final Value<String> qrPayload;
+  final Value<bool> starterPackEnabled;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> expiresAt;
+  final Value<int> rowid;
+  const CaptureLinksCompanion({
+    this.token = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.url = const Value.absent(),
+    this.channel = const Value.absent(),
+    this.qrPayload = const Value.absent(),
+    this.starterPackEnabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CaptureLinksCompanion.insert({
+    required String token,
+    required String channelId,
+    required String url,
+    required String channel,
+    required String qrPayload,
+    required bool starterPackEnabled,
+    required DateTime createdAt,
+    this.expiresAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : token = Value(token),
+       channelId = Value(channelId),
+       url = Value(url),
+       channel = Value(channel),
+       qrPayload = Value(qrPayload),
+       starterPackEnabled = Value(starterPackEnabled),
+       createdAt = Value(createdAt);
+  static Insertable<CaptureLink> custom({
+    Expression<String>? token,
+    Expression<String>? channelId,
+    Expression<String>? url,
+    Expression<String>? channel,
+    Expression<String>? qrPayload,
+    Expression<bool>? starterPackEnabled,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? expiresAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (token != null) 'token': token,
+      if (channelId != null) 'channel_id': channelId,
+      if (url != null) 'url': url,
+      if (channel != null) 'channel': channel,
+      if (qrPayload != null) 'qr_payload': qrPayload,
+      if (starterPackEnabled != null)
+        'starter_pack_enabled': starterPackEnabled,
+      if (createdAt != null) 'created_at': createdAt,
+      if (expiresAt != null) 'expires_at': expiresAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CaptureLinksCompanion copyWith({
+    Value<String>? token,
+    Value<String>? channelId,
+    Value<String>? url,
+    Value<String>? channel,
+    Value<String>? qrPayload,
+    Value<bool>? starterPackEnabled,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? expiresAt,
+    Value<int>? rowid,
+  }) {
+    return CaptureLinksCompanion(
+      token: token ?? this.token,
+      channelId: channelId ?? this.channelId,
+      url: url ?? this.url,
+      channel: channel ?? this.channel,
+      qrPayload: qrPayload ?? this.qrPayload,
+      starterPackEnabled: starterPackEnabled ?? this.starterPackEnabled,
+      createdAt: createdAt ?? this.createdAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (token.present) {
+      map['token'] = Variable<String>(token.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (channel.present) {
+      map['channel'] = Variable<String>(channel.value);
+    }
+    if (qrPayload.present) {
+      map['qr_payload'] = Variable<String>(qrPayload.value);
+    }
+    if (starterPackEnabled.present) {
+      map['starter_pack_enabled'] = Variable<bool>(starterPackEnabled.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (expiresAt.present) {
+      map['expires_at'] = Variable<DateTime>(expiresAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CaptureLinksCompanion(')
+          ..write('token: $token, ')
+          ..write('channelId: $channelId, ')
+          ..write('url: $url, ')
+          ..write('channel: $channel, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('starterPackEnabled: $starterPackEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ReFollowEventsTable extends ReFollowEvents
+    with TableInfo<$ReFollowEventsTable, ReFollowEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReFollowEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tokenMeta = const VerificationMeta('token');
+  @override
+  late final GeneratedColumn<String> token = GeneratedColumn<String>(
+    'token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES capture_links (token)',
+    ),
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _followIdMeta = const VerificationMeta(
+    'followId',
+  );
+  @override
+  late final GeneratedColumn<String> followId = GeneratedColumn<String>(
+    'follow_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelMeta = const VerificationMeta(
+    'channel',
+  );
+  @override
+  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
+    'channel',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _followStateMeta = const VerificationMeta(
+    'followState',
+  );
+  @override
+  late final GeneratedColumn<String> followState = GeneratedColumn<String>(
+    'follow_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pairwiseCreatorFanIdMeta =
+      const VerificationMeta('pairwiseCreatorFanId');
+  @override
+  late final GeneratedColumn<String> pairwiseCreatorFanId =
+      GeneratedColumn<String>(
+        'pairwise_creator_fan_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    token,
+    passportId,
+    channelId,
+    followId,
+    channel,
+    followState,
+    pairwiseCreatorFanId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 're_follow_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReFollowEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('token')) {
+      context.handle(
+        _tokenMeta,
+        token.isAcceptableOrUnknown(data['token']!, _tokenMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tokenMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('follow_id')) {
+      context.handle(
+        _followIdMeta,
+        followId.isAcceptableOrUnknown(data['follow_id']!, _followIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_followIdMeta);
+    }
+    if (data.containsKey('channel')) {
+      context.handle(
+        _channelMeta,
+        channel.isAcceptableOrUnknown(data['channel']!, _channelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelMeta);
+    }
+    if (data.containsKey('follow_state')) {
+      context.handle(
+        _followStateMeta,
+        followState.isAcceptableOrUnknown(
+          data['follow_state']!,
+          _followStateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_followStateMeta);
+    }
+    if (data.containsKey('pairwise_creator_fan_id')) {
+      context.handle(
+        _pairwiseCreatorFanIdMeta,
+        pairwiseCreatorFanId.isAcceptableOrUnknown(
+          data['pairwise_creator_fan_id']!,
+          _pairwiseCreatorFanIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pairwiseCreatorFanIdMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReFollowEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReFollowEvent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      token: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      followId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}follow_id'],
+      )!,
+      channel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel'],
+      )!,
+      followState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}follow_state'],
+      )!,
+      pairwiseCreatorFanId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pairwise_creator_fan_id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReFollowEventsTable createAlias(String alias) {
+    return $ReFollowEventsTable(attachedDatabase, alias);
+  }
+}
+
+class ReFollowEvent extends DataClass implements Insertable<ReFollowEvent> {
+  final String id;
+  final String token;
+  final String passportId;
+  final String channelId;
+  final String followId;
+  final String channel;
+  final String followState;
+  final String pairwiseCreatorFanId;
+  final DateTime createdAt;
+  const ReFollowEvent({
+    required this.id,
+    required this.token,
+    required this.passportId,
+    required this.channelId,
+    required this.followId,
+    required this.channel,
+    required this.followState,
+    required this.pairwiseCreatorFanId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['token'] = Variable<String>(token);
+    map['passport_id'] = Variable<String>(passportId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['follow_id'] = Variable<String>(followId);
+    map['channel'] = Variable<String>(channel);
+    map['follow_state'] = Variable<String>(followState);
+    map['pairwise_creator_fan_id'] = Variable<String>(pairwiseCreatorFanId);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ReFollowEventsCompanion toCompanion(bool nullToAbsent) {
+    return ReFollowEventsCompanion(
+      id: Value(id),
+      token: Value(token),
+      passportId: Value(passportId),
+      channelId: Value(channelId),
+      followId: Value(followId),
+      channel: Value(channel),
+      followState: Value(followState),
+      pairwiseCreatorFanId: Value(pairwiseCreatorFanId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ReFollowEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReFollowEvent(
+      id: serializer.fromJson<String>(json['id']),
+      token: serializer.fromJson<String>(json['token']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      followId: serializer.fromJson<String>(json['followId']),
+      channel: serializer.fromJson<String>(json['channel']),
+      followState: serializer.fromJson<String>(json['followState']),
+      pairwiseCreatorFanId: serializer.fromJson<String>(
+        json['pairwiseCreatorFanId'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'token': serializer.toJson<String>(token),
+      'passportId': serializer.toJson<String>(passportId),
+      'channelId': serializer.toJson<String>(channelId),
+      'followId': serializer.toJson<String>(followId),
+      'channel': serializer.toJson<String>(channel),
+      'followState': serializer.toJson<String>(followState),
+      'pairwiseCreatorFanId': serializer.toJson<String>(pairwiseCreatorFanId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ReFollowEvent copyWith({
+    String? id,
+    String? token,
+    String? passportId,
+    String? channelId,
+    String? followId,
+    String? channel,
+    String? followState,
+    String? pairwiseCreatorFanId,
+    DateTime? createdAt,
+  }) => ReFollowEvent(
+    id: id ?? this.id,
+    token: token ?? this.token,
+    passportId: passportId ?? this.passportId,
+    channelId: channelId ?? this.channelId,
+    followId: followId ?? this.followId,
+    channel: channel ?? this.channel,
+    followState: followState ?? this.followState,
+    pairwiseCreatorFanId: pairwiseCreatorFanId ?? this.pairwiseCreatorFanId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ReFollowEvent copyWithCompanion(ReFollowEventsCompanion data) {
+    return ReFollowEvent(
+      id: data.id.present ? data.id.value : this.id,
+      token: data.token.present ? data.token.value : this.token,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      followId: data.followId.present ? data.followId.value : this.followId,
+      channel: data.channel.present ? data.channel.value : this.channel,
+      followState: data.followState.present
+          ? data.followState.value
+          : this.followState,
+      pairwiseCreatorFanId: data.pairwiseCreatorFanId.present
+          ? data.pairwiseCreatorFanId.value
+          : this.pairwiseCreatorFanId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReFollowEvent(')
+          ..write('id: $id, ')
+          ..write('token: $token, ')
+          ..write('passportId: $passportId, ')
+          ..write('channelId: $channelId, ')
+          ..write('followId: $followId, ')
+          ..write('channel: $channel, ')
+          ..write('followState: $followState, ')
+          ..write('pairwiseCreatorFanId: $pairwiseCreatorFanId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    token,
+    passportId,
+    channelId,
+    followId,
+    channel,
+    followState,
+    pairwiseCreatorFanId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReFollowEvent &&
+          other.id == this.id &&
+          other.token == this.token &&
+          other.passportId == this.passportId &&
+          other.channelId == this.channelId &&
+          other.followId == this.followId &&
+          other.channel == this.channel &&
+          other.followState == this.followState &&
+          other.pairwiseCreatorFanId == this.pairwiseCreatorFanId &&
+          other.createdAt == this.createdAt);
+}
+
+class ReFollowEventsCompanion extends UpdateCompanion<ReFollowEvent> {
+  final Value<String> id;
+  final Value<String> token;
+  final Value<String> passportId;
+  final Value<String> channelId;
+  final Value<String> followId;
+  final Value<String> channel;
+  final Value<String> followState;
+  final Value<String> pairwiseCreatorFanId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ReFollowEventsCompanion({
+    this.id = const Value.absent(),
+    this.token = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.followId = const Value.absent(),
+    this.channel = const Value.absent(),
+    this.followState = const Value.absent(),
+    this.pairwiseCreatorFanId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReFollowEventsCompanion.insert({
+    required String id,
+    required String token,
+    required String passportId,
+    required String channelId,
+    required String followId,
+    required String channel,
+    required String followState,
+    required String pairwiseCreatorFanId,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       token = Value(token),
+       passportId = Value(passportId),
+       channelId = Value(channelId),
+       followId = Value(followId),
+       channel = Value(channel),
+       followState = Value(followState),
+       pairwiseCreatorFanId = Value(pairwiseCreatorFanId),
+       createdAt = Value(createdAt);
+  static Insertable<ReFollowEvent> custom({
+    Expression<String>? id,
+    Expression<String>? token,
+    Expression<String>? passportId,
+    Expression<String>? channelId,
+    Expression<String>? followId,
+    Expression<String>? channel,
+    Expression<String>? followState,
+    Expression<String>? pairwiseCreatorFanId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (token != null) 'token': token,
+      if (passportId != null) 'passport_id': passportId,
+      if (channelId != null) 'channel_id': channelId,
+      if (followId != null) 'follow_id': followId,
+      if (channel != null) 'channel': channel,
+      if (followState != null) 'follow_state': followState,
+      if (pairwiseCreatorFanId != null)
+        'pairwise_creator_fan_id': pairwiseCreatorFanId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReFollowEventsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? token,
+    Value<String>? passportId,
+    Value<String>? channelId,
+    Value<String>? followId,
+    Value<String>? channel,
+    Value<String>? followState,
+    Value<String>? pairwiseCreatorFanId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ReFollowEventsCompanion(
+      id: id ?? this.id,
+      token: token ?? this.token,
+      passportId: passportId ?? this.passportId,
+      channelId: channelId ?? this.channelId,
+      followId: followId ?? this.followId,
+      channel: channel ?? this.channel,
+      followState: followState ?? this.followState,
+      pairwiseCreatorFanId: pairwiseCreatorFanId ?? this.pairwiseCreatorFanId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (token.present) {
+      map['token'] = Variable<String>(token.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (followId.present) {
+      map['follow_id'] = Variable<String>(followId.value);
+    }
+    if (channel.present) {
+      map['channel'] = Variable<String>(channel.value);
+    }
+    if (followState.present) {
+      map['follow_state'] = Variable<String>(followState.value);
+    }
+    if (pairwiseCreatorFanId.present) {
+      map['pairwise_creator_fan_id'] = Variable<String>(
+        pairwiseCreatorFanId.value,
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReFollowEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('token: $token, ')
+          ..write('passportId: $passportId, ')
+          ..write('channelId: $channelId, ')
+          ..write('followId: $followId, ')
+          ..write('channel: $channel, ')
+          ..write('followState: $followState, ')
+          ..write('pairwiseCreatorFanId: $pairwiseCreatorFanId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AnnouncementTemplatesTable extends AnnouncementTemplates
+    with TableInfo<$AnnouncementTemplatesTable, AnnouncementTemplate> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnnouncementTemplatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelMeta = const VerificationMeta(
+    'channel',
+  );
+  @override
+  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
+    'channel',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _placeholdersJsonMeta = const VerificationMeta(
+    'placeholdersJson',
+  );
+  @override
+  late final GeneratedColumn<String> placeholdersJson = GeneratedColumn<String>(
+    'placeholders_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    templateId,
+    name,
+    channel,
+    body,
+    placeholdersJson,
+    active,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'announcement_templates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AnnouncementTemplate> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('channel')) {
+      context.handle(
+        _channelMeta,
+        channel.isAcceptableOrUnknown(data['channel']!, _channelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('placeholders_json')) {
+      context.handle(
+        _placeholdersJsonMeta,
+        placeholdersJson.isAcceptableOrUnknown(
+          data['placeholders_json']!,
+          _placeholdersJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_placeholdersJsonMeta);
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {templateId};
+  @override
+  AnnouncementTemplate map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AnnouncementTemplate(
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      channel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      placeholdersJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}placeholders_json'],
+      )!,
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AnnouncementTemplatesTable createAlias(String alias) {
+    return $AnnouncementTemplatesTable(attachedDatabase, alias);
+  }
+}
+
+class AnnouncementTemplate extends DataClass
+    implements Insertable<AnnouncementTemplate> {
+  final String templateId;
+  final String name;
+  final String channel;
+  final String body;
+  final String placeholdersJson;
+  final bool active;
+  final DateTime updatedAt;
+  const AnnouncementTemplate({
+    required this.templateId,
+    required this.name,
+    required this.channel,
+    required this.body,
+    required this.placeholdersJson,
+    required this.active,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['template_id'] = Variable<String>(templateId);
+    map['name'] = Variable<String>(name);
+    map['channel'] = Variable<String>(channel);
+    map['body'] = Variable<String>(body);
+    map['placeholders_json'] = Variable<String>(placeholdersJson);
+    map['active'] = Variable<bool>(active);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  AnnouncementTemplatesCompanion toCompanion(bool nullToAbsent) {
+    return AnnouncementTemplatesCompanion(
+      templateId: Value(templateId),
+      name: Value(name),
+      channel: Value(channel),
+      body: Value(body),
+      placeholdersJson: Value(placeholdersJson),
+      active: Value(active),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AnnouncementTemplate.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AnnouncementTemplate(
+      templateId: serializer.fromJson<String>(json['templateId']),
+      name: serializer.fromJson<String>(json['name']),
+      channel: serializer.fromJson<String>(json['channel']),
+      body: serializer.fromJson<String>(json['body']),
+      placeholdersJson: serializer.fromJson<String>(json['placeholdersJson']),
+      active: serializer.fromJson<bool>(json['active']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'templateId': serializer.toJson<String>(templateId),
+      'name': serializer.toJson<String>(name),
+      'channel': serializer.toJson<String>(channel),
+      'body': serializer.toJson<String>(body),
+      'placeholdersJson': serializer.toJson<String>(placeholdersJson),
+      'active': serializer.toJson<bool>(active),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  AnnouncementTemplate copyWith({
+    String? templateId,
+    String? name,
+    String? channel,
+    String? body,
+    String? placeholdersJson,
+    bool? active,
+    DateTime? updatedAt,
+  }) => AnnouncementTemplate(
+    templateId: templateId ?? this.templateId,
+    name: name ?? this.name,
+    channel: channel ?? this.channel,
+    body: body ?? this.body,
+    placeholdersJson: placeholdersJson ?? this.placeholdersJson,
+    active: active ?? this.active,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  AnnouncementTemplate copyWithCompanion(AnnouncementTemplatesCompanion data) {
+    return AnnouncementTemplate(
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      name: data.name.present ? data.name.value : this.name,
+      channel: data.channel.present ? data.channel.value : this.channel,
+      body: data.body.present ? data.body.value : this.body,
+      placeholdersJson: data.placeholdersJson.present
+          ? data.placeholdersJson.value
+          : this.placeholdersJson,
+      active: data.active.present ? data.active.value : this.active,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnnouncementTemplate(')
+          ..write('templateId: $templateId, ')
+          ..write('name: $name, ')
+          ..write('channel: $channel, ')
+          ..write('body: $body, ')
+          ..write('placeholdersJson: $placeholdersJson, ')
+          ..write('active: $active, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    templateId,
+    name,
+    channel,
+    body,
+    placeholdersJson,
+    active,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AnnouncementTemplate &&
+          other.templateId == this.templateId &&
+          other.name == this.name &&
+          other.channel == this.channel &&
+          other.body == this.body &&
+          other.placeholdersJson == this.placeholdersJson &&
+          other.active == this.active &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AnnouncementTemplatesCompanion
+    extends UpdateCompanion<AnnouncementTemplate> {
+  final Value<String> templateId;
+  final Value<String> name;
+  final Value<String> channel;
+  final Value<String> body;
+  final Value<String> placeholdersJson;
+  final Value<bool> active;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const AnnouncementTemplatesCompanion({
+    this.templateId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.channel = const Value.absent(),
+    this.body = const Value.absent(),
+    this.placeholdersJson = const Value.absent(),
+    this.active = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnnouncementTemplatesCompanion.insert({
+    required String templateId,
+    required String name,
+    required String channel,
+    required String body,
+    required String placeholdersJson,
+    required bool active,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : templateId = Value(templateId),
+       name = Value(name),
+       channel = Value(channel),
+       body = Value(body),
+       placeholdersJson = Value(placeholdersJson),
+       active = Value(active),
+       updatedAt = Value(updatedAt);
+  static Insertable<AnnouncementTemplate> custom({
+    Expression<String>? templateId,
+    Expression<String>? name,
+    Expression<String>? channel,
+    Expression<String>? body,
+    Expression<String>? placeholdersJson,
+    Expression<bool>? active,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (templateId != null) 'template_id': templateId,
+      if (name != null) 'name': name,
+      if (channel != null) 'channel': channel,
+      if (body != null) 'body': body,
+      if (placeholdersJson != null) 'placeholders_json': placeholdersJson,
+      if (active != null) 'active': active,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnnouncementTemplatesCompanion copyWith({
+    Value<String>? templateId,
+    Value<String>? name,
+    Value<String>? channel,
+    Value<String>? body,
+    Value<String>? placeholdersJson,
+    Value<bool>? active,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AnnouncementTemplatesCompanion(
+      templateId: templateId ?? this.templateId,
+      name: name ?? this.name,
+      channel: channel ?? this.channel,
+      body: body ?? this.body,
+      placeholdersJson: placeholdersJson ?? this.placeholdersJson,
+      active: active ?? this.active,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (channel.present) {
+      map['channel'] = Variable<String>(channel.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (placeholdersJson.present) {
+      map['placeholders_json'] = Variable<String>(placeholdersJson.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnnouncementTemplatesCompanion(')
+          ..write('templateId: $templateId, ')
+          ..write('name: $name, ')
+          ..write('channel: $channel, ')
+          ..write('body: $body, ')
+          ..write('placeholdersJson: $placeholdersJson, ')
+          ..write('active: $active, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RenderedAnnouncementsTable extends RenderedAnnouncements
+    with TableInfo<$RenderedAnnouncementsTable, RenderedAnnouncement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RenderedAnnouncementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _announcementIdMeta = const VerificationMeta(
+    'announcementId',
+  );
+  @override
+  late final GeneratedColumn<String> announcementId = GeneratedColumn<String>(
+    'announcement_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES announcement_templates (template_id)',
+    ),
+  );
+  static const VerificationMeta _channelMeta = const VerificationMeta(
+    'channel',
+  );
+  @override
+  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
+    'channel',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _renderedBodyMeta = const VerificationMeta(
+    'renderedBody',
+  );
+  @override
+  late final GeneratedColumn<String> renderedBody = GeneratedColumn<String>(
+    'rendered_body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _captureLinkUrlMeta = const VerificationMeta(
+    'captureLinkUrl',
+  );
+  @override
+  late final GeneratedColumn<String> captureLinkUrl = GeneratedColumn<String>(
+    'capture_link_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _qrPayloadMeta = const VerificationMeta(
+    'qrPayload',
+  );
+  @override
+  late final GeneratedColumn<String> qrPayload = GeneratedColumn<String>(
+    'qr_payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    announcementId,
+    channelId,
+    templateId,
+    channel,
+    renderedBody,
+    captureLinkUrl,
+    qrPayload,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'rendered_announcements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RenderedAnnouncement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('announcement_id')) {
+      context.handle(
+        _announcementIdMeta,
+        announcementId.isAcceptableOrUnknown(
+          data['announcement_id']!,
+          _announcementIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_announcementIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_templateIdMeta);
+    }
+    if (data.containsKey('channel')) {
+      context.handle(
+        _channelMeta,
+        channel.isAcceptableOrUnknown(data['channel']!, _channelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelMeta);
+    }
+    if (data.containsKey('rendered_body')) {
+      context.handle(
+        _renderedBodyMeta,
+        renderedBody.isAcceptableOrUnknown(
+          data['rendered_body']!,
+          _renderedBodyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_renderedBodyMeta);
+    }
+    if (data.containsKey('capture_link_url')) {
+      context.handle(
+        _captureLinkUrlMeta,
+        captureLinkUrl.isAcceptableOrUnknown(
+          data['capture_link_url']!,
+          _captureLinkUrlMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_captureLinkUrlMeta);
+    }
+    if (data.containsKey('qr_payload')) {
+      context.handle(
+        _qrPayloadMeta,
+        qrPayload.isAcceptableOrUnknown(data['qr_payload']!, _qrPayloadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_qrPayloadMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {announcementId};
+  @override
+  RenderedAnnouncement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RenderedAnnouncement(
+      announcementId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}announcement_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      )!,
+      channel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel'],
+      )!,
+      renderedBody: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rendered_body'],
+      )!,
+      captureLinkUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}capture_link_url'],
+      )!,
+      qrPayload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}qr_payload'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RenderedAnnouncementsTable createAlias(String alias) {
+    return $RenderedAnnouncementsTable(attachedDatabase, alias);
+  }
+}
+
+class RenderedAnnouncement extends DataClass
+    implements Insertable<RenderedAnnouncement> {
+  final String announcementId;
+  final String channelId;
+  final String templateId;
+  final String channel;
+  final String renderedBody;
+  final String captureLinkUrl;
+  final String qrPayload;
+  final DateTime createdAt;
+  const RenderedAnnouncement({
+    required this.announcementId,
+    required this.channelId,
+    required this.templateId,
+    required this.channel,
+    required this.renderedBody,
+    required this.captureLinkUrl,
+    required this.qrPayload,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['announcement_id'] = Variable<String>(announcementId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['template_id'] = Variable<String>(templateId);
+    map['channel'] = Variable<String>(channel);
+    map['rendered_body'] = Variable<String>(renderedBody);
+    map['capture_link_url'] = Variable<String>(captureLinkUrl);
+    map['qr_payload'] = Variable<String>(qrPayload);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  RenderedAnnouncementsCompanion toCompanion(bool nullToAbsent) {
+    return RenderedAnnouncementsCompanion(
+      announcementId: Value(announcementId),
+      channelId: Value(channelId),
+      templateId: Value(templateId),
+      channel: Value(channel),
+      renderedBody: Value(renderedBody),
+      captureLinkUrl: Value(captureLinkUrl),
+      qrPayload: Value(qrPayload),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory RenderedAnnouncement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RenderedAnnouncement(
+      announcementId: serializer.fromJson<String>(json['announcementId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      templateId: serializer.fromJson<String>(json['templateId']),
+      channel: serializer.fromJson<String>(json['channel']),
+      renderedBody: serializer.fromJson<String>(json['renderedBody']),
+      captureLinkUrl: serializer.fromJson<String>(json['captureLinkUrl']),
+      qrPayload: serializer.fromJson<String>(json['qrPayload']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'announcementId': serializer.toJson<String>(announcementId),
+      'channelId': serializer.toJson<String>(channelId),
+      'templateId': serializer.toJson<String>(templateId),
+      'channel': serializer.toJson<String>(channel),
+      'renderedBody': serializer.toJson<String>(renderedBody),
+      'captureLinkUrl': serializer.toJson<String>(captureLinkUrl),
+      'qrPayload': serializer.toJson<String>(qrPayload),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  RenderedAnnouncement copyWith({
+    String? announcementId,
+    String? channelId,
+    String? templateId,
+    String? channel,
+    String? renderedBody,
+    String? captureLinkUrl,
+    String? qrPayload,
+    DateTime? createdAt,
+  }) => RenderedAnnouncement(
+    announcementId: announcementId ?? this.announcementId,
+    channelId: channelId ?? this.channelId,
+    templateId: templateId ?? this.templateId,
+    channel: channel ?? this.channel,
+    renderedBody: renderedBody ?? this.renderedBody,
+    captureLinkUrl: captureLinkUrl ?? this.captureLinkUrl,
+    qrPayload: qrPayload ?? this.qrPayload,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  RenderedAnnouncement copyWithCompanion(RenderedAnnouncementsCompanion data) {
+    return RenderedAnnouncement(
+      announcementId: data.announcementId.present
+          ? data.announcementId.value
+          : this.announcementId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      channel: data.channel.present ? data.channel.value : this.channel,
+      renderedBody: data.renderedBody.present
+          ? data.renderedBody.value
+          : this.renderedBody,
+      captureLinkUrl: data.captureLinkUrl.present
+          ? data.captureLinkUrl.value
+          : this.captureLinkUrl,
+      qrPayload: data.qrPayload.present ? data.qrPayload.value : this.qrPayload,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RenderedAnnouncement(')
+          ..write('announcementId: $announcementId, ')
+          ..write('channelId: $channelId, ')
+          ..write('templateId: $templateId, ')
+          ..write('channel: $channel, ')
+          ..write('renderedBody: $renderedBody, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    announcementId,
+    channelId,
+    templateId,
+    channel,
+    renderedBody,
+    captureLinkUrl,
+    qrPayload,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RenderedAnnouncement &&
+          other.announcementId == this.announcementId &&
+          other.channelId == this.channelId &&
+          other.templateId == this.templateId &&
+          other.channel == this.channel &&
+          other.renderedBody == this.renderedBody &&
+          other.captureLinkUrl == this.captureLinkUrl &&
+          other.qrPayload == this.qrPayload &&
+          other.createdAt == this.createdAt);
+}
+
+class RenderedAnnouncementsCompanion
+    extends UpdateCompanion<RenderedAnnouncement> {
+  final Value<String> announcementId;
+  final Value<String> channelId;
+  final Value<String> templateId;
+  final Value<String> channel;
+  final Value<String> renderedBody;
+  final Value<String> captureLinkUrl;
+  final Value<String> qrPayload;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const RenderedAnnouncementsCompanion({
+    this.announcementId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.templateId = const Value.absent(),
+    this.channel = const Value.absent(),
+    this.renderedBody = const Value.absent(),
+    this.captureLinkUrl = const Value.absent(),
+    this.qrPayload = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RenderedAnnouncementsCompanion.insert({
+    required String announcementId,
+    required String channelId,
+    required String templateId,
+    required String channel,
+    required String renderedBody,
+    required String captureLinkUrl,
+    required String qrPayload,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : announcementId = Value(announcementId),
+       channelId = Value(channelId),
+       templateId = Value(templateId),
+       channel = Value(channel),
+       renderedBody = Value(renderedBody),
+       captureLinkUrl = Value(captureLinkUrl),
+       qrPayload = Value(qrPayload),
+       createdAt = Value(createdAt);
+  static Insertable<RenderedAnnouncement> custom({
+    Expression<String>? announcementId,
+    Expression<String>? channelId,
+    Expression<String>? templateId,
+    Expression<String>? channel,
+    Expression<String>? renderedBody,
+    Expression<String>? captureLinkUrl,
+    Expression<String>? qrPayload,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (announcementId != null) 'announcement_id': announcementId,
+      if (channelId != null) 'channel_id': channelId,
+      if (templateId != null) 'template_id': templateId,
+      if (channel != null) 'channel': channel,
+      if (renderedBody != null) 'rendered_body': renderedBody,
+      if (captureLinkUrl != null) 'capture_link_url': captureLinkUrl,
+      if (qrPayload != null) 'qr_payload': qrPayload,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RenderedAnnouncementsCompanion copyWith({
+    Value<String>? announcementId,
+    Value<String>? channelId,
+    Value<String>? templateId,
+    Value<String>? channel,
+    Value<String>? renderedBody,
+    Value<String>? captureLinkUrl,
+    Value<String>? qrPayload,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return RenderedAnnouncementsCompanion(
+      announcementId: announcementId ?? this.announcementId,
+      channelId: channelId ?? this.channelId,
+      templateId: templateId ?? this.templateId,
+      channel: channel ?? this.channel,
+      renderedBody: renderedBody ?? this.renderedBody,
+      captureLinkUrl: captureLinkUrl ?? this.captureLinkUrl,
+      qrPayload: qrPayload ?? this.qrPayload,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (announcementId.present) {
+      map['announcement_id'] = Variable<String>(announcementId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (channel.present) {
+      map['channel'] = Variable<String>(channel.value);
+    }
+    if (renderedBody.present) {
+      map['rendered_body'] = Variable<String>(renderedBody.value);
+    }
+    if (captureLinkUrl.present) {
+      map['capture_link_url'] = Variable<String>(captureLinkUrl.value);
+    }
+    if (qrPayload.present) {
+      map['qr_payload'] = Variable<String>(qrPayload.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RenderedAnnouncementsCompanion(')
+          ..write('announcementId: $announcementId, ')
+          ..write('channelId: $channelId, ')
+          ..write('templateId: $templateId, ')
+          ..write('channel: $channel, ')
+          ..write('renderedBody: $renderedBody, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LinkInBioPagesTable extends LinkInBioPages
+    with TableInfo<$LinkInBioPagesTable, LinkInBioPage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LinkInBioPagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _handleMeta = const VerificationMeta('handle');
+  @override
+  late final GeneratedColumn<String> handle = GeneratedColumn<String>(
+    'handle',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _avatarRefMeta = const VerificationMeta(
+    'avatarRef',
+  );
+  @override
+  late final GeneratedColumn<String> avatarRef = GeneratedColumn<String>(
+    'avatar_ref',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _captureLinkUrlMeta = const VerificationMeta(
+    'captureLinkUrl',
+  );
+  @override
+  late final GeneratedColumn<String> captureLinkUrl = GeneratedColumn<String>(
+    'capture_link_url',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _qrPayloadMeta = const VerificationMeta(
+    'qrPayload',
+  );
+  @override
+  late final GeneratedColumn<String> qrPayload = GeneratedColumn<String>(
+    'qr_payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _externalLinksJsonMeta = const VerificationMeta(
+    'externalLinksJson',
+  );
+  @override
+  late final GeneratedColumn<String> externalLinksJson =
+      GeneratedColumn<String>(
+        'external_links_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    channelId,
+    handle,
+    displayName,
+    avatarRef,
+    captureLinkUrl,
+    qrPayload,
+    externalLinksJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'link_in_bio_pages';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LinkInBioPage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('handle')) {
+      context.handle(
+        _handleMeta,
+        handle.isAcceptableOrUnknown(data['handle']!, _handleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_handleMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('avatar_ref')) {
+      context.handle(
+        _avatarRefMeta,
+        avatarRef.isAcceptableOrUnknown(data['avatar_ref']!, _avatarRefMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_avatarRefMeta);
+    }
+    if (data.containsKey('capture_link_url')) {
+      context.handle(
+        _captureLinkUrlMeta,
+        captureLinkUrl.isAcceptableOrUnknown(
+          data['capture_link_url']!,
+          _captureLinkUrlMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_captureLinkUrlMeta);
+    }
+    if (data.containsKey('qr_payload')) {
+      context.handle(
+        _qrPayloadMeta,
+        qrPayload.isAcceptableOrUnknown(data['qr_payload']!, _qrPayloadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_qrPayloadMeta);
+    }
+    if (data.containsKey('external_links_json')) {
+      context.handle(
+        _externalLinksJsonMeta,
+        externalLinksJson.isAcceptableOrUnknown(
+          data['external_links_json']!,
+          _externalLinksJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_externalLinksJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {channelId};
+  @override
+  LinkInBioPage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LinkInBioPage(
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      handle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}handle'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      avatarRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar_ref'],
+      )!,
+      captureLinkUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}capture_link_url'],
+      )!,
+      qrPayload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}qr_payload'],
+      )!,
+      externalLinksJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_links_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LinkInBioPagesTable createAlias(String alias) {
+    return $LinkInBioPagesTable(attachedDatabase, alias);
+  }
+}
+
+class LinkInBioPage extends DataClass implements Insertable<LinkInBioPage> {
+  final String channelId;
+  final String handle;
+  final String displayName;
+  final String avatarRef;
+  final String captureLinkUrl;
+  final String qrPayload;
+  final String externalLinksJson;
+  final DateTime updatedAt;
+  const LinkInBioPage({
+    required this.channelId,
+    required this.handle,
+    required this.displayName,
+    required this.avatarRef,
+    required this.captureLinkUrl,
+    required this.qrPayload,
+    required this.externalLinksJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['channel_id'] = Variable<String>(channelId);
+    map['handle'] = Variable<String>(handle);
+    map['display_name'] = Variable<String>(displayName);
+    map['avatar_ref'] = Variable<String>(avatarRef);
+    map['capture_link_url'] = Variable<String>(captureLinkUrl);
+    map['qr_payload'] = Variable<String>(qrPayload);
+    map['external_links_json'] = Variable<String>(externalLinksJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LinkInBioPagesCompanion toCompanion(bool nullToAbsent) {
+    return LinkInBioPagesCompanion(
+      channelId: Value(channelId),
+      handle: Value(handle),
+      displayName: Value(displayName),
+      avatarRef: Value(avatarRef),
+      captureLinkUrl: Value(captureLinkUrl),
+      qrPayload: Value(qrPayload),
+      externalLinksJson: Value(externalLinksJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LinkInBioPage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LinkInBioPage(
+      channelId: serializer.fromJson<String>(json['channelId']),
+      handle: serializer.fromJson<String>(json['handle']),
+      displayName: serializer.fromJson<String>(json['displayName']),
+      avatarRef: serializer.fromJson<String>(json['avatarRef']),
+      captureLinkUrl: serializer.fromJson<String>(json['captureLinkUrl']),
+      qrPayload: serializer.fromJson<String>(json['qrPayload']),
+      externalLinksJson: serializer.fromJson<String>(json['externalLinksJson']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'channelId': serializer.toJson<String>(channelId),
+      'handle': serializer.toJson<String>(handle),
+      'displayName': serializer.toJson<String>(displayName),
+      'avatarRef': serializer.toJson<String>(avatarRef),
+      'captureLinkUrl': serializer.toJson<String>(captureLinkUrl),
+      'qrPayload': serializer.toJson<String>(qrPayload),
+      'externalLinksJson': serializer.toJson<String>(externalLinksJson),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LinkInBioPage copyWith({
+    String? channelId,
+    String? handle,
+    String? displayName,
+    String? avatarRef,
+    String? captureLinkUrl,
+    String? qrPayload,
+    String? externalLinksJson,
+    DateTime? updatedAt,
+  }) => LinkInBioPage(
+    channelId: channelId ?? this.channelId,
+    handle: handle ?? this.handle,
+    displayName: displayName ?? this.displayName,
+    avatarRef: avatarRef ?? this.avatarRef,
+    captureLinkUrl: captureLinkUrl ?? this.captureLinkUrl,
+    qrPayload: qrPayload ?? this.qrPayload,
+    externalLinksJson: externalLinksJson ?? this.externalLinksJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LinkInBioPage copyWithCompanion(LinkInBioPagesCompanion data) {
+    return LinkInBioPage(
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      handle: data.handle.present ? data.handle.value : this.handle,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      avatarRef: data.avatarRef.present ? data.avatarRef.value : this.avatarRef,
+      captureLinkUrl: data.captureLinkUrl.present
+          ? data.captureLinkUrl.value
+          : this.captureLinkUrl,
+      qrPayload: data.qrPayload.present ? data.qrPayload.value : this.qrPayload,
+      externalLinksJson: data.externalLinksJson.present
+          ? data.externalLinksJson.value
+          : this.externalLinksJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LinkInBioPage(')
+          ..write('channelId: $channelId, ')
+          ..write('handle: $handle, ')
+          ..write('displayName: $displayName, ')
+          ..write('avatarRef: $avatarRef, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('externalLinksJson: $externalLinksJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    channelId,
+    handle,
+    displayName,
+    avatarRef,
+    captureLinkUrl,
+    qrPayload,
+    externalLinksJson,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LinkInBioPage &&
+          other.channelId == this.channelId &&
+          other.handle == this.handle &&
+          other.displayName == this.displayName &&
+          other.avatarRef == this.avatarRef &&
+          other.captureLinkUrl == this.captureLinkUrl &&
+          other.qrPayload == this.qrPayload &&
+          other.externalLinksJson == this.externalLinksJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LinkInBioPagesCompanion extends UpdateCompanion<LinkInBioPage> {
+  final Value<String> channelId;
+  final Value<String> handle;
+  final Value<String> displayName;
+  final Value<String> avatarRef;
+  final Value<String> captureLinkUrl;
+  final Value<String> qrPayload;
+  final Value<String> externalLinksJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LinkInBioPagesCompanion({
+    this.channelId = const Value.absent(),
+    this.handle = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.avatarRef = const Value.absent(),
+    this.captureLinkUrl = const Value.absent(),
+    this.qrPayload = const Value.absent(),
+    this.externalLinksJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LinkInBioPagesCompanion.insert({
+    required String channelId,
+    required String handle,
+    required String displayName,
+    required String avatarRef,
+    required String captureLinkUrl,
+    required String qrPayload,
+    required String externalLinksJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : channelId = Value(channelId),
+       handle = Value(handle),
+       displayName = Value(displayName),
+       avatarRef = Value(avatarRef),
+       captureLinkUrl = Value(captureLinkUrl),
+       qrPayload = Value(qrPayload),
+       externalLinksJson = Value(externalLinksJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<LinkInBioPage> custom({
+    Expression<String>? channelId,
+    Expression<String>? handle,
+    Expression<String>? displayName,
+    Expression<String>? avatarRef,
+    Expression<String>? captureLinkUrl,
+    Expression<String>? qrPayload,
+    Expression<String>? externalLinksJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (channelId != null) 'channel_id': channelId,
+      if (handle != null) 'handle': handle,
+      if (displayName != null) 'display_name': displayName,
+      if (avatarRef != null) 'avatar_ref': avatarRef,
+      if (captureLinkUrl != null) 'capture_link_url': captureLinkUrl,
+      if (qrPayload != null) 'qr_payload': qrPayload,
+      if (externalLinksJson != null) 'external_links_json': externalLinksJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LinkInBioPagesCompanion copyWith({
+    Value<String>? channelId,
+    Value<String>? handle,
+    Value<String>? displayName,
+    Value<String>? avatarRef,
+    Value<String>? captureLinkUrl,
+    Value<String>? qrPayload,
+    Value<String>? externalLinksJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LinkInBioPagesCompanion(
+      channelId: channelId ?? this.channelId,
+      handle: handle ?? this.handle,
+      displayName: displayName ?? this.displayName,
+      avatarRef: avatarRef ?? this.avatarRef,
+      captureLinkUrl: captureLinkUrl ?? this.captureLinkUrl,
+      qrPayload: qrPayload ?? this.qrPayload,
+      externalLinksJson: externalLinksJson ?? this.externalLinksJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (handle.present) {
+      map['handle'] = Variable<String>(handle.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (avatarRef.present) {
+      map['avatar_ref'] = Variable<String>(avatarRef.value);
+    }
+    if (captureLinkUrl.present) {
+      map['capture_link_url'] = Variable<String>(captureLinkUrl.value);
+    }
+    if (qrPayload.present) {
+      map['qr_payload'] = Variable<String>(qrPayload.value);
+    }
+    if (externalLinksJson.present) {
+      map['external_links_json'] = Variable<String>(externalLinksJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LinkInBioPagesCompanion(')
+          ..write('channelId: $channelId, ')
+          ..write('handle: $handle, ')
+          ..write('displayName: $displayName, ')
+          ..write('avatarRef: $avatarRef, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('qrPayload: $qrPayload, ')
+          ..write('externalLinksJson: $externalLinksJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $StarterPacksTable extends StarterPacks
+    with TableInfo<$StarterPacksTable, StarterPack> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StarterPacksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _starterPackTokenMeta = const VerificationMeta(
+    'starterPackToken',
+  );
+  @override
+  late final GeneratedColumn<String> starterPackToken = GeneratedColumn<String>(
+    'starter_pack_token',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _memberIdsJsonMeta = const VerificationMeta(
+    'memberIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> memberIdsJson = GeneratedColumn<String>(
+    'member_ids_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _defaultSelectedIdsJsonMeta =
+      const VerificationMeta('defaultSelectedIdsJson');
+  @override
+  late final GeneratedColumn<String> defaultSelectedIdsJson =
+      GeneratedColumn<String>(
+        'default_selected_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    channelId,
+    starterPackToken,
+    memberIdsJson,
+    defaultSelectedIdsJson,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'starter_packs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StarterPack> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('starter_pack_token')) {
+      context.handle(
+        _starterPackTokenMeta,
+        starterPackToken.isAcceptableOrUnknown(
+          data['starter_pack_token']!,
+          _starterPackTokenMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_starterPackTokenMeta);
+    }
+    if (data.containsKey('member_ids_json')) {
+      context.handle(
+        _memberIdsJsonMeta,
+        memberIdsJson.isAcceptableOrUnknown(
+          data['member_ids_json']!,
+          _memberIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_memberIdsJsonMeta);
+    }
+    if (data.containsKey('default_selected_ids_json')) {
+      context.handle(
+        _defaultSelectedIdsJsonMeta,
+        defaultSelectedIdsJson.isAcceptableOrUnknown(
+          data['default_selected_ids_json']!,
+          _defaultSelectedIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_defaultSelectedIdsJsonMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {channelId};
+  @override
+  StarterPack map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StarterPack(
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      starterPackToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}starter_pack_token'],
+      )!,
+      memberIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}member_ids_json'],
+      )!,
+      defaultSelectedIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}default_selected_ids_json'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $StarterPacksTable createAlias(String alias) {
+    return $StarterPacksTable(attachedDatabase, alias);
+  }
+}
+
+class StarterPack extends DataClass implements Insertable<StarterPack> {
+  final String channelId;
+  final String starterPackToken;
+  final String memberIdsJson;
+  final String defaultSelectedIdsJson;
+  final DateTime updatedAt;
+  const StarterPack({
+    required this.channelId,
+    required this.starterPackToken,
+    required this.memberIdsJson,
+    required this.defaultSelectedIdsJson,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['channel_id'] = Variable<String>(channelId);
+    map['starter_pack_token'] = Variable<String>(starterPackToken);
+    map['member_ids_json'] = Variable<String>(memberIdsJson);
+    map['default_selected_ids_json'] = Variable<String>(defaultSelectedIdsJson);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  StarterPacksCompanion toCompanion(bool nullToAbsent) {
+    return StarterPacksCompanion(
+      channelId: Value(channelId),
+      starterPackToken: Value(starterPackToken),
+      memberIdsJson: Value(memberIdsJson),
+      defaultSelectedIdsJson: Value(defaultSelectedIdsJson),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory StarterPack.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StarterPack(
+      channelId: serializer.fromJson<String>(json['channelId']),
+      starterPackToken: serializer.fromJson<String>(json['starterPackToken']),
+      memberIdsJson: serializer.fromJson<String>(json['memberIdsJson']),
+      defaultSelectedIdsJson: serializer.fromJson<String>(
+        json['defaultSelectedIdsJson'],
+      ),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'channelId': serializer.toJson<String>(channelId),
+      'starterPackToken': serializer.toJson<String>(starterPackToken),
+      'memberIdsJson': serializer.toJson<String>(memberIdsJson),
+      'defaultSelectedIdsJson': serializer.toJson<String>(
+        defaultSelectedIdsJson,
+      ),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  StarterPack copyWith({
+    String? channelId,
+    String? starterPackToken,
+    String? memberIdsJson,
+    String? defaultSelectedIdsJson,
+    DateTime? updatedAt,
+  }) => StarterPack(
+    channelId: channelId ?? this.channelId,
+    starterPackToken: starterPackToken ?? this.starterPackToken,
+    memberIdsJson: memberIdsJson ?? this.memberIdsJson,
+    defaultSelectedIdsJson:
+        defaultSelectedIdsJson ?? this.defaultSelectedIdsJson,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  StarterPack copyWithCompanion(StarterPacksCompanion data) {
+    return StarterPack(
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      starterPackToken: data.starterPackToken.present
+          ? data.starterPackToken.value
+          : this.starterPackToken,
+      memberIdsJson: data.memberIdsJson.present
+          ? data.memberIdsJson.value
+          : this.memberIdsJson,
+      defaultSelectedIdsJson: data.defaultSelectedIdsJson.present
+          ? data.defaultSelectedIdsJson.value
+          : this.defaultSelectedIdsJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StarterPack(')
+          ..write('channelId: $channelId, ')
+          ..write('starterPackToken: $starterPackToken, ')
+          ..write('memberIdsJson: $memberIdsJson, ')
+          ..write('defaultSelectedIdsJson: $defaultSelectedIdsJson, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    channelId,
+    starterPackToken,
+    memberIdsJson,
+    defaultSelectedIdsJson,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StarterPack &&
+          other.channelId == this.channelId &&
+          other.starterPackToken == this.starterPackToken &&
+          other.memberIdsJson == this.memberIdsJson &&
+          other.defaultSelectedIdsJson == this.defaultSelectedIdsJson &&
+          other.updatedAt == this.updatedAt);
+}
+
+class StarterPacksCompanion extends UpdateCompanion<StarterPack> {
+  final Value<String> channelId;
+  final Value<String> starterPackToken;
+  final Value<String> memberIdsJson;
+  final Value<String> defaultSelectedIdsJson;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const StarterPacksCompanion({
+    this.channelId = const Value.absent(),
+    this.starterPackToken = const Value.absent(),
+    this.memberIdsJson = const Value.absent(),
+    this.defaultSelectedIdsJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  StarterPacksCompanion.insert({
+    required String channelId,
+    required String starterPackToken,
+    required String memberIdsJson,
+    required String defaultSelectedIdsJson,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : channelId = Value(channelId),
+       starterPackToken = Value(starterPackToken),
+       memberIdsJson = Value(memberIdsJson),
+       defaultSelectedIdsJson = Value(defaultSelectedIdsJson),
+       updatedAt = Value(updatedAt);
+  static Insertable<StarterPack> custom({
+    Expression<String>? channelId,
+    Expression<String>? starterPackToken,
+    Expression<String>? memberIdsJson,
+    Expression<String>? defaultSelectedIdsJson,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (channelId != null) 'channel_id': channelId,
+      if (starterPackToken != null) 'starter_pack_token': starterPackToken,
+      if (memberIdsJson != null) 'member_ids_json': memberIdsJson,
+      if (defaultSelectedIdsJson != null)
+        'default_selected_ids_json': defaultSelectedIdsJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StarterPacksCompanion copyWith({
+    Value<String>? channelId,
+    Value<String>? starterPackToken,
+    Value<String>? memberIdsJson,
+    Value<String>? defaultSelectedIdsJson,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return StarterPacksCompanion(
+      channelId: channelId ?? this.channelId,
+      starterPackToken: starterPackToken ?? this.starterPackToken,
+      memberIdsJson: memberIdsJson ?? this.memberIdsJson,
+      defaultSelectedIdsJson:
+          defaultSelectedIdsJson ?? this.defaultSelectedIdsJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (starterPackToken.present) {
+      map['starter_pack_token'] = Variable<String>(starterPackToken.value);
+    }
+    if (memberIdsJson.present) {
+      map['member_ids_json'] = Variable<String>(memberIdsJson.value);
+    }
+    if (defaultSelectedIdsJson.present) {
+      map['default_selected_ids_json'] = Variable<String>(
+        defaultSelectedIdsJson.value,
+      );
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StarterPacksCompanion(')
+          ..write('channelId: $channelId, ')
+          ..write('starterPackToken: $starterPackToken, ')
+          ..write('memberIdsJson: $memberIdsJson, ')
+          ..write('defaultSelectedIdsJson: $defaultSelectedIdsJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BulkFollowJobsTable extends BulkFollowJobs
+    with TableInfo<$BulkFollowJobsTable, BulkFollowJob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BulkFollowJobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _followedIdsJsonMeta = const VerificationMeta(
+    'followedIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> followedIdsJson = GeneratedColumn<String>(
+    'followed_ids_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _alreadyFollowingIdsJsonMeta =
+      const VerificationMeta('alreadyFollowingIdsJson');
+  @override
+  late final GeneratedColumn<String> alreadyFollowingIdsJson =
+      GeneratedColumn<String>(
+        'already_following_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _feedReadyMeta = const VerificationMeta(
+    'feedReady',
+  );
+  @override
+  late final GeneratedColumn<bool> feedReady = GeneratedColumn<bool>(
+    'feed_ready',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("feed_ready" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    channelId,
+    passportId,
+    followedIdsJson,
+    alreadyFollowingIdsJson,
+    feedReady,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'bulk_follow_jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BulkFollowJob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('followed_ids_json')) {
+      context.handle(
+        _followedIdsJsonMeta,
+        followedIdsJson.isAcceptableOrUnknown(
+          data['followed_ids_json']!,
+          _followedIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_followedIdsJsonMeta);
+    }
+    if (data.containsKey('already_following_ids_json')) {
+      context.handle(
+        _alreadyFollowingIdsJsonMeta,
+        alreadyFollowingIdsJson.isAcceptableOrUnknown(
+          data['already_following_ids_json']!,
+          _alreadyFollowingIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_alreadyFollowingIdsJsonMeta);
+    }
+    if (data.containsKey('feed_ready')) {
+      context.handle(
+        _feedReadyMeta,
+        feedReady.isAcceptableOrUnknown(data['feed_ready']!, _feedReadyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_feedReadyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  BulkFollowJob map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BulkFollowJob(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      followedIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}followed_ids_json'],
+      )!,
+      alreadyFollowingIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}already_following_ids_json'],
+      )!,
+      feedReady: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}feed_ready'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $BulkFollowJobsTable createAlias(String alias) {
+    return $BulkFollowJobsTable(attachedDatabase, alias);
+  }
+}
+
+class BulkFollowJob extends DataClass implements Insertable<BulkFollowJob> {
+  final String id;
+  final String channelId;
+  final String passportId;
+  final String followedIdsJson;
+  final String alreadyFollowingIdsJson;
+  final bool feedReady;
+  final DateTime createdAt;
+  const BulkFollowJob({
+    required this.id,
+    required this.channelId,
+    required this.passportId,
+    required this.followedIdsJson,
+    required this.alreadyFollowingIdsJson,
+    required this.feedReady,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['channel_id'] = Variable<String>(channelId);
+    map['passport_id'] = Variable<String>(passportId);
+    map['followed_ids_json'] = Variable<String>(followedIdsJson);
+    map['already_following_ids_json'] = Variable<String>(
+      alreadyFollowingIdsJson,
+    );
+    map['feed_ready'] = Variable<bool>(feedReady);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  BulkFollowJobsCompanion toCompanion(bool nullToAbsent) {
+    return BulkFollowJobsCompanion(
+      id: Value(id),
+      channelId: Value(channelId),
+      passportId: Value(passportId),
+      followedIdsJson: Value(followedIdsJson),
+      alreadyFollowingIdsJson: Value(alreadyFollowingIdsJson),
+      feedReady: Value(feedReady),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory BulkFollowJob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BulkFollowJob(
+      id: serializer.fromJson<String>(json['id']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      followedIdsJson: serializer.fromJson<String>(json['followedIdsJson']),
+      alreadyFollowingIdsJson: serializer.fromJson<String>(
+        json['alreadyFollowingIdsJson'],
+      ),
+      feedReady: serializer.fromJson<bool>(json['feedReady']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'channelId': serializer.toJson<String>(channelId),
+      'passportId': serializer.toJson<String>(passportId),
+      'followedIdsJson': serializer.toJson<String>(followedIdsJson),
+      'alreadyFollowingIdsJson': serializer.toJson<String>(
+        alreadyFollowingIdsJson,
+      ),
+      'feedReady': serializer.toJson<bool>(feedReady),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  BulkFollowJob copyWith({
+    String? id,
+    String? channelId,
+    String? passportId,
+    String? followedIdsJson,
+    String? alreadyFollowingIdsJson,
+    bool? feedReady,
+    DateTime? createdAt,
+  }) => BulkFollowJob(
+    id: id ?? this.id,
+    channelId: channelId ?? this.channelId,
+    passportId: passportId ?? this.passportId,
+    followedIdsJson: followedIdsJson ?? this.followedIdsJson,
+    alreadyFollowingIdsJson:
+        alreadyFollowingIdsJson ?? this.alreadyFollowingIdsJson,
+    feedReady: feedReady ?? this.feedReady,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  BulkFollowJob copyWithCompanion(BulkFollowJobsCompanion data) {
+    return BulkFollowJob(
+      id: data.id.present ? data.id.value : this.id,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      followedIdsJson: data.followedIdsJson.present
+          ? data.followedIdsJson.value
+          : this.followedIdsJson,
+      alreadyFollowingIdsJson: data.alreadyFollowingIdsJson.present
+          ? data.alreadyFollowingIdsJson.value
+          : this.alreadyFollowingIdsJson,
+      feedReady: data.feedReady.present ? data.feedReady.value : this.feedReady,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BulkFollowJob(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('passportId: $passportId, ')
+          ..write('followedIdsJson: $followedIdsJson, ')
+          ..write('alreadyFollowingIdsJson: $alreadyFollowingIdsJson, ')
+          ..write('feedReady: $feedReady, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    channelId,
+    passportId,
+    followedIdsJson,
+    alreadyFollowingIdsJson,
+    feedReady,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BulkFollowJob &&
+          other.id == this.id &&
+          other.channelId == this.channelId &&
+          other.passportId == this.passportId &&
+          other.followedIdsJson == this.followedIdsJson &&
+          other.alreadyFollowingIdsJson == this.alreadyFollowingIdsJson &&
+          other.feedReady == this.feedReady &&
+          other.createdAt == this.createdAt);
+}
+
+class BulkFollowJobsCompanion extends UpdateCompanion<BulkFollowJob> {
+  final Value<String> id;
+  final Value<String> channelId;
+  final Value<String> passportId;
+  final Value<String> followedIdsJson;
+  final Value<String> alreadyFollowingIdsJson;
+  final Value<bool> feedReady;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const BulkFollowJobsCompanion({
+    this.id = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.followedIdsJson = const Value.absent(),
+    this.alreadyFollowingIdsJson = const Value.absent(),
+    this.feedReady = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BulkFollowJobsCompanion.insert({
+    required String id,
+    required String channelId,
+    required String passportId,
+    required String followedIdsJson,
+    required String alreadyFollowingIdsJson,
+    required bool feedReady,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       channelId = Value(channelId),
+       passportId = Value(passportId),
+       followedIdsJson = Value(followedIdsJson),
+       alreadyFollowingIdsJson = Value(alreadyFollowingIdsJson),
+       feedReady = Value(feedReady),
+       createdAt = Value(createdAt);
+  static Insertable<BulkFollowJob> custom({
+    Expression<String>? id,
+    Expression<String>? channelId,
+    Expression<String>? passportId,
+    Expression<String>? followedIdsJson,
+    Expression<String>? alreadyFollowingIdsJson,
+    Expression<bool>? feedReady,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (channelId != null) 'channel_id': channelId,
+      if (passportId != null) 'passport_id': passportId,
+      if (followedIdsJson != null) 'followed_ids_json': followedIdsJson,
+      if (alreadyFollowingIdsJson != null)
+        'already_following_ids_json': alreadyFollowingIdsJson,
+      if (feedReady != null) 'feed_ready': feedReady,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BulkFollowJobsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? channelId,
+    Value<String>? passportId,
+    Value<String>? followedIdsJson,
+    Value<String>? alreadyFollowingIdsJson,
+    Value<bool>? feedReady,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return BulkFollowJobsCompanion(
+      id: id ?? this.id,
+      channelId: channelId ?? this.channelId,
+      passportId: passportId ?? this.passportId,
+      followedIdsJson: followedIdsJson ?? this.followedIdsJson,
+      alreadyFollowingIdsJson:
+          alreadyFollowingIdsJson ?? this.alreadyFollowingIdsJson,
+      feedReady: feedReady ?? this.feedReady,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (followedIdsJson.present) {
+      map['followed_ids_json'] = Variable<String>(followedIdsJson.value);
+    }
+    if (alreadyFollowingIdsJson.present) {
+      map['already_following_ids_json'] = Variable<String>(
+        alreadyFollowingIdsJson.value,
+      );
+    }
+    if (feedReady.present) {
+      map['feed_ready'] = Variable<bool>(feedReady.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BulkFollowJobsCompanion(')
+          ..write('id: $id, ')
+          ..write('channelId: $channelId, ')
+          ..write('passportId: $passportId, ')
+          ..write('followedIdsJson: $followedIdsJson, ')
+          ..write('alreadyFollowingIdsJson: $alreadyFollowingIdsJson, ')
+          ..write('feedReady: $feedReady, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExternalAccountsTable extends ExternalAccounts
+    with TableInfo<$ExternalAccountsTable, ExternalAccount> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExternalAccountsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _linkIdMeta = const VerificationMeta('linkId');
+  @override
+  late final GeneratedColumn<String> linkId = GeneratedColumn<String>(
+    'link_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _platformMeta = const VerificationMeta(
+    'platform',
+  );
+  @override
+  late final GeneratedColumn<String> platform = GeneratedColumn<String>(
+    'platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _handleMeta = const VerificationMeta('handle');
+  @override
+  late final GeneratedColumn<String> handle = GeneratedColumn<String>(
+    'handle',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _profileUrlMeta = const VerificationMeta(
+    'profileUrl',
+  );
+  @override
+  late final GeneratedColumn<String> profileUrl = GeneratedColumn<String>(
+    'profile_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _verificationStateMeta = const VerificationMeta(
+    'verificationState',
+  );
+  @override
+  late final GeneratedColumn<String> verificationState =
+      GeneratedColumn<String>(
+        'verification_state',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _provenanceMeta = const VerificationMeta(
+    'provenance',
+  );
+  @override
+  late final GeneratedColumn<String> provenance = GeneratedColumn<String>(
+    'provenance',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _linkedAtMeta = const VerificationMeta(
+    'linkedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> linkedAt = GeneratedColumn<DateTime>(
+    'linked_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    linkId,
+    channelId,
+    platform,
+    handle,
+    profileUrl,
+    verificationState,
+    provenance,
+    linkedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'external_accounts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExternalAccount> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('link_id')) {
+      context.handle(
+        _linkIdMeta,
+        linkId.isAcceptableOrUnknown(data['link_id']!, _linkIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_linkIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('platform')) {
+      context.handle(
+        _platformMeta,
+        platform.isAcceptableOrUnknown(data['platform']!, _platformMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_platformMeta);
+    }
+    if (data.containsKey('handle')) {
+      context.handle(
+        _handleMeta,
+        handle.isAcceptableOrUnknown(data['handle']!, _handleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_handleMeta);
+    }
+    if (data.containsKey('profile_url')) {
+      context.handle(
+        _profileUrlMeta,
+        profileUrl.isAcceptableOrUnknown(data['profile_url']!, _profileUrlMeta),
+      );
+    }
+    if (data.containsKey('verification_state')) {
+      context.handle(
+        _verificationStateMeta,
+        verificationState.isAcceptableOrUnknown(
+          data['verification_state']!,
+          _verificationStateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_verificationStateMeta);
+    }
+    if (data.containsKey('provenance')) {
+      context.handle(
+        _provenanceMeta,
+        provenance.isAcceptableOrUnknown(data['provenance']!, _provenanceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_provenanceMeta);
+    }
+    if (data.containsKey('linked_at')) {
+      context.handle(
+        _linkedAtMeta,
+        linkedAt.isAcceptableOrUnknown(data['linked_at']!, _linkedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_linkedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {linkId};
+  @override
+  ExternalAccount map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExternalAccount(
+      linkId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}link_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      platform: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}platform'],
+      )!,
+      handle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}handle'],
+      )!,
+      profileUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}profile_url'],
+      ),
+      verificationState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}verification_state'],
+      )!,
+      provenance: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}provenance'],
+      )!,
+      linkedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}linked_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExternalAccountsTable createAlias(String alias) {
+    return $ExternalAccountsTable(attachedDatabase, alias);
+  }
+}
+
+class ExternalAccount extends DataClass implements Insertable<ExternalAccount> {
+  final String linkId;
+  final String channelId;
+  final String platform;
+  final String handle;
+  final String? profileUrl;
+  final String verificationState;
+  final String provenance;
+  final DateTime linkedAt;
+  const ExternalAccount({
+    required this.linkId,
+    required this.channelId,
+    required this.platform,
+    required this.handle,
+    this.profileUrl,
+    required this.verificationState,
+    required this.provenance,
+    required this.linkedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['link_id'] = Variable<String>(linkId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['platform'] = Variable<String>(platform);
+    map['handle'] = Variable<String>(handle);
+    if (!nullToAbsent || profileUrl != null) {
+      map['profile_url'] = Variable<String>(profileUrl);
+    }
+    map['verification_state'] = Variable<String>(verificationState);
+    map['provenance'] = Variable<String>(provenance);
+    map['linked_at'] = Variable<DateTime>(linkedAt);
+    return map;
+  }
+
+  ExternalAccountsCompanion toCompanion(bool nullToAbsent) {
+    return ExternalAccountsCompanion(
+      linkId: Value(linkId),
+      channelId: Value(channelId),
+      platform: Value(platform),
+      handle: Value(handle),
+      profileUrl: profileUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(profileUrl),
+      verificationState: Value(verificationState),
+      provenance: Value(provenance),
+      linkedAt: Value(linkedAt),
+    );
+  }
+
+  factory ExternalAccount.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExternalAccount(
+      linkId: serializer.fromJson<String>(json['linkId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      platform: serializer.fromJson<String>(json['platform']),
+      handle: serializer.fromJson<String>(json['handle']),
+      profileUrl: serializer.fromJson<String?>(json['profileUrl']),
+      verificationState: serializer.fromJson<String>(json['verificationState']),
+      provenance: serializer.fromJson<String>(json['provenance']),
+      linkedAt: serializer.fromJson<DateTime>(json['linkedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'linkId': serializer.toJson<String>(linkId),
+      'channelId': serializer.toJson<String>(channelId),
+      'platform': serializer.toJson<String>(platform),
+      'handle': serializer.toJson<String>(handle),
+      'profileUrl': serializer.toJson<String?>(profileUrl),
+      'verificationState': serializer.toJson<String>(verificationState),
+      'provenance': serializer.toJson<String>(provenance),
+      'linkedAt': serializer.toJson<DateTime>(linkedAt),
+    };
+  }
+
+  ExternalAccount copyWith({
+    String? linkId,
+    String? channelId,
+    String? platform,
+    String? handle,
+    Value<String?> profileUrl = const Value.absent(),
+    String? verificationState,
+    String? provenance,
+    DateTime? linkedAt,
+  }) => ExternalAccount(
+    linkId: linkId ?? this.linkId,
+    channelId: channelId ?? this.channelId,
+    platform: platform ?? this.platform,
+    handle: handle ?? this.handle,
+    profileUrl: profileUrl.present ? profileUrl.value : this.profileUrl,
+    verificationState: verificationState ?? this.verificationState,
+    provenance: provenance ?? this.provenance,
+    linkedAt: linkedAt ?? this.linkedAt,
+  );
+  ExternalAccount copyWithCompanion(ExternalAccountsCompanion data) {
+    return ExternalAccount(
+      linkId: data.linkId.present ? data.linkId.value : this.linkId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      platform: data.platform.present ? data.platform.value : this.platform,
+      handle: data.handle.present ? data.handle.value : this.handle,
+      profileUrl: data.profileUrl.present
+          ? data.profileUrl.value
+          : this.profileUrl,
+      verificationState: data.verificationState.present
+          ? data.verificationState.value
+          : this.verificationState,
+      provenance: data.provenance.present
+          ? data.provenance.value
+          : this.provenance,
+      linkedAt: data.linkedAt.present ? data.linkedAt.value : this.linkedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalAccount(')
+          ..write('linkId: $linkId, ')
+          ..write('channelId: $channelId, ')
+          ..write('platform: $platform, ')
+          ..write('handle: $handle, ')
+          ..write('profileUrl: $profileUrl, ')
+          ..write('verificationState: $verificationState, ')
+          ..write('provenance: $provenance, ')
+          ..write('linkedAt: $linkedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    linkId,
+    channelId,
+    platform,
+    handle,
+    profileUrl,
+    verificationState,
+    provenance,
+    linkedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExternalAccount &&
+          other.linkId == this.linkId &&
+          other.channelId == this.channelId &&
+          other.platform == this.platform &&
+          other.handle == this.handle &&
+          other.profileUrl == this.profileUrl &&
+          other.verificationState == this.verificationState &&
+          other.provenance == this.provenance &&
+          other.linkedAt == this.linkedAt);
+}
+
+class ExternalAccountsCompanion extends UpdateCompanion<ExternalAccount> {
+  final Value<String> linkId;
+  final Value<String> channelId;
+  final Value<String> platform;
+  final Value<String> handle;
+  final Value<String?> profileUrl;
+  final Value<String> verificationState;
+  final Value<String> provenance;
+  final Value<DateTime> linkedAt;
+  final Value<int> rowid;
+  const ExternalAccountsCompanion({
+    this.linkId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.platform = const Value.absent(),
+    this.handle = const Value.absent(),
+    this.profileUrl = const Value.absent(),
+    this.verificationState = const Value.absent(),
+    this.provenance = const Value.absent(),
+    this.linkedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExternalAccountsCompanion.insert({
+    required String linkId,
+    required String channelId,
+    required String platform,
+    required String handle,
+    this.profileUrl = const Value.absent(),
+    required String verificationState,
+    required String provenance,
+    required DateTime linkedAt,
+    this.rowid = const Value.absent(),
+  }) : linkId = Value(linkId),
+       channelId = Value(channelId),
+       platform = Value(platform),
+       handle = Value(handle),
+       verificationState = Value(verificationState),
+       provenance = Value(provenance),
+       linkedAt = Value(linkedAt);
+  static Insertable<ExternalAccount> custom({
+    Expression<String>? linkId,
+    Expression<String>? channelId,
+    Expression<String>? platform,
+    Expression<String>? handle,
+    Expression<String>? profileUrl,
+    Expression<String>? verificationState,
+    Expression<String>? provenance,
+    Expression<DateTime>? linkedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (linkId != null) 'link_id': linkId,
+      if (channelId != null) 'channel_id': channelId,
+      if (platform != null) 'platform': platform,
+      if (handle != null) 'handle': handle,
+      if (profileUrl != null) 'profile_url': profileUrl,
+      if (verificationState != null) 'verification_state': verificationState,
+      if (provenance != null) 'provenance': provenance,
+      if (linkedAt != null) 'linked_at': linkedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExternalAccountsCompanion copyWith({
+    Value<String>? linkId,
+    Value<String>? channelId,
+    Value<String>? platform,
+    Value<String>? handle,
+    Value<String?>? profileUrl,
+    Value<String>? verificationState,
+    Value<String>? provenance,
+    Value<DateTime>? linkedAt,
+    Value<int>? rowid,
+  }) {
+    return ExternalAccountsCompanion(
+      linkId: linkId ?? this.linkId,
+      channelId: channelId ?? this.channelId,
+      platform: platform ?? this.platform,
+      handle: handle ?? this.handle,
+      profileUrl: profileUrl ?? this.profileUrl,
+      verificationState: verificationState ?? this.verificationState,
+      provenance: provenance ?? this.provenance,
+      linkedAt: linkedAt ?? this.linkedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (linkId.present) {
+      map['link_id'] = Variable<String>(linkId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (platform.present) {
+      map['platform'] = Variable<String>(platform.value);
+    }
+    if (handle.present) {
+      map['handle'] = Variable<String>(handle.value);
+    }
+    if (profileUrl.present) {
+      map['profile_url'] = Variable<String>(profileUrl.value);
+    }
+    if (verificationState.present) {
+      map['verification_state'] = Variable<String>(verificationState.value);
+    }
+    if (provenance.present) {
+      map['provenance'] = Variable<String>(provenance.value);
+    }
+    if (linkedAt.present) {
+      map['linked_at'] = Variable<DateTime>(linkedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExternalAccountsCompanion(')
+          ..write('linkId: $linkId, ')
+          ..write('channelId: $channelId, ')
+          ..write('platform: $platform, ')
+          ..write('handle: $handle, ')
+          ..write('profileUrl: $profileUrl, ')
+          ..write('verificationState: $verificationState, ')
+          ..write('provenance: $provenance, ')
+          ..write('linkedAt: $linkedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PublicMetadataImportJobsTable extends PublicMetadataImportJobs
+    with TableInfo<$PublicMetadataImportJobsTable, PublicMetadataImportJob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PublicMetadataImportJobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _jobIdMeta = const VerificationMeta('jobId');
+  @override
+  late final GeneratedColumn<String> jobId = GeneratedColumn<String>(
+    'job_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _externalAccountLinkIdMeta =
+      const VerificationMeta('externalAccountLinkId');
+  @override
+  late final GeneratedColumn<String> externalAccountLinkId =
+      GeneratedColumn<String>(
+        'external_account_link_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES external_accounts (link_id)',
+        ),
+      );
+  static const VerificationMeta _rightsBasisMeta = const VerificationMeta(
+    'rightsBasis',
+  );
+  @override
+  late final GeneratedColumn<String> rightsBasis = GeneratedColumn<String>(
+    'rights_basis',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importedCountMeta = const VerificationMeta(
+    'importedCount',
+  );
+  @override
+  late final GeneratedColumn<int> importedCount = GeneratedColumn<int>(
+    'imported_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _skippedCountMeta = const VerificationMeta(
+    'skippedCount',
+  );
+  @override
+  late final GeneratedColumn<int> skippedCount = GeneratedColumn<int>(
+    'skipped_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _messageMeta = const VerificationMeta(
+    'message',
+  );
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+    'message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pollCountMeta = const VerificationMeta(
+    'pollCount',
+  );
+  @override
+  late final GeneratedColumn<int> pollCount = GeneratedColumn<int>(
+    'poll_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    jobId,
+    channelId,
+    externalAccountLinkId,
+    rightsBasis,
+    status,
+    importedCount,
+    skippedCount,
+    message,
+    pollCount,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'public_metadata_import_jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PublicMetadataImportJob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('job_id')) {
+      context.handle(
+        _jobIdMeta,
+        jobId.isAcceptableOrUnknown(data['job_id']!, _jobIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jobIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('external_account_link_id')) {
+      context.handle(
+        _externalAccountLinkIdMeta,
+        externalAccountLinkId.isAcceptableOrUnknown(
+          data['external_account_link_id']!,
+          _externalAccountLinkIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_externalAccountLinkIdMeta);
+    }
+    if (data.containsKey('rights_basis')) {
+      context.handle(
+        _rightsBasisMeta,
+        rightsBasis.isAcceptableOrUnknown(
+          data['rights_basis']!,
+          _rightsBasisMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_rightsBasisMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('imported_count')) {
+      context.handle(
+        _importedCountMeta,
+        importedCount.isAcceptableOrUnknown(
+          data['imported_count']!,
+          _importedCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_importedCountMeta);
+    }
+    if (data.containsKey('skipped_count')) {
+      context.handle(
+        _skippedCountMeta,
+        skippedCount.isAcceptableOrUnknown(
+          data['skipped_count']!,
+          _skippedCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_skippedCountMeta);
+    }
+    if (data.containsKey('message')) {
+      context.handle(
+        _messageMeta,
+        message.isAcceptableOrUnknown(data['message']!, _messageMeta),
+      );
+    }
+    if (data.containsKey('poll_count')) {
+      context.handle(
+        _pollCountMeta,
+        pollCount.isAcceptableOrUnknown(data['poll_count']!, _pollCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pollCountMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {jobId};
+  @override
+  PublicMetadataImportJob map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PublicMetadataImportJob(
+      jobId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}job_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      externalAccountLinkId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_account_link_id'],
+      )!,
+      rightsBasis: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rights_basis'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      importedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}imported_count'],
+      )!,
+      skippedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}skipped_count'],
+      )!,
+      message: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message'],
+      ),
+      pollCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poll_count'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PublicMetadataImportJobsTable createAlias(String alias) {
+    return $PublicMetadataImportJobsTable(attachedDatabase, alias);
+  }
+}
+
+class PublicMetadataImportJob extends DataClass
+    implements Insertable<PublicMetadataImportJob> {
+  final String jobId;
+  final String channelId;
+  final String externalAccountLinkId;
+  final String rightsBasis;
+  final String status;
+  final int importedCount;
+  final int skippedCount;
+  final String? message;
+  final int pollCount;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const PublicMetadataImportJob({
+    required this.jobId,
+    required this.channelId,
+    required this.externalAccountLinkId,
+    required this.rightsBasis,
+    required this.status,
+    required this.importedCount,
+    required this.skippedCount,
+    this.message,
+    required this.pollCount,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['job_id'] = Variable<String>(jobId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['external_account_link_id'] = Variable<String>(externalAccountLinkId);
+    map['rights_basis'] = Variable<String>(rightsBasis);
+    map['status'] = Variable<String>(status);
+    map['imported_count'] = Variable<int>(importedCount);
+    map['skipped_count'] = Variable<int>(skippedCount);
+    if (!nullToAbsent || message != null) {
+      map['message'] = Variable<String>(message);
+    }
+    map['poll_count'] = Variable<int>(pollCount);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  PublicMetadataImportJobsCompanion toCompanion(bool nullToAbsent) {
+    return PublicMetadataImportJobsCompanion(
+      jobId: Value(jobId),
+      channelId: Value(channelId),
+      externalAccountLinkId: Value(externalAccountLinkId),
+      rightsBasis: Value(rightsBasis),
+      status: Value(status),
+      importedCount: Value(importedCount),
+      skippedCount: Value(skippedCount),
+      message: message == null && nullToAbsent
+          ? const Value.absent()
+          : Value(message),
+      pollCount: Value(pollCount),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory PublicMetadataImportJob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PublicMetadataImportJob(
+      jobId: serializer.fromJson<String>(json['jobId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      externalAccountLinkId: serializer.fromJson<String>(
+        json['externalAccountLinkId'],
+      ),
+      rightsBasis: serializer.fromJson<String>(json['rightsBasis']),
+      status: serializer.fromJson<String>(json['status']),
+      importedCount: serializer.fromJson<int>(json['importedCount']),
+      skippedCount: serializer.fromJson<int>(json['skippedCount']),
+      message: serializer.fromJson<String?>(json['message']),
+      pollCount: serializer.fromJson<int>(json['pollCount']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'jobId': serializer.toJson<String>(jobId),
+      'channelId': serializer.toJson<String>(channelId),
+      'externalAccountLinkId': serializer.toJson<String>(externalAccountLinkId),
+      'rightsBasis': serializer.toJson<String>(rightsBasis),
+      'status': serializer.toJson<String>(status),
+      'importedCount': serializer.toJson<int>(importedCount),
+      'skippedCount': serializer.toJson<int>(skippedCount),
+      'message': serializer.toJson<String?>(message),
+      'pollCount': serializer.toJson<int>(pollCount),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  PublicMetadataImportJob copyWith({
+    String? jobId,
+    String? channelId,
+    String? externalAccountLinkId,
+    String? rightsBasis,
+    String? status,
+    int? importedCount,
+    int? skippedCount,
+    Value<String?> message = const Value.absent(),
+    int? pollCount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => PublicMetadataImportJob(
+    jobId: jobId ?? this.jobId,
+    channelId: channelId ?? this.channelId,
+    externalAccountLinkId: externalAccountLinkId ?? this.externalAccountLinkId,
+    rightsBasis: rightsBasis ?? this.rightsBasis,
+    status: status ?? this.status,
+    importedCount: importedCount ?? this.importedCount,
+    skippedCount: skippedCount ?? this.skippedCount,
+    message: message.present ? message.value : this.message,
+    pollCount: pollCount ?? this.pollCount,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  PublicMetadataImportJob copyWithCompanion(
+    PublicMetadataImportJobsCompanion data,
+  ) {
+    return PublicMetadataImportJob(
+      jobId: data.jobId.present ? data.jobId.value : this.jobId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      externalAccountLinkId: data.externalAccountLinkId.present
+          ? data.externalAccountLinkId.value
+          : this.externalAccountLinkId,
+      rightsBasis: data.rightsBasis.present
+          ? data.rightsBasis.value
+          : this.rightsBasis,
+      status: data.status.present ? data.status.value : this.status,
+      importedCount: data.importedCount.present
+          ? data.importedCount.value
+          : this.importedCount,
+      skippedCount: data.skippedCount.present
+          ? data.skippedCount.value
+          : this.skippedCount,
+      message: data.message.present ? data.message.value : this.message,
+      pollCount: data.pollCount.present ? data.pollCount.value : this.pollCount,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PublicMetadataImportJob(')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('externalAccountLinkId: $externalAccountLinkId, ')
+          ..write('rightsBasis: $rightsBasis, ')
+          ..write('status: $status, ')
+          ..write('importedCount: $importedCount, ')
+          ..write('skippedCount: $skippedCount, ')
+          ..write('message: $message, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    jobId,
+    channelId,
+    externalAccountLinkId,
+    rightsBasis,
+    status,
+    importedCount,
+    skippedCount,
+    message,
+    pollCount,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PublicMetadataImportJob &&
+          other.jobId == this.jobId &&
+          other.channelId == this.channelId &&
+          other.externalAccountLinkId == this.externalAccountLinkId &&
+          other.rightsBasis == this.rightsBasis &&
+          other.status == this.status &&
+          other.importedCount == this.importedCount &&
+          other.skippedCount == this.skippedCount &&
+          other.message == this.message &&
+          other.pollCount == this.pollCount &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class PublicMetadataImportJobsCompanion
+    extends UpdateCompanion<PublicMetadataImportJob> {
+  final Value<String> jobId;
+  final Value<String> channelId;
+  final Value<String> externalAccountLinkId;
+  final Value<String> rightsBasis;
+  final Value<String> status;
+  final Value<int> importedCount;
+  final Value<int> skippedCount;
+  final Value<String?> message;
+  final Value<int> pollCount;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const PublicMetadataImportJobsCompanion({
+    this.jobId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.externalAccountLinkId = const Value.absent(),
+    this.rightsBasis = const Value.absent(),
+    this.status = const Value.absent(),
+    this.importedCount = const Value.absent(),
+    this.skippedCount = const Value.absent(),
+    this.message = const Value.absent(),
+    this.pollCount = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PublicMetadataImportJobsCompanion.insert({
+    required String jobId,
+    required String channelId,
+    required String externalAccountLinkId,
+    required String rightsBasis,
+    required String status,
+    required int importedCount,
+    required int skippedCount,
+    this.message = const Value.absent(),
+    required int pollCount,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : jobId = Value(jobId),
+       channelId = Value(channelId),
+       externalAccountLinkId = Value(externalAccountLinkId),
+       rightsBasis = Value(rightsBasis),
+       status = Value(status),
+       importedCount = Value(importedCount),
+       skippedCount = Value(skippedCount),
+       pollCount = Value(pollCount),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<PublicMetadataImportJob> custom({
+    Expression<String>? jobId,
+    Expression<String>? channelId,
+    Expression<String>? externalAccountLinkId,
+    Expression<String>? rightsBasis,
+    Expression<String>? status,
+    Expression<int>? importedCount,
+    Expression<int>? skippedCount,
+    Expression<String>? message,
+    Expression<int>? pollCount,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (jobId != null) 'job_id': jobId,
+      if (channelId != null) 'channel_id': channelId,
+      if (externalAccountLinkId != null)
+        'external_account_link_id': externalAccountLinkId,
+      if (rightsBasis != null) 'rights_basis': rightsBasis,
+      if (status != null) 'status': status,
+      if (importedCount != null) 'imported_count': importedCount,
+      if (skippedCount != null) 'skipped_count': skippedCount,
+      if (message != null) 'message': message,
+      if (pollCount != null) 'poll_count': pollCount,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PublicMetadataImportJobsCompanion copyWith({
+    Value<String>? jobId,
+    Value<String>? channelId,
+    Value<String>? externalAccountLinkId,
+    Value<String>? rightsBasis,
+    Value<String>? status,
+    Value<int>? importedCount,
+    Value<int>? skippedCount,
+    Value<String?>? message,
+    Value<int>? pollCount,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return PublicMetadataImportJobsCompanion(
+      jobId: jobId ?? this.jobId,
+      channelId: channelId ?? this.channelId,
+      externalAccountLinkId:
+          externalAccountLinkId ?? this.externalAccountLinkId,
+      rightsBasis: rightsBasis ?? this.rightsBasis,
+      status: status ?? this.status,
+      importedCount: importedCount ?? this.importedCount,
+      skippedCount: skippedCount ?? this.skippedCount,
+      message: message ?? this.message,
+      pollCount: pollCount ?? this.pollCount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (jobId.present) {
+      map['job_id'] = Variable<String>(jobId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (externalAccountLinkId.present) {
+      map['external_account_link_id'] = Variable<String>(
+        externalAccountLinkId.value,
+      );
+    }
+    if (rightsBasis.present) {
+      map['rights_basis'] = Variable<String>(rightsBasis.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (importedCount.present) {
+      map['imported_count'] = Variable<int>(importedCount.value);
+    }
+    if (skippedCount.present) {
+      map['skipped_count'] = Variable<int>(skippedCount.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (pollCount.present) {
+      map['poll_count'] = Variable<int>(pollCount.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PublicMetadataImportJobsCompanion(')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('externalAccountLinkId: $externalAccountLinkId, ')
+          ..write('rightsBasis: $rightsBasis, ')
+          ..write('status: $status, ')
+          ..write('importedCount: $importedCount, ')
+          ..write('skippedCount: $skippedCount, ')
+          ..write('message: $message, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PublicImportedReferencesTable extends PublicImportedReferences
+    with TableInfo<$PublicImportedReferencesTable, PublicImportedReference> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PublicImportedReferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _referenceIdMeta = const VerificationMeta(
+    'referenceId',
+  );
+  @override
+  late final GeneratedColumn<String> referenceId = GeneratedColumn<String>(
+    'reference_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _jobIdMeta = const VerificationMeta('jobId');
+  @override
+  late final GeneratedColumn<String> jobId = GeneratedColumn<String>(
+    'job_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES public_metadata_import_jobs (job_id)',
+    ),
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _platformMeta = const VerificationMeta(
+    'platform',
+  );
+  @override
+  late final GeneratedColumn<String> platform = GeneratedColumn<String>(
+    'platform',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _externalIdMeta = const VerificationMeta(
+    'externalId',
+  );
+  @override
+  late final GeneratedColumn<String> externalId = GeneratedColumn<String>(
+    'external_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _thumbnailRefMeta = const VerificationMeta(
+    'thumbnailRef',
+  );
+  @override
+  late final GeneratedColumn<String> thumbnailRef = GeneratedColumn<String>(
+    'thumbnail_ref',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _publishedAtMeta = const VerificationMeta(
+    'publishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> publishedAt = GeneratedColumn<DateTime>(
+    'published_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _rightsBasisMeta = const VerificationMeta(
+    'rightsBasis',
+  );
+  @override
+  late final GeneratedColumn<String> rightsBasis = GeneratedColumn<String>(
+    'rights_basis',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _searchIndexableMeta = const VerificationMeta(
+    'searchIndexable',
+  );
+  @override
+  late final GeneratedColumn<bool> searchIndexable = GeneratedColumn<bool>(
+    'search_indexable',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("search_indexable" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _aiQueryableMeta = const VerificationMeta(
+    'aiQueryable',
+  );
+  @override
+  late final GeneratedColumn<bool> aiQueryable = GeneratedColumn<bool>(
+    'ai_queryable',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ai_queryable" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    referenceId,
+    jobId,
+    channelId,
+    platform,
+    externalId,
+    title,
+    description,
+    thumbnailRef,
+    sourceUrl,
+    publishedAt,
+    rightsBasis,
+    searchIndexable,
+    aiQueryable,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'public_imported_references';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PublicImportedReference> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('reference_id')) {
+      context.handle(
+        _referenceIdMeta,
+        referenceId.isAcceptableOrUnknown(
+          data['reference_id']!,
+          _referenceIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_referenceIdMeta);
+    }
+    if (data.containsKey('job_id')) {
+      context.handle(
+        _jobIdMeta,
+        jobId.isAcceptableOrUnknown(data['job_id']!, _jobIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jobIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('platform')) {
+      context.handle(
+        _platformMeta,
+        platform.isAcceptableOrUnknown(data['platform']!, _platformMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_platformMeta);
+    }
+    if (data.containsKey('external_id')) {
+      context.handle(
+        _externalIdMeta,
+        externalId.isAcceptableOrUnknown(data['external_id']!, _externalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_externalIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('thumbnail_ref')) {
+      context.handle(
+        _thumbnailRefMeta,
+        thumbnailRef.isAcceptableOrUnknown(
+          data['thumbnail_ref']!,
+          _thumbnailRefMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
+    }
+    if (data.containsKey('published_at')) {
+      context.handle(
+        _publishedAtMeta,
+        publishedAt.isAcceptableOrUnknown(
+          data['published_at']!,
+          _publishedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('rights_basis')) {
+      context.handle(
+        _rightsBasisMeta,
+        rightsBasis.isAcceptableOrUnknown(
+          data['rights_basis']!,
+          _rightsBasisMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_rightsBasisMeta);
+    }
+    if (data.containsKey('search_indexable')) {
+      context.handle(
+        _searchIndexableMeta,
+        searchIndexable.isAcceptableOrUnknown(
+          data['search_indexable']!,
+          _searchIndexableMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_searchIndexableMeta);
+    }
+    if (data.containsKey('ai_queryable')) {
+      context.handle(
+        _aiQueryableMeta,
+        aiQueryable.isAcceptableOrUnknown(
+          data['ai_queryable']!,
+          _aiQueryableMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_aiQueryableMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {referenceId};
+  @override
+  PublicImportedReference map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PublicImportedReference(
+      referenceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference_id'],
+      )!,
+      jobId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}job_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      platform: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}platform'],
+      )!,
+      externalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}external_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      thumbnailRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thumbnail_ref'],
+      ),
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
+      publishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}published_at'],
+      ),
+      rightsBasis: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rights_basis'],
+      )!,
+      searchIndexable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}search_indexable'],
+      )!,
+      aiQueryable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ai_queryable'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PublicImportedReferencesTable createAlias(String alias) {
+    return $PublicImportedReferencesTable(attachedDatabase, alias);
+  }
+}
+
+class PublicImportedReference extends DataClass
+    implements Insertable<PublicImportedReference> {
+  final String referenceId;
+  final String jobId;
+  final String channelId;
+  final String platform;
+  final String externalId;
+  final String title;
+  final String? description;
+  final String? thumbnailRef;
+  final String? sourceUrl;
+  final DateTime? publishedAt;
+  final String rightsBasis;
+  final bool searchIndexable;
+  final bool aiQueryable;
+  final DateTime createdAt;
+  const PublicImportedReference({
+    required this.referenceId,
+    required this.jobId,
+    required this.channelId,
+    required this.platform,
+    required this.externalId,
+    required this.title,
+    this.description,
+    this.thumbnailRef,
+    this.sourceUrl,
+    this.publishedAt,
+    required this.rightsBasis,
+    required this.searchIndexable,
+    required this.aiQueryable,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['reference_id'] = Variable<String>(referenceId);
+    map['job_id'] = Variable<String>(jobId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['platform'] = Variable<String>(platform);
+    map['external_id'] = Variable<String>(externalId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || thumbnailRef != null) {
+      map['thumbnail_ref'] = Variable<String>(thumbnailRef);
+    }
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
+    }
+    if (!nullToAbsent || publishedAt != null) {
+      map['published_at'] = Variable<DateTime>(publishedAt);
+    }
+    map['rights_basis'] = Variable<String>(rightsBasis);
+    map['search_indexable'] = Variable<bool>(searchIndexable);
+    map['ai_queryable'] = Variable<bool>(aiQueryable);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PublicImportedReferencesCompanion toCompanion(bool nullToAbsent) {
+    return PublicImportedReferencesCompanion(
+      referenceId: Value(referenceId),
+      jobId: Value(jobId),
+      channelId: Value(channelId),
+      platform: Value(platform),
+      externalId: Value(externalId),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      thumbnailRef: thumbnailRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(thumbnailRef),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
+      publishedAt: publishedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(publishedAt),
+      rightsBasis: Value(rightsBasis),
+      searchIndexable: Value(searchIndexable),
+      aiQueryable: Value(aiQueryable),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PublicImportedReference.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PublicImportedReference(
+      referenceId: serializer.fromJson<String>(json['referenceId']),
+      jobId: serializer.fromJson<String>(json['jobId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      platform: serializer.fromJson<String>(json['platform']),
+      externalId: serializer.fromJson<String>(json['externalId']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      thumbnailRef: serializer.fromJson<String?>(json['thumbnailRef']),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
+      publishedAt: serializer.fromJson<DateTime?>(json['publishedAt']),
+      rightsBasis: serializer.fromJson<String>(json['rightsBasis']),
+      searchIndexable: serializer.fromJson<bool>(json['searchIndexable']),
+      aiQueryable: serializer.fromJson<bool>(json['aiQueryable']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'referenceId': serializer.toJson<String>(referenceId),
+      'jobId': serializer.toJson<String>(jobId),
+      'channelId': serializer.toJson<String>(channelId),
+      'platform': serializer.toJson<String>(platform),
+      'externalId': serializer.toJson<String>(externalId),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'thumbnailRef': serializer.toJson<String?>(thumbnailRef),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
+      'publishedAt': serializer.toJson<DateTime?>(publishedAt),
+      'rightsBasis': serializer.toJson<String>(rightsBasis),
+      'searchIndexable': serializer.toJson<bool>(searchIndexable),
+      'aiQueryable': serializer.toJson<bool>(aiQueryable),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PublicImportedReference copyWith({
+    String? referenceId,
+    String? jobId,
+    String? channelId,
+    String? platform,
+    String? externalId,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    Value<String?> thumbnailRef = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
+    Value<DateTime?> publishedAt = const Value.absent(),
+    String? rightsBasis,
+    bool? searchIndexable,
+    bool? aiQueryable,
+    DateTime? createdAt,
+  }) => PublicImportedReference(
+    referenceId: referenceId ?? this.referenceId,
+    jobId: jobId ?? this.jobId,
+    channelId: channelId ?? this.channelId,
+    platform: platform ?? this.platform,
+    externalId: externalId ?? this.externalId,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    thumbnailRef: thumbnailRef.present ? thumbnailRef.value : this.thumbnailRef,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
+    publishedAt: publishedAt.present ? publishedAt.value : this.publishedAt,
+    rightsBasis: rightsBasis ?? this.rightsBasis,
+    searchIndexable: searchIndexable ?? this.searchIndexable,
+    aiQueryable: aiQueryable ?? this.aiQueryable,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PublicImportedReference copyWithCompanion(
+    PublicImportedReferencesCompanion data,
+  ) {
+    return PublicImportedReference(
+      referenceId: data.referenceId.present
+          ? data.referenceId.value
+          : this.referenceId,
+      jobId: data.jobId.present ? data.jobId.value : this.jobId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      platform: data.platform.present ? data.platform.value : this.platform,
+      externalId: data.externalId.present
+          ? data.externalId.value
+          : this.externalId,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      thumbnailRef: data.thumbnailRef.present
+          ? data.thumbnailRef.value
+          : this.thumbnailRef,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
+      publishedAt: data.publishedAt.present
+          ? data.publishedAt.value
+          : this.publishedAt,
+      rightsBasis: data.rightsBasis.present
+          ? data.rightsBasis.value
+          : this.rightsBasis,
+      searchIndexable: data.searchIndexable.present
+          ? data.searchIndexable.value
+          : this.searchIndexable,
+      aiQueryable: data.aiQueryable.present
+          ? data.aiQueryable.value
+          : this.aiQueryable,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PublicImportedReference(')
+          ..write('referenceId: $referenceId, ')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('platform: $platform, ')
+          ..write('externalId: $externalId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('thumbnailRef: $thumbnailRef, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('publishedAt: $publishedAt, ')
+          ..write('rightsBasis: $rightsBasis, ')
+          ..write('searchIndexable: $searchIndexable, ')
+          ..write('aiQueryable: $aiQueryable, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    referenceId,
+    jobId,
+    channelId,
+    platform,
+    externalId,
+    title,
+    description,
+    thumbnailRef,
+    sourceUrl,
+    publishedAt,
+    rightsBasis,
+    searchIndexable,
+    aiQueryable,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PublicImportedReference &&
+          other.referenceId == this.referenceId &&
+          other.jobId == this.jobId &&
+          other.channelId == this.channelId &&
+          other.platform == this.platform &&
+          other.externalId == this.externalId &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.thumbnailRef == this.thumbnailRef &&
+          other.sourceUrl == this.sourceUrl &&
+          other.publishedAt == this.publishedAt &&
+          other.rightsBasis == this.rightsBasis &&
+          other.searchIndexable == this.searchIndexable &&
+          other.aiQueryable == this.aiQueryable &&
+          other.createdAt == this.createdAt);
+}
+
+class PublicImportedReferencesCompanion
+    extends UpdateCompanion<PublicImportedReference> {
+  final Value<String> referenceId;
+  final Value<String> jobId;
+  final Value<String> channelId;
+  final Value<String> platform;
+  final Value<String> externalId;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<String?> thumbnailRef;
+  final Value<String?> sourceUrl;
+  final Value<DateTime?> publishedAt;
+  final Value<String> rightsBasis;
+  final Value<bool> searchIndexable;
+  final Value<bool> aiQueryable;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PublicImportedReferencesCompanion({
+    this.referenceId = const Value.absent(),
+    this.jobId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.platform = const Value.absent(),
+    this.externalId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.thumbnailRef = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.publishedAt = const Value.absent(),
+    this.rightsBasis = const Value.absent(),
+    this.searchIndexable = const Value.absent(),
+    this.aiQueryable = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PublicImportedReferencesCompanion.insert({
+    required String referenceId,
+    required String jobId,
+    required String channelId,
+    required String platform,
+    required String externalId,
+    required String title,
+    this.description = const Value.absent(),
+    this.thumbnailRef = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.publishedAt = const Value.absent(),
+    required String rightsBasis,
+    required bool searchIndexable,
+    required bool aiQueryable,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : referenceId = Value(referenceId),
+       jobId = Value(jobId),
+       channelId = Value(channelId),
+       platform = Value(platform),
+       externalId = Value(externalId),
+       title = Value(title),
+       rightsBasis = Value(rightsBasis),
+       searchIndexable = Value(searchIndexable),
+       aiQueryable = Value(aiQueryable),
+       createdAt = Value(createdAt);
+  static Insertable<PublicImportedReference> custom({
+    Expression<String>? referenceId,
+    Expression<String>? jobId,
+    Expression<String>? channelId,
+    Expression<String>? platform,
+    Expression<String>? externalId,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<String>? thumbnailRef,
+    Expression<String>? sourceUrl,
+    Expression<DateTime>? publishedAt,
+    Expression<String>? rightsBasis,
+    Expression<bool>? searchIndexable,
+    Expression<bool>? aiQueryable,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (referenceId != null) 'reference_id': referenceId,
+      if (jobId != null) 'job_id': jobId,
+      if (channelId != null) 'channel_id': channelId,
+      if (platform != null) 'platform': platform,
+      if (externalId != null) 'external_id': externalId,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (thumbnailRef != null) 'thumbnail_ref': thumbnailRef,
+      if (sourceUrl != null) 'source_url': sourceUrl,
+      if (publishedAt != null) 'published_at': publishedAt,
+      if (rightsBasis != null) 'rights_basis': rightsBasis,
+      if (searchIndexable != null) 'search_indexable': searchIndexable,
+      if (aiQueryable != null) 'ai_queryable': aiQueryable,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PublicImportedReferencesCompanion copyWith({
+    Value<String>? referenceId,
+    Value<String>? jobId,
+    Value<String>? channelId,
+    Value<String>? platform,
+    Value<String>? externalId,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<String?>? thumbnailRef,
+    Value<String?>? sourceUrl,
+    Value<DateTime?>? publishedAt,
+    Value<String>? rightsBasis,
+    Value<bool>? searchIndexable,
+    Value<bool>? aiQueryable,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PublicImportedReferencesCompanion(
+      referenceId: referenceId ?? this.referenceId,
+      jobId: jobId ?? this.jobId,
+      channelId: channelId ?? this.channelId,
+      platform: platform ?? this.platform,
+      externalId: externalId ?? this.externalId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      thumbnailRef: thumbnailRef ?? this.thumbnailRef,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      publishedAt: publishedAt ?? this.publishedAt,
+      rightsBasis: rightsBasis ?? this.rightsBasis,
+      searchIndexable: searchIndexable ?? this.searchIndexable,
+      aiQueryable: aiQueryable ?? this.aiQueryable,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (referenceId.present) {
+      map['reference_id'] = Variable<String>(referenceId.value);
+    }
+    if (jobId.present) {
+      map['job_id'] = Variable<String>(jobId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (platform.present) {
+      map['platform'] = Variable<String>(platform.value);
+    }
+    if (externalId.present) {
+      map['external_id'] = Variable<String>(externalId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (thumbnailRef.present) {
+      map['thumbnail_ref'] = Variable<String>(thumbnailRef.value);
+    }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
+    }
+    if (publishedAt.present) {
+      map['published_at'] = Variable<DateTime>(publishedAt.value);
+    }
+    if (rightsBasis.present) {
+      map['rights_basis'] = Variable<String>(rightsBasis.value);
+    }
+    if (searchIndexable.present) {
+      map['search_indexable'] = Variable<bool>(searchIndexable.value);
+    }
+    if (aiQueryable.present) {
+      map['ai_queryable'] = Variable<bool>(aiQueryable.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PublicImportedReferencesCompanion(')
+          ..write('referenceId: $referenceId, ')
+          ..write('jobId: $jobId, ')
+          ..write('channelId: $channelId, ')
+          ..write('platform: $platform, ')
+          ..write('externalId: $externalId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('thumbnailRef: $thumbnailRef, ')
+          ..write('sourceUrl: $sourceUrl, ')
+          ..write('publishedAt: $publishedAt, ')
+          ..write('rightsBasis: $rightsBasis, ')
+          ..write('searchIndexable: $searchIndexable, ')
+          ..write('aiQueryable: $aiQueryable, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CrossPostJobsTable extends CrossPostJobs
+    with TableInfo<$CrossPostJobsTable, CrossPostJob> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CrossPostJobsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _crossPostIdMeta = const VerificationMeta(
+    'crossPostId',
+  );
+  @override
+  late final GeneratedColumn<String> crossPostId = GeneratedColumn<String>(
+    'cross_post_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES creators (id)',
+    ),
+  );
+  static const VerificationMeta _messageMeta = const VerificationMeta(
+    'message',
+  );
+  @override
+  late final GeneratedColumn<String> message = GeneratedColumn<String>(
+    'message',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLinkIdsJsonMeta = const VerificationMeta(
+    'targetLinkIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> targetLinkIdsJson =
+      GeneratedColumn<String>(
+        'target_link_ids_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _targetsJsonMeta = const VerificationMeta(
+    'targetsJson',
+  );
+  @override
+  late final GeneratedColumn<String> targetsJson = GeneratedColumn<String>(
+    'targets_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _announcementIdMeta = const VerificationMeta(
+    'announcementId',
+  );
+  @override
+  late final GeneratedColumn<String> announcementId = GeneratedColumn<String>(
+    'announcement_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contentRefMeta = const VerificationMeta(
+    'contentRef',
+  );
+  @override
+  late final GeneratedColumn<String> contentRef = GeneratedColumn<String>(
+    'content_ref',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _captureLinkUrlMeta = const VerificationMeta(
+    'captureLinkUrl',
+  );
+  @override
+  late final GeneratedColumn<String> captureLinkUrl = GeneratedColumn<String>(
+    'capture_link_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pollCountMeta = const VerificationMeta(
+    'pollCount',
+  );
+  @override
+  late final GeneratedColumn<int> pollCount = GeneratedColumn<int>(
+    'poll_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    crossPostId,
+    channelId,
+    message,
+    targetLinkIdsJson,
+    targetsJson,
+    announcementId,
+    contentRef,
+    captureLinkUrl,
+    pollCount,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cross_post_jobs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CrossPostJob> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('cross_post_id')) {
+      context.handle(
+        _crossPostIdMeta,
+        crossPostId.isAcceptableOrUnknown(
+          data['cross_post_id']!,
+          _crossPostIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_crossPostIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelIdMeta);
+    }
+    if (data.containsKey('message')) {
+      context.handle(
+        _messageMeta,
+        message.isAcceptableOrUnknown(data['message']!, _messageMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_messageMeta);
+    }
+    if (data.containsKey('target_link_ids_json')) {
+      context.handle(
+        _targetLinkIdsJsonMeta,
+        targetLinkIdsJson.isAcceptableOrUnknown(
+          data['target_link_ids_json']!,
+          _targetLinkIdsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetLinkIdsJsonMeta);
+    }
+    if (data.containsKey('targets_json')) {
+      context.handle(
+        _targetsJsonMeta,
+        targetsJson.isAcceptableOrUnknown(
+          data['targets_json']!,
+          _targetsJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetsJsonMeta);
+    }
+    if (data.containsKey('announcement_id')) {
+      context.handle(
+        _announcementIdMeta,
+        announcementId.isAcceptableOrUnknown(
+          data['announcement_id']!,
+          _announcementIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('content_ref')) {
+      context.handle(
+        _contentRefMeta,
+        contentRef.isAcceptableOrUnknown(data['content_ref']!, _contentRefMeta),
+      );
+    }
+    if (data.containsKey('capture_link_url')) {
+      context.handle(
+        _captureLinkUrlMeta,
+        captureLinkUrl.isAcceptableOrUnknown(
+          data['capture_link_url']!,
+          _captureLinkUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('poll_count')) {
+      context.handle(
+        _pollCountMeta,
+        pollCount.isAcceptableOrUnknown(data['poll_count']!, _pollCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pollCountMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {crossPostId};
+  @override
+  CrossPostJob map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CrossPostJob(
+      crossPostId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cross_post_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      )!,
+      message: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}message'],
+      )!,
+      targetLinkIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_link_ids_json'],
+      )!,
+      targetsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}targets_json'],
+      )!,
+      announcementId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}announcement_id'],
+      ),
+      contentRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_ref'],
+      ),
+      captureLinkUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}capture_link_url'],
+      ),
+      pollCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}poll_count'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CrossPostJobsTable createAlias(String alias) {
+    return $CrossPostJobsTable(attachedDatabase, alias);
+  }
+}
+
+class CrossPostJob extends DataClass implements Insertable<CrossPostJob> {
+  final String crossPostId;
+  final String channelId;
+  final String message;
+  final String targetLinkIdsJson;
+  final String targetsJson;
+  final String? announcementId;
+  final String? contentRef;
+  final String? captureLinkUrl;
+  final int pollCount;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const CrossPostJob({
+    required this.crossPostId,
+    required this.channelId,
+    required this.message,
+    required this.targetLinkIdsJson,
+    required this.targetsJson,
+    this.announcementId,
+    this.contentRef,
+    this.captureLinkUrl,
+    required this.pollCount,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['cross_post_id'] = Variable<String>(crossPostId);
+    map['channel_id'] = Variable<String>(channelId);
+    map['message'] = Variable<String>(message);
+    map['target_link_ids_json'] = Variable<String>(targetLinkIdsJson);
+    map['targets_json'] = Variable<String>(targetsJson);
+    if (!nullToAbsent || announcementId != null) {
+      map['announcement_id'] = Variable<String>(announcementId);
+    }
+    if (!nullToAbsent || contentRef != null) {
+      map['content_ref'] = Variable<String>(contentRef);
+    }
+    if (!nullToAbsent || captureLinkUrl != null) {
+      map['capture_link_url'] = Variable<String>(captureLinkUrl);
+    }
+    map['poll_count'] = Variable<int>(pollCount);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CrossPostJobsCompanion toCompanion(bool nullToAbsent) {
+    return CrossPostJobsCompanion(
+      crossPostId: Value(crossPostId),
+      channelId: Value(channelId),
+      message: Value(message),
+      targetLinkIdsJson: Value(targetLinkIdsJson),
+      targetsJson: Value(targetsJson),
+      announcementId: announcementId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(announcementId),
+      contentRef: contentRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contentRef),
+      captureLinkUrl: captureLinkUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(captureLinkUrl),
+      pollCount: Value(pollCount),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CrossPostJob.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CrossPostJob(
+      crossPostId: serializer.fromJson<String>(json['crossPostId']),
+      channelId: serializer.fromJson<String>(json['channelId']),
+      message: serializer.fromJson<String>(json['message']),
+      targetLinkIdsJson: serializer.fromJson<String>(json['targetLinkIdsJson']),
+      targetsJson: serializer.fromJson<String>(json['targetsJson']),
+      announcementId: serializer.fromJson<String?>(json['announcementId']),
+      contentRef: serializer.fromJson<String?>(json['contentRef']),
+      captureLinkUrl: serializer.fromJson<String?>(json['captureLinkUrl']),
+      pollCount: serializer.fromJson<int>(json['pollCount']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'crossPostId': serializer.toJson<String>(crossPostId),
+      'channelId': serializer.toJson<String>(channelId),
+      'message': serializer.toJson<String>(message),
+      'targetLinkIdsJson': serializer.toJson<String>(targetLinkIdsJson),
+      'targetsJson': serializer.toJson<String>(targetsJson),
+      'announcementId': serializer.toJson<String?>(announcementId),
+      'contentRef': serializer.toJson<String?>(contentRef),
+      'captureLinkUrl': serializer.toJson<String?>(captureLinkUrl),
+      'pollCount': serializer.toJson<int>(pollCount),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CrossPostJob copyWith({
+    String? crossPostId,
+    String? channelId,
+    String? message,
+    String? targetLinkIdsJson,
+    String? targetsJson,
+    Value<String?> announcementId = const Value.absent(),
+    Value<String?> contentRef = const Value.absent(),
+    Value<String?> captureLinkUrl = const Value.absent(),
+    int? pollCount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => CrossPostJob(
+    crossPostId: crossPostId ?? this.crossPostId,
+    channelId: channelId ?? this.channelId,
+    message: message ?? this.message,
+    targetLinkIdsJson: targetLinkIdsJson ?? this.targetLinkIdsJson,
+    targetsJson: targetsJson ?? this.targetsJson,
+    announcementId: announcementId.present
+        ? announcementId.value
+        : this.announcementId,
+    contentRef: contentRef.present ? contentRef.value : this.contentRef,
+    captureLinkUrl: captureLinkUrl.present
+        ? captureLinkUrl.value
+        : this.captureLinkUrl,
+    pollCount: pollCount ?? this.pollCount,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CrossPostJob copyWithCompanion(CrossPostJobsCompanion data) {
+    return CrossPostJob(
+      crossPostId: data.crossPostId.present
+          ? data.crossPostId.value
+          : this.crossPostId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      message: data.message.present ? data.message.value : this.message,
+      targetLinkIdsJson: data.targetLinkIdsJson.present
+          ? data.targetLinkIdsJson.value
+          : this.targetLinkIdsJson,
+      targetsJson: data.targetsJson.present
+          ? data.targetsJson.value
+          : this.targetsJson,
+      announcementId: data.announcementId.present
+          ? data.announcementId.value
+          : this.announcementId,
+      contentRef: data.contentRef.present
+          ? data.contentRef.value
+          : this.contentRef,
+      captureLinkUrl: data.captureLinkUrl.present
+          ? data.captureLinkUrl.value
+          : this.captureLinkUrl,
+      pollCount: data.pollCount.present ? data.pollCount.value : this.pollCount,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CrossPostJob(')
+          ..write('crossPostId: $crossPostId, ')
+          ..write('channelId: $channelId, ')
+          ..write('message: $message, ')
+          ..write('targetLinkIdsJson: $targetLinkIdsJson, ')
+          ..write('targetsJson: $targetsJson, ')
+          ..write('announcementId: $announcementId, ')
+          ..write('contentRef: $contentRef, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    crossPostId,
+    channelId,
+    message,
+    targetLinkIdsJson,
+    targetsJson,
+    announcementId,
+    contentRef,
+    captureLinkUrl,
+    pollCount,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CrossPostJob &&
+          other.crossPostId == this.crossPostId &&
+          other.channelId == this.channelId &&
+          other.message == this.message &&
+          other.targetLinkIdsJson == this.targetLinkIdsJson &&
+          other.targetsJson == this.targetsJson &&
+          other.announcementId == this.announcementId &&
+          other.contentRef == this.contentRef &&
+          other.captureLinkUrl == this.captureLinkUrl &&
+          other.pollCount == this.pollCount &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CrossPostJobsCompanion extends UpdateCompanion<CrossPostJob> {
+  final Value<String> crossPostId;
+  final Value<String> channelId;
+  final Value<String> message;
+  final Value<String> targetLinkIdsJson;
+  final Value<String> targetsJson;
+  final Value<String?> announcementId;
+  final Value<String?> contentRef;
+  final Value<String?> captureLinkUrl;
+  final Value<int> pollCount;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CrossPostJobsCompanion({
+    this.crossPostId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.message = const Value.absent(),
+    this.targetLinkIdsJson = const Value.absent(),
+    this.targetsJson = const Value.absent(),
+    this.announcementId = const Value.absent(),
+    this.contentRef = const Value.absent(),
+    this.captureLinkUrl = const Value.absent(),
+    this.pollCount = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CrossPostJobsCompanion.insert({
+    required String crossPostId,
+    required String channelId,
+    required String message,
+    required String targetLinkIdsJson,
+    required String targetsJson,
+    this.announcementId = const Value.absent(),
+    this.contentRef = const Value.absent(),
+    this.captureLinkUrl = const Value.absent(),
+    required int pollCount,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : crossPostId = Value(crossPostId),
+       channelId = Value(channelId),
+       message = Value(message),
+       targetLinkIdsJson = Value(targetLinkIdsJson),
+       targetsJson = Value(targetsJson),
+       pollCount = Value(pollCount),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<CrossPostJob> custom({
+    Expression<String>? crossPostId,
+    Expression<String>? channelId,
+    Expression<String>? message,
+    Expression<String>? targetLinkIdsJson,
+    Expression<String>? targetsJson,
+    Expression<String>? announcementId,
+    Expression<String>? contentRef,
+    Expression<String>? captureLinkUrl,
+    Expression<int>? pollCount,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (crossPostId != null) 'cross_post_id': crossPostId,
+      if (channelId != null) 'channel_id': channelId,
+      if (message != null) 'message': message,
+      if (targetLinkIdsJson != null) 'target_link_ids_json': targetLinkIdsJson,
+      if (targetsJson != null) 'targets_json': targetsJson,
+      if (announcementId != null) 'announcement_id': announcementId,
+      if (contentRef != null) 'content_ref': contentRef,
+      if (captureLinkUrl != null) 'capture_link_url': captureLinkUrl,
+      if (pollCount != null) 'poll_count': pollCount,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CrossPostJobsCompanion copyWith({
+    Value<String>? crossPostId,
+    Value<String>? channelId,
+    Value<String>? message,
+    Value<String>? targetLinkIdsJson,
+    Value<String>? targetsJson,
+    Value<String?>? announcementId,
+    Value<String?>? contentRef,
+    Value<String?>? captureLinkUrl,
+    Value<int>? pollCount,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CrossPostJobsCompanion(
+      crossPostId: crossPostId ?? this.crossPostId,
+      channelId: channelId ?? this.channelId,
+      message: message ?? this.message,
+      targetLinkIdsJson: targetLinkIdsJson ?? this.targetLinkIdsJson,
+      targetsJson: targetsJson ?? this.targetsJson,
+      announcementId: announcementId ?? this.announcementId,
+      contentRef: contentRef ?? this.contentRef,
+      captureLinkUrl: captureLinkUrl ?? this.captureLinkUrl,
+      pollCount: pollCount ?? this.pollCount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (crossPostId.present) {
+      map['cross_post_id'] = Variable<String>(crossPostId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (message.present) {
+      map['message'] = Variable<String>(message.value);
+    }
+    if (targetLinkIdsJson.present) {
+      map['target_link_ids_json'] = Variable<String>(targetLinkIdsJson.value);
+    }
+    if (targetsJson.present) {
+      map['targets_json'] = Variable<String>(targetsJson.value);
+    }
+    if (announcementId.present) {
+      map['announcement_id'] = Variable<String>(announcementId.value);
+    }
+    if (contentRef.present) {
+      map['content_ref'] = Variable<String>(contentRef.value);
+    }
+    if (captureLinkUrl.present) {
+      map['capture_link_url'] = Variable<String>(captureLinkUrl.value);
+    }
+    if (pollCount.present) {
+      map['poll_count'] = Variable<int>(pollCount.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CrossPostJobsCompanion(')
+          ..write('crossPostId: $crossPostId, ')
+          ..write('channelId: $channelId, ')
+          ..write('message: $message, ')
+          ..write('targetLinkIdsJson: $targetLinkIdsJson, ')
+          ..write('targetsJson: $targetsJson, ')
+          ..write('announcementId: $announcementId, ')
+          ..write('contentRef: $contentRef, ')
+          ..write('captureLinkUrl: $captureLinkUrl, ')
+          ..write('pollCount: $pollCount, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AdDecisionsTable extends AdDecisions
+    with TableInfo<$AdDecisionsTable, AdDecision> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AdDecisionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _decisionIdMeta = const VerificationMeta(
+    'decisionId',
+  );
+  @override
+  late final GeneratedColumn<String> decisionId = GeneratedColumn<String>(
+    'decision_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES content_items (id)',
+    ),
+  );
+  static const VerificationMeta _adsJsonMeta = const VerificationMeta(
+    'adsJson',
+  );
+  @override
+  late final GeneratedColumn<String> adsJson = GeneratedColumn<String>(
+    'ads_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _policyVersionMeta = const VerificationMeta(
+    'policyVersion',
+  );
+  @override
+  late final GeneratedColumn<String> policyVersion = GeneratedColumn<String>(
+    'policy_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    decisionId,
+    contentId,
+    adsJson,
+    policyVersion,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ad_decisions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AdDecision> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('decision_id')) {
+      context.handle(
+        _decisionIdMeta,
+        decisionId.isAcceptableOrUnknown(data['decision_id']!, _decisionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decisionIdMeta);
+    }
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('ads_json')) {
+      context.handle(
+        _adsJsonMeta,
+        adsJson.isAcceptableOrUnknown(data['ads_json']!, _adsJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_adsJsonMeta);
+    }
+    if (data.containsKey('policy_version')) {
+      context.handle(
+        _policyVersionMeta,
+        policyVersion.isAcceptableOrUnknown(
+          data['policy_version']!,
+          _policyVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {decisionId};
+  @override
+  AdDecision map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AdDecision(
+      decisionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision_id'],
+      )!,
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      adsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ads_json'],
+      )!,
+      policyVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}policy_version'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AdDecisionsTable createAlias(String alias) {
+    return $AdDecisionsTable(attachedDatabase, alias);
+  }
+}
+
+class AdDecision extends DataClass implements Insertable<AdDecision> {
+  final String decisionId;
+  final String contentId;
+  final String adsJson;
+  final String? policyVersion;
+  final DateTime createdAt;
+  const AdDecision({
+    required this.decisionId,
+    required this.contentId,
+    required this.adsJson,
+    this.policyVersion,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['decision_id'] = Variable<String>(decisionId);
+    map['content_id'] = Variable<String>(contentId);
+    map['ads_json'] = Variable<String>(adsJson);
+    if (!nullToAbsent || policyVersion != null) {
+      map['policy_version'] = Variable<String>(policyVersion);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AdDecisionsCompanion toCompanion(bool nullToAbsent) {
+    return AdDecisionsCompanion(
+      decisionId: Value(decisionId),
+      contentId: Value(contentId),
+      adsJson: Value(adsJson),
+      policyVersion: policyVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(policyVersion),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AdDecision.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AdDecision(
+      decisionId: serializer.fromJson<String>(json['decisionId']),
+      contentId: serializer.fromJson<String>(json['contentId']),
+      adsJson: serializer.fromJson<String>(json['adsJson']),
+      policyVersion: serializer.fromJson<String?>(json['policyVersion']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'decisionId': serializer.toJson<String>(decisionId),
+      'contentId': serializer.toJson<String>(contentId),
+      'adsJson': serializer.toJson<String>(adsJson),
+      'policyVersion': serializer.toJson<String?>(policyVersion),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AdDecision copyWith({
+    String? decisionId,
+    String? contentId,
+    String? adsJson,
+    Value<String?> policyVersion = const Value.absent(),
+    DateTime? createdAt,
+  }) => AdDecision(
+    decisionId: decisionId ?? this.decisionId,
+    contentId: contentId ?? this.contentId,
+    adsJson: adsJson ?? this.adsJson,
+    policyVersion: policyVersion.present
+        ? policyVersion.value
+        : this.policyVersion,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AdDecision copyWithCompanion(AdDecisionsCompanion data) {
+    return AdDecision(
+      decisionId: data.decisionId.present
+          ? data.decisionId.value
+          : this.decisionId,
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      adsJson: data.adsJson.present ? data.adsJson.value : this.adsJson,
+      policyVersion: data.policyVersion.present
+          ? data.policyVersion.value
+          : this.policyVersion,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdDecision(')
+          ..write('decisionId: $decisionId, ')
+          ..write('contentId: $contentId, ')
+          ..write('adsJson: $adsJson, ')
+          ..write('policyVersion: $policyVersion, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(decisionId, contentId, adsJson, policyVersion, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AdDecision &&
+          other.decisionId == this.decisionId &&
+          other.contentId == this.contentId &&
+          other.adsJson == this.adsJson &&
+          other.policyVersion == this.policyVersion &&
+          other.createdAt == this.createdAt);
+}
+
+class AdDecisionsCompanion extends UpdateCompanion<AdDecision> {
+  final Value<String> decisionId;
+  final Value<String> contentId;
+  final Value<String> adsJson;
+  final Value<String?> policyVersion;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const AdDecisionsCompanion({
+    this.decisionId = const Value.absent(),
+    this.contentId = const Value.absent(),
+    this.adsJson = const Value.absent(),
+    this.policyVersion = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AdDecisionsCompanion.insert({
+    required String decisionId,
+    required String contentId,
+    required String adsJson,
+    this.policyVersion = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : decisionId = Value(decisionId),
+       contentId = Value(contentId),
+       adsJson = Value(adsJson),
+       createdAt = Value(createdAt);
+  static Insertable<AdDecision> custom({
+    Expression<String>? decisionId,
+    Expression<String>? contentId,
+    Expression<String>? adsJson,
+    Expression<String>? policyVersion,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (decisionId != null) 'decision_id': decisionId,
+      if (contentId != null) 'content_id': contentId,
+      if (adsJson != null) 'ads_json': adsJson,
+      if (policyVersion != null) 'policy_version': policyVersion,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AdDecisionsCompanion copyWith({
+    Value<String>? decisionId,
+    Value<String>? contentId,
+    Value<String>? adsJson,
+    Value<String?>? policyVersion,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return AdDecisionsCompanion(
+      decisionId: decisionId ?? this.decisionId,
+      contentId: contentId ?? this.contentId,
+      adsJson: adsJson ?? this.adsJson,
+      policyVersion: policyVersion ?? this.policyVersion,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (decisionId.present) {
+      map['decision_id'] = Variable<String>(decisionId.value);
+    }
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (adsJson.present) {
+      map['ads_json'] = Variable<String>(adsJson.value);
+    }
+    if (policyVersion.present) {
+      map['policy_version'] = Variable<String>(policyVersion.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdDecisionsCompanion(')
+          ..write('decisionId: $decisionId, ')
+          ..write('contentId: $contentId, ')
+          ..write('adsJson: $adsJson, ')
+          ..write('policyVersion: $policyVersion, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AdImpressionsTable extends AdImpressions
+    with TableInfo<$AdImpressionsTable, AdImpression> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AdImpressionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _decisionIdMeta = const VerificationMeta(
+    'decisionId',
+  );
+  @override
+  late final GeneratedColumn<String> decisionId = GeneratedColumn<String>(
+    'decision_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES ad_decisions (decision_id)',
+    ),
+  );
+  static const VerificationMeta _adIdMeta = const VerificationMeta('adId');
+  @override
+  late final GeneratedColumn<String> adId = GeneratedColumn<String>(
+    'ad_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedMeta = const VerificationMeta(
+    'completed',
+  );
+  @override
+  late final GeneratedColumn<bool> completed = GeneratedColumn<bool>(
+    'completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("completed" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
+    'receipt_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    decisionId,
+    adId,
+    completed,
+    receiptId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'ad_impressions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AdImpression> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('decision_id')) {
+      context.handle(
+        _decisionIdMeta,
+        decisionId.isAcceptableOrUnknown(data['decision_id']!, _decisionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decisionIdMeta);
+    }
+    if (data.containsKey('ad_id')) {
+      context.handle(
+        _adIdMeta,
+        adId.isAcceptableOrUnknown(data['ad_id']!, _adIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_adIdMeta);
+    }
+    if (data.containsKey('completed')) {
+      context.handle(
+        _completedMeta,
+        completed.isAcceptableOrUnknown(data['completed']!, _completedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_completedMeta);
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AdImpression map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AdImpression(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      decisionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision_id'],
+      )!,
+      adId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ad_id'],
+      )!,
+      completed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}completed'],
+      )!,
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AdImpressionsTable createAlias(String alias) {
+    return $AdImpressionsTable(attachedDatabase, alias);
+  }
+}
+
+class AdImpression extends DataClass implements Insertable<AdImpression> {
+  final String id;
+  final String decisionId;
+  final String adId;
+  final bool completed;
+  final String? receiptId;
+  final DateTime createdAt;
+  const AdImpression({
+    required this.id,
+    required this.decisionId,
+    required this.adId,
+    required this.completed,
+    this.receiptId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['decision_id'] = Variable<String>(decisionId);
+    map['ad_id'] = Variable<String>(adId);
+    map['completed'] = Variable<bool>(completed);
+    if (!nullToAbsent || receiptId != null) {
+      map['receipt_id'] = Variable<String>(receiptId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AdImpressionsCompanion toCompanion(bool nullToAbsent) {
+    return AdImpressionsCompanion(
+      id: Value(id),
+      decisionId: Value(decisionId),
+      adId: Value(adId),
+      completed: Value(completed),
+      receiptId: receiptId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiptId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AdImpression.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AdImpression(
+      id: serializer.fromJson<String>(json['id']),
+      decisionId: serializer.fromJson<String>(json['decisionId']),
+      adId: serializer.fromJson<String>(json['adId']),
+      completed: serializer.fromJson<bool>(json['completed']),
+      receiptId: serializer.fromJson<String?>(json['receiptId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'decisionId': serializer.toJson<String>(decisionId),
+      'adId': serializer.toJson<String>(adId),
+      'completed': serializer.toJson<bool>(completed),
+      'receiptId': serializer.toJson<String?>(receiptId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AdImpression copyWith({
+    String? id,
+    String? decisionId,
+    String? adId,
+    bool? completed,
+    Value<String?> receiptId = const Value.absent(),
+    DateTime? createdAt,
+  }) => AdImpression(
+    id: id ?? this.id,
+    decisionId: decisionId ?? this.decisionId,
+    adId: adId ?? this.adId,
+    completed: completed ?? this.completed,
+    receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AdImpression copyWithCompanion(AdImpressionsCompanion data) {
+    return AdImpression(
+      id: data.id.present ? data.id.value : this.id,
+      decisionId: data.decisionId.present
+          ? data.decisionId.value
+          : this.decisionId,
+      adId: data.adId.present ? data.adId.value : this.adId,
+      completed: data.completed.present ? data.completed.value : this.completed,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdImpression(')
+          ..write('id: $id, ')
+          ..write('decisionId: $decisionId, ')
+          ..write('adId: $adId, ')
+          ..write('completed: $completed, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, decisionId, adId, completed, receiptId, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AdImpression &&
+          other.id == this.id &&
+          other.decisionId == this.decisionId &&
+          other.adId == this.adId &&
+          other.completed == this.completed &&
+          other.receiptId == this.receiptId &&
+          other.createdAt == this.createdAt);
+}
+
+class AdImpressionsCompanion extends UpdateCompanion<AdImpression> {
+  final Value<String> id;
+  final Value<String> decisionId;
+  final Value<String> adId;
+  final Value<bool> completed;
+  final Value<String?> receiptId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const AdImpressionsCompanion({
+    this.id = const Value.absent(),
+    this.decisionId = const Value.absent(),
+    this.adId = const Value.absent(),
+    this.completed = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AdImpressionsCompanion.insert({
+    required String id,
+    required String decisionId,
+    required String adId,
+    required bool completed,
+    this.receiptId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       decisionId = Value(decisionId),
+       adId = Value(adId),
+       completed = Value(completed),
+       createdAt = Value(createdAt);
+  static Insertable<AdImpression> custom({
+    Expression<String>? id,
+    Expression<String>? decisionId,
+    Expression<String>? adId,
+    Expression<bool>? completed,
+    Expression<String>? receiptId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (decisionId != null) 'decision_id': decisionId,
+      if (adId != null) 'ad_id': adId,
+      if (completed != null) 'completed': completed,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AdImpressionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? decisionId,
+    Value<String>? adId,
+    Value<bool>? completed,
+    Value<String?>? receiptId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return AdImpressionsCompanion(
+      id: id ?? this.id,
+      decisionId: decisionId ?? this.decisionId,
+      adId: adId ?? this.adId,
+      completed: completed ?? this.completed,
+      receiptId: receiptId ?? this.receiptId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (decisionId.present) {
+      map['decision_id'] = Variable<String>(decisionId.value);
+    }
+    if (adId.present) {
+      map['ad_id'] = Variable<String>(adId.value);
+    }
+    if (completed.present) {
+      map['completed'] = Variable<bool>(completed.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AdImpressionsCompanion(')
+          ..write('id: $id, ')
+          ..write('decisionId: $decisionId, ')
+          ..write('adId: $adId, ')
+          ..write('completed: $completed, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PremiumNoAdEventsTable extends PremiumNoAdEvents
+    with TableInfo<$PremiumNoAdEventsTable, PremiumNoAdEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PremiumNoAdEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _passportIdMeta = const VerificationMeta(
+    'passportId',
+  );
+  @override
+  late final GeneratedColumn<String> passportId = GeneratedColumn<String>(
+    'passport_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES fan_passports (id)',
+    ),
+  );
+  static const VerificationMeta _contentIdMeta = const VerificationMeta(
+    'contentId',
+  );
+  @override
+  late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
+    'content_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES content_items (id)',
+    ),
+  );
+  static const VerificationMeta _channelIdMeta = const VerificationMeta(
+    'channelId',
+  );
+  @override
+  late final GeneratedColumn<String> channelId = GeneratedColumn<String>(
+    'channel_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sessionIntentMeta = const VerificationMeta(
+    'sessionIntent',
+  );
+  @override
+  late final GeneratedColumn<String> sessionIntent = GeneratedColumn<String>(
+    'session_intent',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
+    'receipt_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    passportId,
+    contentId,
+    channelId,
+    sessionIntent,
+    receiptId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'premium_no_ad_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PremiumNoAdEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('passport_id')) {
+      context.handle(
+        _passportIdMeta,
+        passportId.isAcceptableOrUnknown(data['passport_id']!, _passportIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_passportIdMeta);
+    }
+    if (data.containsKey('content_id')) {
+      context.handle(
+        _contentIdMeta,
+        contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentIdMeta);
+    }
+    if (data.containsKey('channel_id')) {
+      context.handle(
+        _channelIdMeta,
+        channelId.isAcceptableOrUnknown(data['channel_id']!, _channelIdMeta),
+      );
+    }
+    if (data.containsKey('session_intent')) {
+      context.handle(
+        _sessionIntentMeta,
+        sessionIntent.isAcceptableOrUnknown(
+          data['session_intent']!,
+          _sessionIntentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PremiumNoAdEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PremiumNoAdEvent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      passportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}passport_id'],
+      )!,
+      contentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_id'],
+      )!,
+      channelId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel_id'],
+      ),
+      sessionIntent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_intent'],
+      ),
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PremiumNoAdEventsTable createAlias(String alias) {
+    return $PremiumNoAdEventsTable(attachedDatabase, alias);
+  }
+}
+
+class PremiumNoAdEvent extends DataClass
+    implements Insertable<PremiumNoAdEvent> {
+  final String id;
+  final String passportId;
+  final String contentId;
+  final String? channelId;
+  final String? sessionIntent;
+  final String? receiptId;
+  final DateTime createdAt;
+  const PremiumNoAdEvent({
+    required this.id,
+    required this.passportId,
+    required this.contentId,
+    this.channelId,
+    this.sessionIntent,
+    this.receiptId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['passport_id'] = Variable<String>(passportId);
+    map['content_id'] = Variable<String>(contentId);
+    if (!nullToAbsent || channelId != null) {
+      map['channel_id'] = Variable<String>(channelId);
+    }
+    if (!nullToAbsent || sessionIntent != null) {
+      map['session_intent'] = Variable<String>(sessionIntent);
+    }
+    if (!nullToAbsent || receiptId != null) {
+      map['receipt_id'] = Variable<String>(receiptId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PremiumNoAdEventsCompanion toCompanion(bool nullToAbsent) {
+    return PremiumNoAdEventsCompanion(
+      id: Value(id),
+      passportId: Value(passportId),
+      contentId: Value(contentId),
+      channelId: channelId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(channelId),
+      sessionIntent: sessionIntent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sessionIntent),
+      receiptId: receiptId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiptId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PremiumNoAdEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PremiumNoAdEvent(
+      id: serializer.fromJson<String>(json['id']),
+      passportId: serializer.fromJson<String>(json['passportId']),
+      contentId: serializer.fromJson<String>(json['contentId']),
+      channelId: serializer.fromJson<String?>(json['channelId']),
+      sessionIntent: serializer.fromJson<String?>(json['sessionIntent']),
+      receiptId: serializer.fromJson<String?>(json['receiptId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'passportId': serializer.toJson<String>(passportId),
+      'contentId': serializer.toJson<String>(contentId),
+      'channelId': serializer.toJson<String?>(channelId),
+      'sessionIntent': serializer.toJson<String?>(sessionIntent),
+      'receiptId': serializer.toJson<String?>(receiptId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  PremiumNoAdEvent copyWith({
+    String? id,
+    String? passportId,
+    String? contentId,
+    Value<String?> channelId = const Value.absent(),
+    Value<String?> sessionIntent = const Value.absent(),
+    Value<String?> receiptId = const Value.absent(),
+    DateTime? createdAt,
+  }) => PremiumNoAdEvent(
+    id: id ?? this.id,
+    passportId: passportId ?? this.passportId,
+    contentId: contentId ?? this.contentId,
+    channelId: channelId.present ? channelId.value : this.channelId,
+    sessionIntent: sessionIntent.present
+        ? sessionIntent.value
+        : this.sessionIntent,
+    receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PremiumNoAdEvent copyWithCompanion(PremiumNoAdEventsCompanion data) {
+    return PremiumNoAdEvent(
+      id: data.id.present ? data.id.value : this.id,
+      passportId: data.passportId.present
+          ? data.passportId.value
+          : this.passportId,
+      contentId: data.contentId.present ? data.contentId.value : this.contentId,
+      channelId: data.channelId.present ? data.channelId.value : this.channelId,
+      sessionIntent: data.sessionIntent.present
+          ? data.sessionIntent.value
+          : this.sessionIntent,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PremiumNoAdEvent(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('channelId: $channelId, ')
+          ..write('sessionIntent: $sessionIntent, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    passportId,
+    contentId,
+    channelId,
+    sessionIntent,
+    receiptId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PremiumNoAdEvent &&
+          other.id == this.id &&
+          other.passportId == this.passportId &&
+          other.contentId == this.contentId &&
+          other.channelId == this.channelId &&
+          other.sessionIntent == this.sessionIntent &&
+          other.receiptId == this.receiptId &&
+          other.createdAt == this.createdAt);
+}
+
+class PremiumNoAdEventsCompanion extends UpdateCompanion<PremiumNoAdEvent> {
+  final Value<String> id;
+  final Value<String> passportId;
+  final Value<String> contentId;
+  final Value<String?> channelId;
+  final Value<String?> sessionIntent;
+  final Value<String?> receiptId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const PremiumNoAdEventsCompanion({
+    this.id = const Value.absent(),
+    this.passportId = const Value.absent(),
+    this.contentId = const Value.absent(),
+    this.channelId = const Value.absent(),
+    this.sessionIntent = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PremiumNoAdEventsCompanion.insert({
+    required String id,
+    required String passportId,
+    required String contentId,
+    this.channelId = const Value.absent(),
+    this.sessionIntent = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       passportId = Value(passportId),
+       contentId = Value(contentId),
+       createdAt = Value(createdAt);
+  static Insertable<PremiumNoAdEvent> custom({
+    Expression<String>? id,
+    Expression<String>? passportId,
+    Expression<String>? contentId,
+    Expression<String>? channelId,
+    Expression<String>? sessionIntent,
+    Expression<String>? receiptId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (passportId != null) 'passport_id': passportId,
+      if (contentId != null) 'content_id': contentId,
+      if (channelId != null) 'channel_id': channelId,
+      if (sessionIntent != null) 'session_intent': sessionIntent,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PremiumNoAdEventsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? passportId,
+    Value<String>? contentId,
+    Value<String?>? channelId,
+    Value<String?>? sessionIntent,
+    Value<String?>? receiptId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PremiumNoAdEventsCompanion(
+      id: id ?? this.id,
+      passportId: passportId ?? this.passportId,
+      contentId: contentId ?? this.contentId,
+      channelId: channelId ?? this.channelId,
+      sessionIntent: sessionIntent ?? this.sessionIntent,
+      receiptId: receiptId ?? this.receiptId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (passportId.present) {
+      map['passport_id'] = Variable<String>(passportId.value);
+    }
+    if (contentId.present) {
+      map['content_id'] = Variable<String>(contentId.value);
+    }
+    if (channelId.present) {
+      map['channel_id'] = Variable<String>(channelId.value);
+    }
+    if (sessionIntent.present) {
+      map['session_intent'] = Variable<String>(sessionIntent.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PremiumNoAdEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('passportId: $passportId, ')
+          ..write('contentId: $contentId, ')
+          ..write('channelId: $channelId, ')
+          ..write('sessionIntent: $sessionIntent, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $CreatorChannelsTable extends CreatorChannels
     with TableInfo<$CreatorChannelsTable, CreatorChannel> {
   @override
@@ -20832,6 +28453,27 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
   late final $PlaybackTokensTable playbackTokens = $PlaybackTokensTable(this);
   late final $ReceiptsTable receipts = $ReceiptsTable(this);
   late final $AdPreferencesTable adPreferences = $AdPreferencesTable(this);
+  late final $CaptureLinksTable captureLinks = $CaptureLinksTable(this);
+  late final $ReFollowEventsTable reFollowEvents = $ReFollowEventsTable(this);
+  late final $AnnouncementTemplatesTable announcementTemplates =
+      $AnnouncementTemplatesTable(this);
+  late final $RenderedAnnouncementsTable renderedAnnouncements =
+      $RenderedAnnouncementsTable(this);
+  late final $LinkInBioPagesTable linkInBioPages = $LinkInBioPagesTable(this);
+  late final $StarterPacksTable starterPacks = $StarterPacksTable(this);
+  late final $BulkFollowJobsTable bulkFollowJobs = $BulkFollowJobsTable(this);
+  late final $ExternalAccountsTable externalAccounts = $ExternalAccountsTable(
+    this,
+  );
+  late final $PublicMetadataImportJobsTable publicMetadataImportJobs =
+      $PublicMetadataImportJobsTable(this);
+  late final $PublicImportedReferencesTable publicImportedReferences =
+      $PublicImportedReferencesTable(this);
+  late final $CrossPostJobsTable crossPostJobs = $CrossPostJobsTable(this);
+  late final $AdDecisionsTable adDecisions = $AdDecisionsTable(this);
+  late final $AdImpressionsTable adImpressions = $AdImpressionsTable(this);
+  late final $PremiumNoAdEventsTable premiumNoAdEvents =
+      $PremiumNoAdEventsTable(this);
   late final $CreatorChannelsTable creatorChannels = $CreatorChannelsTable(
     this,
   );
@@ -20891,6 +28533,20 @@ abstract class _$LoomDatabase extends GeneratedDatabase {
     playbackTokens,
     receipts,
     adPreferences,
+    captureLinks,
+    reFollowEvents,
+    announcementTemplates,
+    renderedAnnouncements,
+    linkInBioPages,
+    starterPacks,
+    bulkFollowJobs,
+    externalAccounts,
+    publicMetadataImportJobs,
+    publicImportedReferences,
+    crossPostJobs,
+    adDecisions,
+    adImpressions,
+    premiumNoAdEvents,
     creatorChannels,
     channelManifests,
     hostingContracts,
@@ -21108,6 +28764,231 @@ final class $$CreatorsTableReferences
     final cache = $_typedResult.readTableOrNull(
       _searchIndexEntriesRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CaptureLinksTable, List<CaptureLink>>
+  _captureLinksRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.captureLinks,
+    aliasName: $_aliasNameGenerator(db.creators.id, db.captureLinks.channelId),
+  );
+
+  $$CaptureLinksTableProcessedTableManager get captureLinksRefs {
+    final manager = $$CaptureLinksTableTableManager(
+      $_db,
+      $_db.captureLinks,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_captureLinksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReFollowEventsTable, List<ReFollowEvent>>
+  _reFollowEventsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.reFollowEvents,
+    aliasName: $_aliasNameGenerator(
+      db.creators.id,
+      db.reFollowEvents.channelId,
+    ),
+  );
+
+  $$ReFollowEventsTableProcessedTableManager get reFollowEventsRefs {
+    final manager = $$ReFollowEventsTableTableManager(
+      $_db,
+      $_db.reFollowEvents,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_reFollowEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RenderedAnnouncementsTable,
+    List<RenderedAnnouncement>
+  >
+  _renderedAnnouncementsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.renderedAnnouncements,
+        aliasName: $_aliasNameGenerator(
+          db.creators.id,
+          db.renderedAnnouncements.channelId,
+        ),
+      );
+
+  $$RenderedAnnouncementsTableProcessedTableManager
+  get renderedAnnouncementsRefs {
+    final manager = $$RenderedAnnouncementsTableTableManager(
+      $_db,
+      $_db.renderedAnnouncements,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _renderedAnnouncementsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$LinkInBioPagesTable, List<LinkInBioPage>>
+  _linkInBioPagesRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.linkInBioPages,
+    aliasName: $_aliasNameGenerator(
+      db.creators.id,
+      db.linkInBioPages.channelId,
+    ),
+  );
+
+  $$LinkInBioPagesTableProcessedTableManager get linkInBioPagesRefs {
+    final manager = $$LinkInBioPagesTableTableManager(
+      $_db,
+      $_db.linkInBioPages,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_linkInBioPagesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$StarterPacksTable, List<StarterPack>>
+  _starterPacksRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.starterPacks,
+    aliasName: $_aliasNameGenerator(db.creators.id, db.starterPacks.channelId),
+  );
+
+  $$StarterPacksTableProcessedTableManager get starterPacksRefs {
+    final manager = $$StarterPacksTableTableManager(
+      $_db,
+      $_db.starterPacks,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_starterPacksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$BulkFollowJobsTable, List<BulkFollowJob>>
+  _bulkFollowJobsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.bulkFollowJobs,
+    aliasName: $_aliasNameGenerator(
+      db.creators.id,
+      db.bulkFollowJobs.channelId,
+    ),
+  );
+
+  $$BulkFollowJobsTableProcessedTableManager get bulkFollowJobsRefs {
+    final manager = $$BulkFollowJobsTableTableManager(
+      $_db,
+      $_db.bulkFollowJobs,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bulkFollowJobsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ExternalAccountsTable, List<ExternalAccount>>
+  _externalAccountsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.externalAccounts,
+        aliasName: $_aliasNameGenerator(
+          db.creators.id,
+          db.externalAccounts.channelId,
+        ),
+      );
+
+  $$ExternalAccountsTableProcessedTableManager get externalAccountsRefs {
+    final manager = $$ExternalAccountsTableTableManager(
+      $_db,
+      $_db.externalAccounts,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _externalAccountsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PublicMetadataImportJobsTable,
+    List<PublicMetadataImportJob>
+  >
+  _publicMetadataImportJobsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.publicMetadataImportJobs,
+        aliasName: $_aliasNameGenerator(
+          db.creators.id,
+          db.publicMetadataImportJobs.channelId,
+        ),
+      );
+
+  $$PublicMetadataImportJobsTableProcessedTableManager
+  get publicMetadataImportJobsRefs {
+    final manager = $$PublicMetadataImportJobsTableTableManager(
+      $_db,
+      $_db.publicMetadataImportJobs,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _publicMetadataImportJobsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PublicImportedReferencesTable,
+    List<PublicImportedReference>
+  >
+  _publicImportedReferencesRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.publicImportedReferences,
+        aliasName: $_aliasNameGenerator(
+          db.creators.id,
+          db.publicImportedReferences.channelId,
+        ),
+      );
+
+  $$PublicImportedReferencesTableProcessedTableManager
+  get publicImportedReferencesRefs {
+    final manager = $$PublicImportedReferencesTableTableManager(
+      $_db,
+      $_db.publicImportedReferences,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _publicImportedReferencesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CrossPostJobsTable, List<CrossPostJob>>
+  _crossPostJobsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.crossPostJobs,
+    aliasName: $_aliasNameGenerator(db.creators.id, db.crossPostJobs.channelId),
+  );
+
+  $$CrossPostJobsTableProcessedTableManager get crossPostJobsRefs {
+    final manager = $$CrossPostJobsTableTableManager(
+      $_db,
+      $_db.crossPostJobs,
+    ).filter((f) => f.channelId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_crossPostJobsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -21365,6 +29246,261 @@ class $$CreatorsTableFilterComposer
           }) => $$SearchIndexEntriesTableFilterComposer(
             $db: $db,
             $table: $db.searchIndexEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> captureLinksRefs(
+    Expression<bool> Function($$CaptureLinksTableFilterComposer f) f,
+  ) {
+    final $$CaptureLinksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.captureLinks,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaptureLinksTableFilterComposer(
+            $db: $db,
+            $table: $db.captureLinks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reFollowEventsRefs(
+    Expression<bool> Function($$ReFollowEventsTableFilterComposer f) f,
+  ) {
+    final $$ReFollowEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> renderedAnnouncementsRefs(
+    Expression<bool> Function($$RenderedAnnouncementsTableFilterComposer f) f,
+  ) {
+    final $$RenderedAnnouncementsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.renderedAnnouncements,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RenderedAnnouncementsTableFilterComposer(
+                $db: $db,
+                $table: $db.renderedAnnouncements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> linkInBioPagesRefs(
+    Expression<bool> Function($$LinkInBioPagesTableFilterComposer f) f,
+  ) {
+    final $$LinkInBioPagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.linkInBioPages,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LinkInBioPagesTableFilterComposer(
+            $db: $db,
+            $table: $db.linkInBioPages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> starterPacksRefs(
+    Expression<bool> Function($$StarterPacksTableFilterComposer f) f,
+  ) {
+    final $$StarterPacksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.starterPacks,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StarterPacksTableFilterComposer(
+            $db: $db,
+            $table: $db.starterPacks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bulkFollowJobsRefs(
+    Expression<bool> Function($$BulkFollowJobsTableFilterComposer f) f,
+  ) {
+    final $$BulkFollowJobsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bulkFollowJobs,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BulkFollowJobsTableFilterComposer(
+            $db: $db,
+            $table: $db.bulkFollowJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> externalAccountsRefs(
+    Expression<bool> Function($$ExternalAccountsTableFilterComposer f) f,
+  ) {
+    final $$ExternalAccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.externalAccounts,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalAccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.externalAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> publicMetadataImportJobsRefs(
+    Expression<bool> Function($$PublicMetadataImportJobsTableFilterComposer f)
+    f,
+  ) {
+    final $$PublicMetadataImportJobsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableFilterComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> publicImportedReferencesRefs(
+    Expression<bool> Function($$PublicImportedReferencesTableFilterComposer f)
+    f,
+  ) {
+    final $$PublicImportedReferencesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.publicImportedReferences,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicImportedReferencesTableFilterComposer(
+                $db: $db,
+                $table: $db.publicImportedReferences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> crossPostJobsRefs(
+    Expression<bool> Function($$CrossPostJobsTableFilterComposer f) f,
+  ) {
+    final $$CrossPostJobsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.crossPostJobs,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CrossPostJobsTableFilterComposer(
+            $db: $db,
+            $table: $db.crossPostJobs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -21664,6 +29800,261 @@ class $$CreatorsTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> captureLinksRefs<T extends Object>(
+    Expression<T> Function($$CaptureLinksTableAnnotationComposer a) f,
+  ) {
+    final $$CaptureLinksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.captureLinks,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaptureLinksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.captureLinks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> reFollowEventsRefs<T extends Object>(
+    Expression<T> Function($$ReFollowEventsTableAnnotationComposer a) f,
+  ) {
+    final $$ReFollowEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> renderedAnnouncementsRefs<T extends Object>(
+    Expression<T> Function($$RenderedAnnouncementsTableAnnotationComposer a) f,
+  ) {
+    final $$RenderedAnnouncementsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.renderedAnnouncements,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RenderedAnnouncementsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.renderedAnnouncements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> linkInBioPagesRefs<T extends Object>(
+    Expression<T> Function($$LinkInBioPagesTableAnnotationComposer a) f,
+  ) {
+    final $$LinkInBioPagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.linkInBioPages,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LinkInBioPagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.linkInBioPages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> starterPacksRefs<T extends Object>(
+    Expression<T> Function($$StarterPacksTableAnnotationComposer a) f,
+  ) {
+    final $$StarterPacksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.starterPacks,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StarterPacksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.starterPacks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> bulkFollowJobsRefs<T extends Object>(
+    Expression<T> Function($$BulkFollowJobsTableAnnotationComposer a) f,
+  ) {
+    final $$BulkFollowJobsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bulkFollowJobs,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BulkFollowJobsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bulkFollowJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> externalAccountsRefs<T extends Object>(
+    Expression<T> Function($$ExternalAccountsTableAnnotationComposer a) f,
+  ) {
+    final $$ExternalAccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.externalAccounts,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalAccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.externalAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> publicMetadataImportJobsRefs<T extends Object>(
+    Expression<T> Function($$PublicMetadataImportJobsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PublicMetadataImportJobsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> publicImportedReferencesRefs<T extends Object>(
+    Expression<T> Function($$PublicImportedReferencesTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PublicImportedReferencesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.publicImportedReferences,
+          getReferencedColumn: (t) => t.channelId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicImportedReferencesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.publicImportedReferences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> crossPostJobsRefs<T extends Object>(
+    Expression<T> Function($$CrossPostJobsTableAnnotationComposer a) f,
+  ) {
+    final $$CrossPostJobsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.crossPostJobs,
+      getReferencedColumn: (t) => t.channelId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CrossPostJobsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.crossPostJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$CreatorsTableTableManager
@@ -21689,6 +30080,16 @@ class $$CreatorsTableTableManager
             bool tombstonesRefs,
             bool fanFeedbackRefs,
             bool searchIndexEntriesRefs,
+            bool captureLinksRefs,
+            bool reFollowEventsRefs,
+            bool renderedAnnouncementsRefs,
+            bool linkInBioPagesRefs,
+            bool starterPacksRefs,
+            bool bulkFollowJobsRefs,
+            bool externalAccountsRefs,
+            bool publicMetadataImportJobsRefs,
+            bool publicImportedReferencesRefs,
+            bool crossPostJobsRefs,
           })
         > {
   $$CreatorsTableTableManager(_$LoomDatabase db, $CreatorsTable table)
@@ -21753,6 +30154,16 @@ class $$CreatorsTableTableManager
                 tombstonesRefs = false,
                 fanFeedbackRefs = false,
                 searchIndexEntriesRefs = false,
+                captureLinksRefs = false,
+                reFollowEventsRefs = false,
+                renderedAnnouncementsRefs = false,
+                linkInBioPagesRefs = false,
+                starterPacksRefs = false,
+                bulkFollowJobsRefs = false,
+                externalAccountsRefs = false,
+                publicMetadataImportJobsRefs = false,
+                publicImportedReferencesRefs = false,
+                crossPostJobsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -21766,6 +30177,18 @@ class $$CreatorsTableTableManager
                     if (tombstonesRefs) db.tombstones,
                     if (fanFeedbackRefs) db.fanFeedback,
                     if (searchIndexEntriesRefs) db.searchIndexEntries,
+                    if (captureLinksRefs) db.captureLinks,
+                    if (reFollowEventsRefs) db.reFollowEvents,
+                    if (renderedAnnouncementsRefs) db.renderedAnnouncements,
+                    if (linkInBioPagesRefs) db.linkInBioPages,
+                    if (starterPacksRefs) db.starterPacks,
+                    if (bulkFollowJobsRefs) db.bulkFollowJobs,
+                    if (externalAccountsRefs) db.externalAccounts,
+                    if (publicMetadataImportJobsRefs)
+                      db.publicMetadataImportJobs,
+                    if (publicImportedReferencesRefs)
+                      db.publicImportedReferences,
+                    if (crossPostJobsRefs) db.crossPostJobs,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -21959,6 +30382,216 @@ class $$CreatorsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (captureLinksRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          CaptureLink
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._captureLinksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).captureLinksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (reFollowEventsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          ReFollowEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._reFollowEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reFollowEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (renderedAnnouncementsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          RenderedAnnouncement
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._renderedAnnouncementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).renderedAnnouncementsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (linkInBioPagesRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          LinkInBioPage
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._linkInBioPagesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).linkInBioPagesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (starterPacksRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          StarterPack
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._starterPacksRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).starterPacksRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (bulkFollowJobsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          BulkFollowJob
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._bulkFollowJobsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bulkFollowJobsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (externalAccountsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          ExternalAccount
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._externalAccountsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).externalAccountsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (publicMetadataImportJobsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          PublicMetadataImportJob
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._publicMetadataImportJobsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).publicMetadataImportJobsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (publicImportedReferencesRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          PublicImportedReference
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._publicImportedReferencesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).publicImportedReferencesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (crossPostJobsRefs)
+                        await $_getPrefetchedData<
+                          Creator,
+                          $CreatorsTable,
+                          CrossPostJob
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CreatorsTableReferences
+                              ._crossPostJobsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CreatorsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).crossPostJobsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.channelId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -21989,6 +30622,16 @@ typedef $$CreatorsTableProcessedTableManager =
         bool tombstonesRefs,
         bool fanFeedbackRefs,
         bool searchIndexEntriesRefs,
+        bool captureLinksRefs,
+        bool reFollowEventsRefs,
+        bool renderedAnnouncementsRefs,
+        bool linkInBioPagesRefs,
+        bool starterPacksRefs,
+        bool bulkFollowJobsRefs,
+        bool externalAccountsRefs,
+        bool publicMetadataImportJobsRefs,
+        bool publicImportedReferencesRefs,
+        bool crossPostJobsRefs,
       })
     >;
 typedef $$ContentItemsTableCreateCompanionBuilder =
@@ -22168,6 +30811,51 @@ final class $$ContentItemsTableReferences
     ).filter((f) => f.contentId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_receiptsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AdDecisionsTable, List<AdDecision>>
+  _adDecisionsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.adDecisions,
+    aliasName: $_aliasNameGenerator(
+      db.contentItems.id,
+      db.adDecisions.contentId,
+    ),
+  );
+
+  $$AdDecisionsTableProcessedTableManager get adDecisionsRefs {
+    final manager = $$AdDecisionsTableTableManager(
+      $_db,
+      $_db.adDecisions,
+    ).filter((f) => f.contentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_adDecisionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PremiumNoAdEventsTable, List<PremiumNoAdEvent>>
+  _premiumNoAdEventsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.premiumNoAdEvents,
+        aliasName: $_aliasNameGenerator(
+          db.contentItems.id,
+          db.premiumNoAdEvents.contentId,
+        ),
+      );
+
+  $$PremiumNoAdEventsTableProcessedTableManager get premiumNoAdEventsRefs {
+    final manager = $$PremiumNoAdEventsTableTableManager(
+      $_db,
+      $_db.premiumNoAdEvents,
+    ).filter((f) => f.contentId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _premiumNoAdEventsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -22384,6 +31072,56 @@ class $$ContentItemsTableFilterComposer
           }) => $$ReceiptsTableFilterComposer(
             $db: $db,
             $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> adDecisionsRefs(
+    Expression<bool> Function($$AdDecisionsTableFilterComposer f) f,
+  ) {
+    final $$AdDecisionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.adDecisions,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdDecisionsTableFilterComposer(
+            $db: $db,
+            $table: $db.adDecisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> premiumNoAdEventsRefs(
+    Expression<bool> Function($$PremiumNoAdEventsTableFilterComposer f) f,
+  ) {
+    final $$PremiumNoAdEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.premiumNoAdEvents,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PremiumNoAdEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.premiumNoAdEvents,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -22675,6 +31413,57 @@ class $$ContentItemsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> adDecisionsRefs<T extends Object>(
+    Expression<T> Function($$AdDecisionsTableAnnotationComposer a) f,
+  ) {
+    final $$AdDecisionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.adDecisions,
+      getReferencedColumn: (t) => t.contentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdDecisionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.adDecisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> premiumNoAdEventsRefs<T extends Object>(
+    Expression<T> Function($$PremiumNoAdEventsTableAnnotationComposer a) f,
+  ) {
+    final $$PremiumNoAdEventsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.premiumNoAdEvents,
+          getReferencedColumn: (t) => t.contentId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PremiumNoAdEventsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.premiumNoAdEvents,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$ContentItemsTableTableManager
@@ -22698,6 +31487,8 @@ class $$ContentItemsTableTableManager
             bool searchIndexEntriesRefs,
             bool playbackTokensRefs,
             bool receiptsRefs,
+            bool adDecisionsRefs,
+            bool premiumNoAdEventsRefs,
           })
         > {
   $$ContentItemsTableTableManager(_$LoomDatabase db, $ContentItemsTable table)
@@ -22772,6 +31563,8 @@ class $$ContentItemsTableTableManager
                 searchIndexEntriesRefs = false,
                 playbackTokensRefs = false,
                 receiptsRefs = false,
+                adDecisionsRefs = false,
+                premiumNoAdEventsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -22783,6 +31576,8 @@ class $$ContentItemsTableTableManager
                     if (searchIndexEntriesRefs) db.searchIndexEntries,
                     if (playbackTokensRefs) db.playbackTokens,
                     if (receiptsRefs) db.receipts,
+                    if (adDecisionsRefs) db.adDecisions,
+                    if (premiumNoAdEventsRefs) db.premiumNoAdEvents,
                   ],
                   addJoins:
                       <
@@ -22946,6 +31741,48 @@ class $$ContentItemsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (adDecisionsRefs)
+                        await $_getPrefetchedData<
+                          ContentItem,
+                          $ContentItemsTable,
+                          AdDecision
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContentItemsTableReferences
+                              ._adDecisionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).adDecisionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (premiumNoAdEventsRefs)
+                        await $_getPrefetchedData<
+                          ContentItem,
+                          $ContentItemsTable,
+                          PremiumNoAdEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ContentItemsTableReferences
+                              ._premiumNoAdEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ContentItemsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).premiumNoAdEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.contentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -22974,6 +31811,8 @@ typedef $$ContentItemsTableProcessedTableManager =
         bool searchIndexEntriesRefs,
         bool playbackTokensRefs,
         bool receiptsRefs,
+        bool adDecisionsRefs,
+        bool premiumNoAdEventsRefs,
       })
     >;
 typedef $$ContentManifestsTableCreateCompanionBuilder =
@@ -24994,6 +33833,72 @@ final class $$FanPassportsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ReFollowEventsTable, List<ReFollowEvent>>
+  _reFollowEventsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.reFollowEvents,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.reFollowEvents.passportId,
+    ),
+  );
+
+  $$ReFollowEventsTableProcessedTableManager get reFollowEventsRefs {
+    final manager = $$ReFollowEventsTableTableManager(
+      $_db,
+      $_db.reFollowEvents,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_reFollowEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$BulkFollowJobsTable, List<BulkFollowJob>>
+  _bulkFollowJobsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.bulkFollowJobs,
+    aliasName: $_aliasNameGenerator(
+      db.fanPassports.id,
+      db.bulkFollowJobs.passportId,
+    ),
+  );
+
+  $$BulkFollowJobsTableProcessedTableManager get bulkFollowJobsRefs {
+    final manager = $$BulkFollowJobsTableTableManager(
+      $_db,
+      $_db.bulkFollowJobs,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_bulkFollowJobsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PremiumNoAdEventsTable, List<PremiumNoAdEvent>>
+  _premiumNoAdEventsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.premiumNoAdEvents,
+        aliasName: $_aliasNameGenerator(
+          db.fanPassports.id,
+          db.premiumNoAdEvents.passportId,
+        ),
+      );
+
+  $$PremiumNoAdEventsTableProcessedTableManager get premiumNoAdEventsRefs {
+    final manager = $$PremiumNoAdEventsTableTableManager(
+      $_db,
+      $_db.premiumNoAdEvents,
+    ).filter((f) => f.passportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _premiumNoAdEventsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$FanPassportsTableFilterComposer
@@ -25543,6 +34448,81 @@ class $$FanPassportsTableFilterComposer
           }) => $$AdPreferencesTableFilterComposer(
             $db: $db,
             $table: $db.adPreferences,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reFollowEventsRefs(
+    Expression<bool> Function($$ReFollowEventsTableFilterComposer f) f,
+  ) {
+    final $$ReFollowEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> bulkFollowJobsRefs(
+    Expression<bool> Function($$BulkFollowJobsTableFilterComposer f) f,
+  ) {
+    final $$BulkFollowJobsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bulkFollowJobs,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BulkFollowJobsTableFilterComposer(
+            $db: $db,
+            $table: $db.bulkFollowJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> premiumNoAdEventsRefs(
+    Expression<bool> Function($$PremiumNoAdEventsTableFilterComposer f) f,
+  ) {
+    final $$PremiumNoAdEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.premiumNoAdEvents,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PremiumNoAdEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.premiumNoAdEvents,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -26139,6 +35119,82 @@ class $$FanPassportsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> reFollowEventsRefs<T extends Object>(
+    Expression<T> Function($$ReFollowEventsTableAnnotationComposer a) f,
+  ) {
+    final $$ReFollowEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> bulkFollowJobsRefs<T extends Object>(
+    Expression<T> Function($$BulkFollowJobsTableAnnotationComposer a) f,
+  ) {
+    final $$BulkFollowJobsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.bulkFollowJobs,
+      getReferencedColumn: (t) => t.passportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BulkFollowJobsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.bulkFollowJobs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> premiumNoAdEventsRefs<T extends Object>(
+    Expression<T> Function($$PremiumNoAdEventsTableAnnotationComposer a) f,
+  ) {
+    final $$PremiumNoAdEventsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.premiumNoAdEvents,
+          getReferencedColumn: (t) => t.passportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PremiumNoAdEventsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.premiumNoAdEvents,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$FanPassportsTableTableManager
@@ -26176,6 +35232,9 @@ class $$FanPassportsTableTableManager
             bool playbackTokensRefs,
             bool receiptsRefs,
             bool adPreferencesRefs,
+            bool reFollowEventsRefs,
+            bool bulkFollowJobsRefs,
+            bool premiumNoAdEventsRefs,
           })
         > {
   $$FanPassportsTableTableManager(_$LoomDatabase db, $FanPassportsTable table)
@@ -26248,6 +35307,9 @@ class $$FanPassportsTableTableManager
                 playbackTokensRefs = false,
                 receiptsRefs = false,
                 adPreferencesRefs = false,
+                reFollowEventsRefs = false,
+                bulkFollowJobsRefs = false,
+                premiumNoAdEventsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -26273,6 +35335,9 @@ class $$FanPassportsTableTableManager
                     if (playbackTokensRefs) db.playbackTokens,
                     if (receiptsRefs) db.receipts,
                     if (adPreferencesRefs) db.adPreferences,
+                    if (reFollowEventsRefs) db.reFollowEvents,
+                    if (bulkFollowJobsRefs) db.bulkFollowJobs,
+                    if (premiumNoAdEventsRefs) db.premiumNoAdEvents,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -26718,6 +35783,69 @@ class $$FanPassportsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (reFollowEventsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          ReFollowEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._reFollowEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reFollowEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (bulkFollowJobsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          BulkFollowJob
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._bulkFollowJobsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).bulkFollowJobsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (premiumNoAdEventsRefs)
+                        await $_getPrefetchedData<
+                          FanPassport,
+                          $FanPassportsTable,
+                          PremiumNoAdEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$FanPassportsTableReferences
+                              ._premiumNoAdEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$FanPassportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).premiumNoAdEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.passportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -26760,6 +35888,9 @@ typedef $$FanPassportsTableProcessedTableManager =
         bool playbackTokensRefs,
         bool receiptsRefs,
         bool adPreferencesRefs,
+        bool reFollowEventsRefs,
+        bool bulkFollowJobsRefs,
+        bool premiumNoAdEventsRefs,
       })
     >;
 typedef $$AiSessionsTableCreateCompanionBuilder =
@@ -39378,6 +48509,6641 @@ typedef $$AdPreferencesTableProcessedTableManager =
       AdPreference,
       PrefetchHooks Function({bool passportId})
     >;
+typedef $$CaptureLinksTableCreateCompanionBuilder =
+    CaptureLinksCompanion Function({
+      required String token,
+      required String channelId,
+      required String url,
+      required String channel,
+      required String qrPayload,
+      required bool starterPackEnabled,
+      required DateTime createdAt,
+      Value<DateTime?> expiresAt,
+      Value<int> rowid,
+    });
+typedef $$CaptureLinksTableUpdateCompanionBuilder =
+    CaptureLinksCompanion Function({
+      Value<String> token,
+      Value<String> channelId,
+      Value<String> url,
+      Value<String> channel,
+      Value<String> qrPayload,
+      Value<bool> starterPackEnabled,
+      Value<DateTime> createdAt,
+      Value<DateTime?> expiresAt,
+      Value<int> rowid,
+    });
+
+final class $$CaptureLinksTableReferences
+    extends BaseReferences<_$LoomDatabase, $CaptureLinksTable, CaptureLink> {
+  $$CaptureLinksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.captureLinks.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ReFollowEventsTable, List<ReFollowEvent>>
+  _reFollowEventsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.reFollowEvents,
+    aliasName: $_aliasNameGenerator(
+      db.captureLinks.token,
+      db.reFollowEvents.token,
+    ),
+  );
+
+  $$ReFollowEventsTableProcessedTableManager get reFollowEventsRefs {
+    final manager = $$ReFollowEventsTableTableManager(
+      $_db,
+      $_db.reFollowEvents,
+    ).filter((f) => f.token.token.sqlEquals($_itemColumn<String>('token')!));
+
+    final cache = $_typedResult.readTableOrNull(_reFollowEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$CaptureLinksTableFilterComposer
+    extends Composer<_$LoomDatabase, $CaptureLinksTable> {
+  $$CaptureLinksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get token => $composableBuilder(
+    column: $table.token,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get starterPackEnabled => $composableBuilder(
+    column: $table.starterPackEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> reFollowEventsRefs(
+    Expression<bool> Function($$ReFollowEventsTableFilterComposer f) f,
+  ) {
+    final $$ReFollowEventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.token,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.token,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableFilterComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CaptureLinksTableOrderingComposer
+    extends Composer<_$LoomDatabase, $CaptureLinksTable> {
+  $$CaptureLinksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get token => $composableBuilder(
+    column: $table.token,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get url => $composableBuilder(
+    column: $table.url,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get starterPackEnabled => $composableBuilder(
+    column: $table.starterPackEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CaptureLinksTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $CaptureLinksTable> {
+  $$CaptureLinksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get token =>
+      $composableBuilder(column: $table.token, builder: (column) => column);
+
+  GeneratedColumn<String> get url =>
+      $composableBuilder(column: $table.url, builder: (column) => column);
+
+  GeneratedColumn<String> get channel =>
+      $composableBuilder(column: $table.channel, builder: (column) => column);
+
+  GeneratedColumn<String> get qrPayload =>
+      $composableBuilder(column: $table.qrPayload, builder: (column) => column);
+
+  GeneratedColumn<bool> get starterPackEnabled => $composableBuilder(
+    column: $table.starterPackEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get expiresAt =>
+      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> reFollowEventsRefs<T extends Object>(
+    Expression<T> Function($$ReFollowEventsTableAnnotationComposer a) f,
+  ) {
+    final $$ReFollowEventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.token,
+      referencedTable: $db.reFollowEvents,
+      getReferencedColumn: (t) => t.token,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReFollowEventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reFollowEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CaptureLinksTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $CaptureLinksTable,
+          CaptureLink,
+          $$CaptureLinksTableFilterComposer,
+          $$CaptureLinksTableOrderingComposer,
+          $$CaptureLinksTableAnnotationComposer,
+          $$CaptureLinksTableCreateCompanionBuilder,
+          $$CaptureLinksTableUpdateCompanionBuilder,
+          (CaptureLink, $$CaptureLinksTableReferences),
+          CaptureLink,
+          PrefetchHooks Function({bool channelId, bool reFollowEventsRefs})
+        > {
+  $$CaptureLinksTableTableManager(_$LoomDatabase db, $CaptureLinksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CaptureLinksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CaptureLinksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CaptureLinksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> token = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> url = const Value.absent(),
+                Value<String> channel = const Value.absent(),
+                Value<String> qrPayload = const Value.absent(),
+                Value<bool> starterPackEnabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> expiresAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CaptureLinksCompanion(
+                token: token,
+                channelId: channelId,
+                url: url,
+                channel: channel,
+                qrPayload: qrPayload,
+                starterPackEnabled: starterPackEnabled,
+                createdAt: createdAt,
+                expiresAt: expiresAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String token,
+                required String channelId,
+                required String url,
+                required String channel,
+                required String qrPayload,
+                required bool starterPackEnabled,
+                required DateTime createdAt,
+                Value<DateTime?> expiresAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CaptureLinksCompanion.insert(
+                token: token,
+                channelId: channelId,
+                url: url,
+                channel: channel,
+                qrPayload: qrPayload,
+                starterPackEnabled: starterPackEnabled,
+                createdAt: createdAt,
+                expiresAt: expiresAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CaptureLinksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({channelId = false, reFollowEventsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (reFollowEventsRefs) db.reFollowEvents,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (channelId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.channelId,
+                                    referencedTable:
+                                        $$CaptureLinksTableReferences
+                                            ._channelIdTable(db),
+                                    referencedColumn:
+                                        $$CaptureLinksTableReferences
+                                            ._channelIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (reFollowEventsRefs)
+                        await $_getPrefetchedData<
+                          CaptureLink,
+                          $CaptureLinksTable,
+                          ReFollowEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CaptureLinksTableReferences
+                              ._reFollowEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CaptureLinksTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reFollowEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.token == item.token,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$CaptureLinksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $CaptureLinksTable,
+      CaptureLink,
+      $$CaptureLinksTableFilterComposer,
+      $$CaptureLinksTableOrderingComposer,
+      $$CaptureLinksTableAnnotationComposer,
+      $$CaptureLinksTableCreateCompanionBuilder,
+      $$CaptureLinksTableUpdateCompanionBuilder,
+      (CaptureLink, $$CaptureLinksTableReferences),
+      CaptureLink,
+      PrefetchHooks Function({bool channelId, bool reFollowEventsRefs})
+    >;
+typedef $$ReFollowEventsTableCreateCompanionBuilder =
+    ReFollowEventsCompanion Function({
+      required String id,
+      required String token,
+      required String passportId,
+      required String channelId,
+      required String followId,
+      required String channel,
+      required String followState,
+      required String pairwiseCreatorFanId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ReFollowEventsTableUpdateCompanionBuilder =
+    ReFollowEventsCompanion Function({
+      Value<String> id,
+      Value<String> token,
+      Value<String> passportId,
+      Value<String> channelId,
+      Value<String> followId,
+      Value<String> channel,
+      Value<String> followState,
+      Value<String> pairwiseCreatorFanId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$ReFollowEventsTableReferences
+    extends
+        BaseReferences<_$LoomDatabase, $ReFollowEventsTable, ReFollowEvent> {
+  $$ReFollowEventsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CaptureLinksTable _tokenTable(_$LoomDatabase db) =>
+      db.captureLinks.createAlias(
+        $_aliasNameGenerator(db.reFollowEvents.token, db.captureLinks.token),
+      );
+
+  $$CaptureLinksTableProcessedTableManager get token {
+    final $_column = $_itemColumn<String>('token')!;
+
+    final manager = $$CaptureLinksTableTableManager(
+      $_db,
+      $_db.captureLinks,
+    ).filter((f) => f.token.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_tokenTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.reFollowEvents.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.reFollowEvents.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReFollowEventsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ReFollowEventsTable> {
+  $$ReFollowEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followId => $composableBuilder(
+    column: $table.followId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followState => $composableBuilder(
+    column: $table.followState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pairwiseCreatorFanId => $composableBuilder(
+    column: $table.pairwiseCreatorFanId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CaptureLinksTableFilterComposer get token {
+    final $$CaptureLinksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.token,
+      referencedTable: $db.captureLinks,
+      getReferencedColumn: (t) => t.token,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaptureLinksTableFilterComposer(
+            $db: $db,
+            $table: $db.captureLinks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReFollowEventsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ReFollowEventsTable> {
+  $$ReFollowEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get followId => $composableBuilder(
+    column: $table.followId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get followState => $composableBuilder(
+    column: $table.followState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pairwiseCreatorFanId => $composableBuilder(
+    column: $table.pairwiseCreatorFanId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CaptureLinksTableOrderingComposer get token {
+    final $$CaptureLinksTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.token,
+      referencedTable: $db.captureLinks,
+      getReferencedColumn: (t) => t.token,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaptureLinksTableOrderingComposer(
+            $db: $db,
+            $table: $db.captureLinks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReFollowEventsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ReFollowEventsTable> {
+  $$ReFollowEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get followId =>
+      $composableBuilder(column: $table.followId, builder: (column) => column);
+
+  GeneratedColumn<String> get channel =>
+      $composableBuilder(column: $table.channel, builder: (column) => column);
+
+  GeneratedColumn<String> get followState => $composableBuilder(
+    column: $table.followState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pairwiseCreatorFanId => $composableBuilder(
+    column: $table.pairwiseCreatorFanId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CaptureLinksTableAnnotationComposer get token {
+    final $$CaptureLinksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.token,
+      referencedTable: $db.captureLinks,
+      getReferencedColumn: (t) => t.token,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CaptureLinksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.captureLinks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReFollowEventsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ReFollowEventsTable,
+          ReFollowEvent,
+          $$ReFollowEventsTableFilterComposer,
+          $$ReFollowEventsTableOrderingComposer,
+          $$ReFollowEventsTableAnnotationComposer,
+          $$ReFollowEventsTableCreateCompanionBuilder,
+          $$ReFollowEventsTableUpdateCompanionBuilder,
+          (ReFollowEvent, $$ReFollowEventsTableReferences),
+          ReFollowEvent,
+          PrefetchHooks Function({bool token, bool passportId, bool channelId})
+        > {
+  $$ReFollowEventsTableTableManager(
+    _$LoomDatabase db,
+    $ReFollowEventsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReFollowEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReFollowEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReFollowEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> token = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> followId = const Value.absent(),
+                Value<String> channel = const Value.absent(),
+                Value<String> followState = const Value.absent(),
+                Value<String> pairwiseCreatorFanId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReFollowEventsCompanion(
+                id: id,
+                token: token,
+                passportId: passportId,
+                channelId: channelId,
+                followId: followId,
+                channel: channel,
+                followState: followState,
+                pairwiseCreatorFanId: pairwiseCreatorFanId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String token,
+                required String passportId,
+                required String channelId,
+                required String followId,
+                required String channel,
+                required String followState,
+                required String pairwiseCreatorFanId,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ReFollowEventsCompanion.insert(
+                id: id,
+                token: token,
+                passportId: passportId,
+                channelId: channelId,
+                followId: followId,
+                channel: channel,
+                followState: followState,
+                pairwiseCreatorFanId: pairwiseCreatorFanId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReFollowEventsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({token = false, passportId = false, channelId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (token) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.token,
+                                    referencedTable:
+                                        $$ReFollowEventsTableReferences
+                                            ._tokenTable(db),
+                                    referencedColumn:
+                                        $$ReFollowEventsTableReferences
+                                            ._tokenTable(db)
+                                            .token,
+                                  )
+                                  as T;
+                        }
+                        if (passportId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.passportId,
+                                    referencedTable:
+                                        $$ReFollowEventsTableReferences
+                                            ._passportIdTable(db),
+                                    referencedColumn:
+                                        $$ReFollowEventsTableReferences
+                                            ._passportIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (channelId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.channelId,
+                                    referencedTable:
+                                        $$ReFollowEventsTableReferences
+                                            ._channelIdTable(db),
+                                    referencedColumn:
+                                        $$ReFollowEventsTableReferences
+                                            ._channelIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ReFollowEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ReFollowEventsTable,
+      ReFollowEvent,
+      $$ReFollowEventsTableFilterComposer,
+      $$ReFollowEventsTableOrderingComposer,
+      $$ReFollowEventsTableAnnotationComposer,
+      $$ReFollowEventsTableCreateCompanionBuilder,
+      $$ReFollowEventsTableUpdateCompanionBuilder,
+      (ReFollowEvent, $$ReFollowEventsTableReferences),
+      ReFollowEvent,
+      PrefetchHooks Function({bool token, bool passportId, bool channelId})
+    >;
+typedef $$AnnouncementTemplatesTableCreateCompanionBuilder =
+    AnnouncementTemplatesCompanion Function({
+      required String templateId,
+      required String name,
+      required String channel,
+      required String body,
+      required String placeholdersJson,
+      required bool active,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AnnouncementTemplatesTableUpdateCompanionBuilder =
+    AnnouncementTemplatesCompanion Function({
+      Value<String> templateId,
+      Value<String> name,
+      Value<String> channel,
+      Value<String> body,
+      Value<String> placeholdersJson,
+      Value<bool> active,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$AnnouncementTemplatesTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $AnnouncementTemplatesTable,
+          AnnouncementTemplate
+        > {
+  $$AnnouncementTemplatesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<
+    $RenderedAnnouncementsTable,
+    List<RenderedAnnouncement>
+  >
+  _renderedAnnouncementsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.renderedAnnouncements,
+        aliasName: $_aliasNameGenerator(
+          db.announcementTemplates.templateId,
+          db.renderedAnnouncements.templateId,
+        ),
+      );
+
+  $$RenderedAnnouncementsTableProcessedTableManager
+  get renderedAnnouncementsRefs {
+    final manager =
+        $$RenderedAnnouncementsTableTableManager(
+          $_db,
+          $_db.renderedAnnouncements,
+        ).filter(
+          (f) => f.templateId.templateId.sqlEquals(
+            $_itemColumn<String>('template_id')!,
+          ),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _renderedAnnouncementsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$AnnouncementTemplatesTableFilterComposer
+    extends Composer<_$LoomDatabase, $AnnouncementTemplatesTable> {
+  $$AnnouncementTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get placeholdersJson => $composableBuilder(
+    column: $table.placeholdersJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> renderedAnnouncementsRefs(
+    Expression<bool> Function($$RenderedAnnouncementsTableFilterComposer f) f,
+  ) {
+    final $$RenderedAnnouncementsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.renderedAnnouncements,
+          getReferencedColumn: (t) => t.templateId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RenderedAnnouncementsTableFilterComposer(
+                $db: $db,
+                $table: $db.renderedAnnouncements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$AnnouncementTemplatesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AnnouncementTemplatesTable> {
+  $$AnnouncementTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get placeholdersJson => $composableBuilder(
+    column: $table.placeholdersJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AnnouncementTemplatesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AnnouncementTemplatesTable> {
+  $$AnnouncementTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get templateId => $composableBuilder(
+    column: $table.templateId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get channel =>
+      $composableBuilder(column: $table.channel, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<String> get placeholdersJson => $composableBuilder(
+    column: $table.placeholdersJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> renderedAnnouncementsRefs<T extends Object>(
+    Expression<T> Function($$RenderedAnnouncementsTableAnnotationComposer a) f,
+  ) {
+    final $$RenderedAnnouncementsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.renderedAnnouncements,
+          getReferencedColumn: (t) => t.templateId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RenderedAnnouncementsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.renderedAnnouncements,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$AnnouncementTemplatesTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AnnouncementTemplatesTable,
+          AnnouncementTemplate,
+          $$AnnouncementTemplatesTableFilterComposer,
+          $$AnnouncementTemplatesTableOrderingComposer,
+          $$AnnouncementTemplatesTableAnnotationComposer,
+          $$AnnouncementTemplatesTableCreateCompanionBuilder,
+          $$AnnouncementTemplatesTableUpdateCompanionBuilder,
+          (AnnouncementTemplate, $$AnnouncementTemplatesTableReferences),
+          AnnouncementTemplate,
+          PrefetchHooks Function({bool renderedAnnouncementsRefs})
+        > {
+  $$AnnouncementTemplatesTableTableManager(
+    _$LoomDatabase db,
+    $AnnouncementTemplatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnnouncementTemplatesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$AnnouncementTemplatesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$AnnouncementTemplatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> templateId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> channel = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<String> placeholdersJson = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnnouncementTemplatesCompanion(
+                templateId: templateId,
+                name: name,
+                channel: channel,
+                body: body,
+                placeholdersJson: placeholdersJson,
+                active: active,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String templateId,
+                required String name,
+                required String channel,
+                required String body,
+                required String placeholdersJson,
+                required bool active,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AnnouncementTemplatesCompanion.insert(
+                templateId: templateId,
+                name: name,
+                channel: channel,
+                body: body,
+                placeholdersJson: placeholdersJson,
+                active: active,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AnnouncementTemplatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({renderedAnnouncementsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (renderedAnnouncementsRefs) db.renderedAnnouncements,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (renderedAnnouncementsRefs)
+                    await $_getPrefetchedData<
+                      AnnouncementTemplate,
+                      $AnnouncementTemplatesTable,
+                      RenderedAnnouncement
+                    >(
+                      currentTable: table,
+                      referencedTable: $$AnnouncementTemplatesTableReferences
+                          ._renderedAnnouncementsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$AnnouncementTemplatesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).renderedAnnouncementsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.templateId == item.templateId,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnnouncementTemplatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AnnouncementTemplatesTable,
+      AnnouncementTemplate,
+      $$AnnouncementTemplatesTableFilterComposer,
+      $$AnnouncementTemplatesTableOrderingComposer,
+      $$AnnouncementTemplatesTableAnnotationComposer,
+      $$AnnouncementTemplatesTableCreateCompanionBuilder,
+      $$AnnouncementTemplatesTableUpdateCompanionBuilder,
+      (AnnouncementTemplate, $$AnnouncementTemplatesTableReferences),
+      AnnouncementTemplate,
+      PrefetchHooks Function({bool renderedAnnouncementsRefs})
+    >;
+typedef $$RenderedAnnouncementsTableCreateCompanionBuilder =
+    RenderedAnnouncementsCompanion Function({
+      required String announcementId,
+      required String channelId,
+      required String templateId,
+      required String channel,
+      required String renderedBody,
+      required String captureLinkUrl,
+      required String qrPayload,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$RenderedAnnouncementsTableUpdateCompanionBuilder =
+    RenderedAnnouncementsCompanion Function({
+      Value<String> announcementId,
+      Value<String> channelId,
+      Value<String> templateId,
+      Value<String> channel,
+      Value<String> renderedBody,
+      Value<String> captureLinkUrl,
+      Value<String> qrPayload,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$RenderedAnnouncementsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $RenderedAnnouncementsTable,
+          RenderedAnnouncement
+        > {
+  $$RenderedAnnouncementsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(
+          db.renderedAnnouncements.channelId,
+          db.creators.id,
+        ),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $AnnouncementTemplatesTable _templateIdTable(_$LoomDatabase db) =>
+      db.announcementTemplates.createAlias(
+        $_aliasNameGenerator(
+          db.renderedAnnouncements.templateId,
+          db.announcementTemplates.templateId,
+        ),
+      );
+
+  $$AnnouncementTemplatesTableProcessedTableManager get templateId {
+    final $_column = $_itemColumn<String>('template_id')!;
+
+    final manager = $$AnnouncementTemplatesTableTableManager(
+      $_db,
+      $_db.announcementTemplates,
+    ).filter((f) => f.templateId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_templateIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RenderedAnnouncementsTableFilterComposer
+    extends Composer<_$LoomDatabase, $RenderedAnnouncementsTable> {
+  $$RenderedAnnouncementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get renderedBody => $composableBuilder(
+    column: $table.renderedBody,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AnnouncementTemplatesTableFilterComposer get templateId {
+    final $$AnnouncementTemplatesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.announcementTemplates,
+          getReferencedColumn: (t) => t.templateId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$AnnouncementTemplatesTableFilterComposer(
+                $db: $db,
+                $table: $db.announcementTemplates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$RenderedAnnouncementsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $RenderedAnnouncementsTable> {
+  $$RenderedAnnouncementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get renderedBody => $composableBuilder(
+    column: $table.renderedBody,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AnnouncementTemplatesTableOrderingComposer get templateId {
+    final $$AnnouncementTemplatesTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.announcementTemplates,
+          getReferencedColumn: (t) => t.templateId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$AnnouncementTemplatesTableOrderingComposer(
+                $db: $db,
+                $table: $db.announcementTemplates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$RenderedAnnouncementsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $RenderedAnnouncementsTable> {
+  $$RenderedAnnouncementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get channel =>
+      $composableBuilder(column: $table.channel, builder: (column) => column);
+
+  GeneratedColumn<String> get renderedBody => $composableBuilder(
+    column: $table.renderedBody,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get qrPayload =>
+      $composableBuilder(column: $table.qrPayload, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AnnouncementTemplatesTableAnnotationComposer get templateId {
+    final $$AnnouncementTemplatesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.announcementTemplates,
+          getReferencedColumn: (t) => t.templateId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$AnnouncementTemplatesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.announcementTemplates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$RenderedAnnouncementsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $RenderedAnnouncementsTable,
+          RenderedAnnouncement,
+          $$RenderedAnnouncementsTableFilterComposer,
+          $$RenderedAnnouncementsTableOrderingComposer,
+          $$RenderedAnnouncementsTableAnnotationComposer,
+          $$RenderedAnnouncementsTableCreateCompanionBuilder,
+          $$RenderedAnnouncementsTableUpdateCompanionBuilder,
+          (RenderedAnnouncement, $$RenderedAnnouncementsTableReferences),
+          RenderedAnnouncement,
+          PrefetchHooks Function({bool channelId, bool templateId})
+        > {
+  $$RenderedAnnouncementsTableTableManager(
+    _$LoomDatabase db,
+    $RenderedAnnouncementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RenderedAnnouncementsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RenderedAnnouncementsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RenderedAnnouncementsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> announcementId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> templateId = const Value.absent(),
+                Value<String> channel = const Value.absent(),
+                Value<String> renderedBody = const Value.absent(),
+                Value<String> captureLinkUrl = const Value.absent(),
+                Value<String> qrPayload = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RenderedAnnouncementsCompanion(
+                announcementId: announcementId,
+                channelId: channelId,
+                templateId: templateId,
+                channel: channel,
+                renderedBody: renderedBody,
+                captureLinkUrl: captureLinkUrl,
+                qrPayload: qrPayload,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String announcementId,
+                required String channelId,
+                required String templateId,
+                required String channel,
+                required String renderedBody,
+                required String captureLinkUrl,
+                required String qrPayload,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => RenderedAnnouncementsCompanion.insert(
+                announcementId: announcementId,
+                channelId: channelId,
+                templateId: templateId,
+                channel: channel,
+                renderedBody: renderedBody,
+                captureLinkUrl: captureLinkUrl,
+                qrPayload: qrPayload,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RenderedAnnouncementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({channelId = false, templateId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable:
+                                    $$RenderedAnnouncementsTableReferences
+                                        ._channelIdTable(db),
+                                referencedColumn:
+                                    $$RenderedAnnouncementsTableReferences
+                                        ._channelIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (templateId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.templateId,
+                                referencedTable:
+                                    $$RenderedAnnouncementsTableReferences
+                                        ._templateIdTable(db),
+                                referencedColumn:
+                                    $$RenderedAnnouncementsTableReferences
+                                        ._templateIdTable(db)
+                                        .templateId,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RenderedAnnouncementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $RenderedAnnouncementsTable,
+      RenderedAnnouncement,
+      $$RenderedAnnouncementsTableFilterComposer,
+      $$RenderedAnnouncementsTableOrderingComposer,
+      $$RenderedAnnouncementsTableAnnotationComposer,
+      $$RenderedAnnouncementsTableCreateCompanionBuilder,
+      $$RenderedAnnouncementsTableUpdateCompanionBuilder,
+      (RenderedAnnouncement, $$RenderedAnnouncementsTableReferences),
+      RenderedAnnouncement,
+      PrefetchHooks Function({bool channelId, bool templateId})
+    >;
+typedef $$LinkInBioPagesTableCreateCompanionBuilder =
+    LinkInBioPagesCompanion Function({
+      required String channelId,
+      required String handle,
+      required String displayName,
+      required String avatarRef,
+      required String captureLinkUrl,
+      required String qrPayload,
+      required String externalLinksJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LinkInBioPagesTableUpdateCompanionBuilder =
+    LinkInBioPagesCompanion Function({
+      Value<String> channelId,
+      Value<String> handle,
+      Value<String> displayName,
+      Value<String> avatarRef,
+      Value<String> captureLinkUrl,
+      Value<String> qrPayload,
+      Value<String> externalLinksJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$LinkInBioPagesTableReferences
+    extends
+        BaseReferences<_$LoomDatabase, $LinkInBioPagesTable, LinkInBioPage> {
+  $$LinkInBioPagesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.linkInBioPages.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LinkInBioPagesTableFilterComposer
+    extends Composer<_$LoomDatabase, $LinkInBioPagesTable> {
+  $$LinkInBioPagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get handle => $composableBuilder(
+    column: $table.handle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatarRef => $composableBuilder(
+    column: $table.avatarRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalLinksJson => $composableBuilder(
+    column: $table.externalLinksJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LinkInBioPagesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $LinkInBioPagesTable> {
+  $$LinkInBioPagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get handle => $composableBuilder(
+    column: $table.handle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get avatarRef => $composableBuilder(
+    column: $table.avatarRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get qrPayload => $composableBuilder(
+    column: $table.qrPayload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalLinksJson => $composableBuilder(
+    column: $table.externalLinksJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LinkInBioPagesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $LinkInBioPagesTable> {
+  $$LinkInBioPagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get handle =>
+      $composableBuilder(column: $table.handle, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get avatarRef =>
+      $composableBuilder(column: $table.avatarRef, builder: (column) => column);
+
+  GeneratedColumn<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get qrPayload =>
+      $composableBuilder(column: $table.qrPayload, builder: (column) => column);
+
+  GeneratedColumn<String> get externalLinksJson => $composableBuilder(
+    column: $table.externalLinksJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LinkInBioPagesTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $LinkInBioPagesTable,
+          LinkInBioPage,
+          $$LinkInBioPagesTableFilterComposer,
+          $$LinkInBioPagesTableOrderingComposer,
+          $$LinkInBioPagesTableAnnotationComposer,
+          $$LinkInBioPagesTableCreateCompanionBuilder,
+          $$LinkInBioPagesTableUpdateCompanionBuilder,
+          (LinkInBioPage, $$LinkInBioPagesTableReferences),
+          LinkInBioPage,
+          PrefetchHooks Function({bool channelId})
+        > {
+  $$LinkInBioPagesTableTableManager(
+    _$LoomDatabase db,
+    $LinkInBioPagesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LinkInBioPagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LinkInBioPagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LinkInBioPagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> channelId = const Value.absent(),
+                Value<String> handle = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> avatarRef = const Value.absent(),
+                Value<String> captureLinkUrl = const Value.absent(),
+                Value<String> qrPayload = const Value.absent(),
+                Value<String> externalLinksJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LinkInBioPagesCompanion(
+                channelId: channelId,
+                handle: handle,
+                displayName: displayName,
+                avatarRef: avatarRef,
+                captureLinkUrl: captureLinkUrl,
+                qrPayload: qrPayload,
+                externalLinksJson: externalLinksJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String channelId,
+                required String handle,
+                required String displayName,
+                required String avatarRef,
+                required String captureLinkUrl,
+                required String qrPayload,
+                required String externalLinksJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LinkInBioPagesCompanion.insert(
+                channelId: channelId,
+                handle: handle,
+                displayName: displayName,
+                avatarRef: avatarRef,
+                captureLinkUrl: captureLinkUrl,
+                qrPayload: qrPayload,
+                externalLinksJson: externalLinksJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$LinkInBioPagesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({channelId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable: $$LinkInBioPagesTableReferences
+                                    ._channelIdTable(db),
+                                referencedColumn:
+                                    $$LinkInBioPagesTableReferences
+                                        ._channelIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LinkInBioPagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $LinkInBioPagesTable,
+      LinkInBioPage,
+      $$LinkInBioPagesTableFilterComposer,
+      $$LinkInBioPagesTableOrderingComposer,
+      $$LinkInBioPagesTableAnnotationComposer,
+      $$LinkInBioPagesTableCreateCompanionBuilder,
+      $$LinkInBioPagesTableUpdateCompanionBuilder,
+      (LinkInBioPage, $$LinkInBioPagesTableReferences),
+      LinkInBioPage,
+      PrefetchHooks Function({bool channelId})
+    >;
+typedef $$StarterPacksTableCreateCompanionBuilder =
+    StarterPacksCompanion Function({
+      required String channelId,
+      required String starterPackToken,
+      required String memberIdsJson,
+      required String defaultSelectedIdsJson,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$StarterPacksTableUpdateCompanionBuilder =
+    StarterPacksCompanion Function({
+      Value<String> channelId,
+      Value<String> starterPackToken,
+      Value<String> memberIdsJson,
+      Value<String> defaultSelectedIdsJson,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$StarterPacksTableReferences
+    extends BaseReferences<_$LoomDatabase, $StarterPacksTable, StarterPack> {
+  $$StarterPacksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.starterPacks.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$StarterPacksTableFilterComposer
+    extends Composer<_$LoomDatabase, $StarterPacksTable> {
+  $$StarterPacksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get starterPackToken => $composableBuilder(
+    column: $table.starterPackToken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get memberIdsJson => $composableBuilder(
+    column: $table.memberIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get defaultSelectedIdsJson => $composableBuilder(
+    column: $table.defaultSelectedIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$StarterPacksTableOrderingComposer
+    extends Composer<_$LoomDatabase, $StarterPacksTable> {
+  $$StarterPacksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get starterPackToken => $composableBuilder(
+    column: $table.starterPackToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get memberIdsJson => $composableBuilder(
+    column: $table.memberIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get defaultSelectedIdsJson => $composableBuilder(
+    column: $table.defaultSelectedIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$StarterPacksTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $StarterPacksTable> {
+  $$StarterPacksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get starterPackToken => $composableBuilder(
+    column: $table.starterPackToken,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get memberIdsJson => $composableBuilder(
+    column: $table.memberIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get defaultSelectedIdsJson => $composableBuilder(
+    column: $table.defaultSelectedIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$StarterPacksTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $StarterPacksTable,
+          StarterPack,
+          $$StarterPacksTableFilterComposer,
+          $$StarterPacksTableOrderingComposer,
+          $$StarterPacksTableAnnotationComposer,
+          $$StarterPacksTableCreateCompanionBuilder,
+          $$StarterPacksTableUpdateCompanionBuilder,
+          (StarterPack, $$StarterPacksTableReferences),
+          StarterPack,
+          PrefetchHooks Function({bool channelId})
+        > {
+  $$StarterPacksTableTableManager(_$LoomDatabase db, $StarterPacksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StarterPacksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StarterPacksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StarterPacksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> channelId = const Value.absent(),
+                Value<String> starterPackToken = const Value.absent(),
+                Value<String> memberIdsJson = const Value.absent(),
+                Value<String> defaultSelectedIdsJson = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StarterPacksCompanion(
+                channelId: channelId,
+                starterPackToken: starterPackToken,
+                memberIdsJson: memberIdsJson,
+                defaultSelectedIdsJson: defaultSelectedIdsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String channelId,
+                required String starterPackToken,
+                required String memberIdsJson,
+                required String defaultSelectedIdsJson,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => StarterPacksCompanion.insert(
+                channelId: channelId,
+                starterPackToken: starterPackToken,
+                memberIdsJson: memberIdsJson,
+                defaultSelectedIdsJson: defaultSelectedIdsJson,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$StarterPacksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({channelId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable: $$StarterPacksTableReferences
+                                    ._channelIdTable(db),
+                                referencedColumn: $$StarterPacksTableReferences
+                                    ._channelIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$StarterPacksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $StarterPacksTable,
+      StarterPack,
+      $$StarterPacksTableFilterComposer,
+      $$StarterPacksTableOrderingComposer,
+      $$StarterPacksTableAnnotationComposer,
+      $$StarterPacksTableCreateCompanionBuilder,
+      $$StarterPacksTableUpdateCompanionBuilder,
+      (StarterPack, $$StarterPacksTableReferences),
+      StarterPack,
+      PrefetchHooks Function({bool channelId})
+    >;
+typedef $$BulkFollowJobsTableCreateCompanionBuilder =
+    BulkFollowJobsCompanion Function({
+      required String id,
+      required String channelId,
+      required String passportId,
+      required String followedIdsJson,
+      required String alreadyFollowingIdsJson,
+      required bool feedReady,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$BulkFollowJobsTableUpdateCompanionBuilder =
+    BulkFollowJobsCompanion Function({
+      Value<String> id,
+      Value<String> channelId,
+      Value<String> passportId,
+      Value<String> followedIdsJson,
+      Value<String> alreadyFollowingIdsJson,
+      Value<bool> feedReady,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$BulkFollowJobsTableReferences
+    extends
+        BaseReferences<_$LoomDatabase, $BulkFollowJobsTable, BulkFollowJob> {
+  $$BulkFollowJobsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.bulkFollowJobs.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(db.bulkFollowJobs.passportId, db.fanPassports.id),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$BulkFollowJobsTableFilterComposer
+    extends Composer<_$LoomDatabase, $BulkFollowJobsTable> {
+  $$BulkFollowJobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followedIdsJson => $composableBuilder(
+    column: $table.followedIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alreadyFollowingIdsJson => $composableBuilder(
+    column: $table.alreadyFollowingIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get feedReady => $composableBuilder(
+    column: $table.feedReady,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BulkFollowJobsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $BulkFollowJobsTable> {
+  $$BulkFollowJobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get followedIdsJson => $composableBuilder(
+    column: $table.followedIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get alreadyFollowingIdsJson => $composableBuilder(
+    column: $table.alreadyFollowingIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get feedReady => $composableBuilder(
+    column: $table.feedReady,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BulkFollowJobsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $BulkFollowJobsTable> {
+  $$BulkFollowJobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get followedIdsJson => $composableBuilder(
+    column: $table.followedIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get alreadyFollowingIdsJson => $composableBuilder(
+    column: $table.alreadyFollowingIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get feedReady =>
+      $composableBuilder(column: $table.feedReady, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$BulkFollowJobsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $BulkFollowJobsTable,
+          BulkFollowJob,
+          $$BulkFollowJobsTableFilterComposer,
+          $$BulkFollowJobsTableOrderingComposer,
+          $$BulkFollowJobsTableAnnotationComposer,
+          $$BulkFollowJobsTableCreateCompanionBuilder,
+          $$BulkFollowJobsTableUpdateCompanionBuilder,
+          (BulkFollowJob, $$BulkFollowJobsTableReferences),
+          BulkFollowJob,
+          PrefetchHooks Function({bool channelId, bool passportId})
+        > {
+  $$BulkFollowJobsTableTableManager(
+    _$LoomDatabase db,
+    $BulkFollowJobsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BulkFollowJobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BulkFollowJobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BulkFollowJobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> followedIdsJson = const Value.absent(),
+                Value<String> alreadyFollowingIdsJson = const Value.absent(),
+                Value<bool> feedReady = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BulkFollowJobsCompanion(
+                id: id,
+                channelId: channelId,
+                passportId: passportId,
+                followedIdsJson: followedIdsJson,
+                alreadyFollowingIdsJson: alreadyFollowingIdsJson,
+                feedReady: feedReady,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String channelId,
+                required String passportId,
+                required String followedIdsJson,
+                required String alreadyFollowingIdsJson,
+                required bool feedReady,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => BulkFollowJobsCompanion.insert(
+                id: id,
+                channelId: channelId,
+                passportId: passportId,
+                followedIdsJson: followedIdsJson,
+                alreadyFollowingIdsJson: alreadyFollowingIdsJson,
+                feedReady: feedReady,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$BulkFollowJobsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({channelId = false, passportId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable: $$BulkFollowJobsTableReferences
+                                    ._channelIdTable(db),
+                                referencedColumn:
+                                    $$BulkFollowJobsTableReferences
+                                        ._channelIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable: $$BulkFollowJobsTableReferences
+                                    ._passportIdTable(db),
+                                referencedColumn:
+                                    $$BulkFollowJobsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$BulkFollowJobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $BulkFollowJobsTable,
+      BulkFollowJob,
+      $$BulkFollowJobsTableFilterComposer,
+      $$BulkFollowJobsTableOrderingComposer,
+      $$BulkFollowJobsTableAnnotationComposer,
+      $$BulkFollowJobsTableCreateCompanionBuilder,
+      $$BulkFollowJobsTableUpdateCompanionBuilder,
+      (BulkFollowJob, $$BulkFollowJobsTableReferences),
+      BulkFollowJob,
+      PrefetchHooks Function({bool channelId, bool passportId})
+    >;
+typedef $$ExternalAccountsTableCreateCompanionBuilder =
+    ExternalAccountsCompanion Function({
+      required String linkId,
+      required String channelId,
+      required String platform,
+      required String handle,
+      Value<String?> profileUrl,
+      required String verificationState,
+      required String provenance,
+      required DateTime linkedAt,
+      Value<int> rowid,
+    });
+typedef $$ExternalAccountsTableUpdateCompanionBuilder =
+    ExternalAccountsCompanion Function({
+      Value<String> linkId,
+      Value<String> channelId,
+      Value<String> platform,
+      Value<String> handle,
+      Value<String?> profileUrl,
+      Value<String> verificationState,
+      Value<String> provenance,
+      Value<DateTime> linkedAt,
+      Value<int> rowid,
+    });
+
+final class $$ExternalAccountsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $ExternalAccountsTable,
+          ExternalAccount
+        > {
+  $$ExternalAccountsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.externalAccounts.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PublicMetadataImportJobsTable,
+    List<PublicMetadataImportJob>
+  >
+  _publicMetadataImportJobsRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.publicMetadataImportJobs,
+        aliasName: $_aliasNameGenerator(
+          db.externalAccounts.linkId,
+          db.publicMetadataImportJobs.externalAccountLinkId,
+        ),
+      );
+
+  $$PublicMetadataImportJobsTableProcessedTableManager
+  get publicMetadataImportJobsRefs {
+    final manager =
+        $$PublicMetadataImportJobsTableTableManager(
+          $_db,
+          $_db.publicMetadataImportJobs,
+        ).filter(
+          (f) => f.externalAccountLinkId.linkId.sqlEquals(
+            $_itemColumn<String>('link_id')!,
+          ),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _publicMetadataImportJobsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ExternalAccountsTableFilterComposer
+    extends Composer<_$LoomDatabase, $ExternalAccountsTable> {
+  $$ExternalAccountsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get linkId => $composableBuilder(
+    column: $table.linkId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get handle => $composableBuilder(
+    column: $table.handle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get profileUrl => $composableBuilder(
+    column: $table.profileUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get verificationState => $composableBuilder(
+    column: $table.verificationState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get provenance => $composableBuilder(
+    column: $table.provenance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get linkedAt => $composableBuilder(
+    column: $table.linkedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> publicMetadataImportJobsRefs(
+    Expression<bool> Function($$PublicMetadataImportJobsTableFilterComposer f)
+    f,
+  ) {
+    final $$PublicMetadataImportJobsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.linkId,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.externalAccountLinkId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableFilterComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ExternalAccountsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $ExternalAccountsTable> {
+  $$ExternalAccountsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get linkId => $composableBuilder(
+    column: $table.linkId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get handle => $composableBuilder(
+    column: $table.handle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get profileUrl => $composableBuilder(
+    column: $table.profileUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get verificationState => $composableBuilder(
+    column: $table.verificationState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get provenance => $composableBuilder(
+    column: $table.provenance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get linkedAt => $composableBuilder(
+    column: $table.linkedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExternalAccountsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $ExternalAccountsTable> {
+  $$ExternalAccountsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get linkId =>
+      $composableBuilder(column: $table.linkId, builder: (column) => column);
+
+  GeneratedColumn<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => column);
+
+  GeneratedColumn<String> get handle =>
+      $composableBuilder(column: $table.handle, builder: (column) => column);
+
+  GeneratedColumn<String> get profileUrl => $composableBuilder(
+    column: $table.profileUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get verificationState => $composableBuilder(
+    column: $table.verificationState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get provenance => $composableBuilder(
+    column: $table.provenance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get linkedAt =>
+      $composableBuilder(column: $table.linkedAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> publicMetadataImportJobsRefs<T extends Object>(
+    Expression<T> Function($$PublicMetadataImportJobsTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PublicMetadataImportJobsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.linkId,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.externalAccountLinkId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ExternalAccountsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $ExternalAccountsTable,
+          ExternalAccount,
+          $$ExternalAccountsTableFilterComposer,
+          $$ExternalAccountsTableOrderingComposer,
+          $$ExternalAccountsTableAnnotationComposer,
+          $$ExternalAccountsTableCreateCompanionBuilder,
+          $$ExternalAccountsTableUpdateCompanionBuilder,
+          (ExternalAccount, $$ExternalAccountsTableReferences),
+          ExternalAccount,
+          PrefetchHooks Function({
+            bool channelId,
+            bool publicMetadataImportJobsRefs,
+          })
+        > {
+  $$ExternalAccountsTableTableManager(
+    _$LoomDatabase db,
+    $ExternalAccountsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExternalAccountsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExternalAccountsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExternalAccountsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> linkId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> platform = const Value.absent(),
+                Value<String> handle = const Value.absent(),
+                Value<String?> profileUrl = const Value.absent(),
+                Value<String> verificationState = const Value.absent(),
+                Value<String> provenance = const Value.absent(),
+                Value<DateTime> linkedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalAccountsCompanion(
+                linkId: linkId,
+                channelId: channelId,
+                platform: platform,
+                handle: handle,
+                profileUrl: profileUrl,
+                verificationState: verificationState,
+                provenance: provenance,
+                linkedAt: linkedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String linkId,
+                required String channelId,
+                required String platform,
+                required String handle,
+                Value<String?> profileUrl = const Value.absent(),
+                required String verificationState,
+                required String provenance,
+                required DateTime linkedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ExternalAccountsCompanion.insert(
+                linkId: linkId,
+                channelId: channelId,
+                platform: platform,
+                handle: handle,
+                profileUrl: profileUrl,
+                verificationState: verificationState,
+                provenance: provenance,
+                linkedAt: linkedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExternalAccountsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({channelId = false, publicMetadataImportJobsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (publicMetadataImportJobsRefs)
+                      db.publicMetadataImportJobs,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (channelId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.channelId,
+                                    referencedTable:
+                                        $$ExternalAccountsTableReferences
+                                            ._channelIdTable(db),
+                                    referencedColumn:
+                                        $$ExternalAccountsTableReferences
+                                            ._channelIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (publicMetadataImportJobsRefs)
+                        await $_getPrefetchedData<
+                          ExternalAccount,
+                          $ExternalAccountsTable,
+                          PublicMetadataImportJob
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ExternalAccountsTableReferences
+                              ._publicMetadataImportJobsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ExternalAccountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).publicMetadataImportJobsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.externalAccountLinkId == item.linkId,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ExternalAccountsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $ExternalAccountsTable,
+      ExternalAccount,
+      $$ExternalAccountsTableFilterComposer,
+      $$ExternalAccountsTableOrderingComposer,
+      $$ExternalAccountsTableAnnotationComposer,
+      $$ExternalAccountsTableCreateCompanionBuilder,
+      $$ExternalAccountsTableUpdateCompanionBuilder,
+      (ExternalAccount, $$ExternalAccountsTableReferences),
+      ExternalAccount,
+      PrefetchHooks Function({
+        bool channelId,
+        bool publicMetadataImportJobsRefs,
+      })
+    >;
+typedef $$PublicMetadataImportJobsTableCreateCompanionBuilder =
+    PublicMetadataImportJobsCompanion Function({
+      required String jobId,
+      required String channelId,
+      required String externalAccountLinkId,
+      required String rightsBasis,
+      required String status,
+      required int importedCount,
+      required int skippedCount,
+      Value<String?> message,
+      required int pollCount,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$PublicMetadataImportJobsTableUpdateCompanionBuilder =
+    PublicMetadataImportJobsCompanion Function({
+      Value<String> jobId,
+      Value<String> channelId,
+      Value<String> externalAccountLinkId,
+      Value<String> rightsBasis,
+      Value<String> status,
+      Value<int> importedCount,
+      Value<int> skippedCount,
+      Value<String?> message,
+      Value<int> pollCount,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$PublicMetadataImportJobsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $PublicMetadataImportJobsTable,
+          PublicMetadataImportJob
+        > {
+  $$PublicMetadataImportJobsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(
+          db.publicMetadataImportJobs.channelId,
+          db.creators.id,
+        ),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ExternalAccountsTable _externalAccountLinkIdTable(
+    _$LoomDatabase db,
+  ) => db.externalAccounts.createAlias(
+    $_aliasNameGenerator(
+      db.publicMetadataImportJobs.externalAccountLinkId,
+      db.externalAccounts.linkId,
+    ),
+  );
+
+  $$ExternalAccountsTableProcessedTableManager get externalAccountLinkId {
+    final $_column = $_itemColumn<String>('external_account_link_id')!;
+
+    final manager = $$ExternalAccountsTableTableManager(
+      $_db,
+      $_db.externalAccounts,
+    ).filter((f) => f.linkId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(
+      _externalAccountLinkIdTable($_db),
+    );
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PublicImportedReferencesTable,
+    List<PublicImportedReference>
+  >
+  _publicImportedReferencesRefsTable(_$LoomDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.publicImportedReferences,
+        aliasName: $_aliasNameGenerator(
+          db.publicMetadataImportJobs.jobId,
+          db.publicImportedReferences.jobId,
+        ),
+      );
+
+  $$PublicImportedReferencesTableProcessedTableManager
+  get publicImportedReferencesRefs {
+    final manager = $$PublicImportedReferencesTableTableManager(
+      $_db,
+      $_db.publicImportedReferences,
+    ).filter((f) => f.jobId.jobId.sqlEquals($_itemColumn<String>('job_id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _publicImportedReferencesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PublicMetadataImportJobsTableFilterComposer
+    extends Composer<_$LoomDatabase, $PublicMetadataImportJobsTable> {
+  $$PublicMetadataImportJobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get importedCount => $composableBuilder(
+    column: $table.importedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get skippedCount => $composableBuilder(
+    column: $table.skippedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExternalAccountsTableFilterComposer get externalAccountLinkId {
+    final $$ExternalAccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.externalAccountLinkId,
+      referencedTable: $db.externalAccounts,
+      getReferencedColumn: (t) => t.linkId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalAccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.externalAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> publicImportedReferencesRefs(
+    Expression<bool> Function($$PublicImportedReferencesTableFilterComposer f)
+    f,
+  ) {
+    final $$PublicImportedReferencesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.jobId,
+          referencedTable: $db.publicImportedReferences,
+          getReferencedColumn: (t) => t.jobId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicImportedReferencesTableFilterComposer(
+                $db: $db,
+                $table: $db.publicImportedReferences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$PublicMetadataImportJobsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PublicMetadataImportJobsTable> {
+  $$PublicMetadataImportJobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get jobId => $composableBuilder(
+    column: $table.jobId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get importedCount => $composableBuilder(
+    column: $table.importedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get skippedCount => $composableBuilder(
+    column: $table.skippedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExternalAccountsTableOrderingComposer get externalAccountLinkId {
+    final $$ExternalAccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.externalAccountLinkId,
+      referencedTable: $db.externalAccounts,
+      getReferencedColumn: (t) => t.linkId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalAccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.externalAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PublicMetadataImportJobsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PublicMetadataImportJobsTable> {
+  $$PublicMetadataImportJobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get jobId =>
+      $composableBuilder(column: $table.jobId, builder: (column) => column);
+
+  GeneratedColumn<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get importedCount => $composableBuilder(
+    column: $table.importedCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get skippedCount => $composableBuilder(
+    column: $table.skippedCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<int> get pollCount =>
+      $composableBuilder(column: $table.pollCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExternalAccountsTableAnnotationComposer get externalAccountLinkId {
+    final $$ExternalAccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.externalAccountLinkId,
+      referencedTable: $db.externalAccounts,
+      getReferencedColumn: (t) => t.linkId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExternalAccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.externalAccounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> publicImportedReferencesRefs<T extends Object>(
+    Expression<T> Function($$PublicImportedReferencesTableAnnotationComposer a)
+    f,
+  ) {
+    final $$PublicImportedReferencesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.jobId,
+          referencedTable: $db.publicImportedReferences,
+          getReferencedColumn: (t) => t.jobId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicImportedReferencesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.publicImportedReferences,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$PublicMetadataImportJobsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PublicMetadataImportJobsTable,
+          PublicMetadataImportJob,
+          $$PublicMetadataImportJobsTableFilterComposer,
+          $$PublicMetadataImportJobsTableOrderingComposer,
+          $$PublicMetadataImportJobsTableAnnotationComposer,
+          $$PublicMetadataImportJobsTableCreateCompanionBuilder,
+          $$PublicMetadataImportJobsTableUpdateCompanionBuilder,
+          (PublicMetadataImportJob, $$PublicMetadataImportJobsTableReferences),
+          PublicMetadataImportJob,
+          PrefetchHooks Function({
+            bool channelId,
+            bool externalAccountLinkId,
+            bool publicImportedReferencesRefs,
+          })
+        > {
+  $$PublicMetadataImportJobsTableTableManager(
+    _$LoomDatabase db,
+    $PublicMetadataImportJobsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PublicMetadataImportJobsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PublicMetadataImportJobsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PublicMetadataImportJobsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> jobId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> externalAccountLinkId = const Value.absent(),
+                Value<String> rightsBasis = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int> importedCount = const Value.absent(),
+                Value<int> skippedCount = const Value.absent(),
+                Value<String?> message = const Value.absent(),
+                Value<int> pollCount = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PublicMetadataImportJobsCompanion(
+                jobId: jobId,
+                channelId: channelId,
+                externalAccountLinkId: externalAccountLinkId,
+                rightsBasis: rightsBasis,
+                status: status,
+                importedCount: importedCount,
+                skippedCount: skippedCount,
+                message: message,
+                pollCount: pollCount,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String jobId,
+                required String channelId,
+                required String externalAccountLinkId,
+                required String rightsBasis,
+                required String status,
+                required int importedCount,
+                required int skippedCount,
+                Value<String?> message = const Value.absent(),
+                required int pollCount,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PublicMetadataImportJobsCompanion.insert(
+                jobId: jobId,
+                channelId: channelId,
+                externalAccountLinkId: externalAccountLinkId,
+                rightsBasis: rightsBasis,
+                status: status,
+                importedCount: importedCount,
+                skippedCount: skippedCount,
+                message: message,
+                pollCount: pollCount,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PublicMetadataImportJobsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                channelId = false,
+                externalAccountLinkId = false,
+                publicImportedReferencesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (publicImportedReferencesRefs)
+                      db.publicImportedReferences,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (channelId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.channelId,
+                                    referencedTable:
+                                        $$PublicMetadataImportJobsTableReferences
+                                            ._channelIdTable(db),
+                                    referencedColumn:
+                                        $$PublicMetadataImportJobsTableReferences
+                                            ._channelIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (externalAccountLinkId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.externalAccountLinkId,
+                                    referencedTable:
+                                        $$PublicMetadataImportJobsTableReferences
+                                            ._externalAccountLinkIdTable(db),
+                                    referencedColumn:
+                                        $$PublicMetadataImportJobsTableReferences
+                                            ._externalAccountLinkIdTable(db)
+                                            .linkId,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (publicImportedReferencesRefs)
+                        await $_getPrefetchedData<
+                          PublicMetadataImportJob,
+                          $PublicMetadataImportJobsTable,
+                          PublicImportedReference
+                        >(
+                          currentTable: table,
+                          referencedTable:
+                              $$PublicMetadataImportJobsTableReferences
+                                  ._publicImportedReferencesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PublicMetadataImportJobsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).publicImportedReferencesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.jobId == item.jobId,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$PublicMetadataImportJobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PublicMetadataImportJobsTable,
+      PublicMetadataImportJob,
+      $$PublicMetadataImportJobsTableFilterComposer,
+      $$PublicMetadataImportJobsTableOrderingComposer,
+      $$PublicMetadataImportJobsTableAnnotationComposer,
+      $$PublicMetadataImportJobsTableCreateCompanionBuilder,
+      $$PublicMetadataImportJobsTableUpdateCompanionBuilder,
+      (PublicMetadataImportJob, $$PublicMetadataImportJobsTableReferences),
+      PublicMetadataImportJob,
+      PrefetchHooks Function({
+        bool channelId,
+        bool externalAccountLinkId,
+        bool publicImportedReferencesRefs,
+      })
+    >;
+typedef $$PublicImportedReferencesTableCreateCompanionBuilder =
+    PublicImportedReferencesCompanion Function({
+      required String referenceId,
+      required String jobId,
+      required String channelId,
+      required String platform,
+      required String externalId,
+      required String title,
+      Value<String?> description,
+      Value<String?> thumbnailRef,
+      Value<String?> sourceUrl,
+      Value<DateTime?> publishedAt,
+      required String rightsBasis,
+      required bool searchIndexable,
+      required bool aiQueryable,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PublicImportedReferencesTableUpdateCompanionBuilder =
+    PublicImportedReferencesCompanion Function({
+      Value<String> referenceId,
+      Value<String> jobId,
+      Value<String> channelId,
+      Value<String> platform,
+      Value<String> externalId,
+      Value<String> title,
+      Value<String?> description,
+      Value<String?> thumbnailRef,
+      Value<String?> sourceUrl,
+      Value<DateTime?> publishedAt,
+      Value<String> rightsBasis,
+      Value<bool> searchIndexable,
+      Value<bool> aiQueryable,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$PublicImportedReferencesTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $PublicImportedReferencesTable,
+          PublicImportedReference
+        > {
+  $$PublicImportedReferencesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PublicMetadataImportJobsTable _jobIdTable(_$LoomDatabase db) =>
+      db.publicMetadataImportJobs.createAlias(
+        $_aliasNameGenerator(
+          db.publicImportedReferences.jobId,
+          db.publicMetadataImportJobs.jobId,
+        ),
+      );
+
+  $$PublicMetadataImportJobsTableProcessedTableManager get jobId {
+    final $_column = $_itemColumn<String>('job_id')!;
+
+    final manager = $$PublicMetadataImportJobsTableTableManager(
+      $_db,
+      $_db.publicMetadataImportJobs,
+    ).filter((f) => f.jobId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_jobIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(
+          db.publicImportedReferences.channelId,
+          db.creators.id,
+        ),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PublicImportedReferencesTableFilterComposer
+    extends Composer<_$LoomDatabase, $PublicImportedReferencesTable> {
+  $$PublicImportedReferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get publishedAt => $composableBuilder(
+    column: $table.publishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get searchIndexable => $composableBuilder(
+    column: $table.searchIndexable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get aiQueryable => $composableBuilder(
+    column: $table.aiQueryable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PublicMetadataImportJobsTableFilterComposer get jobId {
+    final $$PublicMetadataImportJobsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.jobId,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.jobId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableFilterComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PublicImportedReferencesTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PublicImportedReferencesTable> {
+  $$PublicImportedReferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get platform => $composableBuilder(
+    column: $table.platform,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get publishedAt => $composableBuilder(
+    column: $table.publishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get searchIndexable => $composableBuilder(
+    column: $table.searchIndexable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get aiQueryable => $composableBuilder(
+    column: $table.aiQueryable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PublicMetadataImportJobsTableOrderingComposer get jobId {
+    final $$PublicMetadataImportJobsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.jobId,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.jobId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableOrderingComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PublicImportedReferencesTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PublicImportedReferencesTable> {
+  $$PublicImportedReferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get referenceId => $composableBuilder(
+    column: $table.referenceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => column);
+
+  GeneratedColumn<String> get externalId => $composableBuilder(
+    column: $table.externalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get thumbnailRef => $composableBuilder(
+    column: $table.thumbnailRef,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get publishedAt => $composableBuilder(
+    column: $table.publishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get rightsBasis => $composableBuilder(
+    column: $table.rightsBasis,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get searchIndexable => $composableBuilder(
+    column: $table.searchIndexable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get aiQueryable => $composableBuilder(
+    column: $table.aiQueryable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$PublicMetadataImportJobsTableAnnotationComposer get jobId {
+    final $$PublicMetadataImportJobsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.jobId,
+          referencedTable: $db.publicMetadataImportJobs,
+          getReferencedColumn: (t) => t.jobId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PublicMetadataImportJobsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.publicMetadataImportJobs,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PublicImportedReferencesTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PublicImportedReferencesTable,
+          PublicImportedReference,
+          $$PublicImportedReferencesTableFilterComposer,
+          $$PublicImportedReferencesTableOrderingComposer,
+          $$PublicImportedReferencesTableAnnotationComposer,
+          $$PublicImportedReferencesTableCreateCompanionBuilder,
+          $$PublicImportedReferencesTableUpdateCompanionBuilder,
+          (PublicImportedReference, $$PublicImportedReferencesTableReferences),
+          PublicImportedReference,
+          PrefetchHooks Function({bool jobId, bool channelId})
+        > {
+  $$PublicImportedReferencesTableTableManager(
+    _$LoomDatabase db,
+    $PublicImportedReferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PublicImportedReferencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$PublicImportedReferencesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$PublicImportedReferencesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> referenceId = const Value.absent(),
+                Value<String> jobId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> platform = const Value.absent(),
+                Value<String> externalId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<String?> thumbnailRef = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<DateTime?> publishedAt = const Value.absent(),
+                Value<String> rightsBasis = const Value.absent(),
+                Value<bool> searchIndexable = const Value.absent(),
+                Value<bool> aiQueryable = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PublicImportedReferencesCompanion(
+                referenceId: referenceId,
+                jobId: jobId,
+                channelId: channelId,
+                platform: platform,
+                externalId: externalId,
+                title: title,
+                description: description,
+                thumbnailRef: thumbnailRef,
+                sourceUrl: sourceUrl,
+                publishedAt: publishedAt,
+                rightsBasis: rightsBasis,
+                searchIndexable: searchIndexable,
+                aiQueryable: aiQueryable,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String referenceId,
+                required String jobId,
+                required String channelId,
+                required String platform,
+                required String externalId,
+                required String title,
+                Value<String?> description = const Value.absent(),
+                Value<String?> thumbnailRef = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
+                Value<DateTime?> publishedAt = const Value.absent(),
+                required String rightsBasis,
+                required bool searchIndexable,
+                required bool aiQueryable,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PublicImportedReferencesCompanion.insert(
+                referenceId: referenceId,
+                jobId: jobId,
+                channelId: channelId,
+                platform: platform,
+                externalId: externalId,
+                title: title,
+                description: description,
+                thumbnailRef: thumbnailRef,
+                sourceUrl: sourceUrl,
+                publishedAt: publishedAt,
+                rightsBasis: rightsBasis,
+                searchIndexable: searchIndexable,
+                aiQueryable: aiQueryable,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PublicImportedReferencesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({jobId = false, channelId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (jobId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.jobId,
+                                referencedTable:
+                                    $$PublicImportedReferencesTableReferences
+                                        ._jobIdTable(db),
+                                referencedColumn:
+                                    $$PublicImportedReferencesTableReferences
+                                        ._jobIdTable(db)
+                                        .jobId,
+                              )
+                              as T;
+                    }
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable:
+                                    $$PublicImportedReferencesTableReferences
+                                        ._channelIdTable(db),
+                                referencedColumn:
+                                    $$PublicImportedReferencesTableReferences
+                                        ._channelIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PublicImportedReferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PublicImportedReferencesTable,
+      PublicImportedReference,
+      $$PublicImportedReferencesTableFilterComposer,
+      $$PublicImportedReferencesTableOrderingComposer,
+      $$PublicImportedReferencesTableAnnotationComposer,
+      $$PublicImportedReferencesTableCreateCompanionBuilder,
+      $$PublicImportedReferencesTableUpdateCompanionBuilder,
+      (PublicImportedReference, $$PublicImportedReferencesTableReferences),
+      PublicImportedReference,
+      PrefetchHooks Function({bool jobId, bool channelId})
+    >;
+typedef $$CrossPostJobsTableCreateCompanionBuilder =
+    CrossPostJobsCompanion Function({
+      required String crossPostId,
+      required String channelId,
+      required String message,
+      required String targetLinkIdsJson,
+      required String targetsJson,
+      Value<String?> announcementId,
+      Value<String?> contentRef,
+      Value<String?> captureLinkUrl,
+      required int pollCount,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CrossPostJobsTableUpdateCompanionBuilder =
+    CrossPostJobsCompanion Function({
+      Value<String> crossPostId,
+      Value<String> channelId,
+      Value<String> message,
+      Value<String> targetLinkIdsJson,
+      Value<String> targetsJson,
+      Value<String?> announcementId,
+      Value<String?> contentRef,
+      Value<String?> captureLinkUrl,
+      Value<int> pollCount,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$CrossPostJobsTableReferences
+    extends BaseReferences<_$LoomDatabase, $CrossPostJobsTable, CrossPostJob> {
+  $$CrossPostJobsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $CreatorsTable _channelIdTable(_$LoomDatabase db) =>
+      db.creators.createAlias(
+        $_aliasNameGenerator(db.crossPostJobs.channelId, db.creators.id),
+      );
+
+  $$CreatorsTableProcessedTableManager get channelId {
+    final $_column = $_itemColumn<String>('channel_id')!;
+
+    final manager = $$CreatorsTableTableManager(
+      $_db,
+      $_db.creators,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_channelIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$CrossPostJobsTableFilterComposer
+    extends Composer<_$LoomDatabase, $CrossPostJobsTable> {
+  $$CrossPostJobsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get crossPostId => $composableBuilder(
+    column: $table.crossPostId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLinkIdsJson => $composableBuilder(
+    column: $table.targetLinkIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetsJson => $composableBuilder(
+    column: $table.targetsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contentRef => $composableBuilder(
+    column: $table.contentRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CreatorsTableFilterComposer get channelId {
+    final $$CreatorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableFilterComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CrossPostJobsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $CrossPostJobsTable> {
+  $$CrossPostJobsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get crossPostId => $composableBuilder(
+    column: $table.crossPostId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get message => $composableBuilder(
+    column: $table.message,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLinkIdsJson => $composableBuilder(
+    column: $table.targetLinkIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetsJson => $composableBuilder(
+    column: $table.targetsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contentRef => $composableBuilder(
+    column: $table.contentRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pollCount => $composableBuilder(
+    column: $table.pollCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CreatorsTableOrderingComposer get channelId {
+    final $$CreatorsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableOrderingComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CrossPostJobsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $CrossPostJobsTable> {
+  $$CrossPostJobsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get crossPostId => $composableBuilder(
+    column: $table.crossPostId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get message =>
+      $composableBuilder(column: $table.message, builder: (column) => column);
+
+  GeneratedColumn<String> get targetLinkIdsJson => $composableBuilder(
+    column: $table.targetLinkIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetsJson => $composableBuilder(
+    column: $table.targetsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get announcementId => $composableBuilder(
+    column: $table.announcementId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contentRef => $composableBuilder(
+    column: $table.contentRef,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get captureLinkUrl => $composableBuilder(
+    column: $table.captureLinkUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pollCount =>
+      $composableBuilder(column: $table.pollCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$CreatorsTableAnnotationComposer get channelId {
+    final $$CreatorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.channelId,
+      referencedTable: $db.creators,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CreatorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.creators,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CrossPostJobsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $CrossPostJobsTable,
+          CrossPostJob,
+          $$CrossPostJobsTableFilterComposer,
+          $$CrossPostJobsTableOrderingComposer,
+          $$CrossPostJobsTableAnnotationComposer,
+          $$CrossPostJobsTableCreateCompanionBuilder,
+          $$CrossPostJobsTableUpdateCompanionBuilder,
+          (CrossPostJob, $$CrossPostJobsTableReferences),
+          CrossPostJob,
+          PrefetchHooks Function({bool channelId})
+        > {
+  $$CrossPostJobsTableTableManager(_$LoomDatabase db, $CrossPostJobsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CrossPostJobsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CrossPostJobsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CrossPostJobsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> crossPostId = const Value.absent(),
+                Value<String> channelId = const Value.absent(),
+                Value<String> message = const Value.absent(),
+                Value<String> targetLinkIdsJson = const Value.absent(),
+                Value<String> targetsJson = const Value.absent(),
+                Value<String?> announcementId = const Value.absent(),
+                Value<String?> contentRef = const Value.absent(),
+                Value<String?> captureLinkUrl = const Value.absent(),
+                Value<int> pollCount = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CrossPostJobsCompanion(
+                crossPostId: crossPostId,
+                channelId: channelId,
+                message: message,
+                targetLinkIdsJson: targetLinkIdsJson,
+                targetsJson: targetsJson,
+                announcementId: announcementId,
+                contentRef: contentRef,
+                captureLinkUrl: captureLinkUrl,
+                pollCount: pollCount,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String crossPostId,
+                required String channelId,
+                required String message,
+                required String targetLinkIdsJson,
+                required String targetsJson,
+                Value<String?> announcementId = const Value.absent(),
+                Value<String?> contentRef = const Value.absent(),
+                Value<String?> captureLinkUrl = const Value.absent(),
+                required int pollCount,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CrossPostJobsCompanion.insert(
+                crossPostId: crossPostId,
+                channelId: channelId,
+                message: message,
+                targetLinkIdsJson: targetLinkIdsJson,
+                targetsJson: targetsJson,
+                announcementId: announcementId,
+                contentRef: contentRef,
+                captureLinkUrl: captureLinkUrl,
+                pollCount: pollCount,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CrossPostJobsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({channelId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (channelId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.channelId,
+                                referencedTable: $$CrossPostJobsTableReferences
+                                    ._channelIdTable(db),
+                                referencedColumn: $$CrossPostJobsTableReferences
+                                    ._channelIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$CrossPostJobsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $CrossPostJobsTable,
+      CrossPostJob,
+      $$CrossPostJobsTableFilterComposer,
+      $$CrossPostJobsTableOrderingComposer,
+      $$CrossPostJobsTableAnnotationComposer,
+      $$CrossPostJobsTableCreateCompanionBuilder,
+      $$CrossPostJobsTableUpdateCompanionBuilder,
+      (CrossPostJob, $$CrossPostJobsTableReferences),
+      CrossPostJob,
+      PrefetchHooks Function({bool channelId})
+    >;
+typedef $$AdDecisionsTableCreateCompanionBuilder =
+    AdDecisionsCompanion Function({
+      required String decisionId,
+      required String contentId,
+      required String adsJson,
+      Value<String?> policyVersion,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$AdDecisionsTableUpdateCompanionBuilder =
+    AdDecisionsCompanion Function({
+      Value<String> decisionId,
+      Value<String> contentId,
+      Value<String> adsJson,
+      Value<String?> policyVersion,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$AdDecisionsTableReferences
+    extends BaseReferences<_$LoomDatabase, $AdDecisionsTable, AdDecision> {
+  $$AdDecisionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ContentItemsTable _contentIdTable(_$LoomDatabase db) =>
+      db.contentItems.createAlias(
+        $_aliasNameGenerator(db.adDecisions.contentId, db.contentItems.id),
+      );
+
+  $$ContentItemsTableProcessedTableManager get contentId {
+    final $_column = $_itemColumn<String>('content_id')!;
+
+    final manager = $$ContentItemsTableTableManager(
+      $_db,
+      $_db.contentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$AdImpressionsTable, List<AdImpression>>
+  _adImpressionsRefsTable(_$LoomDatabase db) => MultiTypedResultKey.fromTable(
+    db.adImpressions,
+    aliasName: $_aliasNameGenerator(
+      db.adDecisions.decisionId,
+      db.adImpressions.decisionId,
+    ),
+  );
+
+  $$AdImpressionsTableProcessedTableManager get adImpressionsRefs {
+    final manager = $$AdImpressionsTableTableManager($_db, $_db.adImpressions)
+        .filter(
+          (f) => f.decisionId.decisionId.sqlEquals(
+            $_itemColumn<String>('decision_id')!,
+          ),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_adImpressionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$AdDecisionsTableFilterComposer
+    extends Composer<_$LoomDatabase, $AdDecisionsTable> {
+  $$AdDecisionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get decisionId => $composableBuilder(
+    column: $table.decisionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adsJson => $composableBuilder(
+    column: $table.adsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get policyVersion => $composableBuilder(
+    column: $table.policyVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ContentItemsTableFilterComposer get contentId {
+    final $$ContentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> adImpressionsRefs(
+    Expression<bool> Function($$AdImpressionsTableFilterComposer f) f,
+  ) {
+    final $$AdImpressionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.decisionId,
+      referencedTable: $db.adImpressions,
+      getReferencedColumn: (t) => t.decisionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdImpressionsTableFilterComposer(
+            $db: $db,
+            $table: $db.adImpressions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$AdDecisionsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AdDecisionsTable> {
+  $$AdDecisionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get decisionId => $composableBuilder(
+    column: $table.decisionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get adsJson => $composableBuilder(
+    column: $table.adsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get policyVersion => $composableBuilder(
+    column: $table.policyVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ContentItemsTableOrderingComposer get contentId {
+    final $$ContentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AdDecisionsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AdDecisionsTable> {
+  $$AdDecisionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get decisionId => $composableBuilder(
+    column: $table.decisionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get adsJson =>
+      $composableBuilder(column: $table.adsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get policyVersion => $composableBuilder(
+    column: $table.policyVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ContentItemsTableAnnotationComposer get contentId {
+    final $$ContentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> adImpressionsRefs<T extends Object>(
+    Expression<T> Function($$AdImpressionsTableAnnotationComposer a) f,
+  ) {
+    final $$AdImpressionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.decisionId,
+      referencedTable: $db.adImpressions,
+      getReferencedColumn: (t) => t.decisionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdImpressionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.adImpressions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$AdDecisionsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AdDecisionsTable,
+          AdDecision,
+          $$AdDecisionsTableFilterComposer,
+          $$AdDecisionsTableOrderingComposer,
+          $$AdDecisionsTableAnnotationComposer,
+          $$AdDecisionsTableCreateCompanionBuilder,
+          $$AdDecisionsTableUpdateCompanionBuilder,
+          (AdDecision, $$AdDecisionsTableReferences),
+          AdDecision,
+          PrefetchHooks Function({bool contentId, bool adImpressionsRefs})
+        > {
+  $$AdDecisionsTableTableManager(_$LoomDatabase db, $AdDecisionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AdDecisionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AdDecisionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AdDecisionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> decisionId = const Value.absent(),
+                Value<String> contentId = const Value.absent(),
+                Value<String> adsJson = const Value.absent(),
+                Value<String?> policyVersion = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AdDecisionsCompanion(
+                decisionId: decisionId,
+                contentId: contentId,
+                adsJson: adsJson,
+                policyVersion: policyVersion,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String decisionId,
+                required String contentId,
+                required String adsJson,
+                Value<String?> policyVersion = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AdDecisionsCompanion.insert(
+                decisionId: decisionId,
+                contentId: contentId,
+                adsJson: adsJson,
+                policyVersion: policyVersion,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AdDecisionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({contentId = false, adImpressionsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (adImpressionsRefs) db.adImpressions,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (contentId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.contentId,
+                                    referencedTable:
+                                        $$AdDecisionsTableReferences
+                                            ._contentIdTable(db),
+                                    referencedColumn:
+                                        $$AdDecisionsTableReferences
+                                            ._contentIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (adImpressionsRefs)
+                        await $_getPrefetchedData<
+                          AdDecision,
+                          $AdDecisionsTable,
+                          AdImpression
+                        >(
+                          currentTable: table,
+                          referencedTable: $$AdDecisionsTableReferences
+                              ._adImpressionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$AdDecisionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).adImpressionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.decisionId == item.decisionId,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$AdDecisionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AdDecisionsTable,
+      AdDecision,
+      $$AdDecisionsTableFilterComposer,
+      $$AdDecisionsTableOrderingComposer,
+      $$AdDecisionsTableAnnotationComposer,
+      $$AdDecisionsTableCreateCompanionBuilder,
+      $$AdDecisionsTableUpdateCompanionBuilder,
+      (AdDecision, $$AdDecisionsTableReferences),
+      AdDecision,
+      PrefetchHooks Function({bool contentId, bool adImpressionsRefs})
+    >;
+typedef $$AdImpressionsTableCreateCompanionBuilder =
+    AdImpressionsCompanion Function({
+      required String id,
+      required String decisionId,
+      required String adId,
+      required bool completed,
+      Value<String?> receiptId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$AdImpressionsTableUpdateCompanionBuilder =
+    AdImpressionsCompanion Function({
+      Value<String> id,
+      Value<String> decisionId,
+      Value<String> adId,
+      Value<bool> completed,
+      Value<String?> receiptId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$AdImpressionsTableReferences
+    extends BaseReferences<_$LoomDatabase, $AdImpressionsTable, AdImpression> {
+  $$AdImpressionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $AdDecisionsTable _decisionIdTable(_$LoomDatabase db) =>
+      db.adDecisions.createAlias(
+        $_aliasNameGenerator(
+          db.adImpressions.decisionId,
+          db.adDecisions.decisionId,
+        ),
+      );
+
+  $$AdDecisionsTableProcessedTableManager get decisionId {
+    final $_column = $_itemColumn<String>('decision_id')!;
+
+    final manager = $$AdDecisionsTableTableManager(
+      $_db,
+      $_db.adDecisions,
+    ).filter((f) => f.decisionId.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_decisionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AdImpressionsTableFilterComposer
+    extends Composer<_$LoomDatabase, $AdImpressionsTable> {
+  $$AdImpressionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adId => $composableBuilder(
+    column: $table.adId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$AdDecisionsTableFilterComposer get decisionId {
+    final $$AdDecisionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.decisionId,
+      referencedTable: $db.adDecisions,
+      getReferencedColumn: (t) => t.decisionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdDecisionsTableFilterComposer(
+            $db: $db,
+            $table: $db.adDecisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AdImpressionsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $AdImpressionsTable> {
+  $$AdImpressionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get adId => $composableBuilder(
+    column: $table.adId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get completed => $composableBuilder(
+    column: $table.completed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$AdDecisionsTableOrderingComposer get decisionId {
+    final $$AdDecisionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.decisionId,
+      referencedTable: $db.adDecisions,
+      getReferencedColumn: (t) => t.decisionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdDecisionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.adDecisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AdImpressionsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $AdImpressionsTable> {
+  $$AdImpressionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get adId =>
+      $composableBuilder(column: $table.adId, builder: (column) => column);
+
+  GeneratedColumn<bool> get completed =>
+      $composableBuilder(column: $table.completed, builder: (column) => column);
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$AdDecisionsTableAnnotationComposer get decisionId {
+    final $$AdDecisionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.decisionId,
+      referencedTable: $db.adDecisions,
+      getReferencedColumn: (t) => t.decisionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AdDecisionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.adDecisions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AdImpressionsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $AdImpressionsTable,
+          AdImpression,
+          $$AdImpressionsTableFilterComposer,
+          $$AdImpressionsTableOrderingComposer,
+          $$AdImpressionsTableAnnotationComposer,
+          $$AdImpressionsTableCreateCompanionBuilder,
+          $$AdImpressionsTableUpdateCompanionBuilder,
+          (AdImpression, $$AdImpressionsTableReferences),
+          AdImpression,
+          PrefetchHooks Function({bool decisionId})
+        > {
+  $$AdImpressionsTableTableManager(_$LoomDatabase db, $AdImpressionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AdImpressionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AdImpressionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AdImpressionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> decisionId = const Value.absent(),
+                Value<String> adId = const Value.absent(),
+                Value<bool> completed = const Value.absent(),
+                Value<String?> receiptId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AdImpressionsCompanion(
+                id: id,
+                decisionId: decisionId,
+                adId: adId,
+                completed: completed,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String decisionId,
+                required String adId,
+                required bool completed,
+                Value<String?> receiptId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AdImpressionsCompanion.insert(
+                id: id,
+                decisionId: decisionId,
+                adId: adId,
+                completed: completed,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AdImpressionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({decisionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (decisionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.decisionId,
+                                referencedTable: $$AdImpressionsTableReferences
+                                    ._decisionIdTable(db),
+                                referencedColumn: $$AdImpressionsTableReferences
+                                    ._decisionIdTable(db)
+                                    .decisionId,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AdImpressionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $AdImpressionsTable,
+      AdImpression,
+      $$AdImpressionsTableFilterComposer,
+      $$AdImpressionsTableOrderingComposer,
+      $$AdImpressionsTableAnnotationComposer,
+      $$AdImpressionsTableCreateCompanionBuilder,
+      $$AdImpressionsTableUpdateCompanionBuilder,
+      (AdImpression, $$AdImpressionsTableReferences),
+      AdImpression,
+      PrefetchHooks Function({bool decisionId})
+    >;
+typedef $$PremiumNoAdEventsTableCreateCompanionBuilder =
+    PremiumNoAdEventsCompanion Function({
+      required String id,
+      required String passportId,
+      required String contentId,
+      Value<String?> channelId,
+      Value<String?> sessionIntent,
+      Value<String?> receiptId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$PremiumNoAdEventsTableUpdateCompanionBuilder =
+    PremiumNoAdEventsCompanion Function({
+      Value<String> id,
+      Value<String> passportId,
+      Value<String> contentId,
+      Value<String?> channelId,
+      Value<String?> sessionIntent,
+      Value<String?> receiptId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$PremiumNoAdEventsTableReferences
+    extends
+        BaseReferences<
+          _$LoomDatabase,
+          $PremiumNoAdEventsTable,
+          PremiumNoAdEvent
+        > {
+  $$PremiumNoAdEventsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $FanPassportsTable _passportIdTable(_$LoomDatabase db) =>
+      db.fanPassports.createAlias(
+        $_aliasNameGenerator(
+          db.premiumNoAdEvents.passportId,
+          db.fanPassports.id,
+        ),
+      );
+
+  $$FanPassportsTableProcessedTableManager get passportId {
+    final $_column = $_itemColumn<String>('passport_id')!;
+
+    final manager = $$FanPassportsTableTableManager(
+      $_db,
+      $_db.fanPassports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContentItemsTable _contentIdTable(_$LoomDatabase db) =>
+      db.contentItems.createAlias(
+        $_aliasNameGenerator(
+          db.premiumNoAdEvents.contentId,
+          db.contentItems.id,
+        ),
+      );
+
+  $$ContentItemsTableProcessedTableManager get contentId {
+    final $_column = $_itemColumn<String>('content_id')!;
+
+    final manager = $$ContentItemsTableTableManager(
+      $_db,
+      $_db.contentItems,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_contentIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PremiumNoAdEventsTableFilterComposer
+    extends Composer<_$LoomDatabase, $PremiumNoAdEventsTable> {
+  $$PremiumNoAdEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionIntent => $composableBuilder(
+    column: $table.sessionIntent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$FanPassportsTableFilterComposer get passportId {
+    final $$FanPassportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableFilterComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableFilterComposer get contentId {
+    final $$ContentItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PremiumNoAdEventsTableOrderingComposer
+    extends Composer<_$LoomDatabase, $PremiumNoAdEventsTable> {
+  $$PremiumNoAdEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channelId => $composableBuilder(
+    column: $table.channelId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionIntent => $composableBuilder(
+    column: $table.sessionIntent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$FanPassportsTableOrderingComposer get passportId {
+    final $$FanPassportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableOrderingComposer get contentId {
+    final $$ContentItemsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableOrderingComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PremiumNoAdEventsTableAnnotationComposer
+    extends Composer<_$LoomDatabase, $PremiumNoAdEventsTable> {
+  $$PremiumNoAdEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get channelId =>
+      $composableBuilder(column: $table.channelId, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionIntent => $composableBuilder(
+    column: $table.sessionIntent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$FanPassportsTableAnnotationComposer get passportId {
+    final $$FanPassportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passportId,
+      referencedTable: $db.fanPassports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FanPassportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fanPassports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContentItemsTableAnnotationComposer get contentId {
+    final $$ContentItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.contentId,
+      referencedTable: $db.contentItems,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContentItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contentItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PremiumNoAdEventsTableTableManager
+    extends
+        RootTableManager<
+          _$LoomDatabase,
+          $PremiumNoAdEventsTable,
+          PremiumNoAdEvent,
+          $$PremiumNoAdEventsTableFilterComposer,
+          $$PremiumNoAdEventsTableOrderingComposer,
+          $$PremiumNoAdEventsTableAnnotationComposer,
+          $$PremiumNoAdEventsTableCreateCompanionBuilder,
+          $$PremiumNoAdEventsTableUpdateCompanionBuilder,
+          (PremiumNoAdEvent, $$PremiumNoAdEventsTableReferences),
+          PremiumNoAdEvent,
+          PrefetchHooks Function({bool passportId, bool contentId})
+        > {
+  $$PremiumNoAdEventsTableTableManager(
+    _$LoomDatabase db,
+    $PremiumNoAdEventsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PremiumNoAdEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PremiumNoAdEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PremiumNoAdEventsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> passportId = const Value.absent(),
+                Value<String> contentId = const Value.absent(),
+                Value<String?> channelId = const Value.absent(),
+                Value<String?> sessionIntent = const Value.absent(),
+                Value<String?> receiptId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PremiumNoAdEventsCompanion(
+                id: id,
+                passportId: passportId,
+                contentId: contentId,
+                channelId: channelId,
+                sessionIntent: sessionIntent,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String passportId,
+                required String contentId,
+                Value<String?> channelId = const Value.absent(),
+                Value<String?> sessionIntent = const Value.absent(),
+                Value<String?> receiptId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PremiumNoAdEventsCompanion.insert(
+                id: id,
+                passportId: passportId,
+                contentId: contentId,
+                channelId: channelId,
+                sessionIntent: sessionIntent,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PremiumNoAdEventsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passportId = false, contentId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passportId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.passportId,
+                                referencedTable:
+                                    $$PremiumNoAdEventsTableReferences
+                                        ._passportIdTable(db),
+                                referencedColumn:
+                                    $$PremiumNoAdEventsTableReferences
+                                        ._passportIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (contentId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.contentId,
+                                referencedTable:
+                                    $$PremiumNoAdEventsTableReferences
+                                        ._contentIdTable(db),
+                                referencedColumn:
+                                    $$PremiumNoAdEventsTableReferences
+                                        ._contentIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PremiumNoAdEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$LoomDatabase,
+      $PremiumNoAdEventsTable,
+      PremiumNoAdEvent,
+      $$PremiumNoAdEventsTableFilterComposer,
+      $$PremiumNoAdEventsTableOrderingComposer,
+      $$PremiumNoAdEventsTableAnnotationComposer,
+      $$PremiumNoAdEventsTableCreateCompanionBuilder,
+      $$PremiumNoAdEventsTableUpdateCompanionBuilder,
+      (PremiumNoAdEvent, $$PremiumNoAdEventsTableReferences),
+      PremiumNoAdEvent,
+      PrefetchHooks Function({bool passportId, bool contentId})
+    >;
 typedef $$CreatorChannelsTableCreateCompanionBuilder =
     CreatorChannelsCompanion Function({
       required String id,
@@ -40943,6 +56709,40 @@ class $LoomDatabaseManager {
       $$ReceiptsTableTableManager(_db, _db.receipts);
   $$AdPreferencesTableTableManager get adPreferences =>
       $$AdPreferencesTableTableManager(_db, _db.adPreferences);
+  $$CaptureLinksTableTableManager get captureLinks =>
+      $$CaptureLinksTableTableManager(_db, _db.captureLinks);
+  $$ReFollowEventsTableTableManager get reFollowEvents =>
+      $$ReFollowEventsTableTableManager(_db, _db.reFollowEvents);
+  $$AnnouncementTemplatesTableTableManager get announcementTemplates =>
+      $$AnnouncementTemplatesTableTableManager(_db, _db.announcementTemplates);
+  $$RenderedAnnouncementsTableTableManager get renderedAnnouncements =>
+      $$RenderedAnnouncementsTableTableManager(_db, _db.renderedAnnouncements);
+  $$LinkInBioPagesTableTableManager get linkInBioPages =>
+      $$LinkInBioPagesTableTableManager(_db, _db.linkInBioPages);
+  $$StarterPacksTableTableManager get starterPacks =>
+      $$StarterPacksTableTableManager(_db, _db.starterPacks);
+  $$BulkFollowJobsTableTableManager get bulkFollowJobs =>
+      $$BulkFollowJobsTableTableManager(_db, _db.bulkFollowJobs);
+  $$ExternalAccountsTableTableManager get externalAccounts =>
+      $$ExternalAccountsTableTableManager(_db, _db.externalAccounts);
+  $$PublicMetadataImportJobsTableTableManager get publicMetadataImportJobs =>
+      $$PublicMetadataImportJobsTableTableManager(
+        _db,
+        _db.publicMetadataImportJobs,
+      );
+  $$PublicImportedReferencesTableTableManager get publicImportedReferences =>
+      $$PublicImportedReferencesTableTableManager(
+        _db,
+        _db.publicImportedReferences,
+      );
+  $$CrossPostJobsTableTableManager get crossPostJobs =>
+      $$CrossPostJobsTableTableManager(_db, _db.crossPostJobs);
+  $$AdDecisionsTableTableManager get adDecisions =>
+      $$AdDecisionsTableTableManager(_db, _db.adDecisions);
+  $$AdImpressionsTableTableManager get adImpressions =>
+      $$AdImpressionsTableTableManager(_db, _db.adImpressions);
+  $$PremiumNoAdEventsTableTableManager get premiumNoAdEvents =>
+      $$PremiumNoAdEventsTableTableManager(_db, _db.premiumNoAdEvents);
   $$CreatorChannelsTableTableManager get creatorChannels =>
       $$CreatorChannelsTableTableManager(_db, _db.creatorChannels);
   $$ChannelManifestsTableTableManager get channelManifests =>

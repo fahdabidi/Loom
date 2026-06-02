@@ -31,6 +31,15 @@ CampaignApi? _campaignApi;
 MigrationExportApi? _migrationExportApi;
 EntitlementLedgerApi? _entitlementLedgerApi;
 AiGatewayApi? _aiGatewayApi;
+AdDecisionApi? _adDecisionApi;
+AudienceAnalyticsApi? _audienceAnalyticsApi;
+CreatorAnnouncementApi? _creatorAnnouncementApi;
+CrossPostingApi? _crossPostingApi;
+ExternalAccountLinkApi? _externalAccountLinkApi;
+FanFollowCaptureApi? _fanFollowCaptureApi;
+ImportPublicMetadataApi? _importPublicMetadataApi;
+PremiumNoAdApi? _premiumNoAdApi;
+StarterPackApi? _starterPackApi;
 RecommendationReferralApi? _recommendationReferralApi;
 ExternalRecommendationProviderApi? _externalRecommendationProviderApi;
 SearchApi? _searchApi;
@@ -80,6 +89,42 @@ void registerAiGatewayApi(AiGatewayApi api) {
   _aiGatewayApi = api;
 }
 
+void registerAdDecisionApi(AdDecisionApi api) {
+  _adDecisionApi = api;
+}
+
+void registerAudienceAnalyticsApi(AudienceAnalyticsApi api) {
+  _audienceAnalyticsApi = api;
+}
+
+void registerCreatorAnnouncementApi(CreatorAnnouncementApi api) {
+  _creatorAnnouncementApi = api;
+}
+
+void registerCrossPostingApi(CrossPostingApi api) {
+  _crossPostingApi = api;
+}
+
+void registerExternalAccountLinkApi(ExternalAccountLinkApi api) {
+  _externalAccountLinkApi = api;
+}
+
+void registerFanFollowCaptureApi(FanFollowCaptureApi api) {
+  _fanFollowCaptureApi = api;
+}
+
+void registerImportPublicMetadataApi(ImportPublicMetadataApi api) {
+  _importPublicMetadataApi = api;
+}
+
+void registerPremiumNoAdApi(PremiumNoAdApi api) {
+  _premiumNoAdApi = api;
+}
+
+void registerStarterPackApi(StarterPackApi api) {
+  _starterPackApi = api;
+}
+
 void registerRecommendationReferralApi(RecommendationReferralApi api) {
   _recommendationReferralApi = api;
 }
@@ -125,6 +170,15 @@ void resetAppShellDependencies() {
   _migrationExportApi = null;
   _entitlementLedgerApi = null;
   _aiGatewayApi = null;
+  _adDecisionApi = null;
+  _audienceAnalyticsApi = null;
+  _creatorAnnouncementApi = null;
+  _crossPostingApi = null;
+  _externalAccountLinkApi = null;
+  _fanFollowCaptureApi = null;
+  _importPublicMetadataApi = null;
+  _premiumNoAdApi = null;
+  _starterPackApi = null;
   _recommendationReferralApi = null;
   _externalRecommendationProviderApi = null;
   _searchApi = null;
@@ -219,6 +273,78 @@ AiGatewayApi resolveAiGatewayApi() {
   final api = _aiGatewayApi;
   if (api == null) {
     throw StateError('AiGatewayApi has not been registered.');
+  }
+  return api;
+}
+
+AdDecisionApi resolveAdDecisionApi() {
+  final api = _adDecisionApi;
+  if (api == null) {
+    throw StateError('AdDecisionApi has not been registered.');
+  }
+  return api;
+}
+
+AudienceAnalyticsApi resolveAudienceAnalyticsApi() {
+  final api = _audienceAnalyticsApi;
+  if (api == null) {
+    throw StateError('AudienceAnalyticsApi has not been registered.');
+  }
+  return api;
+}
+
+CreatorAnnouncementApi resolveCreatorAnnouncementApi() {
+  final api = _creatorAnnouncementApi;
+  if (api == null) {
+    throw StateError('CreatorAnnouncementApi has not been registered.');
+  }
+  return api;
+}
+
+CrossPostingApi resolveCrossPostingApi() {
+  final api = _crossPostingApi;
+  if (api == null) {
+    throw StateError('CrossPostingApi has not been registered.');
+  }
+  return api;
+}
+
+ExternalAccountLinkApi resolveExternalAccountLinkApi() {
+  final api = _externalAccountLinkApi;
+  if (api == null) {
+    throw StateError('ExternalAccountLinkApi has not been registered.');
+  }
+  return api;
+}
+
+FanFollowCaptureApi resolveFanFollowCaptureApi() {
+  final api = _fanFollowCaptureApi;
+  if (api == null) {
+    throw StateError('FanFollowCaptureApi has not been registered.');
+  }
+  return api;
+}
+
+ImportPublicMetadataApi resolveImportPublicMetadataApi() {
+  final api = _importPublicMetadataApi;
+  if (api == null) {
+    throw StateError('ImportPublicMetadataApi has not been registered.');
+  }
+  return api;
+}
+
+PremiumNoAdApi resolvePremiumNoAdApi() {
+  final api = _premiumNoAdApi;
+  if (api == null) {
+    throw StateError('PremiumNoAdApi has not been registered.');
+  }
+  return api;
+}
+
+StarterPackApi resolveStarterPackApi() {
+  final api = _starterPackApi;
+  if (api == null) {
+    throw StateError('StarterPackApi has not been registered.');
   }
   return api;
 }

@@ -532,6 +532,206 @@ class AdPreferences extends Table {
   Set<Column<Object>> get primaryKey => {passportId};
 }
 
+class CaptureLinks extends Table {
+  TextColumn get token => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get url => text()();
+  TextColumn get channel => text()();
+  TextColumn get qrPayload => text()();
+  BoolColumn get starterPackEnabled => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get expiresAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {token};
+}
+
+class ReFollowEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get token => text().references(CaptureLinks, #token)();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get followId => text()();
+  TextColumn get channel => text()();
+  TextColumn get followState => text()();
+  TextColumn get pairwiseCreatorFanId => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class AnnouncementTemplates extends Table {
+  TextColumn get templateId => text()();
+  TextColumn get name => text()();
+  TextColumn get channel => text()();
+  TextColumn get body => text()();
+  TextColumn get placeholdersJson => text()();
+  BoolColumn get active => boolean()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {templateId};
+}
+
+class RenderedAnnouncements extends Table {
+  TextColumn get announcementId => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get templateId =>
+      text().references(AnnouncementTemplates, #templateId)();
+  TextColumn get channel => text()();
+  TextColumn get renderedBody => text()();
+  TextColumn get captureLinkUrl => text()();
+  TextColumn get qrPayload => text()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {announcementId};
+}
+
+class LinkInBioPages extends Table {
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get handle => text()();
+  TextColumn get displayName => text()();
+  TextColumn get avatarRef => text()();
+  TextColumn get captureLinkUrl => text()();
+  TextColumn get qrPayload => text()();
+  TextColumn get externalLinksJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {channelId};
+}
+
+class StarterPacks extends Table {
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get starterPackToken => text()();
+  TextColumn get memberIdsJson => text()();
+  TextColumn get defaultSelectedIdsJson => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {channelId};
+}
+
+class BulkFollowJobs extends Table {
+  TextColumn get id => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get followedIdsJson => text()();
+  TextColumn get alreadyFollowingIdsJson => text()();
+  BoolColumn get feedReady => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class ExternalAccounts extends Table {
+  TextColumn get linkId => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get platform => text()();
+  TextColumn get handle => text()();
+  TextColumn get profileUrl => text().nullable()();
+  TextColumn get verificationState => text()();
+  TextColumn get provenance => text()();
+  DateTimeColumn get linkedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {linkId};
+}
+
+class PublicMetadataImportJobs extends Table {
+  TextColumn get jobId => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get externalAccountLinkId =>
+      text().references(ExternalAccounts, #linkId)();
+  TextColumn get rightsBasis => text()();
+  TextColumn get status => text()();
+  IntColumn get importedCount => integer()();
+  IntColumn get skippedCount => integer()();
+  TextColumn get message => text().nullable()();
+  IntColumn get pollCount => integer()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {jobId};
+}
+
+class PublicImportedReferences extends Table {
+  TextColumn get referenceId => text()();
+  TextColumn get jobId => text().references(PublicMetadataImportJobs, #jobId)();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get platform => text()();
+  TextColumn get externalId => text()();
+  TextColumn get title => text()();
+  TextColumn get description => text().nullable()();
+  TextColumn get thumbnailRef => text().nullable()();
+  TextColumn get sourceUrl => text().nullable()();
+  DateTimeColumn get publishedAt => dateTime().nullable()();
+  TextColumn get rightsBasis => text()();
+  BoolColumn get searchIndexable => boolean()();
+  BoolColumn get aiQueryable => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {referenceId};
+}
+
+class CrossPostJobs extends Table {
+  TextColumn get crossPostId => text()();
+  TextColumn get channelId => text().references(Creators, #id)();
+  TextColumn get message => text()();
+  TextColumn get targetLinkIdsJson => text()();
+  TextColumn get targetsJson => text()();
+  TextColumn get announcementId => text().nullable()();
+  TextColumn get contentRef => text().nullable()();
+  TextColumn get captureLinkUrl => text().nullable()();
+  IntColumn get pollCount => integer()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {crossPostId};
+}
+
+class AdDecisions extends Table {
+  TextColumn get decisionId => text()();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get adsJson => text()();
+  TextColumn get policyVersion => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {decisionId};
+}
+
+class AdImpressions extends Table {
+  TextColumn get id => text()();
+  TextColumn get decisionId => text().references(AdDecisions, #decisionId)();
+  TextColumn get adId => text()();
+  BoolColumn get completed => boolean()();
+  TextColumn get receiptId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class PremiumNoAdEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get passportId => text().references(FanPassports, #id)();
+  TextColumn get contentId => text().references(ContentItems, #id)();
+  TextColumn get channelId => text().nullable()();
+  TextColumn get sessionIntent => text().nullable()();
+  TextColumn get receiptId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class CreatorChannels extends Table {
   TextColumn get id => text()();
   TextColumn get ownerPassportId => text()();
@@ -629,6 +829,20 @@ class KvMeta extends Table {
     PlaybackTokens,
     Receipts,
     AdPreferences,
+    CaptureLinks,
+    ReFollowEvents,
+    AnnouncementTemplates,
+    RenderedAnnouncements,
+    LinkInBioPages,
+    StarterPacks,
+    BulkFollowJobs,
+    ExternalAccounts,
+    PublicMetadataImportJobs,
+    PublicImportedReferences,
+    CrossPostJobs,
+    AdDecisions,
+    AdImpressions,
+    PremiumNoAdEvents,
     CreatorChannels,
     ChannelManifests,
     HostingContracts,
@@ -640,7 +854,7 @@ class LoomDatabase extends _$LoomDatabase {
   LoomDatabase(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -705,6 +919,22 @@ class LoomDatabase extends _$LoomDatabase {
       }
       if (from < 9) {
         await m.createTable(exportJobs);
+      }
+      if (from < 10) {
+        await m.createTable(captureLinks);
+        await m.createTable(reFollowEvents);
+        await m.createTable(announcementTemplates);
+        await m.createTable(renderedAnnouncements);
+        await m.createTable(linkInBioPages);
+        await m.createTable(starterPacks);
+        await m.createTable(bulkFollowJobs);
+        await m.createTable(externalAccounts);
+        await m.createTable(publicMetadataImportJobs);
+        await m.createTable(publicImportedReferences);
+        await m.createTable(crossPostJobs);
+        await m.createTable(adDecisions);
+        await m.createTable(adImpressions);
+        await m.createTable(premiumNoAdEvents);
       }
     },
   );
@@ -1577,6 +1807,354 @@ class AllocationLineRecord {
   final String reason;
 }
 
+class CaptureLinkRecord {
+  const CaptureLinkRecord({
+    required this.token,
+    required this.channelId,
+    required this.url,
+    required this.channel,
+    required this.qrPayload,
+    required this.starterPackEnabled,
+    required this.createdAt,
+    this.expiresAt,
+  });
+
+  final String token;
+  final String channelId;
+  final String url;
+  final String channel;
+  final String qrPayload;
+  final bool starterPackEnabled;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+}
+
+class ReFollowEventRecord {
+  const ReFollowEventRecord({
+    required this.id,
+    required this.token,
+    required this.passportId,
+    required this.channelId,
+    required this.followId,
+    required this.channel,
+    required this.followState,
+    required this.pairwiseCreatorFanId,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String token;
+  final String passportId;
+  final String channelId;
+  final String followId;
+  final String channel;
+  final String followState;
+  final String pairwiseCreatorFanId;
+  final DateTime createdAt;
+}
+
+class AnnouncementTemplateRecord {
+  const AnnouncementTemplateRecord({
+    required this.templateId,
+    required this.name,
+    required this.channel,
+    required this.body,
+    required this.placeholders,
+  });
+
+  final String templateId;
+  final String name;
+  final String channel;
+  final String body;
+  final List<String> placeholders;
+}
+
+class RenderedAnnouncementRecord {
+  const RenderedAnnouncementRecord({
+    required this.announcementId,
+    required this.channelId,
+    required this.channel,
+    required this.renderedBody,
+    required this.captureLinkUrl,
+    required this.qrPayload,
+    required this.createdAt,
+  });
+
+  final String announcementId;
+  final String channelId;
+  final String channel;
+  final String renderedBody;
+  final String captureLinkUrl;
+  final String qrPayload;
+  final DateTime createdAt;
+}
+
+class LinkInBioPageRecord {
+  const LinkInBioPageRecord({
+    required this.channelId,
+    required this.handle,
+    required this.displayName,
+    required this.avatarRef,
+    required this.captureLinkUrl,
+    required this.qrPayload,
+    required this.externalLinks,
+  });
+
+  final String channelId;
+  final String handle;
+  final String displayName;
+  final String avatarRef;
+  final String captureLinkUrl;
+  final String qrPayload;
+  final List<Map<String, String>> externalLinks;
+}
+
+class StarterPackRecord {
+  const StarterPackRecord({
+    required this.channelId,
+    required this.starterPackToken,
+    required this.memberIds,
+    required this.defaultSelectedIds,
+    required this.updatedAt,
+  });
+
+  final String channelId;
+  final String starterPackToken;
+  final List<String> memberIds;
+  final List<String> defaultSelectedIds;
+  final DateTime updatedAt;
+}
+
+class BulkFollowJobRecord {
+  const BulkFollowJobRecord({
+    required this.id,
+    required this.channelId,
+    required this.passportId,
+    required this.followedIds,
+    required this.alreadyFollowingIds,
+    required this.feedReady,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String channelId;
+  final String passportId;
+  final List<String> followedIds;
+  final List<String> alreadyFollowingIds;
+  final bool feedReady;
+  final DateTime createdAt;
+}
+
+class ConversionStageRecord {
+  const ConversionStageRecord({
+    required this.stage,
+    required this.count,
+    required this.conversionFromPrevious,
+  });
+
+  final String stage;
+  final int count;
+  final double? conversionFromPrevious;
+}
+
+class ConversionFunnelRecord {
+  const ConversionFunnelRecord({
+    required this.channelId,
+    required this.startsAt,
+    required this.endsAt,
+    required this.stages,
+    required this.byChannelSource,
+  });
+
+  final String channelId;
+  final DateTime startsAt;
+  final DateTime endsAt;
+  final List<ConversionStageRecord> stages;
+  final Map<String, int> byChannelSource;
+}
+
+class ExternalAccountRecord {
+  const ExternalAccountRecord({
+    required this.linkId,
+    required this.channelId,
+    required this.platform,
+    required this.handle,
+    required this.verificationState,
+    required this.linkedAt,
+    this.profileUrl,
+  });
+
+  final String linkId;
+  final String channelId;
+  final String platform;
+  final String handle;
+  final String? profileUrl;
+  final String verificationState;
+  final DateTime linkedAt;
+}
+
+class PublicMetadataImportJobRecord {
+  const PublicMetadataImportJobRecord({
+    required this.jobId,
+    required this.channelId,
+    required this.status,
+    required this.importedCount,
+    required this.skippedCount,
+    this.message,
+  });
+
+  final String jobId;
+  final String channelId;
+  final String status;
+  final int importedCount;
+  final int skippedCount;
+  final String? message;
+}
+
+class PublicImportedReferenceRecord {
+  const PublicImportedReferenceRecord({
+    required this.referenceId,
+    required this.platform,
+    required this.externalId,
+    required this.title,
+    required this.rightsBasis,
+    required this.searchIndexable,
+    required this.aiQueryable,
+    this.description,
+    this.thumbnailRef,
+    this.sourceUrl,
+    this.publishedAt,
+  });
+
+  final String referenceId;
+  final String platform;
+  final String externalId;
+  final String title;
+  final String rightsBasis;
+  final bool searchIndexable;
+  final bool aiQueryable;
+  final String? description;
+  final String? thumbnailRef;
+  final String? sourceUrl;
+  final DateTime? publishedAt;
+}
+
+class CrossPostTargetRecord {
+  const CrossPostTargetRecord({
+    required this.targetLinkId,
+    required this.platform,
+    required this.deliveryStatus,
+    this.externalPostUrl,
+    this.message,
+  });
+
+  final String targetLinkId;
+  final String platform;
+  final String deliveryStatus;
+  final String? externalPostUrl;
+  final String? message;
+}
+
+class CrossPostRecord {
+  const CrossPostRecord({
+    required this.crossPostId,
+    required this.channelId,
+    required this.message,
+    required this.createdAt,
+    required this.targets,
+    this.announcementId,
+    this.contentRef,
+    this.captureLinkUrl,
+  });
+
+  final String crossPostId;
+  final String channelId;
+  final String message;
+  final DateTime createdAt;
+  final List<CrossPostTargetRecord> targets;
+  final String? announcementId;
+  final String? contentRef;
+  final String? captureLinkUrl;
+}
+
+class SelectedAdRecord {
+  const SelectedAdRecord({
+    required this.adId,
+    required this.brand,
+    required this.category,
+    required this.disclosure,
+    required this.selectionBasis,
+  });
+
+  final String adId;
+  final String brand;
+  final String category;
+  final String disclosure;
+  final String selectionBasis;
+}
+
+class AdDecisionRecord {
+  const AdDecisionRecord({
+    required this.decisionId,
+    required this.contentId,
+    required this.ads,
+    this.policyVersion,
+  });
+
+  final String decisionId;
+  final String contentId;
+  final List<SelectedAdRecord> ads;
+  final String? policyVersion;
+}
+
+class AdImpressionRecord {
+  const AdImpressionRecord({
+    required this.id,
+    required this.decisionId,
+    required this.adId,
+    required this.recorded,
+    this.receiptId,
+  });
+
+  final String id;
+  final String decisionId;
+  final String adId;
+  final bool recorded;
+  final String? receiptId;
+}
+
+class PremiumNoAdStatusRecord {
+  const PremiumNoAdStatusRecord({
+    required this.passportId,
+    required this.active,
+    this.entitlementId,
+    this.since,
+    this.renewsAt,
+  });
+
+  final String passportId;
+  final bool active;
+  final String? entitlementId;
+  final DateTime? since;
+  final DateTime? renewsAt;
+}
+
+class PremiumNoAdEventRecord {
+  const PremiumNoAdEventRecord({
+    required this.id,
+    required this.passportId,
+    required this.contentId,
+    required this.noAdApplied,
+    this.receiptId,
+  });
+
+  final String id;
+  final String passportId;
+  final String contentId;
+  final bool noAdApplied;
+  final String? receiptId;
+}
+
 class CreatorPayoutStatementRecord {
   const CreatorPayoutStatementRecord({
     required this.id,
@@ -1641,6 +2219,20 @@ class DemoLocalStore {
     final world = seed ?? seedV1;
 
     await _db.transaction(() async {
+      await _db.delete(_db.premiumNoAdEvents).go();
+      await _db.delete(_db.adImpressions).go();
+      await _db.delete(_db.adDecisions).go();
+      await _db.delete(_db.crossPostJobs).go();
+      await _db.delete(_db.publicImportedReferences).go();
+      await _db.delete(_db.publicMetadataImportJobs).go();
+      await _db.delete(_db.externalAccounts).go();
+      await _db.delete(_db.bulkFollowJobs).go();
+      await _db.delete(_db.starterPacks).go();
+      await _db.delete(_db.linkInBioPages).go();
+      await _db.delete(_db.renderedAnnouncements).go();
+      await _db.delete(_db.announcementTemplates).go();
+      await _db.delete(_db.reFollowEvents).go();
+      await _db.delete(_db.captureLinks).go();
       await _db.delete(_db.allocationStatements).go();
       await _db.delete(_db.payoutStatements).go();
       await _db.delete(_db.settlementRuns).go();
@@ -1778,6 +2370,100 @@ class DemoLocalStore {
             updatedAt: _now(),
           ),
         ]);
+
+        batch.insertAll(
+          _db.announcementTemplates,
+          _announcementTemplateSeeds.map(
+            (template) => AnnouncementTemplatesCompanion.insert(
+              templateId: template.templateId,
+              name: template.name,
+              channel: template.channel,
+              body: template.body,
+              placeholdersJson: jsonEncode(template.placeholders),
+              active: true,
+              updatedAt: _now(),
+            ),
+          ),
+        );
+
+        batch.insertAll(
+          _db.captureLinks,
+          world.creators.map((creator) {
+            final token = _seedCaptureToken(creator.id);
+            return CaptureLinksCompanion.insert(
+              token: token,
+              channelId: creator.id,
+              url: _captureUrl(token),
+              channel: 'link_in_bio',
+              qrPayload: _qrPayload(token),
+              starterPackEnabled: true,
+              createdAt: _now(),
+            );
+          }),
+        );
+
+        batch.insertAll(
+          _db.linkInBioPages,
+          world.creators.map((creator) {
+            final token = _seedCaptureToken(creator.id);
+            return LinkInBioPagesCompanion.insert(
+              channelId: creator.id,
+              handle: creator.handle,
+              displayName: creator.displayName,
+              avatarRef: creator.avatarRef,
+              captureLinkUrl: _captureUrl(token),
+              qrPayload: _qrPayload(token),
+              externalLinksJson: jsonEncode(_linkInBioExternalLinks(creator)),
+              updatedAt: _now(),
+            );
+          }),
+        );
+
+        batch.insertAll(
+          _db.starterPacks,
+          world.creators.map((creator) {
+            final memberIds = _starterPackMemberIds(
+              creator.id,
+              world.creators.map((item) => item.id),
+            );
+            return StarterPacksCompanion.insert(
+              channelId: creator.id,
+              starterPackToken: _starterPackToken(creator.id),
+              memberIdsJson: jsonEncode(memberIds),
+              defaultSelectedIdsJson: jsonEncode(memberIds),
+              updatedAt: _now(),
+            );
+          }),
+        );
+
+        batch.insertAll(
+          _db.externalAccounts,
+          world.creators.expand((creator) {
+            final handle = creator.handle;
+            return [
+              ExternalAccountsCompanion.insert(
+                linkId: 'ext_${_slug(creator.id)}_youtube',
+                channelId: creator.id,
+                platform: 'youtube',
+                handle: '@$handle',
+                profileUrl: Value('https://youtube.example/$handle'),
+                verificationState: 'verified',
+                provenance: 'seeded_public_profile',
+                linkedAt: _now(),
+              ),
+              ExternalAccountsCompanion.insert(
+                linkId: 'ext_${_slug(creator.id)}_instagram',
+                channelId: creator.id,
+                platform: 'instagram',
+                handle: '@$handle',
+                profileUrl: Value('https://instagram.example/$handle'),
+                verificationState: 'verified',
+                provenance: 'seeded_public_profile',
+                linkedAt: _now(),
+              ),
+            ];
+          }),
+        );
 
         batch.insertAll(_db.wallets, [
           WalletsCompanion.insert(
@@ -4440,6 +5126,947 @@ class DemoLocalStore {
     return rows.map(_mapReceipt).toList(growable: false);
   }
 
+  Future<CaptureLinkRecord> createCaptureLink({
+    required String channelId,
+    required String channel,
+    required bool starterPackEnabled,
+    DateTime? expiresAt,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'capture_link');
+    if (existing != null) {
+      final link = await captureLinkByToken(existing);
+      if (link != null) {
+        return link;
+      }
+    }
+    final creator = await creatorById(channelId);
+    if (creator == null) {
+      throw StateError('No channel exists for $channelId');
+    }
+    final token =
+        'cap_${_slug(channelId)}_${_slug(channel)}_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.captureLinks)
+        .insertOnConflictUpdate(
+          CaptureLinksCompanion.insert(
+            token: token,
+            channelId: channelId,
+            url: _captureUrl(token),
+            channel: channel,
+            qrPayload: _qrPayload(token),
+            starterPackEnabled: starterPackEnabled,
+            createdAt: _now(),
+            expiresAt: Value(expiresAt),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'capture_link', token);
+    await _ensureLinkInBioForCreator(creator, token);
+    return (await captureLinkByToken(token))!;
+  }
+
+  Future<CaptureLinkRecord?> captureLinkByToken(String token) async {
+    final row = await (_db.select(
+      _db.captureLinks,
+    )..where((tbl) => tbl.token.equals(token))).getSingleOrNull();
+    return row == null ? null : _mapCaptureLink(row);
+  }
+
+  Future<List<CaptureLinkRecord>> captureLinksForChannel(
+    String channelId,
+  ) async {
+    final rows =
+        await (_db.select(_db.captureLinks)
+              ..where((tbl) => tbl.channelId.equals(channelId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapCaptureLink).toList(growable: false);
+  }
+
+  Future<ReFollowEventRecord> recordReFollow({
+    required String token,
+    required String passportId,
+    required String followVisibility,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 're_follow');
+    if (existing != null) {
+      final event = await reFollowEventById(existing);
+      if (event != null) {
+        return event;
+      }
+    }
+    final link = await captureLinkByToken(token);
+    if (link == null) {
+      throw StateError('No capture link exists for token=$token');
+    }
+    await ensureDemoPassport(passportId: passportId);
+    final existingFollow = await followForPassportCreator(
+      passportId: passportId,
+      creatorId: link.channelId,
+    );
+    final alreadyFollowing = existingFollow != null && !existingFollow.blocked;
+    final follow =
+        existingFollow ??
+        await createFollow(
+          passportId: passportId,
+          creatorId: link.channelId,
+          visibility: followVisibility,
+          idempotencyKey: 're-follow-follow-$idempotencyKey',
+        );
+    final id = 'refollow_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.reFollowEvents)
+        .insertOnConflictUpdate(
+          ReFollowEventsCompanion.insert(
+            id: id,
+            token: token,
+            passportId: passportId,
+            channelId: link.channelId,
+            followId: follow.id,
+            channel: link.channel,
+            followState: alreadyFollowing ? 'already_following' : 'followed',
+            pairwiseCreatorFanId:
+                'pair_${_slug(link.channelId)}_${_slug(passportId)}',
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 're_follow', id);
+    return (await reFollowEventById(id))!;
+  }
+
+  Future<ReFollowEventRecord?> reFollowEventById(String id) async {
+    final row = await (_db.select(
+      _db.reFollowEvents,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapReFollowEvent(row);
+  }
+
+  Future<List<ReFollowEventRecord>> reFollowEventsForChannel(
+    String channelId,
+  ) async {
+    final rows =
+        await (_db.select(_db.reFollowEvents)
+              ..where((tbl) => tbl.channelId.equals(channelId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapReFollowEvent).toList(growable: false);
+  }
+
+  Future<List<AnnouncementTemplateRecord>> announcementTemplates() async {
+    final rows =
+        await (_db.select(_db.announcementTemplates)
+              ..where((tbl) => tbl.active.equals(true))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.name)]))
+            .get();
+    return rows.map(_mapAnnouncementTemplate).toList(growable: false);
+  }
+
+  Future<RenderedAnnouncementRecord> renderAnnouncement({
+    required String channelId,
+    required String templateId,
+    required String captureLinkToken,
+    required Map<String, String> fields,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'rendered_announcement',
+    );
+    if (existing != null) {
+      final announcement = await renderedAnnouncementById(existing);
+      if (announcement != null) {
+        return announcement;
+      }
+    }
+    final creator = await creatorById(channelId);
+    final template = await (_db.select(
+      _db.announcementTemplates,
+    )..where((tbl) => tbl.templateId.equals(templateId))).getSingleOrNull();
+    final link = await captureLinkByToken(captureLinkToken);
+    if (creator == null || template == null || link == null) {
+      throw StateError('Announcement inputs are incomplete.');
+    }
+    final defaults = {
+      'creatorName': creator.displayName,
+      'creatorHandle': creator.handle,
+      'captureLink': link.url,
+      'linkInBio': link.url,
+      ...fields,
+    };
+    final body = _renderTemplate(template.body, defaults);
+    final id = 'ann_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.renderedAnnouncements)
+        .insertOnConflictUpdate(
+          RenderedAnnouncementsCompanion.insert(
+            announcementId: id,
+            channelId: channelId,
+            templateId: templateId,
+            channel: template.channel,
+            renderedBody: body,
+            captureLinkUrl: link.url,
+            qrPayload: link.qrPayload,
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'rendered_announcement', id);
+    return (await renderedAnnouncementById(id))!;
+  }
+
+  Future<RenderedAnnouncementRecord?> renderedAnnouncementById(
+    String id,
+  ) async {
+    final row = await (_db.select(
+      _db.renderedAnnouncements,
+    )..where((tbl) => tbl.announcementId.equals(id))).getSingleOrNull();
+    return row == null ? null : _mapRenderedAnnouncement(row);
+  }
+
+  Future<LinkInBioPageRecord> linkInBioPage(String channelId) async {
+    final row = await (_db.select(
+      _db.linkInBioPages,
+    )..where((tbl) => tbl.channelId.equals(channelId))).getSingleOrNull();
+    if (row != null) {
+      return _mapLinkInBioPage(row);
+    }
+    final creator = await creatorById(channelId);
+    if (creator == null) {
+      throw StateError('No channel exists for $channelId');
+    }
+    final links = await captureLinksForChannel(channelId);
+    final link = links.isNotEmpty
+        ? links.first
+        : await createCaptureLink(
+            channelId: channelId,
+            channel: 'link_in_bio',
+            starterPackEnabled: true,
+            idempotencyKey: 'auto-link-in-bio-$channelId',
+          );
+    await _ensureLinkInBioForCreator(creator, link.token);
+    return linkInBioPage(channelId);
+  }
+
+  Future<StarterPackRecord> starterPack(String channelId) async {
+    final row = await (_db.select(
+      _db.starterPacks,
+    )..where((tbl) => tbl.channelId.equals(channelId))).getSingleOrNull();
+    if (row != null) {
+      return _mapStarterPack(row);
+    }
+    final creators = await this.creators();
+    if (!creators.any((creator) => creator.id == channelId)) {
+      throw StateError('No channel exists for $channelId');
+    }
+    final memberIds = _starterPackMemberIds(
+      channelId,
+      creators.map((creator) => creator.id),
+    );
+    await _db
+        .into(_db.starterPacks)
+        .insertOnConflictUpdate(
+          StarterPacksCompanion.insert(
+            channelId: channelId,
+            starterPackToken: _starterPackToken(channelId),
+            memberIdsJson: jsonEncode(memberIds),
+            defaultSelectedIdsJson: jsonEncode(memberIds),
+            updatedAt: _now(),
+          ),
+        );
+    return starterPack(channelId);
+  }
+
+  Future<BulkFollowJobRecord> bulkFollow({
+    required String channelId,
+    required String passportId,
+    required List<String> channelIds,
+    required String followVisibility,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'bulk_follow');
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.bulkFollowJobs,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapBulkFollowJob(row);
+      }
+    }
+    await ensureDemoPassport(passportId: passportId);
+    final selectedIds = channelIds.toSet().toList(growable: false);
+    final followed = <String>[];
+    final alreadyFollowing = <String>[];
+    for (final selectedId in selectedIds) {
+      final existingFollow = await followForPassportCreator(
+        passportId: passportId,
+        creatorId: selectedId,
+      );
+      if (existingFollow != null && !existingFollow.blocked) {
+        alreadyFollowing.add(selectedId);
+        continue;
+      }
+      await createFollow(
+        passportId: passportId,
+        creatorId: selectedId,
+        visibility: followVisibility,
+        idempotencyKey: 'bulk-follow-$idempotencyKey-$selectedId',
+      );
+      followed.add(selectedId);
+    }
+    final id = 'bulk_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.bulkFollowJobs)
+        .insertOnConflictUpdate(
+          BulkFollowJobsCompanion.insert(
+            id: id,
+            channelId: channelId,
+            passportId: passportId,
+            followedIdsJson: jsonEncode(followed),
+            alreadyFollowingIdsJson: jsonEncode(alreadyFollowing),
+            feedReady: followed.length + alreadyFollowing.length >= 2,
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'bulk_follow', id);
+    final row = await (_db.select(
+      _db.bulkFollowJobs,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    return _mapBulkFollowJob(row);
+  }
+
+  Future<ConversionFunnelRecord> conversionFunnel({
+    required String channelId,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) async {
+    final start = startsAt ?? _now().subtract(const Duration(days: 30));
+    final end = endsAt ?? _now();
+    final captureRows = await captureLinksForChannel(channelId);
+    final announcementRows = await (_db.select(
+      _db.renderedAnnouncements,
+    )..where((tbl) => tbl.channelId.equals(channelId))).get();
+    final crossPostRows = await (_db.select(
+      _db.crossPostJobs,
+    )..where((tbl) => tbl.channelId.equals(channelId))).get();
+    final eventRows = (await reFollowEventsForChannel(channelId))
+        .where((event) => !event.createdAt.isBefore(start))
+        .where((event) => !event.createdAt.isAfter(end))
+        .toList(growable: false);
+    final currentFollows =
+        await (_db.select(_db.follows)
+              ..where((tbl) => tbl.creatorId.equals(channelId))
+              ..where((tbl) => tbl.blocked.equals(false)))
+            .get();
+    final subscriptions =
+        await (_db.select(_db.subscriptions)
+              ..where((tbl) => tbl.creatorId.equals(channelId))
+              ..where((tbl) => tbl.active.equals(true)))
+            .get();
+    final premiumRows = await (_db.select(
+      _db.premiumNoAdEvents,
+    )..where((tbl) => tbl.channelId.equals(channelId))).get();
+    final bySource = <String, int>{};
+    for (final link in captureRows) {
+      bySource.update(link.channel, (value) => value + 30, ifAbsent: () => 30);
+    }
+    for (final event in eventRows) {
+      bySource.update(event.channel, (value) => value + 1, ifAbsent: () => 1);
+    }
+    final reFollowed = {
+      ...eventRows.map((event) => event.passportId),
+      ...currentFollows.map((follow) => follow.passportId),
+    }.length;
+    final member = subscriptions.map((row) => row.passportId).toSet().length;
+    final premium = premiumRows.map((row) => row.passportId).toSet().length;
+    final reached = [
+      reFollowed,
+      captureRows.length * 30,
+      announcementRows.length * 40,
+      crossPostRows.length * 50,
+    ].reduce((a, b) => a > b ? a : b);
+    final counts = [
+      ('reached', reached),
+      ('re_followed', reFollowed),
+      ('member', member),
+      ('premium', premium),
+    ];
+    var previous = 0;
+    final stages = <ConversionStageRecord>[];
+    for (final (stage, count) in counts) {
+      stages.add(
+        ConversionStageRecord(
+          stage: stage,
+          count: count,
+          conversionFromPrevious: previous == 0 ? null : count / previous,
+        ),
+      );
+      previous = count;
+    }
+    return ConversionFunnelRecord(
+      channelId: channelId,
+      startsAt: start,
+      endsAt: end,
+      stages: stages,
+      byChannelSource: bySource,
+    );
+  }
+
+  Future<List<ExternalAccountRecord>> externalAccounts(String channelId) async {
+    final rows =
+        await (_db.select(_db.externalAccounts)
+              ..where((tbl) => tbl.channelId.equals(channelId))
+              ..orderBy([(tbl) => OrderingTerm.asc(tbl.platform)]))
+            .get();
+    return rows.map(_mapExternalAccount).toList(growable: false);
+  }
+
+  Future<ExternalAccountRecord> linkExternalAccount({
+    required String channelId,
+    required String platform,
+    required String handle,
+    String? profileUrl,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'external_account',
+    );
+    if (existing != null) {
+      final record = await externalAccountById(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    final id = 'ext_${_slug(channelId)}_${_slug(platform)}_${_slug(handle)}';
+    await _db
+        .into(_db.externalAccounts)
+        .insertOnConflictUpdate(
+          ExternalAccountsCompanion.insert(
+            linkId: id,
+            channelId: channelId,
+            platform: platform,
+            handle: handle,
+            profileUrl: Value(profileUrl),
+            verificationState: 'pending',
+            provenance: 'creator_declared',
+            linkedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'external_account', id);
+    return (await externalAccountById(id))!;
+  }
+
+  Future<ExternalAccountRecord?> externalAccountById(String linkId) async {
+    final row = await (_db.select(
+      _db.externalAccounts,
+    )..where((tbl) => tbl.linkId.equals(linkId))).getSingleOrNull();
+    return row == null ? null : _mapExternalAccount(row);
+  }
+
+  Future<ExternalAccountRecord> verifyExternalAccount({
+    required String channelId,
+    required String linkId,
+    required String method,
+    String? evidence,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'external_account_verify',
+    );
+    if (existing != null) {
+      final record = await externalAccountById(existing);
+      if (record != null) {
+        return record;
+      }
+    }
+    await (_db.update(_db.externalAccounts)..where(
+          (tbl) => tbl.linkId.equals(linkId) & tbl.channelId.equals(channelId),
+        ))
+        .write(
+          ExternalAccountsCompanion(
+            verificationState: const Value('verified'),
+            provenance: Value('verified:$method:${evidence ?? 'demo'}'),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'external_account_verify', linkId);
+    return (await externalAccountById(linkId))!;
+  }
+
+  Future<void> unlinkExternalAccount({
+    required String channelId,
+    required String linkId,
+  }) {
+    return (_db.delete(_db.externalAccounts)..where(
+          (tbl) => tbl.linkId.equals(linkId) & tbl.channelId.equals(channelId),
+        ))
+        .go();
+  }
+
+  Future<PublicMetadataImportJobRecord> startPublicMetadataImport({
+    required String channelId,
+    required String externalAccountLinkId,
+    required String rightsBasis,
+    required int maxItems,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'public_metadata_import',
+    );
+    if (existing != null) {
+      final job = await publicMetadataImportJob(existing);
+      if (job != null) {
+        return job;
+      }
+    }
+    final account = await externalAccountById(externalAccountLinkId);
+    if (account == null || account.verificationState != 'verified') {
+      throw StateError('A verified external account is required for import.');
+    }
+    final id = 'public_import_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.publicMetadataImportJobs)
+        .insertOnConflictUpdate(
+          PublicMetadataImportJobsCompanion.insert(
+            jobId: id,
+            channelId: channelId,
+            externalAccountLinkId: externalAccountLinkId,
+            rightsBasis: rightsBasis,
+            status: 'processing',
+            importedCount: 0,
+            skippedCount: 0,
+            message: Value(
+              'Importing public metadata from ${account.platform}',
+            ),
+            pollCount: 0,
+            createdAt: _now(),
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'public_metadata_import', id);
+    return (await publicMetadataImportJob(id))!;
+  }
+
+  Future<PublicMetadataImportJobRecord?> publicMetadataImportJob(
+    String jobId,
+  ) async {
+    final row = await (_db.select(
+      _db.publicMetadataImportJobs,
+    )..where((tbl) => tbl.jobId.equals(jobId))).getSingleOrNull();
+    return row == null ? null : _mapPublicMetadataImportJob(row);
+  }
+
+  Future<PublicMetadataImportJobRecord> advancePublicMetadataImportJob(
+    String jobId,
+  ) async {
+    final row = await (_db.select(
+      _db.publicMetadataImportJobs,
+    )..where((tbl) => tbl.jobId.equals(jobId))).getSingle();
+    if (row.status == 'complete') {
+      return _mapPublicMetadataImportJob(row);
+    }
+    final account = await externalAccountById(row.externalAccountLinkId);
+    final platform = account?.platform ?? 'external';
+    final samples = _publicMetadataImportItems(platform);
+    await _db.transaction(() async {
+      for (final item in samples) {
+        await _db
+            .into(_db.publicImportedReferences)
+            .insertOnConflictUpdate(
+              PublicImportedReferencesCompanion.insert(
+                referenceId: 'pubref_${_slug(jobId)}_${_slug(item.externalId)}',
+                jobId: jobId,
+                channelId: row.channelId,
+                platform: platform,
+                externalId: item.externalId,
+                title: item.title,
+                description: Value(item.summary),
+                thumbnailRef: Value(item.thumbnailRef),
+                sourceUrl: Value(
+                  'https://$platform.example/${item.externalId}',
+                ),
+                publishedAt: Value(_now().subtract(const Duration(days: 4))),
+                rightsBasis: row.rightsBasis,
+                searchIndexable: true,
+                aiQueryable: row.rightsBasis != 'public_reference_only',
+                createdAt: _now(),
+              ),
+            );
+      }
+      await (_db.update(
+        _db.publicMetadataImportJobs,
+      )..where((tbl) => tbl.jobId.equals(jobId))).write(
+        PublicMetadataImportJobsCompanion(
+          status: const Value('complete'),
+          importedCount: Value(samples.length),
+          skippedCount: const Value(0),
+          message: const Value('Imported public metadata references.'),
+          pollCount: Value(row.pollCount + 1),
+          updatedAt: Value(_now()),
+        ),
+      );
+    });
+    return (await publicMetadataImportJob(jobId))!;
+  }
+
+  Future<List<PublicImportedReferenceRecord>> publicImportedReferences({
+    required String channelId,
+    String? jobId,
+  }) async {
+    final query = _db.select(_db.publicImportedReferences)
+      ..where((tbl) => tbl.channelId.equals(channelId));
+    if (jobId != null) {
+      query.where((tbl) => tbl.jobId.equals(jobId));
+    }
+    final rows = await query.get();
+    return rows.map(_mapPublicImportedReference).toList(growable: false);
+  }
+
+  Future<CrossPostRecord> createCrossPost({
+    required String channelId,
+    required List<String> targetLinkIds,
+    required String message,
+    String? announcementId,
+    String? contentRef,
+    String? captureLinkUrl,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'cross_post');
+    if (existing != null) {
+      final post = await crossPostById(existing);
+      if (post != null) {
+        return post;
+      }
+    }
+    final accounts = <ExternalAccountRecord>[];
+    for (final linkId in targetLinkIds) {
+      final account = await externalAccountById(linkId);
+      if (account != null && account.verificationState == 'verified') {
+        accounts.add(account);
+      }
+    }
+    if (accounts.isEmpty) {
+      throw StateError('At least one verified external account is required.');
+    }
+    final targets = accounts
+        .map(
+          (account) => CrossPostTargetRecord(
+            targetLinkId: account.linkId,
+            platform: account.platform,
+            deliveryStatus: 'processing',
+            message: message,
+          ),
+        )
+        .toList(growable: false);
+    final id = 'cross_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.crossPostJobs)
+        .insertOnConflictUpdate(
+          CrossPostJobsCompanion.insert(
+            crossPostId: id,
+            channelId: channelId,
+            message: message,
+            targetLinkIdsJson: jsonEncode(targetLinkIds),
+            targetsJson: jsonEncode(
+              targets.map(_crossPostTargetToJson).toList(),
+            ),
+            announcementId: Value(announcementId),
+            contentRef: Value(contentRef),
+            captureLinkUrl: Value(captureLinkUrl),
+            pollCount: 0,
+            createdAt: _now(),
+            updatedAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'cross_post', id);
+    return (await crossPostById(id))!;
+  }
+
+  Future<CrossPostRecord?> crossPostById(String crossPostId) async {
+    final row = await (_db.select(
+      _db.crossPostJobs,
+    )..where((tbl) => tbl.crossPostId.equals(crossPostId))).getSingleOrNull();
+    return row == null ? null : _mapCrossPost(row);
+  }
+
+  Future<CrossPostRecord> advanceCrossPost(String crossPostId) async {
+    final row = await (_db.select(
+      _db.crossPostJobs,
+    )..where((tbl) => tbl.crossPostId.equals(crossPostId))).getSingle();
+    if (row.pollCount > 0) {
+      return _mapCrossPost(row);
+    }
+    final completed = _decodeCrossPostTargets(row.targetsJson)
+        .map(
+          (target) => CrossPostTargetRecord(
+            targetLinkId: target.targetLinkId,
+            platform: target.platform,
+            deliveryStatus: 'complete',
+            externalPostUrl:
+                'https://${target.platform}.example/post/${_slug(row.crossPostId)}',
+            message: target.message,
+          ),
+        )
+        .toList(growable: false);
+    await (_db.update(
+      _db.crossPostJobs,
+    )..where((tbl) => tbl.crossPostId.equals(crossPostId))).write(
+      CrossPostJobsCompanion(
+        targetsJson: Value(
+          jsonEncode(completed.map(_crossPostTargetToJson).toList()),
+        ),
+        pollCount: Value(row.pollCount + 1),
+        updatedAt: Value(_now()),
+      ),
+    );
+    return (await crossPostById(crossPostId))!;
+  }
+
+  Future<List<CrossPostRecord>> crossPosts(String channelId) async {
+    final rows =
+        await (_db.select(_db.crossPostJobs)
+              ..where((tbl) => tbl.channelId.equals(channelId))
+              ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+            .get();
+    return rows.map(_mapCrossPost).toList(growable: false);
+  }
+
+  Future<AdDecisionRecord> decideAds({
+    required String contentId,
+    required String adPosture,
+    required String entitlementState,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'ad_decision');
+    if (existing != null) {
+      final decision = await adDecisionById(existing);
+      if (decision != null) {
+        return decision;
+      }
+    }
+    final content = await contentById(contentId);
+    if (content == null) {
+      throw StateError('No content exists for $contentId');
+    }
+    final policy = await creatorAdPolicy(content.creatorId);
+    final noAds = entitlementState == 'premium_no_ad' || adPosture == 'none';
+    final inventory = noAds
+        ? const <AdInventoryRecord>[]
+        : await adInventory(
+            allowedCategories: policy?.allowedCategories ?? const [],
+            blockedCategories: policy?.blockedCategories ?? const [],
+            surface: 'watch',
+          );
+    final limit = adPosture == 'reduced' ? 1 : 2;
+    final selected = inventory
+        .take(limit)
+        .map(
+          (ad) => SelectedAdRecord(
+            adId: ad.id,
+            brand: ad.brandName,
+            category: ad.category,
+            disclosure:
+                'Contextual ad selected from creator policy; no behavioral targeting.',
+            selectionBasis: 'creator_policy_contextual',
+          ),
+        )
+        .toList(growable: false);
+    final id = 'ad_decision_${_slug(idempotencyKey)}';
+    await _db
+        .into(_db.adDecisions)
+        .insertOnConflictUpdate(
+          AdDecisionsCompanion.insert(
+            decisionId: id,
+            contentId: contentId,
+            adsJson: jsonEncode(selected.map(_selectedAdToJson).toList()),
+            policyVersion: Value(
+              policy == null
+                  ? null
+                  : 'creator-policy-${_slug(content.creatorId)}-${policy.updatedAt.millisecondsSinceEpoch}',
+            ),
+            createdAt: _now(),
+          ),
+        );
+    await _saveIdempotency(idempotencyKey, 'ad_decision', id);
+    return (await adDecisionById(id))!;
+  }
+
+  Future<AdDecisionRecord?> adDecisionById(String decisionId) async {
+    final row = await (_db.select(
+      _db.adDecisions,
+    )..where((tbl) => tbl.decisionId.equals(decisionId))).getSingleOrNull();
+    return row == null ? null : _mapAdDecision(row);
+  }
+
+  Future<AdImpressionRecord> recordAdImpression({
+    required String decisionId,
+    required String adId,
+    required bool completed,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(idempotencyKey, 'ad_impression');
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.adImpressions,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapAdImpression(row);
+      }
+    }
+    final decision = await adDecisionById(decisionId);
+    if (decision == null || !decision.ads.any((ad) => ad.adId == adId)) {
+      throw StateError('No matching ad decision exists.');
+    }
+    await ensureDemoPassport();
+    final id = 'adimp_${_slug(idempotencyKey)}';
+    final receiptId = 'receipt_addecision_${_slug(id)}';
+    await _db.transaction(() async {
+      await _db
+          .into(_db.receipts)
+          .insertOnConflictUpdate(
+            ReceiptsCompanion.insert(
+              id: receiptId,
+              type: 'adImpression',
+              passportId: 'passport_demo_fan',
+              contentId: decision.contentId,
+              authorizationId: decisionId,
+              summary:
+                  'Contextual ad impression recorded from creator-policy decision.',
+              createdAt: _now(),
+            ),
+          );
+      await _db
+          .into(_db.adImpressions)
+          .insertOnConflictUpdate(
+            AdImpressionsCompanion.insert(
+              id: id,
+              decisionId: decisionId,
+              adId: adId,
+              completed: completed,
+              receiptId: Value(receiptId),
+              createdAt: _now(),
+            ),
+          );
+      await _saveIdempotency(idempotencyKey, 'ad_impression', id);
+    });
+    final row = await (_db.select(
+      _db.adImpressions,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    return _mapAdImpression(row);
+  }
+
+  Future<PremiumNoAdStatusRecord> premiumNoAdStatus(String passportId) async {
+    await ensureDemoPassport(passportId: passportId);
+    final grants = await activeEntitlements(
+      passportId: passportId,
+      codes: const ['premium_no_ads'],
+    );
+    final grant = grants.isEmpty ? null : grants.first;
+    return PremiumNoAdStatusRecord(
+      passportId: passportId,
+      active: grant != null,
+      entitlementId: grant?.id,
+      since: grant?.grantedAt,
+      renewsAt: grant?.grantedAt.add(const Duration(days: 30)),
+    );
+  }
+
+  Future<PremiumNoAdEventRecord> recordPremiumNoAdView({
+    required String passportId,
+    required String contentId,
+    String? channelId,
+    String? sessionIntent,
+    required String idempotencyKey,
+  }) async {
+    final existing = await _idempotentTarget(
+      idempotencyKey,
+      'premium_no_ad_event',
+    );
+    if (existing != null) {
+      final row = await (_db.select(
+        _db.premiumNoAdEvents,
+      )..where((tbl) => tbl.id.equals(existing))).getSingleOrNull();
+      if (row != null) {
+        return _mapPremiumNoAdEvent(row);
+      }
+    }
+    final status = await premiumNoAdStatus(passportId);
+    final content = await contentById(contentId);
+    if (content == null) {
+      throw StateError('No content exists for $contentId');
+    }
+    final resolvedChannelId = channelId ?? content.creatorId;
+    final id = 'noad_${_slug(idempotencyKey)}';
+    final receiptId = status.active ? 'receipt_noad_${_slug(id)}' : null;
+    await _db.transaction(() async {
+      if (status.active) {
+        await _db
+            .into(_db.receipts)
+            .insertOnConflictUpdate(
+              ReceiptsCompanion.insert(
+                id: receiptId!,
+                type: 'premiumNoAd',
+                passportId: passportId,
+                contentId: contentId,
+                authorizationId: id,
+                summary:
+                    'Premium no-ad view allocated to creator without serving an ad.',
+                createdAt: _now(),
+              ),
+            );
+      }
+      await _db
+          .into(_db.premiumNoAdEvents)
+          .insertOnConflictUpdate(
+            PremiumNoAdEventsCompanion.insert(
+              id: id,
+              passportId: passportId,
+              contentId: contentId,
+              channelId: Value(resolvedChannelId),
+              sessionIntent: Value(sessionIntent),
+              receiptId: Value(receiptId),
+              createdAt: _now(),
+            ),
+          );
+      await _saveIdempotency(idempotencyKey, 'premium_no_ad_event', id);
+    });
+    final row = await (_db.select(
+      _db.premiumNoAdEvents,
+    )..where((tbl) => tbl.id.equals(id))).getSingle();
+    return _mapPremiumNoAdEvent(row);
+  }
+
+  Future<void> _ensureLinkInBioForCreator(
+    CreatorRecord creator,
+    String captureToken,
+  ) {
+    return _db
+        .into(_db.linkInBioPages)
+        .insertOnConflictUpdate(
+          LinkInBioPagesCompanion.insert(
+            channelId: creator.id,
+            handle: creator.handle,
+            displayName: creator.displayName,
+            avatarRef: creator.avatarRef,
+            captureLinkUrl: _captureUrl(captureToken),
+            qrPayload: _qrPayload(captureToken),
+            externalLinksJson: jsonEncode(
+              _linkInBioExternalLinks(
+                SeedCreator(
+                  id: creator.id,
+                  handle: creator.handle,
+                  displayName: creator.displayName,
+                  vertical: creator.vertical,
+                  avatarRef: creator.avatarRef,
+                ),
+              ),
+            ),
+            updatedAt: _now(),
+          ),
+        );
+  }
+
   Future<void> _ensureWallet(String passportId) async {
     await ensureDemoPassport(passportId: passportId);
     await _db
@@ -5114,6 +6741,174 @@ ReceiptRecord _mapReceipt(Receipt row) {
   );
 }
 
+CaptureLinkRecord _mapCaptureLink(CaptureLink row) {
+  return CaptureLinkRecord(
+    token: row.token,
+    channelId: row.channelId,
+    url: row.url,
+    channel: row.channel,
+    qrPayload: row.qrPayload,
+    starterPackEnabled: row.starterPackEnabled,
+    createdAt: row.createdAt,
+    expiresAt: row.expiresAt,
+  );
+}
+
+ReFollowEventRecord _mapReFollowEvent(ReFollowEvent row) {
+  return ReFollowEventRecord(
+    id: row.id,
+    token: row.token,
+    passportId: row.passportId,
+    channelId: row.channelId,
+    followId: row.followId,
+    channel: row.channel,
+    followState: row.followState,
+    pairwiseCreatorFanId: row.pairwiseCreatorFanId,
+    createdAt: row.createdAt,
+  );
+}
+
+AnnouncementTemplateRecord _mapAnnouncementTemplate(AnnouncementTemplate row) {
+  return AnnouncementTemplateRecord(
+    templateId: row.templateId,
+    name: row.name,
+    channel: row.channel,
+    body: row.body,
+    placeholders: _decodeStringList(row.placeholdersJson),
+  );
+}
+
+RenderedAnnouncementRecord _mapRenderedAnnouncement(RenderedAnnouncement row) {
+  return RenderedAnnouncementRecord(
+    announcementId: row.announcementId,
+    channelId: row.channelId,
+    channel: row.channel,
+    renderedBody: row.renderedBody,
+    captureLinkUrl: row.captureLinkUrl,
+    qrPayload: row.qrPayload,
+    createdAt: row.createdAt,
+  );
+}
+
+LinkInBioPageRecord _mapLinkInBioPage(LinkInBioPage row) {
+  return LinkInBioPageRecord(
+    channelId: row.channelId,
+    handle: row.handle,
+    displayName: row.displayName,
+    avatarRef: row.avatarRef,
+    captureLinkUrl: row.captureLinkUrl,
+    qrPayload: row.qrPayload,
+    externalLinks: _decodeStringMapList(row.externalLinksJson),
+  );
+}
+
+StarterPackRecord _mapStarterPack(StarterPack row) {
+  return StarterPackRecord(
+    channelId: row.channelId,
+    starterPackToken: row.starterPackToken,
+    memberIds: _decodeStringList(row.memberIdsJson),
+    defaultSelectedIds: _decodeStringList(row.defaultSelectedIdsJson),
+    updatedAt: row.updatedAt,
+  );
+}
+
+BulkFollowJobRecord _mapBulkFollowJob(BulkFollowJob row) {
+  return BulkFollowJobRecord(
+    id: row.id,
+    channelId: row.channelId,
+    passportId: row.passportId,
+    followedIds: _decodeStringList(row.followedIdsJson),
+    alreadyFollowingIds: _decodeStringList(row.alreadyFollowingIdsJson),
+    feedReady: row.feedReady,
+    createdAt: row.createdAt,
+  );
+}
+
+ExternalAccountRecord _mapExternalAccount(ExternalAccount row) {
+  return ExternalAccountRecord(
+    linkId: row.linkId,
+    channelId: row.channelId,
+    platform: row.platform,
+    handle: row.handle,
+    profileUrl: row.profileUrl,
+    verificationState: row.verificationState,
+    linkedAt: row.linkedAt,
+  );
+}
+
+PublicMetadataImportJobRecord _mapPublicMetadataImportJob(
+  PublicMetadataImportJob row,
+) {
+  return PublicMetadataImportJobRecord(
+    jobId: row.jobId,
+    channelId: row.channelId,
+    status: row.status,
+    importedCount: row.importedCount,
+    skippedCount: row.skippedCount,
+    message: row.message,
+  );
+}
+
+PublicImportedReferenceRecord _mapPublicImportedReference(
+  PublicImportedReference row,
+) {
+  return PublicImportedReferenceRecord(
+    referenceId: row.referenceId,
+    platform: row.platform,
+    externalId: row.externalId,
+    title: row.title,
+    description: row.description,
+    thumbnailRef: row.thumbnailRef,
+    sourceUrl: row.sourceUrl,
+    publishedAt: row.publishedAt,
+    rightsBasis: row.rightsBasis,
+    searchIndexable: row.searchIndexable,
+    aiQueryable: row.aiQueryable,
+  );
+}
+
+CrossPostRecord _mapCrossPost(CrossPostJob row) {
+  return CrossPostRecord(
+    crossPostId: row.crossPostId,
+    channelId: row.channelId,
+    message: row.message,
+    createdAt: row.createdAt,
+    targets: _decodeCrossPostTargets(row.targetsJson),
+    announcementId: row.announcementId,
+    contentRef: row.contentRef,
+    captureLinkUrl: row.captureLinkUrl,
+  );
+}
+
+AdDecisionRecord _mapAdDecision(AdDecision row) {
+  return AdDecisionRecord(
+    decisionId: row.decisionId,
+    contentId: row.contentId,
+    ads: _decodeSelectedAds(row.adsJson),
+    policyVersion: row.policyVersion,
+  );
+}
+
+AdImpressionRecord _mapAdImpression(AdImpression row) {
+  return AdImpressionRecord(
+    id: row.id,
+    decisionId: row.decisionId,
+    adId: row.adId,
+    recorded: true,
+    receiptId: row.receiptId,
+  );
+}
+
+PremiumNoAdEventRecord _mapPremiumNoAdEvent(PremiumNoAdEvent row) {
+  return PremiumNoAdEventRecord(
+    id: row.id,
+    passportId: row.passportId,
+    contentId: row.contentId,
+    noAdApplied: row.receiptId != null,
+    receiptId: row.receiptId,
+  );
+}
+
 EntitlementDefinitionRecord _mapEntitlementDefinition(
   EntitlementDefinition row,
 ) {
@@ -5198,6 +6993,81 @@ List<String> _decodeStringList(String value) {
     return const [];
   }
   return decoded.whereType<String>().toList(growable: false);
+}
+
+List<Map<String, String>> _decodeStringMapList(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (item) => {
+          for (final entry in item.entries) entry.key: '${entry.value ?? ''}',
+        },
+      )
+      .toList(growable: false);
+}
+
+List<SelectedAdRecord> _decodeSelectedAds(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (item) => SelectedAdRecord(
+          adId: '${item['adId'] ?? ''}',
+          brand: '${item['brand'] ?? ''}',
+          category: '${item['category'] ?? ''}',
+          disclosure: '${item['disclosure'] ?? ''}',
+          selectionBasis: '${item['selectionBasis'] ?? ''}',
+        ),
+      )
+      .where((item) => item.adId.isNotEmpty)
+      .toList(growable: false);
+}
+
+Map<String, Object?> _selectedAdToJson(SelectedAdRecord record) {
+  return {
+    'adId': record.adId,
+    'brand': record.brand,
+    'category': record.category,
+    'disclosure': record.disclosure,
+    'selectionBasis': record.selectionBasis,
+  };
+}
+
+List<CrossPostTargetRecord> _decodeCrossPostTargets(String value) {
+  final decoded = jsonDecode(value);
+  if (decoded is! List) {
+    return const [];
+  }
+  return decoded
+      .whereType<Map<String, Object?>>()
+      .map(
+        (item) => CrossPostTargetRecord(
+          targetLinkId: '${item['targetLinkId'] ?? ''}',
+          platform: '${item['platform'] ?? ''}',
+          deliveryStatus: '${item['deliveryStatus'] ?? 'processing'}',
+          externalPostUrl: item['externalPostUrl'] as String?,
+          message: item['message'] as String?,
+        ),
+      )
+      .where((item) => item.targetLinkId.isNotEmpty)
+      .toList(growable: false);
+}
+
+Map<String, Object?> _crossPostTargetToJson(CrossPostTargetRecord record) {
+  return {
+    'targetLinkId': record.targetLinkId,
+    'platform': record.platform,
+    'deliveryStatus': record.deliveryStatus,
+    'externalPostUrl': record.externalPostUrl,
+    'message': record.message,
+  };
 }
 
 List<RevenueBreakdownRecord> _decodeBreakdowns(String value) {
@@ -5447,6 +7317,49 @@ const _adInventorySeeds = [
   ),
 ];
 
+class _AnnouncementTemplateSeed {
+  const _AnnouncementTemplateSeed({
+    required this.templateId,
+    required this.name,
+    required this.channel,
+    required this.body,
+    required this.placeholders,
+  });
+
+  final String templateId;
+  final String name;
+  final String channel;
+  final String body;
+  final List<String> placeholders;
+}
+
+const _announcementTemplateSeeds = [
+  _AnnouncementTemplateSeed(
+    templateId: 'launch_social_post',
+    name: 'Social launch post',
+    channel: 'social_post',
+    body:
+        'I am moving my creator hub to Loom. Follow {creatorName} here: {captureLink}',
+    placeholders: ['creatorName', 'captureLink'],
+  ),
+  _AnnouncementTemplateSeed(
+    templateId: 'launch_email',
+    name: 'Audience email',
+    channel: 'email',
+    body:
+        'Hi, it is {creatorName}. My archive, memberships, and no-ad support now live on Loom: {captureLink}',
+    placeholders: ['creatorName', 'captureLink'],
+  ),
+  _AnnouncementTemplateSeed(
+    templateId: 'launch_pinned_comment',
+    name: 'Pinned video comment',
+    channel: 'video_pinned_comment',
+    body:
+        'New hub for my full catalog and Q&A: {captureLink}. Starter pack included.',
+    placeholders: ['captureLink'],
+  ),
+];
+
 List<String> _interestIdsForCreatorId(String creatorId) {
   if (creatorId.contains('solar')) {
     return const ['home_energy', 'solar_storage', 'personal_finance'];
@@ -5458,6 +7371,65 @@ List<String> _interestIdsForCreatorId(String creatorId) {
     return const ['mobility', 'strength_basics', 'joint_friendly_cardio'];
   }
   return const ['creator_tools'];
+}
+
+String _seedCaptureToken(String channelId) {
+  return 'cap_${_slug(channelId)}_launch';
+}
+
+String _captureUrl(String token) {
+  return 'https://loom.example/c/$token';
+}
+
+String _qrPayload(String token) {
+  return 'loom://capture/$token';
+}
+
+String _starterPackToken(String channelId) {
+  return 'starter_${_slug(channelId)}_launch';
+}
+
+List<String> _starterPackMemberIds(
+  String channelId,
+  Iterable<String> creatorIds,
+) {
+  final ids = creatorIds.toList();
+  final ordered = [channelId, ...ids.where((id) => id != channelId)];
+  return ordered.take(6).toList(growable: false);
+}
+
+List<Map<String, String>> _linkInBioExternalLinks(SeedCreator creator) {
+  final handle = creator.handle;
+  return [
+    {'label': 'Watch archive', 'url': 'https://youtube.example/$handle'},
+    {'label': 'Daily updates', 'url': 'https://instagram.example/$handle'},
+    {
+      'label': 'Creator-owned Loom hub',
+      'url': _captureUrl(_seedCaptureToken(creator.id)),
+    },
+  ];
+}
+
+String _renderTemplate(String template, Map<String, String> fields) {
+  var rendered = template;
+  for (final entry in fields.entries) {
+    rendered = rendered.replaceAll('{${entry.key}}', entry.value);
+  }
+  return rendered.replaceAll(RegExp(r'\{[a-zA-Z0-9_]+\}'), '');
+}
+
+List<_ImportItem> _publicMetadataImportItems(String platform) {
+  return _sampleImportItems
+      .map(
+        (item) => _ImportItem(
+          externalId: '$platform-${item['externalId']}',
+          contentType: item['contentType']!,
+          title: item['title']!,
+          summary: item['summary']!,
+          thumbnailRef: item['thumbnailRef']!,
+        ),
+      )
+      .toList(growable: false);
 }
 
 List<String> _defaultAdCategoriesForCreator(String creatorId) {

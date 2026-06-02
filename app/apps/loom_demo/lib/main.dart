@@ -42,6 +42,15 @@ Future<void> configureDemoDependencies({bool persistent = true}) async {
   registerMigrationExportApi(MigrationExportFake(store));
   registerEntitlementLedgerApi(EntitlementLedgerFake(store));
   registerAiGatewayApi(AiGatewayFake(store));
+  registerAdDecisionApi(AdDecisionFake(store));
+  registerAudienceAnalyticsApi(AudienceAnalyticsFake(store));
+  registerCreatorAnnouncementApi(CreatorAnnouncementFake(store));
+  registerCrossPostingApi(CrossPostingFake(store));
+  registerExternalAccountLinkApi(ExternalAccountLinkFake(store));
+  registerFanFollowCaptureApi(FanFollowCaptureFake(store));
+  registerImportPublicMetadataApi(ImportPublicMetadataFake(store));
+  registerPremiumNoAdApi(PremiumNoAdFake(store));
+  registerStarterPackApi(StarterPackFake(store));
   registerExternalRecommendationProviderApi(
     ExternalRecommendationProviderFake(store),
   );
