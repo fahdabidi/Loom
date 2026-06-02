@@ -334,6 +334,40 @@ End state:
 
 > Launch/showcase scope (MVP scope id **FE-S15**); implemented in Phases 17–18. See [10 Extensions](./10-creator-plugins-extensions-campaign-layer.md).
 
+### Story 16: Fan connects an AI search agent and external sources
+
+As a fan, I want to connect my own AI agent (Claude/OpenAI/Gemini via MCP) and enable external sources in Settings, so my search is ranked by my agent and can reach beyond Loom.
+
+End state:
+
+- Fan sets a provider + MCP connection (`FanSearchAgentConfig`), toggles external sources, and sets a "prefer creator content" default.
+- A disclosure makes clear that search queries are sent to the fan's chosen AI provider (data egress); the connection is reversible.
+
+> Launch/showcase scope (MVP scope id **FE-S16**); implemented in Phases 21–22. Extends the Phase-5 bring-your-own-AI model from recommendations to search. See [11 AI Layer](./11-ai-layer.md) and [14 Data Rights](./14-audience-data-firewall-and-data-rights.md).
+
+### Story 17: Fan AI search merges creator and external content
+
+As a fan with a connected agent, I want one ranked list that merges creator content (preferred on match) with external results (e.g., YouTube), with ragebait tamed without misrepresenting third-party content.
+
+End state:
+
+- The agent determines final ranking (disclosed); creator content is preferred on match; there is **no paid placement** (neutral search preserved).
+- Creator tiles show summary over clickbait; **external tiles keep the unaltered original title + thumbnail**, lead with an **additive AI accurate-match label**, and show a **source-attribution chip**.
+- With no agent connected, search falls back to the existing neutral path (Story 5).
+
+> Launch/showcase scope (MVP scope id **FE-S17**); implemented in Phase 23. See [11 AI Layer](./11-ai-layer.md) and [13 Neutral Public Search](./13-neutral-public-search-utility.md).
+
+### Story 18: Fan plays external video in-app with AI-driven next
+
+As a fan, I want to play a YouTube result inside Loom and have the next recommendation come from my AI search, not the platform's.
+
+End state:
+
+- Tapping a YouTube item opens the **official in-app embedded player**, unobscured; the original title + source attribution stay visible.
+- A "Next from your AI search" rail (creator-preferred) surrounds the player; non-YouTube sources open externally; no Loom ads over the embed.
+
+> Launch/showcase scope (MVP scope id **FE-S18**); implemented in Phase 24. Compliance (official player, unaltered metadata, attribution) is defined in [17 Trust, Safety, Fraud, and Compliance](./17-trust-safety-fraud-and-compliance.md).
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Fan onboarding and first follow

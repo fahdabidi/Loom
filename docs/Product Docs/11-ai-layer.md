@@ -10,6 +10,8 @@ The AI Layer is a pluggable, permissioned, auditable service layer for creators,
 
 AI in Loom should not be a centralized platform-owned assistant that silently absorbs creator archives and fan behavior. Creators choose AI permissions and providers. Fans choose AI assistants, memory settings, and privacy modes. AI usage creates receipts for audit, attribution, and settlement.
 
+> **Phases 21–26 — Fan AI Search agent:** the bring-your-own-AI model extends from recommendations to **search**. A fan connects their agent (Claude/OpenAI/Gemini) via **MCP** — a `FanSearchAgentMCPServer` parallel to the existing `FanRecommendationMCPServer` — and the agent ranks merged **creator + external** candidates, optionally attaching an **accurate-match annotation**. The annotation is **additive**: for external (YouTube/Twitch) content it never replaces the platform's title (which stays unaltered), it only re-ranks and adds context. AI-usage + source-attribution receipts apply. See `runAiSearch` (AI Gateway API) and stories FE-S16/FE-S17 (MVP scope Part L).
+
 ## 2. Scope
 
 This product area covers:

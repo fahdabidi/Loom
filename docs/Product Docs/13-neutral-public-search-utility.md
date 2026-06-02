@@ -12,6 +12,8 @@ Search is not recommendations. Search is not ad inventory. Search should be dist
 
 Search can be exposed inside Fan Apps as a platform-defined Search intent tile, but the underlying rules do not change: the fan explicitly provides intent, results are neutral, and no ads appear in search results. Opening a result can transition into normal content playback, purchase, campaign, or recommendation flows.
 
+> **Phases 21–26 — AI search over external sources (neutrality preserved):** search may federate **external sources** (YouTube now; others modeled) and be **ranked by the fan's own AI agent**. This stays neutral: the ranker is the *fan's agent*, not Loom; there is **no paid placement and no search ads**; external inclusion is never sold; and `SearchReceipt` remains audit/utility-only. "Prefer creator content" is a fan-controlled, disclosed default — not a paid boost. External results keep their original title/thumbnail unaltered with an additive accurate-match label. See `includeExternalSources` (Search API) and `runAiSearch` (AI Gateway API).
+
 ## 2. Scope
 
 This product area covers:

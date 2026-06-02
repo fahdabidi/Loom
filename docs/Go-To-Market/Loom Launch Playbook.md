@@ -320,8 +320,10 @@ follow** (Pattern 1). The job is to make that arrival frictionless and sticky:
   their recommended creators in a single action, and land on a feed that is already full —
   pre-populated by the creator's intent tiles and recommendations. Never show an empty feed.
 - **Fan hooks unique to Loom:** the **glass-box intent tiles + owned interest profile** ("a feed
-  with a purpose, not a slot machine"), **bring-your-own-AI ranking**, the **one no-ad pass**, and
-  **privacy that pays you back** (opt-in data-for-value).
+  with a purpose, not a slot machine"), **bring-your-own-AI ranking** — now extended to **AI search
+  across the open web** (a fan's own agent ranks creator content *and* external results like YouTube,
+  with ragebait titles de-emphasized and creator content preferred), the **one no-ad pass**, and
+  **privacy that pays you back** (opt-in data-for-value). *(Roadmap: Phases 21–26.)*
 - **Retention differentiator:** the intent feed is the explicit antidote to the engagement-maxing
   slot-machine feed fans say they're tired of — this is the *reason to stay*, not just to arrive.
 

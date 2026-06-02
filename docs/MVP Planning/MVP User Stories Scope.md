@@ -1237,4 +1237,79 @@ End state:
 
 ---
 
+## Part L — Fan AI Search + External Content (Phases 21–26)
+
+These stories extend the fan's "bring your own AI" promise from recommendations (Phase 5) to **search**: a fan
+connects their own AI agent (Claude/OpenAI/Gemini via **MCP**), and the agent ranks results spanning **creator
+content + external sources (YouTube now; twitch/discord/blog/webpage modeled generically)**. Tracked across
+[Phase 21](./Phases/Phase%2021%20-%20AI%20Search%20and%20External%20Content%20Foundation.md) through
+[Phase 26](./Phases/Phase%2026%20-%20Gaming%20Seed%20Showcase%20and%20Final%20Validation.md).
+
+**Source:** approved plan "Fan AI Search + External Content (YouTube/Twitch)" · builds on Doc 11 AI Layer,
+Doc 13 Neutral Public Search, and the existing `ExternalContentReferenceSchema` (Doc 21).
+
+> Note on scope: **launch/showcase scope**, not part of the original Phase 0–9 MVP. **Compliance:** for external
+> (YouTube/Twitch) content, the platform's title + thumbnail stay **visible and unaltered** and playback uses the
+> **official embedded player**; the AI "accurate-match" label is **additive** and a ranking signal only. Neutral
+> search is preserved (the fan's agent ranks; no paid placement; SearchReceipt audit-only). External playback needs
+> network; all Loom APIs stay faked/offline.
+
+---
+
+### FE-S16: Fan connects an AI search agent and external sources **[IN — launch scope]**
+
+As a fan, I want to connect my own AI agent (Claude/OpenAI/Gemini via MCP) and enable external sources (e.g.,
+YouTube) in Settings, so my search is ranked by my agent and can reach beyond Loom.
+
+End state:
+- Fan sets a provider + MCP connection (simulated in the demo) and toggles external sources + a "prefer creator content" default.
+- A clear disclosure states that search queries are sent to the fan's chosen AI provider (data egress).
+- Config is persisted (`FanSearchAgentConfig`) and reversible.
+
+**Target product docs:** `03 Fan Experience`, `11 AI Layer`, `14 Data Rights`. **APIs:** Fan Vault (`FanSearchAgentConfig`), External Content Source.
+
+---
+
+### FE-S17: Fan AI search merges creator + external with compliant titles **[IN — launch scope]**
+
+As a fan with a connected agent, I want one ranked result list that merges creator content (preferred on match)
+with external results, where ragebait is tamed without misrepresenting third-party content.
+
+End state:
+- `runAiSearch` returns a merged list; the agent determines final ranking (disclosed); creator content is preferred on match; **no paid placement** (neutrality preserved).
+- Creator tiles show summary-over-clickbait; **external tiles keep the unaltered original title + thumbnail**, lead with an **additive AI accurate-match label**, and show a **source-attribution chip**.
+- With no agent connected, search falls back to the existing neutral path.
+
+**Target product docs:** `03 Fan Experience`, `11 AI Layer`, `13 Neutral Public Search`. **APIs:** AI Gateway (`runAiSearch`), Search, External Content Source.
+
+---
+
+### FE-S18: Fan plays external video in-app with AI-driven next **[IN — launch scope]**
+
+As a fan, I want to play a YouTube result inside Loom and have the next recommendation come from my AI search, not
+the platform's.
+
+End state:
+- Tapping a YouTube item opens the **official in-app IFrame player**, unobscured; the original title + source attribution remain visible.
+- A "Next from your AI search" rail (creator-preferred) surrounds the player; non-YouTube sources open externally.
+- No Loom ads over the embed; official player used; offline/error handled.
+
+**Target product docs:** `03 Fan Experience`, `15 Fan Apps`, `17 Trust/Safety` (embedded-content compliance). **APIs:** External Content Source (embed descriptor), AI Gateway (next rail).
+
+---
+
+### CE-S14: Creator links external content into their feed **[IN — launch scope]**
+
+As a creator, I want to link external content (YouTube now; twitch/discord/blog/webpage generically) into my
+channel/recommendation feed, rendered as a native Loom tile.
+
+End state:
+- Creator links an external item in Studio (paste URL/ID → preview → confirm) with `searchIndexable`/`aiQueryable` controls; reuses `ExternalContentReferenceSchema`.
+- It renders as a **native tile** (unaltered thumbnail + source chip + creator note) in the feed/channel and plays via the embedded player (YouTube) or opens externally.
+- Compliance (unaltered title/thumbnail, attribution, official player) holds.
+
+**Target product docs:** `02 Creator Experience`, `04 Creator Metadata`, `10 Extensions`/feed. **APIs:** External Content Source, Creator Metadata.
+
+---
+
 *End of MVP User Stories Scope document.*

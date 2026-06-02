@@ -10,6 +10,8 @@ The Creator Channel is the core portable business object in Loom. It is the crea
 
 The Creator Channel must outlive any individual host, app, payment provider, ad provider, AI provider, search provider, recommendation provider, analytics provider, or extension runtime. Hosting providers may serve media, apps may display content, and service providers may process specific capabilities, but the channel remains the creator's portable business state.
 
+> **Phases 21–26 — External content references as feed content:** the existing `ExternalContentReferenceSchema` (Doc 21) is reusable for **curated feed links + embedding**, not only migration import. An `embedDescriptor` (`youtube_iframe` | `link`) plus `sourceAttribution` and an additive `accurateMatchLabel` let external items (YouTube now; twitch/discord/blog/webpage generically) render as native feed tiles within `CreatorExperienceConfig` content modules. The platform's original title/thumbnail are stored and shown **unaltered**; `searchIndexable`/`aiQueryable` flags gate search/AI inclusion. See story CE-S14.
+
 ## 2. Scope
 
 This product area covers the architecture and product behavior of creator channel identity and portable metadata.

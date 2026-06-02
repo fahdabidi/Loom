@@ -293,6 +293,18 @@ End state:
 
 > Launch/showcase scope (MVP scope id **CE-S13**); implemented in Phases 17–19. Builds on Story 4 and [10 Extensions](./10-creator-plugins-extensions-campaign-layer.md).
 
+### Story 11: Creator links external content into their feed
+
+As a creator, I want to link external content (YouTube now; twitch/discord/blog/webpage generically) into my channel and recommendation feed, rendered as a native Loom tile.
+
+End state:
+
+- Creator links an external item in Studio (paste URL/ID → preview → confirm), sets `searchIndexable`/`aiQueryable`, and adds an optional creator note; reuses `ExternalContentReferenceSchema`.
+- It renders as a **native tile** (unaltered thumbnail + source chip + creator note) in the feed/channel and plays via the embedded player (YouTube) or opens externally.
+- Compliance holds: the platform's title/thumbnail stay unaltered, attribution is retained, and the official player is used for playback.
+
+> Launch/showcase scope (MVP scope id **CE-S14**); implemented in Phase 25. See [04 Creator Channel and Metadata Architecture](./04-creator-channel-and-metadata-architecture.md) and [17 Trust/Safety](./17-trust-safety-fraud-and-compliance.md).
+
 ## 6. End-to-End Workflows
 
 ### Workflow 1: Creator onboarding to first publish

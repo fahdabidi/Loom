@@ -10,6 +10,8 @@ The Audience Data Firewall and Data Rights architecture balances fan privacy, cr
 
 Fan private data, creator-scoped audience data, and provider-local runtime data must remain distinct. Providers should not mine creator/fan data for unrelated businesses without permission. Creators should receive useful first-party audience tools without unrestricted fan surveillance.
 
+> **Phases 21–26 — AI search agent connection (query egress):** connecting a fan AI search agent means the fan's **search queries (and only permitted context) are sent to the fan's chosen AI provider** (Claude/OpenAI/Gemini). This is fan-initiated data egress and requires **explicit, revocable consent + clear disclosure** in Settings (`FanSearchAgentConfig.queryEgressAcknowledged`), consistent with the firewall and neutral-search rules. The agent receives only what the fan permits and does not expand creator-scoped or private-vault access. See story FE-S16.
+
 ## 2. Scope
 
 This product area covers:

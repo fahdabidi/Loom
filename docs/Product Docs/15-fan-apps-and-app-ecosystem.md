@@ -10,6 +10,8 @@ Loom should support many fan apps, not just one official app. Apps can specializ
 
 Certified apps must respect Fan Passport identity, wallet entitlements, creator manifests, search neutrality, recommendation disclosures, receipts, extension sandboxing, and data permissions.
 
+> **Phases 21–26 — Embedded external-player surface:** fan apps gain an **embedded-player** surface that plays external video via the **official IFrame player** (YouTube now), with a "Next from your AI search" rail driven by the fan's connected agent (not the platform's recommendations). Non-YouTube sources open externally. Apps must follow the third-party embedded-content compliance rules in Doc 17. See stories FE-S17/FE-S18.
+
 ## 2. Scope
 
 This product area covers:

@@ -10,6 +10,8 @@ Trust, Safety, Fraud, and Compliance must be built into Loom's protocol, not bol
 
 The product should use signed receipts, certified providers, scoped permissions, sandboxed extensions, audit records, takedown workflows, dispute APIs, and governance enforcement to keep the network trustworthy.
 
+> **Phases 21–26 — Third-party embedded-content compliance:** when surfacing external content (YouTube/Twitch), Loom must: (a) keep the platform's **title and thumbnail visible and unaltered** (the AI accurate-match label is additive only); (b) play via the **official embedded player, unobscured** — no overlays in front of the player/controls; a custom play button over the unaltered thumbnail is allowed and must start playback; (c) retain **source attribution** and never imply Loom ownership; (d) show **no Loom ads** over the embed and respect platform ads; and (e) avoid **re-syndication/storage** of platform API data beyond references and public previews. Twitch additionally requires a `parent` domain + SSL, a minimum 400×300 player, and no obscuring. References: YouTube API Developer Policies & Required Minimum Functionality; Twitch Embedding & Developer Agreement.
+
 ## 2. Scope
 
 This product area covers:

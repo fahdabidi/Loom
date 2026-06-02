@@ -163,3 +163,13 @@ remediations are distributed across Phases 12-14 so each phase can ship with a r
 
 Sequencing note: because the demo is contract-first, **§B (API specs) and Phase 10 contract/fake
 foundation must land before the Phase 11-14 UI work** — write the contract, then the fake, then the UI.
+
+## Follow-on capability — Fan AI Search + external content (Phases 21–26)
+
+Beyond this launch scope (and the customization showcase in Phases 15–20), a further sequence extends
+the fan **"bring your own AI"** hook from recommendations to **search**: a fan connects their own AI
+agent (MCP) and search merges **creator + external sources (YouTube first)**, with ragebait titles
+de-emphasized (compliantly, leaving third-party titles unaltered) and creator content preferred. This
+strengthens the fan value prop in the [Launch Playbook](./Loom%20Launch%20Playbook.md) §3.5. Scoped as
+**Phases 21–26** (stories FE-S16/FE-S17/FE-S18/CE-S14, MVP scope Part L); the authoritative final
+physical-phone validation moves to Phase 26.

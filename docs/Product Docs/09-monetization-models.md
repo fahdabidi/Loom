@@ -12,6 +12,8 @@ Loom's monetization should not be a single platform take-rate. Revenue should be
 
 Session intent can affect ad load, contextual ad category, and eligible creator breadth for a fan session, but it does not create behavioral ad targeting or override creator ad policy. Which ads are eligible remains controlled by `CreatorAdPolicy`, sponsor/campaign policy, fan privacy mode, and safety rules.
 
+> **Phases 21–26 — External embeds carry no Loom ads:** external content (YouTube/Twitch) plays via the official embedded player and is **not** wrapped in Loom ads; Loom respects the platform's own monetization. External inclusion in AI search is **never paid placement**. Loom monetization (creator-controlled ads, the no-ad pass, memberships) applies only to Loom-native content.
+
 ## 2. Scope
 
 This product area covers:
