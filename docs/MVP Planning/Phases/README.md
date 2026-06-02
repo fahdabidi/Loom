@@ -26,7 +26,7 @@ Each phase doc is self-contained and follows the same section structure. An exec
 | 11 | [Phase 11 - Creator Launch Funnel.md](./Phase%2011%20-%20Creator%20Launch%20Funnel.md) | HIGH | **STOP for UX** |
 | 12 | [Phase 12 - Fan Starter Pack Onboarding.md](./Phase%2012%20-%20Fan%20Starter%20Pack%20Onboarding.md) | HIGH | **STOP for UX** |
 | 13 | [Phase 13 - Conversion Analytics and Creator Utility Consoles.md](./Phase%2013%20-%20Conversion%20Analytics%20and%20Creator%20Utility%20Consoles.md) | HIGH | **STOP for UX** |
-| 14 | [Phase 14 - UX Hardening and Physical Phone Validation.md](./Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md) | FINAL launch + phone | **STOP for final UX** |
+| 14 | [Phase 14 - UX Hardening and Physical Phone Validation.md](./Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md) | Launch UX hardening + phone deferral | **STOP for UX checkpoint** |
 
 ---
 
@@ -48,7 +48,7 @@ All commands run inside **WSL Ubuntu bash**. Never use PowerShell or Windows pat
 | List devices | `flutter devices` |
 | Launch emulator | `flutter emulators --launch <emulator_id>` |
 | Install on emulator | `adb -s <emulator_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
-| Install on phone (Phase 14 only) | `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
+| Install on phone (Phase 26 only) | `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk` |
 
 `melos run *` scripts are defined in `app/melos.yaml` during Phase 0.
 
@@ -58,7 +58,7 @@ Before any new work, run and confirm **green**:
 2. `melos run lint:boundaries` → 0 violations
 3. `melos run test` → all pass
 4. Prior phase's integration tests pass (`melos run test:integration`)
-5. App boots on the Flutter Android emulator with no runtime errors. Physical-phone boot/install is required only in Phase 14.
+5. App boots on the Flutter Android emulator with no runtime errors. Physical-phone boot/install is required only in Phase 26.
 6. Prior phase "Definition of done" fully checked
 7. Prior phase changes are committed to git, and the commit SHA is recorded in the Phase completion tracker. Do not begin a new phase with uncommitted changes from the prior phase.
 If any item fails → fix the prior phase first; do not start new work.
@@ -107,10 +107,10 @@ Each phase creates or updates a sibling `Phase N - UX Decisions.md` before imple
 `melos run analyze` + `melos run lint:boundaries` + `melos run test` all green; new state/mappers have unit tests; `flutter build apk --debug` succeeds.
 
 ### Integration tests (every phase)
-One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflow-id>`. Each asserts the workflow's **end state** from the scope doc. Run on the Flutter Android emulator via `melos run test:integration` for Phases 0–13; rerun the full launch-demo suite on a physical Android phone in Phase 14.
+One `integration_test` per workflow listed in the phase, named `it_p<N>_<workflow-id>`. Each asserts the workflow's **end state** from the scope doc. Run on the Flutter Android emulator via `melos run test:integration` for Phases 0–26; rerun the full launch-demo suite on a physical Android phone in Phase 26.
 
 ### Definition of done (every phase)
-- Every scope story/workflow in the phase is demonstrable in-app on the Flutter Android emulator. Phase 14 also requires physical Android phone demonstration.
+- Every scope story/workflow in the phase is demonstrable in-app on the Flutter Android emulator. Phase 26 also requires physical Android phone demonstration.
 - All automated checks green; integration tests pass.
 - API Review filed; spec gaps logged.
 - UX Decisions doc filed with reference research, key decisions, and workflow walkthrough.

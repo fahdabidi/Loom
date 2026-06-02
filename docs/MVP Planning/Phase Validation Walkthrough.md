@@ -10,7 +10,7 @@ This is the manual validation playbook for the Demo App while implementation con
 4. Mark each row as `Pass`, `Fail`, or `Needs change` in the Result column.
 5. For every issue, send the issue template at the bottom of this doc with the phase, screen, action, expected result, actual result, and screenshot if useful.
 
-Authoritative final physical Android phone validation is now deferred until Phase 20. Phases 0 through 14 are validated on the Flutter Android emulator unless physical hardware is available for a preliminary smoke pass.
+Authoritative final physical Android phone validation is now deferred until Phase 26. Phases 0 through 25 are validated on the Flutter Android emulator unless physical hardware is available for a preliminary smoke pass.
 
 ## Parallel Validation Protocol
 
@@ -37,7 +37,19 @@ Authoritative final physical Android phone validation is now deferred until Phas
 | 11 | High UX checkpoint | Complete / ready for validation | Creator Studio Launch/Grow |
 | 12 | High UX checkpoint | Complete / ready for validation | Fan capture landing and starter pack |
 | 13 | High UX checkpoint | Complete / ready for validation | Creator conversion analytics and utility consoles |
-| 14 | Emulator UX hardening + preliminary phone smoke | Complete / ready for validation | UX hardening, full launch demo, optional physical phone |
+| 14 | Emulator UX hardening + launch regression | Complete / ready for validation | UX hardening, full launch demo, optional phone smoke |
+| 15 | Extension platform smoke | Complete / ready for validation | Gaming creators and extension slots |
+| 16 | Config-driven creator channels | Complete / ready for validation | Five creator worlds and generic channel regression |
+| 17 | Competitive/economy extensions | Complete / ready for validation | Clip Arena, Pick'Em, HypeWars |
+| 18 | Collaborative/creative extensions | Complete / ready for validation | Quest Log, Build Showcase, Guild Quest |
+| 19 | Creator Studio customization | Complete / ready for validation | Customize console and fan preview |
+| 20 | Customization showcase | Complete / ready for validation after install | Five-world fan showcase and Studio authoring on emulator |
+| 21 | AI search foundation | Pending | Contract/fake/store smoke for AI search and external content |
+| 22 | Fan AI search settings | Pending | Settings, simulated agent/source connections, disclosures |
+| 23 | AI search results | Pending | Creator-preferred merged results and title/source handling |
+| 24 | Embedded external playback | Pending | YouTube player, AI-driven next rail, offline/error states |
+| 25 | Creator external content in feeds | Pending | Studio external content linking and fan feed attribution |
+| 26 | Final showcase + physical phone | Pending | Full AI-search showcase, emulator regression, physical-phone sign-off |
 
 ## Phase 0 - Foundation And Shell
 
@@ -347,9 +359,9 @@ Goal: validate creator conversion-yield analytics and completed creator utility 
 | 4 | Review creator archive-AI preview. | Creator can ask their own archive and receive cited answers before fans arrive. |  |
 | 5 | Review membership setup. | Tier editor has preview, validation, and saved tier state. |  |
 
-## Phase 14 - UX Hardening And Physical Phone Validation
+## Phase 14 - UX Hardening And Launch Regression
 
-Goal: validate immersive discovery, richer media, async states, feed-style pagination, full launch demo, and optional preliminary physical-phone run. Final phone sign-off happens in Phase 20.
+Goal: validate immersive discovery, richer media, async states, feed-style pagination, full launch demo, and optional preliminary physical-phone smoke. Final phone sign-off happens in Phase 26.
 
 ### UX Hardening
 
@@ -361,14 +373,14 @@ Goal: validate immersive discovery, richer media, async states, feed-style pagin
 | 4 | Review media assets across feed, channel, player, campaign, launch, starter-pack, and Studio surfaces. | Main social surfaces are visual-first and not mostly text or generic placeholders. |  |
 | 5 | Trigger feed pagination. | Additional content loads without duplicates or jarring layout shifts; explicit test path still exists. |  |
 
-### Final Launch Demo And Phone
+### Final Launch Demo And Optional Phone Smoke
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Run the full launch demo on emulator. | Re-acquisition -> starter pack -> consume -> conversion analytics -> utility console -> export/reset works end to end. |  |
 | 2 | Reset demo and relaunch on emulator. | App returns to seeded baseline without stale launch state. |  |
-| 3 | If physical hardware is available, install APK on Android phone. | Install succeeds and app launches to first rendered screen; otherwise record phone validation as deferred to Phase 20. |  |
-| 4 | If hardware is available, run key launch flows on phone. | Capture/starter pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
+| 3 | If physical hardware is available, install APK on Android phone as a preliminary smoke. | Install succeeds and app launches to first rendered screen; otherwise record phone validation as deferred to Phase 26. |  |
+| 4 | If hardware is available, run key launch flows as a preliminary smoke. | Capture/starter pack, discovery/playback, conversion analytics, and export/reset work on hardware. |  |
 | 5 | If hardware is available, inspect phone layout. | Safe areas, scrolling, text wrapping, and tap targets work without clipping or overlap. |  |
 
 ## Phase 15 - Extensions Platform Foundation
@@ -428,21 +440,88 @@ Goal: validate creator controls for channel theme, extension installs, module or
 | 4 | Reorder modules. | Fan channel preview reflects the new order without layout jumps. |  |
 | 5 | Switch to Fan App and open the creator channel. | Fan-facing channel uses the Studio-authored config. |  |
 
-## Phase 20 - Showcase And Final Phone Validation
+## Phase 20 - Customization Showcase
 
-Goal: validate the complete customized demo on emulator and physical Android phone.
+Goal: validate the complete customized demo on the Flutter Android emulator. Final physical-phone validation is Phase 26.
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |
 | 1 | Run the full customized fan demo on emulator. | Discovery -> creator channel -> extension modules -> playback/Q&A/wallet/export flows work together. |  |
 | 2 | Run the Creator Studio customization path on emulator. | Creator can adjust appearance/extensions and immediately verify in preview/Fan App. |  |
-| 3 | Install the final APK on a physical Android phone. | Install succeeds through adb and app launches to first rendered screen. |  |
-| 4 | Run the full showcase on the phone. | Safe areas, scrolling, text wrapping, tap targets, and async states work on hardware. |  |
-| 5 | Reset demo on phone and emulator. | Both return to seeded baseline without stale extension, wallet, or customization state. |  |
+| 3 | Review the five gaming creator worlds on emulator. | Each creator has distinct generated media, theme, module order, extension content, persona, and ad posture. |  |
+| 4 | Check loading, empty, and error states on the new surfaces. | Channel, extension, and Studio customization surfaces use polished reusable states without raw placeholders. |  |
+| 5 | Reset demo on emulator. | App returns to seeded baseline without stale extension, wallet, or customization state. |  |
+
+## Phase 21 - AI Search And External Content Foundation
+
+Goal: validate that AI-search contracts, seed state, fakes, and reset behavior exist before user-facing search UX.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Reset demo and relaunch. | App starts cleanly with AI-search/external-content seed state loaded. |  |
+| 2 | Open existing Fan App search/discovery. | Existing neutral search and creator feeds still work before AI-search UI is enabled. |  |
+| 3 | Inspect five gaming creator channels if reachable. | Seeded external-content references do not break channel rendering. |  |
+| 4 | Reset demo again. | Seeded external-content and AI-search fake state returns to baseline. |  |
+
+## Phase 22 - Fan AI Search Settings
+
+Goal: validate simulated agent/source connection settings and disclosure UX.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Fan Settings. | AI search settings are discoverable without crowding primary social navigation. |  |
+| 2 | Connect a simulated AI search agent. | Provider, status, and simulated connection copy are explicit and honest. |  |
+| 3 | Enable external sources and simulated YouTube. | Source toggles persist and explain query egress clearly. |  |
+| 4 | Set prefer-creators default. | The preference is saved and the UI explains creator-first ranking behavior. |  |
+
+## Phase 23 - AI Search Results
+
+Goal: validate merged creator + external search results with creator-preferred ranking and compliant external-title handling.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Search with an AI-search agent connected. | Results merge creator-owned and external content without paid-placement copy. |  |
+| 2 | Review creator-preferred ordering. | Creator results are clearly prioritized when relevant and explainable. |  |
+| 3 | Inspect external result rows. | External title/thumbnail/source remain unaltered; additive match labels and source chips are separate. |  |
+| 4 | Disconnect or disable the agent if reachable. | Search falls back to neutral existing behavior. |  |
+
+## Phase 24 - Embedded Player And AI-Driven Next
+
+Goal: validate official external playback and AI-driven next recommendations.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open a YouTube external result. | Official in-app YouTube player renders unobscured with source attribution. |  |
+| 2 | Review the next rail. | "Next from your AI search" appears as Loom-owned recommendation context, not platform autoplay. |  |
+| 3 | Open a non-YouTube external result if seeded. | App uses external-open behavior with clear source context. |  |
+| 4 | Test offline/error state if possible. | External playback shows a polished error state and preserves navigation. |  |
+
+## Phase 25 - Creator External Content In Feeds
+
+Goal: validate creator-authored external-content linking and fan feed rendering.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Open Creator Studio external-content linking. | Creator can add/review external content with source, title, attribution, and gating controls. |  |
+| 2 | Save an external-content item. | Saved state is visible and uses idempotent API behavior. |  |
+| 3 | Switch to Fan App and open the creator channel/feed. | External content appears as a native tile with unaltered source title and clear attribution. |  |
+| 4 | Toggle search/indexing or AI-queryable controls if available. | Fan feed/search behavior reflects the selected gates. |  |
+
+## Phase 26 - Gaming Seed Showcase And Final Validation
+
+Goal: validate the full AI-search + external-content showcase on emulator and complete authoritative physical Android phone sign-off.
+
+| Step | Action | Expected result | Result |
+| --- | --- | --- | --- |
+| 1 | Run the full launch + customization + AI-search showcase on emulator. | Re-acquisition, starter pack, five gaming worlds, AI search, external playback, Studio authoring, export, and reset work together. |  |
+| 2 | Install the final APK on a physical Android phone. | `adb install` succeeds and app launches to first rendered screen. |  |
+| 3 | Run the full showcase on the phone. | Safe areas, scrolling, text wrapping, tap targets, async states, and network playback work on hardware. |  |
+| 4 | Capture validation screenshots. | Emulator and physical-phone screenshots are stored under `data/validation/` and remain gitignored. |  |
+| 5 | Reset demo on phone and emulator. | Both return to seeded baseline without stale extension, wallet, customization, search, or external-content state. |  |
 
 ## Cross-Phase Visual Regression Pass
 
-Run this after Phase 6, Phase 8, Phase 9, Phase 13, Phase 14, Phase 17, Phase 19, Phase 20, or whenever the app shell changes.
+Run this after Phase 6, Phase 8, Phase 9, Phase 13, Phase 14, Phase 17, Phase 19, Phase 20, Phase 23, Phase 24, Phase 26, or whenever the app shell changes.
 
 | Step | Action | Expected result | Result |
 | --- | --- | --- | --- |

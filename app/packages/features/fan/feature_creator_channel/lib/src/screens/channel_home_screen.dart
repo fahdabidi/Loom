@@ -42,6 +42,7 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
   late final CreatorExperienceApi _experienceApi;
   ChannelHome? _home;
   CreatorExperienceConfig? _config;
+  String? _errorMessage;
   bool _loading = true;
 
   @override
@@ -63,22 +64,33 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final homeFuture = _metadataApi.getChannelHome(
-      channelId: widget.channelId,
-      passportId: widget.passportId,
-    );
-    final configFuture = _experienceApi.getExperienceConfig(
-      channelId: widget.channelId,
-    );
-    final home = await homeFuture;
-    final config = await configFuture;
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
+    ChannelHome? home;
+    CreatorExperienceConfig? config;
+    String? error;
+    try {
+      final homeFuture = _metadataApi.getChannelHome(
+        channelId: widget.channelId,
+        passportId: widget.passportId,
+      );
+      final configFuture = _experienceApi.getExperienceConfig(
+        channelId: widget.channelId,
+      );
+      home = await homeFuture;
+      config = await configFuture;
+    } catch (exception) {
+      error = '$exception';
+    }
     if (!mounted) {
       return;
     }
     setState(() {
       _home = home;
       _config = config;
+      _errorMessage = error;
       _loading = false;
     });
   }
@@ -113,8 +125,28 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading || _home == null || _config == null) {
-      return const Center(child: CircularProgressIndicator());
+    if (_loading) {
+      return ListView(
+        key: const ValueKey('p20_channel_loading_state'),
+        padding: const EdgeInsets.all(16),
+        children: const [
+          LoadingSkeleton(rows: 4, title: 'Loading creator world'),
+        ],
+      );
+    }
+    final error = _errorMessage;
+    if (error != null || _home == null || _config == null) {
+      return ListView(
+        key: const ValueKey('p20_channel_error_state'),
+        padding: const EdgeInsets.all(16),
+        children: [
+          LoomErrorState(
+            title: 'Creator world unavailable',
+            body: error ?? 'The creator channel could not be loaded.',
+            onRetry: _load,
+          ),
+        ],
+      );
     }
     final home = _home!;
     final config = _config!;
@@ -163,6 +195,14 @@ class _CreatorChannelHomeScreenState extends State<CreatorChannelHomeScreen> {
                   ),
                 ],
                 const SizedBox(height: 18),
+                if (modules.isEmpty)
+                  const LoomEmptyState(
+                    key: const ValueKey('p20_channel_empty_modules'),
+                    icon: Icons.view_agenda_outlined,
+                    title: 'No active modules',
+                    body:
+                        'This creator has not enabled any channel modules yet. The channel remains stable while Studio changes are saved.',
+                  ),
                 for (final module in modules) ...[
                   KeyedSubtree(
                     key: ValueKey(
@@ -339,6 +379,14 @@ class _ContentRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const LoomEmptyState(
+        icon: Icons.video_library_outlined,
+        title: 'Archive coming soon',
+        body:
+            'The creator has not published channel content yet. Follow to keep this world in your feed.',
+      );
+    }
     return Column(
       children: [
         for (final item in items.take(5)) ...[

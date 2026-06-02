@@ -107,10 +107,20 @@ class _ExtensionRuntimeModuleState extends State<ExtensionRuntimeModule> {
   @override
   Widget build(BuildContext context) {
     final extensionId = widget.module.extensionId;
-    if (_session == null || _state == null || _busy) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+    if (extensionId == null) {
+      return const LoomErrorState(
+        title: 'Extension unavailable',
+        body: 'This module is missing an installed extension reference.',
+      );
+    }
+    if (_busy && (_session == null || _state == null)) {
+      return const LoadingSkeleton(rows: 3, title: 'Starting extension');
+    }
+    if (_session == null || _state == null) {
+      return LoomErrorState(
+        title: 'Extension unavailable',
+        body: _status,
+        onRetry: _load,
       );
     }
     switch (extensionId) {

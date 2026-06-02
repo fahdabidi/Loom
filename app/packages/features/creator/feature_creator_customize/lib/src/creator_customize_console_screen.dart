@@ -50,7 +50,13 @@ class _CreatorCustomizeConsoleScreenState
         if (_controller.loading) {
           return const Center(
             key: ValueKey('p19_customize_loading'),
-            child: CircularProgressIndicator(),
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: LoadingSkeleton(
+                rows: 4,
+                title: 'Loading customization console',
+              ),
+            ),
           );
         }
         if (_controller.errorMessage != null) {

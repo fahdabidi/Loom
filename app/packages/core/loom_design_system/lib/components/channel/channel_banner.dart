@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'channel_media_backdrop.dart';
 import 'channel_theme.dart';
 
 class ChannelBanner extends StatelessWidget {
@@ -16,33 +17,19 @@ class ChannelBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       key: ValueKey('p16_channel_banner_$bannerRef'),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [theme.primary, theme.secondary],
-        ),
-      ),
       child: Stack(
         children: [
+          ChannelMediaBackdrop(theme: theme, bannerRef: bannerRef),
           Positioned(
-            right: -24,
-            top: -18,
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              size: 168,
-              color: Colors.white.withAlpha(34),
-            ),
-          ),
-          Positioned(
-            right: 18,
+            left: 18,
             bottom: 18,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Colors.white.withAlpha(36),
+                color: Colors.white.withAlpha(38),
                 borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withAlpha(52)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(

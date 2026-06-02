@@ -15,7 +15,7 @@
 - The immersive surface uses existing feed data instead of a separate content model, so the dense and immersive views cannot drift on title, creator, explanation, or provider label.
 - Loading, empty, and error states are reusable design-system components with stable keys for integration coverage.
 - Immersive discovery auto-loads at the end of the vertical surface. Dense discovery keeps the explicit load-more button for deterministic validation.
-- Phase 14 performs emulator UX hardening only; final physical-phone sign-off moves to Phase 20 with the later customization sequence.
+- Phase 14 performs emulator UX hardening only; final physical-phone sign-off moves to Phase 26 with the later AI-search/external-content sequence.
 
 ## Key Implementation Decisions
 
@@ -32,7 +32,7 @@
 3. Fan can return to dense discovery without losing feed state or breaking existing Phase 3/4 content navigation.
 4. Fan opens a creator invite, confirms the starter pack, lands on a populated feed, and opens playback.
 5. Creator switches to Studio, reviews aggregate conversion analytics, then can open the utility consoles added in Phase 13.
-6. The runbook keeps export/reset as the final emulator regression path while physical-phone validation is reserved for Phase 20.
+6. The runbook keeps export/reset as the final emulator regression path while physical-phone validation is reserved for Phase 26.
 
 ## Open Questions And Tradeoffs
 

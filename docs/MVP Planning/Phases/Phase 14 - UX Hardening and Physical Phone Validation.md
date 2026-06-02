@@ -8,8 +8,8 @@
 >
 > **Sequence update:** the demo no longer ends here — it continues into the
 > [Creator-Customized Fan Experiences](./Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md)
-> sequence (Phases 15–20). The **authoritative final physical-phone validation now happens in Phase 20**
-> (the last phase). The physical-phone steps below may run as a preliminary emulator-focused pass here;
+> sequence (Phases 15–26). The **authoritative final physical-phone validation now happens in Phase 26**
+> (the last phase). Any physical-phone steps below may run as a preliminary smoke pass only;
 > Phase 14 is otherwise unchanged.
 
 ## 0. Prerequisite gate (validate Phase 13 done)
@@ -26,15 +26,15 @@ starter-pack onboarding, conversion analytics, and creator utility consoles must
   for deterministic integration tests.
 - **Final launch demo** — Run re-acquisition → starter pack → consume → conversion analytics → utility consoles
   → export/reset end to end.
-- **Physical phone validation** — Install, launch, and manually validate key flows on physical Android hardware.
+- **Optional preliminary phone smoke** — If hardware is available, install, launch, and manually validate key flows on physical Android hardware. This is not the authoritative phone gate.
 
 ## 2. Tools (WSL Ubuntu)
-Standard set plus physical-phone adb setup:
-- Use `adb devices` to confirm the physical phone is visible.
+Standard set. Physical-phone adb setup is optional here and required in Phase 26:
+- Optional: use `adb devices` to confirm the physical phone is visible.
 - Build with `flutter build apk --debug`.
 - Install with `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk`.
 - Launch with `adb -s <phone_id> shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1`.
-- Capture emulator and phone screenshots into `data/validation/` (gitignored).
+- Capture emulator screenshots, plus optional phone-smoke screenshots if hardware is available, into `data/validation/` (gitignored).
 
 No external network dependency is allowed for app runtime. Generated media should be local assets.
 
@@ -51,11 +51,11 @@ Apply the shared social-app UX baseline from [README.md](./README.md), plus thes
 - Media assets must make content inspectable: thumbnails/posters/avatars should signal creator/content category.
 - Loading, empty, and error states must be reusable and applied to launch/starter-pack/analytics/discovery surfaces.
 - Feed-style pagination can be automatic or near-automatic, but explicit test controls must remain stable.
-- Phone validation must check safe areas, clipping, scrolling, and text overlap on physical hardware, not only emulator.
+- Optional phone smoke can check safe areas, clipping, scrolling, and text overlap on physical hardware; authoritative phone validation is Phase 26.
 
 Create [Phase 14 - UX Decisions.md](./Phase%2014%20-%20UX%20Decisions.md) with references, extracted
-patterns, key UX/implementation decisions, final launch-demo walkthrough, emulator screenshots, and physical-phone
-validation notes.
+patterns, key UX/implementation decisions, final launch-demo walkthrough, emulator screenshots, and any optional
+preliminary phone-smoke notes.
 
 ## 3. APIs invoked & stubs to implement
 No new API surfaces are expected. Reuse:
@@ -116,19 +116,19 @@ README baseline plus:
 - `it_p14_async_states` — Key async surfaces expose loading/empty/error states without layout breakage.
 - `it_p14_feed_pagination` — Feed-style pagination loads additional content without duplicates and explicit test path still works.
 - `it_p14_full_launch_demo` — Re-acquisition → starter pack → consume → conversion analytics → export/reset works end to end on emulator.
-- Physical-phone manual validation: install APK, launch app, run key flows from [../Phase Validation Walkthrough.md](../Phase%20Validation%20Walkthrough.md),
-  capture screenshots, and record device ID/model in the tracker.
+- Optional physical-phone smoke: install APK, launch app, run key flows from [../Phase Validation Walkthrough.md](../Phase%20Validation%20Walkthrough.md),
+  capture screenshots, and record device ID/model in the tracker. Authoritative phone validation is Phase 26.
 
 ## 10. Definition of done
-UX gaps U1, U2, U3, and U7 are closed; final launch loop works end to end on the emulator; debug APK installs,
-launches, and key flows pass on a physical Android phone; all automated checks and full integration tests are green;
+UX gaps U1, U2, U3, and U7 are closed; final launch loop works end to end on the emulator; debug APK builds,
+and optional phone-smoke notes are recorded if hardware is available; all automated checks and full integration tests are green;
 [Phase 14 - API Review.md](./Phase%2014%20-%20API%20Review.md) and
 [Phase 14 - UX Decisions.md](./Phase%2014%20-%20UX%20Decisions.md) are filed; the final launch loop is appended to
 [Demo Runbook.md](./Demo%20Runbook.md); tracker is updated with Phase 14 completion date, commit SHA, API review,
-emulator evidence, physical-phone device/evidence, and residual manual validation notes.
+emulator evidence, optional phone-smoke evidence or Phase 26 deferral, and residual manual validation notes.
 
 ## 11. Next phase
 After Phase 14 changes are committed and recorded, **AUTO-PROCEED: immediately begin
 [Phase 15 — Extensions Platform & Customization Foundation](./Phase%2015%20-%20Extensions%20Platform%20and%20Customization%20Foundation.md)**,
-which begins the Creator-Customized Fan Experiences sequence (Phases 15–20). The authoritative final
-physical-phone validation and launch-demo sign-off move to Phase 20.
+which begins the Creator-Customized Fan Experiences sequence and later AI-search/external-content sequence
+(Phases 15–26). The authoritative final physical-phone validation and launch-demo sign-off move to Phase 26.

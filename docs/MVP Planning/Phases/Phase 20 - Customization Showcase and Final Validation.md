@@ -1,12 +1,15 @@
-# Phase 20 — Customization Showcase, UX Hardening & Final Physical-Phone Validation
+# Phase 20 — Customization Showcase & UX Hardening
 
-**Surface:** both · **UX gate:** FINAL launch + customization + phone · **On green:** STOP for final sign-off
+**Surface:** both · **UX gate:** customization showcase (emulator) · **On green:** AUTO → Phase 21
 **Shared conventions:** [README.md](./README.md).
 
-> **Status:** Ready for execution after Phase 19. This is the **final phase of the whole demo**. It ties
-> the customization sequence into one scripted showcase, applies UX-hardening polish to the new surfaces,
-> updates the runbook, and runs the **authoritative final physical-phone validation** (relocated here from
-> Phase 14). On green, the launch + customization demo is signed off.
+> **Status:** Ready for execution after Phase 19. It ties the customization sequence into one scripted
+> showcase and applies UX-hardening polish to the new surfaces.
+>
+> **Sequence update:** the demo no longer ends here — it continues into the
+> [Fan AI Search & External Content](./Phase%2021%20-%20AI%20Search%20and%20External%20Content%20Foundation.md)
+> sequence (Phases 21–26). The **authoritative final physical-phone validation now happens in Phase 26**.
+> Phase 20 is an emulator-focused customization showcase and UX-hardening phase.
 
 ## 0. Prerequisite gate (validate Phases 15–19 done)
 README gate + confirm Phases 15–19 committed/recorded: extension platform + config model, config-driven
@@ -23,20 +26,19 @@ the emulator. Confirm Phase 14 UX-hardening components (immersive feed, skeleton
   lands directly into the customized gaming segment.
 - **UX hardening on new surfaces** — Apply richer generated media and reusable loading/empty/error states
   (Phase 14 components) to channel/theme, extension modules, and the Studio customize console.
-- **Final physical-phone validation** — Install, launch, and manually validate the full launch +
-  customization demo on a physical Android phone.
+- **Emulator showcase sign-off** — The full launch + customization demo runs end to end on the **Flutter
+  Android emulator**. *(Physical-phone validation has moved to [Phase 26](./Phase%2026%20-%20Gaming%20Seed%20Showcase%20and%20Final%20Validation.md), the new final phase.)*
 
 ## 2. Tools (WSL Ubuntu)
-Standard set plus physical-phone adb (as in the former Phase 14):
-- `adb devices`; `flutter build apk --debug`; `adb -s <phone_id> install -r build/app/outputs/flutter-apk/app-debug.apk`;
-  `adb -s <phone_id> shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1`.
-- Capture emulator + phone screenshots into `data/validation/` (gitignored). No runtime network.
+Standard set (emulator only). **Physical-phone adb setup moved to Phase 26.**
+- `flutter build apk --debug`; install/run on the Flutter Android emulator; capture emulator screenshots into
+  `data/validation/` (gitignored). No runtime network.
 
 ## 2A. UX reference research & decision output
 Record in [Phase 20 - UX Decisions.md](./Phase%2020%20-%20UX%20Decisions.md):
 - Showcase/demo-script patterns: a guided path that makes the "five worlds + creator authoring" contrast obvious.
 - Polished async/empty/error states and richer generated media applied to the new customization surfaces.
-- Phone-validation checklist: safe areas, clipping, scrolling, text overlap, theme contrast on real hardware.
+- Emulator layout checklist: safe areas, clipping, scrolling, text overlap, theme contrast, and tap target stability.
 
 Apply the shared baseline plus: the showcase must make the **creator-authored difference** unmistakable;
 new surfaces must use the reusable async-state components; generated media must signal each creator's vibe
@@ -82,18 +84,21 @@ five themed channels and the Studio preview; full launch + customization integra
 - `it_p20_starter_pack_onramp` — New fan onboards via the gaming starter pack and lands in the customized segment.
 - `it_p20_async_states_on_new_surfaces` — Channel/extension/console surfaces expose loading/empty/error states without layout breakage.
 - `it_p20_full_demo_regression` — Launch loop (Phases 11–14) + customization (Phases 15–19) + export/reset run together on the emulator.
-- Physical-phone manual validation: install APK, launch, run the full walkthrough, capture screenshots, record device ID/model.
+- *(Physical-phone manual validation moved to [Phase 26](./Phase%2026%20-%20Gaming%20Seed%20Showcase%20and%20Final%20Validation.md).)*
 
 ## 10. Definition of done
-The customization showcase runs end to end on the emulator (five distinct worlds + creator authoring +
-starter-pack onramp); new surfaces use richer media and loading/empty/error states; the debug APK installs,
-launches, and key flows pass on a **physical Android phone**; all automated checks and the full launch +
-customization integration suite are green; [Phase 20 - API Review.md](./Phase%2020%20-%20API%20Review.md) and
+The customization showcase runs end to end on the **Flutter Android emulator** (five distinct worlds + creator
+authoring + starter-pack onramp); new surfaces use richer media and loading/empty/error states; all automated
+checks and the full launch + customization integration suite are green on the emulator. *(Physical-phone
+validation is no longer required here — it is the authoritative gate in Phase 26.)*
+[Phase 20 - API Review.md](./Phase%2020%20-%20API%20Review.md) and
 [Phase 20 - UX Decisions.md](./Phase%2020%20-%20UX%20Decisions.md) are filed; the customization showcase loop
 is appended to [Demo Runbook.md](./Demo%20Runbook.md); the tracker is updated with Phase 20 completion date,
-commit SHA, API review, emulator evidence, and physical-phone device/evidence.
+commit SHA, API review, emulator evidence, and any emulator/device visibility blockers. Physical-phone
+evidence is recorded in Phase 26.
 
 ## 11. Next phase
-END of the MVP + launch + customization demo. Optional follow-ups: real extension marketplace + third-party
-extension certification, live/streaming extension surfaces, production HTTP clients, additional vertical
-showcases beyond gaming, and inventory cleanup of any remaining narrative-only APIs.
+After Phase 20 changes are committed and recorded, **AUTO-PROCEED: immediately begin
+[Phase 21 — AI Search & External Content Foundation](./Phase%2021%20-%20AI%20Search%20and%20External%20Content%20Foundation.md)**,
+which begins the Fan AI Search + external-content sequence (Phases 21–26). The authoritative final
+physical-phone validation and overall demo sign-off move to Phase 26.

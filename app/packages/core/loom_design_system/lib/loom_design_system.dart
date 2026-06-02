@@ -3,6 +3,7 @@ export 'components/byo_agent_toggle.dart';
 export 'components/campaign_card.dart';
 export 'components/category_default_control.dart';
 export 'components/channel/channel_banner.dart';
+export 'components/channel/channel_media_backdrop.dart';
 export 'components/channel/channel_theme.dart';
 export 'components/channel/extension_slot.dart';
 export 'components/channel/surface_module.dart';

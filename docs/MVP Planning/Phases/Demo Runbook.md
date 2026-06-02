@@ -41,7 +41,20 @@ Use this loop for Phase 14 emulator validation before the later physical-phone s
 6. Open one utility console: catalog import, ad policy, archive AI, or membership setup.
 7. Open export/reset and confirm the seeded baseline can be restored.
 
+## Customization Showcase Loop
+
+Use this loop for Phase 20 emulator validation.
+
+1. Open Fan App and visit NovaClutch, EmberHollow, FrameByFrame, DriftAndChill, and IronVael.
+2. Confirm each creator world has distinct generated media, theme, module order, extension content, AI persona, and ad posture.
+3. Enter at least one live extension module per creator and confirm reward/badge or aggregate progress feedback appears where expected.
+4. Switch to Creator Studio and open Customize fan experience.
+5. Change a theme/banner, install or reconfigure an extension, and reorder a module.
+6. Confirm the Studio preview reflects the change, then switch back to Fan App and confirm the creator channel uses the saved configuration.
+7. Open the gaming starter-pack flow and confirm it lands the fan in a populated customized segment.
+8. Reset demo and confirm creator configs, extension state, wallet receipts, and starter-pack state return to baseline.
+
 ## Validation Targets
 
 - Flutter Android emulator: install, launch, complete all six steps.
-- Physical Android phone: authoritative final sign-off moved to Phase 20; Phase 14 can run a preliminary phone smoke if hardware is available.
+- Physical Android phone: authoritative final sign-off moved to Phase 26; earlier phases can run preliminary phone smoke if hardware is available.

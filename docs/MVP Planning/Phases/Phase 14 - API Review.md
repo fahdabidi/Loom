@@ -32,4 +32,4 @@ Phase 14 hardens the launch-demo UX after Phases 10-13: immersive discovery, reu
 - Green: `melos bootstrap`, `melos run analyze`, `melos run lint:boundaries`, `melos run test` (36 tests), focused `flutter test test/widget_test.dart test/p14_ux_hardening_widget_test.dart`, and `flutter build apk --debug -t lib/main.dart`.
 - Phase 14 integration tests were added for immersive discovery, async states, pagination, and the full launch demo.
 - Blocked device evidence: `adb devices` reports no attached Android device; `flutter devices` only reports Linux desktop; `flutter test integration_test/it_p14_*.dart` fails with `No supported devices connected`.
-- Authoritative physical-phone validation is deferred to Phase 20.
+- Authoritative physical-phone validation is deferred to Phase 26.
