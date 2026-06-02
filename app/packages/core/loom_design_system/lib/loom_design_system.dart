@@ -40,6 +40,8 @@ export 'components/purchase_sheet.dart';
 export 'components/qa_answer_card.dart';
 export 'components/qr_card.dart';
 export 'components/receipt_statement.dart';
+export 'components/search/ai_rank_disclosure.dart';
+export 'components/search/ai_result_tile.dart';
 export 'components/settings/agent_connect_sheet.dart';
 export 'components/settings/connected_service_row.dart';
 export 'components/settings/settings_section.dart';

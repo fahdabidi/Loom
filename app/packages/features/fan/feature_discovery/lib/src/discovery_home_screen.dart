@@ -140,6 +140,24 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
               const SizedBox(height: 12),
             ],
             _SearchField(controller: _controller),
+            if (_controller.searchLoading) ...[
+              const SizedBox(height: 12),
+              const DataDashboardRow(
+                key: ValueKey('p23_ai_search_loading'),
+                icon: Icons.manage_search_rounded,
+                title: 'Running search',
+                subtitle:
+                    'Checking your connected agent and matching creator plus external sources.',
+              ),
+            ],
+            if (_controller.searchErrorMessage != null) ...[
+              const SizedBox(height: 12),
+              LoomErrorState(
+                title: 'Search could not run',
+                body: _controller.searchErrorMessage!,
+                onRetry: () => _controller.search(_controller.searchQuery),
+              ),
+            ],
             const SizedBox(height: 16),
             _IntentRail(controller: _controller),
             const SizedBox(height: 14),
@@ -156,7 +174,14 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
             const SizedBox(height: 14),
             if (_controller.sessionIntent != null)
               _DisclosureCard(sessionIntent: _controller.sessionIntent!),
-            if (_controller.searchResults.isNotEmpty) ...[
+            if (_controller.aiSearchResult != null) ...[
+              const SizedBox(height: 16),
+              _AiSearchResults(
+                result: _controller.aiSearchResult!,
+                onOpenContent: widget.onOpenContent,
+                onOpenCreator: widget.onOpenCreator,
+              ),
+            ] else if (_controller.searchResults.isNotEmpty) ...[
               const SizedBox(height: 16),
               _SearchResults(results: _controller.searchResults),
             ],
@@ -579,6 +604,7 @@ class _SearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: const ValueKey('p23_neutral_search_results'),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -632,6 +658,85 @@ class _SearchResults extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AiSearchResults extends StatelessWidget {
+  const _AiSearchResults({
+    required this.result,
+    required this.onOpenContent,
+    required this.onOpenCreator,
+  });
+
+  final AiSearchResult result;
+  final ValueChanged<String>? onOpenContent;
+  final ValueChanged<String>? onOpenCreator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      key: const ValueKey('p23_ai_search_results'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AiRankDisclosure(
+          title: 'Ranked by your AI search agent',
+          subtitle: result.neutralityLabel,
+          receiptLabel: 'Search receipt ${result.searchReceiptId}',
+        ),
+        const SizedBox(height: 10),
+        for (final item in result.items.take(6)) ...[
+          AiResultTile(
+            resultKey: _aiResultKey(item),
+            title: _aiResultTitle(item),
+            summary: _aiResultSummary(item),
+            thumbnailRef: item.thumbnailRef,
+            sourceLabel: item.sourceAttribution,
+            rankReason: item.rankReason,
+            isExternal: item.type == AiSearchItemType.external,
+            accurateMatchLabel: item.accurateMatchLabel,
+            originalTitle: item.originalTitle,
+            creatorName: item.creatorTile?.creatorName,
+            titleRiskSignals: item.titleRiskSignals,
+            onOpen: () {
+              final tile = item.creatorTile;
+              if (tile != null) {
+                final openContent = onOpenContent;
+                if (openContent != null) {
+                  openContent(tile.contentId);
+                } else {
+                  onOpenCreator?.call(tile.creatorId);
+                }
+                return;
+              }
+              _showExternalPreviewSheet(context, item);
+            },
+            onWhy: () => _showAiWhySheet(context, item),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+}
+
+String _aiResultKey(AiSearchItem item) {
+  final prefix = item.type == AiSearchItemType.external
+      ? 'p23_ai_external'
+      : 'p23_ai_creator';
+  return '${prefix}_${item.id}';
+}
+
+String _aiResultTitle(AiSearchItem item) {
+  if (item.type == AiSearchItemType.external) {
+    return item.originalTitle;
+  }
+  return item.summary;
+}
+
+String _aiResultSummary(AiSearchItem item) {
+  if (item.type == AiSearchItemType.external) {
+    return item.summary;
+  }
+  return 'Creator-owned result. Original title: ${item.originalTitle}';
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -1042,6 +1147,91 @@ void _showWhySheet(BuildContext context, FeedItem item) {
               ),
           ],
         ),
+      ),
+    ),
+  );
+}
+
+void _showAiWhySheet(BuildContext context, AiSearchItem item) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SingleChildScrollView(
+      key: ValueKey('p23_ai_why_sheet_${item.id}'),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Why this ranked',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            Text(item.rankReason),
+            const SizedBox(height: 14),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.source_rounded),
+              title: Text(item.sourceAttribution),
+              subtitle: Text(
+                item.type == AiSearchItemType.external
+                    ? 'External public result. Original title and thumbnail are preserved.'
+                    : 'Creator-owned Loom result. Summary is used as the lead label.',
+              ),
+            ),
+            if (item.titleRiskSignals.isNotEmpty)
+              for (final signal in item.titleRiskSignals)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.fact_check_rounded),
+                  title: Text(signal),
+                ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+void _showExternalPreviewSheet(BuildContext context, AiSearchItem item) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => Padding(
+      key: ValueKey('p23_external_preview_${item.id}'),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.accurateMatchLabel ?? 'External match',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item.originalTitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: LoomColors.mutedInk,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(item.summary),
+          const SizedBox(height: 14),
+          DataDashboardRow(
+            icon: Icons.public_rounded,
+            title: item.sourceAttribution,
+            subtitle:
+                'Phase 23 previews external matches. Embedded playback is added in Phase 24.',
+          ),
+        ],
       ),
     ),
   );

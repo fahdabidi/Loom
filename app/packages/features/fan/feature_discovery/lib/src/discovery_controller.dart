@@ -29,7 +29,10 @@ class DiscoveryController extends ChangeNotifier {
   List<FeedItem> feedItems = const [];
   String? _nextCursor;
   List<SearchResult> searchResults = const [];
+  AiSearchResult? aiSearchResult;
   String searchQuery = '';
+  bool searchLoading = false;
+  String? searchErrorMessage;
   RankPreference? rankPreference;
   int? summaryRankCandidateCount;
   DiscoveryReceipt? latestDiscoveryReceipt;
@@ -146,15 +149,42 @@ class DiscoveryController extends ChangeNotifier {
   }
 
   Future<void> search(String query) async {
-    searchQuery = query;
-    if (query.trim().isEmpty) {
+    final normalizedQuery = query.trim();
+    searchQuery = normalizedQuery;
+    if (normalizedQuery.isEmpty) {
       searchResults = const [];
+      aiSearchResult = null;
+      searchErrorMessage = null;
       notifyListeners();
       return;
     }
-    final page = await _searchApi.search(passportId: passportId, query: query);
-    searchResults = page.items;
+    searchLoading = true;
+    searchErrorMessage = null;
     notifyListeners();
+    try {
+      final config = await _fanVaultApi.getSearchAgentConfig(passportId);
+      if (config.connected) {
+        aiSearchResult = await _aiGatewayApi.runAiSearch(
+          passportId: passportId,
+          query: normalizedQuery,
+        );
+        searchResults = const [];
+      } else {
+        final page = await _searchApi.search(
+          passportId: passportId,
+          query: normalizedQuery,
+        );
+        searchResults = page.items;
+        aiSearchResult = null;
+      }
+    } catch (error) {
+      searchErrorMessage = '$error';
+      searchResults = const [];
+      aiSearchResult = null;
+    } finally {
+      searchLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> setSummaryFirst(bool enabled) async {
