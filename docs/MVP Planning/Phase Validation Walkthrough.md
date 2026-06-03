@@ -395,6 +395,44 @@ Applied Correction:
 Correction Needed: 
 Applied Correction: 
 
+### Hover Mode (3×4 Grid, Swipe Gestures, Undo)
+
+| Step | Action | Expected result | Result (Completed or Correction Needed) |
+| ---- | ------ | --------------- | --------------------------------------- |
+| 1    | Switch to Hover view via ⋮ menu. | 3-column dense grid renders. Current layout mode highlighted in ⋮ menu (moss). | |
+Correction Needed:
+Applied Correction:
+| 2    | Tap a tile in Hover mode. | Expanded card animates into center of viewport (spring, easeOutBack). Background blurs + dims. Feed behind card is fully inert — scroll is blocked. Load more button and all content below the grid are blurred. | |
+Correction Needed [C-P3-07]: Expanded hover card opens off-screen when grid is scrolled to the bottom. Background feed remains scrollable while card is open, dragging the card off-screen. Load more button not covered by blur.
+Applied Correction [F-P3-07]: Lifted blur + card overlays from inside `_DiscoveryFeedHoverGrid` to a viewport-level `Stack` wrapping the body `ListView`. `AbsorbPointer` makes the feed inert. `Center` now resolves to viewport center. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart
+| 3    | Tap the blurred background or ✕ button. | Card springs back (easeInCubic). Background becomes interactive again. | |
+Correction Needed:
+Applied Correction:
+| 4    | Long-press a tile in Hover mode. | 👎 coral circle appears on the left, 👍 moss circle appears on the right. Tile lifts slightly. | |
+Correction Needed:
+Applied Correction:
+| 5    | Long-press + drag left past threshold (~32% tile width). | Tile removed from grid. Grid reflows. Undo overlay appears at bottom: label "Thumbs down", circle-with-X icon (`p3_undo_button`), "Undo" text. Entire background inert. | |
+Correction Needed:
+Applied Correction:
+| 6    | While dismiss undo overlay is visible, tap circle-with-X within 3 s. | Tile restored at original index. Overlay closes. No feedback sent. | |
+Correction Needed:
+Applied Correction:
+| 7    | Dismiss a tile and tap anywhere on feed (not the ✕) within 3 s. | Overlay closes immediately. Dislike committed. Tile stays gone. | |
+Correction Needed:
+Applied Correction:
+| 8    | Dismiss a tile and wait 3 s without tapping. | Overlay auto-closes. Dislike committed. Tile stays gone. | |
+Correction Needed:
+Applied Correction:
+| 9    | Long-press + drag right past threshold. | Tile springs back to original position. Undo overlay appears: "Thumbs up", circle-with-X, "Undo". | |
+Correction Needed:
+Applied Correction:
+| 10   | After thumbs-up, wait 3 s (or tap elsewhere). | Like committed. Ranking boosted for that item and creator. `pullAdditionalContent` may append a new tile at grid end. | |
+Correction Needed:
+Applied Correction:
+| 11   | Open a Video hover card, tap the play button on the poster. | Video plays inline in the poster area (or navigates to content viewer). Non-video cards show no play button. | |
+Correction Needed [C-P3-08]: Hover mode cards show no play button on the poster for Video content. The small "Play" chip in the action strip is not prominent and did not trigger playback.
+Applied Correction [F-P3-08]: Added a centered play-button circle overlay on the poster image inside `_HoverCard` when `contentTypeLabel == 'Video'`. Tapping the poster or the play circle calls `onOpen` (routes to content viewer). files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart
+
 ## Phase 4 - Channel, Follow, Playback, And Ads
 
 Goal: validate creator-channel browsing, follow/block controls, playback, post consumption, and privacy-safe ad presentation.

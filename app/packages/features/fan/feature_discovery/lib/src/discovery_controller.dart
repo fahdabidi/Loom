@@ -129,7 +129,11 @@ class DiscoveryController extends ChangeNotifier {
     }
   }
 
-  Future<void> submitFeedback(FeedItem item, FeedbackAction action) async {
+  Future<void> submitFeedback(
+    FeedItem item,
+    FeedbackAction action, {
+    bool refresh = true,
+  }) async {
     final session = sessionIntent;
     if (session == null) {
       return;
@@ -141,9 +145,55 @@ class DiscoveryController extends ChangeNotifier {
       idempotencyKey:
           'p3-feedback-${session.id}-${item.tile.contentId}-$action',
     );
-    if (action != FeedbackAction.like) {
+    // Likes never refresh (they boost ranking on the next fetch).
+    // refresh:false lets the Hover-mode swipe-to-dismiss remove the tile
+    // optimistically without collapsing the grid to a fresh pageSize-5 page.
+    if (refresh && action != FeedbackAction.like) {
       await refreshFeed();
     }
+  }
+
+  /// Removes [item] from the visible feed in place (optimistic Hover-mode
+  /// dismiss). The grid reflows on the next rebuild.
+  void removeFeedItem(FeedItem item) {
+    feedItems = [...feedItems]
+      ..removeWhere((e) => e.tile.contentId == item.tile.contentId);
+    notifyListeners();
+  }
+
+  /// Re-inserts [item] at [index] (undo of a dismiss). Clamps to valid range.
+  void insertFeedItem(FeedItem item, int index) {
+    final next = [...feedItems];
+    next.insert(index.clamp(0, next.length), item);
+    feedItems = next;
+    notifyListeners();
+  }
+
+  /// Fetches the next ranked page and appends only items not already shown.
+  /// Called after a like commit so a like-boosted item can surface at the end
+  /// of the grid without disturbing existing tiles.
+  Future<void> pullAdditionalContent() async {
+    final session = sessionIntent;
+    if (session == null || _nextCursor == null) {
+      return;
+    }
+    final page = await _recommendationApi.getFeed(
+      sessionIntentId: session.id,
+      cursor: _nextCursor,
+      pageSize: 5,
+    );
+    final ranked = await _applySummaryPreference(page.items);
+    final seen = feedItems.map((e) => e.tile.contentId).toSet();
+    final fresh = ranked.items
+        .where((e) => !seen.contains(e.tile.contentId))
+        .toList(growable: false);
+    if (fresh.isNotEmpty) {
+      feedItems = [...feedItems, ...fresh];
+      summaryRankCandidateCount =
+          (summaryRankCandidateCount ?? 0) + fresh.length;
+    }
+    _nextCursor = page.nextCursor;
+    notifyListeners();
   }
 
   Future<void> recordRecommendedDiscovery(FeedItem item) async {

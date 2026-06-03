@@ -23,6 +23,7 @@ class LoomNavScaffold extends StatelessWidget {
     required this.destinations,
     required this.onDestinationSelected,
     required this.child,
+    this.showBottomNavigationBar = true,
     this.onSearch,
     this.trailing,
     super.key,
@@ -34,6 +35,7 @@ class LoomNavScaffold extends StatelessWidget {
   final List<LoomNavItem> destinations;
   final ValueChanged<int> onDestinationSelected;
   final Widget child;
+  final bool showBottomNavigationBar;
   final VoidCallback? onSearch;
   final Widget? trailing;
 
@@ -87,27 +89,29 @@ class LoomNavScaffold extends StatelessWidget {
         ],
       ),
       body: SafeArea(top: false, child: child),
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: LoomColors.surface,
-          border: Border(top: BorderSide(color: LoomColors.line)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: NavigationBar(
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
-            destinations: [
-              for (final destination in destinations)
-                NavigationDestination(
-                  icon: Icon(destination.icon),
-                  selectedIcon: Icon(destination.selectedIcon),
-                  label: destination.label,
+      bottomNavigationBar: showBottomNavigationBar
+          ? DecoratedBox(
+              decoration: const BoxDecoration(
+                color: LoomColors.surface,
+                border: Border(top: BorderSide(color: LoomColors.line)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: NavigationBar(
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: onDestinationSelected,
+                  destinations: [
+                    for (final destination in destinations)
+                      NavigationDestination(
+                        icon: Icon(destination.icon),
+                        selectedIcon: Icon(destination.selectedIcon),
+                        label: destination.label,
+                      ),
+                  ],
                 ),
-            ],
-          ),
-        ),
-      ),
+              ),
+            )
+          : null,
     );
   }
 }

@@ -20,7 +20,7 @@ class RoleSwitcher extends StatelessWidget {
     final selectedLabel = labels[selectedIndex];
 
     return Tooltip(
-      message: 'Switch role',
+      message: 'Switch workspace',
       child: Padding(
         padding: const EdgeInsets.only(right: LoomSpacing.xs),
         child: InkWell(

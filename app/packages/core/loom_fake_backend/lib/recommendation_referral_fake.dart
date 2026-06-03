@@ -117,6 +117,18 @@ class RecommendationReferralFake implements RecommendationReferralApi {
 
     final content = await _store.publicCatalog();
     final contentById = {for (final item in content) item.id: item};
+
+    // Like-boost: items the user liked rank 0.30 higher; same-creator items
+    // get a 0.12 halo boost, surfacing related content on the next pull.
+    final likedContentIds = feedback
+        .where((f) => f.action == 'like')
+        .map((f) => f.contentId)
+        .toSet();
+    final likedCreatorIds = likedContentIds
+        .map((id) => contentById[id]?.creatorId)
+        .whereType<String>()
+        .toSet();
+
     final recommendedContentIds = <String>{};
     final ranked = <FeedItem>[];
     for (final manifest in _manifestsById.values) {
@@ -175,8 +187,14 @@ class RecommendationReferralFake implements RecommendationReferralApi {
       final trendingBoost = session.platformIntentId == 'intent_trending'
           ? item.perfVelocity * 0.22
           : item.perfVelocity * 0.12;
-      final score =
-          item.perfVelocity * 0.42 + matchScore + externalScore + trendingBoost;
+      final likeBoost = likedContentIds.contains(item.id)
+          ? 0.30
+          : (likedCreatorIds.contains(item.creatorId) ? 0.12 : 0.0);
+      final score = item.perfVelocity * 0.42 +
+          matchScore +
+          externalScore +
+          trendingBoost +
+          likeBoost;
 
       ranked.add(
         FeedItem(
@@ -194,6 +212,11 @@ class RecommendationReferralFake implements RecommendationReferralApi {
                 'Intent match: ${matches.map(_labelForInterest).join(', ')}',
               'Summary-first quality: ${item.summary.split(' ').length} words',
               'Trending velocity: ${item.perfVelocity.toStringAsFixed(2)}',
+              if (likedContentIds.contains(item.id))
+                'Boosted by your thumbs-up (+0.30)',
+              if (!likedContentIds.contains(item.id) &&
+                  likedCreatorIds.contains(item.creatorId))
+                'Creator boosted by your thumbs-up (+0.12)',
               if (external != null) external.reason,
             ],
             suppressedSignals: const ['Paid placement', 'dark-pattern urgency'],

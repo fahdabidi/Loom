@@ -112,6 +112,21 @@ paths:
     post:
       operationId: submitFanContentFeedback
       summary: Submit fan feedback that can update interest, dislike, creator, provider, and safety signals.
+      description: |
+        Feedback is applied to the fan's interest profile and ranking signals on the next feed fetch.
+
+        **like** — positively boosts the ranking score of the target content (+0.30) and same-creator
+        content (+0.12 halo) on subsequent `getSessionIntentFeed` calls. The boost is surfaced
+        transparently in `ContentScoreExplanation.topFactors` (e.g. `"like_boost"`).
+
+        **dislike** — adds the content to the session's `suppressedContentIds`; the item is excluded
+        from all future feed pages for this passport.
+
+        **Client undo window:** clients MAY defer submission of `like` or `dislike` actions for a short
+        window (e.g. 3 seconds) to allow the fan to reverse the action before it is committed. During
+        this window the action MUST NOT be sent to the server; if the fan reverses the action the
+        submission is cancelled entirely — no retract endpoint is required.
+      x-undo-window-seconds: 3
       security:
         - LoomUserOAuth:
             - fan.passport
@@ -867,6 +882,10 @@ components:
           nullable: true
         topFactors:
           type: array
+          description: |
+            Human-readable ranking signals for this item. May include `"like_boost"` when the fan
+            previously liked this content (+0.30) or same-creator content (+0.12 halo). Surfaced
+            in the client's "Why this is here" disclosure sheet.
           items:
             type: string
         matchedInterests:
@@ -954,6 +973,13 @@ components:
           nullable: true
     FanContentFeedbackAction:
       type: string
+      description: |
+        Fan feedback action applied to a content target.
+        - `like` — boosts ranking for the target and same-creator content on subsequent feeds.
+          Eligible for client-side undo window (see `submitFanContentFeedback` description).
+        - `dislike` — suppresses the target from all future feed pages for this passport.
+          Eligible for client-side undo window.
+        - `not_interested` — reduces ranking weight without full suppression (lighter than dislike).
       enum:
         - like
         - dislike

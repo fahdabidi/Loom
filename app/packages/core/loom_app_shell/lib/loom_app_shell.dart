@@ -533,6 +533,7 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
           ? 'Home, follows, and trusted discovery'
           : 'Creator workspace and channel setup',
       selectedIndex: selectedIndex,
+      showBottomNavigationBar: false,
       destinations: const [
         LoomNavItem(
           label: 'Fan App',

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -41,11 +42,35 @@ class DiscoveryHomeScreen extends StatefulWidget {
 
 enum _FeedLayout { list, grid, hover }
 
-class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
+// Holds a pending like/dismiss waiting for the 3-second undo window to close.
+class _PendingAction {
+  _PendingAction({
+    required this.item,
+    required this.index,
+    required this.isLike,
+    required this.label,
+  });
+  final FeedItem item;
+  final int index;
+  final bool isLike;
+  final String label;
+}
+
+class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen>
+    with SingleTickerProviderStateMixin {
   late final DiscoveryController _controller;
   bool _immersive = false;
   bool _showSearchPage = false;
   _FeedLayout _layout = _FeedLayout.list;
+
+  // Hover-expand overlay (viewport-level, covers entire body including Load more)
+  late final AnimationController _expandAnim;
+  late final Animation<double> _expandCurve;
+  FeedItem? _expandedItem;
+
+  // Swipe-undo state
+  _PendingAction? _pending;
+  Timer? _undoTimer;
 
   @override
   void initState() {
@@ -53,6 +78,15 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
     _immersive = widget.initialImmersive;
     _controller = DiscoveryController()..bootstrap();
     widget.searchRequests?.addListener(_handleSearchRequest);
+    _expandAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _expandCurve = CurvedAnimation(
+      parent: _expandAnim,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInCubic,
+    );
   }
 
   @override
@@ -69,7 +103,98 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
   void dispose() {
     widget.searchRequests?.removeListener(_handleSearchRequest);
     _controller.dispose();
+    _expandAnim.dispose();
+    final pending = _pending;
+    if (pending != null) {
+      _undoTimer?.cancel();
+      _undoTimer = null;
+      _pending = null;
+      // Commit any pending action so feedback is never silently dropped.
+      unawaited(_commitAction(pending));
+    }
     super.dispose();
+  }
+
+  // ── Hover expand ──────────────────────────────────────────────────────────
+
+  void _expand(FeedItem item) {
+    setState(() => _expandedItem = item);
+    _expandAnim.forward(from: 0);
+  }
+
+  void _collapse() {
+    _expandAnim.reverse().whenComplete(() {
+      if (mounted) setState(() => _expandedItem = null);
+    });
+  }
+
+  // ── Swipe-action orchestration ────────────────────────────────────────────
+
+  void _onTileDismiss(FeedItem item) {
+    final index = _controller.feedItems
+        .indexWhere((e) => e.tile.contentId == item.tile.contentId);
+    _controller.removeFeedItem(item);
+    _startUndo(item, index < 0 ? 0 : index, isLike: false, label: 'Thumbs down');
+  }
+
+  void _onTileLike(FeedItem item) {
+    final index = _controller.feedItems
+        .indexWhere((e) => e.tile.contentId == item.tile.contentId);
+    _startUndo(item, index < 0 ? 0 : index, isLike: true, label: 'Thumbs up');
+  }
+
+  void _startUndo(
+    FeedItem item,
+    int index, {
+    required bool isLike,
+    required String label,
+  }) {
+    final existing = _pending;
+    if (existing != null) {
+      _undoTimer?.cancel();
+      _undoTimer = null;
+      unawaited(_commitAction(existing));
+    }
+    setState(() => _pending = _PendingAction(
+          item: item,
+          index: index,
+          isLike: isLike,
+          label: label,
+        ));
+    _undoTimer = Timer(const Duration(seconds: 3), _commitPending);
+  }
+
+  void _commitPending() {
+    final pending = _pending;
+    if (pending == null || !mounted) return;
+    setState(() => _pending = null);
+    _undoTimer?.cancel();
+    _undoTimer = null;
+    unawaited(_commitAction(pending));
+  }
+
+  Future<void> _commitAction(_PendingAction pending) async {
+    if (pending.isLike) {
+      await _controller.submitFeedback(pending.item, FeedbackAction.like);
+      await _controller.pullAdditionalContent();
+    } else {
+      await _controller.submitFeedback(
+        pending.item,
+        FeedbackAction.dislike,
+        refresh: false,
+      );
+    }
+  }
+
+  void _undoAction() {
+    final pending = _pending;
+    if (pending == null) return;
+    _undoTimer?.cancel();
+    _undoTimer = null;
+    setState(() => _pending = null);
+    if (!pending.isLike) {
+      _controller.insertFeedItem(pending.item, pending.index);
+    }
   }
 
   void _handleSearchRequest() {
@@ -220,106 +345,241 @@ class _DiscoveryHomeScreenState extends State<DiscoveryHomeScreen> {
             ],
           );
         }
-        return ListView(
-          key: const ValueKey('p3_discovery_scroll'),
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+        // Wrap the body in a Stack so viewport-level overlays (blur + expanded
+        // card + undo catcher) cover the entire feed page including Load more,
+        // and Center resolves to the visible viewport — not the scroll content.
+        final isHoverActive =
+            _expandedItem != null || _pending != null;
+        return Stack(
           children: [
-            _DiscoveryToolbar(
-              onStartOnboarding: widget.onStartOnboarding,
-              onOpenWallet: widget.onOpenWallet,
-              onOpenDataRights: widget.onOpenDataRights,
-              onOpenCampaigns: widget.onOpenCampaigns,
-              onOpenCaptureLink: widget.onOpenCaptureLink,
-              onOpenSettings: widget.onOpenSettings,
-              immersive: _immersive,
-              onToggleImmersive: () => setState(() => _immersive = !_immersive),
-              layout: _layout,
-              onSelectLayout: (l) => setState(() => _layout = l),
-            ),
-            const SizedBox(height: 10),
-            if (_controller.recommendationMessage != null) ...[
-              DataDashboardRow(
-                key: const ValueKey('p8_discovery_receipt'),
-                icon: Icons.receipt_long_rounded,
-                title: _controller.recommendationMessage!,
-                subtitle:
-                    'Recommended content stays labeled before attribution is recorded.',
-              ),
-              const SizedBox(height: 6),
-            ],
-            _RecommendationTypeRow(
-              controller: _controller,
-              onTap: _showRecommendationPanel,
-            ),
-            const SizedBox(height: 10),
-            if (_layout == _FeedLayout.hover)
-              _DiscoveryFeedHoverGrid(
-                items: _controller.feedItems,
-                onOpen: _openContent,
-                onWhy: (item) => _showWhySheet(context, item),
-                onOpenCreator: (item) =>
-                    widget.onOpenCreator?.call(item.tile.creatorId),
-                onFeedback: _controller.submitFeedback,
-                onRecordDiscovery: _controller.recordRecommendedDiscovery,
-              )
-            else if (_layout == _FeedLayout.grid)
-              _DiscoveryFeedGrid(
-                items: _controller.feedItems,
-                onWhy: (item) => _showWhySheet(context, item),
-                onOpen: _openContent,
-                onOpenCreator: (item) =>
-                    widget.onOpenCreator?.call(item.tile.creatorId),
-                onFeedback: _controller.submitFeedback,
-                onRecordDiscovery: _controller.recordRecommendedDiscovery,
-              )
-            else
-              for (final item in _controller.feedItems) ...[
-                _DiscoveryFeedCard(
-                  key: ValueKey('p3_feed_card_${item.tile.contentId}'),
-                  item: item,
-                  onWhy: () => _showWhySheet(context, item),
-                  onOpen: () => _openContent(item),
-                  onOpenCreator: () =>
-                      widget.onOpenCreator?.call(item.tile.creatorId),
-                  onFeedback: (action) =>
-                      _controller.submitFeedback(item, action),
-                  onRecordDiscovery:
-                      item.providerLabel.startsWith('Recommended by ')
-                      ? () => _controller.recordRecommendedDiscovery(item)
-                      : null,
-                ),
-                if (_controller.latestDiscoveryReceipt?.contentId ==
-                    item.tile.contentId) ...[
-                  const SizedBox(height: 10),
-                  DataDashboardRow(
-                    key: const ValueKey('p8_discovery_receipt'),
-                    icon: Icons.receipt_long_rounded,
-                    title:
-                        _controller.recommendationMessage ??
-                        'Discovery receipt recorded.',
-                    subtitle:
-                        'Recommendation attribution is visible before conversion.',
+            AbsorbPointer(
+              absorbing: isHoverActive,
+              child: ListView(
+                key: const ValueKey('p3_discovery_scroll'),
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                children: [
+                  _DiscoveryToolbar(
+                    onStartOnboarding: widget.onStartOnboarding,
+                    onOpenWallet: widget.onOpenWallet,
+                    onOpenDataRights: widget.onOpenDataRights,
+                    onOpenCampaigns: widget.onOpenCampaigns,
+                    onOpenCaptureLink: widget.onOpenCaptureLink,
+                    onOpenSettings: widget.onOpenSettings,
+                    immersive: _immersive,
+                    onToggleImmersive: () =>
+                        setState(() => _immersive = !_immersive),
+                    layout: _layout,
+                    onSelectLayout: (l) => setState(() => _layout = l),
                   ),
+                  const SizedBox(height: 10),
+                  if (_controller.recommendationMessage != null) ...[
+                    DataDashboardRow(
+                      key: const ValueKey('p8_discovery_receipt'),
+                      icon: Icons.receipt_long_rounded,
+                      title: _controller.recommendationMessage!,
+                      subtitle:
+                          'Recommended content stays labeled before attribution is recorded.',
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                  _RecommendationTypeRow(
+                    controller: _controller,
+                    onTap: _showRecommendationPanel,
+                  ),
+                  const SizedBox(height: 10),
+                  if (_layout == _FeedLayout.hover)
+                    _DiscoveryFeedHoverGrid(
+                      items: _controller.feedItems,
+                      onExpand: _expand,
+                      onDismiss: _onTileDismiss,
+                      onLike: _onTileLike,
+                      onWhy: (item) => _showWhySheet(context, item),
+                    )
+                  else if (_layout == _FeedLayout.grid)
+                    _DiscoveryFeedGrid(
+                      items: _controller.feedItems,
+                      onWhy: (item) => _showWhySheet(context, item),
+                      onOpen: _openContent,
+                      onOpenCreator: (item) =>
+                          widget.onOpenCreator?.call(item.tile.creatorId),
+                      onFeedback: _controller.submitFeedback,
+                      onRecordDiscovery: _controller.recordRecommendedDiscovery,
+                    )
+                  else
+                    for (final item in _controller.feedItems) ...[
+                      _DiscoveryFeedCard(
+                        key: ValueKey('p3_feed_card_${item.tile.contentId}'),
+                        item: item,
+                        onWhy: () => _showWhySheet(context, item),
+                        onOpen: () => _openContent(item),
+                        onOpenCreator: () =>
+                            widget.onOpenCreator?.call(item.tile.creatorId),
+                        onFeedback: (action) =>
+                            _controller.submitFeedback(item, action),
+                        onRecordDiscovery:
+                            item.providerLabel.startsWith('Recommended by ')
+                            ? () => _controller.recordRecommendedDiscovery(item)
+                            : null,
+                      ),
+                      if (_controller.latestDiscoveryReceipt?.contentId ==
+                          item.tile.contentId) ...[
+                        const SizedBox(height: 10),
+                        DataDashboardRow(
+                          key: const ValueKey('p8_discovery_receipt'),
+                          icon: Icons.receipt_long_rounded,
+                          title:
+                              _controller.recommendationMessage ??
+                              'Discovery receipt recorded.',
+                          subtitle:
+                              'Recommendation attribution is visible before conversion.',
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                    ],
+                  if (_controller.hasMore)
+                    FilledButton.icon(
+                      key: const ValueKey('p3_load_more_button'),
+                      onPressed: _controller.loadingMore
+                          ? null
+                          : _controller.loadMore,
+                      icon: _controller.loadingMore
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.expand_more_rounded),
+                      label: const Text('Load more'),
+                    ),
                 ],
-                const SizedBox(height: 14),
-              ],
-            if (_controller.hasMore)
-              FilledButton.icon(
-                key: const ValueKey('p3_load_more_button'),
-                onPressed: _controller.loadingMore
-                    ? null
-                    : _controller.loadMore,
-                icon: _controller.loadingMore
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.expand_more_rounded),
-                label: const Text('Load more'),
               ),
+            ),
+            // ── Viewport-level overlays ────────────────────────────────────
+            if (_expandedItem != null) _buildHoverBlur(),
+            if (_expandedItem != null) _buildExpandedCard(context),
+            if (_pending != null) _buildUndoOverlay(),
           ],
         );
       },
+    );
+  }
+
+  // ── Overlay builders ──────────────────────────────────────────────────────
+
+  Widget _buildHoverBlur() {
+    return Positioned.fill(
+      child: AnimatedBuilder(
+        animation: _expandCurve,
+        builder: (context, _) => GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _collapse,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: 8 * _expandCurve.value,
+              sigmaY: 8 * _expandCurve.value,
+            ),
+            child: ColoredBox(
+              color: Colors.black.withValues(
+                alpha: 0.55 * _expandCurve.value,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExpandedCard(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: _expandCurve,
+        builder: (context, child) => Transform.scale(
+          scale: 0.4 + 0.6 * _expandCurve.value,
+          child: Opacity(
+            opacity: (_expandCurve.value * 2).clamp(0.0, 1.0),
+            child: child,
+          ),
+        ),
+        child: _HoverCard(
+          item: _expandedItem!,
+          onOpen: () {
+            _collapse();
+            _openContent(_expandedItem!);
+          },
+          onWhy: () => _showWhySheet(context, _expandedItem!),
+          onOpenCreator: () =>
+              widget.onOpenCreator?.call(_expandedItem!.tile.creatorId),
+          onFeedback: (action) =>
+              _controller.submitFeedback(_expandedItem!, action),
+          onRecordDiscovery:
+              _expandedItem!.providerLabel.startsWith('Recommended by ')
+              ? () => _controller.recordRecommendedDiscovery(_expandedItem!)
+              : null,
+          onDismiss: _collapse,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUndoOverlay() {
+    final pending = _pending!;
+    return Stack(
+      children: [
+        // Full-screen tap-catcher: tap ANYWHERE on the feed commits the action.
+        Positioned.fill(
+          child: GestureDetector(
+            key: const ValueKey('p3_undo_bg_catcher'),
+            behavior: HitTestBehavior.opaque,
+            onTap: _commitPending,
+          ),
+        ),
+        // Bottom undo card — the ⊗ is the only target that undoes.
+        Positioned(
+          bottom: 28,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: LoomColors.line.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    pending.label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    key: const ValueKey('p3_undo_button'),
+                    onTap: _undoAction,
+                    child: const Icon(
+                      Icons.cancel,
+                      size: 36,
+                      color: LoomColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Undo',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: LoomColors.mutedInk,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -362,8 +622,9 @@ class _DiscoveryToolbar extends StatelessWidget {
               'Discover',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w900),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
           ),
           Tooltip(
@@ -1276,15 +1537,73 @@ class _DiscoveryFeedCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image + condensed description, sized to the poster tile.
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
                     width: 136,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _Poster(item: item, compact: true),
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _Poster(item: item, compact: true),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            _FeedbackIcon(
+                              keyValue:
+                                  'p3_feedback_like_${item.tile.contentId}',
+                              icon: Icons.thumb_up_alt_outlined,
+                              label: 'Like',
+                              onTap: () => onFeedback(FeedbackAction.like),
+                              iconSize: 12,
+                              buttonSize: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            _FeedbackIcon(
+                              keyValue:
+                                  'p3_feedback_dislike_${item.tile.contentId}',
+                              icon: Icons.thumb_down_alt_outlined,
+                              label: 'Dislike',
+                              onTap: () => onFeedback(FeedbackAction.dislike),
+                              iconSize: 12,
+                              buttonSize: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            _FeedbackIcon(
+                              keyValue:
+                                  'p3_feedback_mute_${item.tile.contentId}',
+                              icon: Icons.volume_off_outlined,
+                              label: 'Mute creator',
+                              onTap: () =>
+                                  onFeedback(FeedbackAction.muteCreator),
+                              iconSize: 12,
+                              buttonSize: 20,
+                            ),
+                            if (onRecordDiscovery != null) ...[
+                              const Spacer(),
+                              Tooltip(
+                                message: 'Record discovery receipt',
+                                child: IconButton(
+                                  key: ValueKey(
+                                    'p8_record_discovery_${item.tile.contentId}',
+                                  ),
+                                  onPressed: onRecordDiscovery,
+                                  constraints: BoxConstraints.tight(
+                                    const Size.square(20),
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 11,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -1366,76 +1685,6 @@ class _DiscoveryFeedCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              // Actions on one line, directly below the image + description.
-              Row(
-                children: [
-                  _ActionChip(
-                    icon: item.tile.contentTypeLabel == 'Video'
-                        ? Icons.play_arrow_rounded
-                        : Icons.article_rounded,
-                    label: item.tile.contentTypeLabel == 'Video'
-                        ? 'Play'
-                        : 'Read',
-                    height: 22,
-                    horizontalPadding: 6,
-                    iconSize: 10,
-                    textSize: 8,
-                  ),
-                  const SizedBox(width: 4),
-                  if (_shouldShowFanProviderLabel(item.providerLabel))
-                    Flexible(
-                      child: _ProviderPill(
-                        key: ValueKey(
-                          'p8_recommendation_disclosure_${item.tile.contentId}',
-                        ),
-                        label: item.providerLabel,
-                      ),
-                    )
-                  else
-                    const Spacer(),
-                  const SizedBox(width: 6),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_like_${item.tile.contentId}',
-                    icon: Icons.thumb_up_alt_outlined,
-                    label: 'Like',
-                    onTap: () => onFeedback(FeedbackAction.like),
-                    iconSize: 12,
-                    buttonSize: 20,
-                  ),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_dislike_${item.tile.contentId}',
-                    icon: Icons.thumb_down_alt_outlined,
-                    label: 'Dislike',
-                    onTap: () => onFeedback(FeedbackAction.dislike),
-                    iconSize: 12,
-                    buttonSize: 20,
-                  ),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_mute_${item.tile.contentId}',
-                    icon: Icons.volume_off_outlined,
-                    label: 'Mute creator',
-                    onTap: () => onFeedback(FeedbackAction.muteCreator),
-                    iconSize: 12,
-                    buttonSize: 20,
-                  ),
-                  if (onRecordDiscovery != null)
-                    Tooltip(
-                      message: 'Record discovery receipt',
-                      child: IconButton(
-                        key: ValueKey(
-                          'p8_record_discovery_${item.tile.contentId}',
-                        ),
-                        onPressed: onRecordDiscovery,
-                        constraints: BoxConstraints.tight(
-                          const Size.square(20),
-                        ),
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.receipt_long_rounded, size: 11),
-                      ),
-                    ),
-                ],
-              ),
             ],
           ),
         ),
@@ -1472,7 +1721,7 @@ class _DiscoveryFeedGrid extends StatelessWidget {
         crossAxisCount: 2,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.82,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -1484,8 +1733,7 @@ class _DiscoveryFeedGrid extends StatelessWidget {
           onOpen: () => onOpen(item),
           onOpenCreator: () => onOpenCreator(item),
           onFeedback: (action) => onFeedback(item, action),
-          onRecordDiscovery:
-              item.providerLabel.startsWith('Recommended by ')
+          onRecordDiscovery: item.providerLabel.startsWith('Recommended by ')
               ? () => onRecordDiscovery(item)
               : null,
         );
@@ -1528,7 +1776,57 @@ class _GridTile extends StatelessWidget {
               child: _Poster(item: item, compact: false),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 5, 8, 0),
+              padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+              child: Row(
+                children: [
+                  _FeedbackIcon(
+                    keyValue: 'p3_feedback_like_${item.tile.contentId}',
+                    icon: Icons.thumb_up_alt_outlined,
+                    label: 'Like',
+                    onTap: () => onFeedback(FeedbackAction.like),
+                    iconSize: 12,
+                    buttonSize: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  _FeedbackIcon(
+                    keyValue: 'p3_feedback_dislike_${item.tile.contentId}',
+                    icon: Icons.thumb_down_alt_outlined,
+                    label: 'Dislike',
+                    onTap: () => onFeedback(FeedbackAction.dislike),
+                    iconSize: 12,
+                    buttonSize: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  _FeedbackIcon(
+                    keyValue: 'p3_feedback_mute_${item.tile.contentId}',
+                    icon: Icons.volume_off_outlined,
+                    label: 'Mute creator',
+                    onTap: () => onFeedback(FeedbackAction.muteCreator),
+                    iconSize: 12,
+                    buttonSize: 20,
+                  ),
+                  if (onRecordDiscovery != null) ...[
+                    const Spacer(),
+                    Tooltip(
+                      message: 'Record discovery receipt',
+                      child: IconButton(
+                        key: ValueKey(
+                          'p8_record_discovery_${item.tile.contentId}',
+                        ),
+                        onPressed: onRecordDiscovery,
+                        constraints: BoxConstraints.tight(
+                          const Size.square(20),
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.receipt_long_rounded, size: 11),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 2, 8, 0),
               child: Row(
                 children: [
                   InkWell(
@@ -1548,8 +1846,9 @@ class _GridTile extends StatelessWidget {
                       item.tile.creatorName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -1564,69 +1863,31 @@ class _GridTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(),
             Padding(
-              padding: const EdgeInsets.fromLTRB(6, 0, 4, 6),
-              child: Row(
-                children: [
-                  _ActionChip(
-                    icon: item.tile.contentTypeLabel == 'Video'
-                        ? Icons.play_arrow_rounded
-                        : Icons.article_rounded,
-                    label: item.tile.contentTypeLabel == 'Video'
-                        ? 'Play'
-                        : 'Read',
-                  ),
-                  const SizedBox(width: 4),
-                  if (_shouldShowFanProviderLabel(item.providerLabel))
-                    Flexible(
-                      child: _ProviderPill(
-                        key: ValueKey(
-                          'p8_recommendation_disclosure_${item.tile.contentId}',
-                        ),
-                        label: item.providerLabel,
-                      ),
-                    )
-                  else
-                    const Spacer(),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_like_${item.tile.contentId}',
-                    icon: Icons.thumb_up_alt_outlined,
-                    label: 'Like',
-                    onTap: () => onFeedback(FeedbackAction.like),
-                  ),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_dislike_${item.tile.contentId}',
-                    icon: Icons.thumb_down_alt_outlined,
-                    label: 'Dislike',
-                    onTap: () => onFeedback(FeedbackAction.dislike),
-                  ),
-                  _FeedbackIcon(
-                    keyValue: 'p3_feedback_mute_${item.tile.contentId}',
-                    icon: Icons.volume_off_outlined,
-                    label: 'Mute creator',
-                    onTap: () => onFeedback(FeedbackAction.muteCreator),
-                  ),
-                  if (onRecordDiscovery != null)
-                    Tooltip(
-                      message: 'Record discovery receipt',
-                      child: IconButton(
-                        key: ValueKey(
-                          'p8_record_discovery_${item.tile.contentId}',
-                        ),
-                        onPressed: onRecordDiscovery,
-                        constraints:
-                            BoxConstraints.tight(const Size.square(28)),
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(
-                          Icons.receipt_long_rounded,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                ],
+              padding: const EdgeInsets.fromLTRB(8, 3, 8, 0),
+              child: Text(
+                item.tile.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
+                ),
               ),
             ),
+            if (item.tile.summary.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 2, 8, 0),
+                child: Text(
+                  item.tile.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: LoomColors.mutedInk,
+                    height: 1.08,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -1636,183 +1897,225 @@ class _GridTile extends StatelessWidget {
 
 // ── 3-column hover grid ───────────────────────────────────────────────────────
 
-class _DiscoveryFeedHoverGrid extends StatefulWidget {
+// Hover grid is now Stateless — expand/blur/card overlays live at the screen
+// body level so they cover the full viewport including Load more.
+class _DiscoveryFeedHoverGrid extends StatelessWidget {
   const _DiscoveryFeedHoverGrid({
     required this.items,
-    required this.onOpen,
+    required this.onExpand,
+    required this.onDismiss,
+    required this.onLike,
     required this.onWhy,
-    required this.onOpenCreator,
-    required this.onFeedback,
-    required this.onRecordDiscovery,
   });
 
   final List<FeedItem> items;
-  final void Function(FeedItem) onOpen;
+  final void Function(FeedItem) onExpand;
+  final void Function(FeedItem) onDismiss;
+  final void Function(FeedItem) onLike;
   final void Function(FeedItem) onWhy;
-  final void Function(FeedItem) onOpenCreator;
-  final void Function(FeedItem, FeedbackAction) onFeedback;
-  final void Function(FeedItem) onRecordDiscovery;
-
-  @override
-  State<_DiscoveryFeedHoverGrid> createState() =>
-      _DiscoveryFeedHoverGridState();
-}
-
-class _DiscoveryFeedHoverGridState extends State<_DiscoveryFeedHoverGrid>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _anim;
-  late final Animation<double> _curve;
-  FeedItem? _hoveredItem;
-
-  @override
-  void initState() {
-    super.initState();
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _curve = CurvedAnimation(
-      parent: _anim,
-      curve: Curves.easeOutBack,
-      reverseCurve: Curves.easeInCubic,
-    );
-  }
-
-  @override
-  void dispose() {
-    _anim.dispose();
-    super.dispose();
-  }
-
-  void _hover(FeedItem item) {
-    setState(() => _hoveredItem = item);
-    _anim.forward(from: 0);
-  }
-
-  void _dismiss() {
-    _anim.reverse().whenComplete(() {
-      if (mounted) setState(() => _hoveredItem = null);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: widget.items.length,
-          itemBuilder: (context, i) {
-            final item = widget.items[i];
-            return _HoverGridTile(
-              key: ValueKey('p3_feed_card_${item.tile.contentId}'),
-              item: item,
-              onTap: () => _hover(item),
-            );
-          },
-        ),
-        if (_hoveredItem != null)
-          AnimatedBuilder(
-            animation: _curve,
-            builder: (context, _) => GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _dismiss,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 8 * _curve.value,
-                  sigmaY: 8 * _curve.value,
-                ),
-                child: ColoredBox(
-                  color: Colors.black.withValues(alpha: 0.55 * _curve.value),
-                  child: const SizedBox.expand(),
-                ),
-              ),
-            ),
-          ),
-        if (_hoveredItem != null)
-          Center(
-            child: AnimatedBuilder(
-              animation: _curve,
-              builder: (context, child) => Transform.scale(
-                scale: 0.4 + 0.6 * _curve.value,
-                child: Opacity(
-                  opacity: (_curve.value * 2).clamp(0.0, 1.0),
-                  child: child,
-                ),
-              ),
-              child: _HoverCard(
-                item: _hoveredItem!,
-                onOpen: () {
-                  _dismiss();
-                  widget.onOpen(_hoveredItem!);
-                },
-                onWhy: () => widget.onWhy(_hoveredItem!),
-                onOpenCreator: () =>
-                    widget.onOpenCreator(_hoveredItem!),
-                onFeedback: (action) =>
-                    widget.onFeedback(_hoveredItem!, action),
-                onRecordDiscovery:
-                    _hoveredItem!.providerLabel.startsWith('Recommended by ')
-                    ? () => widget.onRecordDiscovery(_hoveredItem!)
-                    : null,
-                onDismiss: _dismiss,
-              ),
-            ),
-          ),
-      ],
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 6,
+        crossAxisSpacing: 6,
+        childAspectRatio: 0.75,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final item = items[i];
+        return _HoverGridTile(
+          key: ValueKey('p3_feed_card_${item.tile.contentId}'),
+          item: item,
+          onTap: () => onExpand(item),
+          onDismiss: () => onDismiss(item),
+          onLike: () => onLike(item),
+          onWhy: () => onWhy(item),
+        );
+      },
     );
   }
 }
 
-class _HoverGridTile extends StatelessWidget {
+// Tile in Hover mode: tap = expand; long-press + drag = like/dismiss gesture.
+class _HoverGridTile extends StatefulWidget {
   const _HoverGridTile({
     required this.item,
     required this.onTap,
+    required this.onDismiss,
+    required this.onLike,
+    required this.onWhy,
     super.key,
   });
 
   final FeedItem item;
   final VoidCallback onTap;
+  final VoidCallback onDismiss;
+  final VoidCallback onLike;
+  final VoidCallback onWhy;
+
+  @override
+  State<_HoverGridTile> createState() => _HoverGridTileState();
+}
+
+class _HoverGridTileState extends State<_HoverGridTile> {
+  bool _armed = false;
+  double _dx = 0;
+
+  void _reset() => setState(() {
+        _armed = false;
+        _dx = 0;
+      });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: _Poster(item: item, compact: true),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final threshold = constraints.maxWidth * 0.32;
+        final progress = (_dx / threshold).clamp(-1.0, 1.0);
+        final likeProgress = progress.clamp(0.0, 1.0);
+        final dismissProgress = (-progress).clamp(0.0, 1.0);
+
+        return GestureDetector(
+          onTap: _armed ? null : widget.onTap,
+          onLongPressStart: (_) => setState(() => _armed = true),
+          onLongPressMoveUpdate: (details) =>
+              setState(() => _dx = details.localOffsetFromOrigin.dx),
+          onLongPressEnd: (_) {
+            if (_dx <= -threshold) {
+              _reset();
+              widget.onDismiss();
+            } else if (_dx >= threshold) {
+              _reset();
+              widget.onLike();
+            } else {
+              _reset();
+            }
+          },
+          onLongPressCancel: _reset,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Poster + text, translated by drag offset
+              Transform.translate(
+                offset: _armed ? Offset(_dx, 0) : Offset.zero,
+                child: _buildTileContent(context),
+              ),
+              // Dismiss affordance (left — coral 👎)
+              if (_armed)
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Opacity(
+                      opacity: dismissProgress,
+                      child: Transform.scale(
+                        scale: 0.6 + 0.4 * dismissProgress,
+                        child: Container(
+                          key: ValueKey(
+                            'p3_thumbsdown_affordance_${widget.item.tile.contentId}',
+                          ),
+                          width: 32,
+                          height: 32,
+                          decoration: const BoxDecoration(
+                            color: LoomColors.coral,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.thumb_down_alt_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              // Like affordance (right — moss 👍)
+              if (_armed)
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Opacity(
+                      opacity: likeProgress,
+                      child: Transform.scale(
+                        scale: 0.6 + 0.4 * likeProgress,
+                        child: Container(
+                          key: ValueKey(
+                            'p3_thumbsup_affordance_${widget.item.tile.contentId}',
+                          ),
+                          width: 32,
+                          height: 32,
+                          decoration: const BoxDecoration(
+                            color: LoomColors.moss,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.thumb_up_alt_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            item.tile.creatorName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: LoomColors.mutedInk,
-              fontWeight: FontWeight.w700,
+        );
+      },
+    );
+  }
+
+  Widget _buildTileContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _Poster(item: widget.item, compact: true),
+        ),
+        const SizedBox(height: 3),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.item.tile.creatorName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: LoomColors.mutedInk,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-          Text(
-            item.tile.title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              height: 1.1,
+            GestureDetector(
+              key: ValueKey('p3_why_button_${widget.item.tile.contentId}'),
+              onTap: widget.onWhy,
+              child: const Padding(
+                padding: EdgeInsets.only(left: 2),
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 11,
+                  color: LoomColors.mutedInk,
+                ),
+              ),
             ),
+          ],
+        ),
+        Text(
+          widget.item.tile.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            height: 1.1,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1850,31 +2153,57 @@ class _HoverCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Poster with close button overlay
-            Stack(
-              children: [
-                _Poster(item: item, compact: false),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: onDismiss,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
+            // Poster: tappable area opens content. Videos show a centered
+            // play button overlaid on the poster image.
+            GestureDetector(
+              key: const ValueKey('p3_hover_card_poster'),
+              onTap: onOpen,
+              child: Stack(
+                children: [
+                  _Poster(item: item, compact: false),
+                  // Centered play button for Video content
+                  if (item.tile.contentTypeLabel == 'Video')
+                    Positioned.fill(
+                      child: Center(
+                        child: Container(
+                          key: const ValueKey('p3_hover_card_play_button'),
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 16,
+                    ),
+                  // Close button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: onDismiss,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
@@ -1897,8 +2226,9 @@ class _HoverCard extends StatelessWidget {
                       item.tile.creatorName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelMedium
-                          ?.copyWith(fontWeight: FontWeight.w900),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                   TextButton.icon(
@@ -1932,25 +2262,12 @@ class _HoverCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(10, 0, 8, 12),
               child: Row(
                 children: [
-                  _ActionChip(
-                    icon: item.tile.contentTypeLabel == 'Video'
-                        ? Icons.play_arrow_rounded
-                        : Icons.article_rounded,
-                    label: item.tile.contentTypeLabel == 'Video'
-                        ? 'Play'
-                        : 'Read',
-                    height: 32,
-                    horizontalPadding: 10,
-                    iconSize: 18,
-                    textSize: 12,
-                  ),
-                  const SizedBox(width: 6),
                   if (_shouldShowFanProviderLabel(item.providerLabel))
                     Flexible(
                       child: _ProviderPill(
                         key: ValueKey(
                           'p8_recommendation_disclosure_${item.tile.contentId}',
-                          ),
+                        ),
                         label: item.providerLabel,
                       ),
                     )
@@ -1988,13 +2305,11 @@ class _HoverCard extends StatelessWidget {
                           'p8_record_discovery_${item.tile.contentId}',
                         ),
                         onPressed: onRecordDiscovery,
-                        constraints:
-                            BoxConstraints.tight(const Size.square(32)),
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(
-                          Icons.receipt_long_rounded,
-                          size: 18,
+                        constraints: BoxConstraints.tight(
+                          const Size.square(32),
                         ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.receipt_long_rounded, size: 18),
                       ),
                     ),
                 ],
@@ -2038,15 +2353,27 @@ class _Poster extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: -18,
-            top: -12,
-            child: Icon(
-              item.tile.contentTypeLabel == 'Video'
-                  ? Icons.play_circle_fill_rounded
-                  : Icons.article_rounded,
-              color: Colors.white.withAlpha(44),
-              size: 94,
-            ),
+            child: item.tile.contentTypeLabel == 'Video'
+                ? Center(
+                    child: Container(
+                      width: compact ? 36 : 42,
+                      height: compact ? 36 : 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        size: compact ? 20 : 24,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
           Positioned(
             left: compact ? 8 : 14,
@@ -2089,51 +2416,6 @@ class _Poster extends StatelessWidget {
           loadingProgress == null
           ? child
           : _FallbackPoster(seed: thumbnailRef, label: item.trendingLabel),
-    );
-  }
-}
-
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({
-    required this.icon,
-    required this.label,
-    this.height = 22,
-    this.horizontalPadding = 6,
-    this.iconSize = 10,
-    this.textSize = 8,
-  });
-
-  final IconData icon;
-  final String label;
-  final double height;
-  final double horizontalPadding;
-  final double iconSize;
-  final double textSize;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      decoration: BoxDecoration(
-        color: LoomColors.ink,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: iconSize, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: textSize,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -2193,12 +2475,19 @@ class _FeedbackIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Tooltip(
       message: label,
-      child: IconButton(
-        key: ValueKey(keyValue),
-        onPressed: onTap,
-        constraints: BoxConstraints.tight(Size.square(buttonSize)),
-        padding: EdgeInsets.zero,
-        icon: Icon(icon, size: iconSize),
+      child: Semantics(
+        button: true,
+        label: label,
+        child: InkResponse(
+          key: ValueKey(keyValue),
+          onTap: onTap,
+          radius: buttonSize / 2,
+          containedInkWell: true,
+          child: SizedBox.square(
+            dimension: buttonSize,
+            child: Icon(icon, size: iconSize),
+          ),
+        ),
       ),
     );
   }

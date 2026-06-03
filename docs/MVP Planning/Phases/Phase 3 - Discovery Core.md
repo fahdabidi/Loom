@@ -11,6 +11,9 @@ README gate + confirm: the demo creator has **live published content with summar
 - **FE-S9 / RE-W3** — Trusted recommendation feed (glass-box, why-shown).
 - **RE-W3A** — Startup tile selection + mid-session intent switch.
 - **FE-S9B / RE-S8** — Like/dislike/mute/block feedback shaping the profile.
+- **FE-S9C** — Hover-mode swipe-right (long-press + drag right) → like: tile springs back; after a 3-second client undo window the `like` feedback is committed, ranking is boosted for the item (+0.30) and same-creator content (+0.12 halo), and `pullAdditionalContent` appends any newly-surfaced items to the end of the grid.
+- **FE-S9D** — Hover-mode swipe-left (long-press + drag left) → dismiss: tile is removed from the grid immediately (optimistic); after the 3-second undo window the `dislike` feedback is committed (no server-side refresh — the local list is already correct).
+- **FE-S9E** — Undo window: after any swipe action a viewport-level overlay appears showing the action label, a circle-with-X (tapping it restores the dismissed tile / cancels the like commit), and an "Undo" label. Tapping anywhere else on the feed immediately accepts the action. The overlay auto-accepts after 3 seconds. The background feed is fully inert while the overlay is visible.
 - **RE-S9** — Summary-first ranking hook (BYO-agent preference flag; AI wiring lands Phase 5, the flag/scoring path here).
 - **RE-S7 / RE-W7** — Host trending statistics consumed for Entertainment/Trending intents.
 - **FE-S5 / FE-W5** — Search as an intent (neutral, no ads in results).
@@ -68,6 +71,10 @@ README baseline. Unit tests: scoring/explanation determinism, dislike suppressio
 - `it_p3_feedback` — dislike an item/creator → suppressed on next fetch; profile updated in vault.
 - `it_p3_mid_session_switch` — switch intent → re-rank from new policy; disclosure updates.
 - `it_p3_search_no_ads` — search returns neutral results, zero ad fields, paginated.
+- `it_p3_swipe_dismiss_undo` — Hover mode: long-press + drag-left past threshold → tile removed from grid; undo overlay visible (`p3_undo_button`); tap `p3_undo_button` within 3 s → tile restored at original index.
+- `it_p3_swipe_dismiss_commit` — same as above, but tap elsewhere on screen → overlay closes, `dislike` committed (tile stays gone); background scroll disabled while overlay was visible.
+- `it_p3_swipe_like_pull` — long-press + drag-right → tile springs back; after 3 s like committed; fake-backend score boosted; `pullAdditionalContent` called; grid may gain a new tile at the end.
+- `it_p3_hover_card_viewport` — scroll grid to bottom, tap a tile → expanded card fully within viewport bounds (not off-screen); dragging the blurred background does not scroll the feed.
 
 ## 10. Definition of done
 Tiles → session intent → glass-box feed with why-shown, feedback, mid-session switch, trending-backed Entertainment intent, and neutral search all work on the Flutter Android emulator; feed is single-call + paginated; all checks green; API Review filed (esp. the N+1/batching/payload findings); UX Decisions doc filed. Update the Phase completion tracker in [../Demo App Implementation Plan.md](../Demo%20App%20Implementation%20Plan.md) with Phase 3 status, completion date, API review link/name, and gate evidence before marking this phase complete. Commit all Phase 3 changes to git and record the commit SHA in the tracker before proceeding.
