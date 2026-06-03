@@ -47,15 +47,15 @@ class _CreatorAdPolicyConsoleScreenState
     });
   }
 
-  Future<void> _saveAndVerify() async {
+  Future<void> _saveAndVerify(StudioAdPolicySelection selection) async {
     if (_saving) {
       return;
     }
     setState(() => _saving = true);
     final policy = await _metadataApi.setCreatorAdPolicy(
       channelId: widget.channelId,
-      allowedCategories: const ['sustainable_living'],
-      blockedCategories: const ['home_energy', 'gambling', 'alcohol'],
+      allowedCategories: selection.allowedCategories,
+      blockedCategories: selection.blockedCategories,
       formats: const ['pre_roll', 'sponsor_card'],
       surfaces: const ['watch', 'channel'],
       idempotencyKey: 'p13-ad-policy-${widget.channelId}',
@@ -88,11 +88,6 @@ class _CreatorAdPolicyConsoleScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p13_ad_policy_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Ad policy',
@@ -105,9 +100,14 @@ class _CreatorAdPolicyConsoleScreenState
         ),
         const SizedBox(height: LoomSpacing.md),
         StudioAdPolicyEditor(
+          initialAllowedCategories:
+              policy?.allowedCategories ?? const ['sustainable_living'],
+          initialBlockedCategories:
+              policy?.blockedCategories ??
+              const ['home_energy', 'gambling', 'alcohol'],
           savedLabel: policy == null
               ? 'Draft blocks home energy ads before verification.'
-              : 'Saved ${_date(policy.updatedAt)} · blocks ${policy.blockedCategories.join(', ')}',
+              : 'Saved ${_date(policy.updatedAt)} - allows ${policy.allowedCategories.join(', ')}; blocks ${policy.blockedCategories.join(', ')}',
           onSavePolicy: _saveAndVerify,
         ),
         const SizedBox(height: LoomSpacing.md),

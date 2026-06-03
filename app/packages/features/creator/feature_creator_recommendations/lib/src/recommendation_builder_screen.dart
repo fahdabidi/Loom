@@ -122,11 +122,6 @@ class _RecommendationBuilderScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p8_recommendations_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Recommendations',

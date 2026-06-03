@@ -12,6 +12,7 @@ Run everything in **WSL Ubuntu**. Commands assume the workspace root at `app/` a
 
 ```bash
 flutter emulators --launch PantryVision_API_36 # — wait for the Android home screen
+flutter emulators --launch PantryVision_Manual_API_36 # — wait for the Android home screen
 adb devices                                # confirm a line "emulator-5554   device" apears
 ```
 
@@ -19,14 +20,19 @@ adb devices                                # confirm a line "emulator-5554   dev
 
 ```bash
 cd app/apps/loom_demo
+adb -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk
 adb -s emulator-5554 shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1
+or
+adb -s emulator-5556 install -r build/app/outputs/flutter-apk/app-debug.apk
+adb -s emulator-5556 shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1
 ```
 
 **c (OPTIONAL IF NEW UPDATES ARE NOT YET IN THE APP). Build, install, and launch.** Simplest — one command from `app/apps/loom_demo`:
 
 ```bash
 cd app/apps/loom_demo
-flutter run -d emulator-5554               # builds the debug APK, installs, and launches
+flutter run -d emulator-5554               # builds the debug APK, installs, and launches on automated emulator
+flutter run -d emulator-5556               # builds the debug APK, installs, and launches on manual emulator
 ```
 
 Or mirror the phase-doc steps (build → install → launch separately):
@@ -114,6 +120,23 @@ flutter run -d emulator-5554
 Because `melos run test:integration` defaults to `emulator-5554`, the agents' automated validation never
 touches your `emulator-5560`, and vice versa. Prefer `-port` (or launch the agent AVD first) so serials stay
 deterministic; if WSLg graphics are flaky, add `-gpu swiftshader_indirect` to the manual launch.
+
+**Loading the latest code onto your manual emulator.** Booting the AVD does **not** update the app — the
+emulator keeps whatever APK is installed, and an agent rebuild installs only to `emulator-5554`. You don't
+restart the emulator to update; you **reinstall the APK** (the app updates in place, keeping its data):
+
+```bash
+# Option A — rebuild current source + install + launch on 5560 (guarantees latest):
+cd app/apps/loom_demo && flutter run -d emulator-5560
+
+# Option B — reinstall the APK the agent already built (only if it was built AFTER your edits):
+adb -s emulator-5560 install -r app/apps/loom_demo/build/app/outputs/flutter-apk/app-debug.apk
+adb -s emulator-5560 shell monkey -p com.example.loom_demo -c android.intent.category.LAUNCHER 1
+```
+
+Don't run Option A while an agent is building from the same `apps/loom_demo` dir (concurrent Flutter builds
+contend on `build/`); wait for that build, then use Option B with its fresh artifact. `-r` keeps your test
+data — add `adb -s emulator-5560 uninstall com.example.loom_demo` first if you want a clean install.
 
 ## Correction & Completion Protocol (for the implementing agent)
 
@@ -250,7 +273,7 @@ Applied Correction [F-P1-03]: Rewrote managed-hosting copy and checklist to expl
 | 4    | Accept managed hosting.      | Completion state appears.                                                    |             Completed                   |
 Correction Needed: 
 Applied Correction: 
-| 5    | Review final state.          | Channel name, handle, and hosting status are visible.                        |            Completed (re-validate)      |
+| 5    | Review final state.          | Channel name, handle, and hosting status are visible.                        |            Completed                    |
 Correction Needed [C-P1-04]: ![alt text](image-12.png) I did not see the channel name apear. I see "Open Publishing Setup"
 Applied Correction [F-P1-04]: Promoted the created channel display name and handle into the final-state hero card, kept explicit fact rows for completion/channel/handle/hosting, and preserved the publishing setup CTA below that state. files: app/packages/features/creator/feature_creator_onboarding/lib/src/screens/creator_onboarding_screen.dart · commit b5dfeec · validated: flutter analyze packages/features/creator/feature_creator_onboarding, flutter test integration_test/it_p1_CE-W1_test.dart.
 | 6    | Open publishing setup.       | Phase 2 Studio setup opens.                                                  |           Completed                     |
@@ -265,16 +288,16 @@ Goal: validate that Creator Studio setup feels like a modern creator workflow, n
 
 | Step | Action                                 | Expected result                                                                             | Result (Completed or Correction Needed) |
 | ---- | -------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Open Creator Studio.                   | Creator onboarding or completed creator state appears.                                      |           Completed (re-validate)       |
+| 1    | Open Creator Studio.                   | Creator onboarding or completed creator state appears.                                      |           Completed                     |
 Correction Needed [C-P2-01]: Nvaigating to the Fan App and then back to Creator Studio resets the Ui back to "Create Creator Channel" wizard state. ![alt text](image-13.png). The previous setup seems to have disapeared.
 Applied Correction [F-P2-01]: Changed the role shell from rebuilding a role-keyed surface to preserving Fan App and Creator Studio in an IndexedStack, while still resetting both surfaces only on demo reset. Added a retention integration test that completes creator onboarding, switches to Fan App, switches back, and verifies the completed channel state and publishing setup CTA remain visible. files: app/packages/core/loom_app_shell/lib/loom_app_shell.dart, app/apps/loom_demo/integration_test/it_p2_creator_state_retained_test.dart · commit b5dfeec · validated: flutter analyze packages/core/loom_app_shell, flutter test integration_test/it_p2_creator_state_retained_test.dart.
 | 2    | Complete creator onboarding if needed. | The publishing setup entry point is visible.                                                |                                         |
 Correction Needed: 
 Applied Correction: 
-| 3    | Open publishing setup.                 | Phase 2 setup screen opens with header, status cards, and publish composer.                 |                                         |
+| 3    | Open publishing setup.                 | Phase 2 setup screen opens with header, status cards, and publish composer.                 |              Completed                  |
 Correction Needed: 
 Applied Correction: 
-| 4    | Review first viewport.                 | The page feels dense, modern, and creator-focused; status cards and publish path are clear. |                                         |
+| 4    | Review first viewport.                 | The page feels dense, modern, and creator-focused; status cards and publish path are clear. |              Completed                  |
 Correction Needed: 
 Applied Correction: 
 
@@ -282,19 +305,19 @@ Applied Correction:
 
 | Step | Action                                         | Expected result                                                               | Result (Completed or Correction Needed) |
 | ---- | ---------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Review media preview and title/summary fields. | Media preview comes first; title and required summary are easy to understand. |                                         |
+| 1    | Review media preview and title/summary fields. | Media preview comes first; title and required summary are easy to understand. |           Completed                     |
 Correction Needed: 
 Applied Correction: 
-| 2    | Test missing summary.                          | Inline error appears for the required summary.                                |                                         |
+| 2    | Test missing summary.                          | Inline error appears for the required summary.                                |            Completed                    |
+Correction Needed [C-P2-02]: ![alt text](image-33.png) text apears below the summary text box and not "inline"
+Applied Correction [F-P2-02]: Rendered the `summary_required` message as an inline error chip inside the creator-approved summary control instead of below the text box. files: app/packages/core/loom_design_system/lib/components/studio/publish_composer.dart - commit pending - validated: loom_design_system/feature_creator_publishing/loom_demo analyzers, flutter test -d emulator-5554 integration_test/it_p2_publish_requires_summary_test.dart.
+| 3    | Generate an AI draft summary.                  | Summary field receives a usable draft.                                        |           Completed                     |
+Correction Needed [C-P2-03]: The AI Draft Summary Button is unresponsive at first. After publishing the video it became responsive. Its a bit confusing as it seems like the flow is publish video, the create summary and publish post. So the Publish video action should be then above the "create approved summary box" if that is the flow.
+Applied Correction [F-P2-03]: Kept Publish video above the approved summary box and left AI draft summary available before publishing; video upload can save with a pending-summary placeholder while member post still requires an approved summary. files: app/packages/core/loom_design_system/lib/components/studio/publish_composer.dart, app/packages/features/creator/feature_creator_publishing/lib/src/screens/creator_publishing_setup_screen.dart - commit pending - validated: flutter test -d emulator-5554 integration_test/it_p2_publish_requires_summary_test.dart.
+| 4    | Publish video.                                 | Success state shows manifest version.                                         |         Completed                       |
 Correction Needed: 
 Applied Correction: 
-| 3    | Generate an AI draft summary.                  | Summary field receives a usable draft.                                        |                                         |
-Correction Needed: 
-Applied Correction: 
-| 4    | Publish video.                                 | Success state shows manifest version.                                         |                                         |
-Correction Needed: 
-Applied Correction: 
-| 5    | Publish post.                                  | Member-only post publishes successfully after summary exists.                 |                                         |
+| 5    | Publish post.                                  | Member-only post publishes successfully after summary exists.                 |          Completed                      |
 Correction Needed: 
 Applied Correction: 
 
@@ -302,21 +325,21 @@ Applied Correction:
 
 | Step | Action                             | Expected result                                                          | Result (Completed or Correction Needed) |
 | ---- | ---------------------------------- | ------------------------------------------------------------------------ | --------------------------------------- |
-| 1    | Start catalog import.              | Import completes and external references success state appears.          |                                         |
+| 1    | Start catalog import.              | Import completes and external references success state appears.          |           Completed                     |
 Correction Needed: 
 Applied Correction: 
-| 2    | Define membership tiers.           | Membership setup reports entitlement definitions registered.             |                                         |
+| 2    | Define membership tiers.           | Membership setup reports entitlement definitions registered.             |           Completed                     |
 Correction Needed: 
 Applied Correction: 
-| 3    | Save creator ad policy.            | Saved state appears and blocked categories are clear.                    |                                         |
+| 3    | Save creator ad policy.            | Saved state appears and blocked categories are clear.                    |          Completed                      |
+Correction Needed [C-P2-04]: ![alt text](image-34.png) I can't select any of te option like Allow home energy, Block gambling etc. Let me select the actions to allow and block before clicking save policy. Also insert an "expando" that populates more add policy choises.
+Applied Correction [F-P2-04]: Replaced static ad-policy chips with selectable Allow/Block policy rows plus a More policy choices expander, and persisted the selected allow/block categories in both Phase 2 setup and the Phase 13 ad-policy console. files: app/packages/core/loom_design_system/lib/components/studio/ad_policy_editor.dart, app/packages/features/creator/feature_creator_publishing/lib/src/state/creator_publishing_controller.dart, app/packages/features/creator/feature_creator_publishing/lib/src/screens/creator_publishing_setup_screen.dart, app/packages/features/creator/feature_creator_ads/lib/src/creator_ad_policy_console_screen.dart, app/apps/loom_demo/integration_test/it_p13_ad_policy_console_test.dart - commit pending - validated: flutter test -d emulator-5554 integration_test/it_p2_ad_policy_test.dart integration_test/it_p13_ad_policy_console_test.dart.
+| 4    | Enable AI archive access.          | AI content policy stored state appears.                                  |          Completed                      |
 Correction Needed: 
 Applied Correction: 
-| 4    | Enable AI archive access.          | AI content policy stored state appears.                                  |                                         |
-Correction Needed: 
-Applied Correction: 
-| 5    | Review the whole page after setup. | Controls are compact; saved states are easy to verify; no text overlaps. |                                         |
-Correction Needed: 
-Applied Correction: 
+| 5    | Review the whole page after setup. | Controls are compact; saved states are easy to verify; no text overlaps. |          Completed                      |
+Correction Needed [C-P2-05]: ![alt text](image-35.png) once actions are completed, the top tile should mention the updated status instead of generically "Phase 2 Setup". It should update to the latest status.
+Applied Correction [F-P2-05]: Added a dynamic Phase 2 status chip/headline/detail that advances from setup to content published, catalog imported, memberships ready, ad policy saved, AI ready, and complete based on saved controller state. files: app/packages/features/creator/feature_creator_publishing/lib/src/screens/creator_publishing_setup_screen.dart - commit pending - validated: feature_creator_publishing analyzer and loom_demo analyzer.
 
 ## Phase 3 - Discovery Core
 
@@ -326,23 +349,25 @@ Goal: validate Fan App discovery: startup tiles, session intent, glass-box feed,
 
 | Step | Action                                            | Expected result                                                        | Result (Completed or Correction Needed) |
 | ---- | ------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Open Fan App after Phase 3 or later is installed. | Home or Discover surface shows modern intent/topic entry points.       |                                         |
-Correction Needed: 
-Applied Correction: 
-| 2    | Select a startup tile or intent chip.             | A session intent is created and the disclosure is visible.             |                                         |
-Correction Needed: 
-Applied Correction: 
-| 3    | Review tile design.                               | Tiles are visual, scannable, and explain what kind of feed they start. |                                         |
-Correction Needed: 
-Applied Correction: 
+| 1    | Open Fan App after Phase 3 or later is installed. | Home or Discover surface shows modern intent/topic entry points.       |           Completed                     |
+Correction Needed [C-P3-01]: ![alt text](image-36.png) putting the "why" click link in its own line occupies too much space, move this Why link next to the line above, along side here ![alt text](image-37.png).
+Applied Correction [F-P3-01]: Moved the Why action into the creator metadata row on each feed card so it no longer wraps into a standalone bottom line. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart - commit pending - validated: feature_discovery analyzer, flutter test -d emulator-5554 integration_test/it_p3_feed_ranked_test.dart.
+| 2    | Select a startup tile or intent chip.             | A session intent is created and the disclosure is visible.             |            Completed                    |
+Correction Needed [C-P3-02]: ![alt text](image-38.png) once I click an "Intent" Recommendation Type, it becomes unselectable/unclicable. So i can;t click for instance "for you" or "Learn" again and the session is stuck at "Trending".
+Applied Correction [F-P3-02]: Replaced the large horizontal intent cards with compact selectable intent controls that remain visible/tappable and added a controller selecting state while the feed refreshes. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart, app/packages/features/fan/feature_discovery/lib/src/discovery_controller.dart - commit pending - validated: flutter test -d emulator-5554 integration_test/it_p3_tiles_session_intent_test.dart integration_test/it_p3_mid_session_switch_test.dart.
+| 3    | Review tile design.                               | Tiles are visual, scannable, and explain what kind of feed they start. |        Completed                        |
+Correction Needed [C-P3-03]: ![alt text](image-40.png)Not enough content is displayed, we want a denser design like youtube ![alt text](image-39.png)  or spotify ![alt text](image-41.png) so more content can be shown to the fans to pick from quicker.
+Applied Correction [F-P3-03]: Converted feed cards to dense media rows with compact thumbnails, title/summary, creator metadata, provider pill, and compact feedback controls so more recommendations fit on screen. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart - commit pending - validated: flutter test -d emulator-5554 integration_test/it_p3_feed_ranked_test.dart integration_test/it_p3_feedback_test.dart.
+Correction Needed [C-P3-05]: There is still excessive white space in the top recommendation controls and the grid/list card rows: the top recommendation label should not include a separate “For you” chip, spacing between "Play/Read" and thumbs rows should be much tighter, icon controls are too large, and cards still show generic poster art.
+Applied Correction [F-P3-05]: Removed redundant top "For you" block, compressed recommendation-type panel spacing, moved the copy text into the Recommendation Type row/sub-panel description, reduced action icon and row spacing across rows by ~75%, and switched poster rendering to seeded network clip media with image fallbacks for realistic content previews. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart - commit pending - validated: feature_discovery analyzer, flutter test -d emulator-5554 integration_test/it_p3_feed_ranked_test.dart integration_test/it_p3_feedback_test.dart.
 
 ### Glass-Box Feed
 
 | Step | Action                              | Expected result                                                                    | Result (Completed or Correction Needed) |
 | ---- | ----------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------- |
 | 1    | Review feed cards.                  | Cards show thumbnail/media, title, summary, creator, and compact why-shown badges. |                                         |
-Correction Needed: 
-Applied Correction: 
+Correction Needed [C-P3-06]: Cards still need denser use of header/title/summary/feedback areas and less wasted vertical space between title/read controls and recommendation signals, especially in Grid view.
+Applied Correction [F-P3-06]: Reduced card paddings, compacted action strip heights and icon sizes, removed spacer-induced dead space in grid rows, and inserted optional summary lines between creator and action controls for better scan density.
 | 2    | Open a why-shown explanation.       | Sheet or detail view explains top ranking factors without overwhelming the feed.   |                                         |
 Correction Needed: 
 Applied Correction: 
@@ -357,9 +382,9 @@ Applied Correction:
 
 | Step | Action                                          | Expected result                                                                           | Result (Completed or Correction Needed) |
 | ---- | ----------------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------- |
-| 1    | Like, dislike, mute, or block from a feed card. | Feedback affordances are icon-based, clear, and optimistic.                               |                                         |
-Correction Needed: 
-Applied Correction: 
+| 1    | Like, dislike, mute, or block from a feed card. | Feedback affordances are icon-based, clear, and optimistic.                               |          Completed                      |
+Correction Needed [C-P3-04]: Switching to grid view triggers a `RenderFlex` overflow and unstable rendering near the card action row, which can crash/hang during emulator interactions.
+Applied Correction [F-P3-04]: Reworked grid tile action row to wrap/shrink its controls (`_GridTile` now uses `Wrap`; action chips/icons/pills use compact sizing and width constraints), preventing overflow in narrow cards and eliminating the crash. files: app/packages/features/fan/feature_discovery/lib/src/discovery_home_screen.dart · validated: flutter test -d emulator-5554 integration_test/it_p3_feed_ranked_test.dart integration_test/it_p3_feedback_test.dart integration_test/it_p3_tiles_session_intent_test.dart integration_test/it_p3_mid_session_switch_test.dart.
 | 2    | Refresh or fetch next page.                     | Disliked or muted content is suppressed or visibly affected.                              |                                         |
 Correction Needed: 
 Applied Correction: 

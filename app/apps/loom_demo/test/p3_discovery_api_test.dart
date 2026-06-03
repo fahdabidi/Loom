@@ -57,6 +57,56 @@ void main() {
     },
   );
 
+  test(
+    'session intent switch can revisit prior recommendation modes',
+    () async {
+      final store = await DemoLocalStore.seeded();
+      addTearDown(store.close);
+      final api = RecommendationReferralFake(store, latency: Duration.zero);
+
+      final session = await api.createSessionIntent(
+        passportId: 'passport_demo_fan',
+        platformIntentId: 'intent_for_you',
+        idempotencyKey: 'p3-api-revisit-session',
+      );
+
+      var current = await api.switchSessionIntent(
+        sessionIntentId: session.id,
+        platformIntentId: 'intent_learn',
+        idempotencyKey: 'p3-api-switch-${session.id}-intent_learn',
+      );
+      expect(current.platformIntentId, 'intent_learn');
+
+      current = await api.switchSessionIntent(
+        sessionIntentId: session.id,
+        platformIntentId: 'intent_for_you',
+        idempotencyKey: 'p3-api-switch-${session.id}-intent_for_you',
+      );
+      expect(current.platformIntentId, 'intent_for_you');
+
+      current = await api.switchSessionIntent(
+        sessionIntentId: session.id,
+        platformIntentId: 'intent_learn',
+        idempotencyKey: 'p3-api-switch-${session.id}-intent_learn',
+      );
+      expect(current.platformIntentId, 'intent_learn');
+
+      current = await api.switchSessionIntent(
+        sessionIntentId: session.id,
+        platformIntentId: 'intent_reset',
+        idempotencyKey: 'p3-api-switch-${session.id}-intent_reset',
+      );
+      expect(current.platformIntentId, 'intent_reset');
+
+      current = await api.switchSessionIntent(
+        sessionIntentId: session.id,
+        platformIntentId: 'intent_for_you',
+        idempotencyKey: 'p3-api-switch-${session.id}-intent_for_you',
+      );
+      expect(current.platformIntentId, 'intent_for_you');
+    },
+  );
+
   test('search returns neutral non-ad results', () async {
     final store = await DemoLocalStore.seeded();
     addTearDown(store.close);

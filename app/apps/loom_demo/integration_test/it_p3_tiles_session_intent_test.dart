@@ -13,8 +13,19 @@ void main() {
     await findDiscoveryKey(tester, 'p3_session_disclosure');
     expect(find.text('Paid placement'), findsWidgets);
 
-    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_trending');
+    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_learn');
+    expect(find.text('Learn feed'), findsOneWidget);
 
-    expect(find.text('Trending feed'), findsOneWidget);
+    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_for_you');
+    expect(find.text('For you feed'), findsOneWidget);
+
+    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_learn');
+    expect(find.text('Learn feed'), findsOneWidget);
+
+    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_reset');
+    expect(find.text('Reset feed'), findsOneWidget);
+
+    await tapDiscoveryKey(tester, 'p3_startup_tile_intent_for_you');
+    expect(find.text('For you feed'), findsOneWidget);
   });
 }

@@ -14,6 +14,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
+      find.byKey(const ValueKey('creator_open_channel_setup_button')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
       find.byKey(const ValueKey('creator_create_channel_button')),
     );
     await tester.pumpAndSettle();
@@ -24,14 +29,27 @@ void main() {
 
     expect(find.text('Channel: Loom Home Lab'), findsOneWidget);
 
+    await tester.tap(
+      find.byKey(const ValueKey('creator_return_to_studio_button')),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey('creator_studio_landing')),
+      findsOneWidget,
+    );
+
     await tester.tap(find.text('Fan App'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Creator Studio'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Channel: Loom Home Lab'), findsOneWidget);
     expect(
-      find.byKey(const ValueKey('creator_open_publishing_setup_button')),
+      find.byKey(const ValueKey('creator_studio_landing')),
+      findsOneWidget,
+    );
+    expect(find.text('Onboarding complete'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('creator_complete_onboarding_tile')),
       findsOneWidget,
     );
   });

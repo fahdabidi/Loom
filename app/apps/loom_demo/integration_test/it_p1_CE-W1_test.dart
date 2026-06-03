@@ -13,6 +13,19 @@ void main() {
     await tester.tap(find.text('Creator Studio'));
     await tester.pumpAndSettle();
 
+    expect(
+      find.byKey(const ValueKey('creator_studio_landing')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('creator_complete_onboarding_tile')),
+      findsOneWidget,
+    );
+    await tester.tap(
+      find.byKey(const ValueKey('creator_open_channel_setup_button')),
+    );
+    await tester.pumpAndSettle();
+
     await tester.tap(
       find.byKey(const ValueKey('creator_create_channel_button')),
     );

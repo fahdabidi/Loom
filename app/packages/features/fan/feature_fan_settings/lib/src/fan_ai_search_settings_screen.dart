@@ -81,7 +81,7 @@ class _FanAiSearchSettingsScreenState extends State<FanAiSearchSettingsScreen> {
           key: const ValueKey('p22_fan_settings_screen'),
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
           children: [
-            _SettingsHeader(onBack: widget.onBack),
+            const _SettingsHeader(),
             const SizedBox(height: 14),
             const DataDashboardRow(
               key: ValueKey('p22_query_egress_disclosure'),
@@ -227,21 +227,12 @@ class _FanAiSearchSettingsScreenState extends State<FanAiSearchSettingsScreen> {
 }
 
 class _SettingsHeader extends StatelessWidget {
-  const _SettingsHeader({required this.onBack});
-
-  final VoidCallback onBack;
+  const _SettingsHeader();
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        TextButton.icon(
-          key: const ValueKey('p22_settings_back_button'),
-          onPressed: onBack,
-          icon: const Icon(Icons.home_rounded),
-          label: const Text('Return to Feed'),
-        ),
-        const SizedBox(width: 10),
         Expanded(
           child: Text(
             'AI search settings',

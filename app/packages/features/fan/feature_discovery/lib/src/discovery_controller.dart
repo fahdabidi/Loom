@@ -23,6 +23,7 @@ class DiscoveryController extends ChangeNotifier {
 
   bool loading = false;
   bool loadingMore = false;
+  bool selectingIntent = false;
   String? errorMessage;
   List<PlatformIntent> startupTiles = const [];
   SessionIntent? sessionIntent;
@@ -61,21 +62,31 @@ class DiscoveryController extends ChangeNotifier {
   }
 
   Future<void> selectIntent(PlatformIntent intent) async {
-    final current = sessionIntent;
-    if (current == null) {
-      sessionIntent = await _recommendationApi.createSessionIntent(
-        passportId: passportId,
-        platformIntentId: intent.id,
-        idempotencyKey: 'p3-session-${intent.id}',
-      );
-    } else {
-      sessionIntent = await _recommendationApi.switchSessionIntent(
-        sessionIntentId: current.id,
-        platformIntentId: intent.id,
-        idempotencyKey: 'p3-switch-${current.id}-${intent.id}',
-      );
+    if (selectingIntent) {
+      return;
     }
-    await refreshFeed();
+    selectingIntent = true;
+    notifyListeners();
+    try {
+      final current = sessionIntent;
+      if (current == null) {
+        sessionIntent = await _recommendationApi.createSessionIntent(
+          passportId: passportId,
+          platformIntentId: intent.id,
+          idempotencyKey: 'p3-session-${intent.id}',
+        );
+      } else {
+        sessionIntent = await _recommendationApi.switchSessionIntent(
+          sessionIntentId: current.id,
+          platformIntentId: intent.id,
+          idempotencyKey: 'p3-switch-${current.id}-${intent.id}',
+        );
+      }
+      await refreshFeed();
+    } finally {
+      selectingIntent = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refreshFeed() async {

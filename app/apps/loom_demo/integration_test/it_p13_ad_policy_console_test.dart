@@ -10,9 +10,20 @@ void main() {
     await tester.pumpWidget(await buildLoomDemoAppForTest());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('p13_open_ad_policy_button')));
+    await tester.tap(find.text('Creator Studio'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('p2_save_ad_policy_button')));
+
+    final adPolicyButton = find.byKey(
+      const ValueKey('p13_open_ad_policy_button'),
+    );
+    await tester.ensureVisible(adPolicyButton);
+    await tester.pumpAndSettle();
+    await tester.tap(adPolicyButton);
+    await tester.pumpAndSettle();
+    final saveButton = find.byKey(const ValueKey('p2_save_ad_policy_button'));
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
     expect(

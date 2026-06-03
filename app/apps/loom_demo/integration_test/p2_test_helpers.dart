@@ -8,6 +8,10 @@ Future<void> openCreatorPublishingSetup(WidgetTester tester) async {
 
   await tester.tap(find.text('Creator Studio'));
   await tester.pumpAndSettle();
+  await tester.tap(
+    find.byKey(const ValueKey('creator_open_channel_setup_button')),
+  );
+  await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('creator_create_channel_button')));
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('creator_accept_hosting_button')));

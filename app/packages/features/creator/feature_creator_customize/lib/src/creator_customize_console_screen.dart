@@ -63,7 +63,6 @@ class _CreatorCustomizeConsoleScreenState
         if (_controller.errorMessage != null) {
           return _CustomizeError(
             message: _controller.errorMessage!,
-            onBack: widget.onBack,
             onRetry: _controller.load,
           );
         }
@@ -72,7 +71,6 @@ class _CreatorCustomizeConsoleScreenState
         if (home == null || config == null) {
           return _CustomizeError(
             message: 'Creator customization state is unavailable.',
-            onBack: widget.onBack,
             onRetry: _controller.load,
           );
         }
@@ -82,7 +80,6 @@ class _CreatorCustomizeConsoleScreenState
           busy: _controller.busy,
           dirty: _controller.dirty,
           status: _controller.statusMessage,
-          onBack: widget.onBack,
           onSave: _controller.save,
           editor: _Editor(controller: _controller, config: config),
           preview: _Preview(home: home, config: config),
@@ -402,14 +399,9 @@ class _Preview extends StatelessWidget {
 }
 
 class _CustomizeError extends StatelessWidget {
-  const _CustomizeError({
-    required this.message,
-    required this.onBack,
-    required this.onRetry,
-  });
+  const _CustomizeError({required this.message, required this.onRetry});
 
   final String message;
-  final VoidCallback onBack;
   final VoidCallback onRetry;
 
   @override
@@ -417,11 +409,6 @@ class _CustomizeError extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
       children: [
-        IconButton(
-          onPressed: onBack,
-          alignment: Alignment.centerLeft,
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
         LoomErrorState(
           title: 'Customization unavailable',
           body: message,

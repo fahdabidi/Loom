@@ -59,11 +59,6 @@ class _CreatorRevenueDashboardScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p6_revenue_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Revenue',

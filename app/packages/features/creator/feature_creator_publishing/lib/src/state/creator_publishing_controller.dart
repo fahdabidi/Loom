@@ -152,12 +152,18 @@ class CreatorPublishingController extends ChangeNotifier {
     });
   }
 
-  Future<void> saveAdPolicy() async {
+  Future<void> saveAdPolicy({
+    List<String> allowedCategories = const [
+      'home_energy',
+      'sustainable_living',
+    ],
+    List<String> blockedCategories = const ['gambling', 'alcohol'],
+  }) async {
     await _run(() async {
       adPolicy = await _metadataApi.setCreatorAdPolicy(
         channelId: channelId,
-        allowedCategories: const ['home_energy', 'sustainable_living'],
-        blockedCategories: const ['gambling', 'alcohol'],
+        allowedCategories: allowedCategories,
+        blockedCategories: blockedCategories,
         formats: const ['pre_roll', 'sponsor_card'],
         surfaces: const ['watch', 'channel'],
         idempotencyKey: 'p2-ad-policy-$channelId',

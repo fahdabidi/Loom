@@ -5,8 +5,13 @@ import 'package:loom_design_system/loom_design_system.dart';
 import '../state/creator_onboarding_controller.dart';
 
 class CreatorOnboardingScreen extends StatefulWidget {
-  const CreatorOnboardingScreen({this.onOpenPublishingSetup, super.key});
+  const CreatorOnboardingScreen({
+    this.onComplete,
+    this.onOpenPublishingSetup,
+    super.key,
+  });
 
+  final VoidCallback? onComplete;
   final VoidCallback? onOpenPublishingSetup;
 
   @override
@@ -82,6 +87,7 @@ class _CreatorOnboardingScreenState extends State<CreatorOnboardingScreen> {
             handleController: _handleController,
             descriptionController: _descriptionController,
             verticalController: _verticalController,
+            onComplete: widget.onComplete,
             onOpenPublishingSetup: widget.onOpenPublishingSetup,
           ),
         );
@@ -182,6 +188,7 @@ class _PrimaryAction extends StatelessWidget {
     required this.handleController,
     required this.descriptionController,
     required this.verticalController,
+    required this.onComplete,
     required this.onOpenPublishingSetup,
   });
 
@@ -190,6 +197,7 @@ class _PrimaryAction extends StatelessWidget {
   final TextEditingController handleController;
   final TextEditingController descriptionController;
   final TextEditingController verticalController;
+  final VoidCallback? onComplete;
   final VoidCallback? onOpenPublishingSetup;
 
   @override
@@ -214,7 +222,12 @@ class _PrimaryAction extends StatelessWidget {
       case CreatorOnboardingStep.hosting:
         return FilledButton.icon(
           key: const ValueKey('creator_accept_hosting_button'),
-          onPressed: controller.acceptManagedHosting,
+          onPressed: () async {
+            await controller.acceptManagedHosting();
+            if (controller.step == CreatorOnboardingStep.complete) {
+              onComplete?.call();
+            }
+          },
           icon: const Icon(Icons.cloud_done_outlined),
           label: const Text('Accept managed hosting'),
         );

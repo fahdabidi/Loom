@@ -167,13 +167,6 @@ class _CampaignEntryScreenState extends State<CampaignEntryScreen> {
       children: [
         Row(
           children: [
-            TextButton.icon(
-              key: const ValueKey('p8_campaigns_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.home_rounded),
-              label: const Text('Return to Feed'),
-            ),
-            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'Campaigns',

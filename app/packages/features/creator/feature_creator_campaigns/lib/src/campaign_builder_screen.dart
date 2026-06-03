@@ -100,11 +100,6 @@ class _CreatorCampaignBuilderScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p8_campaign_builder_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Campaigns',

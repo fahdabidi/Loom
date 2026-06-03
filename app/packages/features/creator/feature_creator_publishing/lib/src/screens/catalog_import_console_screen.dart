@@ -96,11 +96,6 @@ class _CatalogImportConsoleScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p13_catalog_import_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Catalog import',

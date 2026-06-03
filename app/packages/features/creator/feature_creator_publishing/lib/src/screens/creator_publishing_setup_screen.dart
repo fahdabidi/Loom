@@ -59,7 +59,12 @@ class _CreatorPublishingSetupScreenState
           key: const ValueKey('p2_studio_scroll'),
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 120),
           children: [
-            _StudioHeader(isLoading: _controller.isLoading),
+            _StudioHeader(
+              isLoading: _controller.isLoading,
+              statusLabel: _setupStatusLabel,
+              headline: _setupHeadline,
+              detail: _setupDetail,
+            ),
             const SizedBox(height: LoomSpacing.md),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -98,7 +103,9 @@ class _CreatorPublishingSetupScreenState
                   _controller.publishWithoutSummary(_titleController.text),
               onPublishVideo: () => _controller.publishVideo(
                 title: _titleController.text,
-                summary: _summaryController.text,
+                summary: _summaryController.text.isEmpty
+                    ? 'Video uploaded; creator-approved summary pending.'
+                    : _summaryController.text,
               ),
               onPublishPost: () => _controller.publishPost(
                 title: _titleController.text,
@@ -138,10 +145,19 @@ class _CreatorPublishingSetupScreenState
               ),
             const SizedBox(height: LoomSpacing.md),
             StudioAdPolicyEditor(
+              initialAllowedCategories:
+                  _controller.adPolicy?.allowedCategories ??
+                  const ['home_energy', 'sustainable_living'],
+              initialBlockedCategories:
+                  _controller.adPolicy?.blockedCategories ??
+                  const ['gambling', 'alcohol'],
               savedLabel: _controller.adPolicy == null
                   ? 'Contextual ads may run until policy is saved.'
-                  : 'Policy saved - blocks gambling and alcohol.',
-              onSavePolicy: _controller.saveAdPolicy,
+                  : 'Policy saved - allows ${_controller.adPolicy!.allowedCategories.join(', ')}; blocks ${_controller.adPolicy!.blockedCategories.join(', ')}.',
+              onSavePolicy: (selection) => _controller.saveAdPolicy(
+                allowedCategories: selection.allowedCategories,
+                blockedCategories: selection.blockedCategories,
+              ),
             ),
             if (_controller.adPolicy != null)
               const _StatusLine(
@@ -171,12 +187,77 @@ class _CreatorPublishingSetupScreenState
     }
     return job.state.name;
   }
+
+  String get _setupStatusLabel {
+    if ((_controller.aiPolicy?.archiveQaEnabled ?? false) &&
+        _controller.adPolicy != null &&
+        _controller.entitlements.isNotEmpty &&
+        _controller.importJob?.state.name == 'complete' &&
+        _controller.publishedCount > 0) {
+      return 'Phase 2 complete';
+    }
+    if (_controller.aiPolicy?.archiveQaEnabled ?? false) {
+      return 'AI ready';
+    }
+    if (_controller.adPolicy != null) {
+      return 'Ad policy saved';
+    }
+    if (_controller.entitlements.isNotEmpty) {
+      return 'Memberships ready';
+    }
+    if (_controller.importJob?.state.name == 'complete') {
+      return 'Catalog imported';
+    }
+    if (_controller.lastPublished != null) {
+      return 'Content published';
+    }
+    return 'Phase 2 setup';
+  }
+
+  String get _setupHeadline {
+    if (_controller.publishedCount == 0) {
+      return 'Prepare content, money, ads, and AI before discovery.';
+    }
+    if (_controller.adPolicy != null) {
+      return 'Latest setup: ad policy saved and discovery controls updated.';
+    }
+    if (_controller.entitlements.isNotEmpty) {
+      return 'Latest setup: memberships and entitlements registered.';
+    }
+    if (_controller.importJob?.state.name == 'complete') {
+      return 'Latest setup: catalog import completed.';
+    }
+    return 'Latest setup: content is published for discovery.';
+  }
+
+  String get _setupDetail {
+    final completed = <String>[
+      if (_controller.publishedCount > 0)
+        '${_controller.publishedCount} published item${_controller.publishedCount == 1 ? '' : 's'}',
+      if (_controller.importJob?.state.name == 'complete') 'catalog imported',
+      if (_controller.entitlements.isNotEmpty) 'memberships ready',
+      if (_controller.adPolicy != null) 'ad policy saved',
+      if (_controller.aiPolicy?.archiveQaEnabled ?? false) 'AI enabled',
+    ];
+    if (completed.isEmpty) {
+      return 'This work console keeps the publishing path visible while advanced controls stay compact.';
+    }
+    return completed.join(' | ');
+  }
 }
 
 class _StudioHeader extends StatelessWidget {
-  const _StudioHeader({required this.isLoading});
+  const _StudioHeader({
+    required this.isLoading,
+    required this.statusLabel,
+    required this.headline,
+    required this.detail,
+  });
 
   final bool isLoading;
+  final String statusLabel;
+  final String headline;
+  final String detail;
 
   @override
   Widget build(BuildContext context) {
@@ -191,9 +272,10 @@ class _StudioHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Chip(
-                label: Text('Phase 2 setup'),
-                avatar: Icon(Icons.tune_rounded, size: 18),
+              Chip(
+                key: const ValueKey('p2_setup_status_chip'),
+                label: Text(statusLabel),
+                avatar: const Icon(Icons.tune_rounded, size: 18),
               ),
               const Spacer(),
               if (isLoading)
@@ -206,7 +288,7 @@ class _StudioHeader extends StatelessWidget {
           ),
           const SizedBox(height: LoomSpacing.md),
           Text(
-            'Prepare content, money, ads, and AI before discovery.',
+            headline,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: LoomColors.surface,
               fontWeight: FontWeight.w900,
@@ -215,7 +297,7 @@ class _StudioHeader extends StatelessWidget {
           ),
           const SizedBox(height: LoomSpacing.sm),
           Text(
-            'This work console keeps the publishing path visible while advanced controls stay compact.',
+            detail,
             style: TextStyle(color: LoomColors.surface.withAlpha(210)),
           ),
         ],

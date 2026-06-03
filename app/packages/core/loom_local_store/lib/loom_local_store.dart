@@ -3846,7 +3846,7 @@ class DemoLocalStore {
     );
     if (existing != null) {
       final session = await sessionIntentById(existing);
-      if (session != null) {
+      if (session != null && session.platformIntentId == platformIntentId) {
         return session;
       }
     }

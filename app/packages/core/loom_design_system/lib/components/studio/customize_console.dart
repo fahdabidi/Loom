@@ -9,7 +9,6 @@ class StudioCustomizeConsole extends StatelessWidget {
     required this.subtitle,
     required this.busy,
     required this.dirty,
-    required this.onBack,
     required this.onSave,
     required this.editor,
     required this.preview,
@@ -21,7 +20,6 @@ class StudioCustomizeConsole extends StatelessWidget {
   final String subtitle;
   final bool busy;
   final bool dirty;
-  final VoidCallback onBack;
   final VoidCallback onSave;
   final String? status;
   final Widget editor;
@@ -35,12 +33,6 @@ class StudioCustomizeConsole extends StatelessWidget {
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p19_customize_back_button'),
-              onPressed: onBack,
-              tooltip: 'Back',
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

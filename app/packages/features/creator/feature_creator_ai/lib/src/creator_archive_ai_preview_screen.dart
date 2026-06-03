@@ -63,11 +63,6 @@ class _CreatorArchiveAiPreviewScreenState
       children: [
         Row(
           children: [
-            IconButton(
-              key: const ValueKey('p13_creator_ai_back_button'),
-              onPressed: widget.onBack,
-              icon: const Icon(Icons.arrow_back_rounded),
-            ),
             Expanded(
               child: Text(
                 'Archive AI',
