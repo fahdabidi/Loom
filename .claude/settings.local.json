@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(wsl -d Ubuntu -- bash -lc 'uname -a; echo \"---redocly---\"; which redocly || npx --no-install redocly --version 2>/dev/null || echo no-redocly; echo \"---swagger-cli---\"; which swagger-cli || echo no-swagger-cli; echo \"---spectral---\"; which spectral || echo no-spectral; echo \"---node---\"; node --version 2>/dev/null || echo no-node; echo \"---python yaml---\"; python3 -c \"import yaml; print\\(\\\\\"pyyaml-ok\\\\\"\\)\" 2>/dev/null || echo no-pyyaml')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom && timeout 180 npx -y @redocly/cli@latest --version 2>&1 | tail -5')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/API/OpenAPI && timeout 240 npx -y @redocly/cli@latest lint \\\\ *)",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/API/OpenAPI && timeout 200 npx -y @redocly/cli@latest lint \\\\ *)",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom && echo \"=== .gitignore \\(data?\\) ===\"; grep -n \"data\" .gitignore 2>/dev/null || echo \"\\(no data entry / no gitignore\\)\"; echo \"=== data dir? ===\"; ls -la data 2>/dev/null | head || echo \"\\(no data dir yet\\)\"; echo \"=== python-pptx? ===\"; python3 -c \"import pptx; print\\(\\\\\"pptx\\\\\", pptx.__version__\\)\" 2>/dev/null || echo \"no-pptx\"; echo \"=== git check-ignore ===\"; git check-ignore -v data/test.pptx 2>/dev/null || echo \"\\(data not currently ignored\\)\"')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom/data && python3 build_deck.py 2>&1 | tail -15')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom && ls -la data/Loom_Investor_Deck.pptx && echo \"--- git status \\(should be clean of data/\\) ---\" && git status --porcelain | grep -i \"data/\" || echo \"data/ is untracked-ignored \\(not shown by git\\) ✓\" && echo \"--- check-ignore ---\" && git check-ignore -v data/Loom_Investor_Deck.pptx')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'cd /mnt/c/Users/fahd_/OneDrive/Documents/Loom/data && python3 build_deck.py 2>&1 | tail -5 && echo \"--- soffice? ---\" && \\(which soffice libreoffice 2>/dev/null || echo \"no-soffice\"\\)')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'sudo -n true 2>/dev/null && echo \"SUDO_OK\" || echo \"SUDO_NEEDS_PASSWORD\"; echo \"--- installing \\(this can take several minutes\\) ---\"; sudo -n DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 | tail -2; sudo -n DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libreoffice-impress poppler-utils 2>&1 | tail -6; echo \"--- versions ---\"; \\(soffice --version 2>/dev/null || libreoffice --version 2>/dev/null\\) | head -1; pdftoppm -v 2>&1 | head -1')",
+      "Bash(wsl -d Ubuntu -- bash -lc 'pip install --user --break-system-packages -q pymupdf 2>&1 | tail -2; python3 -c \"import fitz; print\\(\\\\\"pymupdf\\\\\", fitz.__doc__.split\\(chr\\(10\\)\\)[0] if fitz.__doc__ else \\\\\"ok\\\\\"\\)\" 2>&1 | tail -1; echo \"--- probe AppImage URLs ---\"; for u in \"https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage\" \"https://libreoffice.soluzioniopen.com/daily/full/LibreOffice.full-x86_64.AppImage\"; do code=$\\(curl -s -o /dev/null -L --max-time 25 -w \"%{http_code} %{size_download}\" -r 0-0 \"$u\"\\); echo \"$code  $u\"; done')",
+      "Bash(wsl -d *)",
+      "Bash(cd \"/mnt/c/Users/fahd_/OneDrive/Documents/Loom\" && echo \"=== data tree ===\" && find data -type d 2>/dev/null | head -50; echo \"=== Search folder files ===\" && find . -path ./node_modules -prune -o -iname \"*semantic*\" -print 2>/dev/null; find . -iname \"*integration changes*\" 2>/dev/null)",
+      "Read(//mnt/c/Users/fahd_/OneDrive/Documents/**)"
+    ]
+  }
+}
