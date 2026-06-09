@@ -275,6 +275,12 @@ are deferred until a hosted Loom build and validation backend exists.
 | --- | --- | --- | --- | --- |
 | `wf_book-club-headline` | workflow | none | community-registry, events-service, forms-voting-service, publishing-service, messaging-stream-service, search-service, ai-gateway, digest-service, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
+## Phase B3 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_youth-soccer-headline` | workflow | none | membership-service, spaces-service, protected-visibility-vault, wallet-dues-donations, events-service, notification-service, app-shell-runtime, community-registry, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |

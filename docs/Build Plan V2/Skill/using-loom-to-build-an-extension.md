@@ -267,3 +267,7 @@ and App Shell fakes until a hosted Loom backend is available.
 Phase B2 adds the first vertical workflow guide: `workflows/book-club-headline.md`. Use it to compose
 forms, polls, events, publishing, discussion, search, AI, and digest features into a complete book club
 extension, then validate the flow in the Demo App with Local Backend.
+
+Phase B3 adds `workflows/youth-soccer-headline.md`. Use it for guardian membership, team spaces,
+protected minor data, registration payments, schedule events, notifications, and local Demo App
+validation of a youth sports extension.

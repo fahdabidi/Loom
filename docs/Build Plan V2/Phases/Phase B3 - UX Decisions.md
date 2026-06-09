@@ -1,6 +1,6 @@
 # Phase B3 - UX Decisions
 
-Status: Template
+Status: Completed
 
 ## Reference Sources Reviewed
 
@@ -8,19 +8,27 @@ Youth sports registration, guardian consent, roster, schedule, and payment patte
 
 ## UX Patterns Extracted
 
-Record protected minor data, payment, roster, and schedule UX patterns.
+- Protected minor data is never displayed directly in roster cards.
+- Guardian registration and payment are separate states so failed payment does not expose protected data.
+- Team spaces are the roster boundary.
+- Schedule notifications should dedupe by event/reminder key.
 
 ## Key UX Decisions
 
-Record minor-data disclosure and role-limited display decisions.
+- Roster views show approved member/team state, not sensitive minor fields.
+- Protected-vault reads must show redacted values unless the actor has the required permission.
+- Practice reminders are local notification events in the preliminary app.
 
 ## Workflow Walkthrough
 
-Walk through `wf_youth-soccer-headline`.
+`wf_youth-soccer-headline` installs a local youth soccer community, approves membership, creates the
+team space, stores protected minor data, records registration payment, creates a practice event,
+delivers a reminder, and opens `local:ext_youth_soccer@latest`.
 
 ## Open Questions
 
-Record unresolved workflow UX risks.
+- How much roster data guardians can export.
+- Whether team chat belongs in the headline workflow or the later messaging phase.
 
 ## WSL Ubuntu Tooling Requirement
 

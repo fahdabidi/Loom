@@ -1,6 +1,6 @@
 # Phase B3 - API Review
 
-Status: Template
+Status: Completed
 
 ## Scope
 
@@ -9,15 +9,19 @@ schedule, notifications.
 
 ## Review Checklist
 
-- Guardian/minor data classes.
-- Protected-vault read/write shape.
-- Registration payment and entitlement.
-- Roster role policy.
-- Schedule notification payloads.
+- Guardian/minor data classes: represented as extension schema fields with protected-vault storage.
+- Protected-vault read/write shape: `CommunityProtectedVaultApi.writeProtectedRecord` and
+  `readProtectedRecord` cover permission-gated redaction.
+- Registration payment and entitlement: `CommunityWalletApi.recordPayment` covers dues-style
+  registration payment.
+- Roster role policy: membership approval plus team space creation define the preliminary roster.
+- Schedule notification payloads: `CommunityEventsApi.createEvent` and `CommunityNotificationApi`
+  cover schedule/reminder behavior.
 
 ## OpenAPI Outputs
 
-Record workflow-driven spec gaps.
+- Future OpenAPI should formalize guardian/minor profile schemas and roster-safe display rules. B3 is
+  otherwise covered by existing local component contracts.
 
 ## WSL Ubuntu Tooling Requirement
 

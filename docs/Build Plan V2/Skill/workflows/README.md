@@ -24,3 +24,7 @@ Each guide must include:
 ## Phase B2 Guides
 
 - [book-club-headline.md](./book-club-headline.md)
+
+## Phase B3 Guides
+
+- [youth-soccer-headline.md](./youth-soccer-headline.md)

@@ -47,7 +47,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B1a | Complete | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | WSL Ubuntu bootstrap, B1a workflow tests, A6 Demo App regression, focused Demo App analysis, Skill prereq check/setup, manifest gate, phase gate, and boundary lint pass. | `df6f543` |
 | B1b | Complete | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | B1b workflow test, B1a regression, A6 Demo App regression, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | `7825b59` |
 | B2 | Complete | B1b | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | Book club workflow test, B1a/B1b regressions, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | `e362090` |
-| B3 | Not started | B2 | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | TBD | TBD |
+| B3 | Complete | B2 | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | Youth soccer workflow test, prior Set B regressions, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | pending commit |
 | B4 | Not started | B3 | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | TBD | TBD |
 | B5 | Not started | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | TBD | TBD |
 | B6 | Not started | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | TBD | TBD |
@@ -420,6 +420,18 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   data, permission, and payment regressions pass.
 - **Evidence to record:** Workflow output, protected-data assertions, payment test output, API Review and
   UX Decisions paths, Skill example paths, commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Implemented workflow test:** Added
+  `apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart`.
+- **Validated end state:** The workflow approves guardian membership, creates a team space, writes and
+  reads protected minor data with redaction, records registration payment, creates a practice event,
+  delivers a deduped reminder, and opens `local:ext_youth_soccer@latest`.
+- **Skill and examples:** Added `Skill/workflows/youth-soccer-headline.md` and
+  `Skill/examples/youth-soccer/phase-b3-headline/`.
+- **Manifest stamps:** ai-skill-extension-builder `ebb94a52333e`; workflow-validation-harness
+  `2d7b10969bb6`; `wf_youth-soccer-headline` test hash `e404d2433f01`.
 
 ### Phase B4 - HOA Headline Flow
 
