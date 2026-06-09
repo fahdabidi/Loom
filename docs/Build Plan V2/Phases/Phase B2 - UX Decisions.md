@@ -1,6 +1,6 @@
 # Phase B2 - UX Decisions
 
-Status: Template
+Status: Completed
 
 ## Reference Sources Reviewed
 
@@ -8,19 +8,28 @@ Book club, poll, event, discussion, and digest examples.
 
 ## UX Patterns Extracted
 
-Record nomination, voting, event, discussion, and digest patterns.
+- The first screen should show current book selection, vote status, and the next meeting.
+- Nomination and voting are separate cards to avoid accidental duplicate submissions.
+- Digest output must show citations back to indexed community content.
+- Discussion is a thread entry point, not a replacement for the main stream.
 
 ## Key UX Decisions
 
-Record book club app layout, state, and empty/error behavior.
+- Empty state prompts members to nominate the first book.
+- Winning-selection publish creates a stream item and a searchable record.
+- Meeting RSVP shows ticket state when capacity is enforced.
+- Digest failures should identify whether search, AI, or citation generation owns the failure.
 
 ## Workflow Walkthrough
 
-Walk through `wf_book-club-headline`.
+`wf_book-club-headline` installs a local book club community, submits a nomination, records a vote,
+creates a meeting, RSVPs, publishes the winning selection, starts a discussion, indexes the published
+selection, creates a cited digest, and opens `local:ext_book_club@latest`.
 
 ## Open Questions
 
-Record unresolved workflow UX risks.
+- Whether nominations should be anonymous by default.
+- Whether digest cards should appear in the main stream or a separate recap surface.
 
 ## WSL Ubuntu Tooling Requirement
 

@@ -269,6 +269,12 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_ai-skill_generate-package` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
 | `wf_build-publish-discover-install` | workflow | none | ai-skill-extension-builder, builder-app-id-service, extension-registry, certification-system, community-registry, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
+## Phase B2 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_book-club-headline` | workflow | none | community-registry, events-service, forms-voting-service, publishing-service, messaging-stream-service, search-service, ai-gateway, digest-service, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |

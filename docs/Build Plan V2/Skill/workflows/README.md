@@ -20,3 +20,7 @@ Each guide must include:
 ## Phase B1b Guides
 
 - [build-publish-discover-install.md](./build-publish-discover-install.md)
+
+## Phase B2 Guides
+
+- [book-club-headline.md](./book-club-headline.md)

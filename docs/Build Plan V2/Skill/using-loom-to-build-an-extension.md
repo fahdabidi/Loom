@@ -263,3 +263,7 @@ Phase B1b proves the `real-backend-publish` workflow shape while still validatin
 builder App ID metadata, signing scope, package ID, certification evidence, community handle, QR
 payload, and latest-open routing. The validation loop uses local registry, certification, discovery,
 and App Shell fakes until a hosted Loom backend is available.
+
+Phase B2 adds the first vertical workflow guide: `workflows/book-club-headline.md`. Use it to compose
+forms, polls, events, publishing, discussion, search, AI, and digest features into a complete book club
+extension, then validate the flow in the Demo App with Local Backend.

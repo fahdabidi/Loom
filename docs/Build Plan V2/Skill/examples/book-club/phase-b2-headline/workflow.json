@@ -1,0 +1,27 @@
+{
+  "workflowId": "wf_book-club-headline",
+  "communityType": "book-club",
+  "forms": [
+    {
+      "formId": "book_nomination",
+      "fields": ["book"]
+    }
+  ],
+  "polls": [
+    {
+      "pollId": "book_vote",
+      "options": ["parable"]
+    }
+  ],
+  "events": [
+    {
+      "title": "Discuss Parable of the Sower",
+      "capacity": 24
+    }
+  ],
+  "threads": ["book_discussion"],
+  "digest": {
+    "query": "Parable",
+    "requiresCitations": true
+  }
+}
