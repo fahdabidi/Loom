@@ -27,3 +27,15 @@ Each guide must include:
 - [event-bus.md](./event-bus.md)
 - [key-management.md](./key-management.md)
 - [builder-app-id-service.md](./builder-app-id-service.md)
+
+## Phase A2 Guides
+
+- [workflow-inventory-registry.md](./workflow-inventory-registry.md)
+- [phase-test-manifest-bridge.md](./phase-test-manifest-bridge.md)
+- [community-registry.md](./community-registry.md)
+- [spaces-service.md](./spaces-service.md)
+- [membership-service.md](./membership-service.md)
+- [invitation-service.md](./invitation-service.md)
+- [extension-registry.md](./extension-registry.md)
+- [certification-system.md](./certification-system.md)
+- [public-registry-read-model.md](./public-registry-read-model.md)

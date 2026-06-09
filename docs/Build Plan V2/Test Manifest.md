@@ -61,8 +61,32 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_protected-vault__ads_no-fill-sensitive` | contract | protected-visibility-vault | protected-visibility-vault, ad-decision-service | pending-counterpart |
 | `ct_receipt-ledger__wallet_append-payment` | contract | receipt-ledger | receipt-ledger, wallet-dues-donations | pending-counterpart |
 | `ct_event-bus__rule-engine_publish-replay` | contract | event-bus | event-bus, rule-engine | pending-counterpart |
-| `ct_connections__invitation_blocked-path` | contract | connections-graph | connections-graph, invitation-service | pending-counterpart |
-| `ct_builder-app-id__extension-registry_signing-scope` | contract | builder-app-id-service | builder-app-id-service, extension-registry | pending-counterpart |
+| `ct_connections__invitation_blocked-path` | contract | connections-graph | connections-graph, invitation-service | pass |
+| `ct_builder-app-id__extension-registry_signing-scope` | contract | builder-app-id-service | builder-app-id-service, extension-registry | pass |
+
+## Phase A2 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_workflow-inventory_test-index` | validation | workflow-inventory-registry | workflow-inventory-registry | pass |
+| `vt_test-manifest_staleness` | validation | phase-test-manifest-bridge | phase-test-manifest-bridge | pass |
+| `vt_community-registry_discovery` | validation | community-registry | community-registry | pass |
+| `vt_community-registry_branding` | validation | community-registry | community-registry | pass |
+| `vt_spaces_nesting` | validation | spaces-service | spaces-service, community-registry | pass |
+| `vt_membership_join-approval` | validation | membership-service | membership-service, passport-ledger, community-registry | pass |
+| `vt_invitation_create-revoke` | validation | invitation-service | invitation-service, connections-graph | pass |
+| `vt_extension-registry_resolve-latest` | validation | extension-registry | extension-registry, certification-system | pass |
+| `vt_certification_validate-package` | validation | certification-system | certification-system | pass |
+| `vt_certification_asset-evidence` | validation | certification-system | certification-system | pass |
+| `vt_public-registry_status` | validation | public-registry-read-model | public-registry-read-model | pass |
+| `ct_certification__extension-registry_certify-package` | contract | certification-system | certification-system, extension-registry | pass |
+| `ct_community-registry__extension-registry_installed-pointers` | contract | community-registry | community-registry, extension-registry | pass |
+| `ct_invitation__membership_accept` | contract | invitation-service | invitation-service, membership-service | pass |
+| `ct_spaces__membership_space-join` | contract | spaces-service | spaces-service, membership-service | pass |
+| `ct_community-registry__app-shell_resolve-by-qr` | contract | community-registry | community-registry, app-shell-runtime | pending-counterpart |
+| `ct_extension-registry__app-shell_resolve-latest` | contract | extension-registry | extension-registry, app-shell-runtime | pending-counterpart |
+| `ct_membership__app-shell_member-state` | contract | membership-service | membership-service, app-shell-runtime | pending-counterpart |
+| `ct_public-registry__app-shell_trust-state` | contract | public-registry-read-model | public-registry-read-model, app-shell-runtime | pending-counterpart |
 
 ## Set B - Workflow Phases
 

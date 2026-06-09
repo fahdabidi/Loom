@@ -31,8 +31,8 @@
       "layer": "tooling",
       "phase": "0",
       "contract": "TestManifestSchema",
-      "version": "planned",
-      "fakePresent": false
+      "version": "89e620c5af33",
+      "fakePresent": true
     },
     {
       "id": "skill-debug-harness",
@@ -151,64 +151,64 @@
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityCertificationApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "7d026e0c94bc",
+      "fakePresent": true
     },
     {
       "id": "community-registry",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityRegistryApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "10643e91b879",
+      "fakePresent": true
     },
     {
       "id": "extension-registry",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityExtensionRegistryApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "845149fec120",
+      "fakePresent": true
     },
     {
       "id": "invitation-service",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityInvitationApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "d762581a0d01",
+      "fakePresent": true
     },
     {
       "id": "membership-service",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityMembershipApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "743b4c1a71e2",
+      "fakePresent": true
     },
     {
       "id": "public-registry-read-model",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityPublicRegistryApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "092951c163e1",
+      "fakePresent": true
     },
     {
       "id": "spaces-service",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunitySpacesApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "669c7e405b9a",
+      "fakePresent": true
     },
     {
       "id": "workflow-inventory-registry",
       "layer": "registry",
       "phase": "A2",
       "contract": "CommunityWorkflowInventoryApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "7ab9c7b379ee",
+      "fakePresent": true
     },
     {
       "id": "events-service",
@@ -673,13 +673,14 @@
         "extension-registry"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
       "lastRunComponentVersions": {
-        "builder-app-id-service": "46dfcdb9934e"
+        "builder-app-id-service": "46dfcdb9934e",
+        "extension-registry": "845149fec120"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_connections__invitation_blocked-path",
@@ -693,13 +694,14 @@
         "invitation-service"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
       "lastRunComponentVersions": {
-        "connections-graph": "297b5d201b5f"
+        "connections-graph": "297b5d201b5f",
+        "invitation-service": "d762581a0d01"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_event-bus__rule-engine_publish-replay",
@@ -958,11 +960,14 @@
         "extension-registry"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "certification-system": "7d026e0c94bc",
+        "extension-registry": "845149fec120"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_community-registry__app-shell_resolve-by-qr",
@@ -977,9 +982,11 @@
       ],
       "phase": "A2",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "67c8b32b08c8",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "community-registry": "10643e91b879"
+      },
       "lastRunAt": null
     },
     {
@@ -994,11 +1001,14 @@
         "extension-registry"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "community-registry": "10643e91b879",
+        "extension-registry": "845149fec120"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_extension-registry__app-shell_resolve-latest",
@@ -1013,9 +1023,11 @@
       ],
       "phase": "A2",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "67c8b32b08c8",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "extension-registry": "845149fec120"
+      },
       "lastRunAt": null
     },
     {
@@ -1030,11 +1042,14 @@
         "membership-service"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "invitation-service": "d762581a0d01",
+        "membership-service": "743b4c1a71e2"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_membership__app-shell_member-state",
@@ -1049,9 +1064,11 @@
       ],
       "phase": "A2",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "67c8b32b08c8",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "membership-service": "743b4c1a71e2"
+      },
       "lastRunAt": null
     },
     {
@@ -1067,9 +1084,11 @@
       ],
       "phase": "A2",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "67c8b32b08c8",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "public-registry-read-model": "092951c163e1"
+      },
       "lastRunAt": null
     },
     {
@@ -1084,11 +1103,14 @@
         "membership-service"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "spaces-service": "669c7e405b9a",
+        "membership-service": "743b4c1a71e2"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_certification_validate-package",
@@ -1102,11 +1124,13 @@
         "public-registry-read-model"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "certification-system": "7d026e0c94bc"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_certification_asset-evidence",
@@ -1119,11 +1143,13 @@
         "extension-registry"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "certification-system": "7d026e0c94bc"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_community-registry_discovery",
@@ -1137,11 +1163,13 @@
         "search-service"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "community-registry": "10643e91b879"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_community-registry_branding",
@@ -1155,11 +1183,13 @@
         "loom-communities-demo-app"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "community-registry": "10643e91b879"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_extension-registry_resolve-latest",
@@ -1174,11 +1204,14 @@
         "extension-runtime-bridge"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "extension-registry": "845149fec120",
+        "certification-system": "7d026e0c94bc"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_invitation_create-revoke",
@@ -1193,11 +1226,14 @@
         "app-shell-runtime"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "invitation-service": "d762581a0d01",
+        "connections-graph": "297b5d201b5f"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_membership_join-approval",
@@ -1213,11 +1249,15 @@
         "notification-service"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "membership-service": "743b4c1a71e2",
+        "passport-ledger": "f6e17f408e74",
+        "community-registry": "10643e91b879"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_public-registry_status",
@@ -1228,11 +1268,13 @@
       ],
       "dependents": [],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "public-registry-read-model": "092951c163e1"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_spaces_nesting",
@@ -1247,11 +1289,14 @@
         "search-service"
       ],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "spaces-service": "669c7e405b9a",
+        "community-registry": "10643e91b879"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_test-manifest_staleness",
@@ -1262,11 +1307,13 @@
       ],
       "dependents": [],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "phase-test-manifest-bridge": "89e620c5af33"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "vt_workflow-inventory_test-index",
@@ -1277,11 +1324,13 @@
       ],
       "dependents": [],
       "phase": "A2",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "67c8b32b08c8",
+      "lastRunTestHash": "67c8b32b08c8",
+      "lastRunComponentVersions": {
+        "workflow-inventory-registry": "7ab9c7b379ee"
+      },
+      "lastRunAt": "2026-06-09T14:00:00Z"
     },
     {
       "testId": "ct_events__workflow-engine_event-registration",

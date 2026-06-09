@@ -228,3 +228,7 @@ These guides contain practical usage notes beyond OpenAPI.
 Phase A1 adds the foundation guides for passport identity, role/policy decisions, member vaults,
 protected data, connections, receipts, audit, events, keys, and builder App IDs. Use these first when
 planning permissions, sensitive-data reads, package signing, or event-driven workflows.
+
+Phase A2 adds registry/control-plane guides for communities, spaces, membership, invitations,
+certification, extension versions, public discovery projections, workflow inventory, and manifest
+staleness. Use these before designing installation, discovery, or certification flows.
