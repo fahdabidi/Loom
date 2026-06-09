@@ -292,3 +292,8 @@ funding, and local Demo App validation of ad-off economics.
 Phase B8 adds `workflows/export-migration.md`. Use it for export scope, protected redaction, import
 replay, extension custom-data export, checksums, provider transfer verification, rollback, API inventory
 validation, and final full-suite Demo App regression.
+
+Phase B9 adds `workflows/arbitrary-local-package-ingestion.md`. Use it whenever the Skill generates a
+new local-demo extension that is not one of the worked examples. The Demo App loader must consume the
+selected package contents, import the parsed community and branding, render the parsed card, and open
+`local:<extension-id>@latest`; seeing Book Club values in this flow is a validation failure.

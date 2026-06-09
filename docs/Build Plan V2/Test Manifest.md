@@ -246,6 +246,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | B6 | `wf_messaging-ads-connections` | Required nav, messaging, connections, in-stream ads |
 | B7 | `wf_ad-off` | Member/community ad-off, ad suppression, settlement |
 | B8 | `wf_export-migration` | Community export, protected redaction, provider transfer |
+| B9 | `wf_arbitrary-local-package-ingestion` | Arbitrary local package pair -> parsed import -> card -> local latest open |
 
 ## Phase B1a Execution Status
 
@@ -324,6 +325,15 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_provider-transfer_rollback` | validation | provider-transfer-service | provider-transfer-service | pass |
 | `wf_export-migration` | workflow | none | workflow-validation-harness, export-service, import-service, provider-transfer-service, protected-visibility-vault, data-schema-store, receipt-ledger, wallet-dues-donations, documents-service, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
+## Phase B9 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_fake-backend_parse-arbitrary-local-package-pair` | validation | local-in-app-backend | local-in-app-backend, extension-package-validator, initialization-package-schema | pass |
+| `vt_fake-backend_import-arbitrary-package-pair` | validation | local-in-app-backend | local-in-app-backend, extension-package-validator, initialization-package-schema | pass |
+| `vt_demo-app_arbitrary-local-extension-loads-card` | validation | loom-communities-demo-app | loom-communities-demo-app, local-in-app-backend, community-card | pass |
+| `wf_arbitrary-local-package-ingestion` | workflow | none | workflow-validation-harness, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |
@@ -334,6 +344,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | Package validation and local load | `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_demo-app_local-file-load-extension`, `vt_demo-app_local-loader-opens`, `vt_demo-app_local-loader-invalid-extension-error`, `vt_demo-app_local-loader-validates-package-pair`, `vt_fake-backend_local-package-pair-validation`, `ct_extension-package__demo-loader_validate-load` |
 | Initialization import | `vt_initialization-package_schema`, `vt_initialization-package_idempotency`, `vt_initialization-package_community-branding`, `vt_fake-backend_import-init-package`, `vt_fake-backend_import-idempotent`, `vt_demo-app_duplicate-local-import-status`, `ct_initialization-package__fake-backend_import`, `ct_initialization-package__fake-backend_branding-import` |
 | Local persistence, branded card, and open | `vt_local-store_persist-reload`, `vt_demo-app_cards-after-load`, `vt_demo-app_card-image-after-load`, `vt_community-card_branding-priority`, `vt_demo-app_open-local-extension`, `ct_local-backend__community-card_branding-props`, `ct_extension-runtime__app-shell_local-session` |
+| Arbitrary package ingestion | `vt_fake-backend_parse-arbitrary-local-package-pair`, `vt_fake-backend_import-arbitrary-package-pair`, `vt_demo-app_arbitrary-local-extension-loads-card`, `wf_arbitrary-local-package-ingestion` |
 | End to end | `wf_local-build-download-sideload-install` |
 
 ## Manifest Rules

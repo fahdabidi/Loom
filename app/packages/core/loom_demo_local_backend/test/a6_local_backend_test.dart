@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_extension_package/loom_extension_package.dart';
 import 'package:test/test.dart';
@@ -38,6 +41,47 @@ void main() {
         contains('Initialization package must end with .loom-init.zip.'),
       );
       expect(valid.isValid, isTrue);
+    });
+
+    test('vt_fake-backend_parse-arbitrary-local-package-pair', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryPackagePair();
+
+      final plan = backend.parseLocalPackagePair(
+        extensionPackagePath: fixture.extensionPath,
+        initializationPackagePath: fixture.initializationPath,
+      );
+
+      expect(plan.extensionPackage.extensionId, 'ext_garden_club');
+      expect(plan.extensionPackage.displayName, 'Garden Club');
+      expect(plan.extensionPackage.assetIds, contains('asset_card_garden'));
+      expect(plan.initializationPackage.communityId, 'community_garden_club');
+      expect(plan.initializationPackage.communityName, 'Garden Club');
+      expect(plan.initializationPackage.cardAssetId, 'asset_card_garden');
+      expect(plan.accentColor, '#3A7D44');
+      expect(plan.logoAssetId, 'asset_logo_garden');
+      expect(plan.heroImageAssetId, 'asset_hero_garden');
+    });
+
+    test('vt_fake-backend_import-arbitrary-package-pair', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryPackagePair();
+
+      final report = backend.installLocalPackagePairFromFiles(
+        extensionPackagePath: fixture.extensionPath,
+        initializationPackagePath: fixture.initializationPath,
+      );
+
+      expect(report.created, isTrue);
+      expect(report.community.communityId, 'community_garden_club');
+      expect(report.community.displayName, 'Garden Club');
+      expect(report.community.extensionId, 'ext_garden_club');
+      expect(report.community.cardImageAssetId, 'asset_card_garden');
+      expect(report.community.logoAssetId, 'asset_logo_garden');
+      expect(report.community.heroImageAssetId, 'asset_hero_garden');
+      expect(report.community.accentColor, '#3A7D44');
+      expect(backend.isExtensionLoaded('ext_garden_club'), isTrue);
+      expect(report.importedSeedFiles, contains('seed/events.json'));
     });
 
     test('vt_fake-backend_import-init-package', () {
@@ -105,6 +149,61 @@ void main() {
       expect(report.community.accentColor, '#246B62');
     });
   });
+}
+
+_PackagePairFixture _writeArbitraryPackagePair() {
+  final tempDir = Directory.systemTemp.createTempSync('loom_arbitrary_');
+  final extensionFile = File('${tempDir.path}/garden-club.loom-extension.zip');
+  final initializationFile = File('${tempDir.path}/garden-club.loom-init.zip');
+  extensionFile.writeAsStringSync(
+    jsonEncode({
+      'schemaVersion': 1,
+      'mode': 'local-demo',
+      'extensionId': 'ext_garden_club',
+      'displayName': 'Garden Club',
+      'version': '1.0.0',
+      'permissions': ['content.publish', 'events.write'],
+      'assets': [
+        {
+          'assetId': 'asset_card_garden',
+          'kind': 'cardImage',
+          'path': 'assets/card.png',
+        },
+        {
+          'assetId': 'asset_logo_garden',
+          'kind': 'logo',
+          'path': 'assets/logo.png',
+        },
+      ],
+    }),
+  );
+  initializationFile.writeAsStringSync(
+    jsonEncode({
+      'schemaVersion': 1,
+      'communityId': 'community_garden_club',
+      'communityName': 'Garden Club',
+      'extensionId': 'ext_garden_club',
+      'seedDataFiles': ['seed/community.json', 'seed/events.json'],
+      'cardAssetId': 'asset_card_garden',
+      'logoAssetId': 'asset_logo_garden',
+      'heroImageAssetId': 'asset_hero_garden',
+      'accentColor': '#3A7D44',
+    }),
+  );
+  return _PackagePairFixture(
+    extensionPath: extensionFile.path,
+    initializationPath: initializationFile.path,
+  );
+}
+
+class _PackagePairFixture {
+  const _PackagePairFixture({
+    required this.extensionPath,
+    required this.initializationPath,
+  });
+
+  final String extensionPath;
+  final String initializationPath;
 }
 
 LoomExtensionPackageSummary _extension() {

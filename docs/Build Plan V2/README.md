@@ -54,6 +54,7 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | B6 | [Phase B6 - Messaging In-Stream Ads and Connections.md](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Workflows | Required shell surfaces, messages, ads, and connections pass. |
 | B7 | [Phase B7 - Ad-Off.md](./Phases/Phase%20B7%20-%20Ad-Off.md) | Workflows | Ad-off workflow and economic regressions pass. |
 | B8 | [Phase B8 - Export and Migration.md](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Workflows | Export/migration and redaction regressions pass. |
+| B9 | [Phase B9 - Arbitrary Local Package Ingestion.md](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Workflows | Arbitrary local package contents are parsed, imported, rendered, and opened without fixture substitution. |
 
 ## Shared Execution Convention
 

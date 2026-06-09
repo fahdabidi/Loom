@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
-import 'package:loom_extension_package/loom_extension_package.dart';
 
 void main() {
   runApp(const LoomCommunitiesDemoApp());
@@ -46,34 +45,15 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     required String extensionPackagePath,
     required String initializationPackagePath,
   }) {
-    final validation = _backend.validateLocalPackagePair(
-      extensionPackagePath: extensionPackagePath,
-      initializationPackagePath: initializationPackagePath,
-    );
-    if (!validation.isValid) {
-      return validation.errors.join('\n');
+    late final LocalBackendImportReport report;
+    try {
+      report = _backend.installLocalPackagePairFromFiles(
+        extensionPackagePath: extensionPackagePath,
+        initializationPackagePath: initializationPackagePath,
+      );
+    } on StateError catch (error) {
+      return error.message;
     }
-
-    _backend.loadExtensionPackage(
-      const LoomExtensionPackageSummary(
-        extensionId: 'ext_book_club',
-        displayName: 'Book Club',
-        version: '1.0.0',
-        permissions: ['content.publish'],
-        assetIds: ['asset_card_book_club'],
-      ),
-    );
-    final report = _backend.importInitializationPackage(
-      const LoomInitializationPackageSummary(
-        communityId: 'community_book_club',
-        communityName: 'Neighborhood Book Club',
-        extensionId: 'ext_book_club',
-        seedDataFiles: ['seed/community.json'],
-        cardAssetId: 'asset_card_book_club',
-      ),
-      logoAssetId: 'asset_logo_book_club',
-      heroImageAssetId: 'asset_hero_book_club',
-    );
     setState(() {
       _lastLocalImportMessage = reportMessage(
         communityName: report.community.displayName,

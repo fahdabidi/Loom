@@ -103,5 +103,4 @@ Before starting the next phase:
 
 ## 10. Next Phase
 
-End of Build Plan V2 workflow validation. Next step is review against the implementation roadmap and
-convert approved phases into execution tasks.
+Proceed to [Phase B9 - Arbitrary Local Package Ingestion.md](./Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md).

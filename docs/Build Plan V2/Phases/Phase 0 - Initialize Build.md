@@ -115,7 +115,7 @@ execution target, produce an install plan, and write a placeholder validation en
 
 Create and initialize [../Build Tracker.md](../Build%20Tracker.md).
 
-The tracker must have all phases from 0 through B8, including the pre-split A4a/A4b service phases.
+The tracker must have all phases from 0 through B9, including the pre-split A4a/A4b service phases.
 
 ## 6. API Review
 
