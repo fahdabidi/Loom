@@ -527,7 +527,7 @@
       "layer": "ux",
       "phase": "A6",
       "contract": "LoomCommunitiesDemoApp",
-      "version": "1979adae7eba",
+      "version": "c0ededc719bf",
       "fakePresent": true
     },
     {
@@ -2594,7 +2594,7 @@
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
         "extension-package-validator": "512380dc6848",
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3383,7 +3383,28 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
+    },
+    {
+      "testId": "vt_demo-app_empty-state-cta-loads-community",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "pass",
+      "testHash": "9fa2ae466442",
+      "lastRunTestHash": "9fa2ae466442",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "c0ededc719bf",
+        "local-in-app-backend": "4067f3df7a7f",
+        "community-card": "690cea54a8d2"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3400,7 +3421,7 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3419,7 +3440,7 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "community-card": "690cea54a8d2",
         "local-in-app-backend": "4067f3df7a7f"
       },
@@ -3438,7 +3459,7 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3455,7 +3476,7 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3472,7 +3493,7 @@
       "testHash": "793d68041893",
       "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "1979adae7eba"
+        "loom-communities-demo-app": "c0ededc719bf"
       },
       "lastRunAt": "2026-06-10T00:00:00Z"
     },
@@ -3630,7 +3651,7 @@
       "lastRunTestHash": "980fd2458420",
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f"
       },
       "lastRunAt": "2026-06-10T04:00:00Z"
@@ -3730,7 +3751,7 @@
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
         "workflow-validation-harness": "2d7b10969bb6",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f",
         "loom-local-store": "2d8dbc534574"
       },
@@ -3765,7 +3786,7 @@
         "ai-skill-extension-builder": "ebb94a52333e",
         "extension-package-validator": "512380dc6848",
         "initialization-package-schema": "1dd4a2b2ca52",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f",
         "loom-local-store": "2d8dbc534574",
         "community-card": "690cea54a8d2",
@@ -3819,7 +3840,7 @@
         "certification-system": "7d026e0c94bc",
         "community-registry": "10643e91b879",
         "app-shell-runtime": "c7c0a602fdad",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f",
         "community-card": "690cea54a8d2"
       },
@@ -3859,7 +3880,7 @@
         "app-shell-runtime": "c7c0a602fdad",
         "messaging-stream-service": "709572cac272",
         "digest-service": "d6d8d601ba0a",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f",
         "community-card": "690cea54a8d2"
       },
@@ -3897,7 +3918,7 @@
         "notification-service": "b7c57774de42",
         "app-shell-runtime": "c7c0a602fdad",
         "community-registry": "10643e91b879",
-        "loom-communities-demo-app": "1979adae7eba",
+        "loom-communities-demo-app": "c0ededc719bf",
         "local-in-app-backend": "4067f3df7a7f",
         "community-card": "690cea54a8d2"
       },

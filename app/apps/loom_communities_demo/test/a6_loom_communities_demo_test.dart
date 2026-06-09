@@ -8,6 +8,19 @@ void main() {
 
     expect(find.text('No communities installed'), findsOneWidget);
     expect(find.byKey(const ValueKey('add-community-button')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('empty-add-community-button')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('vt_demo-app_empty-state-cta-loads-community', (tester) async {
+    await tester.pumpWidget(const LoomCommunitiesDemoApp());
+
+    await tester.tap(find.byKey(const ValueKey('empty-add-community-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Neighborhood Book Club'), findsOneWidget);
   });
 
   testWidgets('vt_demo-app_cards-after-load and card image after load', (

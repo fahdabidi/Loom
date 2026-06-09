@@ -43,7 +43,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | A4a | Ops/community services | `vt_case-task_transition`, `vt_documents_permissions`, `vt_facilities_reservation`, `vt_export_redaction`, `vt_moderation_case-lifecycle` |
 | A4b | Economic/search/ads | `vt_wallet_payment`, `vt_ad-decision_sensitive-no-fill`, `vt_search_permission-aware`, `vt_ai-gateway_answer`, `vt_settlement_run` |
 | A5 | Extension engines | `vt_extension-runtime_session`, `vt_rule-engine_evaluate`, `vt_workflow-engine_transition`, `vt_data-schema_export-index`, `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_initialization-package_schema`, `vt_initialization-package_community-branding` |
-| A6 | UX micro-components + local demo | `vt_app-shell_required-nav`, `vt_app-shell_ad-slots`, `vt_payment-surface_shell-owned`, `vt_connections-shell_invite-blocked`, `vt_community-card_branding-priority`, `vt_demo-app_empty-community-state`, `vt_demo-app_card-image-after-load`, `vt_fake-backend_import-init-package`, `vt_local-store_persist-reload` |
+| A6 | UX micro-components + local demo | `vt_app-shell_required-nav`, `vt_app-shell_ad-slots`, `vt_payment-surface_shell-owned`, `vt_connections-shell_invite-blocked`, `vt_community-card_branding-priority`, `vt_demo-app_empty-community-state`, `vt_demo-app_empty-state-cta-loads-community`, `vt_demo-app_card-image-after-load`, `vt_fake-backend_import-init-package`, `vt_local-store_persist-reload` |
 
 ## Phase A1 Execution Status
 
@@ -214,6 +214,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_data-dashboard_consent-revoke` | validation | data-dashboard-consent | data-dashboard-consent | pass |
 | `vt_demo-app_empty-community-state` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
 | `vt_demo-app_add-community-button` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
+| `vt_demo-app_empty-state-cta-loads-community` | validation | loom-communities-demo-app | loom-communities-demo-app, local-in-app-backend, community-card | pass |
 | `vt_demo-app_local-file-load-extension` | validation | loom-communities-demo-app | loom-communities-demo-app, extension-package-validator | pass |
 | `vt_demo-app_cards-after-load` | validation | loom-communities-demo-app | loom-communities-demo-app, community-card, local-in-app-backend | pass |
 | `vt_demo-app_open-local-extension` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
@@ -286,7 +287,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | Capability | Test IDs |
 | --- | --- |
 | Skill validation environment | `vt_skill-prereq_manifest-complete`, `vt_skill-prereq_host-detection`, `vt_skill-prereq_install-plan`, `vt_skill-prereq_environment-lock`, `vt_skill-prereq_demo-app-smoke`, `ct_skill-prereq-setup__workflow-validation-harness_environment-ready`, `wf_local-demo-prereq-to-validation-ready` |
-| Empty app and Add Community | `vt_demo-app_empty-community-state`, `vt_demo-app_add-community-button` |
+| Empty app and Add Community | `vt_demo-app_empty-community-state`, `vt_demo-app_add-community-button`, `vt_demo-app_empty-state-cta-loads-community` |
 | Skill local artifacts | `vt_skill_generate-downloadable-extension`, `vt_skill_generate-initialization-package`, `vt_skill_generate-brand-assets`, `vt_skill_debug_golden-flow` |
 | Package validation and local load | `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_demo-app_local-file-load-extension`, `ct_extension-package__demo-loader_validate-load` |
 | Initialization import | `vt_initialization-package_schema`, `vt_initialization-package_idempotency`, `vt_initialization-package_community-branding`, `vt_fake-backend_import-init-package`, `vt_fake-backend_import-idempotent`, `ct_initialization-package__fake-backend_import`, `ct_initialization-package__fake-backend_branding-import` |

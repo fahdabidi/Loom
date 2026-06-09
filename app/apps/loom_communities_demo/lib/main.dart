@@ -73,7 +73,9 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                 constraints: BoxConstraints(maxWidth: 520),
                 child: Padding(
                   padding: EdgeInsets.all(24),
-                  child: _EmptyCommunityState(),
+                  child: _EmptyCommunityState(
+                    onAddCommunity: _loadSampleLocalCommunity,
+                  ),
                 ),
               ),
             )
@@ -107,7 +109,9 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
 }
 
 class _EmptyCommunityState extends StatelessWidget {
-  const _EmptyCommunityState();
+  const _EmptyCommunityState({required this.onAddCommunity});
+
+  final VoidCallback onAddCommunity;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +132,8 @@ class _EmptyCommunityState extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         FilledButton.icon(
-          onPressed: () {},
+          key: const ValueKey('empty-add-community-button'),
+          onPressed: onAddCommunity,
           icon: const Icon(Icons.add),
           label: const Text('Add Community'),
         ),
