@@ -56,7 +56,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B6 | Complete | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | R20 UX Decisions completed; messaging/ads/connections workflow, affected component regressions, manifest gate, B6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b8c348d` |
 | B7 | Complete | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | R20 UX Decisions completed; ad-off workflow, wallet community-ad-off validation, ad-decision validation, affected regressions, manifest gate, B7 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b06d3c7` |
 | B8 | Complete | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `762f556` |
-| B9 | In progress | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 implementation and gates in progress. | TBD |
+| B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp TBD |
 
 ## Phase Outcome Summary
 
@@ -808,7 +808,33 @@ Closeout rule for reopened phases:
 
 #### Execution Record - 2026-06-09
 
-- **Status:** In progress.
+- **Implementation outcome:** Added file-backed local package parsing/import to
+  `LocalInAppBackend`, routed the Demo App loader through the parsed package pair, and removed the
+  hardcoded Book Club install path from the UI.
+- **Tests added/updated:** Added arbitrary backend parsing/import assertions, updated Demo App widget
+  tests to enter generated package paths, and added `wf_arbitrary-local-package-ingestion` for an
+  arbitrary Chess Club package pair.
+- **Skill/API/UX artifacts:** Added `Phase B9 - API Review.md`,
+  `Phase B9 - UX Decisions.md`, `Phase B9 - Arbitrary Local Package Ingestion.md`,
+  `Skill/workflows/arbitrary-local-package-ingestion.md`, and the master Skill walkthrough update.
+- **Manifest stamps:** `local-in-app-backend` `f5a3e98e5595`; `loom-communities-demo-app`
+  `42175a068b2a`; backend test hash `69045e9512a0`; widget test hash `d4401d6651a`;
+  B9 workflow test hash `c63d67658e18`.
+- **Passed WSL checks:** `dart test packages/core/loom_demo_local_backend/test/a6_local_backend_test.dart`;
+  `flutter test apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b7_ad_off_workflow_test.dart
+  apps/loom_communities_demo/test/b8_export_migration_workflow_test.dart
+  apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart`;
+  `dart analyze packages/core/loom_demo_local_backend`; `flutter analyze apps/loom_communities_demo`;
+  manifest and B9 phase gates; boundary lint; `git diff --check`.
+- **Commit:** B9 implementation `db3c476`; tracker stamp TBD.
 
 ## Gate Evidence Template
 
