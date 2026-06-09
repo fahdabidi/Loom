@@ -31,7 +31,7 @@ support is deferred until a hosted Loom build and validation backend exists.
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Blocked - prereq toolchain missing | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | Node checks pass for JSON, manifest refs, Skill prereqs, scaffold paths, and melos script registration; `dart`, `flutter`, and `melos` are not on PATH, so Dart gates were not executed. | Pending scaffold commit |
+| 0 | Blocked - prereq toolchain missing | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | Node checks pass for JSON, manifest refs, Skill prereqs, scaffold paths, and melos script registration; `dart`, `flutter`, and `melos` are not on PATH, so Dart gates were not executed. | `7c6a4f8` |
 | A1 | Not started | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | TBD | TBD |
 | A2 | Not started | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | TBD | TBD |
 | A3 | Not started | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | TBD | TBD |
