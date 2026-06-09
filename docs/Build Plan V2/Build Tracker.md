@@ -56,7 +56,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B6 | Complete | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | R20 UX Decisions completed; messaging/ads/connections workflow, affected component regressions, manifest gate, B6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b8c348d` |
 | B7 | Complete | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | R20 UX Decisions completed; ad-off workflow, wallet community-ad-off validation, ad-decision validation, affected regressions, manifest gate, B7 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b06d3c7` |
 | B8 | Complete | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `762f556` |
-| B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp TBD |
+| B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp `4a91980` |
 
 ## Phase Outcome Summary
 
@@ -834,7 +834,7 @@ Closeout rule for reopened phases:
   apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart`;
   `dart analyze packages/core/loom_demo_local_backend`; `flutter analyze apps/loom_communities_demo`;
   manifest and B9 phase gates; boundary lint; `git diff --check`.
-- **Commit:** B9 implementation `db3c476`; tracker stamp TBD.
+- **Commit:** B9 implementation `db3c476`; tracker stamp `4a91980`.
 
 ## Gate Evidence Template
 
