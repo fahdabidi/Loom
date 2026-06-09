@@ -57,29 +57,37 @@ V2 changes the ordering. It is component-first, then workflow-first:
 
 ## Shared Execution Convention
 
-All phase implementation happens from `app/` in the melos monorepo. Commands are expected to use the
-same harness as V1: `loom_api_contracts`, `loom_fake_backend`, `loom_local_store`, `loom_seed_data`,
-`loom_lints`, and Flutter integration tests under the demo app.
+All phase implementation happens from `app/` in the melos monorepo through WSL Ubuntu. Do not run
+Dart, Flutter, Melos, package validators, manifest gates, phase gates, or workflow tests from
+Windows-native PowerShell. Use this command shape from the Windows host:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
+
+Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu toolchain. Commands are
+expected to use the same harness as V1: `loom_api_contracts`, `loom_fake_backend`, `loom_local_store`,
+`loom_seed_data`, `loom_lints`, and Flutter integration tests under the demo app.
 
 Baseline commands:
 
 | Purpose | Command |
 | --- | --- |
-| Bootstrap | `melos bootstrap` |
-| Skill prereq setup | `dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo` |
-| Skill prereq check | `dart run packages/tooling/skill_prereq_check.dart --mode local-demo` |
-| Analyze | `melos run analyze` |
-| Boundary lints | `melos run lint:boundaries` |
-| Unit tests | `melos run test` |
-| Integration tests | `melos run test:integration` |
-| Extension package validation | `melos run validate:extension` |
-| Extension asset validation | `melos run validate:extension-assets` |
-| Initialization package validation | `melos run validate:initialization` |
-| Local demo sideload workflow | `melos run test:demo-local` |
-| Local validation-ready workflow | `melos run test:demo-local-prereq` |
-| Workflow validation target | `melos run test:workflows:demo-local` |
-| Manifest gate | `dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build Plan V2/test-manifest.json` |
-| Phase gate | `dart run packages/tooling/phase_gate.dart --phase <phase>` |
+| Bootstrap | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos bootstrap'` |
+| Skill prereq setup | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo'` |
+| Skill prereq check | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/skill_prereq_check.dart --mode local-demo'` |
+| Analyze | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run analyze'` |
+| Boundary lints | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run lint:boundaries'` |
+| Unit tests | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test'` |
+| Integration tests | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test:integration'` |
+| Extension package validation | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run validate:extension'` |
+| Extension asset validation | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run validate:extension-assets'` |
+| Initialization package validation | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run validate:initialization'` |
+| Local demo sideload workflow | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test:demo-local'` |
+| Local validation-ready workflow | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test:demo-local-prereq'` |
+| Workflow validation target | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test:workflows:demo-local'` |
+| Manifest gate | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build\\ Plan\\ V2/test-manifest.json'` |
+| Phase gate | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/phase_gate.dart --phase <phase>'` |
 
 ## Required Sibling Docs
 

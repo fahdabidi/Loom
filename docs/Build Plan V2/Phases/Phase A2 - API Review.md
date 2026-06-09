@@ -21,6 +21,16 @@ certification, public registry, workflow inventory, test manifest bridge.
 Record registry/control-plane spec additions and gaps, including community branding fields and asset
 references consumed by App Shell card rendering.
 
+## WSL Ubuntu Tooling Requirement
+
+Run all phase tooling from WSL Ubuntu, not Windows PowerShell. Use this command shape from the Windows host:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
+
+Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu toolchain. Do not run Dart, Flutter, Melos, package validation, manifest gates, phase gates, or workflow tests from Windows-native shells.
+
 ## Commit Gate
 
 Before starting the next phase:

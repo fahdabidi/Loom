@@ -14,7 +14,7 @@ Source manifest: [test-manifest.json](./test-manifest.json)
 For each phase:
 
 1. Confirm the predecessor phase is complete.
-2. Run the prerequisite gate in the phase file.
+2. Run the prerequisite gate in the phase file from WSL Ubuntu.
 3. Execute the phase deliverables.
 4. Run all required validation, contract, workflow, manifest, and staleness gates.
 5. Stage only the phase's intended changes and review `git diff --staged`.
@@ -25,13 +25,18 @@ For each phase:
 Set B workflow tests must run against the Demo Loom Communities App with the Local Backend. The Skill
 supports both `local-demo` and `real-backend-publish` modes, but no Set B gate may depend on an
 external backend. The first supported Skill execution targets are Codex and Claude Code; online-only
-support is deferred until a hosted Loom build and validation backend exists.
+support is deferred until a hosted Loom build and validation backend exists. All Dart, Flutter, Melos,
+package-validation, phase-gate, manifest-gate, and workflow-test commands run from WSL Ubuntu using:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
 
 ## Phase Status Tracker
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Blocked - prereq toolchain missing | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | Node checks pass for JSON, manifest refs, Skill prereqs, scaffold paths, and melos script registration; `dart`, `flutter`, and `melos` are not on PATH, so Dart gates were not executed. | `7c6a4f8` |
+| 0 | Complete | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | WSL Ubuntu toolchain verified; `dart format`, `melos bootstrap`, manifest gate, phase gate with `--check-env`, Skill prereq setup/check, boundary lint, and focused scaffold analysis passed. | Pending WSL completion commit |
 | A1 | Not started | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | TBD | TBD |
 | A2 | Not started | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | TBD | TBD |
 | A3 | Not started | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | TBD | TBD |
@@ -96,12 +101,19 @@ support is deferred until a hosted Loom build and validation backend exists.
 - **Passed checks:** `test-manifest.json`, `prereq-manifest.json`, and
   `validation-environment.lock.json` parse; manifest component/test references validate; Skill prereq
   targets are `codex` and `claude-code`; required scaffold paths exist; melos gate scripts are present.
-- **Blocked checks:** `dart`, `flutter`, and `melos` are not available on PATH in this shell. `dart format`
-  and the Dart gate scripts could not run. A targeted SDK search under the user profile timed out.
-- **Next action:** Install or expose Dart/Flutter/melos per
-  [Skill/setup/system-prereqs.md](./Skill/setup/system-prereqs.md), then run `dart format`, `melos
-  bootstrap`, `melos run manifest:gate`, `melos run phase:gate`, `melos run skill:prereq:check`, and
-  `melos run skill:prereq:setup` before starting A1.
+- **WSL toolchain:** Ubuntu 24.04 on WSL2; `dart` resolves to `/home/fahd_/flutter/bin/dart`,
+  `flutter` resolves to `/home/fahd_/flutter/bin/flutter`, and `melos` resolves to
+  `/home/fahd_/.pub-cache/bin/melos`.
+- **Passed WSL checks:** `dart format` on Phase 0 scaffold files; `melos bootstrap` with 36 packages;
+  `dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`;
+  `dart run packages/tooling/phase_gate.dart --phase 0 --check-env`; `dart run
+  packages/tooling/skill_prereq_check.dart --mode local-demo`; `dart run
+  packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo`; `melos run
+  manifest:gate`; `melos run phase:gate`; `melos run skill:prereq:check`; `melos run
+  skill:prereq:setup`; `melos run lint:boundaries`; focused `flutter analyze` / `dart analyze` on the
+  Phase 0 scaffold packages and tooling scripts.
+- **Notes:** Full historical workspace `melos run analyze` exceeded the command timeout; focused analysis
+  of the Phase 0 scaffold passed. No Set A phase has started.
 
 ### Phase A1 - Foundation Components
 
@@ -297,6 +309,12 @@ For each completed phase, paste or link:
 - Component version hashes
 - Test hash updates
 - Commit SHA
+
+Run each command above through WSL Ubuntu from `app/`, for example:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos bootstrap'
+```
 
 ## Component Version Template
 

@@ -9,6 +9,16 @@ Store, App Shell, Community Card, Extension Runtime.
 UX gate: high
 Gate: `wf_local-build-download-sideload-install` plus affected component regressions pass.
 
+## WSL Ubuntu Tooling Requirement
+
+Run all phase tooling from WSL Ubuntu, not Windows PowerShell. Use this command shape from the Windows host:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
+
+Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu toolchain. Do not run Dart, Flutter, Melos, package validation, manifest gates, phase gates, or workflow tests from Windows-native shells.
+
 ## 0. Prerequisite Gate
 
 - A6 complete and committed.

@@ -34,7 +34,9 @@ String? _argValue(List<String> args, String name) {
 }
 
 String _defaultPrereqManifestPath() {
-  final appRelative = File('../docs/Build Plan V2/Skill/setup/prereq-manifest.json');
+  final appRelative = File(
+    '../docs/Build Plan V2/Skill/setup/prereq-manifest.json',
+  );
   if (appRelative.existsSync()) {
     return appRelative.path;
   }
@@ -73,13 +75,7 @@ List<_InstallPlanEntry> _buildInstallPlan(
       _fail('skill_prereq_setup: each tool requires id, install, and verify');
     }
     if (requiredFor.contains(mode)) {
-      entries.add(
-        _InstallPlanEntry(
-          id: id,
-          install: install,
-          verify: verify,
-        ),
-      );
+      entries.add(_InstallPlanEntry(id: id, install: install, verify: verify));
     }
   }
   return entries;

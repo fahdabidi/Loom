@@ -43,7 +43,9 @@ String? _argValue(List<String> args, String name) {
 }
 
 String _defaultPrereqManifestPath() {
-  final appRelative = File('../docs/Build Plan V2/Skill/setup/prereq-manifest.json');
+  final appRelative = File(
+    '../docs/Build Plan V2/Skill/setup/prereq-manifest.json',
+  );
   if (appRelative.existsSync()) {
     return appRelative.path;
   }

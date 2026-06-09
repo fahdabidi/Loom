@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "status": "phase-0-skeleton",
+  "toolingEnvironment": {
+    "id": "wsl-ubuntu",
+    "required": true,
+    "hostCommandPrefix": "wsl.exe -d Ubuntu -- bash -lc 'cd \"/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app\" && <command>'",
+    "repoPathInWsl": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app"
+  },
   "supportedExecutionTargets": [
     "codex",
     "claude-code"
@@ -20,6 +26,12 @@
     }
   ],
   "tools": [
+    {
+      "id": "wsl-ubuntu",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Install WSL2 with the Ubuntu distribution from the Windows host.",
+      "verify": "test -r /proc/version && grep -qi 'microsoft\\|wsl' /proc/version && test -r /etc/os-release && grep -qi '^ID=ubuntu' /etc/os-release"
+    },
     {
       "id": "git",
       "requiredFor": ["local-demo", "real-backend-publish"],

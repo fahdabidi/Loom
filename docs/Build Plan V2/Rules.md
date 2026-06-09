@@ -96,8 +96,9 @@ make a follow-up commit and update the tracker to the latest applicable SHA befo
 
 Use `loom_api_contracts`, `loom_fake_backend`, `loom_local_store`, `loom_seed_data`,
 `loom_lints`, the Loom Communities Demo App, `loom_skill_prereq_setup`, melos scripts, and Flutter
-integration tests. Do not create a parallel test harness unless the phase explicitly records why the
-existing harness cannot support the component.
+integration tests. Run all harness commands through WSL Ubuntu from `app/`; `dart`, `flutter`, and
+`melos` must resolve inside Ubuntu, not from Windows-native shells. Do not create a parallel test
+harness unless the phase explicitly records why the existing harness cannot support the component.
 
 ## R14 A4 service split
 
@@ -157,6 +158,7 @@ and Gemini.com support is deferred until Loom has a hosted build and validation 
 
 Before any local workflow validation runs, the Skill prereq setup component must:
 
+- Verify WSL Ubuntu is the active tooling environment.
 - Load `Skill/setup/prereq-manifest.json`.
 - Detect the host, shell, repo path, and execution target.
 - Produce an install/configuration plan before changing the environment.
@@ -165,8 +167,8 @@ Before any local workflow validation runs, the Skill prereq setup component must
 - Write `Skill/setup/validation-environment.lock.json`.
 - Pass the Demo App local validation smoke check.
 
-The phase gate must fail if `validationReady` is false, if the environment lock is stale, or if the
-selected execution target is unsupported.
+The phase gate must fail if `validationReady` is false, if the environment lock is stale, if WSL Ubuntu
+tooling is not active, or if the selected execution target is unsupported.
 
 ## R19 Locked package and branding format
 

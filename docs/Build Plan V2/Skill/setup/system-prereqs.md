@@ -4,13 +4,22 @@ Status: Phase 0 skeleton
 
 This setup guide defines the local tools the Loom Skill must prepare before it can claim that an
 extension has been validated. The first supported execution targets are Codex and Claude Code. Online
-chat-only surfaces are out of scope until Loom provides a hosted build and validation backend.
+chat-only surfaces are out of scope until Loom provides a hosted build and validation backend. The
+canonical local tooling environment is WSL Ubuntu.
+
+All Dart, Flutter, Melos, package validation, manifest gate, phase gate, and workflow test commands
+must run inside WSL Ubuntu from `app/`:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
 
 ## Responsibilities
 
 The Skill prereq setup component must:
 
 - Detect host OS, shell, repo path, execution target, and available package managers.
+- Verify WSL Ubuntu is available and is the active tooling environment.
 - Read [prereq-manifest.json](./prereq-manifest.json).
 - Produce an install/configuration plan before changing the environment.
 - Install or configure only approved tools.
@@ -22,6 +31,7 @@ The Skill prereq setup component must:
 
 | Tool class | Purpose | Required for |
 | --- | --- | --- |
+| WSL Ubuntu | Canonical Linux shell where Dart, Flutter, Melos, validators, gates, and workflow tests run. | all validation |
 | Flutter and Dart | Build and test the Loom Communities Demo App. | `local-demo`, `real-backend-publish` local validation |
 | Melos | Bootstrap and orchestrate the monorepo. | all validation |
 | Git | Version, diff, fixture, and artifact hash tracking. | all validation |
@@ -35,14 +45,15 @@ The Skill prereq setup component must:
 ## Setup Flow
 
 1. Select execution target: Codex or Claude Code.
-2. Detect host capabilities and unsupported gaps.
-3. Load the prereq manifest and choose required tools for the selected Skill mode.
-4. Produce an install plan and wait for explicit approval where the execution environment requires it.
-5. Install/configure tools.
-6. Run verification commands.
-7. Run the Demo App smoke check.
-8. Write the environment lock.
-9. Expose `validationReady=true` to the workflow validation harness.
+2. Enter WSL Ubuntu and `cd` to `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`.
+3. Detect host capabilities and unsupported gaps from inside WSL Ubuntu.
+4. Load the prereq manifest and choose required tools for the selected Skill mode.
+5. Produce an install plan and wait for explicit approval where the execution environment requires it.
+6. Install/configure tools in WSL Ubuntu.
+7. Run verification commands in WSL Ubuntu.
+8. Run the Demo App smoke check.
+9. Write the environment lock.
+10. Expose `validationReady=true` to the workflow validation harness.
 
 ## Phase Gate
 

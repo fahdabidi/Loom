@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "not-run",
+  "toolingEnvironment": {
+    "id": "wsl-ubuntu",
+    "validated": false,
+    "repoPathInWsl": null
+  },
   "executionTarget": null,
   "generatedAt": null,
   "repoRoot": null,

@@ -27,6 +27,16 @@ secrets/connectors, extension package manifests, and initialization packages.
 Record extension-engine spec additions and gaps, including local package and initialization package
 contracts used by B1a. Include package asset validation and initialization branding contracts.
 
+## WSL Ubuntu Tooling Requirement
+
+Run all phase tooling from WSL Ubuntu, not Windows PowerShell. Use this command shape from the Windows host:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
+
+Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu toolchain. Do not run Dart, Flutter, Melos, package validation, manifest gates, phase gates, or workflow tests from Windows-native shells.
+
 ## Commit Gate
 
 Before starting the next phase:

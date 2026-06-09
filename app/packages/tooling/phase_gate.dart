@@ -7,12 +7,14 @@ void main(List<String> args) {
   final checkEnv = args.contains('--check-env');
   final manifest = _readJsonObject(File(manifestPath));
   final tests = _requiredList(manifest, 'tests');
-  final phaseTests = tests.where((Object? value) {
-    if (value is! Map<String, Object?>) {
-      return false;
-    }
-    return value['phase'] == phase;
-  }).toList(growable: false);
+  final phaseTests = tests
+      .where((Object? value) {
+        if (value is! Map<String, Object?>) {
+          return false;
+        }
+        return value['phase'] == phase;
+      })
+      .toList(growable: false);
 
   if (phaseTests.isEmpty) {
     _fail('phase_gate: no manifest tests registered for phase $phase');
@@ -35,6 +37,7 @@ void main(List<String> args) {
   }
 
   if (checkEnv) {
+    _validateWslUbuntu();
     _validatePrereqFiles(repoRoot);
   }
 
@@ -62,7 +65,9 @@ String _defaultManifestPath() {
 
 Directory _repoRoot() {
   final fromApp = Directory.current.parent;
-  if (File('${fromApp.path}/docs/Build Plan V2/test-manifest.json').existsSync()) {
+  if (File(
+    '${fromApp.path}/docs/Build Plan V2/test-manifest.json',
+  ).existsSync()) {
     return fromApp;
   }
   return Directory.current;
@@ -90,12 +95,30 @@ List<Object?> _requiredList(Map<String, Object?> map, String key) {
 void _validatePrereqFiles(Directory repoRoot) {
   final setupDir = '${repoRoot.path}/docs/Build Plan V2/Skill/setup';
   final prereq = _readJsonObject(File('$setupDir/prereq-manifest.json'));
-  final lock = _readJsonObject(File('$setupDir/validation-environment.lock.json'));
+  final lock = _readJsonObject(
+    File('$setupDir/validation-environment.lock.json'),
+  );
   if (prereq['schemaVersion'] != 1) {
     _fail('phase_gate: prereq manifest schemaVersion must be 1');
   }
   if (lock['schemaVersion'] != 1) {
     _fail('phase_gate: validation environment lock schemaVersion must be 1');
+  }
+}
+
+void _validateWslUbuntu() {
+  final procVersion = File('/proc/version');
+  final osRelease = File('/etc/os-release');
+  if (!procVersion.existsSync() || !osRelease.existsSync()) {
+    _fail('phase_gate: WSL Ubuntu check must run inside Ubuntu');
+  }
+
+  final kernel = procVersion.readAsStringSync().toLowerCase();
+  final os = osRelease.readAsStringSync().toLowerCase();
+  final isWsl = kernel.contains('microsoft') || kernel.contains('wsl');
+  final isUbuntu = os.contains('id=ubuntu') || os.contains('name="ubuntu"');
+  if (!isWsl || !isUbuntu) {
+    _fail('phase_gate: tooling must run inside WSL Ubuntu');
   }
 }
 

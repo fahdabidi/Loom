@@ -5,11 +5,22 @@ UX gate: low
 On green: proceed to A1
 Rules: [Rules.md](../Rules.md)
 
+## WSL Ubuntu Tooling Requirement
+
+Run all phase tooling from WSL Ubuntu, not Windows PowerShell. Use this command shape from the Windows host:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && <command>'
+```
+
+Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu toolchain. Do not run Dart, Flutter, Melos, package validation, manifest gates, phase gates, or workflow tests from Windows-native shells.
+
 ## 0. Prerequisite Gate
 
 No prior phase. Verify local execution environment only:
 
 - `app/` exists or is created as the V2 melos workspace root.
+- WSL Ubuntu is available and `dart`, `flutter`, and `melos` resolve inside Ubuntu.
 - Flutter/Dart/melos/tooling prerequisites are documented through the Skill setup manifest.
 - Git worktree status is recorded before generation begins.
 
