@@ -1,22 +1,32 @@
 # Phase B4 - API Review
 
-Status: Template
+Status: Completed
 
 ## Scope
 
-HOA workflow: dues, documents, facility reservation, architectural request, committee decision, export.
+HOA dues, documents, facility reservation, architectural request, committee review workflow,
+notification, export, and local latest-open behavior.
 
 ## Review Checklist
 
-- Dues and invoice state.
-- Document visibility.
-- Reservation holds/payments.
-- Case/task workflow states.
-- Export inclusion of request and receipts.
+- Dues payment: covered by `CommunityWalletApi.recordPayment`.
+- Document upload and visibility: covered by `CommunityDocumentsApi.uploadDocument` and
+  `visibleDocuments`.
+- Facility reservation: covered by `CommunityFacilitiesApi.reserveFacility` and
+  `listReservations`.
+- Architectural request: represented as `CommunityCaseTaskApi.openCase` and `transitionCase`.
+- Committee review: represented by `CommunityWorkflowApi.startWorkflow` and `transition`.
+- Decision notification: covered by `CommunityNotificationApi.deliver`.
+- Export assembly: covered by `CommunityExportApi.assemble`.
 
 ## OpenAPI Outputs
 
-Record workflow-driven spec gaps.
+- Existing contracts cover the local workflow.
+- Hosted OpenAPI should add a first-class architectural request resource with attachment references,
+  committee comments, due dates, and decision reasons.
+- Export OpenAPI should add record-level inclusion lists for cases, payments, reservations,
+  notifications, and workflow runs instead of only component coverage.
+- Facility OpenAPI should eventually include availability/conflict checks and cancellation policy.
 
 ## WSL Ubuntu Tooling Requirement
 

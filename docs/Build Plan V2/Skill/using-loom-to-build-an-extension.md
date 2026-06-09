@@ -271,3 +271,7 @@ extension, then validate the flow in the Demo App with Local Backend.
 Phase B3 adds `workflows/youth-soccer-headline.md`. Use it for guardian membership, team spaces,
 protected minor data, registration payments, schedule events, notifications, and local Demo App
 validation of a youth sports extension.
+
+Phase B4 adds `workflows/hoa-headline.md`. Use it for dues, member-visible documents, facility
+reservations, architectural request cases, committee workflow decisions, owner notifications, export
+coverage, and local Demo App validation of an HOA extension.

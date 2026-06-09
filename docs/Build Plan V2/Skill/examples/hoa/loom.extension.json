@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "mode": "local-demo",
+  "extensionId": "ext_hoa",
+  "displayName": "HOA Portal",
+  "version": "1.0.0",
+  "communityType": "hoa",
+  "permissions": [
+    "payments.record",
+    "documents.read",
+    "documents.write",
+    "facilities.reserve",
+    "cases.write",
+    "workflows.transition",
+    "notifications.send",
+    "export.read"
+  ],
+  "assets": [
+    {
+      "assetId": "asset_card_hoa",
+      "kind": "cardImage",
+      "path": "assets/card.png"
+    },
+    {
+      "assetId": "asset_logo_hoa",
+      "kind": "logo",
+      "path": "assets/logo.png"
+    }
+  ]
+}

@@ -327,9 +327,13 @@ class CommunityExportFake implements CommunityExportApi {
     );
     final componentIds = <String>[
       'community-registry',
+      'case-task-service',
       'documents-service',
+      'facilities-service',
       'import-service',
       'export-service',
+      'wallet-dues-donations',
+      'receipt-ledger',
     ];
     if (redactProtectedData) {
       componentIds.add('protected-visibility-vault:redacted');

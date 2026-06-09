@@ -12,6 +12,7 @@ class DemoWorkflowHarness {
     required this.experience,
     required this.economic,
     required this.ops,
+    required this.engine,
     required this.localBackend,
     required this.shell,
     required this.profile,
@@ -22,6 +23,7 @@ class DemoWorkflowHarness {
   final CommunityExperienceServicesFakeBackend experience;
   final CommunityEconomicServicesFakeBackend economic;
   final CommunityOpsServicesFakeBackend ops;
+  final CommunityEngineServicesFakeBackend engine;
   final LocalInAppBackend localBackend;
   final CommunityAppShellRuntime shell;
   final CommunityProfile profile;
@@ -53,6 +55,7 @@ class DemoWorkflowHarness {
       registry: registry,
       experience: experience,
     );
+    final engine = CommunityEngineServicesFakeBackend(foundation: foundation);
     final profile = await registry.communityRegistry.registerCommunity(
       handle: handle,
       displayName: displayName,
@@ -71,6 +74,7 @@ class DemoWorkflowHarness {
       experience: experience,
       economic: economic,
       ops: ops,
+      engine: engine,
       localBackend: LocalInAppBackend(),
       shell: CommunityAppShellRuntime(),
       profile: profile,

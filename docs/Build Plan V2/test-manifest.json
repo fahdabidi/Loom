@@ -55,7 +55,7 @@
       "layer": "tooling",
       "phase": "0",
       "contract": "LoomWorkflowValidationHarnessApi",
-      "version": "2d7b10969bb6",
+      "version": "09c26b466480",
       "fakePresent": true
     },
     {
@@ -287,7 +287,7 @@
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityExportApi",
-      "version": "d4d34a47066a",
+      "version": "9079b5ad7e37",
       "fakePresent": true
     },
     {
@@ -1705,7 +1705,7 @@
       "lastRunTestHash": "95ab341622ef",
       "lastRunComponentVersions": {
         "documents-service": "bc037ffdc17c",
-        "export-service": "d4d34a47066a"
+        "export-service": "9079b5ad7e37"
       },
       "lastRunAt": "2026-06-09T18:00:00Z"
     },
@@ -1748,7 +1748,7 @@
       "testHash": "b9f992f9488b",
       "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
-        "export-service": "d4d34a47066a",
+        "export-service": "9079b5ad7e37",
         "data-schema-store": "6a09d351f11f",
         "provider-transfer-service": "91de09a48370"
       },
@@ -1858,7 +1858,7 @@
       "lastRunComponentVersions": {
         "protected-visibility-vault": "3795b6a09b20",
         "import-service": "0a178c20caba",
-        "export-service": "d4d34a47066a"
+        "export-service": "9079b5ad7e37"
       },
       "lastRunAt": "2026-06-09T18:00:00Z"
     },
@@ -1950,7 +1950,7 @@
       "testHash": "95ab341622ef",
       "lastRunTestHash": "95ab341622ef",
       "lastRunComponentVersions": {
-        "export-service": "d4d34a47066a"
+        "export-service": "9079b5ad7e37"
       },
       "lastRunAt": "2026-06-09T18:00:00Z"
     },
@@ -1970,7 +1970,7 @@
       "testHash": "95ab341622ef",
       "lastRunTestHash": "95ab341622ef",
       "lastRunComponentVersions": {
-        "export-service": "d4d34a47066a",
+        "export-service": "9079b5ad7e37",
         "protected-visibility-vault": "3795b6a09b20"
       },
       "lastRunAt": "2026-06-09T18:00:00Z"
@@ -2552,7 +2552,7 @@
       "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
         "data-schema-store": "6a09d351f11f",
-        "export-service": "d4d34a47066a"
+        "export-service": "9079b5ad7e37"
       },
       "lastRunAt": "2026-06-09T22:00:00Z"
     },
@@ -2785,7 +2785,7 @@
       "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
         "data-schema-store": "6a09d351f11f",
-        "export-service": "d4d34a47066a",
+        "export-service": "9079b5ad7e37",
         "search-service": "00f0b4124434"
       },
       "lastRunAt": "2026-06-09T22:00:00Z"
@@ -3673,7 +3673,7 @@
       "lastRunTestHash": "980fd2458420",
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
-        "workflow-validation-harness": "2d7b10969bb6"
+        "workflow-validation-harness": "09c26b466480"
       },
       "lastRunAt": "2026-06-10T04:00:00Z"
     },
@@ -3845,7 +3845,7 @@
       "lastRunTestHash": "980fd2458420",
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
-        "workflow-validation-harness": "2d7b10969bb6",
+        "workflow-validation-harness": "09c26b466480",
         "loom-communities-demo-app": "fe03608c5230",
         "local-in-app-backend": "332432d7b39d",
         "loom-local-store": "2d8dbc534574"
@@ -3877,7 +3877,7 @@
       "lastRunTestHash": "980fd2458420",
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
-        "workflow-validation-harness": "2d7b10969bb6",
+        "workflow-validation-harness": "09c26b466480",
         "ai-skill-extension-builder": "ebb94a52333e",
         "extension-package-validator": "512380dc6848",
         "initialization-package-schema": "1dd4a2b2ca52",
@@ -4025,21 +4025,41 @@
       "type": "workflow",
       "owningComponent": null,
       "coversComponents": [
+        "workflow-validation-harness",
         "wallet-dues-donations",
         "documents-service",
         "facilities-service",
         "case-task-service",
         "workflow-engine",
         "export-service",
-        "app-shell-runtime"
+        "notification-service",
+        "receipt-ledger",
+        "app-shell-runtime",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card"
       ],
       "dependents": [],
       "phase": "B4",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null,
+      "status": "pass",
+      "testHash": "563319be521c",
+      "lastRunTestHash": "563319be521c",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "wallet-dues-donations": "071871e00937",
+        "documents-service": "bc037ffdc17c",
+        "facilities-service": "0c23efd3c350",
+        "case-task-service": "e8924d019980",
+        "workflow-engine": "15f4ac99a8db",
+        "export-service": "9079b5ad7e37",
+        "notification-service": "b7c57774de42",
+        "receipt-ledger": "9f9e82fd4a2f",
+        "app-shell-runtime": "c7c0a602fdad",
+        "loom-communities-demo-app": "fe03608c5230",
+        "local-in-app-backend": "332432d7b39d",
+        "community-card": "690cea54a8d2"
+      },
+      "lastRunAt": "2026-06-10T05:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     },
     {

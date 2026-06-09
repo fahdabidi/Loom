@@ -51,7 +51,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B1b | Complete | B1a R20 closeout | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | R20 UX Decisions completed; B1b workflow, B1a/A6 regressions, manifest gate, B1b phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `7825b59` prior code commit; R20 closeout `105cb16` |
 | B2 | Complete | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B2 workflow, B1b/B1a/A6 regressions, manifest gate, B2 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `e362090` prior code commit; R20 closeout `e97ba72` |
 | B3 | Complete | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B3 workflow, B2/B1b/B1a/A6 regressions, manifest gate, B3 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `36aee10` prior code commit; R20 closeout `23dd422` |
-| B4 | Not started - R20 UX required first | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | Complete `Phase B4 - UX Decisions.md` using R20 before implementation. | TBD |
+| B4 | Complete - pending commit stamp | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
 | B5 | Not started - R20 UX required first | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | Complete `Phase B5 - UX Decisions.md` using R20 before implementation. | TBD |
 | B6 | Not started - R20 UX required first | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | Complete `Phase B6 - UX Decisions.md` using R20 before implementation. | TBD |
 | B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
@@ -94,7 +94,8 @@ new method and the affected regressions pass again.
 | B1b | `7825b59`; R20 closeout `105cb16` | Complete | Recreated real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
 | B2 | `e362090`; R20 closeout `e97ba72` | Complete | Recreated book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
 | B3 | `36aee10`; R20 closeout `23dd422` | Complete | Recreated youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
-| B4-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+| B4 | None | Complete - pending commit stamp | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
+| B5-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
 Closeout rule for reopened phases:
 
@@ -260,7 +261,7 @@ Closeout rule for reopened phases:
   A4b/A5 consumer-contract tests remain `pending-counterpart`.
 - **Component versions:** abuse-report-service `5c220d916543`; case-task-service `e8924d019980`;
   dispute-service `5f035552f46b`; documents-service `bc037ffdc17c`; export-service
-  `d4d34a47066a`; facilities-service `0c23efd3c350`; import-service `0a178c20caba`;
+  `9079b5ad7e37`; facilities-service `0c23efd3c350`; import-service `0a178c20caba`;
   incident-service `d6d2177db39e`; moderation-case-service `860c5e41ffe4`;
   provider-transfer-service `91de09a48370`.
 - **Passed WSL checks:** `dart test test/a1_foundation_components_test.dart
@@ -573,7 +574,7 @@ Closeout rule for reopened phases:
 - **Skill and examples:** Added `Skill/workflows/youth-soccer-headline.md` and
   `Skill/examples/youth-soccer/phase-b3-headline/`.
 - **Manifest stamps:** ai-skill-extension-builder `ebb94a52333e`; workflow-validation-harness
-  `2d7b10969bb6`; `wf_youth-soccer-headline` test hash `e404d2433f01`.
+  `09c26b466480`; `wf_youth-soccer-headline` test hash `e404d2433f01`.
 - **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
   `Phase B3 - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B3 and prior
   Set B regressions, and record a new closeout commit before B3 can be treated as complete again.
@@ -604,6 +605,31 @@ Closeout rule for reopened phases:
   facilities, wallet, case/task, workflow, and export regressions pass.
 - **Evidence to record:** Workflow output, export coverage output, component regression output, API Review
   and UX Decisions paths, Skill example paths, commit SHA.
+
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B4 - UX Decisions.md` with current HOA portal,
+  homeowner payment, document, amenity reservation, architectural request, and case-status
+  references.
+- **Implementation outcome:** Added the HOA workflow test and example package. The workflow validates
+  dues payment, document visibility, facility reservation with payment, architectural review case
+  lifecycle, workflow transition, notification delivery, export component coverage, and local
+  latest-open behavior in the Demo App with Local Backend.
+- **Skill/API artifacts:** Added `Skill/workflows/hoa-headline.md`,
+  `Skill/examples/hoa/README.md`, `Skill/examples/hoa/loom.extension.json`,
+  `Skill/examples/hoa/loom.initialization.json`, and `Phase B4 - API Review.md`; updated the
+  master Skill walkthrough.
+- **Manifest stamps:** workflow-validation-harness `09c26b466480`; export-service `9079b5ad7e37`;
+  `wf_hoa-headline` test hash `563319be521c`.
+- **Passed WSL checks:** `flutter test apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; fake backend A4a/A4b/A5
+  regression tests; `flutter analyze apps/loom_communities_demo`; `dart analyze
+  packages/core/loom_fake_backend`; manifest and B4 phase gates; boundary lint; `git diff --check`.
+- **Commit:** pending B4 closeout commit.
 
 ### Phase B5 - Mosque Headline Flow
 
@@ -704,16 +730,16 @@ Use the component hash generated by `manifest_gate`.
 | notification-service | A3 | b7c57774de42 | A3 |
 | events-service | A3 | dee493ff7d53 | A3 |
 | forms-voting-service | A3 | 72bf23f58102 | A3 |
-| export-service | A4a | TBD | TBD |
-| wallet-dues-donations | A4b | TBD | TBD |
-| ad-decision-service | A4b | TBD | TBD |
-| search-service | A4b | TBD | TBD |
-| extension-runtime-bridge | A5 | TBD | TBD |
-| extension-package-validator | A5 | TBD | TBD |
-| initialization-package-schema | A5 | TBD | TBD |
-| app-shell-runtime | A6 | TBD | TBD |
-| loom-communities-demo-app | A6 | TBD | TBD |
-| local-in-app-backend | A6 | TBD | TBD |
+| export-service | A4a | 9079b5ad7e37 | B4 |
+| wallet-dues-donations | A4b | 071871e00937 | A4b |
+| ad-decision-service | A4b | e5a7593ee1ea | A4b |
+| search-service | A4b | 00f0b4124434 | A4b |
+| extension-runtime-bridge | A5 | 1aff2ed72457 | A5 |
+| extension-package-validator | A5 | 512380dc6848 | A5 |
+| initialization-package-schema | A5 | 1dd4a2b2ca52 | A5 |
+| app-shell-runtime | A6 | c7c0a602fdad | A6 |
+| loom-communities-demo-app | A6 | fe03608c5230 | B1a |
+| local-in-app-backend | A6 | 332432d7b39d | B1a |
 
 ## Artifact Completion Checklist
 

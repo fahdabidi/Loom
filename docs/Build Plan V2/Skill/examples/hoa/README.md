@@ -1,14 +1,25 @@
 # HOA Example Extension
 
-Status: Phase 0 placeholder
+Status: Phase B4 local workflow example.
 
-This example grows during Phase B4.
+This example extension validates the HOA headline path in the Demo Loom Communities App with Local
+Backend.
 
-Expected final coverage:
+## Included Flow
 
-- Dues.
-- Documents.
-- Facilities/reservations.
-- Architectural request workflow.
-- Committee decision.
-- Export metadata.
+- Dues payment.
+- Member-visible governing document.
+- Clubhouse reservation with reservation payment.
+- Architectural request case.
+- Committee workflow decision.
+- Owner notification.
+- Export bundle with document and operational component coverage.
+
+## Validation
+
+Run:
+
+```bash
+cd app
+flutter test apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+```
