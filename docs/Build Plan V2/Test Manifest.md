@@ -299,6 +299,12 @@ are deferred until a hosted Loom build and validation backend exists.
 | --- | --- | --- | --- | --- |
 | `wf_mosque-headline` | workflow | none | workflow-validation-harness, publishing-service, wallet-dues-donations, events-service, forms-voting-service, core-member-vault, protected-visibility-vault, notification-service, search-service, ai-gateway, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
+## Phase B6 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_messaging-ads-connections` | workflow | none | workflow-validation-harness, messaging-stream-service, connections-graph, ad-campaign-service, ad-decision-service, stream-renderer, navigation-panel, connections-shell, ad-slots, protected-visibility-vault, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |

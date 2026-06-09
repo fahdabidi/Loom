@@ -280,3 +280,7 @@ Phase B5 adds `workflows/mosque-headline.md`. Use it for mosque announcements, i
 volunteer signup with protected contact fields, anonymous donor visibility, donations, private care
 requests, neutral notifications, public announcement search/AI citations, and local Demo App
 validation of a mosque extension.
+
+Phase B6 adds `workflows/messaging-ads-connections.md`. Use it to preserve shell-owned Messages,
+Connections, top banner ads, in-stream sponsored disclosure, blocked-connection affordances,
+sensitive-context no-fill behavior, and local Demo App validation of platform invariants.

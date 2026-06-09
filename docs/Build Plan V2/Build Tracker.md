@@ -53,7 +53,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B3 | Complete | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B3 workflow, B2/B1b/B1a/A6 regressions, manifest gate, B3 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `36aee10` prior code commit; R20 closeout `23dd422` |
 | B4 | Complete | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `f3ffad3` |
 | B5 | Complete | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; mosque workflow, affected component regressions, manifest gate, B5 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `163dad1` |
-| B6 | Not started - R20 UX required first | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | Complete `Phase B6 - UX Decisions.md` using R20 before implementation. | TBD |
+| B6 | Complete - pending commit stamp | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | R20 UX Decisions completed; messaging/ads/connections workflow, affected component regressions, manifest gate, B6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
 | B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
 | B8 | Not started - R20 UX required first | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | Complete `Phase B8 - UX Decisions.md` using R20 before implementation. | TBD |
 
@@ -96,7 +96,8 @@ new method and the affected regressions pass again.
 | B3 | `36aee10`; R20 closeout `23dd422` | Complete | Recreated youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
 | B4 | None | Complete | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
 | B5 | None | Complete | Completed mosque announcement, event, volunteer, donation, donor visibility, protected care request, notification, and local card/open UX decisions using R20. |
-| B6-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+| B6 | None | Complete - pending commit stamp | Completed Messages, Connections, stream rendering, in-stream ad disclosure, top banner, no-fill, and block/invite UX decisions using R20. |
+| B7-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
 Closeout rule for reopened phases:
 
@@ -680,6 +681,33 @@ Closeout rule for reopened phases:
   invariants prove extensions cannot hide Messages, Connections, or required ad surfaces.
 - **Evidence to record:** Workflow output, shell invariant lint output, ad decision/no-fill output, API
   Review and UX Decisions paths, Skill workflow guide path, commit SHA.
+
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B6 - UX Decisions.md` with current navigation, messaging
+  request/block, native ad disclosure, sponsored content, and native ad load/no-fill references.
+- **Implementation outcome:** Added the messaging/ads/connections workflow test. The workflow validates
+  shell-owned Messages and Connections, required top banner no-fill state, message stream rendering,
+  connection invite and blocked-target prevention, in-stream/top-banner ad fills, sensitive-context
+  no-fill, Sponsored disclosure, and local latest-open behavior.
+- **Skill/API artifacts:** Added `Skill/workflows/messaging-ads-connections.md`, updated the master
+  Skill walkthrough, and completed `Phase B6 - API Review.md`.
+- **Manifest stamps:** `wf_messaging-ads-connections` test hash `15e89fb50365`; messaging-stream-service
+  `709572cac272`; connections-graph `297b5d201b5f`; ad-campaign-service `7d781eea95a9`;
+  ad-decision-service `e5a7593ee1ea`; app-shell-runtime `c7c0a602fdad`; stream-renderer
+  `07547f0370c6`.
+- **Passed WSL checks:** `flutter test
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A1/A3/A4b/A6 component
+  regression tests; `flutter analyze apps/loom_communities_demo`; manifest and B6 phase gates;
+  boundary lint; `git diff --check`.
+- **Commit:** pending B6 closeout commit.
 
 ### Phase B7 - Ad-Off
 
