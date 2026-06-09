@@ -41,7 +41,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A2 | Complete | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | A2 contracts/fakes/schema/seed/test suite added; A1 unblocked contract tests pass; App Shell counterpart tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `3d6a388` |
 | A3 | Complete | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | A3 contracts/fakes/schema/seed/test suite added; forms/protected-vault contract passes; A4b/A5/A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `a4cc268` |
 | A4a | Complete | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | A4a contracts/fakes/schema/seed/test suite added; document/export, import/protected-vault, incident/certification contracts pass; A4b/A5 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `c56f45b` |
-| A4b | Not started | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | TBD | TBD |
+| A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | Pending A4b commit |
 | A5 | Not started | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | TBD | TBD |
 | A6 | Not started | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | TBD | TBD |
 | B1a | Not started | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | TBD | TBD |
@@ -234,6 +234,27 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   protected no-fill, receipts, settlement, and search permission checks are testable.
 - **Evidence to record:** A4b gate output, component hashes, ad/search/payment test output, API Review
   path, Skill guide paths, commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Contracts:** Added `CommunityWalletApi`, `CommunityAdCampaignApi`, `CommunityAdDecisionApi`,
+  `CommunityIndexingApi`, `CommunitySearchApi`, `CommunityAiGatewayApi`, `CommunityDigestApi`,
+  `CommunitySettlementApi`, `CommunityUtilityFundingApi`, and `CommunityFraudApi`.
+- **Fakes and harness:** Added `CommunityEconomicServicesFakeBackend`, A4b owned-table schema metadata,
+  A4b seed fixture, and `test/a4b_economic_services_test.dart`.
+- **Skill/API docs:** Added ten Skill component guides and completed `Phase A4b - API Review.md`.
+- **Manifest:** A4b validation and built-counterpart contract tests are stamped `pass`; A1/A3/A4a
+  provider contracts unblocked by A4b are stamped `pass`; App Shell, stream renderer, and payment
+  surface consumer tests remain `pending-counterpart`.
+- **Component versions:** ad-campaign-service `7d781eea95a9`; ad-decision-service `e5a7593ee1ea`;
+  ai-gateway `66fa617e8d1b`; digest-service `d6d8d601ba0a`; fraud-signal-service
+  `e82f961e8a1d`; indexing-service `085147318d54`; search-service `00f0b4124434`;
+  settlement-engine `12129ce8f929`; utility-funding-service `9e0362c7cc0f`;
+  wallet-dues-donations `071871e00937`.
+- **Passed WSL checks:** `dart test test/a1_foundation_components_test.dart
+  test/a2_registry_control_plane_test.dart test/a3_experience_services_test.dart
+  test/a4a_ops_services_test.dart test/a4b_economic_services_test.dart`; `dart analyze` on touched
+  A1-A4b packages; manifest and phase gates; boundary lint.
 
 ### Phase A5 - Extension Engine Components
 

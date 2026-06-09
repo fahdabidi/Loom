@@ -335,72 +335,72 @@
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityAdCampaignApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "7d781eea95a9",
+      "fakePresent": true
     },
     {
       "id": "ad-decision-service",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityAdDecisionApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "e5a7593ee1ea",
+      "fakePresent": true
     },
     {
       "id": "ai-gateway",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityAiGatewayApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "66fa617e8d1b",
+      "fakePresent": true
     },
     {
       "id": "digest-service",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityDigestApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "d6d8d601ba0a",
+      "fakePresent": true
     },
     {
       "id": "fraud-signal-service",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityFraudApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "e82f961e8a1d",
+      "fakePresent": true
     },
     {
       "id": "search-service",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunitySearchApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "00f0b4124434",
+      "fakePresent": true
     },
     {
       "id": "settlement-engine",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunitySettlementApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "12129ce8f929",
+      "fakePresent": true
     },
     {
       "id": "utility-funding-service",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityUtilityFundingApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "9e0362c7cc0f",
+      "fakePresent": true
     },
     {
       "id": "wallet-dues-donations",
       "layer": "service",
       "phase": "A4b",
       "contract": "CommunityWalletApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "071871e00937",
+      "fakePresent": true
     },
     {
       "id": "data-schema-store",
@@ -735,13 +735,14 @@
         "ad-decision-service"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
       "lastRunComponentVersions": {
-        "protected-visibility-vault": "3795b6a09b20"
+        "protected-visibility-vault": "3795b6a09b20",
+        "ad-decision-service": "e5a7593ee1ea"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_receipt-ledger__wallet_append-payment",
@@ -755,13 +756,14 @@
         "wallet-dues-donations"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
       "lastRunComponentVersions": {
-        "receipt-ledger": "9f9e82fd4a2f"
+        "receipt-ledger": "9f9e82fd4a2f",
+        "wallet-dues-donations": "071871e00937"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_role-policy__extension-runtime_effective-permission",
@@ -1385,13 +1387,14 @@
         "ad-decision-service"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
       "lastRunComponentVersions": {
-        "messaging-stream-service": "709572cac272"
+        "messaging-stream-service": "709572cac272",
+        "ad-decision-service": "e5a7593ee1ea"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_messaging__stream-renderer_render-message-and-ad-item",
@@ -1445,13 +1448,14 @@
         "search-service"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
       "lastRunComponentVersions": {
-        "publishing-service": "0e31d279bf88"
+        "publishing-service": "0e31d279bf88",
+        "search-service": "00f0b4124434"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_publishing__stream-renderer_render-post",
@@ -1694,11 +1698,14 @@
         "search-service"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "documents-service": "bc037ffdc17c",
+        "search-service": "00f0b4124434"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_export__components_enumerate",
@@ -1732,11 +1739,14 @@
         "wallet-dues-donations"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "facilities-service": "0c23efd3c350",
+        "wallet-dues-donations": "071871e00937"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_fraud__dispute_resolution-path",
@@ -1750,11 +1760,14 @@
         "dispute-service"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "fraud-signal-service": "e82f961e8a1d",
+        "dispute-service": "5f035552f46b"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_import__protected-vault_write",
@@ -2089,11 +2102,14 @@
         "digest-service"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ai-gateway": "66fa617e8d1b",
+        "digest-service": "d6d8d601ba0a"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_fraud__settlement_apply-adjustment",
@@ -2107,11 +2123,14 @@
         "settlement-engine"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "fraud-signal-service": "e82f961e8a1d",
+        "settlement-engine": "12129ce8f929"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_receipt-ledger__settlement_read-window",
@@ -2125,11 +2144,14 @@
         "settlement-engine"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "receipt-ledger": "9f9e82fd4a2f",
+        "settlement-engine": "12129ce8f929"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_search__ai-gateway_retrieval",
@@ -2143,11 +2165,14 @@
         "ai-gateway"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "search-service": "00f0b4124434",
+        "ai-gateway": "66fa617e8d1b"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_search__app-shell_result-explanations",
@@ -2179,11 +2204,14 @@
         "utility-funding-service"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "settlement-engine": "12129ce8f929",
+        "utility-funding-service": "9e0362c7cc0f"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_wallet__ad-decision_ad-off-entitlement",
@@ -2197,11 +2225,14 @@
         "ad-decision-service"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "wallet-dues-donations": "071871e00937",
+        "ad-decision-service": "e5a7593ee1ea"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_wallet__payment-surface_checkout",
@@ -2230,11 +2261,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ad-campaign-service": "7d781eea95a9"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_ad-decision_sensitive-no-fill",
@@ -2249,11 +2282,14 @@
         "stream-renderer"
       ],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ad-decision-service": "e5a7593ee1ea",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_ad-decision_slot-eligibility",
@@ -2264,11 +2300,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ad-decision-service": "e5a7593ee1ea"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_ai-gateway_answer",
@@ -2282,11 +2320,14 @@
         "digest-service"
       ],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ai-gateway": "66fa617e8d1b",
+        "search-service": "00f0b4124434"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_ai-gateway_source-policy",
@@ -2297,11 +2338,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "ai-gateway": "66fa617e8d1b"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_digest_on-demand",
@@ -2312,11 +2355,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "digest-service": "d6d8d601ba0a"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_fraud_create-signal",
@@ -2327,11 +2372,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "fraud-signal-service": "e82f961e8a1d"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_search_deindex",
@@ -2342,11 +2389,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "search-service": "00f0b4124434"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_search_permission-aware",
@@ -2361,11 +2410,14 @@
         "app-shell-runtime"
       ],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "search-service": "00f0b4124434",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_settlement_run",
@@ -2379,11 +2431,14 @@
         "utility-funding-service"
       ],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "settlement-engine": "12129ce8f929",
+        "receipt-ledger": "9f9e82fd4a2f"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_utility-funding_calculate",
@@ -2394,11 +2449,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "utility-funding-service": "9e0362c7cc0f"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_wallet_ad-off",
@@ -2409,11 +2466,13 @@
       ],
       "dependents": [],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "wallet-dues-donations": "071871e00937"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "vt_wallet_payment",
@@ -2428,11 +2487,14 @@
         "settlement-engine"
       ],
       "phase": "A4b",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "1a75a707142e",
+      "lastRunTestHash": "1a75a707142e",
+      "lastRunComponentVersions": {
+        "wallet-dues-donations": "071871e00937",
+        "receipt-ledger": "9f9e82fd4a2f"
+      },
+      "lastRunAt": "2026-06-09T20:00:00Z"
     },
     {
       "testId": "ct_data-schema-store__import-export_schema-enumeration",

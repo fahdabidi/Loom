@@ -240,3 +240,7 @@ forms.
 Phase A4a adds ops/community guides for cases, documents, facilities, import/export, provider transfer,
 abuse reports, moderation, incidents, and disputes. Use these when implementing approval queues,
 document libraries, reservations, migration packages, safety escalation, and portability behavior.
+
+Phase A4b adds economic/search/ad guides for wallet payments, ad campaigns, ad decisions, indexing,
+search, AI answers, digests, settlement, utility funding, and fraud signals. Use these when
+implementing monetization, ad-off, permission-aware search, cited AI, and auditable economic flows.

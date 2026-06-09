@@ -58,8 +58,8 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_event-bus_publish` | validation | event-bus | event-bus | pass |
 | `vt_builder-app-id_signing-scope` | validation | builder-app-id-service | builder-app-id-service, key-management | pass |
 | `ct_role-policy__extension-runtime_effective-permission` | contract | role-policy-consent-engine | role-policy-consent-engine, extension-runtime-bridge | pending-counterpart |
-| `ct_protected-vault__ads_no-fill-sensitive` | contract | protected-visibility-vault | protected-visibility-vault, ad-decision-service | pending-counterpart |
-| `ct_receipt-ledger__wallet_append-payment` | contract | receipt-ledger | receipt-ledger, wallet-dues-donations | pending-counterpart |
+| `ct_protected-vault__ads_no-fill-sensitive` | contract | protected-visibility-vault | protected-visibility-vault, ad-decision-service | pass |
+| `ct_receipt-ledger__wallet_append-payment` | contract | receipt-ledger | receipt-ledger, wallet-dues-donations | pass |
 | `ct_event-bus__rule-engine_publish-replay` | contract | event-bus | event-bus, rule-engine | pending-counterpart |
 | `ct_connections__invitation_blocked-path` | contract | connections-graph | connections-graph, invitation-service | pass |
 | `ct_builder-app-id__extension-registry_signing-scope` | contract | builder-app-id-service | builder-app-id-service, extension-registry | pass |
@@ -102,10 +102,10 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_forms-voting_submit` | validation | forms-voting-service | forms-voting-service, protected-visibility-vault | pass |
 | `vt_forms-voting_poll-results` | validation | forms-voting-service | forms-voting-service | pass |
 | `ct_forms-voting__protected-vault_sensitive-fields` | contract | forms-voting-service | forms-voting-service, protected-visibility-vault | pass |
-| `ct_publishing__search_index-visible-content` | contract | publishing-service | publishing-service, search-service | pending-counterpart |
+| `ct_publishing__search_index-visible-content` | contract | publishing-service | publishing-service, search-service | pass |
 | `ct_publishing__stream-renderer_render-post` | contract | publishing-service | publishing-service, stream-renderer | pending-counterpart |
 | `ct_messaging__stream-renderer_render-message-and-ad-item` | contract | messaging-stream-service | messaging-stream-service, stream-renderer | pending-counterpart |
-| `ct_messaging__ad-decision_in-stream-insertion` | contract | messaging-stream-service | messaging-stream-service, ad-decision-service | pending-counterpart |
+| `ct_messaging__ad-decision_in-stream-insertion` | contract | messaging-stream-service | messaging-stream-service, ad-decision-service | pass |
 | `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pending-counterpart |
 | `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pending-counterpart |
 
@@ -130,10 +130,38 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_protected-vault__import-export_redaction` | contract | protected-visibility-vault | protected-visibility-vault, import-service, export-service | pass |
 | `ct_incident__certification_revoke` | contract | incident-service | incident-service, certification-system | pass |
 | `ct_case-task__workflow-engine_transition` | contract | case-task-service | case-task-service, workflow-engine | pending-counterpart |
-| `ct_documents__search_index-visible-documents` | contract | documents-service | documents-service, search-service | pending-counterpart |
+| `ct_documents__search_index-visible-documents` | contract | documents-service | documents-service, search-service | pass |
 | `ct_export__components_enumerate` | contract | export-service | export-service, data-schema-store, provider-transfer-service | pending-counterpart |
-| `ct_facilities__wallet_reservation-payment` | contract | facilities-service | facilities-service, wallet-dues-donations | pending-counterpart |
-| `ct_fraud__dispute_resolution-path` | contract | fraud-signal-service | fraud-signal-service, dispute-service | pending-counterpart |
+| `ct_facilities__wallet_reservation-payment` | contract | facilities-service | facilities-service, wallet-dues-donations | pass |
+| `ct_fraud__dispute_resolution-path` | contract | fraud-signal-service | fraud-signal-service, dispute-service | pass |
+
+## Phase A4b Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_wallet_payment` | validation | wallet-dues-donations | wallet-dues-donations, receipt-ledger | pass |
+| `vt_wallet_ad-off` | validation | wallet-dues-donations | wallet-dues-donations | pass |
+| `vt_ad-campaign_setup` | validation | ad-campaign-service | ad-campaign-service | pass |
+| `vt_ad-decision_slot-eligibility` | validation | ad-decision-service | ad-decision-service | pass |
+| `vt_ad-decision_sensitive-no-fill` | validation | ad-decision-service | ad-decision-service, protected-visibility-vault | pass |
+| `vt_search_permission-aware` | validation | search-service | search-service, role-policy-consent-engine | pass |
+| `vt_search_deindex` | validation | search-service | search-service | pass |
+| `vt_ai-gateway_answer` | validation | ai-gateway | ai-gateway, search-service | pass |
+| `vt_ai-gateway_source-policy` | validation | ai-gateway | ai-gateway | pass |
+| `vt_digest_on-demand` | validation | digest-service | digest-service | pass |
+| `vt_settlement_run` | validation | settlement-engine | settlement-engine, receipt-ledger | pass |
+| `vt_utility-funding_calculate` | validation | utility-funding-service | utility-funding-service | pass |
+| `vt_fraud_create-signal` | validation | fraud-signal-service | fraud-signal-service | pass |
+| `ct_wallet__ad-decision_ad-off-entitlement` | contract | wallet-dues-donations | wallet-dues-donations, ad-decision-service | pass |
+| `ct_search__ai-gateway_retrieval` | contract | search-service | search-service, ai-gateway | pass |
+| `ct_ai-gateway__digest_citations` | contract | ai-gateway | ai-gateway, digest-service | pass |
+| `ct_receipt-ledger__settlement_read-window` | contract | receipt-ledger | receipt-ledger, settlement-engine | pass |
+| `ct_settlement__utility-funding_allocation` | contract | settlement-engine | settlement-engine, utility-funding-service | pass |
+| `ct_fraud__settlement_apply-adjustment` | contract | fraud-signal-service | fraud-signal-service, settlement-engine | pass |
+| `ct_ad-decision__app-shell_banner-fill` | contract | ad-decision-service | ad-decision-service, app-shell-runtime | pending-counterpart |
+| `ct_ad-decision__stream-renderer_in-stream-ad` | contract | ad-decision-service | ad-decision-service, stream-renderer | pending-counterpart |
+| `ct_search__app-shell_result-explanations` | contract | search-service | search-service, app-shell-runtime | pending-counterpart |
+| `ct_wallet__payment-surface_checkout` | contract | wallet-dues-donations | wallet-dues-donations, payment-surface | pending-counterpart |
 
 ## Set B - Workflow Phases
 

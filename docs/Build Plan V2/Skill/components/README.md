@@ -60,3 +60,16 @@ Each guide must include:
 - [moderation-case-service.md](./moderation-case-service.md)
 - [incident-service.md](./incident-service.md)
 - [dispute-service.md](./dispute-service.md)
+
+## Phase A4b Guides
+
+- [wallet-dues-donations.md](./wallet-dues-donations.md)
+- [ad-campaign-service.md](./ad-campaign-service.md)
+- [ad-decision-service.md](./ad-decision-service.md)
+- [indexing-service.md](./indexing-service.md)
+- [search-service.md](./search-service.md)
+- [ai-gateway.md](./ai-gateway.md)
+- [digest-service.md](./digest-service.md)
+- [settlement-engine.md](./settlement-engine.md)
+- [utility-funding-service.md](./utility-funding-service.md)
+- [fraud-signal-service.md](./fraud-signal-service.md)

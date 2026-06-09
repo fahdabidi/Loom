@@ -1,6 +1,6 @@
 # Phase A4b - API Review
 
-Status: Template
+Status: Completed in A4b
 
 ## Scope
 
@@ -19,6 +19,52 @@ digest, settlement, utility funding, fraud signals.
 ## OpenAPI Outputs
 
 Record economic/search/ad-service spec additions and gaps.
+
+## A4b Contract Additions
+
+- `CommunityWalletApi`
+- `CommunityAdCampaignApi`
+- `CommunityAdDecisionApi`
+- `CommunityIndexingApi`
+- `CommunitySearchApi`
+- `CommunityAiGatewayApi`
+- `CommunityDigestApi`
+- `CommunitySettlementApi`
+- `CommunityUtilityFundingApi`
+- `CommunityFraudApi`
+
+These contracts are currently implemented as typed Dart contracts in
+`app/packages/core/loom_api_contracts/lib/clients/community_economic_apis.dart` and in-memory fakes in
+`app/packages/core/loom_fake_backend/lib/community_economic_fake.dart`.
+
+## OpenAPI Follow-Ups
+
+- Add public specs for wallet payments, ad-off entitlements, ad campaigns, ad decisions, indexing,
+  permission-aware search, AI answers, digests, settlement windows, utility allocation, and fraud
+  signals.
+- Keep App Shell, stream renderer, and payment surface consumers pending until A6.
+
+## Validation Evidence
+
+- `vt_wallet_payment`
+- `vt_wallet_ad-off`
+- `vt_ad-campaign_setup`
+- `vt_ad-decision_slot-eligibility`
+- `vt_ad-decision_sensitive-no-fill`
+- `vt_search_permission-aware`
+- `vt_search_deindex`
+- `vt_ai-gateway_answer`
+- `vt_ai-gateway_source-policy`
+- `vt_digest_on-demand`
+- `vt_settlement_run`
+- `vt_utility-funding_calculate`
+- `vt_fraud_create-signal`
+- `ct_wallet__ad-decision_ad-off-entitlement`
+- `ct_search__ai-gateway_retrieval`
+- `ct_ai-gateway__digest_citations`
+- `ct_receipt-ledger__settlement_read-window`
+- `ct_settlement__utility-funding_allocation`
+- `ct_fraud__settlement_apply-adjustment`
 
 ## WSL Ubuntu Tooling Requirement
 
