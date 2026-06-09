@@ -51,7 +51,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B1b | Complete | B1a R20 closeout | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | R20 UX Decisions completed; B1b workflow, B1a/A6 regressions, manifest gate, B1b phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `7825b59` prior code commit; R20 closeout `105cb16` |
 | B2 | Complete | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B2 workflow, B1b/B1a/A6 regressions, manifest gate, B2 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `e362090` prior code commit; R20 closeout `e97ba72` |
 | B3 | Complete | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B3 workflow, B2/B1b/B1a/A6 regressions, manifest gate, B3 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `36aee10` prior code commit; R20 closeout `23dd422` |
-| B4 | Complete - pending commit stamp | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
+| B4 | Complete | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `f3ffad3` |
 | B5 | Not started - R20 UX required first | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | Complete `Phase B5 - UX Decisions.md` using R20 before implementation. | TBD |
 | B6 | Not started - R20 UX required first | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | Complete `Phase B6 - UX Decisions.md` using R20 before implementation. | TBD |
 | B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
@@ -94,7 +94,7 @@ new method and the affected regressions pass again.
 | B1b | `7825b59`; R20 closeout `105cb16` | Complete | Recreated real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
 | B2 | `e362090`; R20 closeout `e97ba72` | Complete | Recreated book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
 | B3 | `36aee10`; R20 closeout `23dd422` | Complete | Recreated youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
-| B4 | None | Complete - pending commit stamp | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
+| B4 | None | Complete | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
 | B5-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
 Closeout rule for reopened phases:
@@ -629,7 +629,7 @@ Closeout rule for reopened phases:
   apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; fake backend A4a/A4b/A5
   regression tests; `flutter analyze apps/loom_communities_demo`; `dart analyze
   packages/core/loom_fake_backend`; manifest and B4 phase gates; boundary lint; `git diff --check`.
-- **Commit:** pending B4 closeout commit.
+- **Commit:** B4 closeout `f3ffad3`.
 
 ### Phase B5 - Mosque Headline Flow
 
