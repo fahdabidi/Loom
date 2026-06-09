@@ -262,6 +262,13 @@ are deferred until a hosted Loom build and validation backend exists.
 | `wf_local-demo-prereq-to-validation-ready` | workflow | none | skill-prereq-setup, workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, loom-local-store | pass |
 | `wf_local-build-download-sideload-install` | workflow | none | skill-prereq-setup, workflow-validation-harness, ai-skill-extension-builder, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, loom-local-store, community-card, app-shell-runtime, extension-runtime-bridge | pass |
 
+## Phase B1b Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_ai-skill_generate-package` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
+| `wf_build-publish-discover-install` | workflow | none | ai-skill-extension-builder, builder-app-id-service, extension-registry, certification-system, community-registry, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |

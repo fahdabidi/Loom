@@ -45,7 +45,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `b4c8b25` |
 | A6 | Complete | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | A6 shell/local-backend/demo app contracts and tests added; all Set A pending counterpart tests are resolved; Demo App starts empty, Add Community loads a local sample package/init package, cards render, and local backend import/reload passes; manifest and phase gates pass in WSL Ubuntu. | `0346c99` |
 | B1a | Complete | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | WSL Ubuntu bootstrap, B1a workflow tests, A6 Demo App regression, focused Demo App analysis, Skill prereq check/setup, manifest gate, phase gate, and boundary lint pass. | `df6f543` |
-| B1b | Not started | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | TBD | TBD |
+| B1b | Complete | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | B1b workflow test, B1a regression, A6 Demo App regression, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | pending commit |
 | B2 | Not started | B1b | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | TBD | TBD |
 | B3 | Not started | B2 | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | TBD | TBD |
 | B4 | Not started | B3 | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | TBD | TBD |
@@ -369,6 +369,25 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   using local backend stubs/contracts for hosted behavior; B1a local package behavior remains green.
 - **Evidence to record:** Workflow output, hosted API stub/contract output, package/certification test
   output, API Review and UX Decisions paths, Skill workflow guide path, commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Implemented workflow test:** Added
+  `apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart` for
+  `wf_build-publish-discover-install`.
+- **Validated local hosted-publish stubs:** The workflow registers a builder App ID, verifies signing
+  scope, certifies the package, publishes a certified extension version, resolves the community by
+  handle and QR, imports the initialization package into the Local Backend, renders the card, and opens
+  `local:ext_book_club@latest`.
+- **Skill and examples:** Added `Skill/workflows/build-publish-discover-install.md` and the book-club
+  `phase-b1b-publish` example package/init artifacts.
+- **Manifest stamps:** ai-skill-extension-builder `29acc7de90fa`; workflow-validation-harness
+  `44632537bded`; `wf_build-publish-discover-install` test hash `617a61fa0308`.
+- **Passed WSL checks:** `dart format` on the B1b workflow test; `melos bootstrap`; `flutter test
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; `flutter analyze
+  apps/loom_communities_demo`.
 
 ### Phase B2 - Book Club Headline Flow
 

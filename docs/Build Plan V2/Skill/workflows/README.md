@@ -16,3 +16,7 @@ Each guide must include:
 ## Phase B1a Guides
 
 - [local-build-download-sideload-install.md](./local-build-download-sideload-install.md)
+
+## Phase B1b Guides
+
+- [build-publish-discover-install.md](./build-publish-discover-install.md)

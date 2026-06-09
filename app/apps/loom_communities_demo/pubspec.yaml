@@ -20,6 +20,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  loom_api_contracts:
+    path: ../../packages/core/loom_api_contracts
+  loom_fake_backend:
+    path: ../../packages/core/loom_fake_backend
+  loom_seed_data:
+    path: ../../packages/core/loom_seed_data
 
 flutter:
   uses-material-design: true

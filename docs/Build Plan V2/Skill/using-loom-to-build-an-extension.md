@@ -257,3 +257,9 @@ Phase B1a proves the local-demo workflow. Use
 `workflows/local-build-download-sideload-install.md` and the book-club `phase-b1a-local` example to
 generate package pairs, validate them, import fake-backend seed data, render the branded card, and open
 `local:<extension-id>@latest`.
+
+Phase B1b proves the `real-backend-publish` workflow shape while still validating locally. Use
+`workflows/build-publish-discover-install.md` and the book-club `phase-b1b-publish` example to add
+builder App ID metadata, signing scope, package ID, certification evidence, community handle, QR
+payload, and latest-open routing. The validation loop uses local registry, certification, discovery,
+and App Shell fakes until a hosted Loom backend is available.

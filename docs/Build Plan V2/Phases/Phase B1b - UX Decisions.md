@@ -1,27 +1,38 @@
 # Phase B1b - UX Decisions
 
-Status: Template
+Status: Completed
 
 ## Reference Sources Reviewed
 
-QR install, app install, permission review, certification, and package publish flows.
+QR install, app install, permission review, certification, package publish, and B1a local sideload
+flows.
 
 ## UX Patterns Extracted
 
-Record patterns for install trust, certification status, permission clarity, latest-version updates,
-and the difference between local sideload and hosted install.
+- Hosted install should show certification state before install.
+- Permission review should display package permissions before the local backend import/install step.
+- QR and handle discovery resolve the same community profile.
+- Latest-version open is a routing behavior, not a separate user choice in the preliminary Demo App.
+- Local sideload remains visibly separate from publish-ready mode because B1b still uses fakes.
 
 ## Key UX Decisions
 
-Record publish, QR/handle, install, and latest-open UI decisions.
+- Publish-ready packages carry `real-backend-publish` metadata but remain locally downloadable.
+- The Demo App can validate hosted publish semantics without showing hosted backend screens.
+- The community card continues to be the post-install entry point.
+- Certification and trust state are represented in test output and package metadata for now; richer UI
+  treatment can wait for hosted backend screens.
 
 ## Workflow Walkthrough
 
-Walk through `wf_build-publish-discover-install`.
+`wf_build-publish-discover-install` registers a builder App ID, certifies the package, publishes the
+certified version, resolves the community by handle/QR, imports the initialization package locally,
+renders the community card, and opens `local:<extension-id>@latest`.
 
 ## Open Questions
 
-Record unresolved hosted workflow UX risks.
+- Whether hosted install should expose a separate "review certification evidence" screen.
+- Whether QR install should land on a pre-install preview or directly on permission review.
 
 ## WSL Ubuntu Tooling Requirement
 
