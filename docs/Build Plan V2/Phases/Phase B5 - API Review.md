@@ -1,22 +1,38 @@
 # Phase B5 - API Review
 
-Status: Template
+Status: Completed
 
 ## Scope
 
-Mosque workflow: announcements, RSVP, volunteer signup, donation, donor visibility, care request.
+Mosque workflow: announcement, event RSVP, volunteer signup, donation with donor visibility, protected
+care request, notification, public search/AI citation, and local latest-open behavior.
 
 ## Review Checklist
 
-- Donation visibility classes.
-- Care protected-vault class.
-- Volunteer form schema.
-- Event/announcement visibility.
-- Notification routing.
+- Announcement publishing: covered by `CommunityPublishingApi.publishPost`.
+- Event and RSVP: covered by `CommunityEventsApi.createEvent` and `rsvp`.
+- Volunteer signup: covered by `CommunityFormsVotingApi.submitForm`; contact data uses
+  `sensitiveFields`.
+- Donation: covered by `CommunityWalletApi.recordPayment` with `CommunityPaymentKind.donation`.
+- Donor visibility: represented locally as `CommunityCoreVaultApi.setPreference` for
+  `donor_visibility`.
+- Care request privacy: represented by `CommunityFormsVotingApi.submitForm` plus
+  `CommunityProtectedVaultApi.writeProtectedRecord`/`readProtectedRecord`.
+- Notification: covered by `CommunityNotificationApi.deliver`.
+- Public search/AI: announcement content is indexed through `CommunityIndexingApi.indexRecord` and
+  cited through `CommunityAiGatewayApi.answerQuestion`.
 
 ## OpenAPI Outputs
 
-Record workflow-driven spec gaps.
+- Hosted donation APIs should add first-class `donorVisibility` and receipt/tax-statement fields
+  rather than relying on a generic member preference.
+- Volunteer forms should eventually expose capacity, scheduling window, and coordinator assignment.
+- Protected care requests need an explicit hosted resource with care-team routing, response status,
+  escalation disclaimers, and audit metadata.
+- Notification templates should support localized neutral/private copy for sensitive request
+  confirmations.
+- Search/AI OpenAPI should document that protected care details and donor visibility data are
+  non-indexable.
 
 ## WSL Ubuntu Tooling Requirement
 

@@ -52,7 +52,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B2 | Complete | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B2 workflow, B1b/B1a/A6 regressions, manifest gate, B2 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `e362090` prior code commit; R20 closeout `e97ba72` |
 | B3 | Complete | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B3 workflow, B2/B1b/B1a/A6 regressions, manifest gate, B3 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `36aee10` prior code commit; R20 closeout `23dd422` |
 | B4 | Complete | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `f3ffad3` |
-| B5 | Not started - R20 UX required first | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | Complete `Phase B5 - UX Decisions.md` using R20 before implementation. | TBD |
+| B5 | Complete - pending commit stamp | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; mosque workflow, affected component regressions, manifest gate, B5 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
 | B6 | Not started - R20 UX required first | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | Complete `Phase B6 - UX Decisions.md` using R20 before implementation. | TBD |
 | B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
 | B8 | Not started - R20 UX required first | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | Complete `Phase B8 - UX Decisions.md` using R20 before implementation. | TBD |
@@ -95,7 +95,8 @@ new method and the affected regressions pass again.
 | B2 | `e362090`; R20 closeout `e97ba72` | Complete | Recreated book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
 | B3 | `36aee10`; R20 closeout `23dd422` | Complete | Recreated youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
 | B4 | None | Complete | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
-| B5-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+| B5 | None | Complete - pending commit stamp | Completed mosque announcement, event, volunteer, donation, donor visibility, protected care request, notification, and local card/open UX decisions using R20. |
+| B6-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
 Closeout rule for reopened phases:
 
@@ -640,6 +641,35 @@ Closeout rule for reopened phases:
   donation, event, form, notification, search/AI, and App Shell regressions pass.
 - **Evidence to record:** Workflow output, protected-vault assertions, donation receipt output, API Review
   and UX Decisions paths, Skill example paths, commit SHA.
+
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B5 - UX Decisions.md` with current mosque app,
+  mosque-management, faith-community giving, event, volunteer, donor privacy, and private
+  prayer/care-request references.
+- **Implementation outcome:** Added the mosque workflow test and example package. The workflow validates
+  public announcement publishing, event RSVP, volunteer signup with protected contact details,
+  anonymous donor visibility, donation payment, protected care request, neutral notification,
+  public announcement search/AI citation, and local latest-open behavior in the Demo App with Local
+  Backend.
+- **Skill/API artifacts:** Added `Skill/workflows/mosque-headline.md`,
+  `Skill/examples/mosque/loom.extension.json`, `Skill/examples/mosque/loom.initialization.json`,
+  updated `Skill/examples/mosque/README.md`, updated the master Skill walkthrough, and completed
+  `Phase B5 - API Review.md`.
+- **Manifest stamps:** `wf_mosque-headline` test hash `6887a1ff12ff`; workflow-validation-harness
+  `09c26b466480`; publishing-service `0e31d279bf88`; wallet-dues-donations `071871e00937`;
+  protected-visibility-vault `3795b6a09b20`; search-service `00f0b4124434`; ai-gateway
+  `66fa617e8d1b`.
+- **Passed WSL checks:** `flutter test apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A1/A3/A4b component
+  regression tests; `flutter analyze apps/loom_communities_demo`; manifest and B5 phase gates;
+  boundary lint; `git diff --check`.
+- **Commit:** pending B5 closeout commit.
 
 ### Phase B6 - Messaging, In-Stream Ads, and Connections
 

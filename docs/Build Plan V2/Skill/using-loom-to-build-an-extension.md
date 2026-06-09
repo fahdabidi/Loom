@@ -275,3 +275,8 @@ validation of a youth sports extension.
 Phase B4 adds `workflows/hoa-headline.md`. Use it for dues, member-visible documents, facility
 reservations, architectural request cases, committee workflow decisions, owner notifications, export
 coverage, and local Demo App validation of an HOA extension.
+
+Phase B5 adds `workflows/mosque-headline.md`. Use it for mosque announcements, iftar/event RSVPs,
+volunteer signup with protected contact fields, anonymous donor visibility, donations, private care
+requests, neutral notifications, public announcement search/AI citations, and local Demo App
+validation of a mosque extension.
