@@ -36,7 +36,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Complete | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | WSL Ubuntu toolchain verified; `dart format`, `melos bootstrap`, manifest gate, phase gate with `--check-env`, Skill prereq setup/check, boundary lint, and focused scaffold analysis passed. | Pending WSL completion commit |
+| 0 | Complete | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | WSL Ubuntu toolchain verified; `dart format`, `melos bootstrap`, manifest gate, phase gate with `--check-env`, Skill prereq setup/check, boundary lint, and focused scaffold analysis passed. | `17b4b81` |
 | A1 | Not started | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | TBD | TBD |
 | A2 | Not started | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | TBD | TBD |
 | A3 | Not started | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | TBD | TBD |
