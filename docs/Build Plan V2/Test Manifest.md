@@ -260,6 +260,11 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_skill_generate-downloadable-extension` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
 | `vt_skill_generate-initialization-package` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
 | `vt_skill_generate-brand-assets` | validation | ai-skill-extension-builder | ai-skill-extension-builder, extension-package-validator, initialization-package-schema | pass |
+| `vt_demo-app_local-loader-opens` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
+| `vt_demo-app_local-loader-invalid-extension-error` | validation | loom-communities-demo-app | loom-communities-demo-app, local-in-app-backend | pass |
+| `vt_demo-app_local-loader-validates-package-pair` | validation | loom-communities-demo-app | loom-communities-demo-app, local-in-app-backend, community-card | pass |
+| `vt_demo-app_duplicate-local-import-status` | validation | loom-communities-demo-app | loom-communities-demo-app, local-in-app-backend, community-card | pass |
+| `vt_fake-backend_local-package-pair-validation` | validation | local-in-app-backend | local-in-app-backend | pass |
 | `wf_local-demo-prereq-to-validation-ready` | workflow | none | skill-prereq-setup, workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, loom-local-store | pass |
 | `wf_local-build-download-sideload-install` | workflow | none | skill-prereq-setup, workflow-validation-harness, ai-skill-extension-builder, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, loom-local-store, community-card, app-shell-runtime, extension-runtime-bridge | pass |
 
@@ -289,8 +294,8 @@ are deferred until a hosted Loom build and validation backend exists.
 | Skill validation environment | `vt_skill-prereq_manifest-complete`, `vt_skill-prereq_host-detection`, `vt_skill-prereq_install-plan`, `vt_skill-prereq_environment-lock`, `vt_skill-prereq_demo-app-smoke`, `ct_skill-prereq-setup__workflow-validation-harness_environment-ready`, `wf_local-demo-prereq-to-validation-ready` |
 | Empty app and Add Community | `vt_demo-app_empty-community-state`, `vt_demo-app_add-community-button`, `vt_demo-app_empty-state-cta-loads-community` |
 | Skill local artifacts | `vt_skill_generate-downloadable-extension`, `vt_skill_generate-initialization-package`, `vt_skill_generate-brand-assets`, `vt_skill_debug_golden-flow` |
-| Package validation and local load | `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_demo-app_local-file-load-extension`, `ct_extension-package__demo-loader_validate-load` |
-| Initialization import | `vt_initialization-package_schema`, `vt_initialization-package_idempotency`, `vt_initialization-package_community-branding`, `vt_fake-backend_import-init-package`, `vt_fake-backend_import-idempotent`, `ct_initialization-package__fake-backend_import`, `ct_initialization-package__fake-backend_branding-import` |
+| Package validation and local load | `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_demo-app_local-file-load-extension`, `vt_demo-app_local-loader-opens`, `vt_demo-app_local-loader-invalid-extension-error`, `vt_demo-app_local-loader-validates-package-pair`, `vt_fake-backend_local-package-pair-validation`, `ct_extension-package__demo-loader_validate-load` |
+| Initialization import | `vt_initialization-package_schema`, `vt_initialization-package_idempotency`, `vt_initialization-package_community-branding`, `vt_fake-backend_import-init-package`, `vt_fake-backend_import-idempotent`, `vt_demo-app_duplicate-local-import-status`, `ct_initialization-package__fake-backend_import`, `ct_initialization-package__fake-backend_branding-import` |
 | Local persistence, branded card, and open | `vt_local-store_persist-reload`, `vt_demo-app_cards-after-load`, `vt_demo-app_card-image-after-load`, `vt_community-card_branding-priority`, `vt_demo-app_open-local-extension`, `ct_local-backend__community-card_branding-props`, `ct_extension-runtime__app-shell_local-session` |
 | End to end | `wf_local-build-download-sideload-install` |
 

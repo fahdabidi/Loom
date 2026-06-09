@@ -63,6 +63,14 @@ class LocalBackendSnapshot {
   final List<String> loadedExtensionIds;
 }
 
+class LocalPackagePairValidation {
+  const LocalPackagePairValidation({required this.errors});
+
+  final List<String> errors;
+
+  bool get isValid => errors.isEmpty;
+}
+
 class LocalInAppBackend {
   LocalInAppBackend({LocalBackendSnapshot? snapshot}) {
     if (snapshot != null) {
@@ -82,6 +90,26 @@ class LocalInAppBackend {
 
   bool isExtensionLoaded(String extensionId) {
     return _loadedExtensionIds.contains(extensionId);
+  }
+
+  LocalPackagePairValidation validateLocalPackagePair({
+    required String extensionPackagePath,
+    required String initializationPackagePath,
+  }) {
+    final errors = <String>[];
+    final extensionPath = extensionPackagePath.trim();
+    final initializationPath = initializationPackagePath.trim();
+    if (extensionPath.isEmpty) {
+      errors.add('Choose an extension package.');
+    } else if (!extensionPath.endsWith('.loom-extension.zip')) {
+      errors.add('Extension package must end with .loom-extension.zip.');
+    }
+    if (initializationPath.isEmpty) {
+      errors.add('Choose an initialization package.');
+    } else if (!initializationPath.endsWith('.loom-init.zip')) {
+      errors.add('Initialization package must end with .loom-init.zip.');
+    }
+    return LocalPackagePairValidation(errors: errors);
   }
 
   void loadExtensionPackage(LoomExtensionPackageSummary package) {

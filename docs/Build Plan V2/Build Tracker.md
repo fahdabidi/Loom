@@ -47,7 +47,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `4ab715d` |
 | A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `b4c8b25` |
 | A6 | Complete | A5 + Phase 0 R20 closeout | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | R20 UX Decisions completed; empty-state CTA gap fixed; A6 tests, existing B1a-B3 workflow regressions, manifest gate, A6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `0346c99` prior code commit; R20 closeout `39af637` |
-| B1a | Reopened - R20 UX second pass required | A6 R20 closeout | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | Prior workflow passed at `df6f543`, but UX Decisions were completed before R20 existed. Recreate local-demo UX Decisions before reclosing and rerun B1a regressions. | `df6f543` prior code commit; new closeout TBD |
+| B1a | Complete - R20 closeout pending commit stamp | A6 R20 closeout | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | R20 UX Decisions completed; local package loader, package-pair validation, invalid-file error, duplicate import status, B1a workflow, B1b-B3 regressions, manifest gate, B1a phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `df6f543` prior code commit; R20 closeout pending stamp |
 | B1b | Reopened - R20 UX second pass required | B1a R20 closeout | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | Prior workflow passed at `7825b59`, but UX Decisions were completed before R20 existed. Recreate publish/discovery/install UX Decisions before reclosing and rerun B1b regressions. | `7825b59` prior code commit; new closeout TBD |
 | B2 | Reopened - R20 UX second pass required | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | Prior workflow passed at `e362090`, but UX Decisions were completed before R20 existed. Recreate book club UX Decisions before reclosing and rerun B2 regressions. | `e362090` prior code commit; new closeout TBD |
 | B3 | Reopened - R20 UX second pass required | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | Prior workflow passed at `36aee10`, but UX Decisions were completed before R20 existed. Recreate youth soccer UX Decisions before reclosing and rerun B3 regressions. | `36aee10` prior code commit; new closeout TBD |
@@ -90,7 +90,7 @@ new method and the affected regressions pass again.
 | --- | --- | --- | --- |
 | 0 | `17b4b81`; R20 closeout `b838fa8` | Complete | R20 rules, UX Decisions templates, phase instructions, and tracker reset are now the Phase 0 second-pass baseline. |
 | A6 | `0346c99`; R20 closeout `39af637` | Complete | Recreated App Shell, UX micro-component, Demo App empty/load/import, branded card, local backend, ad slot, payment surface, data dashboard, and required shell-surface UX decisions using R20. |
-| B1a | `df6f543` | Reopened - R20 UX second pass required | Recreate local-demo build/download/sideload/install UX decisions using R20, including local file picker, validation errors, import progress, duplicate import, rollback, card branding fallback, and local latest-open states. |
+| B1a | `df6f543` | Complete - R20 closeout pending commit stamp | Recreated local-demo build/download/sideload/install UX decisions using R20, including local file picker/path entry, validation errors, import progress/status, duplicate import, rollback tradeoff, card branding fallback, and local latest-open states. |
 | B1b | `7825b59` | Reopened - R20 UX second pass required | Recreate real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
 | B2 | `e362090` | Reopened - R20 UX second pass required | Recreate book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
 | B3 | `36aee10` | Reopened - R20 UX second pass required | Recreate youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
@@ -359,8 +359,8 @@ Closeout rule for reopened phases:
   are resolved.
 - **Component versions:** ad-slots `12d754c97f76`; app-shell-runtime `c7c0a602fdad`;
   community-card `690cea54a8d2`; connections-shell `212f751b3eb5`; data-dashboard-consent
-  `917fd80d8266`; local-in-app-backend `4067f3df7a7f`; loom-communities-demo-app
-  `c0ededc719bf`; navigation-panel `ffc2aecac272`; payment-surface `637ca25646d9`;
+  `917fd80d8266`; local-in-app-backend `332432d7b39d`; loom-communities-demo-app
+  `fe03608c5230`; navigation-panel `ffc2aecac272`; payment-surface `637ca25646d9`;
   stream-renderer `07547f0370c6`.
 - **Passed WSL checks:** `flutter test packages/core/loom_app_shell/test/a6_app_shell_components_test.dart`;
   `dart test test/a6_local_backend_test.dart`; `flutter test
@@ -378,7 +378,7 @@ Closeout rule for reopened phases:
   shell floating Add Community action, so the first-run state provides a direct path to install.
 - **Tests:** Added `vt_demo-app_empty-state-cta-loads-community` and registered it in the machine and
   human test manifests.
-- **Component version update:** `loom-communities-demo-app` is now stamped `c0ededc719bf`.
+- **Component version update:** `loom-communities-demo-app` is now stamped `fe03608c5230`.
 - **Passed WSL checks:** `dart format apps/loom_communities_demo/lib/main.dart
   apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; `flutter test
   packages/core/loom_app_shell/test/a6_app_shell_components_test.dart`; `dart test
@@ -431,6 +431,39 @@ Closeout rule for reopened phases:
 - **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
   `Phase B1a - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B1a/A6
   regressions, and record a new closeout commit before B1a can be treated as complete again.
+
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B1a - UX Decisions.md` with current reference sources,
+  extracted patterns, local-demo decisions, implementation decisions, workflow walkthrough, and
+  tradeoffs.
+- **UX-driven implementation:** `Add Community` now opens a local package loader with extension/init
+  package path fields. The Demo App validates package suffixes before import, shows invalid-file
+  errors, imports through the fake backend, renders the branded community card, and reports duplicate
+  imports as updates.
+- **Validation ownership:** Added reusable local package-pair validation to the Local In-App Backend.
+- **Tests:** Added `vt_demo-app_local-loader-opens`,
+  `vt_demo-app_local-loader-invalid-extension-error`,
+  `vt_demo-app_local-loader-validates-package-pair`,
+  `vt_demo-app_duplicate-local-import-status`, and
+  `vt_fake-backend_local-package-pair-validation`.
+- **Manifest:** Registered the new B1a validation tests and refreshed current component stamps:
+  `loom-communities-demo-app` `fe03608c5230`; `local-in-app-backend` `332432d7b39d`.
+- **Skill docs:** Updated `Skill/workflows/local-build-download-sideload-install.md` with the local
+  package-pair selection and validation process.
+- **Passed WSL checks:** `dart format` on changed Dart files; `dart test
+  packages/core/loom_demo_local_backend/test/a6_local_backend_test.dart`; `flutter test
+  packages/core/loom_app_shell/test/a6_app_shell_components_test.dart`; `flutter test
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart`; `flutter analyze
+  apps/loom_communities_demo`; `dart analyze packages/core/loom_demo_local_backend`; `dart run
+  packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`; `dart
+  run packages/tooling/phase_gate.dart --phase B1a --check-env`; `melos run lint:boundaries`; `git
+  diff --check`.
+- **Commit:** Pending R20 closeout commit stamp.
 
 ### Phase B1b - Publish, Discover, Certify, Install
 

@@ -16,6 +16,30 @@ void main() {
       expect(backend.isExtensionLoaded('ext_book_club'), isTrue);
     });
 
+    test('vt_fake-backend_local-package-pair-validation', () {
+      final backend = LocalInAppBackend();
+
+      final invalid = backend.validateLocalPackagePair(
+        extensionPackagePath: '/emulator/Download/book-club.zip',
+        initializationPackagePath: '/emulator/Download/book-club.json',
+      );
+      final valid = backend.validateLocalPackagePair(
+        extensionPackagePath: '/emulator/Download/book-club.loom-extension.zip',
+        initializationPackagePath: '/emulator/Download/book-club.loom-init.zip',
+      );
+
+      expect(invalid.isValid, isFalse);
+      expect(
+        invalid.errors,
+        contains('Extension package must end with .loom-extension.zip.'),
+      );
+      expect(
+        invalid.errors,
+        contains('Initialization package must end with .loom-init.zip.'),
+      );
+      expect(valid.isValid, isTrue);
+    });
+
     test('vt_fake-backend_import-init-package', () {
       final backend = LocalInAppBackend()..loadExtensionPackage(_extension());
       final report = backend.importInitializationPackage(_initialization());
