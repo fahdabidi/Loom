@@ -10,7 +10,7 @@ Rules: [Rules.md](../Rules.md)
 No prior phase. Verify local execution environment only:
 
 - `app/` exists or is created as the V2 melos workspace root.
-- Flutter/Dart/melos/tooling prerequisites are documented.
+- Flutter/Dart/melos/tooling prerequisites are documented through the Skill setup manifest.
 - Git worktree status is recorded before generation begins.
 
 ## 1. Build the Test Manifest
@@ -40,7 +40,7 @@ Publish:
 - [../Rules.md](../Rules.md)
 - [../README.md](../README.md)
 
-Rules R1-R14 are binding. Phase docs may add checks but cannot weaken the rules.
+Rules R1-R19 are binding. Phase docs may add checks but cannot weaken the rules.
 
 ## 3. Scaffold the Skill
 
@@ -54,10 +54,18 @@ Create:
 - `Skill/examples/youth-soccer/`
 - `Skill/examples/hoa/`
 - `Skill/examples/mosque/`
+- `Skill/setup/system-prereqs.md`
+- `Skill/setup/prereq-manifest.json`
+- `Skill/setup/execution-targets/codex.md`
+- `Skill/setup/execution-targets/claude-code.md`
+- `Skill/setup/validation-environment.lock.json`
+- `Skill/setup/troubleshooting.md`
 
 The initial Skill must explain the Loom trust boundary, required App Shell structure, permission model,
-extension package shape, validation loop, certification path, and publish -> QR/handle -> install ->
-latest loop.
+extension package shape, initialization package shape, validation loop, local download/sideload loop,
+locked asset/branding format, Skill debug loop, system prereq setup, canonical Codex/Claude Code
+execution targets, deferred online-only support, certification path, and publish -> QR/handle ->
+install -> latest loop.
 
 ## 4. Scaffold the V2 Workspace
 
@@ -69,11 +77,23 @@ Create or confirm package namespaces for:
 - `loom_seed_data`
 - `loom_app_shell`
 - `loom_design_system`
+- `loom_extension_package`
+- `loom_demo_local_backend`
+- `apps/loom_communities_demo`
 - `loom_lints`
+- `loom_skill_prereq_setup`
+- `loom_skill_debug_harness`
+- `api_spec_inventory`
 - `packages/tooling/manifest_gate.dart`
 - `packages/tooling/phase_gate.dart`
+- `packages/tooling/skill_prereq_setup.dart`
+- `packages/tooling/skill_prereq_check.dart`
 
 No domain implementation is required in Phase 0 beyond enough scaffolding for the gates to exist.
+The demo app scaffold must include placeholders for the empty community state, local file loader,
+local DB adapter, fake backend import endpoint, and reset/reload test hooks.
+The Skill prereq scaffold must include enough placeholders to parse the prereq manifest, detect the
+execution target, produce an install plan, and write a placeholder validation environment lock.
 
 ## 5. Build Tracker
 
@@ -91,6 +111,9 @@ Record:
 - Which V1 specs can be reused or renamed.
 - Which V2 contracts are new.
 - Which specs are deferred to component phases.
+- Which local-only package, initialization, and fake-backend APIs are required before B1a.
+- Which Skill prereq setup APIs and environment-lock schema are required before local workflow
+  validation can run.
 
 ## 7. Definition of Done
 
@@ -100,8 +123,22 @@ Phase 0 is complete when:
 - Manifest gate can run and report expected `planned` / `pending-counterpart` states.
 - Rules, README, tracker, and Skill skeleton exist.
 - Workspace scaffold and gate script placeholders exist.
+- Loom Communities Demo App, local fake-backend adapter, extension package schema, initialization
+  package schema, Skill prereq setup, Skill debug harness, and API spec inventory placeholders exist.
+- Skill setup docs exist and `prereq-manifest.json` plus placeholder
+  `validation-environment.lock.json` parse as valid JSON.
 - API Review filed.
 - Build Tracker records Phase 0 gate evidence and commit SHA.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 8. Next Phase
 

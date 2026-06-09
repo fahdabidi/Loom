@@ -54,11 +54,13 @@ Required examples:
 - `vt_workflow-inventory_test-index`
 - `vt_test-manifest_staleness`
 - `vt_community-registry_discovery`
+- `vt_community-registry_branding`
 - `vt_spaces_nesting`
 - `vt_membership_join-approval`
 - `vt_invitation_create-revoke`
 - `vt_extension-registry_resolve-latest`
 - `vt_certification_validate-package`
+- `vt_certification_asset-evidence`
 - `vt_public-registry_status`
 
 ## 5. Consumer-Contract Tests Authored for Dependents
@@ -90,7 +92,8 @@ owns projections only.
 ## 8. Skill Contribution
 
 Add component guides for all A2 components. Each guide must show how an extension builder discovers,
-installs, certifies, or references community/space/membership state without bypassing contracts.
+installs, certifies, brands, or references community/space/membership state without bypassing
+contracts.
 
 ## 9. Manifest Update
 
@@ -100,12 +103,23 @@ contract tests unblocked by A2.
 ## 10. API Review
 
 Create `Phase A2 - API Review.md`. Record OpenAPI specs for registry, spaces, membership, invitation,
-extension registry, certification, public registry, and manifest APIs.
+extension registry, certification, public registry, and manifest APIs. Include community branding
+fields used by App Shell card rendering.
 
 ## 11. Definition of Done
 
 All A2 tests and affected A1 regressions pass; Skill guides, manifest, API Review, tracker, and commit
 SHA are complete.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 12. Next Phase
 

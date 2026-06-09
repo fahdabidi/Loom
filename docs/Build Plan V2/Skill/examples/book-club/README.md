@@ -2,7 +2,8 @@
 
 Status: Phase 0 placeholder
 
-This example grows during Phase B2. Phase B1 may seed a minimal package fragment for publish/install.
+This example grows during Phase B2. Phase B1a seeds a minimal local package and initialization package
+for sideload/install; Phase B1b adds hosted publish/install fragments.
 
 Expected final coverage:
 

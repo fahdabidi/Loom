@@ -80,16 +80,24 @@ A phase is done only when:
 
 - Required tests pass.
 - Manifest and staleness gates pass.
+- For any local validation phase, Skill prereq setup passes and the validation environment lock is
+  current.
+- API/OpenAPI specs owned or changed by the phase exist, validate, and are linked from the API Review.
 - Skill contribution is complete.
 - API Review is filed.
 - UX Decisions is filed where UI or workflow UX changed.
-- Build Tracker records status, gate evidence, component versions, and commit SHA.
+- Phase changes are committed to git.
+- Build Tracker records status, gate evidence, component versions, and the exact commit SHA.
+
+No next phase may start from uncommitted prior-phase changes. If a fix-up is needed after the commit,
+make a follow-up commit and update the tracker to the latest applicable SHA before advancing.
 
 ## R13 Reuse the V1 harness
 
 Use `loom_api_contracts`, `loom_fake_backend`, `loom_local_store`, `loom_seed_data`,
-`loom_lints`, melos scripts, and Flutter integration tests. Do not create a parallel test harness unless
-the phase explicitly records why the existing harness cannot support the component.
+`loom_lints`, the Loom Communities Demo App, `loom_skill_prereq_setup`, melos scripts, and Flutter
+integration tests. Do not create a parallel test harness unless the phase explicitly records why the
+existing harness cannot support the component.
 
 ## R14 A4 service split
 
@@ -102,6 +110,77 @@ The Service layer is pre-split to avoid an overloaded component phase:
 
 Do not merge A4a and A4b during execution. If either still exceeds clean parallel review capacity,
 split further only by adding a new phase and updating the manifest first.
+
+## R15 Local-first extension delivery gate
+
+Before any hosted publish/certify workflow is required, B1a must prove the local preliminary product:
+
+- The Loom Communities Demo App starts with zero communities.
+- The App Shell shows an empty-state community card area and an `Add Community` action.
+- The user can choose a local extension package from the emulator file system.
+- The app validates the package, imports its initialization package into the fake in-app backend, and
+  persists records in the local DB.
+- The installed community appears as a card and opens in the App Shell using the latest local package.
+
+Hosted publish, QR, and marketplace behaviors cannot substitute for this local sideload gate.
+
+## R16 Skill debug loop
+
+The Skill must be testable like product code. Each phase that changes the Skill updates:
+
+- Prompt fixtures and expected package outputs.
+- Golden extension and initialization packages.
+- Validator diagnostics and remediation examples.
+- Transcript capture/replay notes for failed Skill runs.
+
+B1a cannot complete until the Skill can generate a downloadable extension package and initialization
+package from at least one golden prompt and the Demo App can load both.
+
+## R17 Skill modes and workflow validation target
+
+The Skill supports exactly two delivery modes:
+
+- `local-demo`: build a downloadable extension package and initialization package for the Demo Loom
+  Communities App with the Local Backend.
+- `real-backend-publish`: build the package and backend initialization payloads needed for a real Loom
+  Communities backend publish flow.
+
+All Set B validation workflow tests run against the Demo Loom Communities App with the Local Backend.
+Real-backend publishing behavior is validated through local backend stubs, contract fakes, and
+conformance tests first. A phase may document a later hosted smoke test, but the phase gate cannot
+depend on an external backend.
+
+## R18 Execution environment bootstrap
+
+The first supported Skill execution targets are Codex and Claude Code. Online-only ChatGPT, Claude.ai,
+and Gemini.com support is deferred until Loom has a hosted build and validation backend.
+
+Before any local workflow validation runs, the Skill prereq setup component must:
+
+- Load `Skill/setup/prereq-manifest.json`.
+- Detect the host, shell, repo path, and execution target.
+- Produce an install/configuration plan before changing the environment.
+- Install or configure approved missing tools.
+- Verify required tool commands and versions.
+- Write `Skill/setup/validation-environment.lock.json`.
+- Pass the Demo App local validation smoke check.
+
+The phase gate must fail if `validationReady` is false, if the environment lock is stale, or if the
+selected execution target is unsupported.
+
+## R19 Locked package and branding format
+
+Extension artifacts use two locked downloadable formats:
+
+- `<extension-id>.loom-extension.zip` contains `loom.extension.json`, UI, bundled assets, schemas,
+  rules, workflows, jobs, optional functions, fixtures, tests, docs, and signatures.
+- `<extension-id>.loom-init.zip` contains `loom.initialization.json`, seed assets, fixtures, and an
+  import plan.
+
+All local-demo assets must be bundled locally, declared in the manifest, hashed, size-limited,
+format-limited, dimension-validated, and labeled with alt text or decorative metadata. The App Shell
+owns community-card rendering. Card image priority is community card image -> community logo ->
+extension default card image -> generated initials/category/accent-color fallback.
 
 ## Test Naming
 

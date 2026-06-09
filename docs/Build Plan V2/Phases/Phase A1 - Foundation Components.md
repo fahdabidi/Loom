@@ -148,6 +148,16 @@ audit, event, key, and builder App ID APIs.
 All required A1 gates pass, Skill guides are present, manifest is current, API Review is filed, tracker
 is updated with component hashes and commit SHA.
 
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
+
 ## 12. Next Phase
 
 Proceed to [Phase A2 - Registry and Control-Plane Components.md](./Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md).

@@ -25,7 +25,7 @@ lint for required structure.
 
 | Feature | Definition | Product value | Interacting areas |
 | --- | --- | --- | --- |
-| Community cards | Installed communities appear as stable cards. | Members switch communities easily. | 04, 12 |
+| Community cards | Installed communities appear as stable shell-rendered cards using community branding, extension defaults, and safe fallbacks. | Members recognize and switch communities easily. | 04, 10, 12 |
 | Required nav panel | Every community exposes Messages and Connections from the shell. | Custom apps cannot hide core communication. | 12, 15 |
 | Extension route host | Cards/routes/WebViews mount through typed shell contracts. | Custom UX remains governed. | 10 |
 | Top ad banner | Shell-owned ad slot, suppressed only by valid ad-off policy. | Free backend funding is enforceable. | 09, 18 |
@@ -36,10 +36,21 @@ lint for required structure.
 
 ## 4. Product Experience Requirements
 
-Members should be able to install/add communities, switch between them, read messages, manage
-connections, pay, search, see ads/ad-off state, respond to extension workflows, and control data grants
-without learning which extension or provider powers each community. Owners should be confident that
-all generated extensions still preserve the required structure.
+Members should be able to install/add communities, switch between them, recognize them by logo/card
+image, read messages, manage connections, pay, search, see ads/ad-off state, respond to extension
+workflows, and control data grants without learning which extension or provider powers each community.
+Owners should be confident that all generated extensions still preserve the required structure.
+
+Community cards are owned by the App Shell. Extensions and initialization packages can provide display
+name, tagline, logo, card image, hero image, category, and accent color, but they cannot replace the
+card layout or hide shell-owned controls, badges, membership state, ad-off state, or safety indicators.
+
+Card image resolution follows this order:
+
+1. Community-specific `branding.cardImage`.
+2. Community-specific `branding.logo`.
+3. Extension `defaultCardImage`.
+4. Generated initials/category/accent-color fallback.
 
 ## 5. User Stories
 
@@ -60,7 +71,7 @@ all generated extensions still preserve the required structure.
 
 1. Member scans QR, opens invite, enters handle, or chooses search result.
 2. Community registry resolves profile and installed extension.
-3. App Shell downloads card, required surfaces, and latest certified package.
+3. App Shell resolves card metadata, branding assets, required surfaces, and latest certified package.
 4. Member reviews join state, permissions, and data notes.
 5. Community card appears in app.
 
@@ -83,6 +94,9 @@ all generated extensions still preserve the required structure.
 ## 7. Cross-Area Requirements
 
 - App Shell owns required UI invariants; extensions mount inside it.
+- App Shell owns community-card rendering; extension/init package branding is input data only.
+- Card assets must have local fallbacks and must pass size, format, hash, dimension, and accessibility
+  metadata checks.
 - Payment, consent, ad, protected-vault, and data-dashboard surfaces are shell-owned.
 - Ads are present unless ad-off entitlement or sensitive-context exclusion applies.
 - Latest extension version, revocation, and certification state must be checked on open.
@@ -90,9 +104,9 @@ all generated extensions still preserve the required structure.
 
 ## 8. Prototype Implications
 
-The MVP must build the community-card grid, nav panel, Messages/Connections placeholders, stream
-renderer, top ad banner, ad-off check, extension route host, payment surface stub, consent prompt, and
-latest-version resolution.
+The MVP must build the community-card grid with branding fallback behavior, nav panel,
+Messages/Connections placeholders, stream renderer, top ad banner, ad-off check, extension route host,
+payment surface stub, consent prompt, and latest-version resolution.
 
 ## 9. FAQ
 

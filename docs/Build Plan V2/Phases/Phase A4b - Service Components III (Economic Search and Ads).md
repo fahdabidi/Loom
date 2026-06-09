@@ -107,6 +107,16 @@ utility funding, and fraud.
 
 A4b tests, regressions, manifest, Skill guides, API Review, tracker, and commit SHA complete.
 
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
+
 ## 12. Next Phase
 
 Proceed to [Phase A5 - Extension Engine Components.md](./Phase%20A5%20-%20Extension%20Engine%20Components.md).

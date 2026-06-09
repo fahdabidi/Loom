@@ -12,6 +12,7 @@ Gate: `wf_youth-soccer-headline` plus affected component regressions pass.
 - B2 complete and committed.
 - Minor/protected vault and payment tests are current.
 - Youth soccer fixture package exists.
+- Workflow validation target is the Demo Loom Communities App with the Local Backend.
 
 ## 1. Workflows and End States
 
@@ -67,6 +68,16 @@ contract gaps.
 
 Youth soccer workflow passes, protected data assertions pass, regressions pass, Skill/example updated,
 manifest current, UX/API docs filed, tracker and commit SHA recorded.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 10. Next Phase
 

@@ -25,7 +25,7 @@ evidence, version release channels, rollback, revocation, and developer economic
 | --- | --- | --- | --- |
 | App ID | Builder credential tied to Loom identity and signing keys. | Packages are attributable. | 05, 19 |
 | Local harness | Contracts, fakes, local store, seed data, validators, and integration tests. | Builders can work before real providers exist. | Build Plan V2 |
-| Signed artifacts | Immutable package versions with signatures and attestations. | Runtime can fail closed on tampering. | 10, 17 |
+| Signed artifacts | Immutable package versions with signatures, asset hashes, and attestations. | Runtime can fail closed on tampering. | 10, 17 |
 | Certification feedback | Actionable errors for permissions, UI invariants, data rights, ads, exports, and tests. | Safe iteration. | 19 |
 | Version channels | Draft, preview, certified, revoked, rollback, and latest. | Owners can preview and update safely. | 15 |
 | Examples and Skill docs | Component/workflow examples beyond OpenAPI. | AI and human builders learn correct patterns. | 11, 20 |
@@ -56,12 +56,12 @@ monitor installs/incidents. Owners should know who built an extension and what v
 1. Builder signs in with Passport/identity.
 2. Builder console creates App ID and signing keys.
 3. Builder chooses template or Skill output.
-4. Local project includes manifest, schemas, tests, fakes, fixtures, and CI config.
+4. Local project includes manifest, assets, schemas, tests, fakes, fixtures, and CI config.
 5. Builder runs validator locally.
 
 ### Workflow 2: Sign, submit, certify, publish
 
-1. Builder signs artifact and attaches build attestation/SBOM.
+1. Builder signs artifact and attaches asset hashes, build attestation, and SBOM.
 2. Extension registry stores immutable version.
 3. Certification validates manifest, permissions, data rights, UI invariants, tests, and supply chain.
 4. Approved version is marked certified and optionally listed.
@@ -78,14 +78,15 @@ monitor installs/incidents. Owners should know who built an extension and what v
 ## 7. Cross-Area Requirements
 
 - Every package version must be attributable to App ID and builder identity.
-- Validators must include ad/nav/payment/data-rights/export/certification checks.
+- Every package asset must be included in artifact hashes and build attestations.
+- Validators must include ad/nav/payment/data-rights/export/certification/asset checks.
 - Runtime must fail closed on invalid signature, revoked App ID, or uncertified version.
 - The Skill and examples must be versioned with the platform contracts.
 
 ## 8. Prototype Implications
 
-The MVP needs App ID records, local scaffold, validator, fake backend, artifact signing stub, extension
-registry version states, certification output, and one update/rollback path.
+The MVP needs App ID records, local scaffold, validator, asset validator, fake backend, artifact
+signing stub, extension registry version states, certification output, and one update/rollback path.
 
 ## 9. FAQ
 

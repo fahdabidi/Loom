@@ -5,13 +5,15 @@ redaction, provider transfer, import replay.
 Components involved: Export, Import, Provider Transfer, Registry, Membership, Protected Vault, Data
 Schema Store, Receipt Ledger, Wallet, Documents, Case/Task.
 UX gate: final workflow validation
-Gate: `wf_export-migration` plus affected component regressions pass.
+Gate: `wf_export-migration`, `vt_api_specs_complete`, and affected component regressions pass.
 
 ## 0. Prerequisite Gate
 
 - B7 complete and committed.
 - All prior workflow tests are current and not stale.
 - Export/import/provider transfer tests are current.
+- API spec inventory is current for every component and workflow touched by V2.
+- Workflow validation target is the Demo Loom Communities App with the Local Backend.
 
 ## 1. Workflows and End States
 
@@ -29,6 +31,7 @@ Gate: `wf_export-migration` plus affected component regressions pass.
 | Include receipts/economic state | receipt-ledger, wallet-dues-donations | `vt_receipt-ledger_append`, `vt_wallet_payment` |
 | Verify transfer | provider-transfer-service | `vt_provider-transfer_execute-verify` |
 | Rollback or complete | provider-transfer-service, community-registry | `vt_provider-transfer_rollback` |
+| Verify final API coverage | api-spec-inventory | `vt_api_specs_complete` |
 
 ## 3. UX Research and Decisions
 
@@ -43,7 +46,7 @@ component that owns the missing data or to Export if orchestration is wrong.
 ## 5. Per-Component Regression Gate
 
 Run all tests for altered components plus every workflow involving those components. This is the final
-workflow phase, so also run the full Set B workflow suite.
+workflow phase, so also run the full Set B workflow suite and the API spec inventory/conformance gate.
 
 ## 6. Skill Contribution
 
@@ -55,17 +58,30 @@ Update all example extensions with export metadata and custom schema export beha
 
 ## 7. Manifest Update
 
-Stamp `wf_export-migration`, all affected tests, and final Set B workflow test runs.
+Stamp `wf_export-migration`, `vt_api_specs_complete`, all affected tests, and final Set B workflow test
+runs.
 
 ## 8. API Review
 
 Create `Phase B8 - API Review.md`. Record export, import, provider transfer, protected redaction,
-receipt, and schema portability gaps.
+receipt, schema portability gaps, and the final API inventory result proving every required API spec is
+present and validates.
 
 ## 9. Definition of Done
 
-Export/migration workflow passes, full workflow suite passes, regressions pass, Skill/examples updated,
-manifest current, UX/API docs filed, tracker and commit SHA recorded.
+Export/migration workflow passes, full workflow suite passes, API specs are complete and validated,
+regressions pass, Skill/examples updated, manifest current, UX/API docs filed, tracker and commit SHA
+recorded.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 10. Next Phase
 

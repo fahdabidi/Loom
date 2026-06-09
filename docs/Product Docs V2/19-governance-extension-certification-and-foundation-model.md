@@ -28,7 +28,7 @@ certification marks.
 | --- | --- | --- | --- |
 | Neutral foundation | Stewardship separated from commercial providers. | Prevents protocol capture. | 22 |
 | Capability certification | Certification scoped by actor, role, API, version, geography, data class, and risk tier. | Precise trust and revocation. | 07, 16 |
-| Extension certification | Validates manifests, permissions, UI invariants, data rights, ads, export, tests, and supply chain. | AI-built apps can be trusted. | 10, 11 |
+| Extension certification | Validates manifests, assets, permissions, UI invariants, data rights, ads, export, tests, and supply chain. | AI-built apps can be trusted. | 10, 11 |
 | Public registries | Published status for providers, apps, extensions, keys, incidents, and API versions. | Ecosystem transparency. | 17 |
 | Dispute resolution | Handles payouts, data misuse, moderation, takedowns, export, provider issues, and certification appeals. | Enforcement is accountable. | 08, 14 |
 | Policy/version governance | Changes have deprecation windows, tests, and migration guidance. | Builders and communities can keep working. | 16, 21 |
@@ -69,8 +69,8 @@ sensitive evidence.
 ### Workflow 1: Extension certification
 
 1. Builder submits signed package version and evidence.
-2. Certification validates manifest, permissions, tests, shell invariants, ads, data rights, export, and
-   supply chain.
+2. Certification validates manifest, assets, permissions, tests, shell invariants, ads, data rights,
+   export, and supply chain.
 3. Risk tier is assigned.
 4. Manual review runs for higher-risk tiers.
 5. Approved, limited, rejected, or revoked status is written to registry.
@@ -94,6 +94,8 @@ sensitive evidence.
 ## 8. Cross-Area Requirements
 
 - Certification is contract/test-backed, not discretionary only.
+- Certification must reject undeclared, remote-only, oversized, hash-mismatched, or inaccessible
+  package assets.
 - Revocation must propagate to runtime and App Shell quickly.
 - Public records must balance transparency with protected data redaction.
 - Governance must maintain fakes/conformance tests used by builders and phase gates.

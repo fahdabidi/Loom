@@ -15,7 +15,8 @@ book club, youth soccer, HOA, mosque, messaging/ads/connections, ad-off, and exp
 
 ```mermaid
 flowchart TB
-  Skill[Skill]
+  Skill[Skill / Extension Builder]
+  Prereq[Skill Prereq Setup]
   Registry[Community + Extension Registries]
   Shell[Main Loom App / App Shell]
   Identity[Passport + Policy + Vaults]
@@ -26,6 +27,8 @@ flowchart TB
   Safety[Trust/Safety]
   Export[Import/Export]
 
+  Skill --> Prereq
+  Prereq --> Shell
   Skill --> Registry
   Registry --> Shell
   Shell --> Identity
@@ -44,6 +47,7 @@ flowchart TB
 | Field | Meaning |
 | --- | --- |
 | `sliceContext` | MVP slice id, vertical, fixture set, expected end state. |
+| `environmentContext` | Supported execution target, prereq manifest, validation environment lock, and Demo App smoke evidence. |
 | `componentContext` | Components involved and current fake/provider bindings. |
 | `extensionContext` | Package id/version, install grant, rules/workflows/schemas. |
 | `memberContext` | Passport, membership, role, consent, protected data, payment state. |
@@ -55,6 +59,8 @@ flowchart TB
 | Interface | MVP responsibility |
 | --- | --- |
 | `CommunityWorkflowInventoryApi` | Lists slices, step owners, expected tests. |
+| `LoomSkillPrereqSetupApi` | Proves Codex or Claude Code environment readiness before local workflow validation. |
+| `LoomWorkflowValidationHarnessApi` | Consumes the validation-ready signal and runs local Demo App workflow tests. |
 | `CommunityExtensionRuntimeApi` | Runs generated vertical packages. |
 | `CommunityAppShellApi` | Renders required shell and vertical routes. |
 | `CommunityWalletApi` | Simulated dues/donations/ad-off payments. |
@@ -101,7 +107,9 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 
 | Slice | Trigger | Primary path | End state | Workflow test |
 | --- | --- | --- | --- | --- |
-| `12/S1` Build/Publish/Discover/Install | Owner asks Skill to create app. | Skill -> Registry -> Certification -> Shell. | Member opens latest certified package. | `wf_build-publish-discover-install` |
+| `12/S1a-0` Local Validation Prereq | Skill run starts on Codex or Claude Code. | Skill -> Prereq Setup -> environment lock -> Demo App smoke -> workflow harness. | Local validation target is ready. | `wf_local-demo-prereq-to-validation-ready` |
+| `12/S1a` Local Build/Download/Sideload/Install | Owner asks Skill to create app for local demo. | Skill -> prereq-ready gate -> Package/Init validators -> Demo App local loader -> Local Backend -> Shell. | Member opens latest local package. | `wf_local-build-download-sideload-install` |
+| `12/S1b` Build/Publish/Discover/Install | Owner asks Skill to create publish-ready app. | Skill -> Registry/Certification fakes -> Shell. | Member opens latest certified package through local stubs/contracts. | `wf_build-publish-discover-install` |
 | `12/S2` Book club | Owner installs book club package. | Runtime -> Events/Forms/Publishing/Search. | Book selected, event created, discussion searchable. | `wf_book-club-headline` |
 | `12/S3` Youth soccer | Parent registers child. | Membership -> Protected Vault -> Wallet -> Events. | Player roster/payment/protected data complete. | `wf_youth-soccer-headline` |
 | `12/S4` HOA | Member submits request/pays dues. | Wallet -> Docs/Facilities/CaseTask. | Dues paid, request decided, docs exportable. | `wf_hoa-headline` |
@@ -112,7 +120,18 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 
 ## 7. Step-by-Step Life of a Packet Overlays
 
-### 7.1 `12/S1`: Build, Publish, Discover, Install
+### 7.1 `12/S1a`: Local Build, Download, Sideload, Install
+
+| Step | Packet action | Owning component | Covering test |
+| --- | --- | --- | --- |
+| 1 | Skill verifies Codex or Claude Code prereqs and writes the environment lock. | Skill Prereq Setup | `wf_local-demo-prereq-to-validation-ready` |
+| 2 | Skill generates downloadable extension and initialization packages. | AI Skill / Extension Builder | `vt_skill_generate-downloadable-extension`, `vt_skill_generate-initialization-package` |
+| 3 | Validators approve package and initialization shape. | Extension Package Validator / Initialization Package Schema | `vt_extension-package_downloadable-shape`, `vt_initialization-package_schema` |
+| 4 | Demo App starts empty and loads the local files through `Add Community`. | Loom Communities Demo App | `vt_demo-app_empty-community-state`, `vt_demo-app_local-file-load-extension` |
+| 5 | Local Backend imports initialization data and persists it. | Local In-App Backend / Local Store | `vt_fake-backend_import-init-package`, `vt_local-store_persist-reload` |
+| 6 | Member opens the community card and latest local extension. | App Shell Runtime / Community Card | `wf_local-build-download-sideload-install` |
+
+### 7.2 `12/S1b`: Build, Publish, Discover, Install
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
@@ -122,7 +141,7 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 | 4 | Community gets handle/QR and installed pointer. | Community Registry | `vt_community-registry_extension-pointers` |
 | 5 | Member opens Main App and loads latest. | App Shell Runtime | `wf_build-publish-discover-install` |
 
-### 7.2 `12/S3`: Youth Soccer
+### 7.3 `12/S3`: Youth Soccer
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
@@ -132,7 +151,7 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 | 4 | Team event schedule and notifications created. | Events Service / Notification Service | `wf_youth-soccer-headline` |
 | 5 | Coach views roster under role policy. | Role/Policy/Consent Engine | `vt_role-policy_effective-permission` |
 
-### 7.3 `12/S4`: HOA
+### 7.4 `12/S4`: HOA
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
@@ -142,7 +161,7 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 | 4 | Decision notice and audit emitted. | Notification Service / Audit Ledger | `wf_hoa-headline` |
 | 5 | Export includes request, decision, docs, and receipts. | Export Service | `vt_export_assemble` |
 
-### 7.4 `12/S7`: Ad-Off
+### 7.5 `12/S7`: Ad-Off
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
@@ -152,7 +171,7 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 | 4 | Receipts and settlement update. | Receipt Ledger / Settlement Engine | `wf_ad-off` |
 | 5 | Sensitive contexts still no-fill regardless of paid state. | Ad Decision Service | `vt_ad-decision_sensitive-no-fill` |
 
-### 7.5 `12/S8`: Export and Migration
+### 7.6 `12/S8`: Export and Migration
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
@@ -165,6 +184,8 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 ## 8. Error and Recovery Behavior
 
 - A slice fails if the required shell nav/ad/payment surfaces are absent.
+- Local Skill slices fail before package generation if the validation environment lock is missing,
+  stale, or from an unsupported execution target.
 - Sensitive data assertions must fail if protected records appear in search, ads, or ordinary export.
 - Payment failures should leave workflows in resumable pending states.
 - Certification failure blocks install but should preserve remediation output.
@@ -179,8 +200,8 @@ Agent workpackage: fixture generation is local and deterministic. (T9)
 | T3 | Slice execution uses component fakes and seed data. |
 | T4 | Slices validate the bottom-up component graph rather than introducing sync cycles. |
 | T5 | Failing slice routes fix to owning component. |
-| T6 | Every slice maps to `wf_` tests plus supporting `vt_`/`ct_` tests. |
-| T7 | Slice packets assert idempotency, versioning, receipts, and audit. |
+| T6 | Every slice maps to `wf_` tests plus supporting `vt_`/`ct_` tests, including the local prereq workflow. |
+| T7 | Slice packets assert idempotency, versioning, receipts, audit, and validation environment locks. |
 | T8 | Slice behavior relies on events for rules/workflows/notifications. |
 | T9 | Slices are agent-workable as workflow-phase packages. |
 | T10 | Required App Shell micro-components are explicit slice assertions. |

@@ -50,7 +50,7 @@ flowchart TB
 
 | Field | Meaning |
 | --- | --- |
-| `communityContext` | `communityId`, handle, profile, visibility, installed extension refs, export policy. |
+| `communityContext` | `communityId`, handle, profile, branding, visibility, installed extension refs, export policy. |
 | `spaceContext` | `spaceId`, parent, type, visibility, inherited policy, extension bindings. |
 | `membershipContext` | Member Passport, membership state, join policy, invite id, approval state. |
 | `roleContext` | Role grants, scope, permission set, policy version, consent pointer. |
@@ -61,7 +61,7 @@ flowchart TB
 
 | Interface | Packet responsibility |
 | --- | --- |
-| `CommunityRegistryApi` | Create, update, resolve handle/QR, visibility, installed extension refs. |
+| `CommunityRegistryApi` | Create, update, resolve handle/QR, profile, branding, visibility, installed extension refs. |
 | `CommunitySpacesApi` | Create/update/archive spaces and parent-child relationships. |
 | `CommunityMembershipApi` | Invite, join, approve, suspend, leave, remove, membership export. |
 | `CommunityRolePolicyApi` | Create roles, assign grants, compute effective permissions. |
@@ -73,13 +73,14 @@ flowchart TB
 
 ```text
 Component: Community Registry              Layer: registry
-Single responsibility: own canonical community identity, handle, profile, visibility, and installed-extension pointers. (T1)
+Single responsibility: own canonical community identity, handle, profile, branding, visibility, and installed-extension pointers. (T1)
 Interface contract: CommunityRegistryApi (v1), in loom_api_contracts (T2)
 Capabilities (testable sub-units):
   - create/configure -> createCommunity/updateCommunityProfile -> vt_community-registry_create-configure
   - discovery -> findByHandle/generateQr/resolveQr -> vt_community-registry_discovery
   - install pointers -> setInstalledExtensionRefs -> vt_community-registry_extension-pointers
-Owned data: Community, CommunityHandle, CommunityProfile, CommunityVisibility, InstalledExtensionPointer (T1)
+  - branding -> updateCommunityBranding/resolveCommunityBranding -> vt_community-registry_branding
+Owned data: Community, CommunityHandle, CommunityProfile, CommunityBranding, CommunityVisibility, InstalledExtensionPointer (T1)
 Dependencies (by contract + fake): CommunityPassportApi (fake), CommunityAuditApi (fake) (T3)
 Events emitted: community.created, community.updated, community.extension-pointers.changed   Events consumed: extension.certified (T8)
 Blast radius / scoped change: registry state only; does not write membership, spaces, or extension packages. (T5)
@@ -151,11 +152,11 @@ Agent workpackage: policy math is local and testable with passport/audit fakes. 
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
-| 1 | Owner submits community profile and handle. | Community Registry | `vt_community-registry_create-configure` |
+| 1 | Owner submits community profile, branding, and handle. | Community Registry | `vt_community-registry_create-configure`, `vt_community-registry_branding` |
 | 2 | Registry validates Passport owner identity. | Passport Ledger | `ct_passport__community-registry_owner-identity` |
 | 3 | Registry writes community and handle. | Community Registry | `vt_community-registry_discovery` |
 | 4 | Policy engine assigns owner role. | Role/Policy/Consent Engine | `ct_role-policy__community-registry_owner-role` |
-| 5 | Audit records creation and App Shell can render card. | Audit Ledger / App Shell Runtime | `wf_build-publish-discover-install` |
+| 5 | Audit records creation and App Shell can render the branded card. | Audit Ledger / App Shell Runtime | `wf_build-publish-discover-install` |
 
 ### 7.2 `04/W3`: Accept Invite
 
@@ -187,7 +188,7 @@ Agent workpackage: policy math is local and testable with passport/audit fakes. 
 | T7 | Community, role, invite, and membership mutations are idempotent/versioned/audited. |
 | T8 | Events propagate changes to shell, runtime, search, and notifications. |
 | T9 | Each card is a single-agent work package. |
-| T10 | App Shell consumes community/space metadata through contracts to render micro-components. |
+| T10 | App Shell consumes community/space metadata and branding through contracts to render micro-components. |
 
 ## 10. Open Architecture Questions
 

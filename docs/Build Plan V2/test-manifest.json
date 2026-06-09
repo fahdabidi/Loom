@@ -10,114 +10,3593 @@
     ]
   },
   "components": [
-    { "id": "passport-ledger", "layer": "foundation", "phase": "A1", "contract": "CommunityPassportApi", "version": "planned", "fakePresent": false },
-    { "id": "role-policy-consent-engine", "layer": "foundation", "phase": "A1", "contract": "CommunityRolePolicyApi", "version": "planned", "fakePresent": false },
-    { "id": "core-member-vault", "layer": "foundation", "phase": "A1", "contract": "CommunityCoreVaultApi", "version": "planned", "fakePresent": false },
-    { "id": "protected-visibility-vault", "layer": "foundation", "phase": "A1", "contract": "CommunityProtectedVaultApi", "version": "planned", "fakePresent": false },
-    { "id": "connections-graph", "layer": "foundation", "phase": "A1", "contract": "CommunityConnectionsApi", "version": "planned", "fakePresent": false },
-    { "id": "receipt-ledger", "layer": "foundation", "phase": "A1", "contract": "CommunityReceiptLedgerApi", "version": "planned", "fakePresent": false },
-    { "id": "audit-ledger", "layer": "foundation", "phase": "A1", "contract": "CommunityAuditApi", "version": "planned", "fakePresent": false },
-    { "id": "event-bus", "layer": "foundation", "phase": "A1", "contract": "CommunityEventBusApi", "version": "planned", "fakePresent": false },
-    { "id": "key-management", "layer": "foundation", "phase": "A1", "contract": "CommunityKeyManagementApi", "version": "planned", "fakePresent": false },
-    { "id": "builder-app-id-service", "layer": "foundation", "phase": "A1", "contract": "CommunityBuilderAppIdApi", "version": "planned", "fakePresent": false },
-    { "id": "community-registry", "layer": "registry", "phase": "A2", "contract": "CommunityRegistryApi", "version": "planned", "fakePresent": false },
-    { "id": "spaces-service", "layer": "registry", "phase": "A2", "contract": "CommunitySpacesApi", "version": "planned", "fakePresent": false },
-    { "id": "membership-service", "layer": "registry", "phase": "A2", "contract": "CommunityMembershipApi", "version": "planned", "fakePresent": false },
-    { "id": "invitation-service", "layer": "registry", "phase": "A2", "contract": "CommunityInvitationApi", "version": "planned", "fakePresent": false },
-    { "id": "extension-registry", "layer": "registry", "phase": "A2", "contract": "CommunityExtensionRegistryApi", "version": "planned", "fakePresent": false },
-    { "id": "certification-system", "layer": "registry", "phase": "A2", "contract": "CommunityCertificationApi", "version": "planned", "fakePresent": false },
-    { "id": "public-registry-read-model", "layer": "registry", "phase": "A2", "contract": "CommunityPublicRegistryApi", "version": "planned", "fakePresent": false },
-    { "id": "workflow-inventory-registry", "layer": "registry", "phase": "A2", "contract": "CommunityWorkflowInventoryApi", "version": "planned", "fakePresent": false },
-    { "id": "publishing-service", "layer": "service", "phase": "A3", "contract": "CommunityPublishingApi", "version": "planned", "fakePresent": false },
-    { "id": "messaging-stream-service", "layer": "service", "phase": "A3", "contract": "CommunityMessagingApi", "version": "planned", "fakePresent": false },
-    { "id": "notification-service", "layer": "service", "phase": "A3", "contract": "CommunityNotificationApi", "version": "planned", "fakePresent": false },
-    { "id": "events-service", "layer": "service", "phase": "A3", "contract": "CommunityEventsApi", "version": "planned", "fakePresent": false },
-    { "id": "forms-voting-service", "layer": "service", "phase": "A3", "contract": "CommunityFormsVotingApi", "version": "planned", "fakePresent": false },
-    { "id": "case-task-service", "layer": "service", "phase": "A4a", "contract": "CommunityCaseTaskApi", "version": "planned", "fakePresent": false },
-    { "id": "documents-service", "layer": "service", "phase": "A4a", "contract": "CommunityDocumentsApi", "version": "planned", "fakePresent": false },
-    { "id": "facilities-service", "layer": "service", "phase": "A4a", "contract": "CommunityFacilitiesApi", "version": "planned", "fakePresent": false },
-    { "id": "import-service", "layer": "service", "phase": "A4a", "contract": "CommunityImportApi", "version": "planned", "fakePresent": false },
-    { "id": "export-service", "layer": "service", "phase": "A4a", "contract": "CommunityExportApi", "version": "planned", "fakePresent": false },
-    { "id": "provider-transfer-service", "layer": "service", "phase": "A4a", "contract": "CommunityProviderTransferApi", "version": "planned", "fakePresent": false },
-    { "id": "abuse-report-service", "layer": "service", "phase": "A4a", "contract": "CommunityAbuseReportApi", "version": "planned", "fakePresent": false },
-    { "id": "moderation-case-service", "layer": "service", "phase": "A4a", "contract": "CommunityModerationApi", "version": "planned", "fakePresent": false },
-    { "id": "incident-service", "layer": "service", "phase": "A4a", "contract": "CommunityIncidentApi", "version": "planned", "fakePresent": false },
-    { "id": "wallet-dues-donations", "layer": "service", "phase": "A4b", "contract": "CommunityWalletApi", "version": "planned", "fakePresent": false },
-    { "id": "ad-decision-service", "layer": "service", "phase": "A4b", "contract": "CommunityAdDecisionApi", "version": "planned", "fakePresent": false },
-    { "id": "ad-campaign-service", "layer": "service", "phase": "A4b", "contract": "CommunityAdCampaignApi", "version": "planned", "fakePresent": false },
-    { "id": "search-service", "layer": "service", "phase": "A4b", "contract": "CommunitySearchApi", "version": "planned", "fakePresent": false },
-    { "id": "ai-gateway", "layer": "service", "phase": "A4b", "contract": "CommunityAiGatewayApi", "version": "planned", "fakePresent": false },
-    { "id": "digest-service", "layer": "service", "phase": "A4b", "contract": "CommunityDigestApi", "version": "planned", "fakePresent": false },
-    { "id": "settlement-engine", "layer": "service", "phase": "A4b", "contract": "CommunitySettlementApi", "version": "planned", "fakePresent": false },
-    { "id": "utility-funding-service", "layer": "service", "phase": "A4b", "contract": "CommunityUtilityFundingApi", "version": "planned", "fakePresent": false },
-    { "id": "fraud-signal-service", "layer": "service", "phase": "A4b", "contract": "CommunityFraudApi", "version": "planned", "fakePresent": false },
-    { "id": "extension-runtime-bridge", "layer": "engine", "phase": "A5", "contract": "CommunityExtensionRuntimeApi", "version": "planned", "fakePresent": false },
-    { "id": "rule-engine", "layer": "engine", "phase": "A5", "contract": "CommunityRuleEngineApi", "version": "planned", "fakePresent": false },
-    { "id": "workflow-engine", "layer": "engine", "phase": "A5", "contract": "CommunityWorkflowApi", "version": "planned", "fakePresent": false },
-    { "id": "job-scheduler", "layer": "engine", "phase": "A5", "contract": "CommunityJobSchedulerApi", "version": "planned", "fakePresent": false },
-    { "id": "function-runtime", "layer": "engine", "phase": "A5", "contract": "CommunityFunctionRuntimeApi", "version": "planned", "fakePresent": false },
-    { "id": "data-schema-store", "layer": "engine", "phase": "A5", "contract": "CommunityDataSchemaApi", "version": "planned", "fakePresent": false },
-    { "id": "app-shell-runtime", "layer": "ux", "phase": "A6", "contract": "CommunityAppShellApi", "version": "planned", "fakePresent": false },
-    { "id": "community-card", "layer": "ux", "phase": "A6", "contract": "CommunityCardProps", "version": "planned", "fakePresent": false },
-    { "id": "navigation-panel", "layer": "ux", "phase": "A6", "contract": "NavigationPanelProps", "version": "planned", "fakePresent": false },
-    { "id": "stream-renderer", "layer": "ux", "phase": "A6", "contract": "StreamRendererProps", "version": "planned", "fakePresent": false },
-    { "id": "connections-shell", "layer": "ux", "phase": "A6", "contract": "ConnectionsShellProps", "version": "planned", "fakePresent": false },
-    { "id": "ad-slots", "layer": "ux", "phase": "A6", "contract": "AdSlotProps", "version": "planned", "fakePresent": false },
-    { "id": "payment-surface", "layer": "ux", "phase": "A6", "contract": "PaymentSurfaceProps", "version": "planned", "fakePresent": false }
+    {
+      "id": "ai-skill-extension-builder",
+      "layer": "skill",
+      "phase": "0",
+      "contract": "LoomExtensionSkill",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "api-spec-inventory",
+      "layer": "tooling",
+      "phase": "0",
+      "contract": "ApiSpecInventory",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "phase-test-manifest-bridge",
+      "layer": "tooling",
+      "phase": "0",
+      "contract": "TestManifestSchema",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "skill-debug-harness",
+      "layer": "tooling",
+      "phase": "0",
+      "contract": "SkillDebugHarness",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "skill-prereq-setup",
+      "layer": "tooling",
+      "phase": "0",
+      "contract": "LoomSkillPrereqSetupApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "workflow-validation-harness",
+      "layer": "tooling",
+      "phase": "0",
+      "contract": "LoomWorkflowValidationHarnessApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "audit-ledger",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityAuditApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "builder-app-id-service",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityBuilderAppIdApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "connections-graph",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityConnectionsApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "core-member-vault",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityCoreVaultApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "event-bus",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityEventBusApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "key-management",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityKeyManagementApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "loom-local-store",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "LoomLocalStoreApi",
+      "version": "planned",
+      "fakePresent": true
+    },
+    {
+      "id": "passport-ledger",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityPassportApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "protected-visibility-vault",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityProtectedVaultApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "receipt-ledger",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityReceiptLedgerApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "role-policy-consent-engine",
+      "layer": "foundation",
+      "phase": "A1",
+      "contract": "CommunityRolePolicyApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "certification-system",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityCertificationApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "community-registry",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityRegistryApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "extension-registry",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityExtensionRegistryApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "invitation-service",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityInvitationApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "membership-service",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityMembershipApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "public-registry-read-model",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityPublicRegistryApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "spaces-service",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunitySpacesApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "workflow-inventory-registry",
+      "layer": "registry",
+      "phase": "A2",
+      "contract": "CommunityWorkflowInventoryApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "events-service",
+      "layer": "service",
+      "phase": "A3",
+      "contract": "CommunityEventsApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "forms-voting-service",
+      "layer": "service",
+      "phase": "A3",
+      "contract": "CommunityFormsVotingApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "messaging-stream-service",
+      "layer": "service",
+      "phase": "A3",
+      "contract": "CommunityMessagingApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "notification-service",
+      "layer": "service",
+      "phase": "A3",
+      "contract": "CommunityNotificationApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "publishing-service",
+      "layer": "service",
+      "phase": "A3",
+      "contract": "CommunityPublishingApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "abuse-report-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityAbuseReportApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "case-task-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityCaseTaskApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "dispute-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityDisputeApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "documents-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityDocumentsApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "export-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityExportApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "facilities-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityFacilitiesApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "import-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityImportApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "incident-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityIncidentApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "moderation-case-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityModerationApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "provider-transfer-service",
+      "layer": "service",
+      "phase": "A4a",
+      "contract": "CommunityProviderTransferApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "ad-campaign-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityAdCampaignApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "ad-decision-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityAdDecisionApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "ai-gateway",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityAiGatewayApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "digest-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityDigestApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "fraud-signal-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityFraudApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "search-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunitySearchApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "settlement-engine",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunitySettlementApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "utility-funding-service",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityUtilityFundingApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "wallet-dues-donations",
+      "layer": "service",
+      "phase": "A4b",
+      "contract": "CommunityWalletApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "data-schema-store",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityDataSchemaApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "extension-package-validator",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityExtensionPackageApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "extension-runtime-bridge",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityExtensionRuntimeApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "function-runtime",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityFunctionRuntimeApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "initialization-package-schema",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityInitializationPackageApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "job-scheduler",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityJobSchedulerApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "rule-engine",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityRuleEngineApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "secrets-connector-broker",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunitySecretsConnectorApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "workflow-engine",
+      "layer": "engine",
+      "phase": "A5",
+      "contract": "CommunityWorkflowApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "ad-slots",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "AdSlotProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "app-shell-runtime",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "CommunityAppShellApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "community-card",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "CommunityCardProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "connections-shell",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "ConnectionsShellProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "data-dashboard-consent",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "DataDashboardProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "local-in-app-backend",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "LocalLoomBackendApi",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "loom-communities-demo-app",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "LoomCommunitiesDemoApp",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "navigation-panel",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "NavigationPanelProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "payment-surface",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "PaymentSurfaceProps",
+      "version": "planned",
+      "fakePresent": false
+    },
+    {
+      "id": "stream-renderer",
+      "layer": "ux",
+      "phase": "A6",
+      "contract": "StreamRendererProps",
+      "version": "planned",
+      "fakePresent": false
+    }
   ],
   "tests": [
-    { "testId": "vt_manifest_schema", "type": "validation", "owningComponent": "phase-test-manifest-bridge", "coversComponents": ["phase-test-manifest-bridge"], "dependents": [], "phase": "0", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_skill_skeleton", "type": "validation", "owningComponent": "ai-skill-extension-builder", "coversComponents": ["ai-skill-extension-builder"], "dependents": [], "phase": "0", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_passport-ledger_create-resolve", "type": "validation", "owningComponent": "passport-ledger", "coversComponents": ["passport-ledger"], "dependents": ["app-shell-runtime", "membership-service"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_role-policy_effective-permission", "type": "validation", "owningComponent": "role-policy-consent-engine", "coversComponents": ["role-policy-consent-engine"], "dependents": ["extension-runtime-bridge", "protected-visibility-vault", "search-service"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_core-vault_preferences", "type": "validation", "owningComponent": "core-member-vault", "coversComponents": ["core-member-vault"], "dependents": ["app-shell-runtime"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_protected-vault_read-gated", "type": "validation", "owningComponent": "protected-visibility-vault", "coversComponents": ["protected-visibility-vault", "role-policy-consent-engine"], "dependents": ["forms-voting-service", "ai-gateway", "export-service"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_connections_invite-permission", "type": "validation", "owningComponent": "connections-graph", "coversComponents": ["connections-graph"], "dependents": ["invitation-service", "connections-shell"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_receipt-ledger_append", "type": "validation", "owningComponent": "receipt-ledger", "coversComponents": ["receipt-ledger"], "dependents": ["wallet-dues-donations", "ad-decision-service", "settlement-engine"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_event-bus_publish", "type": "validation", "owningComponent": "event-bus", "coversComponents": ["event-bus"], "dependents": ["rule-engine", "workflow-engine"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_builder-app-id_signing-scope", "type": "validation", "owningComponent": "builder-app-id-service", "coversComponents": ["builder-app-id-service", "key-management"], "dependents": ["extension-registry"], "phase": "A1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_community-registry_discovery", "type": "validation", "owningComponent": "community-registry", "coversComponents": ["community-registry"], "dependents": ["app-shell-runtime", "search-service"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_spaces_nesting", "type": "validation", "owningComponent": "spaces-service", "coversComponents": ["spaces-service", "community-registry"], "dependents": ["membership-service", "search-service"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_membership_join-approval", "type": "validation", "owningComponent": "membership-service", "coversComponents": ["membership-service", "passport-ledger", "community-registry"], "dependents": ["app-shell-runtime", "notification-service"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_invitation_create-revoke", "type": "validation", "owningComponent": "invitation-service", "coversComponents": ["invitation-service", "connections-graph"], "dependents": ["membership-service", "app-shell-runtime"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_extension-registry_resolve-latest", "type": "validation", "owningComponent": "extension-registry", "coversComponents": ["extension-registry", "certification-system"], "dependents": ["app-shell-runtime", "extension-runtime-bridge"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_certification_validate-package", "type": "validation", "owningComponent": "certification-system", "coversComponents": ["certification-system"], "dependents": ["extension-registry", "public-registry-read-model"], "phase": "A2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_publishing_publish", "type": "validation", "owningComponent": "publishing-service", "coversComponents": ["publishing-service", "role-policy-consent-engine"], "dependents": ["search-service", "stream-renderer"], "phase": "A3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_messaging_stream-render", "type": "validation", "owningComponent": "messaging-stream-service", "coversComponents": ["messaging-stream-service"], "dependents": ["stream-renderer", "ad-decision-service"], "phase": "A3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_notification_deliver", "type": "validation", "owningComponent": "notification-service", "coversComponents": ["notification-service"], "dependents": ["workflow-engine", "digest-service"], "phase": "A3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_events_rsvp", "type": "validation", "owningComponent": "events-service", "coversComponents": ["events-service"], "dependents": ["workflow-engine"], "phase": "A3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_forms-voting_submit", "type": "validation", "owningComponent": "forms-voting-service", "coversComponents": ["forms-voting-service", "protected-visibility-vault"], "dependents": ["workflow-engine"], "phase": "A3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_case-task_transition", "type": "validation", "owningComponent": "case-task-service", "coversComponents": ["case-task-service"], "dependents": ["workflow-engine"], "phase": "A4a", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_documents_permissions", "type": "validation", "owningComponent": "documents-service", "coversComponents": ["documents-service", "role-policy-consent-engine"], "dependents": ["search-service", "export-service"], "phase": "A4a", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_facilities_reservation", "type": "validation", "owningComponent": "facilities-service", "coversComponents": ["facilities-service"], "dependents": ["wallet-dues-donations"], "phase": "A4a", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_export_redaction", "type": "validation", "owningComponent": "export-service", "coversComponents": ["export-service", "protected-visibility-vault"], "dependents": ["provider-transfer-service"], "phase": "A4a", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_moderation_case-lifecycle", "type": "validation", "owningComponent": "moderation-case-service", "coversComponents": ["moderation-case-service"], "dependents": ["incident-service"], "phase": "A4a", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_wallet_payment", "type": "validation", "owningComponent": "wallet-dues-donations", "coversComponents": ["wallet-dues-donations", "receipt-ledger"], "dependents": ["payment-surface", "settlement-engine"], "phase": "A4b", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_ad-decision_sensitive-no-fill", "type": "validation", "owningComponent": "ad-decision-service", "coversComponents": ["ad-decision-service", "protected-visibility-vault"], "dependents": ["ad-slots", "stream-renderer"], "phase": "A4b", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_search_permission-aware", "type": "validation", "owningComponent": "search-service", "coversComponents": ["search-service", "role-policy-consent-engine"], "dependents": ["ai-gateway", "app-shell-runtime"], "phase": "A4b", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_ai-gateway_answer", "type": "validation", "owningComponent": "ai-gateway", "coversComponents": ["ai-gateway", "search-service"], "dependents": ["digest-service"], "phase": "A4b", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_settlement_run", "type": "validation", "owningComponent": "settlement-engine", "coversComponents": ["settlement-engine", "receipt-ledger"], "dependents": ["utility-funding-service"], "phase": "A4b", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_extension-runtime_session", "type": "validation", "owningComponent": "extension-runtime-bridge", "coversComponents": ["extension-runtime-bridge", "extension-registry", "role-policy-consent-engine"], "dependents": ["app-shell-runtime", "rule-engine"], "phase": "A5", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_rule-engine_evaluate", "type": "validation", "owningComponent": "rule-engine", "coversComponents": ["rule-engine", "event-bus"], "dependents": ["workflow-engine"], "phase": "A5", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_workflow-engine_transition", "type": "validation", "owningComponent": "workflow-engine", "coversComponents": ["workflow-engine"], "dependents": ["case-task-service", "notification-service"], "phase": "A5", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_data-schema_export-index", "type": "validation", "owningComponent": "data-schema-store", "coversComponents": ["data-schema-store", "export-service", "search-service"], "dependents": ["import-service", "extension-runtime-bridge"], "phase": "A5", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_app-shell_required-nav", "type": "validation", "owningComponent": "app-shell-runtime", "coversComponents": ["app-shell-runtime", "navigation-panel"], "dependents": [], "phase": "A6", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_app-shell_ad-slots", "type": "validation", "owningComponent": "app-shell-runtime", "coversComponents": ["app-shell-runtime", "ad-slots", "ad-decision-service"], "dependents": [], "phase": "A6", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "vt_payment-surface_shell-owned", "type": "validation", "owningComponent": "payment-surface", "coversComponents": ["payment-surface", "wallet-dues-donations"], "dependents": [], "phase": "A6", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_community-registry__app-shell_resolve-by-qr", "type": "contract", "owningComponent": "community-registry", "coversComponents": ["community-registry", "app-shell-runtime"], "dependents": ["app-shell-runtime"], "phase": "A2", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_role-policy__extension-runtime_effective-permission", "type": "contract", "owningComponent": "role-policy-consent-engine", "coversComponents": ["role-policy-consent-engine", "extension-runtime-bridge"], "dependents": ["extension-runtime-bridge"], "phase": "A1", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_protected-vault__ads_no-fill-sensitive", "type": "contract", "owningComponent": "protected-visibility-vault", "coversComponents": ["protected-visibility-vault", "ad-decision-service"], "dependents": ["ad-decision-service"], "phase": "A1", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_extension-registry__app-shell_resolve-latest", "type": "contract", "owningComponent": "extension-registry", "coversComponents": ["extension-registry", "app-shell-runtime"], "dependents": ["app-shell-runtime"], "phase": "A2", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_receipt-ledger__wallet_append-payment", "type": "contract", "owningComponent": "receipt-ledger", "coversComponents": ["receipt-ledger", "wallet-dues-donations"], "dependents": ["wallet-dues-donations"], "phase": "A1", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_search__ai-gateway_retrieval", "type": "contract", "owningComponent": "search-service", "coversComponents": ["search-service", "ai-gateway"], "dependents": ["ai-gateway"], "phase": "A4b", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "ct_data-schema-store__import-export_schema-enumeration", "type": "contract", "owningComponent": "data-schema-store", "coversComponents": ["data-schema-store", "export-service"], "dependents": ["export-service"], "phase": "A5", "status": "pending-counterpart", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_build-publish-discover-install", "type": "workflow", "owningComponent": null, "coversComponents": ["ai-skill-extension-builder", "builder-app-id-service", "extension-registry", "certification-system", "community-registry", "app-shell-runtime"], "dependents": [], "phase": "B1", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_book-club-headline", "type": "workflow", "owningComponent": null, "coversComponents": ["community-registry", "events-service", "forms-voting-service", "publishing-service", "search-service", "ai-gateway", "app-shell-runtime"], "dependents": [], "phase": "B2", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_youth-soccer-headline", "type": "workflow", "owningComponent": null, "coversComponents": ["membership-service", "spaces-service", "protected-visibility-vault", "wallet-dues-donations", "events-service", "notification-service", "app-shell-runtime"], "dependents": [], "phase": "B3", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_hoa-headline", "type": "workflow", "owningComponent": null, "coversComponents": ["wallet-dues-donations", "documents-service", "facilities-service", "case-task-service", "workflow-engine", "export-service", "app-shell-runtime"], "dependents": [], "phase": "B4", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_mosque-headline", "type": "workflow", "owningComponent": null, "coversComponents": ["wallet-dues-donations", "events-service", "forms-voting-service", "protected-visibility-vault", "notification-service", "app-shell-runtime"], "dependents": [], "phase": "B5", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_messaging-ads-connections", "type": "workflow", "owningComponent": null, "coversComponents": ["messaging-stream-service", "connections-graph", "ad-decision-service", "stream-renderer", "navigation-panel", "connections-shell", "ad-slots"], "dependents": [], "phase": "B6", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_ad-off", "type": "workflow", "owningComponent": null, "coversComponents": ["wallet-dues-donations", "ad-decision-service", "receipt-ledger", "settlement-engine", "utility-funding-service", "payment-surface", "ad-slots"], "dependents": [], "phase": "B7", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null },
-    { "testId": "wf_export-migration", "type": "workflow", "owningComponent": null, "coversComponents": ["export-service", "import-service", "provider-transfer-service", "protected-visibility-vault", "data-schema-store", "receipt-ledger"], "dependents": [], "phase": "B8", "status": "planned", "testHash": "planned", "lastRunTestHash": null, "lastRunComponentVersions": {}, "lastRunAt": null }
-  ]
+    {
+      "testId": "vt_api-spec-inventory_schema",
+      "type": "validation",
+      "owningComponent": "api-spec-inventory",
+      "coversComponents": [
+        "api-spec-inventory"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_manifest_schema",
+      "type": "validation",
+      "owningComponent": "phase-test-manifest-bridge",
+      "coversComponents": [
+        "phase-test-manifest-bridge"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill_skeleton",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-debug-harness_fixture-replay",
+      "type": "validation",
+      "owningComponent": "skill-debug-harness",
+      "coversComponents": [
+        "skill-debug-harness"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-prereq_manifest-complete",
+      "type": "validation",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-prereq_host-detection",
+      "type": "validation",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-prereq_install-plan",
+      "type": "validation",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup"
+      ],
+      "dependents": [],
+      "phase": "0",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_builder-app-id__extension-registry_signing-scope",
+      "type": "contract",
+      "owningComponent": "builder-app-id-service",
+      "coversComponents": [
+        "builder-app-id-service",
+        "extension-registry"
+      ],
+      "dependents": [
+        "extension-registry"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_connections__invitation_blocked-path",
+      "type": "contract",
+      "owningComponent": "connections-graph",
+      "coversComponents": [
+        "connections-graph",
+        "invitation-service"
+      ],
+      "dependents": [
+        "invitation-service"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_event-bus__rule-engine_publish-replay",
+      "type": "contract",
+      "owningComponent": "event-bus",
+      "coversComponents": [
+        "event-bus",
+        "rule-engine"
+      ],
+      "dependents": [
+        "rule-engine"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_protected-vault__ads_no-fill-sensitive",
+      "type": "contract",
+      "owningComponent": "protected-visibility-vault",
+      "coversComponents": [
+        "protected-visibility-vault",
+        "ad-decision-service"
+      ],
+      "dependents": [
+        "ad-decision-service"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_receipt-ledger__wallet_append-payment",
+      "type": "contract",
+      "owningComponent": "receipt-ledger",
+      "coversComponents": [
+        "receipt-ledger",
+        "wallet-dues-donations"
+      ],
+      "dependents": [
+        "wallet-dues-donations"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_role-policy__extension-runtime_effective-permission",
+      "type": "contract",
+      "owningComponent": "role-policy-consent-engine",
+      "coversComponents": [
+        "role-policy-consent-engine",
+        "extension-runtime-bridge"
+      ],
+      "dependents": [
+        "extension-runtime-bridge"
+      ],
+      "phase": "A1",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_builder-app-id_signing-scope",
+      "type": "validation",
+      "owningComponent": "builder-app-id-service",
+      "coversComponents": [
+        "builder-app-id-service",
+        "key-management"
+      ],
+      "dependents": [
+        "extension-registry"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_connections_invite-permission",
+      "type": "validation",
+      "owningComponent": "connections-graph",
+      "coversComponents": [
+        "connections-graph"
+      ],
+      "dependents": [
+        "invitation-service",
+        "connections-shell"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_core-vault_preferences",
+      "type": "validation",
+      "owningComponent": "core-member-vault",
+      "coversComponents": [
+        "core-member-vault"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_event-bus_publish",
+      "type": "validation",
+      "owningComponent": "event-bus",
+      "coversComponents": [
+        "event-bus"
+      ],
+      "dependents": [
+        "rule-engine",
+        "workflow-engine"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_passport-ledger_create-resolve",
+      "type": "validation",
+      "owningComponent": "passport-ledger",
+      "coversComponents": [
+        "passport-ledger"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "membership-service"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_protected-vault_read-gated",
+      "type": "validation",
+      "owningComponent": "protected-visibility-vault",
+      "coversComponents": [
+        "protected-visibility-vault",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "forms-voting-service",
+        "ai-gateway",
+        "export-service"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_receipt-ledger_append",
+      "type": "validation",
+      "owningComponent": "receipt-ledger",
+      "coversComponents": [
+        "receipt-ledger"
+      ],
+      "dependents": [
+        "wallet-dues-donations",
+        "ad-decision-service",
+        "settlement-engine"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_role-policy_effective-permission",
+      "type": "validation",
+      "owningComponent": "role-policy-consent-engine",
+      "coversComponents": [
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "extension-runtime-bridge",
+        "protected-visibility-vault",
+        "search-service"
+      ],
+      "phase": "A1",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_certification__extension-registry_certify-package",
+      "type": "contract",
+      "owningComponent": "certification-system",
+      "coversComponents": [
+        "certification-system",
+        "extension-registry"
+      ],
+      "dependents": [
+        "extension-registry"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_community-registry__app-shell_resolve-by-qr",
+      "type": "contract",
+      "owningComponent": "community-registry",
+      "coversComponents": [
+        "community-registry",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_community-registry__extension-registry_installed-pointers",
+      "type": "contract",
+      "owningComponent": "community-registry",
+      "coversComponents": [
+        "community-registry",
+        "extension-registry"
+      ],
+      "dependents": [
+        "extension-registry"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_extension-registry__app-shell_resolve-latest",
+      "type": "contract",
+      "owningComponent": "extension-registry",
+      "coversComponents": [
+        "extension-registry",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_invitation__membership_accept",
+      "type": "contract",
+      "owningComponent": "invitation-service",
+      "coversComponents": [
+        "invitation-service",
+        "membership-service"
+      ],
+      "dependents": [
+        "membership-service"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_membership__app-shell_member-state",
+      "type": "contract",
+      "owningComponent": "membership-service",
+      "coversComponents": [
+        "membership-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_public-registry__app-shell_trust-state",
+      "type": "contract",
+      "owningComponent": "public-registry-read-model",
+      "coversComponents": [
+        "public-registry-read-model",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_spaces__membership_space-join",
+      "type": "contract",
+      "owningComponent": "spaces-service",
+      "coversComponents": [
+        "spaces-service",
+        "membership-service"
+      ],
+      "dependents": [
+        "membership-service"
+      ],
+      "phase": "A2",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_certification_validate-package",
+      "type": "validation",
+      "owningComponent": "certification-system",
+      "coversComponents": [
+        "certification-system"
+      ],
+      "dependents": [
+        "extension-registry",
+        "public-registry-read-model"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_certification_asset-evidence",
+      "type": "validation",
+      "owningComponent": "certification-system",
+      "coversComponents": [
+        "certification-system"
+      ],
+      "dependents": [
+        "extension-registry"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_community-registry_discovery",
+      "type": "validation",
+      "owningComponent": "community-registry",
+      "coversComponents": [
+        "community-registry"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "search-service"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_community-registry_branding",
+      "type": "validation",
+      "owningComponent": "community-registry",
+      "coversComponents": [
+        "community-registry"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "loom-communities-demo-app"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-registry_resolve-latest",
+      "type": "validation",
+      "owningComponent": "extension-registry",
+      "coversComponents": [
+        "extension-registry",
+        "certification-system"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "extension-runtime-bridge"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_invitation_create-revoke",
+      "type": "validation",
+      "owningComponent": "invitation-service",
+      "coversComponents": [
+        "invitation-service",
+        "connections-graph"
+      ],
+      "dependents": [
+        "membership-service",
+        "app-shell-runtime"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_membership_join-approval",
+      "type": "validation",
+      "owningComponent": "membership-service",
+      "coversComponents": [
+        "membership-service",
+        "passport-ledger",
+        "community-registry"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "notification-service"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_public-registry_status",
+      "type": "validation",
+      "owningComponent": "public-registry-read-model",
+      "coversComponents": [
+        "public-registry-read-model"
+      ],
+      "dependents": [],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_spaces_nesting",
+      "type": "validation",
+      "owningComponent": "spaces-service",
+      "coversComponents": [
+        "spaces-service",
+        "community-registry"
+      ],
+      "dependents": [
+        "membership-service",
+        "search-service"
+      ],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_test-manifest_staleness",
+      "type": "validation",
+      "owningComponent": "phase-test-manifest-bridge",
+      "coversComponents": [
+        "phase-test-manifest-bridge"
+      ],
+      "dependents": [],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_workflow-inventory_test-index",
+      "type": "validation",
+      "owningComponent": "workflow-inventory-registry",
+      "coversComponents": [
+        "workflow-inventory-registry"
+      ],
+      "dependents": [],
+      "phase": "A2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_events__workflow-engine_event-registration",
+      "type": "contract",
+      "owningComponent": "events-service",
+      "coversComponents": [
+        "events-service",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_forms-voting__protected-vault_sensitive-fields",
+      "type": "contract",
+      "owningComponent": "forms-voting-service",
+      "coversComponents": [
+        "forms-voting-service",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "protected-visibility-vault"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_messaging__ad-decision_in-stream-insertion",
+      "type": "contract",
+      "owningComponent": "messaging-stream-service",
+      "coversComponents": [
+        "messaging-stream-service",
+        "ad-decision-service"
+      ],
+      "dependents": [
+        "ad-decision-service"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_messaging__stream-renderer_render-message-and-ad-item",
+      "type": "contract",
+      "owningComponent": "messaging-stream-service",
+      "coversComponents": [
+        "messaging-stream-service",
+        "stream-renderer"
+      ],
+      "dependents": [
+        "stream-renderer"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_notification__workflow-engine_delivery",
+      "type": "contract",
+      "owningComponent": "notification-service",
+      "coversComponents": [
+        "notification-service",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_publishing__search_index-visible-content",
+      "type": "contract",
+      "owningComponent": "publishing-service",
+      "coversComponents": [
+        "publishing-service",
+        "search-service"
+      ],
+      "dependents": [
+        "search-service"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_publishing__stream-renderer_render-post",
+      "type": "contract",
+      "owningComponent": "publishing-service",
+      "coversComponents": [
+        "publishing-service",
+        "stream-renderer"
+      ],
+      "dependents": [
+        "stream-renderer"
+      ],
+      "phase": "A3",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_events_rsvp",
+      "type": "validation",
+      "owningComponent": "events-service",
+      "coversComponents": [
+        "events-service"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_events_ticketing",
+      "type": "validation",
+      "owningComponent": "events-service",
+      "coversComponents": [
+        "events-service"
+      ],
+      "dependents": [],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_forms-voting_poll-results",
+      "type": "validation",
+      "owningComponent": "forms-voting-service",
+      "coversComponents": [
+        "forms-voting-service"
+      ],
+      "dependents": [],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_forms-voting_submit",
+      "type": "validation",
+      "owningComponent": "forms-voting-service",
+      "coversComponents": [
+        "forms-voting-service",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_messaging_direct-group",
+      "type": "validation",
+      "owningComponent": "messaging-stream-service",
+      "coversComponents": [
+        "messaging-stream-service"
+      ],
+      "dependents": [],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_messaging_stream-render",
+      "type": "validation",
+      "owningComponent": "messaging-stream-service",
+      "coversComponents": [
+        "messaging-stream-service"
+      ],
+      "dependents": [
+        "stream-renderer",
+        "ad-decision-service"
+      ],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_notification_deliver",
+      "type": "validation",
+      "owningComponent": "notification-service",
+      "coversComponents": [
+        "notification-service"
+      ],
+      "dependents": [
+        "workflow-engine",
+        "digest-service"
+      ],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_publishing_publish",
+      "type": "validation",
+      "owningComponent": "publishing-service",
+      "coversComponents": [
+        "publishing-service",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "search-service",
+        "stream-renderer"
+      ],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_publishing_visibility",
+      "type": "validation",
+      "owningComponent": "publishing-service",
+      "coversComponents": [
+        "publishing-service"
+      ],
+      "dependents": [],
+      "phase": "A3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_case-task__workflow-engine_transition",
+      "type": "contract",
+      "owningComponent": "case-task-service",
+      "coversComponents": [
+        "case-task-service",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_documents__export_include-documents",
+      "type": "contract",
+      "owningComponent": "documents-service",
+      "coversComponents": [
+        "documents-service",
+        "export-service"
+      ],
+      "dependents": [
+        "export-service"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_documents__search_index-visible-documents",
+      "type": "contract",
+      "owningComponent": "documents-service",
+      "coversComponents": [
+        "documents-service",
+        "search-service"
+      ],
+      "dependents": [
+        "search-service"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_export__components_enumerate",
+      "type": "contract",
+      "owningComponent": "export-service",
+      "coversComponents": [
+        "export-service",
+        "data-schema-store",
+        "provider-transfer-service"
+      ],
+      "dependents": [
+        "data-schema-store",
+        "provider-transfer-service"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_facilities__wallet_reservation-payment",
+      "type": "contract",
+      "owningComponent": "facilities-service",
+      "coversComponents": [
+        "facilities-service",
+        "wallet-dues-donations"
+      ],
+      "dependents": [
+        "wallet-dues-donations"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_fraud__dispute_resolution-path",
+      "type": "contract",
+      "owningComponent": "fraud-signal-service",
+      "coversComponents": [
+        "fraud-signal-service",
+        "dispute-service"
+      ],
+      "dependents": [
+        "dispute-service"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_import__protected-vault_write",
+      "type": "contract",
+      "owningComponent": "import-service",
+      "coversComponents": [
+        "import-service",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "protected-visibility-vault"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_incident__certification_revoke",
+      "type": "contract",
+      "owningComponent": "incident-service",
+      "coversComponents": [
+        "incident-service",
+        "certification-system"
+      ],
+      "dependents": [
+        "certification-system"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_protected-vault__import-export_redaction",
+      "type": "contract",
+      "owningComponent": "protected-visibility-vault",
+      "coversComponents": [
+        "protected-visibility-vault",
+        "import-service",
+        "export-service"
+      ],
+      "dependents": [
+        "import-service",
+        "export-service"
+      ],
+      "phase": "A4a",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_abuse-report_submit",
+      "type": "validation",
+      "owningComponent": "abuse-report-service",
+      "coversComponents": [
+        "abuse-report-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_case-task_transition",
+      "type": "validation",
+      "owningComponent": "case-task-service",
+      "coversComponents": [
+        "case-task-service"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_dispute_open-case",
+      "type": "validation",
+      "owningComponent": "dispute-service",
+      "coversComponents": [
+        "dispute-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_documents_permissions",
+      "type": "validation",
+      "owningComponent": "documents-service",
+      "coversComponents": [
+        "documents-service",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "search-service",
+        "export-service"
+      ],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_export_assemble",
+      "type": "validation",
+      "owningComponent": "export-service",
+      "coversComponents": [
+        "export-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_export_redaction",
+      "type": "validation",
+      "owningComponent": "export-service",
+      "coversComponents": [
+        "export-service",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "provider-transfer-service"
+      ],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_facilities_reservation",
+      "type": "validation",
+      "owningComponent": "facilities-service",
+      "coversComponents": [
+        "facilities-service"
+      ],
+      "dependents": [
+        "wallet-dues-donations"
+      ],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_import_commit",
+      "type": "validation",
+      "owningComponent": "import-service",
+      "coversComponents": [
+        "import-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_import_dry-run",
+      "type": "validation",
+      "owningComponent": "import-service",
+      "coversComponents": [
+        "import-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_incident_create",
+      "type": "validation",
+      "owningComponent": "incident-service",
+      "coversComponents": [
+        "incident-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_moderation_case-lifecycle",
+      "type": "validation",
+      "owningComponent": "moderation-case-service",
+      "coversComponents": [
+        "moderation-case-service"
+      ],
+      "dependents": [
+        "incident-service"
+      ],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_provider-transfer_execute-verify",
+      "type": "validation",
+      "owningComponent": "provider-transfer-service",
+      "coversComponents": [
+        "provider-transfer-service"
+      ],
+      "dependents": [],
+      "phase": "A4a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_ad-decision__app-shell_banner-fill",
+      "type": "contract",
+      "owningComponent": "ad-decision-service",
+      "coversComponents": [
+        "ad-decision-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_ad-decision__stream-renderer_in-stream-ad",
+      "type": "contract",
+      "owningComponent": "ad-decision-service",
+      "coversComponents": [
+        "ad-decision-service",
+        "stream-renderer"
+      ],
+      "dependents": [
+        "stream-renderer"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_ai-gateway__digest_citations",
+      "type": "contract",
+      "owningComponent": "ai-gateway",
+      "coversComponents": [
+        "ai-gateway",
+        "digest-service"
+      ],
+      "dependents": [
+        "digest-service"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_fraud__settlement_apply-adjustment",
+      "type": "contract",
+      "owningComponent": "fraud-signal-service",
+      "coversComponents": [
+        "fraud-signal-service",
+        "settlement-engine"
+      ],
+      "dependents": [
+        "settlement-engine"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_receipt-ledger__settlement_read-window",
+      "type": "contract",
+      "owningComponent": "receipt-ledger",
+      "coversComponents": [
+        "receipt-ledger",
+        "settlement-engine"
+      ],
+      "dependents": [
+        "settlement-engine"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_search__ai-gateway_retrieval",
+      "type": "contract",
+      "owningComponent": "search-service",
+      "coversComponents": [
+        "search-service",
+        "ai-gateway"
+      ],
+      "dependents": [
+        "ai-gateway"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_search__app-shell_result-explanations",
+      "type": "contract",
+      "owningComponent": "search-service",
+      "coversComponents": [
+        "search-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_settlement__utility-funding_allocation",
+      "type": "contract",
+      "owningComponent": "settlement-engine",
+      "coversComponents": [
+        "settlement-engine",
+        "utility-funding-service"
+      ],
+      "dependents": [
+        "utility-funding-service"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_wallet__ad-decision_ad-off-entitlement",
+      "type": "contract",
+      "owningComponent": "wallet-dues-donations",
+      "coversComponents": [
+        "wallet-dues-donations",
+        "ad-decision-service"
+      ],
+      "dependents": [
+        "ad-decision-service"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_wallet__payment-surface_checkout",
+      "type": "contract",
+      "owningComponent": "wallet-dues-donations",
+      "coversComponents": [
+        "wallet-dues-donations",
+        "payment-surface"
+      ],
+      "dependents": [
+        "payment-surface"
+      ],
+      "phase": "A4b",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_ad-campaign_setup",
+      "type": "validation",
+      "owningComponent": "ad-campaign-service",
+      "coversComponents": [
+        "ad-campaign-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_ad-decision_sensitive-no-fill",
+      "type": "validation",
+      "owningComponent": "ad-decision-service",
+      "coversComponents": [
+        "ad-decision-service",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "ad-slots",
+        "stream-renderer"
+      ],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_ad-decision_slot-eligibility",
+      "type": "validation",
+      "owningComponent": "ad-decision-service",
+      "coversComponents": [
+        "ad-decision-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_ai-gateway_answer",
+      "type": "validation",
+      "owningComponent": "ai-gateway",
+      "coversComponents": [
+        "ai-gateway",
+        "search-service"
+      ],
+      "dependents": [
+        "digest-service"
+      ],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_ai-gateway_source-policy",
+      "type": "validation",
+      "owningComponent": "ai-gateway",
+      "coversComponents": [
+        "ai-gateway"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_digest_on-demand",
+      "type": "validation",
+      "owningComponent": "digest-service",
+      "coversComponents": [
+        "digest-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_fraud_create-signal",
+      "type": "validation",
+      "owningComponent": "fraud-signal-service",
+      "coversComponents": [
+        "fraud-signal-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_search_deindex",
+      "type": "validation",
+      "owningComponent": "search-service",
+      "coversComponents": [
+        "search-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_search_permission-aware",
+      "type": "validation",
+      "owningComponent": "search-service",
+      "coversComponents": [
+        "search-service",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "ai-gateway",
+        "app-shell-runtime"
+      ],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_settlement_run",
+      "type": "validation",
+      "owningComponent": "settlement-engine",
+      "coversComponents": [
+        "settlement-engine",
+        "receipt-ledger"
+      ],
+      "dependents": [
+        "utility-funding-service"
+      ],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_utility-funding_calculate",
+      "type": "validation",
+      "owningComponent": "utility-funding-service",
+      "coversComponents": [
+        "utility-funding-service"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_wallet_ad-off",
+      "type": "validation",
+      "owningComponent": "wallet-dues-donations",
+      "coversComponents": [
+        "wallet-dues-donations"
+      ],
+      "dependents": [],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_wallet_payment",
+      "type": "validation",
+      "owningComponent": "wallet-dues-donations",
+      "coversComponents": [
+        "wallet-dues-donations",
+        "receipt-ledger"
+      ],
+      "dependents": [
+        "payment-surface",
+        "settlement-engine"
+      ],
+      "phase": "A4b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_data-schema-store__import-export_schema-enumeration",
+      "type": "contract",
+      "owningComponent": "data-schema-store",
+      "coversComponents": [
+        "data-schema-store",
+        "export-service"
+      ],
+      "dependents": [
+        "export-service"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_data-schema-store__search_indexability",
+      "type": "contract",
+      "owningComponent": "data-schema-store",
+      "coversComponents": [
+        "data-schema-store",
+        "search-service"
+      ],
+      "dependents": [
+        "search-service"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_extension-package__demo-loader_validate-load",
+      "type": "contract",
+      "owningComponent": "extension-package-validator",
+      "coversComponents": [
+        "extension-package-validator",
+        "loom-communities-demo-app"
+      ],
+      "dependents": [
+        "loom-communities-demo-app"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_extension-runtime__app-shell_session",
+      "type": "contract",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_extension-runtime__protected-vault_write",
+      "type": "contract",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge",
+        "protected-visibility-vault"
+      ],
+      "dependents": [
+        "protected-visibility-vault"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_initialization-package__fake-backend_import",
+      "type": "contract",
+      "owningComponent": "initialization-package-schema",
+      "coversComponents": [
+        "initialization-package-schema",
+        "local-in-app-backend"
+      ],
+      "dependents": [
+        "local-in-app-backend"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_initialization-package__fake-backend_branding-import",
+      "type": "contract",
+      "owningComponent": "initialization-package-schema",
+      "coversComponents": [
+        "initialization-package-schema",
+        "local-in-app-backend"
+      ],
+      "dependents": [
+        "local-in-app-backend"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_local-backend__community-card_branding-props",
+      "type": "contract",
+      "owningComponent": "local-in-app-backend",
+      "coversComponents": [
+        "local-in-app-backend",
+        "community-card"
+      ],
+      "dependents": [
+        "community-card"
+      ],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_job-scheduler__rule-engine_trigger",
+      "type": "contract",
+      "owningComponent": "job-scheduler",
+      "coversComponents": [
+        "job-scheduler",
+        "rule-engine"
+      ],
+      "dependents": [
+        "rule-engine"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_rule-engine__extension-runtime_action-dispatch",
+      "type": "contract",
+      "owningComponent": "rule-engine",
+      "coversComponents": [
+        "rule-engine",
+        "extension-runtime-bridge"
+      ],
+      "dependents": [
+        "extension-runtime-bridge"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_workflow-engine__case-task_transition",
+      "type": "contract",
+      "owningComponent": "workflow-engine",
+      "coversComponents": [
+        "workflow-engine",
+        "case-task-service"
+      ],
+      "dependents": [
+        "case-task-service"
+      ],
+      "phase": "A5",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_data-schema_export-index",
+      "type": "validation",
+      "owningComponent": "data-schema-store",
+      "coversComponents": [
+        "data-schema-store",
+        "export-service",
+        "search-service"
+      ],
+      "dependents": [
+        "import-service",
+        "extension-runtime-bridge"
+      ],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_data-schema_register",
+      "type": "validation",
+      "owningComponent": "data-schema-store",
+      "coversComponents": [
+        "data-schema-store"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-package_downloadable-shape",
+      "type": "validation",
+      "owningComponent": "extension-package-validator",
+      "coversComponents": [
+        "extension-package-validator"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-package_asset-manifest",
+      "type": "validation",
+      "owningComponent": "extension-package-validator",
+      "coversComponents": [
+        "extension-package-validator"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-package_asset-policy",
+      "type": "validation",
+      "owningComponent": "extension-package-validator",
+      "coversComponents": [
+        "extension-package-validator"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-runtime_bridge-call",
+      "type": "validation",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-runtime_permission",
+      "type": "validation",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_extension-runtime_session",
+      "type": "validation",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge",
+        "extension-registry",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [
+        "app-shell-runtime",
+        "rule-engine"
+      ],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_function-runtime_sandbox-permission",
+      "type": "validation",
+      "owningComponent": "function-runtime",
+      "coversComponents": [
+        "function-runtime"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_initialization-package_idempotency",
+      "type": "validation",
+      "owningComponent": "initialization-package-schema",
+      "coversComponents": [
+        "initialization-package-schema"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_initialization-package_community-branding",
+      "type": "validation",
+      "owningComponent": "initialization-package-schema",
+      "coversComponents": [
+        "initialization-package-schema",
+        "community-registry"
+      ],
+      "dependents": [
+        "local-in-app-backend",
+        "community-card"
+      ],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_initialization-package_schema",
+      "type": "validation",
+      "owningComponent": "initialization-package-schema",
+      "coversComponents": [
+        "initialization-package-schema"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_job-scheduler_trigger",
+      "type": "validation",
+      "owningComponent": "job-scheduler",
+      "coversComponents": [
+        "job-scheduler"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_rule-engine_action",
+      "type": "validation",
+      "owningComponent": "rule-engine",
+      "coversComponents": [
+        "rule-engine"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_rule-engine_evaluate",
+      "type": "validation",
+      "owningComponent": "rule-engine",
+      "coversComponents": [
+        "rule-engine",
+        "event-bus"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_secrets-connector_scoped-secret",
+      "type": "validation",
+      "owningComponent": "secrets-connector-broker",
+      "coversComponents": [
+        "secrets-connector-broker"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_workflow-engine_start",
+      "type": "validation",
+      "owningComponent": "workflow-engine",
+      "coversComponents": [
+        "workflow-engine"
+      ],
+      "dependents": [],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_workflow-engine_transition",
+      "type": "validation",
+      "owningComponent": "workflow-engine",
+      "coversComponents": [
+        "workflow-engine"
+      ],
+      "dependents": [
+        "case-task-service",
+        "notification-service"
+      ],
+      "phase": "A5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_app-shell__workflow_install-latest",
+      "type": "contract",
+      "owningComponent": "app-shell-runtime",
+      "coversComponents": [
+        "app-shell-runtime",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_data-dashboard__workflow_consent-revoke",
+      "type": "contract",
+      "owningComponent": "data-dashboard-consent",
+      "coversComponents": [
+        "data-dashboard-consent",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_extension-runtime__app-shell_local-session",
+      "type": "contract",
+      "owningComponent": "extension-runtime-bridge",
+      "coversComponents": [
+        "extension-runtime-bridge",
+        "app-shell-runtime"
+      ],
+      "dependents": [
+        "app-shell-runtime"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_navigation-panel__workflow_messages-connections-reachable",
+      "type": "contract",
+      "owningComponent": "navigation-panel",
+      "coversComponents": [
+        "navigation-panel",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_payment-surface__workflow_ad-off-checkout",
+      "type": "contract",
+      "owningComponent": "payment-surface",
+      "coversComponents": [
+        "payment-surface",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_stream-renderer__workflow_in-stream-ad",
+      "type": "contract",
+      "owningComponent": "stream-renderer",
+      "coversComponents": [
+        "stream-renderer",
+        "workflow-engine"
+      ],
+      "dependents": [
+        "workflow-engine"
+      ],
+      "phase": "A6",
+      "status": "pending-counterpart",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_app-shell_ad-slots",
+      "type": "validation",
+      "owningComponent": "app-shell-runtime",
+      "coversComponents": [
+        "app-shell-runtime",
+        "ad-slots",
+        "ad-decision-service"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_app-shell_cards",
+      "type": "validation",
+      "owningComponent": "app-shell-runtime",
+      "coversComponents": [
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_app-shell_required-nav",
+      "type": "validation",
+      "owningComponent": "app-shell-runtime",
+      "coversComponents": [
+        "app-shell-runtime",
+        "navigation-panel"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_app-shell_route-host",
+      "type": "validation",
+      "owningComponent": "app-shell-runtime",
+      "coversComponents": [
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_community-card_render-bind",
+      "type": "validation",
+      "owningComponent": "community-card",
+      "coversComponents": [
+        "community-card"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_community-card_branding-priority",
+      "type": "validation",
+      "owningComponent": "community-card",
+      "coversComponents": [
+        "community-card",
+        "community-registry",
+        "extension-package-validator"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_connections-shell_invite-blocked",
+      "type": "validation",
+      "owningComponent": "connections-shell",
+      "coversComponents": [
+        "connections-shell"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_data-dashboard_consent-revoke",
+      "type": "validation",
+      "owningComponent": "data-dashboard-consent",
+      "coversComponents": [
+        "data-dashboard-consent"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_add-community-button",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_cards-after-load",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_card-image-after-load",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app",
+        "community-card",
+        "local-in-app-backend"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_empty-community-state",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_local-file-load-extension",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_demo-app_open-local-extension",
+      "type": "validation",
+      "owningComponent": "loom-communities-demo-app",
+      "coversComponents": [
+        "loom-communities-demo-app"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_fake-backend_import-idempotent",
+      "type": "validation",
+      "owningComponent": "local-in-app-backend",
+      "coversComponents": [
+        "local-in-app-backend"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_fake-backend_import-init-package",
+      "type": "validation",
+      "owningComponent": "local-in-app-backend",
+      "coversComponents": [
+        "local-in-app-backend"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_local-store_persist-reload",
+      "type": "validation",
+      "owningComponent": "loom-local-store",
+      "coversComponents": [
+        "loom-local-store"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_navigation-panel_messages-connections",
+      "type": "validation",
+      "owningComponent": "navigation-panel",
+      "coversComponents": [
+        "navigation-panel"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_payment-surface_shell-owned",
+      "type": "validation",
+      "owningComponent": "payment-surface",
+      "coversComponents": [
+        "payment-surface",
+        "wallet-dues-donations"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_stream-renderer_ad-item-disclosure",
+      "type": "validation",
+      "owningComponent": "stream-renderer",
+      "coversComponents": [
+        "stream-renderer"
+      ],
+      "dependents": [],
+      "phase": "A6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill_debug_golden-flow",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-prereq_environment-lock",
+      "type": "validation",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill-prereq_demo-app-smoke",
+      "type": "validation",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup",
+        "loom-communities-demo-app",
+        "local-in-app-backend"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "ct_skill-prereq-setup__workflow-validation-harness_environment-ready",
+      "type": "contract",
+      "owningComponent": "skill-prereq-setup",
+      "coversComponents": [
+        "skill-prereq-setup",
+        "workflow-validation-harness"
+      ],
+      "dependents": [
+        "workflow-validation-harness"
+      ],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill_generate-downloadable-extension",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill_generate-initialization-package",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_skill_generate-brand-assets",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder",
+        "extension-package-validator",
+        "initialization-package-schema"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "wf_local-demo-prereq-to-validation-ready",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "skill-prereq-setup",
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "loom-local-store"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_local-build-download-sideload-install",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "skill-prereq-setup",
+        "workflow-validation-harness",
+        "ai-skill-extension-builder",
+        "extension-package-validator",
+        "initialization-package-schema",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "loom-local-store",
+        "community-card",
+        "app-shell-runtime",
+        "extension-runtime-bridge"
+      ],
+      "dependents": [],
+      "phase": "B1a",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "vt_ai-skill_generate-package",
+      "type": "validation",
+      "owningComponent": "ai-skill-extension-builder",
+      "coversComponents": [
+        "ai-skill-extension-builder"
+      ],
+      "dependents": [],
+      "phase": "B1b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "wf_build-publish-discover-install",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "ai-skill-extension-builder",
+        "builder-app-id-service",
+        "extension-registry",
+        "certification-system",
+        "community-registry",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B1b",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_book-club-headline",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "community-registry",
+        "events-service",
+        "forms-voting-service",
+        "publishing-service",
+        "search-service",
+        "ai-gateway",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B2",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_youth-soccer-headline",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "membership-service",
+        "spaces-service",
+        "protected-visibility-vault",
+        "wallet-dues-donations",
+        "events-service",
+        "notification-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B3",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_hoa-headline",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "wallet-dues-donations",
+        "documents-service",
+        "facilities-service",
+        "case-task-service",
+        "workflow-engine",
+        "export-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B4",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_mosque-headline",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "wallet-dues-donations",
+        "events-service",
+        "forms-voting-service",
+        "protected-visibility-vault",
+        "notification-service",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B5",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_messaging-ads-connections",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "messaging-stream-service",
+        "connections-graph",
+        "ad-decision-service",
+        "stream-renderer",
+        "navigation-panel",
+        "connections-shell",
+        "ad-slots"
+      ],
+      "dependents": [],
+      "phase": "B6",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "vt_ad-decision_ad-off",
+      "type": "validation",
+      "owningComponent": "ad-decision-service",
+      "coversComponents": [
+        "ad-decision-service"
+      ],
+      "dependents": [],
+      "phase": "B7",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "wf_ad-off",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "wallet-dues-donations",
+        "ad-decision-service",
+        "receipt-ledger",
+        "settlement-engine",
+        "utility-funding-service",
+        "payment-surface",
+        "ad-slots"
+      ],
+      "dependents": [],
+      "phase": "B7",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "vt_api_specs_complete",
+      "type": "validation",
+      "owningComponent": "api-spec-inventory",
+      "coversComponents": [
+        "api-spec-inventory"
+      ],
+      "dependents": [],
+      "phase": "B8",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "vt_provider-transfer_rollback",
+      "type": "validation",
+      "owningComponent": "provider-transfer-service",
+      "coversComponents": [
+        "provider-transfer-service"
+      ],
+      "dependents": [],
+      "phase": "B8",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null
+    },
+    {
+      "testId": "wf_export-migration",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "export-service",
+        "import-service",
+        "provider-transfer-service",
+        "protected-visibility-vault",
+        "data-schema-store",
+        "receipt-ledger"
+      ],
+      "dependents": [],
+      "phase": "B8",
+      "status": "planned",
+      "testHash": "planned",
+      "lastRunTestHash": null,
+      "lastRunComponentVersions": {},
+      "lastRunAt": null,
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    }
+  ],
+  "skillModes": [
+    {
+      "id": "local-demo",
+      "description": "Downloadable extension and initialization package for the Demo Loom Communities App with the Local Backend."
+    },
+    {
+      "id": "real-backend-publish",
+      "description": "Publish-ready extension and backend initialization payload for a real Loom Communities backend; validated through local backend stubs/contracts first."
+    }
+  ],
+  "workflowExecutionTarget": "demo-loom-communities-app-local-backend",
+  "skillExecutionTargets": {
+    "supported": [
+      "codex",
+      "claude-code"
+    ],
+    "deferredUntilHostedBuildBackend": [
+      "chatgpt-online",
+      "claude-ai-online",
+      "gemini-online"
+    ]
+  }
 }

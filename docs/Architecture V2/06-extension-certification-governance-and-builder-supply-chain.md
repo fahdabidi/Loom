@@ -49,7 +49,7 @@ flowchart TB
 | Field | Meaning |
 | --- | --- |
 | `builderContext` | Builder identity, App ID, signing key, organization/team delegation. |
-| `artifactContext` | Package id, version, signature, SBOM, attestation, immutable artifact pointer. |
+| `artifactContext` | Package id, version, signature, asset hashes, SBOM, attestation, immutable artifact pointer. |
 | `certificationContext` | Risk tier, requested capabilities, test evidence, restrictions, status. |
 | `registryContext` | Listing state, installability, latest version, revocation/rollback state. |
 | `governanceContext` | Policy version, manual review, dispute, incident, key state. |
@@ -60,7 +60,7 @@ flowchart TB
 | Interface | Packet responsibility |
 | --- | --- |
 | `CommunityBuilderAppIdApi` | Create/delegate/revoke App IDs and signing scopes. |
-| `CommunityArtifactApi` | Store immutable package artifacts, signatures, SBOMs, attestations. |
+| `CommunityArtifactApi` | Store immutable package artifacts, signatures, asset manifests, SBOMs, attestations. |
 | `CommunityExtensionRegistryApi` | Submit, version, list, install, latest, rollback, revoke. |
 | `CommunityCertificationApi` | Validate package, assign tier/status, store evidence/restrictions. |
 | `CommunityPublicRegistryApi` | Read certification, keys, incidents, versions, listings. |
@@ -107,6 +107,7 @@ Single responsibility: own validation/certification decisions, risk tiers, evide
 Interface contract: CommunityCertificationApi (v1), in loom_api_contracts (T2)
 Capabilities (testable sub-units):
   - validate package -> validatePackage -> vt_certification_validate-package
+  - validate assets -> validateAssetEvidence -> vt_certification_asset-evidence
   - assign tier/status -> certifyPackage -> vt_certification_tier-status
   - revoke/limit -> limitCertification/revokeCertification -> vt_certification_revoke-limit
 Owned data: CertificationScopeRecord, CertificationEvidence, RiskTierAssignment, CertificationRestriction (T1)
@@ -149,9 +150,9 @@ Agent workpackage: projection component can be implemented against event and sou
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
-| 1 | Builder uploads signed artifact, SBOM, attestation. | Artifact Store | `vt_artifact-store_store-signed-artifact` |
+| 1 | Builder uploads signed artifact, asset manifest, SBOM, attestation. | Artifact Store | `vt_artifact-store_store-signed-artifact` |
 | 2 | Extension Registry records package version. | Extension Registry | `vt_extension-registry_publish-version` |
-| 3 | Certification validates manifest, permissions, tests, UI, ads, data rights, export. | Certification System | `vt_certification_validate-package` |
+| 3 | Certification validates manifest, assets, permissions, tests, UI, ads, data rights, export. | Certification System | `vt_certification_validate-package`, `vt_certification_asset-evidence` |
 | 4 | Risk tier/status/restrictions are written. | Certification System | `vt_certification_tier-status` |
 | 5 | Public registry projects installable status. | Public Registry Read Model | `ct_public-registry__certification_status-projection` |
 
@@ -168,6 +169,8 @@ Agent workpackage: projection component can be implemented against event and sou
 ## 8. Error and Recovery Behavior
 
 - Invalid artifact signatures fail before certification starts.
+- Missing, undeclared, remote-only, oversized, or hash-mismatched assets fail before certification
+  starts.
 - Certification rejections return structured remediation and do not create installable versions.
 - Revoked keys invalidate future signatures; historical receipts remain key-time verifiable.
 - Rollback cannot load a version whose certification or key is revoked.

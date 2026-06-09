@@ -8,8 +8,8 @@ Predecessor: [Loom V1 Creator Channel and Metadata Architecture](../Product%20Do
 ## 1. Product Definition
 
 The community model is the durable container for Loom Communities. A community owns its handle,
-profile, spaces, memberships, roles, policies, installed extensions, data, payments, audit history, and
-export boundary. It replaces the V1 creator channel as the main product object while preserving the V1
+profile, branding, spaces, memberships, roles, policies, installed extensions, data, payments, audit
+history, and export boundary. It replaces the V1 creator channel as the main product object while preserving the V1
 principle that the owner should not be locked into a single host, app, or provider.
 
 A space is a nestable sub-community: a team, committee, ministry, classroom, book room, facility,
@@ -18,7 +18,7 @@ can narrow membership, roles, surfaces, extensions, and visibility.
 
 ## 2. Scope
 
-This area covers the community object, handles, profiles, spaces, membership lifecycle, roles,
+This area covers the community object, handles, profiles, branding, spaces, membership lifecycle, roles,
 permissions, invitations, join policies, directory visibility, extension bindings, and member/space
 audit. Identity internals are Product 05; app-shell rendering is Product 15; governance and
 certification are Product 19.
@@ -27,7 +27,7 @@ certification are Product 19.
 
 | Feature | Definition | Product value | Interacting areas |
 | --- | --- | --- | --- |
-| Community object | Stable `communityId`, unique handle, profile, visibility, owner, installed extensions, and export policy. | A community can be discovered, installed, exported, and moved without changing identity. | 06, 10, 12, 15, 21 |
+| Community object | Stable `communityId`, unique handle, profile, branding, visibility, owner, installed extensions, and export policy. | A community can be discovered, installed, exported, and moved without changing identity. | 06, 10, 12, 15, 21 |
 | Nestable spaces | Arbitrary-depth spaces with inherited or narrowed membership and policy. | Real communities can model teams, committees, classes, rooms, and private groups without custom backend code. | 10, 13, 15 |
 | Membership lifecycle | Invite, request, approve, join, suspend, leave, remove, transfer owner, and archive. | Gives owners/admins operational control without owning member identity. | 05, 14, 17 |
 | Roles and permissions | Role templates plus custom role grants scoped to community, space, or workflow. | Extension actions can be permissioned consistently across verticals. | 05, 10, 19 |
@@ -39,7 +39,7 @@ certification are Product 19.
 ## 4. Product Experience Requirements
 
 Owners and admins should be able to create a community, claim a handle, choose a template, define
-spaces, approve or reject membership, assign roles, install extensions, and export the full community
+branding, define spaces, approve or reject membership, assign roles, install extensions, and export the full community
 state. They should see clear warnings when a policy or extension affects member data, payments, minors,
 protected vault data, ads, or portability.
 
@@ -69,7 +69,7 @@ domain entities through Loom APIs without writing directly to community membersh
 ### Workflow 1: Create community and claim handle
 
 1. Owner signs in with Passport.
-2. Owner chooses community type, handle, profile, default visibility, and starter template.
+2. Owner chooses community type, handle, profile, branding, default visibility, and starter template.
 3. `CommunityRegistryApi.createCommunity` validates handle uniqueness and writes the community.
 4. `CommunityRolePolicyApi` assigns owner and default admin/member roles.
 5. `CommunityAppShellApi` registers the community card and required shell surfaces.
@@ -111,13 +111,15 @@ domain entities through Loom APIs without writing directly to community membersh
 - Roles and policy are contract-first and versioned; all mutations carry idempotency keys.
 - Sensitive membership contexts, such as minors or care groups, must route through protected vaults.
 - Search sees only records allowed by community/space visibility and member consent.
-- Extensions may request capabilities but cannot bypass community policy, app-shell invariants, ads, or export.
+- Extensions may request capabilities but cannot bypass community policy, app-shell invariants, card
+  rendering rules, ads, or export.
 
 ## 8. Prototype Implications
 
-The MVP must support community creation, handle/QR resolution, one level of spaces, membership invite,
-owner/admin/member roles, installed extension references, and exportable community state. Deeply nested
-spaces, advanced role templates, and complex join policies can follow after the first vertical demos.
+The MVP must support community creation, handle/QR resolution, community branding for cards, one level
+of spaces, membership invite, owner/admin/member roles, installed extension references, and exportable
+community state. Deeply nested spaces, advanced role templates, and complex join policies can follow
+after the first vertical demos.
 
 ## 9. FAQ
 

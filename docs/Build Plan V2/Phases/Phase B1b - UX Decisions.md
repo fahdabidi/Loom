@@ -1,26 +1,27 @@
-# Phase B7 - UX Decisions
+# Phase B1b - UX Decisions
 
 Status: Template
 
 ## Reference Sources Reviewed
 
-Subscription, ad-off, payment confirmation, receipt, and ad preference flows.
+QR install, app install, permission review, certification, and package publish flows.
 
 ## UX Patterns Extracted
 
-Record ad-off purchase and entitlement visibility patterns.
+Record patterns for install trust, certification status, permission clarity, latest-version updates,
+and the difference between local sideload and hosted install.
 
 ## Key UX Decisions
 
-Record ad-off checkout, ad status, receipt, and settlement explanation decisions.
+Record publish, QR/handle, install, and latest-open UI decisions.
 
 ## Workflow Walkthrough
 
-Walk through `wf_ad-off`.
+Walk through `wf_build-publish-discover-install`.
 
 ## Open Questions
 
-Record unresolved workflow UX risks.
+Record unresolved hosted workflow UX risks.
 
 ## Commit Gate
 

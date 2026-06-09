@@ -2,7 +2,8 @@
 
 Layer: extension engine
 Components: Extension Runtime Bridge, Rule Engine, Workflow Engine, Job Scheduler, Sandboxed Function
-Runtime, Data Schema Store, Secrets/Connector Broker.
+Runtime, Data Schema Store, Secrets/Connector Broker, Extension Package Validator, Initialization
+Package Schema.
 Depends on: A4b
 Parallelism: one agent per component
 Gate: engine validation and provider/consumer contract tests pass
@@ -24,6 +25,8 @@ Gate: engine validation and provider/consumer contract tests pass
 | function-runtime | [Arch 08](../../Architecture%20V2/08-extension-platform-runtime.md) | `CommunityFunctionRuntimeApi` |
 | data-schema-store | [Arch 08](../../Architecture%20V2/08-extension-platform-runtime.md) | `CommunityDataSchemaApi` |
 | secrets-connector-broker | [Arch 08](../../Architecture%20V2/08-extension-platform-runtime.md) | `CommunitySecretsConnectorApi` |
+| extension-package-validator | [Arch 08](../../Architecture%20V2/08-extension-platform-runtime.md) | `CommunityExtensionPackageApi` |
+| initialization-package-schema | [Arch 08](../../Architecture%20V2/08-extension-platform-runtime.md) | `CommunityInitializationPackageApi` |
 
 ## 2. Agent Assignment and Parallelism
 
@@ -36,6 +39,8 @@ Run one agent per component. Merge order:
 5. Job Scheduler.
 6. Function Runtime.
 7. Secrets/Connector Broker.
+8. Extension Package Validator.
+9. Initialization Package Schema.
 
 ## 3. Per-Component Build Spec
 
@@ -58,6 +63,12 @@ Required:
 - `vt_data-schema_register`
 - `vt_data-schema_export-index`
 - `vt_secrets-connector_scoped-secret`
+- `vt_extension-package_downloadable-shape`
+- `vt_extension-package_asset-manifest`
+- `vt_extension-package_asset-policy`
+- `vt_initialization-package_schema`
+- `vt_initialization-package_idempotency`
+- `vt_initialization-package_community-branding`
 
 ## 5. Consumer-Contract Tests Authored for Dependents
 
@@ -70,6 +81,9 @@ Author and register:
 - `ct_job-scheduler__rule-engine_trigger`
 - `ct_data-schema-store__import-export_schema-enumeration`
 - `ct_data-schema-store__search_indexability`
+- `ct_extension-package__demo-loader_validate-load`
+- `ct_initialization-package__fake-backend_import`
+- `ct_initialization-package__fake-backend_branding-import`
 
 ## 6. Cross-Component Test Gate
 
@@ -83,9 +97,11 @@ the only extension bridge into Loom service APIs.
 
 ## 8. Skill Contribution
 
-Add guides for runtime, rules, workflows, jobs, functions, schemas, and secrets/connectors. These are
-the most important "beyond OpenAPI" guides: include recipes for config -> rules -> workflows -> jobs ->
-functions and when not to use functions.
+Add guides for runtime, rules, workflows, jobs, functions, schemas, secrets/connectors, extension
+packages, and initialization packages. These are the most important "beyond OpenAPI" guides: include
+recipes for config -> rules -> workflows -> jobs -> functions, when not to use functions, how to
+produce downloadable local packages, how to bundle icons/images safely, how to declare card defaults,
+and how to seed fake backend data and community branding without inventing storage.
 
 ## 9. Manifest Update
 
@@ -93,12 +109,24 @@ Stamp A5 tests and resolve pending counterpart tests involving engine consumers/
 
 ## 10. API Review
 
-Create `Phase A5 - API Review.md`. Record OpenAPI specs for runtime, event bus interactions, rules,
-workflows, jobs, functions, schemas, and secrets/connectors.
+Create `Phase A5 - API Review.md`. Record OpenAPI/specs for runtime, event bus interactions, rules,
+workflows, jobs, functions, schemas, secrets/connectors, extension package manifests, and
+initialization package payloads. Include locked package directory contracts, asset manifest schema,
+asset hash/dimension/format limits, and initialization branding schema.
 
 ## 11. Definition of Done
 
 A5 tests, regressions, manifest, Skill guides, API Review, tracker, and commit SHA complete.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 12. Next Phase
 

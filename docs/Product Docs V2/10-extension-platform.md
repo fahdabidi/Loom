@@ -27,7 +27,7 @@ governance is Product 19; App Shell rendering is Product 15.
 
 | Feature | Definition | Product value | Interacting areas |
 | --- | --- | --- | --- |
-| Extension package | `loom.extension.json` plus UI, schemas, rules, workflows, jobs, tests, and fixtures. | Custom apps become portable artifacts. | 11, 16, 19 |
+| Extension package | `loom.extension.json` plus UI, assets, schemas, rules, workflows, jobs, tests, and fixtures. | Custom apps become portable artifacts. | 11, 16, 19 |
 | Runtime bridge | Permissioned session bridge for API calls, events, and UI context. | Extensions never receive raw credentials or direct DB access. | 05, 15 |
 | Four backend levels | Config, declarative rules, workflows/jobs, and sandboxed functions. | Most vertical logic avoids bespoke services. | 08, 11 |
 | Data schema store | Extension-defined entities stored, permissioned, audited, and exported by Loom. | Custom data does not create lock-in. | 14, 21 |
@@ -38,14 +38,117 @@ governance is Product 19; App Shell rendering is Product 15.
 
 ## 4. Extension Package Model
 
-The package contains:
+The locked package shape is two downloadable artifacts: a runtime extension package and an
+initialization package.
+
+```text
+<extension-id>.loom-extension.zip
+  loom.extension.json
+  ui/
+    cards/
+    routes/
+    assets/
+    webview/
+  assets/
+    brand/
+      extension-icon.png
+      default-community-logo.png
+      default-card-image.png
+      default-hero-image.png
+    images/
+    icons/
+    thumbnails/
+  schemas/
+  rules/
+  workflows/
+  jobs/
+  functions/
+  fixtures/
+  tests/
+  docs/
+  signatures/
+    manifest.hash
+    build-attestation.json
+
+<extension-id>.loom-init.zip
+  loom.initialization.json
+  seed/
+    assets/
+  fixtures/
+  import-plan.json
+```
+
+The runtime package contains:
 
 - Manifest: id, version, community type, surfaces, permissions, event subscriptions, risk tier, export
-  behavior, compatibility, and certification metadata.
-- UI: declarative cards/routes, assets, and optional WebView mini-app bundle.
+  behavior, compatibility, certification metadata, asset declarations, and card presentation defaults.
+- UI: declarative cards/routes, bundled assets, and optional WebView mini-app bundle.
+- Assets: extension icon, default community logo, default card image, default hero image, image/icon
+  libraries, thumbnails, hashes, dimensions, and alt/decorative metadata.
 - Backend declarations: config, rules, workflows, jobs, data schemas, and optional functions.
 - Fixtures and tests: seed data, validation tests, workflow tests, and permission-negative tests.
 - Documentation: owner install notes, member-facing data-use explanations, and export support.
+
+The initialization package contains community-instance data:
+
+- Community profile: display name, tagline, category, handle suggestion, locale/time zone defaults.
+- Community branding: logo, card image, hero image, accent color, and image metadata.
+- Seed data: spaces, initial roles, initial records, rules, workflows, jobs, and fixtures.
+- Import plan: idempotency keys, import order, rollback expectations, and report fields.
+
+The extension package provides defaults. The initialization package provides community-specific
+personalization for a concrete installed community. Local-demo mode must not depend on remote images.
+
+### 4.1 Card Presentation and Branding
+
+Community cards are rendered by the Loom App Shell, not by arbitrary extension UI. Packages may provide
+metadata and assets, but the shell owns card layout, badges, required controls, accessibility, and
+fallbacks.
+
+The card image priority is:
+
+1. Community-specific `branding.cardImage` imported from `loom.initialization.json`.
+2. Community-specific `branding.logo`.
+3. Extension `assets.brand.defaultCardImage`.
+4. Generated fallback from community initials, category, and accent color.
+
+`loom.extension.json` must declare extension-level defaults:
+
+```json
+{
+  "assets": {
+    "extensionIcon": "assets/brand/extension-icon.png",
+    "defaultCommunityLogo": "assets/brand/default-community-logo.png",
+    "defaultCardImage": "assets/brand/default-card-image.png",
+    "defaultHeroImage": "assets/brand/default-hero-image.png"
+  },
+  "cardPresentation": {
+    "template": "standard-community-card",
+    "titleSource": "community.displayName",
+    "subtitleSource": "community.tagline",
+    "imageSource": "community.branding.cardImage",
+    "fallbackImage": "assets/brand/default-card-image.png"
+  }
+}
+```
+
+`loom.initialization.json` may override community instance branding:
+
+```json
+{
+  "community": {
+    "displayName": "Oak Street Book Club",
+    "tagline": "Monthly reads and neighborhood discussions",
+    "category": "book-club",
+    "branding": {
+      "logo": "seed/assets/oak-book-club-logo.png",
+      "cardImage": "seed/assets/oak-book-club-card.png",
+      "heroImage": "seed/assets/oak-book-club-hero.png",
+      "accentColor": "#3E6B58"
+    }
+  }
+}
+```
 
 ## 5. Backend Extensibility Levels
 
@@ -116,6 +219,9 @@ should receive stable APIs, fakes, validators, and certification feedback.
 
 - Extensions use Loom APIs only; no direct database, vault, payment, ad, or identity access.
 - Every package must declare export behavior for custom schemas.
+- Every package asset must be local, hashed, size-limited, format-limited, and declared in the package
+  manifest before local-demo validation can pass.
+- Community card branding is shell-rendered and follows the locked image priority above.
 - Rules, workflows, jobs, and functions are versioned and auditable.
 - Certification must test required App Shell structure and ad-surface invariants.
 - Provider-neutral fakes must be available for all dependencies.

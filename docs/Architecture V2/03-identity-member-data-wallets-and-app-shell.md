@@ -51,7 +51,7 @@ flowchart TB
 | Field | Meaning |
 | --- | --- |
 | `memberIdentity` | Passport id, keys, recovery state, selected persona, account assurance. |
-| `appShellContext` | App version, community card, route, surface, nav/ad/payment/data-dashboard state. |
+| `appShellContext` | App version, community card, branding assets, route, surface, nav/ad/payment/data-dashboard state. |
 | `vaultContext` | Core vault scopes, protected class, retention, redaction policy, access purpose. |
 | `consentContext` | Requested fields, owner approval, role, member consent, safety invariant, grant version. |
 | `walletContext` | Payment intent, entitlement, dues/donation/ad-off state, receipt refs. |
@@ -127,15 +127,16 @@ Single responsibility: own community cards, required nav, route hosting, stream 
 Interface contract: CommunityAppShellApi (v1), in loom_api_contracts (T2)
 Capabilities (testable sub-units):
   - community cards -> resolveCard/renderCard -> vt_app-shell_cards
+  - card branding -> resolveCardBranding/renderBrandingFallback -> vt_community-card_branding-priority
   - nav panel -> renderNavigationPanel -> vt_app-shell_required-nav
   - routes -> openExtensionRoute -> vt_app-shell_route-host
   - ad slots -> renderTopAdSlot/renderStreamAdItem -> vt_app-shell_ad-slots
   - payment/consent surfaces -> renderPaymentSurface/renderConsentPrompt -> vt_app-shell_shell-owned-surfaces
-Owned data: CommunityCardCache, RouteMountState, NavigationPanelState, ShellSurfaceState (T1)
+Owned data: CommunityCardCache, CommunityCardAssetCache, RouteMountState, NavigationPanelState, ShellSurfaceState (T1)
 Dependencies (by contract + fake): CommunityPassportApi (fake), CommunityRegistryApi (fake), CommunityExtensionRuntimeApi (fake), CommunityAdsApi (fake), CommunityWalletApi (fake) (T3)
 Events emitted: shell.route.opened, shell.ad-slot.rendered   Events consumed: extension.certified, entitlement.ad-off.updated (T8)
 Blast radius / scoped change: App Shell UI contracts only; no service storage writes. (T5)
-Integration tests: conformance plus cards, nav, routes, ad slots, shell-owned surfaces. (T6)
+Integration tests: conformance plus cards, card branding priority, nav, routes, ad slots, shell-owned surfaces. (T6)
 Agent workpackage: UI micro-component accepts typed props/fakes; tests prove invariants locally. (T9/T10)
 ```
 
@@ -155,11 +156,11 @@ Agent workpackage: UI micro-component accepts typed props/fakes; tests prove inv
 
 | Step | Packet action | Owning component | Covering test |
 | --- | --- | --- | --- |
-| 1 | App opens handle/QR/invite context. | App Shell Runtime | `vt_app-shell_cards` |
+| 1 | App opens handle/QR/invite context and resolves card branding. | App Shell Runtime | `vt_app-shell_cards`, `vt_community-card_branding-priority` |
 | 2 | Passport is created or resolved. | Passport Ledger | `vt_passport_create-resolve` |
 | 3 | Persona/default visibility is selected. | Passport Ledger | `vt_passport_persona` |
 | 4 | Core vault stores app preferences and grant pointers. | Core Member Vault | `vt_core-vault_preferences` |
-| 5 | App Shell renders community card and required nav. | App Shell Runtime | `vt_app-shell_required-nav` |
+| 5 | App Shell renders branded community card and required nav. | App Shell Runtime | `vt_app-shell_required-nav`, `vt_community-card_branding-priority` |
 
 ### 7.2 `03/W3`: Protected Data Write and Read
 
@@ -190,6 +191,8 @@ Agent workpackage: UI micro-component accepts typed props/fakes; tests prove inv
   the request.
 - Ad-off or sensitive no-fill must preserve layout without letting extensions draw fake ad surfaces.
 - Revoked extension versions must stop route rendering at the App Shell before runtime starts.
+- Invalid or missing community-card images fall back to logo, then extension default card image, then
+  generated initials/category/accent-color fallback.
 
 ## 9. How These Components Adhere To The Tenets
 
@@ -204,7 +207,7 @@ Agent workpackage: UI micro-component accepts typed props/fakes; tests prove inv
 | T7 | Identity, vault, wallet, and shell actions are idempotent/versioned/audited. |
 | T8 | State changes emit typed events for consent, vault, entitlement, and route changes. |
 | T9 | Each card can be assigned to one agent with local acceptance tests. |
-| T10 | App Shell is explicitly decomposed into UI micro-components with tests. |
+| T10 | App Shell is explicitly decomposed into UI micro-components with tests, including shell-owned card branding. |
 
 ## 10. Open Architecture Questions
 

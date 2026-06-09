@@ -11,6 +11,7 @@ Gate: `wf_ad-off` plus affected component regressions pass.
 
 - B6 complete and committed.
 - Wallet, ad decision, receipt, settlement, and payment-surface tests are current.
+- Workflow validation target is the Demo Loom Communities App with the Local Backend.
 
 ## 1. Workflows and End States
 
@@ -65,6 +66,16 @@ utility-funding gaps.
 
 Ad-off workflow passes, regressions pass, Skill updated, manifest current, UX/API docs filed, tracker
 and commit SHA recorded.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 10. Next Phase
 

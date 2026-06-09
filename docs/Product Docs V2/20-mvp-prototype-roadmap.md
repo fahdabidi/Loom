@@ -8,9 +8,9 @@ Predecessor: [Loom V1 MVP / Prototype Roadmap](../Product%20Docs/20-mvp-prototyp
 ## 1. Product Definition
 
 The MVP proves the V2 thesis: an owner can create a community, use the Skill to generate a custom
-extension, publish/install it into the Main Loom App, onboard members by handle/QR/invite, run real
-community workflows, accept payments or donations where needed, enforce data rights, show required ad
-surfaces or ad-off, and export/migrate state.
+extension, validate it locally in the Demo Loom Communities App, publish/install it into the Main Loom
+App, onboard members by handle/QR/invite, run real community workflows, accept payments or donations
+where needed, enforce data rights, show required ad surfaces or ad-off, and export/migrate state.
 
 The MVP is not a full marketplace or production-scale backend. It is a coherent end-to-end prototype
 across several verticals that exercises the platform primitives.
@@ -27,7 +27,7 @@ separate under Build Plan V2.
 | --- | --- |
 | Community creation | Owner creates community, handle, QR, profile, roles, and spaces. |
 | Main Loom App | Member sees community card, nav panel, Messages, Connections, ads, and extension UI. |
-| Skill-built extension | Skill generates package, fixtures, tests, and installable artifact. |
+| Skill-built extension | Skill prepares a Codex or Claude Code validation environment, then generates package, bundled branding assets, fixtures, tests, and installable artifact. |
 | Extension runtime | Rules/workflows/jobs call fixed Loom APIs through runtime bridge. |
 | Payments | Dues/donations/tickets/ad-off use wallet and receipts, even if payment is simulated. |
 | Protected vault | Minor/donor/care/confidential records use protected policy. |
@@ -56,7 +56,7 @@ Required components:
 - Publishing, Messaging, Notifications, Events, Forms/Voting, Case/Task, Documents, Facilities.
 - Wallet/Dues/Donations, Receipt Ledger, Settlement Simulator, Ads Service.
 - Search/AI digest, Import/Export, Trust/Safety, Certification.
-- Skill skeleton with component/workflow guides and examples.
+- Skill skeleton with component/workflow guides, setup/prereq manifest, validation environment lock, and examples.
 
 ## 6. User Stories
 
@@ -68,36 +68,47 @@ Required components:
 
 ## 7. End-to-End Prototype Workflows
 
-### Workflow 1: Build, publish, discover, install
+### Workflow 1: Local build, download, sideload, install
 
 1. Owner describes community to Skill.
-2. Skill outputs package, tests, fixtures, and docs.
-3. Validator/certification pass.
+2. Skill verifies Codex or Claude Code prereqs and writes the validation environment lock.
+3. Skill outputs downloadable extension package, initialization package, bundled logo/card/hero assets,
+   tests, fixtures, and docs.
+4. Demo App starts empty.
+5. Owner uses `Add Community` to load the local package and initialization package.
+6. Fake backend imports the initialization package into local DB.
+7. Member opens the new branded community card and runs the latest local extension.
+
+### Workflow 2: Build, publish, discover, install
+
+1. Owner describes community to Skill.
+2. Skill outputs publish-ready package, backend initialization payload, tests, fixtures, and docs.
+3. Validator/certification pass through local stubs/contracts first.
 4. Community gets handle/QR.
 5. Member scans, joins, and opens latest certified extension.
 
-### Workflow 2: Book club headline flow
+### Workflow 3: Book club headline flow
 
 1. Owner creates club and meeting cadence.
 2. Members nominate books and vote.
 3. Winning book creates event and discussion thread.
 4. Digest/search can summarize permitted discussion.
 
-### Workflow 3: Youth soccer headline flow
+### Workflow 4: Youth soccer headline flow
 
 1. Parent joins team space.
 2. Registration collects guardian/minor data in protected vault.
 3. Fee payment records entitlement/receipt.
 4. Coach sees roster and schedule within role policy.
 
-### Workflow 4: HOA headline flow
+### Workflow 5: HOA headline flow
 
 1. Member pays dues.
 2. Member submits architectural request with attachments.
 3. Committee workflow reviews and decides.
 4. Decision, documents, and audit are exportable.
 
-### Workflow 5: Mosque headline flow
+### Workflow 6: Mosque headline flow
 
 1. Member joins mosque and relevant spaces.
 2. Member donates with donor visibility.
@@ -111,7 +122,8 @@ Required components:
 3. Experience services: publishing, messaging, events, forms, payments, ads, search.
 4. Extension engines: runtime, rules, workflows, jobs, schemas.
 5. UX micro-components: app shell, cards, nav, stream, connections, payments, ad slots.
-6. Workflows: build/publish/install and vertical demos.
+6. Workflows: local build/download/sideload/install, publish/discover/install through local stubs, and
+   vertical demos.
 
 ## 9. Explicit Deferrals
 
@@ -120,13 +132,15 @@ Required components:
 - External provider marketplace can start with fake providers and scorecards.
 - Third-party apps can wait until Main Loom App proves the shell.
 - Sandboxed functions can be limited to one or two examples.
+- Online-only Skill execution can wait until Loom has a hosted build and validation backend.
 
 ## 10. Success Criteria
 
 - Each anchor vertical runs end-to-end in the Main Loom App.
 - Required App Shell structure and ads/ad-off are visible.
 - Protected data, consent, and search exclusions are demonstrable.
-- Extension package validates and can update to latest.
+- Extension package validates locally with a current validation environment lock, bundled assets,
+  branded card rendering, and update-to-latest behavior.
 - Export includes community, membership, payments, receipts, and extension data.
 
 ## 11. FAQ

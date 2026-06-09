@@ -167,7 +167,7 @@ flowchart TB
 
 | Component | Responsibility | Primary interfaces and outputs |
 | --- | --- | --- |
-| AI Skill / Extension Builder | Generates extension packages from an owner description; registers builder App IDs; publishes packages. | Emits `CommunityExtensionManifest` + package; calls publish/validate/certify; returns QR/handle. |
+| AI Skill / Extension Builder | Generates extension packages from an owner description; supports local-demo and real-backend-publish modes. See [Architecture 13](./13-ai-skill-extension-builder-architecture.md). | Emits extension package + initialization package; validates locally; publish mode calls publish/validate/certify contracts through fakes before hosted use. |
 | Main Loom App + App Shell | Member-facing app: auth, community cards, the required nav panel (Messages + Connections), top ad banner, route rendering, and the JS bridge. | Calls registry, runtime, messaging, ads, connections; renders declarative cards/routes + WebView mini-apps. |
 | Owner / Admin Console | Owner surface for community creation, permission approval, members/roles/spaces, payments, moderation, ad-off, export. | Calls registry, role/policy, wallet, trust/safety, import/export. |
 | Builder Console | Builder surface for App ID, package validation, certification status, versions. | Calls extension registry + certification. |

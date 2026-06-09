@@ -53,6 +53,7 @@ flowchart TB
 | Field | Meaning |
 | --- | --- |
 | `extensionContext` | Extension id/version, package signature, certification state, install grant. |
+| `assetContext` | Declared asset path, hash, dimensions, format, alt/decorative metadata, local-demo availability. |
 | `sessionContext` | Community, space, member, route, surface, runtime session id, idempotency key. |
 | `capabilityContext` | Requested capability, owner approval, role, consent, safety, platform invariant. |
 | `eventContext` | Event type, source component, version, payload, dedupe key. |
@@ -72,6 +73,8 @@ flowchart TB
 | `CommunityFunctionRuntimeApi` | Sandboxed functions with bounded permissions. |
 | `CommunityDataSchemaApi` | Extension schemas, records, validation, export/index policy. |
 | `CommunitySecretsConnectorApi` | External secrets/connectors for high-tier packages. |
+| `CommunityExtensionPackageApi` | Validate locked extension package shape, assets, manifests, signatures, and App Shell invariants. |
+| `CommunityInitializationPackageApi` | Validate initialization package shape, community branding, seed data, idempotency, and import reports. |
 
 ## 5. Component Contract Cards
 
@@ -155,6 +158,73 @@ Integration tests: conformance plus register, records, export-index suites. (T6)
 Agent workpackage: schema and record behavior can be implemented against policy/search/audit fakes. (T9)
 ```
 
+```text
+Component: Extension Package Validator      Layer: engine
+Single responsibility: validate and attest the locked `.loom-extension.zip` package format. (T1)
+Interface contract: CommunityExtensionPackageApi (v1), in loom_api_contracts (T2)
+Capabilities (testable sub-units):
+  - shape -> validatePackageShape -> vt_extension-package_downloadable-shape
+  - assets -> validateAssetManifest -> vt_extension-package_asset-manifest
+  - asset policy -> validateAssetPolicy -> vt_extension-package_asset-policy
+Owned data: PackageValidationReport, AssetManifest, PackageAttestation (T1)
+Dependencies (by contract + fake): CommunityCertificationApi (fake), file/archive reader fake, App Shell invariant fake (T3)
+Events emitted: extension-package.validated, extension-package.rejected   Events consumed: certification.policy.updated (T8)
+Blast radius / scoped change: validation reports and attestations only; package contents remain immutable inputs. (T5)
+Integration tests: package shape, asset manifest, asset policy, signature/hash, App Shell invariant suites. (T6)
+Agent workpackage: validator can be built against package fixtures and certification fakes. (T9)
+```
+
+```text
+Component: Initialization Package Schema     Layer: engine
+Single responsibility: validate and describe the `.loom-init.zip` package used to seed local or hosted backends. (T1)
+Interface contract: CommunityInitializationPackageApi (v1), in loom_api_contracts (T2)
+Capabilities (testable sub-units):
+  - schema -> validateInitializationSchema -> vt_initialization-package_schema
+  - idempotency -> validateImportIdempotency -> vt_initialization-package_idempotency
+  - community branding -> validateCommunityBranding -> vt_initialization-package_community-branding
+Owned data: InitializationValidationReport, ImportPlan, CommunityBrandingSeed (T1)
+Dependencies (by contract + fake): CommunityRegistryApi (fake), CommunitySpacesApi (fake), LocalLoomBackendApi (fake), file/archive reader fake (T3)
+Events emitted: initialization-package.validated, initialization-package.rejected   Events consumed: none (T8)
+Blast radius / scoped change: validation report only; import happens through registry/local backend APIs. (T5)
+Integration tests: schema, idempotency, branding, import-plan, rollback-report suites. (T6)
+Agent workpackage: schema can be built against deterministic init package fixtures. (T9)
+```
+
+## 5.1 Locked Package Format
+
+Extension packages and initialization packages are immutable zip artifacts.
+
+```text
+<extension-id>.loom-extension.zip
+  loom.extension.json
+  ui/
+  assets/
+    brand/
+    images/
+    icons/
+    thumbnails/
+  schemas/
+  rules/
+  workflows/
+  jobs/
+  functions/
+  fixtures/
+  tests/
+  docs/
+  signatures/
+
+<extension-id>.loom-init.zip
+  loom.initialization.json
+  seed/
+    assets/
+  fixtures/
+  import-plan.json
+```
+
+Asset validation requires local files for `local-demo`, declared hashes, allowed formats, file-size
+limits, image dimensions, alt/decorative metadata, and safe fallbacks. Remote image dependencies are
+not valid for local-demo validation.
+
 ## 6. Workflow Transaction Packet Models
 
 | Ref | Trigger | Primary path | Durable writes / receipts | Completion response |
@@ -164,6 +234,7 @@ Agent workpackage: schema and record behavior can be implemented against policy/
 | `08/W3` | Workflow starts. | Rule/Runtime -> Workflow Engine -> Services. | Workflow instance, transitions. | State updated. |
 | `08/W4` | Scheduled job fires. | Job Scheduler -> Rule/Workflow. | Job execution record. | Rule/workflow invoked. |
 | `08/W5` | Extension record exported. | Data Schema Store -> Import/Export. | Export package records. | Portable custom data delivered. |
+| `08/W6` | Package is validated. | Package Validator -> Certification/App Shell invariant checks. | Validation report and attestation. | Package accepted or rejected. |
 
 ## 7. Step-by-Step Life of a Packet Overlays
 
@@ -205,21 +276,23 @@ Agent workpackage: schema and record behavior can be implemented against policy/
 - Job scheduler must not execute disabled/uninstalled extension jobs.
 - Data schema export must include schema version and deny unexportable/protected classes with typed
   reasons.
+- Package asset validation fails if required branding assets are missing, remote-only, too large,
+  unsupported, hash-mismatched, dimension-invalid, or missing accessibility metadata.
 
 ## 9. How These Components Adhere To The Tenets
 
 | Tenet | How it is met here |
 | --- | --- |
-| T1 | Runtime, event bus, rules, workflows, jobs/functions, and schema store own separate state. |
+| T1 | Runtime, event bus, rules, workflows, jobs/functions, schema store, package validator, and initialization schema own separate state. |
 | T2 | Engine entry points are typed contracts. |
 | T3 | Every dependency has a fake. |
 | T4 | Engine calls service/registry/foundation layers; upward effects arrive via Event Bus. |
 | T5 | Service mutations are only through Runtime Bridge contracts. |
-| T6 | Every capability lists validation suites. |
+| T6 | Every capability lists validation suites, including package shape and asset-policy suites. |
 | T7 | Sessions, events, rules, workflows, jobs, and schemas are versioned/audited/idempotent. |
 | T8 | Event Bus is the decoupling mechanism. |
 | T9 | Each engine component is assignable to one agent. |
-| T10 | Runtime receives UX surface context from App Shell instead of owning shell UI. |
+| T10 | Runtime receives UX surface context from App Shell instead of owning shell UI; card presentation remains shell-owned. |
 
 ## 10. Open Architecture Questions
 

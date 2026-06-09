@@ -8,9 +8,10 @@ Gate: `wf_book-club-headline` plus affected component regressions pass.
 
 ## 0. Prerequisite Gate
 
-- B1 complete and committed.
+- B1b complete and committed.
 - Manifest current for all components in the workflow.
-- Book club example package from B1 is available.
+- Book club local and hosted package fragments from B1a/B1b are available.
+- Workflow validation target is the Demo Loom Communities App with the Local Backend.
 
 ## 1. Workflows and End States
 
@@ -66,6 +67,16 @@ contract gaps.
 
 Book club workflow passes, regressions pass, Skill/example updated, manifest current, UX/API docs
 filed, tracker and commit SHA recorded.
+
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
 
 ## 10. Next Phase
 

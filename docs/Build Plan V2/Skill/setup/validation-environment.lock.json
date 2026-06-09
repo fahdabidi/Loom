@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "status": "not-run",
+  "executionTarget": null,
+  "generatedAt": null,
+  "repoRoot": null,
+  "skillMode": null,
+  "tools": {},
+  "validationReady": false,
+  "smokeChecks": [],
+  "notes": [
+    "This file is a Phase 0 placeholder. B1a replaces it with host-specific tool versions and smoke evidence."
+  ]
+}

@@ -99,6 +99,16 @@ notifications, events, and forms/voting.
 
 A3 tests, regressions, manifest, Skill guides, API Review, tracker, and commit SHA complete.
 
+## Commit Gate
+
+Before starting the next phase:
+
+- Stage only this phase's intended changes.
+- Run `git diff --staged` and confirm the staged scope matches this phase.
+- Commit the phase changes.
+- Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
+- Do not begin the next phase until the commit exists and the tracker points to it.
+
 ## 12. Next Phase
 
 Proceed to [Phase A4a - Service Components II (Ops and Community).md](./Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md).

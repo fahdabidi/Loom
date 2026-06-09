@@ -44,12 +44,14 @@ relevant role plus an explicit policy.
 - Register with the Skill → create an App ID → log in with a Loom Identity (or create one).
 - Create the community: Loom assigns a `communityId`; the owner picks a friendly, unique handle
   (e.g. `@sunset-ridge-hoa`) members will search by.
-- Set type, visibility (public/private/secret), and location scope.
+- Set type, visibility (public/private/secret), location scope, display name, tagline, logo, card
+  image, hero image, and accent color.
 
 ### 4.2 Build with AI or install an extension
 
 - Describe the community to the Skill ("an HOA with dues, architectural review, board votes, and a
   document library"); the Skill generates the extension package.
+- Review generated branding assets and card preview before approving the first build.
 - Or pick a certified marketplace extension and configure it.
 - Loom validates and certifies the package; the owner reviews requested permissions, surfaces, and
   rules in plain language and approves.

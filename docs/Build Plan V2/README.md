@@ -13,7 +13,12 @@ V2 changes the ordering. It is component-first, then workflow-first:
 
 1. **Phase 0** initializes rules, manifest, gates, workspace scaffolds, tracker, and the Skill.
 2. **Set A** builds micro-components bottom-up by Architecture V2 layer.
-3. **Set B** runs end-to-end workflows and fixes issues by routing each fix to the owning component.
+3. **Set B** runs end-to-end workflows against the Demo Loom Communities App with the Local Backend and
+   fixes issues by routing each fix to the owning component. The first workflow is local-only:
+   generate a downloadable extension and initialization package, load it into the Demo App from the
+   emulator file system, seed the fake backend, and run without a hosted backend. The real-backend
+   publishing mode is also validated through local backend stubs/contracts before any external backend
+   is required.
 
 ## Control Artifacts
 
@@ -25,6 +30,8 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | [Build Tracker.md](./Build%20Tracker.md) | Phase status, gate evidence, component versions, and commit SHAs. |
 | [Skill/SKILL.md](./Skill/SKILL.md) | Provider-neutral Loom extension-building Skill wrapper. |
 | [Skill/using-loom-to-build-an-extension.md](./Skill/using-loom-to-build-an-extension.md) | Master walkthrough the Skill follows. |
+| [Skill/setup/system-prereqs.md](./Skill/setup/system-prereqs.md) | Local setup and validation-ready contract for Codex and Claude Code execution targets. |
+| [Skill/setup/prereq-manifest.json](./Skill/setup/prereq-manifest.json) | Machine-readable setup manifest for required validation tools. |
 
 ## Phase Index
 
@@ -38,7 +45,8 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | A4b | [Phase A4b - Service Components III (Economic Search and Ads).md](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Components | Economic/search/ad-service tests to/from built providers pass. |
 | A5 | [Phase A5 - Extension Engine Components.md](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Components | Engine tests and provider/consumer contract tests pass. |
 | A6 | [Phase A6 - UX Components.md](./Phases/Phase%20A6%20-%20UX%20Components.md) | Components | UX micro-component, visual, invariant, and contract tests pass. |
-| B1 | [Phase B1 - Build, Publish, Discover, Install.md](./Phases/Phase%20B1%20-%20Build%20Publish%20Discover%20Install.md) | Workflows | Workflow and affected component regressions pass. |
+| B1a | [Phase B1a - Local Build Download Sideload Install.md](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Workflows | Skill prereq setup, local package, init package, fake backend import, and app sideload pass. |
+| B1b | [Phase B1b - Publish Discover Certify Install.md](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Workflows | Hosted publish/certify/discover/install workflow and regressions pass. |
 | B2 | [Phase B2 - Book Club Headline Flow.md](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Workflows | Book club workflow and regressions pass. |
 | B3 | [Phase B3 - Youth Soccer Headline Flow.md](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Workflows | Youth soccer workflow and regressions pass. |
 | B4 | [Phase B4 - HOA Headline Flow.md](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | Workflows | HOA workflow and regressions pass. |
@@ -58,10 +66,18 @@ Baseline commands:
 | Purpose | Command |
 | --- | --- |
 | Bootstrap | `melos bootstrap` |
+| Skill prereq setup | `dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo` |
+| Skill prereq check | `dart run packages/tooling/skill_prereq_check.dart --mode local-demo` |
 | Analyze | `melos run analyze` |
 | Boundary lints | `melos run lint:boundaries` |
 | Unit tests | `melos run test` |
 | Integration tests | `melos run test:integration` |
+| Extension package validation | `melos run validate:extension` |
+| Extension asset validation | `melos run validate:extension-assets` |
+| Initialization package validation | `melos run validate:initialization` |
+| Local demo sideload workflow | `melos run test:demo-local` |
+| Local validation-ready workflow | `melos run test:demo-local-prereq` |
+| Workflow validation target | `melos run test:workflows:demo-local` |
 | Manifest gate | `dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build Plan V2/test-manifest.json` |
 | Phase gate | `dart run packages/tooling/phase_gate.dart --phase <phase>` |
 
@@ -77,4 +93,5 @@ Every phase creates or updates:
 
 A phase is complete only when [Rules.md](./Rules.md) R12 is satisfied: tests green, manifest current,
 staleness gate green, Skill updated, API Review filed, UX Decisions filed where applicable, Build
-Tracker updated, and commit SHA recorded.
+Tracker updated, phase changes committed, and commit SHA recorded. Do not start the next phase until
+the prior phase commit exists and is recorded in the tracker.

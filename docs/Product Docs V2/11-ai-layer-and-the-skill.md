@@ -19,15 +19,15 @@ contracts, examples, and validation feedback, then outputs a compliant extension
 
 This area covers runtime AI features, AI gateway policy, prompt/source attribution, permission-aware
 retrieval, the Skill knowledge base, extension generation, validation loops, examples, provider-neutral
-operation across LLMs, and certification feedback. Extension runtime is Product 10; search/discovery is
-Product 13; protected data and consent are Product 14.
+artifact conventions, local execution targets, and certification feedback. Extension runtime is
+Product 10; search/discovery is Product 13; protected data and consent are Product 14.
 
 ## 3. Key Features and Differentiators
 
 | Feature | Definition | Product value | Interacting areas |
 | --- | --- | --- | --- |
-| Provider-neutral Skill | `SKILL.md` plus process docs, examples, component guides, workflow guides, and validation commands. | Owners can use ChatGPT, Claude, Gemini, or a developer workflow. | 10, 16, 20 |
-| AI extension authoring | Converts owner intent into manifests, cards, routes, schemas, rules, workflows, jobs, fixtures, and tests. | Custom community apps become practical for non-developers. | 02, 10 |
+| Provider-neutral Skill | `SKILL.md` plus process docs, examples, component guides, workflow guides, setup manifest, and validation commands. | Owners can use a supported local agent first: Codex or Claude Code. Online-only support waits for a hosted build/validation backend. | 10, 16, 20 |
+| AI extension authoring | Converts owner intent into manifests, cards, routes, bundled assets, schemas, rules, workflows, jobs, fixtures, and tests. | Custom community apps become practical for non-developers. | 02, 10 |
 | Permission-aware AI | Retrieval and generation respect role, consent, protected vault, search policy, and export state. | AI does not become a data bypass. | 05, 13, 14 |
 | Source attribution | AI outputs keep source pointers and policy context. | Members and admins can verify answers and dispute misuse. | 17 |
 | Validation loop | AI output is checked by package validator, certification rules, tests, and App Shell lint. | Generated code is governed by contracts, not trust in the model. | 16, 19 |
@@ -46,12 +46,16 @@ The Skill guides an LLM through this process:
 
 1. Understand the trust boundary: Loom owns identity, roles, payments, vaults, ads, audit, and export;
    the extension owns experience and domain logic.
-2. Choose community type, surfaces, and required shell structure.
-3. Declare minimal permissions.
-4. Compose fixed Loom APIs through config, rules, workflows, jobs, and optional functions.
-5. Author cards, routes, schemas, fixtures, and tests.
-6. Run validator and certification checks.
-7. Publish, QR/install, run latest, and update safely.
+2. Prepare the supported local execution environment, currently Codex or Claude Code, using the Skill
+   setup manifest and validation environment lock.
+3. Choose community type, surfaces, and required shell structure.
+4. Collect or generate owner-approved branding: logo, card image, hero image, accent color, and alt
+   text/decorative metadata.
+5. Declare minimal permissions.
+6. Compose fixed Loom APIs through config, rules, workflows, jobs, and optional functions.
+7. Author cards, routes, assets, schemas, fixtures, and tests.
+8. Run validators, local Demo App workflow tests, and certification checks.
+9. Publish, QR/install, run latest, and update safely.
 
 The Skill should reference API specs and Architecture V2 cards rather than duplicating them.
 
@@ -81,11 +85,12 @@ only after certification and should understand what data any AI feature uses.
 ### Workflow 1: Owner builds extension with Skill
 
 1. Owner describes community, workflows, roles, and data sensitivity.
-2. Skill selects template and required Loom APIs.
-3. Skill emits manifest, routes, cards, schemas, rules, workflows, jobs, fixtures, and tests.
-4. Validator checks structure, permissions, shell invariants, export behavior, and test coverage.
-5. Owner previews and revises.
-6. Package is signed, certified, and installed.
+2. Skill verifies the Codex or Claude Code validation environment and writes an environment lock.
+3. Skill selects template, required Loom APIs, and branding asset requirements.
+4. Skill emits manifest, routes, cards, bundled assets, schemas, rules, workflows, jobs, fixtures, and tests.
+5. Validator checks structure, assets, permissions, shell invariants, export behavior, and test coverage.
+6. Owner previews and revises.
+7. Package is signed, certified, and installed.
 
 ### Workflow 2: Permission-aware AI answer
 
@@ -106,20 +111,27 @@ only after certification and should understand what data any AI feature uses.
 
 - AI must respect effective permissions, protected vault policy, and member consent.
 - Generated packages must pass the same validators as hand-written extensions.
+- Generated assets must be local, declared, hashed, size-limited, and accessible before local-demo
+  validation can pass.
 - The Skill must preserve App Shell required structure and monetization invariants.
+- The Skill must run local validation only from a supported execution target with a current validation
+  environment lock.
 - AI-generated code must be attributable to package versions and build attestations.
 - Skill examples must be kept current as a phase definition-of-done.
 
 ## 10. Prototype Implications
 
-The MVP needs a rough Skill skeleton, a book club extension generated through the Skill, a validator
-loop, a small prompt/source retrieval layer, one permission-aware digest/search demo, and component
-guides that point to Architecture V2 contract cards.
+The MVP needs a rough Skill skeleton, setup/prereq manifest, validation environment lock flow, a book
+club extension generated through the Skill, a validator loop, a small prompt/source retrieval layer,
+one permission-aware digest/search demo, and component guides that point to Architecture V2 contract
+cards.
 
 ## 11. FAQ
 
 **Is the Skill tied to one AI provider?**
-No. It is a provider-neutral instruction and artifact set.
+No. It is a provider-neutral instruction and artifact set. The first validation execution targets are
+local Codex and Claude Code environments because they can run the Demo App workflow checks. Online-only
+chat support is deferred until Loom has a hosted build/validation backend.
 
 **Can AI act without a user?**
 Only through declared jobs/workflows and certified permissions; autonomous actions still call Loom APIs
@@ -127,6 +139,7 @@ with role, consent, idempotency, and audit.
 
 ## 12. Open Questions
 
-- Which LLM/tooling surfaces should be officially tested first?
+- What hosted build/validation backend is required before online-only LLM surfaces can be officially
+  supported?
 - How should generated UI be constrained for accessibility and App Shell consistency?
 - What source-attribution policy is required for AI summaries in MVP?
