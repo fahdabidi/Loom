@@ -1,0 +1,23 @@
+name: loom_communities_demo
+description: Phase 0 scaffold for the Loom Communities demo app with a local backend.
+publish_to: none
+version: 0.1.0+1
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  loom_demo_local_backend:
+    path: ../../packages/core/loom_demo_local_backend
+  loom_extension_package:
+    path: ../../packages/core/loom_extension_package
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

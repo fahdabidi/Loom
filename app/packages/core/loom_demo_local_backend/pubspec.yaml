@@ -1,0 +1,12 @@
+name: loom_demo_local_backend
+description: Local in-app backend scaffold for the Loom Communities demo app.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  loom_extension_package:
+    path: ../loom_extension_package

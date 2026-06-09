@@ -31,7 +31,7 @@ support is deferred until a hosted Loom build and validation backend exists.
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Not started | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | TBD | TBD |
+| 0 | Blocked - prereq toolchain missing | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | Node checks pass for JSON, manifest refs, Skill prereqs, scaffold paths, and melos script registration; `dart`, `flutter`, and `melos` are not on PATH, so Dart gates were not executed. | Pending scaffold commit |
 | A1 | Not started | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | TBD | TBD |
 | A2 | Not started | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | TBD | TBD |
 | A3 | Not started | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | TBD | TBD |
@@ -84,6 +84,24 @@ support is deferred until a hosted Loom build and validation backend exists.
   Review is filed; tracker records SHA.
 - **Evidence to record:** Manifest parse output, prereq manifest parse output, placeholder lock parse
   output, gate placeholder output, created package paths, API Review path, Skill paths, commit SHA.
+
+#### Execution Record - 2026-06-08
+
+- **Created/confirmed scaffold:** `apps/loom_communities_demo`, `loom_extension_package`,
+  `loom_demo_local_backend`, `api_spec_inventory`, `loom_skill_prereq_setup`,
+  `loom_skill_debug_harness`, and top-level tooling scripts for manifest, phase, prereq setup, and
+  prereq check gates.
+- **Registered workspace entries:** Added the new V2 app/package namespaces to `app/pubspec.yaml`; added
+  melos commands for `manifest:gate`, `phase:gate`, `skill:prereq:check`, and `skill:prereq:setup`.
+- **Passed checks:** `test-manifest.json`, `prereq-manifest.json`, and
+  `validation-environment.lock.json` parse; manifest component/test references validate; Skill prereq
+  targets are `codex` and `claude-code`; required scaffold paths exist; melos gate scripts are present.
+- **Blocked checks:** `dart`, `flutter`, and `melos` are not available on PATH in this shell. `dart format`
+  and the Dart gate scripts could not run. A targeted SDK search under the user profile timed out.
+- **Next action:** Install or expose Dart/Flutter/melos per
+  [Skill/setup/system-prereqs.md](./Skill/setup/system-prereqs.md), then run `dart format`, `melos
+  bootstrap`, `melos run manifest:gate`, `melos run phase:gate`, `melos run skill:prereq:check`, and
+  `melos run skill:prereq:setup` before starting A1.
 
 ### Phase A1 - Foundation Components
 

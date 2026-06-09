@@ -1,0 +1,8 @@
+name: api_spec_inventory
+description: API specification inventory scaffold for Loom Communities V2.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5

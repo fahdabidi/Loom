@@ -1,0 +1,8 @@
+name: loom_skill_prereq_setup
+description: Skill prerequisite setup contract scaffold for Codex and Claude Code targets.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5

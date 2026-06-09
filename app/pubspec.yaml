@@ -9,12 +9,15 @@ dev_dependencies:
 
 workspace:
   - apps/loom_demo
+  - apps/loom_communities_demo
   - packages/core/loom_api_contracts
+  - packages/core/loom_app_shell
+  - packages/core/loom_demo_local_backend
+  - packages/core/loom_design_system
+  - packages/core/loom_extension_package
+  - packages/core/loom_fake_backend
   - packages/core/loom_local_store
   - packages/core/loom_seed_data
-  - packages/core/loom_fake_backend
-  - packages/core/loom_design_system
-  - packages/core/loom_app_shell
   - packages/features/fan/feature_fan_onboarding
   - packages/features/fan/feature_discovery
   - packages/features/fan/feature_creator_channel
@@ -37,7 +40,10 @@ workspace:
   - packages/features/creator/feature_creator_export
   - packages/features/creator/feature_creator_launch
   - packages/features/creator/feature_creator_customize
+  - packages/tooling/api_spec_inventory
   - packages/tooling/loom_lints
+  - packages/tooling/loom_skill_debug_harness
+  - packages/tooling/loom_skill_prereq_setup
 
 melos:
   scripts:
@@ -53,3 +59,15 @@ melos:
     lint:boundaries:
       run: dart run packages/tooling/loom_lints/bin/check_boundaries.dart
       description: Enforce feature and design-system import boundaries.
+    manifest:gate:
+      run: dart run packages/tooling/manifest_gate.dart
+      description: Validate the V2 test manifest and component/test references.
+    phase:gate:
+      run: dart run packages/tooling/phase_gate.dart
+      description: Validate the requested V2 phase gate.
+    skill:prereq:check:
+      run: dart run packages/tooling/skill_prereq_check.dart --mode local-demo
+      description: Check the Skill prerequisite manifest for local-demo validation.
+    skill:prereq:setup:
+      run: dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo
+      description: Print the Skill prerequisite setup plan for Codex local-demo execution.

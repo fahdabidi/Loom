@@ -20,3 +20,15 @@ scripts:
   lint:boundaries:
     run: dart run packages/tooling/loom_lints/bin/check_boundaries.dart
     description: Enforce feature and design-system import boundaries.
+  manifest:gate:
+    run: dart run packages/tooling/manifest_gate.dart
+    description: Validate the V2 test manifest and component/test references.
+  phase:gate:
+    run: dart run packages/tooling/phase_gate.dart
+    description: Validate the requested V2 phase gate.
+  skill:prereq:check:
+    run: dart run packages/tooling/skill_prereq_check.dart --mode local-demo
+    description: Check the Skill prerequisite manifest for local-demo validation.
+  skill:prereq:setup:
+    run: dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo
+    description: Print the Skill prerequisite setup plan for Codex local-demo execution.
