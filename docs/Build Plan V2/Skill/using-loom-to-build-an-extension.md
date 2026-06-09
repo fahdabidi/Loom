@@ -232,3 +232,7 @@ planning permissions, sensitive-data reads, package signing, or event-driven wor
 Phase A2 adds registry/control-plane guides for communities, spaces, membership, invitations,
 certification, extension versions, public discovery projections, workflow inventory, and manifest
 staleness. Use these before designing installation, discovery, or certification flows.
+
+Phase A3 adds experience-service guides for publishing, messaging, notifications, events, and
+forms/voting. Use these when implementing announcements, threads, RSVP flows, polls, or protected
+forms.

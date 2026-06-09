@@ -215,40 +215,40 @@
       "layer": "service",
       "phase": "A3",
       "contract": "CommunityEventsApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "dee493ff7d53",
+      "fakePresent": true
     },
     {
       "id": "forms-voting-service",
       "layer": "service",
       "phase": "A3",
       "contract": "CommunityFormsVotingApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "72bf23f58102",
+      "fakePresent": true
     },
     {
       "id": "messaging-stream-service",
       "layer": "service",
       "phase": "A3",
       "contract": "CommunityMessagingApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "709572cac272",
+      "fakePresent": true
     },
     {
       "id": "notification-service",
       "layer": "service",
       "phase": "A3",
       "contract": "CommunityNotificationApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "b7c57774de42",
+      "fakePresent": true
     },
     {
       "id": "publishing-service",
       "layer": "service",
       "phase": "A3",
       "contract": "CommunityPublishingApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "0e31d279bf88",
+      "fakePresent": true
     },
     {
       "id": "abuse-report-service",
@@ -1345,9 +1345,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "events-service": "dee493ff7d53"
+      },
       "lastRunAt": null
     },
     {
@@ -1362,11 +1364,14 @@
         "protected-visibility-vault"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "forms-voting-service": "72bf23f58102",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "ct_messaging__ad-decision_in-stream-insertion",
@@ -1381,9 +1386,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "messaging-stream-service": "709572cac272"
+      },
       "lastRunAt": null
     },
     {
@@ -1399,9 +1406,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "messaging-stream-service": "709572cac272"
+      },
       "lastRunAt": null
     },
     {
@@ -1417,9 +1426,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "notification-service": "b7c57774de42"
+      },
       "lastRunAt": null
     },
     {
@@ -1435,9 +1446,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "publishing-service": "0e31d279bf88"
+      },
       "lastRunAt": null
     },
     {
@@ -1453,9 +1466,11 @@
       ],
       "phase": "A3",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "f4d0a361a494",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "publishing-service": "0e31d279bf88"
+      },
       "lastRunAt": null
     },
     {
@@ -1469,11 +1484,13 @@
         "workflow-engine"
       ],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "events-service": "dee493ff7d53"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_events_ticketing",
@@ -1484,11 +1501,13 @@
       ],
       "dependents": [],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "events-service": "dee493ff7d53"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_forms-voting_poll-results",
@@ -1499,11 +1518,13 @@
       ],
       "dependents": [],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "forms-voting-service": "72bf23f58102"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_forms-voting_submit",
@@ -1517,11 +1538,14 @@
         "workflow-engine"
       ],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "forms-voting-service": "72bf23f58102",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_messaging_direct-group",
@@ -1532,11 +1556,13 @@
       ],
       "dependents": [],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "messaging-stream-service": "709572cac272"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_messaging_stream-render",
@@ -1550,11 +1576,13 @@
         "ad-decision-service"
       ],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "messaging-stream-service": "709572cac272"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_notification_deliver",
@@ -1568,11 +1596,13 @@
         "digest-service"
       ],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "notification-service": "b7c57774de42"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_publishing_publish",
@@ -1587,11 +1617,14 @@
         "stream-renderer"
       ],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "publishing-service": "0e31d279bf88",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "vt_publishing_visibility",
@@ -1602,11 +1635,13 @@
       ],
       "dependents": [],
       "phase": "A3",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "f4d0a361a494",
+      "lastRunTestHash": "f4d0a361a494",
+      "lastRunComponentVersions": {
+        "publishing-service": "0e31d279bf88"
+      },
+      "lastRunAt": "2026-06-09T16:00:00Z"
     },
     {
       "testId": "ct_case-task__workflow-engine_transition",

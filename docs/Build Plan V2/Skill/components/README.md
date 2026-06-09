@@ -39,3 +39,11 @@ Each guide must include:
 - [extension-registry.md](./extension-registry.md)
 - [certification-system.md](./certification-system.md)
 - [public-registry-read-model.md](./public-registry-read-model.md)
+
+## Phase A3 Guides
+
+- [publishing-service.md](./publishing-service.md)
+- [messaging-stream-service.md](./messaging-stream-service.md)
+- [notification-service.md](./notification-service.md)
+- [events-service.md](./events-service.md)
+- [forms-voting-service.md](./forms-voting-service.md)

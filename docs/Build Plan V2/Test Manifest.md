@@ -88,6 +88,27 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_membership__app-shell_member-state` | contract | membership-service | membership-service, app-shell-runtime | pending-counterpart |
 | `ct_public-registry__app-shell_trust-state` | contract | public-registry-read-model | public-registry-read-model, app-shell-runtime | pending-counterpart |
 
+## Phase A3 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_publishing_publish` | validation | publishing-service | publishing-service, role-policy-consent-engine | pass |
+| `vt_publishing_visibility` | validation | publishing-service | publishing-service | pass |
+| `vt_messaging_stream-render` | validation | messaging-stream-service | messaging-stream-service | pass |
+| `vt_messaging_direct-group` | validation | messaging-stream-service | messaging-stream-service | pass |
+| `vt_notification_deliver` | validation | notification-service | notification-service | pass |
+| `vt_events_rsvp` | validation | events-service | events-service | pass |
+| `vt_events_ticketing` | validation | events-service | events-service | pass |
+| `vt_forms-voting_submit` | validation | forms-voting-service | forms-voting-service, protected-visibility-vault | pass |
+| `vt_forms-voting_poll-results` | validation | forms-voting-service | forms-voting-service | pass |
+| `ct_forms-voting__protected-vault_sensitive-fields` | contract | forms-voting-service | forms-voting-service, protected-visibility-vault | pass |
+| `ct_publishing__search_index-visible-content` | contract | publishing-service | publishing-service, search-service | pending-counterpart |
+| `ct_publishing__stream-renderer_render-post` | contract | publishing-service | publishing-service, stream-renderer | pending-counterpart |
+| `ct_messaging__stream-renderer_render-message-and-ad-item` | contract | messaging-stream-service | messaging-stream-service, stream-renderer | pending-counterpart |
+| `ct_messaging__ad-decision_in-stream-insertion` | contract | messaging-stream-service | messaging-stream-service, ad-decision-service | pending-counterpart |
+| `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pending-counterpart |
+| `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pending-counterpart |
+
 ## Set B - Workflow Phases
 
 | Phase | Workflow test | Covered workflow |
