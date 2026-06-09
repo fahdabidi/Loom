@@ -1,26 +1,87 @@
 # Phase B4 - UX Decisions
 
-Status: Template
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for HOA dues, documents, facility reservation, architectural request, committee decision, case/task state, export, and local card/open flow. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-HOA portals, dues, document libraries, facility reservations, request approval queues.
+Before implementing this phase, find several reference implementations of HOA dues, documents, facility reservation, architectural request, committee decision, case/task state, export, and local card/open flow. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Find several reference implementations of HOA portals, owner/member dashboards, dues payment, document libraries, facility booking, approval queues, architectural requests, and export/download flows.
+- Extract patterns for compact admin/member workflows, status visibility, document permissions, payment/hold states, committee decision timelines, and export confidence.
+- Review how references reduce operational clutter while keeping repeated HOA tasks fast.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-Record patterns for owner/admin/member HOA workflows.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-Record dues, documents, facility, case/task, and export UI decisions.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-Walk through `wf_hoa-headline`.
+Workflow under review: `wf_hoa-headline`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Pay dues | TBD | TBD | TBD | TBD |
+| 2 | Upload/view documents | TBD | TBD | TBD | TBD |
+| 3 | Reserve facility | TBD | TBD | TBD | TBD |
+| 4 | Open architectural request case | TBD | TBD | TBD | TBD |
+| 5 | Move through committee review | TBD | TBD | TBD | TBD |
+| 6 | Resolve case | TBD | TBD | TBD | TBD |
+| 7 | Assemble export | TBD | TBD | TBD | TBD |
+| 8 | Open local HOA extension | TBD | TBD | TBD | TBD |
 
-Record unresolved workflow UX risks.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 

@@ -51,7 +51,12 @@ Publish:
 - [../Rules.md](../Rules.md)
 - [../README.md](../README.md)
 
-Rules R1-R19 are binding. Phase docs may add checks but cannot weaken the rules.
+Rules R1-R20 are binding. Phase docs may add checks but cannot weaken the rules.
+
+Phase 0 also establishes the required UX Decisions standard used by every UI or workflow phase. Each
+`Phase X - UX Decisions.md` must require reference implementations, extracted UX patterns, key UX
+decisions, key implementation decisions, a workflow walkthrough, and open questions/tradeoffs before
+implementation starts.
 
 ## 3. Scaffold the Skill
 

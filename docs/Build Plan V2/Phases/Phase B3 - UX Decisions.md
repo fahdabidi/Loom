@@ -1,34 +1,86 @@
 # Phase B3 - UX Decisions
 
-Status: Completed
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for youth soccer guardian join, minor protected data, team roster, registration payment, schedule event, practice notification, and local card/open flow. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-Youth sports registration, guardian consent, roster, schedule, and payment patterns.
+Before implementing this phase, find several reference implementations of youth soccer guardian join, minor protected data, team roster, registration payment, schedule event, practice notification, and local card/open flow. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Find several reference implementations of youth sports registration, guardian consent, minor data collection, roster display, team schedule, payment, and practice notifications.
+- Extract privacy patterns for minor data, role-limited roster details, guardian consent copy, payment recovery, and schedule reminders.
+- Review what should never appear in roster cards or public surfaces.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-- Protected minor data is never displayed directly in roster cards.
-- Guardian registration and payment are separate states so failed payment does not expose protected data.
-- Team spaces are the roster boundary.
-- Schedule notifications should dedupe by event/reminder key.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-- Roster views show approved member/team state, not sensitive minor fields.
-- Protected-vault reads must show redacted values unless the actor has the required permission.
-- Practice reminders are local notification events in the preliminary app.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-`wf_youth-soccer-headline` installs a local youth soccer community, approves membership, creates the
-team space, stores protected minor data, records registration payment, creates a practice event,
-delivers a reminder, and opens `local:ext_youth_soccer@latest`.
+Workflow under review: `wf_youth-soccer-headline`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Request/approve guardian membership | TBD | TBD | TBD | TBD |
+| 2 | Create team space | TBD | TBD | TBD | TBD |
+| 3 | Collect protected minor field | TBD | TBD | TBD | TBD |
+| 4 | Record registration payment | TBD | TBD | TBD | TBD |
+| 5 | Create schedule event | TBD | TBD | TBD | TBD |
+| 6 | Send notification | TBD | TBD | TBD | TBD |
+| 7 | Open local team extension | TBD | TBD | TBD | TBD |
 
-- How much roster data guardians can export.
-- Whether team chat belongs in the headline workflow or the later messaging phase.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 

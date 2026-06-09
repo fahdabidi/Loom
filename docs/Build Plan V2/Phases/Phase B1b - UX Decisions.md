@@ -1,38 +1,86 @@
 # Phase B1b - UX Decisions
 
-Status: Completed
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for real-backend-publish mode, builder signing, certification, package permission review, QR/handle discovery, hosted-install preview, and latest certified open behavior validated through local fakes. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-QR install, app install, permission review, certification, package publish, and B1a local sideload
-flows.
+Before implementing this phase, find several reference implementations of real-backend-publish mode, builder signing, certification, package permission review, QR/handle discovery, hosted-install preview, and latest certified open behavior validated through local fakes. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Find several reference implementations of package publish, app review/certification, QR install, permission review, trusted install preview, and latest-version update flows.
+- Compare local sideload language with hosted-publish language so users understand which backend mode they are using.
+- Extract trust indicators, certification status, permission clarity, install confirmation, and update/latest affordances.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-- Hosted install should show certification state before install.
-- Permission review should display package permissions before the local backend import/install step.
-- QR and handle discovery resolve the same community profile.
-- Latest-version open is a routing behavior, not a separate user choice in the preliminary Demo App.
-- Local sideload remains visibly separate from publish-ready mode because B1b still uses fakes.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-- Publish-ready packages carry `real-backend-publish` metadata but remain locally downloadable.
-- The Demo App can validate hosted publish semantics without showing hosted backend screens.
-- The community card continues to be the post-install entry point.
-- Certification and trust state are represented in test output and package metadata for now; richer UI
-  treatment can wait for hosted backend screens.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-`wf_build-publish-discover-install` registers a builder App ID, certifies the package, publishes the
-certified version, resolves the community by handle/QR, imports the initialization package locally,
-renders the community card, and opens `local:<extension-id>@latest`.
+Workflow under review: `wf_build-publish-discover-install`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Generate publish-ready package metadata | TBD | TBD | TBD | TBD |
+| 2 | Register builder signing scope | TBD | TBD | TBD | TBD |
+| 3 | Certify package | TBD | TBD | TBD | TBD |
+| 4 | Publish version | TBD | TBD | TBD | TBD |
+| 5 | Resolve by handle/QR | TBD | TBD | TBD | TBD |
+| 6 | Review permissions/install locally | TBD | TBD | TBD | TBD |
+| 7 | Open latest certified package | TBD | TBD | TBD | TBD |
 
-- Whether hosted install should expose a separate "review certification evidence" screen.
-- Whether QR install should land on a pre-install preview or directly on permission review.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 

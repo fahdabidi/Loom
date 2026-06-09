@@ -1,41 +1,86 @@
 # Phase B1a - UX Decisions
 
-Status: Completed in B1a
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for local-demo extension build, download, sideload, Add Community, local file selection, fake backend initialization import, branded community card, and local latest-open behavior. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-Empty-state app launch, emulator file loading, local package validation, branding asset validation,
-import progress, duplicate import behavior, branded community-card fallback behavior, and local
-developer app flows.
+Before implementing this phase, find several reference implementations of local-demo extension build, download, sideload, Add Community, local file selection, fake backend initialization import, branded community card, and local latest-open behavior. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Find several reference implementations of local file import, sideload/install, package validation, empty app onboarding, import progress, duplicate import, rollback, and local app launch flows.
+- Review how developer tools and mobile apps explain local-only/debug state versus production-ready state.
+- Extract patterns for validation errors, file-picker affordances, import summaries, branding fallback states, and first-community empty states.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-- First launch is an empty state with one primary Add Community action.
-- A deterministic sample local package is used in this phase while B1a establishes workflow tests.
-- Branded card preview uses imported local backend branding props.
-- Card launch opens a local latest extension route in App Shell.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-- Empty state text: `No communities installed`.
-- Add Community is exposed as a floating action and in the empty state.
-- Accepted local file types remain `.loom-extension.zip` and `.loom-init.zip`.
-- Card image fallback follows A6 priority rules.
-- B1a validates the route as `local:<extension-id>@latest`.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-1. Skill prereq manifest and environment lock validate Codex local-demo readiness.
-2. Skill generates the book-club package pair.
-3. Demo App starts empty.
-4. Local backend loads the extension package summary.
-5. Local backend imports the initialization package summary and branding props.
-6. App Shell renders a card and opens `local:ext_book_club@latest`.
+Workflow under review: `wf_local-build-download-sideload-install`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Validate execution environment | TBD | TBD | TBD | TBD |
+| 2 | Generate downloadable package pair | TBD | TBD | TBD | TBD |
+| 3 | Show empty Demo App | TBD | TBD | TBD | TBD |
+| 4 | Add Community from local files | TBD | TBD | TBD | TBD |
+| 5 | Import initialization package | TBD | TBD | TBD | TBD |
+| 6 | Render branded card | TBD | TBD | TBD | TBD |
+| 7 | Open local latest extension | TBD | TBD | TBD | TBD |
 
-- B1a still uses a deterministic sample action; emulator file picking and validation-error UI become
-  B1a/B2 hardening work if needed before real user testing.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 

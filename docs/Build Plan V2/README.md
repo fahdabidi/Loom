@@ -95,11 +95,13 @@ Every phase creates or updates:
 
 - `Phase X - API Review.md`: API conformance, OpenAPI gaps, payload/idempotency/pagination notes.
 - `Phase X - UX Decisions.md`: required where the phase changes UI or workflow UX; optional but allowed
-  for component-only phases.
+  for component-only phases. When required, it must be completed before implementation and follow the
+  R20 structure: reference sources reviewed, UX patterns extracted, key UX decisions, key
+  implementation decisions, workflow walkthrough, and open questions / tradeoffs.
 
 ## Completion Rule
 
-A phase is complete only when [Rules.md](./Rules.md) R12 is satisfied: tests green, manifest current,
-staleness gate green, Skill updated, API Review filed, UX Decisions filed where applicable, Build
-Tracker updated, phase changes committed, and commit SHA recorded. Do not start the next phase until
-the prior phase commit exists and is recorded in the tracker.
+A phase is complete only when [Rules.md](./Rules.md) R12 and R20 are satisfied: tests green, manifest
+current, staleness gate green, Skill updated, API Review filed, UX Decisions completed where
+applicable, Build Tracker updated, phase changes committed, and commit SHA recorded. Do not start the
+next phase until the prior phase commit exists and is recorded in the tracker.

@@ -15,12 +15,15 @@ For each phase:
 
 1. Confirm the predecessor phase is complete.
 2. Run the prerequisite gate in the phase file from WSL Ubuntu.
-3. Execute the phase deliverables.
-4. Run all required validation, contract, workflow, manifest, and staleness gates.
-5. Stage only the phase's intended changes and review `git diff --staged`.
-6. Commit the phase changes to git.
-7. Record component version hashes, API/UX/Skill artifacts, gate evidence, and the resulting commit SHA.
-8. Start the next phase only after the commit exists and this tracker points to that SHA.
+3. If the phase has UI, interaction, workflow UX, or user-facing copy, complete the R20 UX Decisions
+   gate before implementation: reference sources reviewed, UX patterns extracted, key UX decisions,
+   key implementation decisions, workflow walkthrough, and open questions / tradeoffs.
+4. Execute the phase deliverables.
+5. Run all required validation, contract, workflow, manifest, and staleness gates.
+6. Stage only the phase's intended changes and review `git diff --staged`.
+7. Commit the phase changes to git.
+8. Record component version hashes, API/UX/Skill artifacts, gate evidence, and the resulting commit SHA.
+9. Start the next phase only after the commit exists and this tracker points to that SHA.
 
 Set B workflow tests must run against the Demo Loom Communities App with the Local Backend. The Skill
 supports both `local-demo` and `real-backend-publish` modes, but no Set B gate may depend on an
@@ -36,23 +39,23 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Complete | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | WSL Ubuntu toolchain verified; `dart format`, `melos bootstrap`, manifest gate, phase gate with `--check-env`, Skill prereq setup/check, boundary lint, and focused scaffold analysis passed. | `17b4b81` |
+| 0 | Complete - R20 baseline pending commit stamp | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | R20 UX methodology, phase instructions, tracker reset, manifest gate, Phase 0 gate, Skill prereq check, boundary lint, and diff check passed in WSL Ubuntu. | `17b4b81` prior scaffold commit; R20 closeout commit pending stamp |
 | A1 | Complete | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | A1 contracts/fakes/schema/seed/test suite added; validation tests pass; consumer-contract kits are pending only for unbuilt counterparts; manifest and phase gates pass in WSL Ubuntu. | `e3c0357` |
 | A2 | Complete | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | A2 contracts/fakes/schema/seed/test suite added; A1 unblocked contract tests pass; App Shell counterpart tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `3d6a388` |
 | A3 | Complete | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | A3 contracts/fakes/schema/seed/test suite added; forms/protected-vault contract passes; A4b/A5/A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `a4cc268` |
 | A4a | Complete | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | A4a contracts/fakes/schema/seed/test suite added; document/export, import/protected-vault, incident/certification contracts pass; A4b/A5 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `c56f45b` |
 | A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `4ab715d` |
 | A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `b4c8b25` |
-| A6 | Complete | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | A6 shell/local-backend/demo app contracts and tests added; all Set A pending counterpart tests are resolved; Demo App starts empty, Add Community loads a local sample package/init package, cards render, and local backend import/reload passes; manifest and phase gates pass in WSL Ubuntu. | `0346c99` |
-| B1a | Complete | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | WSL Ubuntu bootstrap, B1a workflow tests, A6 Demo App regression, focused Demo App analysis, Skill prereq check/setup, manifest gate, phase gate, and boundary lint pass. | `df6f543` |
-| B1b | Complete | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | B1b workflow test, B1a regression, A6 Demo App regression, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | `7825b59` |
-| B2 | Complete | B1b | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | Book club workflow test, B1a/B1b regressions, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | `e362090` |
-| B3 | Complete | B2 | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | Youth soccer workflow test, prior Set B regressions, focused Demo App analysis, manifest gate, phase gate, and boundary lint pass in WSL Ubuntu. | `36aee10` |
-| B4 | Not started | B3 | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | TBD | TBD |
-| B5 | Not started | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | TBD | TBD |
-| B6 | Not started | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | TBD | TBD |
-| B7 | Not started | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | TBD | TBD |
-| B8 | Not started | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | TBD | TBD |
+| A6 | Reopened - R20 UX second pass required | A5 + Phase 0 R20 closeout | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | Prior code/tests passed at `0346c99`, but UX Decisions were completed before R20 existed. Recreate `Phase A6 - UX Decisions.md` with reference research, extracted patterns, UX decisions, implementation decisions, walkthrough, and tradeoffs before reclosing. | `0346c99` prior code commit; new closeout TBD |
+| B1a | Reopened - R20 UX second pass required | A6 R20 closeout | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | Prior workflow passed at `df6f543`, but UX Decisions were completed before R20 existed. Recreate local-demo UX Decisions before reclosing and rerun B1a regressions. | `df6f543` prior code commit; new closeout TBD |
+| B1b | Reopened - R20 UX second pass required | B1a R20 closeout | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | Prior workflow passed at `7825b59`, but UX Decisions were completed before R20 existed. Recreate publish/discovery/install UX Decisions before reclosing and rerun B1b regressions. | `7825b59` prior code commit; new closeout TBD |
+| B2 | Reopened - R20 UX second pass required | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | Prior workflow passed at `e362090`, but UX Decisions were completed before R20 existed. Recreate book club UX Decisions before reclosing and rerun B2 regressions. | `e362090` prior code commit; new closeout TBD |
+| B3 | Reopened - R20 UX second pass required | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | Prior workflow passed at `36aee10`, but UX Decisions were completed before R20 existed. Recreate youth soccer UX Decisions before reclosing and rerun B3 regressions. | `36aee10` prior code commit; new closeout TBD |
+| B4 | Not started - R20 UX required first | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | Complete `Phase B4 - UX Decisions.md` using R20 before implementation. | TBD |
+| B5 | Not started - R20 UX required first | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | Complete `Phase B5 - UX Decisions.md` using R20 before implementation. | TBD |
+| B6 | Not started - R20 UX required first | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | Complete `Phase B6 - UX Decisions.md` using R20 before implementation. | TBD |
+| B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
+| B8 | Not started - R20 UX required first | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | Complete `Phase B8 - UX Decisions.md` using R20 before implementation. | TBD |
 
 ## Phase Outcome Summary
 
@@ -75,6 +78,32 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B6 | Validates required social and ad surfaces. | Messages, Connections, invite/block behavior, stream rendering, in-stream ads, top banner behavior. | Platform invariants are proven: Messages and Connections are reachable, ads render or no-fill correctly, extensions cannot suppress required surfaces. |
 | B7 | Validates ad-off economics. | Member/community ad-off purchase, entitlement checks, ad decision behavior, receipts, settlement, utility allocation. | Ad-off works end to end and economic records stay auditable. |
 | B8 | Closes portability and final readiness. | Export/migration, redaction, transfer verification/rollback, full workflow regression, API spec inventory, final Skill/example updates. | Every workflow remains green, every required API/local contract is present and validated, and V2 is ready for roadmap review. |
+
+## UX Methodology Reset - 2026-06-09
+
+R20 was added after A6, B1a, B1b, B2, and B3 had already been marked complete. Those phases are now
+reopened for UX methodology only. Their prior implementation commits remain useful technical evidence,
+but the phases are not considered fully closed until their UX Decisions files are recreated with the
+new method and the affected regressions pass again.
+
+| Phase | Prior closeout commit | Current status | Required UX recreation |
+| --- | --- | --- | --- |
+| 0 | `17b4b81` | Complete - R20 baseline pending commit stamp | R20 rules, UX Decisions templates, phase instructions, and tracker reset are now the Phase 0 second-pass baseline. |
+| A6 | `0346c99` | Reopened - R20 UX second pass required | Recreate App Shell, UX micro-component, Demo App empty/load/import, branded card, local backend, ad slot, payment surface, data dashboard, and required shell-surface UX decisions using R20. |
+| B1a | `df6f543` | Reopened - R20 UX second pass required | Recreate local-demo build/download/sideload/install UX decisions using R20, including local file picker, validation errors, import progress, duplicate import, rollback, card branding fallback, and local latest-open states. |
+| B1b | `7825b59` | Reopened - R20 UX second pass required | Recreate real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
+| B2 | `e362090` | Reopened - R20 UX second pass required | Recreate book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
+| B3 | `36aee10` | Reopened - R20 UX second pass required | Recreate youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
+| B4-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+
+Closeout rule for reopened phases:
+
+1. Complete the phase's UX Decisions file with current reference sources, extracted patterns, key UX
+   decisions, key implementation decisions, workflow walkthrough, and open tradeoffs.
+2. Apply any UX-driven implementation/test changes.
+3. Rerun the phase workflow and all affected regressions.
+4. Update manifest/test stamps if tests or UX-owned component behavior changed.
+5. Commit the phase closeout and replace the `new closeout TBD` entry in the status table.
 
 ## Per-Phase Completion Ledger
 
@@ -114,6 +143,20 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   Phase 0 scaffold packages and tooling scripts.
 - **Notes:** Full historical workspace `melos run analyze` exceeded the command timeout; focused analysis
   of the Phase 0 scaffold passed. No Set A phase has started.
+
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 baseline:** Added R20 as the required UX research and decision gate; updated Phase 0, the Build
+  Plan README, and every UX-bearing phase file so UX Decisions are completed before implementation.
+- **UX Decisions standard:** Updated the UX Decisions siblings for A6 and B1a-B8 to require reference
+  sources reviewed, UX patterns extracted, key UX decisions, key implementation decisions, workflow
+  walkthrough, and open questions / tradeoffs.
+- **Tracker reset:** Reopened A6, B1a, B1b, B2, and B3 for UX-methodology closeout; marked B4-B8 as
+  R20-required-before-implementation; kept the prior technical closeout commits as historical evidence.
+- **Passed WSL checks:** `dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`;
+  `dart run packages/tooling/phase_gate.dart --phase 0 --check-env`; `dart run
+  packages/tooling/skill_prereq_check.dart --mode local-demo`; `melos run lint:boundaries`; `git diff --check`.
+- **Commit:** Pending R20 baseline commit stamp.
 
 ### Phase A1 - Foundation Components
 
@@ -323,6 +366,9 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   `dart test test/a6_local_backend_test.dart`; `flutter test
   apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A1-A5 component regression tests;
   focused `flutter analyze`; manifest and phase gates; boundary lint.
+- **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
+  `Phase A6 - UX Decisions.md` with the new method, apply any UX-driven changes, rerun affected
+  regressions, and record a new closeout commit before A6 can be treated as complete again.
 
 ### Phase B1a - Local Build, Download, Sideload, Install
 
@@ -359,6 +405,9 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   `dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo`; `dart run
   packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`; `dart run
   packages/tooling/phase_gate.dart --phase B1a --check-env`; `melos run lint:boundaries`.
+- **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
+  `Phase B1a - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B1a/A6
+  regressions, and record a new closeout commit before B1a can be treated as complete again.
 
 ### Phase B1b - Publish, Discover, Certify, Install
 
@@ -388,6 +437,9 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
   apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; `flutter analyze
   apps/loom_communities_demo`.
+- **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
+  `Phase B1b - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B1b/B1a/A6
+  regressions, and record a new closeout commit before B1b can be treated as complete again.
 
 ### Phase B2 - Book Club Headline Flow
 
@@ -410,6 +462,9 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   `Skill/examples/book-club/phase-b2-headline/`.
 - **Manifest stamps:** ai-skill-extension-builder `1a5665e8b68d`; workflow-validation-harness
   `a5d952a0a466`; `wf_book-club-headline` test hash `ce5f487585dc`.
+- **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
+  `Phase B2 - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B2 and prior
+  Set B regressions, and record a new closeout commit before B2 can be treated as complete again.
 
 ### Phase B3 - Youth Soccer Headline Flow
 
@@ -432,6 +487,9 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   `Skill/examples/youth-soccer/phase-b3-headline/`.
 - **Manifest stamps:** ai-skill-extension-builder `ebb94a52333e`; workflow-validation-harness
   `2d7b10969bb6`; `wf_youth-soccer-headline` test hash `e404d2433f01`.
+- **R20 reopen note:** This technical closeout predates the R20 UX research/decision gate. Recreate
+  `Phase B3 - UX Decisions.md` with the new method, apply any UX-driven changes, rerun B3 and prior
+  Set B regressions, and record a new closeout commit before B3 can be treated as complete again.
 
 ### Phase B4 - HOA Headline Flow
 

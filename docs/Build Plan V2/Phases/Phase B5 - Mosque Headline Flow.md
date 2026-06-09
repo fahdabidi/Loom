@@ -43,8 +43,16 @@ Inside WSL Ubuntu, `dart`, `flutter`, and `melos` must resolve from the Ubuntu t
 
 ## 3. UX Research and Decisions
 
-Create `Phase B5 - UX Decisions.md`. Review religious/community event, donation, volunteer, and care
-request UX. Record donor privacy, care-team routing, and respectful disclosure patterns.
+Complete `Phase B5 - UX Decisions.md` before implementation work that affects UI, interaction, user-visible state, or workflow copy. The UX Decisions file is a gate artifact and must follow this required format:
+
+1. **Reference Sources Reviewed** - find several reference implementations of mosque announcements, events, volunteer signup, donations, donor privacy, protected care requests, notifications, and local card/open flow; record each source, surface/flow reviewed, why it applies, patterns observed, applicability/gaps, and review date.
+2. **UX Patterns Extracted** - learn from the reference implementations and extract concrete patterns for task flow, entry points, state handling, trust/privacy/payment cues, layout density, accessibility, and error recovery.
+3. **Key UX Decisions** - list the UX decisions made for Loom, with rationale, affected surfaces, and the acceptance signal or covering test.
+4. **Key Implementation Decisions** - record implementation choices that materially alter UX, including component ownership, state model, layout behavior, validation behavior, copy source, and test coverage.
+5. **Workflow Walkthrough** - walk through the workflow step by step, mapping each user goal/action to the screen or state, owning component, UX decision applied, and covering test.
+6. **Open Questions / Tradeoffs** - capture unresolved questions, options considered, recommendation, owner, and when resolution is required.
+
+The phase cannot be marked done if the UX Decisions file only contains generic notes or unreviewed placeholders. If no external references are available, record the internal reference surfaces reviewed and the reason external reference research was not possible.
 
 ## 4. Execution and Issue-Triage Loop
 

@@ -1,47 +1,85 @@
 # Phase A6 - UX Decisions
 
-Status: Completed in A6
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for App Shell and UX micro-components: community cards, nav panel, stream renderer, connections shell, ad slots, payment surface, data dashboard, Demo App empty state, local loader, and local backend import surfaces. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-- Architecture V2/00 UX micro-component rules.
-- Product Docs V2/15 Main Loom App, App Shell, and Required Structure.
-- A5 package and initialization package contracts.
-- A6 App Shell and local backend tests.
+Before implementing this phase, find several reference implementations of App Shell and UX micro-components: community cards, nav panel, stream renderer, connections shell, ad slots, payment surface, data dashboard, Demo App empty state, local loader, and local backend import surfaces. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Reference component libraries or apps with dense community cards, app shells, persistent navigation, stream/feed rendering, ad slots, payment surfaces, consent dashboards, local-file import, and empty-state onboarding.
+- Compare how reference products handle loading, empty, error, disabled, permission, and recovery states for each micro-component.
+- Extract layout density, information hierarchy, visual states, accessibility behavior, and platform invariant patterns for required Messages, Connections, and ad surfaces.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-- Shell-owned navigation, top ad slot, payment surface, and data dashboard.
-- Extension-owned content routes mounted inside the shell.
-- Community-card branding priority: community card image, community logo, extension default card image,
-  generated fallback.
-- Local-demo empty state with a single Add Community action.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-- Required Messages and Connections navigation.
-- Top banner and in-stream ad behavior.
-- Shell-owned payment and consent surfaces.
-- Extension route boundaries.
-- Demo App starts empty and does not preload communities.
-- The first A6 Add Community action uses a deterministic sample local package while B1a replaces it
-  with emulator local-file selection.
-- Community cards are rendered by shell/local-backend props, not arbitrary extension card UI.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-1. User opens the Demo App and sees no installed communities.
-2. User selects Add Community.
-3. Local backend loads an extension package summary and initialization package summary.
-4. Local backend imports branding and seed metadata idempotently.
-5. App renders a community card from typed branding props.
-6. User opens the card and the App Shell records the local extension route.
+Workflow under review: `A6 UX component validation`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Launch Demo App empty state | TBD | TBD | TBD | TBD |
+| 2 | Trigger Add Community/local loader | TBD | TBD | TBD | TBD |
+| 3 | Validate package/init package feedback states | TBD | TBD | TBD | TBD |
+| 4 | Import fake backend data | TBD | TBD | TBD | TBD |
+| 5 | Render branded community card | TBD | TBD | TBD | TBD |
+| 6 | Open local extension in App Shell | TBD | TBD | TBD | TBD |
 
-- B1a should replace the sample Add Community handler with emulator-safe local file picking.
-- B1a should add screenshot evidence for empty state, loaded card, and opened local extension.
-- B1a should decide whether generated initials fallback uses category text or a deterministic icon.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 

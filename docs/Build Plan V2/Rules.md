@@ -184,6 +184,25 @@ format-limited, dimension-validated, and labeled with alt text or decorative met
 owns community-card rendering. Card image priority is community card image -> community logo ->
 extension default card image -> generated initials/category/accent-color fallback.
 
+## R20 UX research and decision gate
+
+Any phase with UI, interaction, user-visible workflow state, or user-facing copy must complete its
+sibling `Phase X - UX Decisions.md` before implementation. The UX Decisions file must include:
+
+- Reference sources reviewed: several reference implementations, the surfaces/flows reviewed, why each
+  applies, observed patterns, applicability/gaps, and review date.
+- UX patterns extracted: concrete patterns learned from the references, including task flow, states,
+  trust/privacy/payment cues, layout density, accessibility, and recovery behavior.
+- Key UX decisions: Loom-specific decisions with rationale, affected surfaces, and acceptance signals.
+- Key implementation decisions: choices that materially alter UX, including component ownership, state
+  model, validation behavior, layout behavior, copy source, and tests.
+- Workflow walkthrough: step-by-step user actions mapped to screens/states, owning components, UX
+  decisions, and covering tests.
+- Open questions / tradeoffs: unresolved options, recommendation, owner, and resolution deadline.
+
+A phase cannot complete with a UX Decisions file that only contains generic notes or unreviewed
+placeholders.
+
 ## Test Naming
 
 | Type | Pattern | Example |

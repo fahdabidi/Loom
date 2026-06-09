@@ -1,35 +1,87 @@
 # Phase B2 - UX Decisions
 
-Status: Completed
+Status: Second-pass UX research required before phase execution
+
+Purpose: document the UX research, extracted patterns, decisions, implementation impacts, workflow walkthrough, and open tradeoffs for book club nomination, poll/vote, meeting event, RSVP, discussion thread, search, AI digest, citations, and local card/open flow. This file is a phase gate artifact, not a placeholder.
 
 ## Reference Sources Reviewed
 
-Book club, poll, event, discussion, and digest examples.
+Before implementing this phase, find several reference implementations of book club nomination, poll/vote, meeting event, RSVP, discussion thread, search, AI digest, citations, and local card/open flow. Record enough detail that another agent can understand what was reviewed and why it applies. Use current references available at execution time, and prefer mature production products over generic inspiration.
+
+Research focus:
+
+- Find several reference implementations of book clubs, reading groups, polls, event RSVP, discussion threads, recaps/digests, and citation-backed summaries.
+- Extract how references separate nomination, voting, selected-book announcement, event details, discussion, and recap states.
+- Review empty, duplicate vote, closed poll, full event, and digest unavailable states.
+
+| Reference | Surface / Flow Reviewed | Why It Applies | Patterns Observed | Applicability / Gaps | Date Reviewed |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD | TBD |
 
 ## UX Patterns Extracted
 
-- The first screen should show current book selection, vote status, and the next meeting.
-- Nomination and voting are separate cards to avoid accidental duplicate submissions.
-- Digest output must show citations back to indexed community content.
-- Discussion is a thread entry point, not a replacement for the main stream.
+Learn from the reference implementations before making Loom-specific decisions. Extract concrete patterns, not general preferences.
+
+| Pattern | Source References | User Problem Solved | Loom Application | Risk / Constraint |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD | TBD |
+
+Required pattern categories:
+
+- Primary task flow and entry points.
+- Empty, loading, success, failure, retry, and duplicate-action states.
+- Permission, privacy, trust, payment, certification, or sensitive-data cues where applicable.
+- Mobile and desktop layout density, hierarchy, and navigation.
+- Accessibility, labels, tap targets, keyboard/focus behavior, and reduced-motion expectations.
+- Error prevention and recovery copy.
 
 ## Key UX Decisions
 
-- Empty state prompts members to nominate the first book.
-- Winning-selection publish creates a stream item and a searchable record.
-- Meeting RSVP shows ticket state when capacity is enforced.
-- Digest failures should identify whether search, AI, or citation generation owns the failure.
+List the UX decisions that must be reflected in implementation. Each decision must trace to either a reference pattern, a Loom platform invariant, or a workflow requirement.
+
+| Decision | Rationale | Applies To | Acceptance Signal / Test |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+
+## Key Implementation Decisions
+
+Record implementation decisions that materially alter the UX, including component ownership, state model, copy source, layout behavior, validation behavior, and test coverage.
+
+| Implementation Decision | UX Impact | Owning Component | Tests / Gates |
+| --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
+| TBD | TBD | TBD | TBD |
 
 ## Workflow Walkthrough
 
-`wf_book-club-headline` installs a local book club community, submits a nomination, records a vote,
-creates a meeting, RSVPs, publishes the winning selection, starts a discussion, indexes the published
-selection, creates a cited digest, and opens `local:ext_book_club@latest`.
+Workflow under review: `wf_book-club-headline`. Walk through the experience step by step after the UX decisions are made. Include the screen or state shown, the user action, the owning component, and the covering test.
 
-## Open Questions
+| Step | User Goal / Action | Screen or State | Owning Component | UX Decision Applied | Covering Test |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Nominate a book | TBD | TBD | TBD | TBD |
+| 2 | Vote in the monthly poll | TBD | TBD | TBD | TBD |
+| 3 | Publish selected book | TBD | TBD | TBD | TBD |
+| 4 | Create discussion event | TBD | TBD | TBD | TBD |
+| 5 | RSVP | TBD | TBD | TBD | TBD |
+| 6 | Post in discussion | TBD | TBD | TBD | TBD |
+| 7 | Index content | TBD | TBD | TBD | TBD |
+| 8 | Generate cited digest | TBD | TBD | TBD | TBD |
 
-- Whether nominations should be anonymous by default.
-- Whether digest cards should appear in the main stream or a separate recap surface.
+## Open Questions / Tradeoffs
+
+Capture unresolved UX questions and tradeoffs before implementation starts. A phase can proceed only when blockers are resolved or explicitly accepted.
+
+| Question / Tradeoff | Options Considered | Recommendation | Owner | Resolution Required Before |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | Phase implementation |
+| TBD | TBD | TBD | TBD | Phase implementation |
 
 ## WSL Ubuntu Tooling Requirement
 
