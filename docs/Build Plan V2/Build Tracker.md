@@ -44,7 +44,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `4ab715d` |
 | A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `b4c8b25` |
 | A6 | Complete | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | A6 shell/local-backend/demo app contracts and tests added; all Set A pending counterpart tests are resolved; Demo App starts empty, Add Community loads a local sample package/init package, cards render, and local backend import/reload passes; manifest and phase gates pass in WSL Ubuntu. | `0346c99` |
-| B1a | Not started | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | TBD | TBD |
+| B1a | Complete | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | WSL Ubuntu bootstrap, B1a workflow tests, A6 Demo App regression, focused Demo App analysis, Skill prereq check/setup, manifest gate, phase gate, and boundary lint pass. | pending commit |
 | B1b | Not started | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | TBD | TBD |
 | B2 | Not started | B1b | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | TBD | TBD |
 | B3 | Not started | B2 | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | TBD | TBD |
@@ -339,6 +339,26 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 - **Evidence to record:** Environment lock hash, prereq setup output, workflow output, Skill
   prompt/transcript/golden package hashes, package validator output, asset validator output, fake
   backend import report, branded-card screenshot/output, API Review and UX Decisions paths, commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Validated Skill setup:** `validation-environment.lock.json` is `validated` for Codex `local-demo`
+  execution in WSL Ubuntu with Dart, Flutter, and Melos resolved from the Ubuntu toolchain.
+- **Implemented workflow test:** Added
+  `apps/loom_communities_demo/test/b1a_local_workflow_test.dart` covering
+  `wf_local-demo-prereq-to-validation-ready` and `wf_local-build-download-sideload-install`.
+- **Skill and examples:** Added the local build/download/sideload workflow guide and a book-club
+  extension/init-package example under `Skill/examples/book-club/phase-b1a-local/`.
+- **Manifest stamps:** Skill/prereq/tooling components now have concrete version hashes:
+  ai-skill-extension-builder `b06a5c0bdc86`, skill-prereq-setup `8517e97898ef`,
+  workflow-validation-harness `37f93fec7784`, and skill-debug-harness `809fc9cb1902`.
+- **Passed WSL checks:** `melos bootstrap`; `flutter test
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; `flutter analyze
+  apps/loom_communities_demo`; `dart run packages/tooling/skill_prereq_check.dart --mode local-demo`;
+  `dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo`; `dart run
+  packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`; `dart run
+  packages/tooling/phase_gate.dart --phase B1a --check-env`; `melos run lint:boundaries`.
 
 ### Phase B1b - Publish, Discover, Certify, Install
 

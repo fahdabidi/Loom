@@ -243,6 +243,25 @@ are deferred until a hosted Loom build and validation backend exists.
 | B7 | `wf_ad-off` | Member/community ad-off, ad suppression, settlement |
 | B8 | `wf_export-migration` | Community export, protected redaction, provider transfer |
 
+## Phase B1a Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_skill-prereq_manifest-complete` | validation | skill-prereq-setup | skill-prereq-setup | pass |
+| `vt_skill-prereq_host-detection` | validation | skill-prereq-setup | skill-prereq-setup | pass |
+| `vt_skill-prereq_install-plan` | validation | skill-prereq-setup | skill-prereq-setup | pass |
+| `vt_skill-prereq_environment-lock` | validation | skill-prereq-setup | skill-prereq-setup | pass |
+| `vt_skill-prereq_demo-app-smoke` | validation | skill-prereq-setup | skill-prereq-setup, loom-communities-demo-app, local-in-app-backend | pass |
+| `ct_skill-prereq-setup__workflow-validation-harness_environment-ready` | contract | skill-prereq-setup | skill-prereq-setup, workflow-validation-harness | pass |
+| `vt_skill_skeleton` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
+| `vt_skill_debug_golden-flow` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
+| `vt_skill-debug-harness_fixture-replay` | validation | skill-debug-harness | skill-debug-harness | pass |
+| `vt_skill_generate-downloadable-extension` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
+| `vt_skill_generate-initialization-package` | validation | ai-skill-extension-builder | ai-skill-extension-builder | pass |
+| `vt_skill_generate-brand-assets` | validation | ai-skill-extension-builder | ai-skill-extension-builder, extension-package-validator, initialization-package-schema | pass |
+| `wf_local-demo-prereq-to-validation-ready` | workflow | none | skill-prereq-setup, workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, loom-local-store | pass |
+| `wf_local-build-download-sideload-install` | workflow | none | skill-prereq-setup, workflow-validation-harness, ai-skill-extension-builder, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, loom-local-store, community-card, app-shell-runtime, extension-runtime-bridge | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |

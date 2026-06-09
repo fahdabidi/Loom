@@ -12,3 +12,7 @@ Each guide must include:
 - Fixtures and tests.
 - Failure modes and owning components.
 - Example extension fragment.
+
+## Phase B1a Guides
+
+- [local-build-download-sideload-install.md](./local-build-download-sideload-install.md)

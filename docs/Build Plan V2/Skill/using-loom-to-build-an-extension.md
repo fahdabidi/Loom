@@ -252,3 +252,8 @@ local-demo artifacts and to keep backend logic declarative before reaching for s
 Phase A6 adds UX/local-demo guides for App Shell, community cards, navigation, stream rendering,
 connections, ad slots, payment, data dashboard, the local in-app backend, and the Demo App. Use these
 to validate that generated packages install locally and preserve shell-owned structure.
+
+Phase B1a proves the local-demo workflow. Use
+`workflows/local-build-download-sideload-install.md` and the book-club `phase-b1a-local` example to
+generate package pairs, validate them, import fake-backend seed data, render the branded card, and open
+`local:<extension-id>@latest`.

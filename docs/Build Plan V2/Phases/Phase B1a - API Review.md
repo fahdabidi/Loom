@@ -1,6 +1,6 @@
 # Phase B1a - API Review
 
-Status: Template
+Status: Completed in B1a
 
 ## Scope
 
@@ -29,6 +29,25 @@ Record local package, initialization package, fake backend, local DB, Demo App l
 local-session spec gaps. Specs may be local-contract files rather than public hosted OpenAPI endpoints,
 but they must validate before B1a completes.
 
+## B1a Local Contracts
+
+- `LoomExtensionPackageSummary`
+- `LoomInitializationPackageSummary`
+- `LocalInAppBackend.loadExtensionPackage`
+- `LocalInAppBackend.importInitializationPackage`
+- `LocalInAppBackend.snapshot`
+- `CommunityAppShellRuntime.openExtension`
+- `validation-environment.lock.json`
+
+These are local contracts for the preliminary Demo App flow. Hosted publish APIs are not required in
+B1a.
+
+## Validation Evidence
+
+- `wf_local-demo-prereq-to-validation-ready`
+- `wf_local-build-download-sideload-install`
+- `flutter test apps/loom_communities_demo/test/b1a_local_workflow_test.dart`
+
 ## Skill Prereq Contracts
 
 The API review must record the local tooling contracts that are not public OpenAPI specs:
@@ -40,6 +59,9 @@ The API review must record the local tooling contracts that are not public OpenA
 
 The review must confirm that online-only execution targets are documented as deferred until a hosted
 Loom build and validation backend exists.
+
+Confirmed: Codex and Claude Code remain the supported execution targets. Online-only execution is
+deferred.
 
 ## WSL Ubuntu Tooling Requirement
 

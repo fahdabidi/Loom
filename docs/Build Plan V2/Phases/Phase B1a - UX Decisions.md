@@ -1,6 +1,6 @@
 # Phase B1a - UX Decisions
 
-Status: Template
+Status: Completed in B1a
 
 ## Reference Sources Reviewed
 
@@ -10,23 +10,32 @@ developer app flows.
 
 ## UX Patterns Extracted
 
-Record patterns for first community install, local file picker affordances, package trust warnings,
-validation error recovery, asset error recovery, import progress, import rollback, branded card
-preview, and card launch.
+- First launch is an empty state with one primary Add Community action.
+- A deterministic sample local package is used in this phase while B1a establishes workflow tests.
+- Branded card preview uses imported local backend branding props.
+- Card launch opens a local latest extension route in App Shell.
 
 ## Key UX Decisions
 
-Record the exact empty state, `Add Community` placement, accepted local file types, package validation
-error display, branding asset error display, card image fallback order, initialization import
-confirmation, and card-to-App-Shell transition.
+- Empty state text: `No communities installed`.
+- Add Community is exposed as a floating action and in the empty state.
+- Accepted local file types remain `.loom-extension.zip` and `.loom-init.zip`.
+- Card image fallback follows A6 priority rules.
+- B1a validates the route as `local:<extension-id>@latest`.
 
 ## Workflow Walkthrough
 
-Walk through `wf_local-build-download-sideload-install`.
+1. Skill prereq manifest and environment lock validate Codex local-demo readiness.
+2. Skill generates the book-club package pair.
+3. Demo App starts empty.
+4. Local backend loads the extension package summary.
+5. Local backend imports the initialization package summary and branding props.
+6. App Shell renders a card and opens `local:ext_book_club@latest`.
 
 ## Open Questions
 
-Record unresolved local install UX risks.
+- B1a still uses a deterministic sample action; emulator file picking and validation-error UI become
+  B1a/B2 hardening work if needed before real user testing.
 
 ## WSL Ubuntu Tooling Requirement
 

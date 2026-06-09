@@ -14,6 +14,8 @@ dependencies:
     path: ../../packages/core/loom_demo_local_backend
   loom_extension_package:
     path: ../../packages/core/loom_extension_package
+  loom_app_shell:
+    path: ../../packages/core/loom_app_shell
 
 dev_dependencies:
   flutter_test:
