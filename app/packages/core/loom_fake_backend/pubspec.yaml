@@ -12,3 +12,8 @@ dependencies:
     path: ../loom_api_contracts
   loom_local_store:
     path: ../loom_local_store
+
+dev_dependencies:
+  loom_seed_data:
+    path: ../loom_seed_data
+  test: ^1.25.15

@@ -63,55 +63,55 @@
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityAuditApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "0b57bac5ec69",
+      "fakePresent": true
     },
     {
       "id": "builder-app-id-service",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityBuilderAppIdApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "46dfcdb9934e",
+      "fakePresent": true
     },
     {
       "id": "connections-graph",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityConnectionsApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "297b5d201b5f",
+      "fakePresent": true
     },
     {
       "id": "core-member-vault",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityCoreVaultApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "67421d04854e",
+      "fakePresent": true
     },
     {
       "id": "event-bus",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityEventBusApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "1f233230d7c9",
+      "fakePresent": true
     },
     {
       "id": "key-management",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityKeyManagementApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "16c1bdc8be88",
+      "fakePresent": true
     },
     {
       "id": "loom-local-store",
       "layer": "foundation",
       "phase": "A1",
       "contract": "LoomLocalStoreApi",
-      "version": "planned",
+      "version": "2d8dbc534574",
       "fakePresent": true
     },
     {
@@ -119,32 +119,32 @@
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityPassportApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "f6e17f408e74",
+      "fakePresent": true
     },
     {
       "id": "protected-visibility-vault",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityProtectedVaultApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "3795b6a09b20",
+      "fakePresent": true
     },
     {
       "id": "receipt-ledger",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityReceiptLedgerApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "9f9e82fd4a2f",
+      "fakePresent": true
     },
     {
       "id": "role-policy-consent-engine",
       "layer": "foundation",
       "phase": "A1",
       "contract": "CommunityRolePolicyApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "01288a26926f",
+      "fakePresent": true
     },
     {
       "id": "certification-system",
@@ -674,9 +674,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "builder-app-id-service": "46dfcdb9934e"
+      },
       "lastRunAt": null
     },
     {
@@ -692,9 +694,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "connections-graph": "297b5d201b5f"
+      },
       "lastRunAt": null
     },
     {
@@ -710,9 +714,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "event-bus": "1f233230d7c9"
+      },
       "lastRunAt": null
     },
     {
@@ -728,9 +734,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "protected-visibility-vault": "3795b6a09b20"
+      },
       "lastRunAt": null
     },
     {
@@ -746,9 +754,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "receipt-ledger": "9f9e82fd4a2f"
+      },
       "lastRunAt": null
     },
     {
@@ -764,9 +774,11 @@
       ],
       "phase": "A1",
       "status": "pending-counterpart",
-      "testHash": "planned",
+      "testHash": "7a41986eaea1",
       "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
+      "lastRunComponentVersions": {
+        "role-policy-consent-engine": "01288a26926f"
+      },
       "lastRunAt": null
     },
     {
@@ -781,11 +793,14 @@
         "extension-registry"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "builder-app-id-service": "46dfcdb9934e",
+        "key-management": "16c1bdc8be88"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_connections_invite-permission",
@@ -799,11 +814,13 @@
         "connections-shell"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "connections-graph": "297b5d201b5f"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_core-vault_preferences",
@@ -816,11 +833,13 @@
         "app-shell-runtime"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "core-member-vault": "67421d04854e"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_event-bus_publish",
@@ -834,11 +853,13 @@
         "workflow-engine"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "event-bus": "1f233230d7c9"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_passport-ledger_create-resolve",
@@ -852,11 +873,13 @@
         "membership-service"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "passport-ledger": "f6e17f408e74"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_protected-vault_read-gated",
@@ -872,11 +895,14 @@
         "export-service"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "protected-visibility-vault": "3795b6a09b20",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_receipt-ledger_append",
@@ -891,11 +917,13 @@
         "settlement-engine"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "receipt-ledger": "9f9e82fd4a2f"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "vt_role-policy_effective-permission",
@@ -910,11 +938,13 @@
         "search-service"
       ],
       "phase": "A1",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "7a41986eaea1",
+      "lastRunTestHash": "7a41986eaea1",
+      "lastRunComponentVersions": {
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T12:00:00Z"
     },
     {
       "testId": "ct_certification__extension-registry_certify-package",

@@ -1,6 +1,6 @@
 # Phase A1 - API Review
 
-Status: Template
+Status: Completed in A1
 
 ## Scope
 
@@ -19,6 +19,40 @@ audit, event bus, key management, builder App ID.
 ## OpenAPI Outputs
 
 Record new or updated specs under `docs/API/OpenAPI/**`.
+
+## A1 Contract Additions
+
+- `CommunityPassportApi`
+- `CommunityRolePolicyApi`
+- `CommunityCoreVaultApi`
+- `CommunityProtectedVaultApi`
+- `CommunityConnectionsApi`
+- `CommunityReceiptLedgerApi`
+- `CommunityAuditApi`
+- `CommunityEventBusApi`
+- `CommunityKeyManagementApi`
+- `CommunityBuilderAppIdApi`
+
+These contracts are currently implemented as typed Dart contracts in
+`app/packages/core/loom_api_contracts/lib/clients/community_foundation_apis.dart` and in-memory fakes
+in `app/packages/core/loom_fake_backend/lib/community_foundation_fake.dart`.
+
+## OpenAPI Follow-Ups
+
+- Add public OpenAPI specs for the Foundation APIs when the HTTP boundary is introduced.
+- Keep the A1 fake contracts as the source for package-level validation until API transport is built.
+- Mark higher-layer consumer-contract tests as `pending-counterpart` until their consumers exist.
+
+## Validation Evidence
+
+- `vt_passport-ledger_create-resolve`
+- `vt_role-policy_effective-permission`
+- `vt_core-vault_preferences`
+- `vt_protected-vault_read-gated`
+- `vt_connections_invite-permission`
+- `vt_receipt-ledger_append`
+- `vt_event-bus_publish`
+- `vt_builder-app-id_signing-scope`
 
 ## WSL Ubuntu Tooling Requirement
 

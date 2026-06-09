@@ -45,6 +45,25 @@ are deferred until a hosted Loom build and validation backend exists.
 | A5 | Extension engines | `vt_extension-runtime_session`, `vt_rule-engine_evaluate`, `vt_workflow-engine_transition`, `vt_data-schema_export-index`, `vt_extension-package_downloadable-shape`, `vt_extension-package_asset-manifest`, `vt_extension-package_asset-policy`, `vt_initialization-package_schema`, `vt_initialization-package_community-branding` |
 | A6 | UX micro-components + local demo | `vt_app-shell_required-nav`, `vt_app-shell_ad-slots`, `vt_payment-surface_shell-owned`, `vt_connections-shell_invite-blocked`, `vt_community-card_branding-priority`, `vt_demo-app_empty-community-state`, `vt_demo-app_card-image-after-load`, `vt_fake-backend_import-init-package`, `vt_local-store_persist-reload` |
 
+## Phase A1 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_passport-ledger_create-resolve` | validation | passport-ledger | passport-ledger | pass |
+| `vt_role-policy_effective-permission` | validation | role-policy-consent-engine | role-policy-consent-engine | pass |
+| `vt_core-vault_preferences` | validation | core-member-vault | core-member-vault | pass |
+| `vt_protected-vault_read-gated` | validation | protected-visibility-vault | protected-visibility-vault, role-policy-consent-engine | pass |
+| `vt_connections_invite-permission` | validation | connections-graph | connections-graph | pass |
+| `vt_receipt-ledger_append` | validation | receipt-ledger | receipt-ledger | pass |
+| `vt_event-bus_publish` | validation | event-bus | event-bus | pass |
+| `vt_builder-app-id_signing-scope` | validation | builder-app-id-service | builder-app-id-service, key-management | pass |
+| `ct_role-policy__extension-runtime_effective-permission` | contract | role-policy-consent-engine | role-policy-consent-engine, extension-runtime-bridge | pending-counterpart |
+| `ct_protected-vault__ads_no-fill-sensitive` | contract | protected-visibility-vault | protected-visibility-vault, ad-decision-service | pending-counterpart |
+| `ct_receipt-ledger__wallet_append-payment` | contract | receipt-ledger | receipt-ledger, wallet-dues-donations | pending-counterpart |
+| `ct_event-bus__rule-engine_publish-replay` | contract | event-bus | event-bus, rule-engine | pending-counterpart |
+| `ct_connections__invitation_blocked-path` | contract | connections-graph | connections-graph, invitation-service | pending-counterpart |
+| `ct_builder-app-id__extension-registry_signing-scope` | contract | builder-app-id-service | builder-app-id-service, extension-registry | pending-counterpart |
+
 ## Set B - Workflow Phases
 
 | Phase | Workflow test | Covered workflow |

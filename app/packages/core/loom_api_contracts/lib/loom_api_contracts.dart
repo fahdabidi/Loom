@@ -2,6 +2,7 @@ export 'clients/ad_decision_api.dart';
 export 'clients/ai_gateway_api.dart';
 export 'clients/audience_analytics_api.dart';
 export 'clients/campaign_api.dart';
+export 'clients/community_foundation_apis.dart';
 export 'clients/content_host_api.dart';
 export 'clients/creator_announcement_api.dart';
 export 'clients/creator_audience_api.dart';

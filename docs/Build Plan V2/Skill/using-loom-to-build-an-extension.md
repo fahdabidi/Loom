@@ -224,3 +224,7 @@ Before using a component or workflow, read the matching guide:
 - `workflows/<workflow>.md`
 
 These guides contain practical usage notes beyond OpenAPI.
+
+Phase A1 adds the foundation guides for passport identity, role/policy decisions, member vaults,
+protected data, connections, receipts, audit, events, keys, and builder App IDs. Use these first when
+planning permissions, sensitive-data reads, package signing, or event-driven workflows.

@@ -2,6 +2,7 @@ export 'ad_decision_fake.dart';
 export 'ai_gateway_fake.dart';
 export 'audience_analytics_fake.dart';
 export 'campaign_fake.dart';
+export 'community_foundation_fake.dart';
 export 'content_host_fake.dart';
 export 'creator_announcement_fake.dart';
 export 'creator_audience_fake.dart';
