@@ -1,6 +1,6 @@
 # Phase A5 - API Review
 
-Status: Template
+Status: Completed in A5
 
 ## Scope
 
@@ -26,6 +26,59 @@ secrets/connectors, extension package manifests, and initialization packages.
 
 Record extension-engine spec additions and gaps, including local package and initialization package
 contracts used by B1a. Include package asset validation and initialization branding contracts.
+
+## A5 Contract Additions
+
+- `CommunityExtensionRuntimeApi`
+- `CommunityRuleEngineApi`
+- `CommunityWorkflowApi`
+- `CommunityJobSchedulerApi`
+- `CommunityFunctionRuntimeApi`
+- `CommunityDataSchemaApi`
+- `CommunitySecretsConnectorApi`
+- `CommunityExtensionPackageApi`
+- `CommunityInitializationPackageApi`
+
+These contracts are currently implemented as typed Dart contracts in
+`app/packages/core/loom_api_contracts/lib/clients/community_engine_apis.dart` and in-memory fakes in
+`app/packages/core/loom_fake_backend/lib/community_engine_fake.dart`.
+
+## Package Contracts
+
+- `.loom-extension.zip` must include `loom.extension.json`, UI, assets, schemas, rules, workflows,
+  jobs, docs, tests/fixtures, and signatures.
+- `.loom-init.zip` must include `loom.initialization.json`, seed assets, fixtures, and an import plan.
+- Asset manifests must include file path, hash, kind, dimensions, and alt/decorative metadata.
+- Initialization packages must include handle, display name, logo, card image, hero image, accent
+  color, and idempotency key.
+
+## OpenAPI Follow-Ups
+
+- Publish OpenAPI or JSON Schema specs for extension manifests, initialization packages, asset
+  manifests, rule/workflow/job definitions, schema registration, connector secrets, and runtime session
+  calls.
+- Keep App Shell, Demo loader, and local in-app backend consumer contracts pending until A6/B1a.
+
+## Validation Evidence
+
+- `vt_extension-runtime_session`
+- `vt_extension-runtime_bridge-call`
+- `vt_extension-runtime_permission`
+- `vt_rule-engine_evaluate`
+- `vt_rule-engine_action`
+- `vt_workflow-engine_start`
+- `vt_workflow-engine_transition`
+- `vt_job-scheduler_trigger`
+- `vt_function-runtime_sandbox-permission`
+- `vt_data-schema_register`
+- `vt_data-schema_export-index`
+- `vt_secrets-connector_scoped-secret`
+- `vt_extension-package_downloadable-shape`
+- `vt_extension-package_asset-manifest`
+- `vt_extension-package_asset-policy`
+- `vt_initialization-package_schema`
+- `vt_initialization-package_idempotency`
+- `vt_initialization-package_community-branding`
 
 ## WSL Ubuntu Tooling Requirement
 

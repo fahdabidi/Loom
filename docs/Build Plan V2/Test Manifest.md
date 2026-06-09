@@ -57,10 +57,10 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_receipt-ledger_append` | validation | receipt-ledger | receipt-ledger | pass |
 | `vt_event-bus_publish` | validation | event-bus | event-bus | pass |
 | `vt_builder-app-id_signing-scope` | validation | builder-app-id-service | builder-app-id-service, key-management | pass |
-| `ct_role-policy__extension-runtime_effective-permission` | contract | role-policy-consent-engine | role-policy-consent-engine, extension-runtime-bridge | pending-counterpart |
+| `ct_role-policy__extension-runtime_effective-permission` | contract | role-policy-consent-engine | role-policy-consent-engine, extension-runtime-bridge | pass |
 | `ct_protected-vault__ads_no-fill-sensitive` | contract | protected-visibility-vault | protected-visibility-vault, ad-decision-service | pass |
 | `ct_receipt-ledger__wallet_append-payment` | contract | receipt-ledger | receipt-ledger, wallet-dues-donations | pass |
-| `ct_event-bus__rule-engine_publish-replay` | contract | event-bus | event-bus, rule-engine | pending-counterpart |
+| `ct_event-bus__rule-engine_publish-replay` | contract | event-bus | event-bus, rule-engine | pass |
 | `ct_connections__invitation_blocked-path` | contract | connections-graph | connections-graph, invitation-service | pass |
 | `ct_builder-app-id__extension-registry_signing-scope` | contract | builder-app-id-service | builder-app-id-service, extension-registry | pass |
 
@@ -106,8 +106,8 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_publishing__stream-renderer_render-post` | contract | publishing-service | publishing-service, stream-renderer | pending-counterpart |
 | `ct_messaging__stream-renderer_render-message-and-ad-item` | contract | messaging-stream-service | messaging-stream-service, stream-renderer | pending-counterpart |
 | `ct_messaging__ad-decision_in-stream-insertion` | contract | messaging-stream-service | messaging-stream-service, ad-decision-service | pass |
-| `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pending-counterpart |
-| `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pending-counterpart |
+| `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pass |
+| `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pass |
 
 ## Phase A4a Execution Status
 
@@ -129,9 +129,9 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_import__protected-vault_write` | contract | import-service | import-service, protected-visibility-vault | pass |
 | `ct_protected-vault__import-export_redaction` | contract | protected-visibility-vault | protected-visibility-vault, import-service, export-service | pass |
 | `ct_incident__certification_revoke` | contract | incident-service | incident-service, certification-system | pass |
-| `ct_case-task__workflow-engine_transition` | contract | case-task-service | case-task-service, workflow-engine | pending-counterpart |
+| `ct_case-task__workflow-engine_transition` | contract | case-task-service | case-task-service, workflow-engine | pass |
 | `ct_documents__search_index-visible-documents` | contract | documents-service | documents-service, search-service | pass |
-| `ct_export__components_enumerate` | contract | export-service | export-service, data-schema-store, provider-transfer-service | pending-counterpart |
+| `ct_export__components_enumerate` | contract | export-service | export-service, data-schema-store, provider-transfer-service | pass |
 | `ct_facilities__wallet_reservation-payment` | contract | facilities-service | facilities-service, wallet-dues-donations | pass |
 | `ct_fraud__dispute_resolution-path` | contract | fraud-signal-service | fraud-signal-service, dispute-service | pass |
 
@@ -162,6 +162,39 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_ad-decision__stream-renderer_in-stream-ad` | contract | ad-decision-service | ad-decision-service, stream-renderer | pending-counterpart |
 | `ct_search__app-shell_result-explanations` | contract | search-service | search-service, app-shell-runtime | pending-counterpart |
 | `ct_wallet__payment-surface_checkout` | contract | wallet-dues-donations | wallet-dues-donations, payment-surface | pending-counterpart |
+
+## Phase A5 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_extension-runtime_session` | validation | extension-runtime-bridge | extension-runtime-bridge, extension-registry, role-policy-consent-engine | pass |
+| `vt_extension-runtime_bridge-call` | validation | extension-runtime-bridge | extension-runtime-bridge | pass |
+| `vt_extension-runtime_permission` | validation | extension-runtime-bridge | extension-runtime-bridge | pass |
+| `vt_rule-engine_evaluate` | validation | rule-engine | rule-engine, event-bus | pass |
+| `vt_rule-engine_action` | validation | rule-engine | rule-engine | pass |
+| `vt_workflow-engine_start` | validation | workflow-engine | workflow-engine | pass |
+| `vt_workflow-engine_transition` | validation | workflow-engine | workflow-engine | pass |
+| `vt_job-scheduler_trigger` | validation | job-scheduler | job-scheduler | pass |
+| `vt_function-runtime_sandbox-permission` | validation | function-runtime | function-runtime | pass |
+| `vt_data-schema_register` | validation | data-schema-store | data-schema-store | pass |
+| `vt_data-schema_export-index` | validation | data-schema-store | data-schema-store, export-service, search-service | pass |
+| `vt_secrets-connector_scoped-secret` | validation | secrets-connector-broker | secrets-connector-broker | pass |
+| `vt_extension-package_downloadable-shape` | validation | extension-package-validator | extension-package-validator | pass |
+| `vt_extension-package_asset-manifest` | validation | extension-package-validator | extension-package-validator | pass |
+| `vt_extension-package_asset-policy` | validation | extension-package-validator | extension-package-validator | pass |
+| `vt_initialization-package_schema` | validation | initialization-package-schema | initialization-package-schema | pass |
+| `vt_initialization-package_idempotency` | validation | initialization-package-schema | initialization-package-schema | pass |
+| `vt_initialization-package_community-branding` | validation | initialization-package-schema | initialization-package-schema, community-registry | pass |
+| `ct_rule-engine__extension-runtime_action-dispatch` | contract | rule-engine | rule-engine, extension-runtime-bridge | pass |
+| `ct_job-scheduler__rule-engine_trigger` | contract | job-scheduler | job-scheduler, rule-engine | pass |
+| `ct_workflow-engine__case-task_transition` | contract | workflow-engine | workflow-engine, case-task-service | pass |
+| `ct_data-schema-store__import-export_schema-enumeration` | contract | data-schema-store | data-schema-store, export-service | pass |
+| `ct_data-schema-store__search_indexability` | contract | data-schema-store | data-schema-store, search-service | pass |
+| `ct_extension-runtime__protected-vault_write` | contract | extension-runtime-bridge | extension-runtime-bridge, protected-visibility-vault | pass |
+| `ct_extension-runtime__app-shell_session` | contract | extension-runtime-bridge | extension-runtime-bridge, app-shell-runtime | pending-counterpart |
+| `ct_extension-package__demo-loader_validate-load` | contract | extension-package-validator | extension-package-validator, loom-communities-demo-app | pending-counterpart |
+| `ct_initialization-package__fake-backend_import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pending-counterpart |
+| `ct_initialization-package__fake-backend_branding-import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pending-counterpart |
 
 ## Set B - Workflow Phases
 

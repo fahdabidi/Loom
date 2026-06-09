@@ -3,6 +3,7 @@ export 'clients/ai_gateway_api.dart';
 export 'clients/audience_analytics_api.dart';
 export 'clients/campaign_api.dart';
 export 'clients/community_economic_apis.dart';
+export 'clients/community_engine_apis.dart';
 export 'clients/community_foundation_apis.dart';
 export 'clients/community_experience_apis.dart';
 export 'clients/community_ops_apis.dart';

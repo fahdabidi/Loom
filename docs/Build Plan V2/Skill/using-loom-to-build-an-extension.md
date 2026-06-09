@@ -244,3 +244,7 @@ document libraries, reservations, migration packages, safety escalation, and por
 Phase A4b adds economic/search/ad guides for wallet payments, ad campaigns, ad decisions, indexing,
 search, AI answers, digests, settlement, utility funding, and fraud signals. Use these when
 implementing monetization, ad-off, permission-aware search, cited AI, and auditable economic flows.
+
+Phase A5 adds extension-engine guides for runtime sessions, rules, workflows, jobs, functions, schemas,
+secrets/connectors, extension packages, and initialization packages. Use these to build downloadable
+local-demo artifacts and to keep backend logic declarative before reaching for sandboxed functions.

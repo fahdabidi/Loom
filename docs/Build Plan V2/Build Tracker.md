@@ -42,7 +42,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A3 | Complete | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | A3 contracts/fakes/schema/seed/test suite added; forms/protected-vault contract passes; A4b/A5/A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `a4cc268` |
 | A4a | Complete | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | A4a contracts/fakes/schema/seed/test suite added; document/export, import/protected-vault, incident/certification contracts pass; A4b/A5 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `c56f45b` |
 | A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `4ab715d` |
-| A5 | Not started | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | TBD | TBD |
+| A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | Pending A5 commit |
 | A6 | Not started | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | TBD | TBD |
 | B1a | Not started | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | TBD | TBD |
 | B1b | Not started | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | TBD | TBD |
@@ -268,6 +268,28 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 - **Evidence to record:** A5 gate output, package validator output, asset validator output,
   initialization schema/branding validation, component hashes, API Review path, Skill guide paths,
   commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Contracts:** Added `CommunityExtensionRuntimeApi`, `CommunityRuleEngineApi`,
+  `CommunityWorkflowApi`, `CommunityJobSchedulerApi`, `CommunityFunctionRuntimeApi`,
+  `CommunityDataSchemaApi`, `CommunitySecretsConnectorApi`, `CommunityExtensionPackageApi`, and
+  `CommunityInitializationPackageApi`.
+- **Fakes and harness:** Added `CommunityEngineServicesFakeBackend`, A5 owned-table schema metadata,
+  A5 seed fixture, and `test/a5_engine_services_test.dart`.
+- **Skill/API docs:** Added nine Skill component guides and completed `Phase A5 - API Review.md`.
+- **Manifest:** A5 validation and built-counterpart contract tests are stamped `pass`; A1/A3/A4a
+  provider contracts unblocked by A5 are stamped `pass`; App Shell, Demo loader, and local in-app
+  backend consumer tests remain `pending-counterpart`.
+- **Component versions:** extension-runtime-bridge `1aff2ed72457`; rule-engine `b5071a6c9402`;
+  workflow-engine `15f4ac99a8db`; job-scheduler `1f5f4cd3da14`; function-runtime
+  `875d131947fb`; data-schema-store `6a09d351f11f`; secrets-connector-broker
+  `b008328af7af`; extension-package-validator `512380dc6848`; initialization-package-schema
+  `1dd4a2b2ca52`.
+- **Passed WSL checks:** `dart test test/a1_foundation_components_test.dart
+  test/a2_registry_control_plane_test.dart test/a3_experience_services_test.dart
+  test/a4a_ops_services_test.dart test/a4b_economic_services_test.dart test/a5_engine_services_test.dart`;
+  `dart analyze` on touched A1-A5 packages; manifest and phase gates; boundary lint.
 
 ### Phase A6 - UX Components
 

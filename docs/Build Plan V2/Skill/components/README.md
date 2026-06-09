@@ -73,3 +73,15 @@ Each guide must include:
 - [settlement-engine.md](./settlement-engine.md)
 - [utility-funding-service.md](./utility-funding-service.md)
 - [fraud-signal-service.md](./fraud-signal-service.md)
+
+## Phase A5 Guides
+
+- [extension-runtime-bridge.md](./extension-runtime-bridge.md)
+- [rule-engine.md](./rule-engine.md)
+- [workflow-engine.md](./workflow-engine.md)
+- [job-scheduler.md](./job-scheduler.md)
+- [function-runtime.md](./function-runtime.md)
+- [data-schema-store.md](./data-schema-store.md)
+- [secrets-connector-broker.md](./secrets-connector-broker.md)
+- [extension-package-validator.md](./extension-package-validator.md)
+- [initialization-package-schema.md](./initialization-package-schema.md)

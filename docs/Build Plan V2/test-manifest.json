@@ -407,72 +407,72 @@
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityDataSchemaApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "6a09d351f11f",
+      "fakePresent": true
     },
     {
       "id": "extension-package-validator",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityExtensionPackageApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "512380dc6848",
+      "fakePresent": true
     },
     {
       "id": "extension-runtime-bridge",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityExtensionRuntimeApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "1aff2ed72457",
+      "fakePresent": true
     },
     {
       "id": "function-runtime",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityFunctionRuntimeApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "875d131947fb",
+      "fakePresent": true
     },
     {
       "id": "initialization-package-schema",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityInitializationPackageApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "1dd4a2b2ca52",
+      "fakePresent": true
     },
     {
       "id": "job-scheduler",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityJobSchedulerApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "1f5f4cd3da14",
+      "fakePresent": true
     },
     {
       "id": "rule-engine",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityRuleEngineApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "b5071a6c9402",
+      "fakePresent": true
     },
     {
       "id": "secrets-connector-broker",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunitySecretsConnectorApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "b008328af7af",
+      "fakePresent": true
     },
     {
       "id": "workflow-engine",
       "layer": "engine",
       "phase": "A5",
       "contract": "CommunityWorkflowApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "15f4ac99a8db",
+      "fakePresent": true
     },
     {
       "id": "ad-slots",
@@ -715,13 +715,14 @@
         "rule-engine"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
-        "event-bus": "1f233230d7c9"
+        "event-bus": "1f233230d7c9",
+        "rule-engine": "b5071a6c9402"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_protected-vault__ads_no-fill-sensitive",
@@ -777,13 +778,14 @@
         "extension-runtime-bridge"
       ],
       "phase": "A1",
-      "status": "pending-counterpart",
-      "testHash": "7a41986eaea1",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
-        "role-policy-consent-engine": "01288a26926f"
+        "role-policy-consent-engine": "01288a26926f",
+        "extension-runtime-bridge": "1aff2ed72457"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_builder-app-id_signing-scope",
@@ -1346,13 +1348,14 @@
         "workflow-engine"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
-        "events-service": "dee493ff7d53"
+        "events-service": "dee493ff7d53",
+        "workflow-engine": "15f4ac99a8db"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_forms-voting__protected-vault_sensitive-fields",
@@ -1428,13 +1431,14 @@
         "workflow-engine"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
       "lastRunComponentVersions": {
-        "notification-service": "b7c57774de42"
+        "notification-service": "b7c57774de42",
+        "workflow-engine": "15f4ac99a8db"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_publishing__search_index-visible-content",
@@ -1659,11 +1663,14 @@
         "workflow-engine"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "case-task-service": "e8924d019980",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_documents__export_include-documents",
@@ -1721,11 +1728,15 @@
         "provider-transfer-service"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "export-service": "d4d34a47066a",
+        "data-schema-store": "6a09d351f11f",
+        "provider-transfer-service": "91de09a48370"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_facilities__wallet_reservation-payment",
@@ -2508,11 +2519,14 @@
         "export-service"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "data-schema-store": "6a09d351f11f",
+        "export-service": "d4d34a47066a"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_data-schema-store__search_indexability",
@@ -2526,11 +2540,14 @@
         "search-service"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "data-schema-store": "6a09d351f11f",
+        "search-service": "00f0b4124434"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_extension-package__demo-loader_validate-load",
@@ -2580,11 +2597,14 @@
         "protected-visibility-vault"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_initialization-package__fake-backend_import",
@@ -2652,11 +2672,14 @@
         "rule-engine"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "job-scheduler": "1f5f4cd3da14",
+        "rule-engine": "b5071a6c9402"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_rule-engine__extension-runtime_action-dispatch",
@@ -2670,11 +2693,14 @@
         "extension-runtime-bridge"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "rule-engine": "b5071a6c9402",
+        "extension-runtime-bridge": "1aff2ed72457"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_workflow-engine__case-task_transition",
@@ -2688,11 +2714,14 @@
         "case-task-service"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "workflow-engine": "15f4ac99a8db",
+        "case-task-service": "e8924d019980"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_data-schema_export-index",
@@ -2708,11 +2737,15 @@
         "extension-runtime-bridge"
       ],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "data-schema-store": "6a09d351f11f",
+        "export-service": "d4d34a47066a",
+        "search-service": "00f0b4124434"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_data-schema_register",
@@ -2723,11 +2756,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "data-schema-store": "6a09d351f11f"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-package_downloadable-shape",
@@ -2738,11 +2773,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-package-validator": "512380dc6848"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-package_asset-manifest",
@@ -2753,11 +2790,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-package-validator": "512380dc6848"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-package_asset-policy",
@@ -2768,11 +2807,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-package-validator": "512380dc6848"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-runtime_bridge-call",
@@ -2783,11 +2824,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-runtime_permission",
@@ -2798,11 +2841,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_extension-runtime_session",
@@ -2818,11 +2863,15 @@
         "rule-engine"
       ],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457",
+        "extension-registry": "845149fec120",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_function-runtime_sandbox-permission",
@@ -2833,11 +2882,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "function-runtime": "875d131947fb"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_initialization-package_idempotency",
@@ -2848,11 +2899,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "initialization-package-schema": "1dd4a2b2ca52"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_initialization-package_community-branding",
@@ -2867,11 +2920,14 @@
         "community-card"
       ],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "initialization-package-schema": "1dd4a2b2ca52",
+        "community-registry": "10643e91b879"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_initialization-package_schema",
@@ -2882,11 +2938,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "initialization-package-schema": "1dd4a2b2ca52"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_job-scheduler_trigger",
@@ -2897,11 +2955,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "job-scheduler": "1f5f4cd3da14"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_rule-engine_action",
@@ -2912,11 +2972,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "rule-engine": "b5071a6c9402"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_rule-engine_evaluate",
@@ -2930,11 +2992,14 @@
         "workflow-engine"
       ],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "rule-engine": "b5071a6c9402",
+        "event-bus": "1f233230d7c9"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_secrets-connector_scoped-secret",
@@ -2945,11 +3010,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "secrets-connector-broker": "b008328af7af"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_workflow-engine_start",
@@ -2960,11 +3027,13 @@
       ],
       "dependents": [],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "vt_workflow-engine_transition",
@@ -2978,11 +3047,13 @@
         "notification-service"
       ],
       "phase": "A5",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "b9f992f9488b",
+      "lastRunTestHash": "b9f992f9488b",
+      "lastRunComponentVersions": {
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-09T22:00:00Z"
     },
     {
       "testId": "ct_app-shell__workflow_install-latest",
