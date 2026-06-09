@@ -49,7 +49,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A6 | Complete | A5 + Phase 0 R20 closeout | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | R20 UX Decisions completed; empty-state CTA gap fixed; A6 tests, existing B1a-B3 workflow regressions, manifest gate, A6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `0346c99` prior code commit; R20 closeout `39af637` |
 | B1a | Complete | A6 R20 closeout | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | R20 UX Decisions completed; local package loader, package-pair validation, invalid-file error, duplicate import status, B1a workflow, B1b-B3 regressions, manifest gate, B1a phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `df6f543` prior code commit; R20 closeout `471677a` |
 | B1b | Complete | B1a R20 closeout | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | R20 UX Decisions completed; B1b workflow, B1a/A6 regressions, manifest gate, B1b phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `7825b59` prior code commit; R20 closeout `105cb16` |
-| B2 | Complete - R20 closeout pending commit stamp | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B2 workflow, B1b/B1a/A6 regressions, manifest gate, B2 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `e362090` prior code commit; R20 closeout pending stamp |
+| B2 | Complete | B1b R20 closeout | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; B2 workflow, B1b/B1a/A6 regressions, manifest gate, B2 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | `e362090` prior code commit; R20 closeout `e97ba72` |
 | B3 | Reopened - R20 UX second pass required | B2 R20 closeout | [Youth Soccer Headline Flow](./Phases/Phase%20B3%20-%20Youth%20Soccer%20Headline%20Flow.md) | Youth soccer workflow passes in the Demo App with Local Backend. | Prior workflow passed at `36aee10`, but UX Decisions were completed before R20 existed. Recreate youth soccer UX Decisions before reclosing and rerun B3 regressions. | `36aee10` prior code commit; new closeout TBD |
 | B4 | Not started - R20 UX required first | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | Complete `Phase B4 - UX Decisions.md` using R20 before implementation. | TBD |
 | B5 | Not started - R20 UX required first | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | Complete `Phase B5 - UX Decisions.md` using R20 before implementation. | TBD |
@@ -92,7 +92,7 @@ new method and the affected regressions pass again.
 | A6 | `0346c99`; R20 closeout `39af637` | Complete | Recreated App Shell, UX micro-component, Demo App empty/load/import, branded card, local backend, ad slot, payment surface, data dashboard, and required shell-surface UX decisions using R20. |
 | B1a | `df6f543`; R20 closeout `471677a` | Complete | Recreated local-demo build/download/sideload/install UX decisions using R20, including local file picker/path entry, validation errors, import progress/status, duplicate import, rollback tradeoff, card branding fallback, and local latest-open states. |
 | B1b | `7825b59`; R20 closeout `105cb16` | Complete | Recreated real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
-| B2 | `e362090` | Complete - R20 closeout pending commit stamp | Recreated book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
+| B2 | `e362090`; R20 closeout `e97ba72` | Complete | Recreated book club nomination, voting, event, RSVP, discussion, digest, citations, and local card/open UX decisions using R20. |
 | B3 | `36aee10` | Reopened - R20 UX second pass required | Recreate youth soccer guardian join, protected minor data, roster, registration payment, schedule, notification, and local card/open UX decisions using R20. |
 | B4-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
@@ -551,7 +551,7 @@ Closeout rule for reopened phases:
   packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`; `dart
   run packages/tooling/phase_gate.dart --phase B2 --check-env`; `melos run lint:boundaries`; `git
   diff --check`.
-- **Commit:** Pending R20 closeout commit stamp.
+- **Commit:** R20 closeout `e97ba72`.
 
 ### Phase B3 - Youth Soccer Headline Flow
 
