@@ -14,3 +14,7 @@ dependencies:
     path: ../loom_api_contracts
   loom_design_system:
     path: ../loom_design_system
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

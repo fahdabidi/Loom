@@ -43,7 +43,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A4a | Complete | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | A4a contracts/fakes/schema/seed/test suite added; document/export, import/protected-vault, incident/certification contracts pass; A4b/A5 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `c56f45b` |
 | A4b | Complete | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | A4b contracts/fakes/schema/seed/test suite added; wallet/ad decision, search/AI/digest, settlement/utility, receipt/settlement, fraud/dispute, and earlier unblocked provider contracts pass; A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `4ab715d` |
 | A5 | Complete | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | A5 contracts/fakes/schema/seed/test suite added; runtime/rules/workflows/jobs/functions/schema/secrets/package/init validations pass; engine-unblocked provider contracts pass; A6/B1a consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `b4c8b25` |
-| A6 | Not started | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | TBD | TBD |
+| A6 | Complete | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | A6 shell/local-backend/demo app contracts and tests added; all Set A pending counterpart tests are resolved; Demo App starts empty, Add Community loads a local sample package/init package, cards render, and local backend import/reload passes; manifest and phase gates pass in WSL Ubuntu. | Pending A6 commit |
 | B1a | Not started | A6 | [Local Build Download Sideload Install](./Phases/Phase%20B1a%20-%20Local%20Build%20Download%20Sideload%20Install.md) | Skill prereq setup, local package/init package, fake backend import, card render, and local open pass. | TBD | TBD |
 | B1b | Not started | B1a | [Publish Discover Certify Install](./Phases/Phase%20B1b%20-%20Publish%20Discover%20Certify%20Install.md) | Real-backend publish mode is validated through local stubs/contracts. | TBD | TBD |
 | B2 | Not started | B1b | [Book Club Headline Flow](./Phases/Phase%20B2%20-%20Book%20Club%20Headline%20Flow.md) | Book club workflow passes in the Demo App with Local Backend. | TBD | TBD |
@@ -302,6 +302,27 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 - **Evidence to record:** A6 visual/interaction output, Demo App local backend tests, local persistence
   tests, branded-card screenshot/output, API Review and UX Decisions paths, Skill guide paths, commit
   SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Contracts:** Added App Shell and UX micro-component contracts in `loom_app_shell`, local backend
+  contracts in `loom_demo_local_backend`, and an enabled Add Community local load flow in
+  `loom_communities_demo`.
+- **Tests:** Added `test/a6_app_shell_components_test.dart`, `test/a6_local_backend_test.dart`, and
+  `test/a6_loom_communities_demo_test.dart`.
+- **Skill/API/UX docs:** Added ten Skill component guides and completed `Phase A6 - API Review.md` and
+  `Phase A6 - UX Decisions.md`.
+- **Manifest:** A6 validation and contract tests are stamped `pass`; all Set A pending counterpart tests
+  are resolved.
+- **Component versions:** ad-slots `12d754c97f76`; app-shell-runtime `c7c0a602fdad`;
+  community-card `690cea54a8d2`; connections-shell `212f751b3eb5`; data-dashboard-consent
+  `917fd80d8266`; local-in-app-backend `4067f3df7a7f`; loom-communities-demo-app
+  `1979adae7eba`; navigation-panel `ffc2aecac272`; payment-surface `637ca25646d9`;
+  stream-renderer `07547f0370c6`.
+- **Passed WSL checks:** `flutter test packages/core/loom_app_shell/test/a6_app_shell_components_test.dart`;
+  `dart test test/a6_local_backend_test.dart`; `flutter test
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A1-A5 component regression tests;
+  focused `flutter analyze`; manifest and phase gates; boundary lint.
 
 ### Phase B1a - Local Build, Download, Sideload, Install
 

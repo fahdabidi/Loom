@@ -248,3 +248,7 @@ implementing monetization, ad-off, permission-aware search, cited AI, and audita
 Phase A5 adds extension-engine guides for runtime sessions, rules, workflows, jobs, functions, schemas,
 secrets/connectors, extension packages, and initialization packages. Use these to build downloadable
 local-demo artifacts and to keep backend logic declarative before reaching for sandboxed functions.
+
+Phase A6 adds UX/local-demo guides for App Shell, community cards, navigation, stream rendering,
+connections, ad slots, payment, data dashboard, the local in-app backend, and the Demo App. Use these
+to validate that generated packages install locally and preserve shell-owned structure.

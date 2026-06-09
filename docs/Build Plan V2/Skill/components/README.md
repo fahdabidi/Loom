@@ -85,3 +85,16 @@ Each guide must include:
 - [secrets-connector-broker.md](./secrets-connector-broker.md)
 - [extension-package-validator.md](./extension-package-validator.md)
 - [initialization-package-schema.md](./initialization-package-schema.md)
+
+## Phase A6 Guides
+
+- [app-shell-runtime.md](./app-shell-runtime.md)
+- [community-card.md](./community-card.md)
+- [navigation-panel.md](./navigation-panel.md)
+- [stream-renderer.md](./stream-renderer.md)
+- [connections-shell.md](./connections-shell.md)
+- [ad-slots.md](./ad-slots.md)
+- [payment-surface.md](./payment-surface.md)
+- [data-dashboard-consent.md](./data-dashboard-consent.md)
+- [local-in-app-backend.md](./local-in-app-backend.md)
+- [loom-communities-demo-app.md](./loom-communities-demo-app.md)

@@ -20,3 +20,114 @@ class LocalCommunityInstallDraft {
   final LoomExtensionPackageSummary extensionPackage;
   final LoomInitializationPackageSummary initializationPackage;
 }
+
+class LocalInstalledCommunity {
+  const LocalInstalledCommunity({
+    required this.communityId,
+    required this.displayName,
+    required this.extensionId,
+    required this.logoAssetId,
+    required this.cardImageAssetId,
+    required this.heroImageAssetId,
+    required this.accentColor,
+  });
+
+  final String communityId;
+  final String displayName;
+  final String extensionId;
+  final String? logoAssetId;
+  final String? cardImageAssetId;
+  final String? heroImageAssetId;
+  final String accentColor;
+}
+
+class LocalBackendImportReport {
+  const LocalBackendImportReport({
+    required this.community,
+    required this.created,
+    required this.importedSeedFiles,
+  });
+
+  final LocalInstalledCommunity community;
+  final bool created;
+  final List<String> importedSeedFiles;
+}
+
+class LocalBackendSnapshot {
+  const LocalBackendSnapshot({
+    required this.communities,
+    required this.loadedExtensionIds,
+  });
+
+  final List<LocalInstalledCommunity> communities;
+  final List<String> loadedExtensionIds;
+}
+
+class LocalInAppBackend {
+  LocalInAppBackend({LocalBackendSnapshot? snapshot}) {
+    if (snapshot != null) {
+      for (final community in snapshot.communities) {
+        _communities[community.communityId] = community;
+      }
+      _loadedExtensionIds.addAll(snapshot.loadedExtensionIds);
+    }
+  }
+
+  final Map<String, LocalInstalledCommunity> _communities = {};
+  final Set<String> _loadedExtensionIds = {};
+
+  List<LocalInstalledCommunity> listCommunities() {
+    return _communities.values.toList(growable: false);
+  }
+
+  bool isExtensionLoaded(String extensionId) {
+    return _loadedExtensionIds.contains(extensionId);
+  }
+
+  void loadExtensionPackage(LoomExtensionPackageSummary package) {
+    _loadedExtensionIds.add(package.extensionId);
+  }
+
+  LocalBackendImportReport importInitializationPackage(
+    LoomInitializationPackageSummary package, {
+    String accentColor = '#246B62',
+    String? logoAssetId,
+    String? heroImageAssetId,
+  }) {
+    final existing = _communities[package.communityId];
+    if (existing != null) {
+      return LocalBackendImportReport(
+        community: existing,
+        created: false,
+        importedSeedFiles: package.seedDataFiles,
+      );
+    }
+    final community = LocalInstalledCommunity(
+      communityId: package.communityId,
+      displayName: package.communityName,
+      extensionId: package.extensionId,
+      logoAssetId: logoAssetId,
+      cardImageAssetId: package.cardAssetId,
+      heroImageAssetId: heroImageAssetId,
+      accentColor: accentColor,
+    );
+    _communities[community.communityId] = community;
+    return LocalBackendImportReport(
+      community: community,
+      created: true,
+      importedSeedFiles: package.seedDataFiles,
+    );
+  }
+
+  LocalBackendSnapshot snapshot() {
+    return LocalBackendSnapshot(
+      communities: listCommunities(),
+      loadedExtensionIds: _loadedExtensionIds.toList(growable: false),
+    );
+  }
+
+  void reset() {
+    _communities.clear();
+    _loadedExtensionIds.clear();
+  }
+}

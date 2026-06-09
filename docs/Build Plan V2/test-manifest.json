@@ -479,80 +479,80 @@
       "layer": "ux",
       "phase": "A6",
       "contract": "AdSlotProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "12d754c97f76",
+      "fakePresent": true
     },
     {
       "id": "app-shell-runtime",
       "layer": "ux",
       "phase": "A6",
       "contract": "CommunityAppShellApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "c7c0a602fdad",
+      "fakePresent": true
     },
     {
       "id": "community-card",
       "layer": "ux",
       "phase": "A6",
       "contract": "CommunityCardProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "690cea54a8d2",
+      "fakePresent": true
     },
     {
       "id": "connections-shell",
       "layer": "ux",
       "phase": "A6",
       "contract": "ConnectionsShellProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "212f751b3eb5",
+      "fakePresent": true
     },
     {
       "id": "data-dashboard-consent",
       "layer": "ux",
       "phase": "A6",
       "contract": "DataDashboardProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "917fd80d8266",
+      "fakePresent": true
     },
     {
       "id": "local-in-app-backend",
       "layer": "ux",
       "phase": "A6",
       "contract": "LocalLoomBackendApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "4067f3df7a7f",
+      "fakePresent": true
     },
     {
       "id": "loom-communities-demo-app",
       "layer": "ux",
       "phase": "A6",
       "contract": "LoomCommunitiesDemoApp",
-      "version": "planned",
-      "fakePresent": false
+      "version": "1979adae7eba",
+      "fakePresent": true
     },
     {
       "id": "navigation-panel",
       "layer": "ux",
       "phase": "A6",
       "contract": "NavigationPanelProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "ffc2aecac272",
+      "fakePresent": true
     },
     {
       "id": "payment-surface",
       "layer": "ux",
       "phase": "A6",
       "contract": "PaymentSurfaceProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "637ca25646d9",
+      "fakePresent": true
     },
     {
       "id": "stream-renderer",
       "layer": "ux",
       "phase": "A6",
       "contract": "StreamRendererProps",
-      "version": "planned",
-      "fakePresent": false
+      "version": "07547f0370c6",
+      "fakePresent": true
     }
   ],
   "tests": [
@@ -985,13 +985,14 @@
         "app-shell-runtime"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "67c8b32b08c8",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "community-registry": "10643e91b879"
+        "community-registry": "10643e91b879",
+        "app-shell-runtime": "c7c0a602fdad"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_community-registry__extension-registry_installed-pointers",
@@ -1026,13 +1027,14 @@
         "app-shell-runtime"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "67c8b32b08c8",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "extension-registry": "845149fec120"
+        "extension-registry": "845149fec120",
+        "app-shell-runtime": "c7c0a602fdad"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_invitation__membership_accept",
@@ -1067,13 +1069,14 @@
         "app-shell-runtime"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "67c8b32b08c8",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "membership-service": "743b4c1a71e2"
+        "membership-service": "743b4c1a71e2",
+        "app-shell-runtime": "c7c0a602fdad"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_public-registry__app-shell_trust-state",
@@ -1087,13 +1090,14 @@
         "app-shell-runtime"
       ],
       "phase": "A2",
-      "status": "pending-counterpart",
-      "testHash": "67c8b32b08c8",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "public-registry-read-model": "092951c163e1"
+        "public-registry-read-model": "092951c163e1",
+        "app-shell-runtime": "c7c0a602fdad"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_spaces__membership_space-join",
@@ -1411,13 +1415,14 @@
         "stream-renderer"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "messaging-stream-service": "709572cac272"
+        "messaging-stream-service": "709572cac272",
+        "stream-renderer": "07547f0370c6"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_notification__workflow-engine_delivery",
@@ -1473,13 +1478,14 @@
         "stream-renderer"
       ],
       "phase": "A3",
-      "status": "pending-counterpart",
-      "testHash": "f4d0a361a494",
-      "lastRunTestHash": null,
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
       "lastRunComponentVersions": {
-        "publishing-service": "0e31d279bf88"
+        "publishing-service": "0e31d279bf88",
+        "stream-renderer": "07547f0370c6"
       },
-      "lastRunAt": null
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_events_rsvp",
@@ -2077,11 +2083,14 @@
         "app-shell-runtime"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "ad-decision-service": "e5a7593ee1ea",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_ad-decision__stream-renderer_in-stream-ad",
@@ -2095,11 +2104,14 @@
         "stream-renderer"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "ad-decision-service": "e5a7593ee1ea",
+        "stream-renderer": "07547f0370c6"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_ai-gateway__digest_citations",
@@ -2197,11 +2209,14 @@
         "app-shell-runtime"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "search-service": "00f0b4124434",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_settlement__utility-funding_allocation",
@@ -2257,11 +2272,14 @@
         "payment-surface"
       ],
       "phase": "A4b",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "wallet-dues-donations": "071871e00937",
+        "payment-surface": "637ca25646d9"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_ad-campaign_setup",
@@ -2561,11 +2579,14 @@
         "loom-communities-demo-app"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "extension-package-validator": "512380dc6848",
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_extension-runtime__app-shell_session",
@@ -2579,11 +2600,14 @@
         "app-shell-runtime"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_extension-runtime__protected-vault_write",
@@ -2618,11 +2642,14 @@
         "local-in-app-backend"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "initialization-package-schema": "1dd4a2b2ca52",
+        "local-in-app-backend": "4067f3df7a7f"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_initialization-package__fake-backend_branding-import",
@@ -2636,11 +2663,14 @@
         "local-in-app-backend"
       ],
       "phase": "A5",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "initialization-package-schema": "1dd4a2b2ca52",
+        "local-in-app-backend": "4067f3df7a7f"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_local-backend__community-card_branding-props",
@@ -2654,11 +2684,14 @@
         "community-card"
       ],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "local-in-app-backend": "4067f3df7a7f",
+        "community-card": "690cea54a8d2"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_job-scheduler__rule-engine_trigger",
@@ -3067,11 +3100,14 @@
         "workflow-engine"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "app-shell-runtime": "c7c0a602fdad",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_data-dashboard__workflow_consent-revoke",
@@ -3085,11 +3121,14 @@
         "workflow-engine"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "data-dashboard-consent": "917fd80d8266",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_extension-runtime__app-shell_local-session",
@@ -3103,11 +3142,14 @@
         "app-shell-runtime"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "extension-runtime-bridge": "1aff2ed72457",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_navigation-panel__workflow_messages-connections-reachable",
@@ -3121,11 +3163,14 @@
         "workflow-engine"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "navigation-panel": "ffc2aecac272",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_payment-surface__workflow_ad-off-checkout",
@@ -3139,11 +3184,14 @@
         "workflow-engine"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "payment-surface": "637ca25646d9",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "ct_stream-renderer__workflow_in-stream-ad",
@@ -3157,11 +3205,14 @@
         "workflow-engine"
       ],
       "phase": "A6",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "stream-renderer": "07547f0370c6",
+        "workflow-engine": "15f4ac99a8db"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_app-shell_ad-slots",
@@ -3174,11 +3225,15 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "app-shell-runtime": "c7c0a602fdad",
+        "ad-slots": "12d754c97f76",
+        "ad-decision-service": "e5a7593ee1ea"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_app-shell_cards",
@@ -3189,11 +3244,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_app-shell_required-nav",
@@ -3205,11 +3262,14 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "app-shell-runtime": "c7c0a602fdad",
+        "navigation-panel": "ffc2aecac272"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_app-shell_route-host",
@@ -3220,11 +3280,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_community-card_render-bind",
@@ -3235,11 +3297,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "community-card": "690cea54a8d2"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_community-card_branding-priority",
@@ -3252,11 +3316,15 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "community-card": "690cea54a8d2",
+        "community-registry": "10643e91b879",
+        "extension-package-validator": "512380dc6848"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_connections-shell_invite-blocked",
@@ -3267,11 +3335,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "connections-shell": "212f751b3eb5"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_data-dashboard_consent-revoke",
@@ -3282,11 +3352,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "data-dashboard-consent": "917fd80d8266"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_add-community-button",
@@ -3297,11 +3369,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_cards-after-load",
@@ -3312,11 +3386,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_card-image-after-load",
@@ -3329,11 +3405,15 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba",
+        "community-card": "690cea54a8d2",
+        "local-in-app-backend": "4067f3df7a7f"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_empty-community-state",
@@ -3344,11 +3424,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_local-file-load-extension",
@@ -3359,11 +3441,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_demo-app_open-local-extension",
@@ -3374,11 +3458,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "1979adae7eba"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_fake-backend_import-idempotent",
@@ -3389,11 +3475,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "local-in-app-backend": "4067f3df7a7f"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_fake-backend_import-init-package",
@@ -3404,11 +3492,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "local-in-app-backend": "4067f3df7a7f"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_local-store_persist-reload",
@@ -3419,11 +3509,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "loom-local-store": "2d8dbc534574"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_navigation-panel_messages-connections",
@@ -3434,11 +3526,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "navigation-panel": "ffc2aecac272"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_payment-surface_shell-owned",
@@ -3450,11 +3544,14 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "payment-surface": "637ca25646d9",
+        "wallet-dues-donations": "071871e00937"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_stream-renderer_ad-item-disclosure",
@@ -3465,11 +3562,13 @@
       ],
       "dependents": [],
       "phase": "A6",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "793d68041893",
+      "lastRunTestHash": "793d68041893",
+      "lastRunComponentVersions": {
+        "stream-renderer": "07547f0370c6"
+      },
+      "lastRunAt": "2026-06-10T00:00:00Z"
     },
     {
       "testId": "vt_skill_debug_golden-flow",

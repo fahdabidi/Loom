@@ -10,3 +10,6 @@ environment:
 dependencies:
   loom_extension_package:
     path: ../loom_extension_package
+
+dev_dependencies:
+  test: ^1.26.3

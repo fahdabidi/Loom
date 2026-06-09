@@ -605,3 +605,197 @@ class _LoomDemoShellState extends State<LoomDemoShell> {
     );
   }
 }
+
+class CommunityCardBranding {
+  const CommunityCardBranding({
+    required this.displayName,
+    required this.tagline,
+    required this.category,
+    required this.accentColor,
+    required this.altText,
+    this.logoAssetId,
+    this.cardImageAssetId,
+    this.heroImageAssetId,
+    this.extensionDefaultCardImageAssetId,
+  });
+
+  final String displayName;
+  final String tagline;
+  final String category;
+  final String accentColor;
+  final String altText;
+  final String? logoAssetId;
+  final String? cardImageAssetId;
+  final String? heroImageAssetId;
+  final String? extensionDefaultCardImageAssetId;
+}
+
+class CommunityCardProps {
+  const CommunityCardProps({
+    required this.communityId,
+    required this.handle,
+    required this.branding,
+  });
+
+  final String communityId;
+  final String handle;
+  final CommunityCardBranding branding;
+}
+
+class CommunityCardViewModel {
+  const CommunityCardViewModel({
+    required this.title,
+    required this.subtitle,
+    required this.imageAssetId,
+    required this.accentColor,
+    required this.altText,
+  });
+
+  final String title;
+  final String subtitle;
+  final String imageAssetId;
+  final String accentColor;
+  final String altText;
+}
+
+CommunityCardViewModel bindCommunityCard(CommunityCardProps props) {
+  return CommunityCardViewModel(
+    title: props.branding.displayName,
+    subtitle: props.branding.tagline,
+    imageAssetId: resolveCommunityCardImage(props.branding),
+    accentColor: props.branding.accentColor,
+    altText: props.branding.altText,
+  );
+}
+
+String resolveCommunityCardImage(CommunityCardBranding branding) {
+  return branding.cardImageAssetId ??
+      branding.logoAssetId ??
+      branding.extensionDefaultCardImageAssetId ??
+      'generated:${branding.category}:${branding.accentColor}';
+}
+
+class NavigationPanelProps {
+  const NavigationPanelProps({required this.destinations});
+
+  final List<String> destinations;
+
+  bool get exposesMessagesAndConnections {
+    return destinations.contains('Messages') &&
+        destinations.contains('Connections');
+  }
+}
+
+class StreamItemProps {
+  const StreamItemProps({
+    required this.kind,
+    required this.title,
+    required this.body,
+    required this.disclosure,
+  });
+
+  final String kind;
+  final String title;
+  final String body;
+  final String? disclosure;
+}
+
+class ConnectionsShellProps {
+  const ConnectionsShellProps({required this.blockedPassportIds});
+
+  final List<String> blockedPassportIds;
+
+  bool canInvite(String passportId) {
+    return !blockedPassportIds.contains(passportId);
+  }
+}
+
+StreamItemProps renderAdStreamItem({
+  required String title,
+  required String body,
+}) {
+  return StreamItemProps(
+    kind: 'ad',
+    title: title,
+    body: body,
+    disclosure: 'Sponsored',
+  );
+}
+
+class AdSlotProps {
+  const AdSlotProps({
+    required this.slotId,
+    required this.required,
+    required this.status,
+    required this.reason,
+  });
+
+  final String slotId;
+  final bool required;
+  final String status;
+  final String reason;
+}
+
+class PaymentSurfaceProps {
+  const PaymentSurfaceProps({
+    required this.surfaceId,
+    required this.shellOwned,
+    required this.amountCents,
+  });
+
+  final String surfaceId;
+  final bool shellOwned;
+  final int amountCents;
+}
+
+class DataDashboardProps {
+  const DataDashboardProps({
+    required this.passportId,
+    required this.revokedConsentIds,
+  });
+
+  final String passportId;
+  final List<String> revokedConsentIds;
+
+  DataDashboardProps revokeConsent(String consentId) {
+    return DataDashboardProps(
+      passportId: passportId,
+      revokedConsentIds: [...revokedConsentIds, consentId],
+    );
+  }
+}
+
+class CommunityAppShellRuntime {
+  CommunityAppShellRuntime()
+    : navigation = const NavigationPanelProps(
+        destinations: ['Home', 'Messages', 'Connections'],
+      ),
+      topAdSlot = const AdSlotProps(
+        slotId: 'shell.top-banner',
+        required: true,
+        status: 'no-fill',
+        reason: 'empty-state',
+      );
+
+  final NavigationPanelProps navigation;
+  final AdSlotProps topAdSlot;
+  final List<CommunityCardProps> _cards = [];
+  String? _openExtensionId;
+
+  List<CommunityCardProps> get cards => List.unmodifiable(_cards);
+
+  String? get openExtensionId => _openExtensionId;
+
+  bool get hasRequiredStructure {
+    return navigation.exposesMessagesAndConnections && topAdSlot.required;
+  }
+
+  void installCommunity(CommunityCardProps props) {
+    _cards.removeWhere((card) => card.communityId == props.communityId);
+    _cards.add(props);
+  }
+
+  void openExtension(String extensionId) {
+    _openExtensionId = extensionId;
+  }
+}

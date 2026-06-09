@@ -83,10 +83,10 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_community-registry__extension-registry_installed-pointers` | contract | community-registry | community-registry, extension-registry | pass |
 | `ct_invitation__membership_accept` | contract | invitation-service | invitation-service, membership-service | pass |
 | `ct_spaces__membership_space-join` | contract | spaces-service | spaces-service, membership-service | pass |
-| `ct_community-registry__app-shell_resolve-by-qr` | contract | community-registry | community-registry, app-shell-runtime | pending-counterpart |
-| `ct_extension-registry__app-shell_resolve-latest` | contract | extension-registry | extension-registry, app-shell-runtime | pending-counterpart |
-| `ct_membership__app-shell_member-state` | contract | membership-service | membership-service, app-shell-runtime | pending-counterpart |
-| `ct_public-registry__app-shell_trust-state` | contract | public-registry-read-model | public-registry-read-model, app-shell-runtime | pending-counterpart |
+| `ct_community-registry__app-shell_resolve-by-qr` | contract | community-registry | community-registry, app-shell-runtime | pass |
+| `ct_extension-registry__app-shell_resolve-latest` | contract | extension-registry | extension-registry, app-shell-runtime | pass |
+| `ct_membership__app-shell_member-state` | contract | membership-service | membership-service, app-shell-runtime | pass |
+| `ct_public-registry__app-shell_trust-state` | contract | public-registry-read-model | public-registry-read-model, app-shell-runtime | pass |
 
 ## Phase A3 Execution Status
 
@@ -103,8 +103,8 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_forms-voting_poll-results` | validation | forms-voting-service | forms-voting-service | pass |
 | `ct_forms-voting__protected-vault_sensitive-fields` | contract | forms-voting-service | forms-voting-service, protected-visibility-vault | pass |
 | `ct_publishing__search_index-visible-content` | contract | publishing-service | publishing-service, search-service | pass |
-| `ct_publishing__stream-renderer_render-post` | contract | publishing-service | publishing-service, stream-renderer | pending-counterpart |
-| `ct_messaging__stream-renderer_render-message-and-ad-item` | contract | messaging-stream-service | messaging-stream-service, stream-renderer | pending-counterpart |
+| `ct_publishing__stream-renderer_render-post` | contract | publishing-service | publishing-service, stream-renderer | pass |
+| `ct_messaging__stream-renderer_render-message-and-ad-item` | contract | messaging-stream-service | messaging-stream-service, stream-renderer | pass |
 | `ct_messaging__ad-decision_in-stream-insertion` | contract | messaging-stream-service | messaging-stream-service, ad-decision-service | pass |
 | `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pass |
 | `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pass |
@@ -158,10 +158,10 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_receipt-ledger__settlement_read-window` | contract | receipt-ledger | receipt-ledger, settlement-engine | pass |
 | `ct_settlement__utility-funding_allocation` | contract | settlement-engine | settlement-engine, utility-funding-service | pass |
 | `ct_fraud__settlement_apply-adjustment` | contract | fraud-signal-service | fraud-signal-service, settlement-engine | pass |
-| `ct_ad-decision__app-shell_banner-fill` | contract | ad-decision-service | ad-decision-service, app-shell-runtime | pending-counterpart |
-| `ct_ad-decision__stream-renderer_in-stream-ad` | contract | ad-decision-service | ad-decision-service, stream-renderer | pending-counterpart |
-| `ct_search__app-shell_result-explanations` | contract | search-service | search-service, app-shell-runtime | pending-counterpart |
-| `ct_wallet__payment-surface_checkout` | contract | wallet-dues-donations | wallet-dues-donations, payment-surface | pending-counterpart |
+| `ct_ad-decision__app-shell_banner-fill` | contract | ad-decision-service | ad-decision-service, app-shell-runtime | pass |
+| `ct_ad-decision__stream-renderer_in-stream-ad` | contract | ad-decision-service | ad-decision-service, stream-renderer | pass |
+| `ct_search__app-shell_result-explanations` | contract | search-service | search-service, app-shell-runtime | pass |
+| `ct_wallet__payment-surface_checkout` | contract | wallet-dues-donations | wallet-dues-donations, payment-surface | pass |
 
 ## Phase A5 Execution Status
 
@@ -191,10 +191,42 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_data-schema-store__import-export_schema-enumeration` | contract | data-schema-store | data-schema-store, export-service | pass |
 | `ct_data-schema-store__search_indexability` | contract | data-schema-store | data-schema-store, search-service | pass |
 | `ct_extension-runtime__protected-vault_write` | contract | extension-runtime-bridge | extension-runtime-bridge, protected-visibility-vault | pass |
-| `ct_extension-runtime__app-shell_session` | contract | extension-runtime-bridge | extension-runtime-bridge, app-shell-runtime | pending-counterpart |
-| `ct_extension-package__demo-loader_validate-load` | contract | extension-package-validator | extension-package-validator, loom-communities-demo-app | pending-counterpart |
-| `ct_initialization-package__fake-backend_import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pending-counterpart |
-| `ct_initialization-package__fake-backend_branding-import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pending-counterpart |
+| `ct_extension-runtime__app-shell_session` | contract | extension-runtime-bridge | extension-runtime-bridge, app-shell-runtime | pass |
+| `ct_extension-package__demo-loader_validate-load` | contract | extension-package-validator | extension-package-validator, loom-communities-demo-app | pass |
+| `ct_initialization-package__fake-backend_import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pass |
+| `ct_initialization-package__fake-backend_branding-import` | contract | initialization-package-schema | initialization-package-schema, local-in-app-backend | pass |
+
+## Phase A6 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_app-shell_cards` | validation | app-shell-runtime | app-shell-runtime | pass |
+| `vt_app-shell_required-nav` | validation | app-shell-runtime | app-shell-runtime, navigation-panel | pass |
+| `vt_app-shell_route-host` | validation | app-shell-runtime | app-shell-runtime | pass |
+| `vt_app-shell_ad-slots` | validation | app-shell-runtime | app-shell-runtime, ad-slots | pass |
+| `vt_community-card_render-bind` | validation | community-card | community-card | pass |
+| `vt_community-card_branding-priority` | validation | community-card | community-card, extension-package-validator, initialization-package-schema | pass |
+| `vt_demo-app_card-image-after-load` | validation | loom-communities-demo-app | loom-communities-demo-app, community-card, local-in-app-backend | pass |
+| `vt_navigation-panel_messages-connections` | validation | navigation-panel | navigation-panel | pass |
+| `vt_stream-renderer_ad-item-disclosure` | validation | stream-renderer | stream-renderer | pass |
+| `vt_connections-shell_invite-blocked` | validation | connections-shell | connections-shell | pass |
+| `vt_payment-surface_shell-owned` | validation | payment-surface | payment-surface, wallet-dues-donations | pass |
+| `vt_data-dashboard_consent-revoke` | validation | data-dashboard-consent | data-dashboard-consent | pass |
+| `vt_demo-app_empty-community-state` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
+| `vt_demo-app_add-community-button` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
+| `vt_demo-app_local-file-load-extension` | validation | loom-communities-demo-app | loom-communities-demo-app, extension-package-validator | pass |
+| `vt_demo-app_cards-after-load` | validation | loom-communities-demo-app | loom-communities-demo-app, community-card, local-in-app-backend | pass |
+| `vt_demo-app_open-local-extension` | validation | loom-communities-demo-app | loom-communities-demo-app | pass |
+| `vt_fake-backend_import-init-package` | validation | local-in-app-backend | local-in-app-backend | pass |
+| `vt_fake-backend_import-idempotent` | validation | local-in-app-backend | local-in-app-backend | pass |
+| `vt_local-store_persist-reload` | validation | local-in-app-backend | local-in-app-backend | pass |
+| `ct_app-shell__workflow_install-latest` | contract | app-shell-runtime | app-shell-runtime, workflow-engine | pass |
+| `ct_navigation-panel__workflow_messages-connections-reachable` | contract | navigation-panel | navigation-panel | pass |
+| `ct_stream-renderer__workflow_in-stream-ad` | contract | stream-renderer | stream-renderer | pass |
+| `ct_payment-surface__workflow_ad-off-checkout` | contract | payment-surface | payment-surface, wallet-dues-donations | pass |
+| `ct_data-dashboard__workflow_consent-revoke` | contract | data-dashboard-consent | data-dashboard-consent | pass |
+| `ct_local-backend__community-card_branding-props` | contract | local-in-app-backend | local-in-app-backend, community-card | pass |
+| `ct_extension-runtime__app-shell_local-session` | contract | extension-runtime-bridge | extension-runtime-bridge, app-shell-runtime | pass |
 
 ## Set B - Workflow Phases
 
