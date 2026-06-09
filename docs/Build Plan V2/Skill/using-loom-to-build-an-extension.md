@@ -284,3 +284,7 @@ validation of a mosque extension.
 Phase B6 adds `workflows/messaging-ads-connections.md`. Use it to preserve shell-owned Messages,
 Connections, top banner ads, in-stream sponsored disclosure, blocked-connection affordances,
 sensitive-context no-fill behavior, and local Demo App validation of platform invariants.
+
+Phase B7 adds `workflows/ad-off.md`. Use it for shell-owned ad-off checkout, member and community
+entitlements, eligible ad suppression, sensitive-context no-fill, receipts, settlement, utility
+funding, and local Demo App validation of ad-off economics.

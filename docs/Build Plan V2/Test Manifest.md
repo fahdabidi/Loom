@@ -141,9 +141,11 @@ are deferred until a hosted Loom build and validation backend exists.
 | --- | --- | --- | --- | --- |
 | `vt_wallet_payment` | validation | wallet-dues-donations | wallet-dues-donations, receipt-ledger | pass |
 | `vt_wallet_ad-off` | validation | wallet-dues-donations | wallet-dues-donations | pass |
+| `vt_wallet_community-ad-off` | validation | wallet-dues-donations | wallet-dues-donations | pass |
 | `vt_ad-campaign_setup` | validation | ad-campaign-service | ad-campaign-service | pass |
 | `vt_ad-decision_slot-eligibility` | validation | ad-decision-service | ad-decision-service | pass |
 | `vt_ad-decision_sensitive-no-fill` | validation | ad-decision-service | ad-decision-service, protected-visibility-vault | pass |
+| `vt_ad-decision_ad-off` | validation | ad-decision-service | ad-decision-service, wallet-dues-donations | pass |
 | `vt_search_permission-aware` | validation | search-service | search-service, role-policy-consent-engine | pass |
 | `vt_search_deindex` | validation | search-service | search-service | pass |
 | `vt_ai-gateway_answer` | validation | ai-gateway | ai-gateway, search-service | pass |
@@ -304,6 +306,14 @@ are deferred until a hosted Loom build and validation backend exists.
 | Test | Type | Owner | Covers | Status |
 | --- | --- | --- | --- | --- |
 | `wf_messaging-ads-connections` | workflow | none | workflow-validation-harness, messaging-stream-service, connections-graph, ad-campaign-service, ad-decision-service, stream-renderer, navigation-panel, connections-shell, ad-slots, protected-visibility-vault, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
+## Phase B7 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_wallet_community-ad-off` | validation | wallet-dues-donations | wallet-dues-donations | pass |
+| `vt_ad-decision_ad-off` | validation | ad-decision-service | ad-decision-service, wallet-dues-donations | pass |
+| `wf_ad-off` | workflow | none | workflow-validation-harness, wallet-dues-donations, ad-decision-service, ad-campaign-service, receipt-ledger, settlement-engine, utility-funding-service, payment-surface, ad-slots, protected-visibility-vault, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
 ## Required B1a Local Flow Coverage
 

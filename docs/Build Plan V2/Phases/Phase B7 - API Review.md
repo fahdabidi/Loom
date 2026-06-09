@@ -1,22 +1,36 @@
 # Phase B7 - API Review
 
-Status: Template
+Status: Completed
 
 ## Scope
 
-Ad-off workflow: checkout, entitlement, ad suppression, receipts, settlement, utility allocation.
+Ad-off workflow: shell-owned checkout, member entitlement, community-wide entitlement, eligible ad
+suppression, sensitive no-fill, receipts, settlement, and utility allocation.
 
 ## Review Checklist
 
-- Ad-off entitlement scope.
-- Member vs community ad-off.
-- Sensitive no-fill still enforced.
-- Receipt and settlement fields.
-- Utility funding allocation fields.
+- Ad-off checkout: covered by `PaymentSurfaceProps` with `shellOwned=true`.
+- Member ad-off entitlement: covered by `CommunityWalletApi.purchaseAdOff` and `hasAdOff`.
+- Community ad-off entitlement: covered locally by `purchaseAdOff(scopeId, passportId: 'community')`
+  and wallet fallback lookup.
+- Eligible ad suppression: covered by `CommunityAdDecisionApi.decide` returning `noFill` with
+  `ad-off-entitlement`.
+- Sensitive no-fill: still covered by `CommunityAdDecisionApi.decide(sensitiveContext: true)`.
+- Receipts: covered by `CommunityReceiptLedgerApi.listReceipts`.
+- Settlement: covered by `CommunitySettlementApi.runSettlement`.
+- Utility funding: covered by `CommunityUtilityFundingApi.calculate`.
 
 ## OpenAPI Outputs
 
-Record workflow-driven spec gaps.
+- Hosted Wallet/OpenAPI should add a first-class `adOffScope` enum (`member`, `community`) instead of
+  relying on the local `passportId=community` encoding.
+- Ad Decision OpenAPI should document precedence: sensitive no-fill first, ad-off entitlement second,
+  campaign eligibility third.
+- Receipt OpenAPI should expose entitlement receipt linkage, receipt history, refund/dispute status, and
+  exportable receipt records.
+- Settlement/Utility APIs should expose allocation rationale, basis points, owner net, utility share,
+  and auditable settlement run IDs.
+- Payment Surface API should expose restore/recheck status when real billing providers are integrated.
 
 ## WSL Ubuntu Tooling Requirement
 

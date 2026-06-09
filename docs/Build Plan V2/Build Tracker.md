@@ -54,7 +54,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B4 | Complete | B3 R20 closeout | [HOA Headline Flow](./Phases/Phase%20B4%20-%20HOA%20Headline%20Flow.md) | HOA workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; HOA workflow, affected fake backend regressions, manifest gate, B4 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `f3ffad3` |
 | B5 | Complete | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; mosque workflow, affected component regressions, manifest gate, B5 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `163dad1` |
 | B6 | Complete | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | R20 UX Decisions completed; messaging/ads/connections workflow, affected component regressions, manifest gate, B6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b8c348d` |
-| B7 | Not started - R20 UX required first | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | Complete `Phase B7 - UX Decisions.md` using R20 before implementation. | TBD |
+| B7 | Complete - pending commit stamp | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | R20 UX Decisions completed; ad-off workflow, wallet community-ad-off validation, ad-decision validation, affected regressions, manifest gate, B7 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
 | B8 | Not started - R20 UX required first | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | Complete `Phase B8 - UX Decisions.md` using R20 before implementation. | TBD |
 
 ## Phase Outcome Summary
@@ -97,7 +97,8 @@ new method and the affected regressions pass again.
 | B4 | None | Complete | Completed HOA dues, documents, facilities, architectural review, export, and local card/open UX decisions using R20. |
 | B5 | None | Complete | Completed mosque announcement, event, volunteer, donation, donor visibility, protected care request, notification, and local card/open UX decisions using R20. |
 | B6 | None | Complete | Completed Messages, Connections, stream rendering, in-stream ad disclosure, top banner, no-fill, and block/invite UX decisions using R20. |
-| B7-B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+| B7 | None | Complete - pending commit stamp | Completed ad-off checkout, entitlement, status, receipt, ad preference, ad suppression, sensitive no-fill, settlement, and utility allocation UX decisions using R20. |
+| B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
 
 Closeout rule for reopened phases:
 
@@ -719,6 +720,33 @@ Closeout rule for reopened phases:
 - **Evidence to record:** Workflow output, payment/receipt output, settlement output, API Review and UX
   Decisions paths, Skill workflow guide path, commit SHA.
 
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B7 - UX Decisions.md` with current subscription/ad-off,
+  purchase management, entitlement status, receipt, restore/recheck, and ad-removal expectation
+  references.
+- **Implementation outcome:** Added community-wide ad-off support to the local wallet fake, added
+  `vt_wallet_community-ad-off` and `vt_ad-decision_ad-off`, and added the ad-off workflow test. The
+  workflow validates shell-owned member/community checkout, pre-entitlement ad fill, member ad-off
+  suppression, community ad-off suppression, sensitive-context no-fill, receipt linkage, settlement,
+  utility allocation, and local latest-open behavior.
+- **Skill/API artifacts:** Added `Skill/workflows/ad-off.md`, updated the master Skill walkthrough,
+  and completed `Phase B7 - API Review.md`.
+- **Manifest stamps:** wallet-dues-donations `f49eb0bac62d`; A4b economic test hash `842b87d3f51a`;
+  `wf_ad-off` test hash `2e3f04bafe9d`.
+- **Passed WSL checks:** `flutter test apps/loom_communities_demo/test/b7_ad_off_workflow_test.dart
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A4b/A6 component regression
+  tests; `dart analyze packages/core/loom_fake_backend`; `flutter analyze apps/loom_communities_demo`;
+  manifest and B7 phase gates; boundary lint; `git diff --check`.
+- **Commit:** pending B7 closeout commit.
+
 ### Phase B8 - Export and Migration
 
 - **Achieves:** Validates portability and closes the build-plan readiness gate.
@@ -789,7 +817,7 @@ Use the component hash generated by `manifest_gate`.
 | events-service | A3 | dee493ff7d53 | A3 |
 | forms-voting-service | A3 | 72bf23f58102 | A3 |
 | export-service | A4a | 9079b5ad7e37 | B4 |
-| wallet-dues-donations | A4b | 071871e00937 | A4b |
+| wallet-dues-donations | A4b | f49eb0bac62d | B7 |
 | ad-decision-service | A4b | e5a7593ee1ea | A4b |
 | search-service | A4b | 00f0b4124434 | A4b |
 | extension-runtime-bridge | A5 | 1aff2ed72457 | A5 |

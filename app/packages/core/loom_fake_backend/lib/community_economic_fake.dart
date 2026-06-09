@@ -110,6 +110,7 @@ class CommunityWalletFake implements CommunityWalletApi {
     required String passportId,
   }) async {
     return _adOffByScopeAndPassport[_key(scopeId, passportId)]?.active ??
+        _adOffByScopeAndPassport[_key(scopeId, 'community')]?.active ??
         false;
   }
 

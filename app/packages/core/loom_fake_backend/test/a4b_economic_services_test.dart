@@ -43,6 +43,24 @@ void main() {
       expect(hasAdOff, isTrue);
     });
 
+    test('vt_wallet_community-ad-off', () async {
+      final harness = await _harness();
+      final entitlement = await harness.economic.wallet.purchaseAdOff(
+        scopeId: harness.community.communityId,
+        passportId: 'community',
+        amountCents: 1999,
+        idempotencyKey: 'wallet-community-ad-off',
+      );
+      final memberHasAdOff = await harness.economic.wallet.hasAdOff(
+        scopeId: harness.community.communityId,
+        passportId: communityFoundationSeed.memberPassportId,
+      );
+
+      expect(entitlement.active, isTrue);
+      expect(entitlement.passportId, 'community');
+      expect(memberHasAdOff, isTrue);
+    });
+
     test('vt_ad-campaign_setup', () async {
       final harness = await _harness();
       final campaign = await harness.economic.adCampaigns.createCampaign(
@@ -86,6 +104,26 @@ void main() {
 
       expect(decision.status, CommunityAdDecisionStatus.noFill);
       expect(decision.reason, 'sensitive-context');
+    });
+
+    test('vt_ad-decision_ad-off', () async {
+      final harness = await _harnessWithCampaign();
+      await harness.economic.wallet.purchaseAdOff(
+        scopeId: harness.community.communityId,
+        passportId: communityFoundationSeed.memberPassportId,
+        amountCents: 299,
+        idempotencyKey: 'ad-decision-ad-off-entitlement',
+      );
+      final decision = await harness.economic.adDecisions.decide(
+        communityId: harness.community.communityId,
+        passportId: communityFoundationSeed.memberPassportId,
+        slot: communityEconomicSeed.adSlotTopBanner,
+        sensitiveContext: false,
+        idempotencyKey: 'ad-decision-ad-off',
+      );
+
+      expect(decision.status, CommunityAdDecisionStatus.noFill);
+      expect(decision.reason, 'ad-off-entitlement');
     });
 
     test('vt_search_permission-aware', () async {
