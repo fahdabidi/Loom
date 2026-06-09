@@ -39,7 +39,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 | Phase | Status | Required predecessor | Phase doc | Primary completion checkpoint | Gate evidence | Commit SHA |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Complete - R20 baseline pending commit stamp | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | R20 UX methodology, phase instructions, tracker reset, manifest gate, Phase 0 gate, Skill prereq check, boundary lint, and diff check passed in WSL Ubuntu. | `17b4b81` prior scaffold commit; R20 closeout commit pending stamp |
+| 0 | Complete | None | [Initialize Build](./Phases/Phase%200%20-%20Initialize%20Build.md) | Rules, manifest, tracker, Skill skeleton, Skill setup manifest, workspace scaffold, and gates exist. | R20 UX methodology, phase instructions, tracker reset, manifest gate, Phase 0 gate, Skill prereq check, boundary lint, and diff check passed in WSL Ubuntu. | `17b4b81` prior scaffold commit; R20 closeout `b838fa8` |
 | A1 | Complete | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | A1 contracts/fakes/schema/seed/test suite added; validation tests pass; consumer-contract kits are pending only for unbuilt counterparts; manifest and phase gates pass in WSL Ubuntu. | `e3c0357` |
 | A2 | Complete | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | A2 contracts/fakes/schema/seed/test suite added; A1 unblocked contract tests pass; App Shell counterpart tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `3d6a388` |
 | A3 | Complete | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | A3 contracts/fakes/schema/seed/test suite added; forms/protected-vault contract passes; A4b/A5/A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `a4cc268` |
@@ -88,7 +88,7 @@ new method and the affected regressions pass again.
 
 | Phase | Prior closeout commit | Current status | Required UX recreation |
 | --- | --- | --- | --- |
-| 0 | `17b4b81` | Complete - R20 baseline pending commit stamp | R20 rules, UX Decisions templates, phase instructions, and tracker reset are now the Phase 0 second-pass baseline. |
+| 0 | `17b4b81`; R20 closeout `b838fa8` | Complete | R20 rules, UX Decisions templates, phase instructions, and tracker reset are now the Phase 0 second-pass baseline. |
 | A6 | `0346c99` | Reopened - R20 UX second pass required | Recreate App Shell, UX micro-component, Demo App empty/load/import, branded card, local backend, ad slot, payment surface, data dashboard, and required shell-surface UX decisions using R20. |
 | B1a | `df6f543` | Reopened - R20 UX second pass required | Recreate local-demo build/download/sideload/install UX decisions using R20, including local file picker, validation errors, import progress, duplicate import, rollback, card branding fallback, and local latest-open states. |
 | B1b | `7825b59` | Reopened - R20 UX second pass required | Recreate real-backend-publish, certification, permission review, QR/handle discovery, install preview, and latest-certified open UX decisions using R20. |
@@ -156,7 +156,7 @@ Closeout rule for reopened phases:
 - **Passed WSL checks:** `dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build\ Plan\ V2/test-manifest.json`;
   `dart run packages/tooling/phase_gate.dart --phase 0 --check-env`; `dart run
   packages/tooling/skill_prereq_check.dart --mode local-demo`; `melos run lint:boundaries`; `git diff --check`.
-- **Commit:** Pending R20 baseline commit stamp.
+- **Commit:** R20 baseline closeout `b838fa8`.
 
 ### Phase A1 - Foundation Components
 
