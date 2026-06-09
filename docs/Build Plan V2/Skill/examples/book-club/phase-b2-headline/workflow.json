@@ -23,5 +23,15 @@
   "digest": {
     "query": "Parable",
     "requiresCitations": true
+  },
+  "export": {
+    "customSchemas": ["book_nomination", "book_vote"],
+    "redactionPolicy": "no-sensitive-fields",
+    "includedComponents": [
+      "forms-voting-service",
+      "events-service",
+      "publishing-service",
+      "messaging-stream-service"
+    ]
   }
 }

@@ -164,8 +164,34 @@ void main() {
       );
 
       expect(transfer.verified, isFalse);
+      expect(transfer.rolledBack, isFalse);
       expect(verified.verified, isTrue);
+      expect(verified.rolledBack, isFalse);
       expect(verified.version, 2);
+    });
+
+    test('vt_provider-transfer_rollback', () async {
+      final harness = await _harness();
+      final bundle = await harness.ops.exports.assemble(
+        communityId: harness.community.communityId,
+        redactProtectedData: true,
+        idempotencyKey: 'export-for-rollback',
+      );
+      final transfer = await harness.ops.providerTransfers.executeTransfer(
+        communityId: harness.community.communityId,
+        exportId: bundle.exportId,
+        targetProviderId: communityOpsSeed.targetProviderId,
+        idempotencyKey: 'transfer-rollback-execute',
+      );
+      final rolledBack = await harness.ops.providerTransfers.rollbackTransfer(
+        transferId: transfer.transferId,
+        reason: 'target verification failed',
+        idempotencyKey: 'transfer-rollback',
+      );
+
+      expect(rolledBack.verified, isFalse);
+      expect(rolledBack.rolledBack, isTrue);
+      expect(rolledBack.version, 2);
     });
 
     test('vt_abuse-report_submit', () async {

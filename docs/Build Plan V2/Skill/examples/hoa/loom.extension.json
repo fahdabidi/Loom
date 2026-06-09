@@ -26,5 +26,15 @@
       "kind": "logo",
       "path": "assets/logo.png"
     }
-  ]
+  ],
+  "export": {
+    "customSchemas": ["architectural_review", "facility_reservation"],
+    "redactionPolicy": "protected-fields-redacted",
+    "includedComponents": [
+      "documents-service",
+      "facilities-service",
+      "case-task-service",
+      "wallet-dues-donations"
+    ]
+  }
 }

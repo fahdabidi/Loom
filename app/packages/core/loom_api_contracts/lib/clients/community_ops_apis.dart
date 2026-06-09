@@ -121,6 +121,7 @@ class CommunityProviderTransfer {
     required this.exportId,
     required this.targetProviderId,
     required this.verified,
+    required this.rolledBack,
     required this.version,
   });
 
@@ -129,6 +130,7 @@ class CommunityProviderTransfer {
   final String exportId;
   final String targetProviderId;
   final bool verified;
+  final bool rolledBack;
   final int version;
 }
 
@@ -288,6 +290,12 @@ abstract class CommunityProviderTransferApi {
 
   Future<CommunityProviderTransfer> verifyTransfer({
     required String transferId,
+    required String idempotencyKey,
+  });
+
+  Future<CommunityProviderTransfer> rollbackTransfer({
+    required String transferId,
+    required String reason,
     required String idempotencyKey,
   });
 }

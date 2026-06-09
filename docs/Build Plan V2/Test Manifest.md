@@ -121,6 +121,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_export_assemble` | validation | export-service | export-service | pass |
 | `vt_export_redaction` | validation | export-service | export-service, protected-visibility-vault | pass |
 | `vt_provider-transfer_execute-verify` | validation | provider-transfer-service | provider-transfer-service | pass |
+| `vt_provider-transfer_rollback` | validation | provider-transfer-service | provider-transfer-service | pass |
 | `vt_abuse-report_submit` | validation | abuse-report-service | abuse-report-service | pass |
 | `vt_moderation_case-lifecycle` | validation | moderation-case-service | moderation-case-service | pass |
 | `vt_incident_create` | validation | incident-service | incident-service | pass |
@@ -314,6 +315,14 @@ are deferred until a hosted Loom build and validation backend exists.
 | `vt_wallet_community-ad-off` | validation | wallet-dues-donations | wallet-dues-donations | pass |
 | `vt_ad-decision_ad-off` | validation | ad-decision-service | ad-decision-service, wallet-dues-donations | pass |
 | `wf_ad-off` | workflow | none | workflow-validation-harness, wallet-dues-donations, ad-decision-service, ad-campaign-service, receipt-ledger, settlement-engine, utility-funding-service, payment-surface, ad-slots, protected-visibility-vault, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
+
+## Phase B8 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_api_specs_complete` | validation | api-spec-inventory | api-spec-inventory | pass |
+| `vt_provider-transfer_rollback` | validation | provider-transfer-service | provider-transfer-service | pass |
+| `wf_export-migration` | workflow | none | workflow-validation-harness, export-service, import-service, provider-transfer-service, protected-visibility-vault, data-schema-store, receipt-ledger, wallet-dues-donations, documents-service, app-shell-runtime, loom-communities-demo-app, local-in-app-backend, community-card | pass |
 
 ## Required B1a Local Flow Coverage
 

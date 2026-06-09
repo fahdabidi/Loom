@@ -26,5 +26,15 @@
       "kind": "logo",
       "path": "assets/logo.png"
     }
-  ]
+  ],
+  "export": {
+    "customSchemas": ["iftar_volunteer", "care_request"],
+    "redactionPolicy": "protected-care-fields-redacted",
+    "includedComponents": [
+      "publishing-service",
+      "events-service",
+      "forms-voting-service",
+      "wallet-dues-donations"
+    ]
+  }
 }

@@ -383,6 +383,7 @@ class CommunityProviderTransferFake implements CommunityProviderTransferApi {
       exportId: exportId,
       targetProviderId: targetProviderId,
       verified: false,
+      rolledBack: false,
       version: 1,
     );
     _transfers[transfer.transferId] = transfer;
@@ -405,10 +406,34 @@ class CommunityProviderTransferFake implements CommunityProviderTransferApi {
       exportId: current.exportId,
       targetProviderId: current.targetProviderId,
       verified: true,
+      rolledBack: false,
       version: current.version + 1,
     );
     _transfers[transferId] = verified;
     return verified;
+  }
+
+  @override
+  Future<CommunityProviderTransfer> rollbackTransfer({
+    required String transferId,
+    required String reason,
+    required String idempotencyKey,
+  }) async {
+    final current = _transfers[transferId];
+    if (current == null) {
+      throw StateError('unknown transfer: $transferId');
+    }
+    final rolledBack = CommunityProviderTransfer(
+      transferId: current.transferId,
+      communityId: current.communityId,
+      exportId: current.exportId,
+      targetProviderId: current.targetProviderId,
+      verified: false,
+      rolledBack: true,
+      version: current.version + 1,
+    );
+    _transfers[transferId] = rolledBack;
+    return rolledBack;
   }
 }
 

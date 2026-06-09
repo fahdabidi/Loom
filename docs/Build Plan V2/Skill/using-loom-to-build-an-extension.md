@@ -288,3 +288,7 @@ sensitive-context no-fill behavior, and local Demo App validation of platform in
 Phase B7 adds `workflows/ad-off.md`. Use it for shell-owned ad-off checkout, member and community
 entitlements, eligible ad suppression, sensitive-context no-fill, receipts, settlement, utility
 funding, and local Demo App validation of ad-off economics.
+
+Phase B8 adds `workflows/export-migration.md`. Use it for export scope, protected redaction, import
+replay, extension custom-data export, checksums, provider transfer verification, rollback, API inventory
+validation, and final full-suite Demo App regression.

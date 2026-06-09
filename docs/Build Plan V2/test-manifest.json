@@ -23,8 +23,8 @@
       "layer": "tooling",
       "phase": "0",
       "contract": "ApiSpecInventory",
-      "version": "planned",
-      "fakePresent": false
+      "version": "9d57761d8326",
+      "fakePresent": true
     },
     {
       "id": "phase-test-manifest-bridge",
@@ -327,7 +327,7 @@
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityProviderTransferApi",
-      "version": "91de09a48370",
+      "version": "7a931f77c1e1",
       "fakePresent": true
     },
     {
@@ -1701,8 +1701,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "documents-service": "bc037ffdc17c",
         "export-service": "9079b5ad7e37"
@@ -1750,7 +1750,7 @@
       "lastRunComponentVersions": {
         "export-service": "9079b5ad7e37",
         "data-schema-store": "6a09d351f11f",
-        "provider-transfer-service": "91de09a48370"
+        "provider-transfer-service": "7a931f77c1e1"
       },
       "lastRunAt": "2026-06-09T22:00:00Z"
     },
@@ -1809,8 +1809,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "import-service": "0a178c20caba",
         "protected-visibility-vault": "3795b6a09b20"
@@ -1830,8 +1830,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "incident-service": "d6d2177db39e",
         "certification-system": "7d026e0c94bc"
@@ -1853,8 +1853,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "protected-visibility-vault": "3795b6a09b20",
         "import-service": "0a178c20caba",
@@ -1872,8 +1872,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "abuse-report-service": "5c220d916543"
       },
@@ -1891,8 +1891,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "case-task-service": "e8924d019980"
       },
@@ -1908,8 +1908,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "dispute-service": "5f035552f46b"
       },
@@ -1929,8 +1929,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "documents-service": "bc037ffdc17c",
         "role-policy-consent-engine": "01288a26926f"
@@ -1947,8 +1947,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "export-service": "9079b5ad7e37"
       },
@@ -1967,8 +1967,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "export-service": "9079b5ad7e37",
         "protected-visibility-vault": "3795b6a09b20"
@@ -1987,8 +1987,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "facilities-service": "0c23efd3c350"
       },
@@ -2004,8 +2004,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "import-service": "0a178c20caba"
       },
@@ -2021,8 +2021,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "import-service": "0a178c20caba"
       },
@@ -2038,8 +2038,8 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "incident-service": "d6d2177db39e"
       },
@@ -2057,8 +2057,8 @@
       ],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
         "moderation-case-service": "860c5e41ffe4"
       },
@@ -2074,10 +2074,10 @@
       "dependents": [],
       "phase": "A4a",
       "status": "pass",
-      "testHash": "95ab341622ef",
-      "lastRunTestHash": "95ab341622ef",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
       "lastRunComponentVersions": {
-        "provider-transfer-service": "91de09a48370"
+        "provider-transfer-service": "7a931f77c1e1"
       },
       "lastRunAt": "2026-06-09T18:00:00Z"
     },
@@ -4241,11 +4241,13 @@
       ],
       "dependents": [],
       "phase": "B8",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "9d57761d8326",
+      "lastRunTestHash": "9d57761d8326",
+      "lastRunComponentVersions": {
+        "api-spec-inventory": "9d57761d8326"
+      },
+      "lastRunAt": "2026-06-10T07:00:00Z"
     },
     {
       "testId": "vt_provider-transfer_rollback",
@@ -4256,31 +4258,54 @@
       ],
       "dependents": [],
       "phase": "B8",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "28947a0e1dd0",
+      "lastRunTestHash": "28947a0e1dd0",
+      "lastRunComponentVersions": {
+        "provider-transfer-service": "7a931f77c1e1"
+      },
+      "lastRunAt": "2026-06-10T07:00:00Z"
     },
     {
       "testId": "wf_export-migration",
       "type": "workflow",
       "owningComponent": null,
       "coversComponents": [
+        "workflow-validation-harness",
         "export-service",
         "import-service",
         "provider-transfer-service",
         "protected-visibility-vault",
         "data-schema-store",
-        "receipt-ledger"
+        "receipt-ledger",
+        "wallet-dues-donations",
+        "documents-service",
+        "app-shell-runtime",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card"
       ],
       "dependents": [],
       "phase": "B8",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null,
+      "status": "pass",
+      "testHash": "90ae5bef5a27",
+      "lastRunTestHash": "90ae5bef5a27",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "export-service": "9079b5ad7e37",
+        "import-service": "0a178c20caba",
+        "provider-transfer-service": "7a931f77c1e1",
+        "protected-visibility-vault": "3795b6a09b20",
+        "data-schema-store": "6a09d351f11f",
+        "receipt-ledger": "9f9e82fd4a2f",
+        "wallet-dues-donations": "f49eb0bac62d",
+        "documents-service": "bc037ffdc17c",
+        "app-shell-runtime": "c7c0a602fdad",
+        "loom-communities-demo-app": "fe03608c5230",
+        "local-in-app-backend": "332432d7b39d",
+        "community-card": "690cea54a8d2"
+      },
+      "lastRunAt": "2026-06-10T07:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],

@@ -19,5 +19,10 @@
     "packageId": "pkg_book_club_1",
     "communityHandle": "book-club",
     "assetEvidencePresent": true
+  },
+  "export": {
+    "customSchemas": ["book_nomination", "book_vote"],
+    "redactionPolicy": "no-sensitive-fields",
+    "includedComponents": ["forms-voting-service", "events-service"]
   }
 }

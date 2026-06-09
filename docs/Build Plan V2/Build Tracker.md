@@ -55,7 +55,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B5 | Complete | B4 | [Mosque Headline Flow](./Phases/Phase%20B5%20-%20Mosque%20Headline%20Flow.md) | Mosque workflow passes in the Demo App with Local Backend. | R20 UX Decisions completed; mosque workflow, affected component regressions, manifest gate, B5 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `163dad1` |
 | B6 | Complete | B5 | [Messaging In-Stream Ads and Connections](./Phases/Phase%20B6%20-%20Messaging%20In-Stream%20Ads%20and%20Connections.md) | Messaging, connections, ad surfaces, and shell invariants pass. | R20 UX Decisions completed; messaging/ads/connections workflow, affected component regressions, manifest gate, B6 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b8c348d` |
 | B7 | Complete | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | R20 UX Decisions completed; ad-off workflow, wallet community-ad-off validation, ad-decision validation, affected regressions, manifest gate, B7 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b06d3c7` |
-| B8 | Not started - R20 UX required first | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | Complete `Phase B8 - UX Decisions.md` using R20 before implementation. | TBD |
+| B8 | Complete - pending commit stamp | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | TBD |
 
 ## Phase Outcome Summary
 
@@ -98,7 +98,7 @@ new method and the affected regressions pass again.
 | B5 | None | Complete | Completed mosque announcement, event, volunteer, donation, donor visibility, protected care request, notification, and local card/open UX decisions using R20. |
 | B6 | None | Complete | Completed Messages, Connections, stream rendering, in-stream ad disclosure, top banner, no-fill, and block/invite UX decisions using R20. |
 | B7 | None | Complete | Completed ad-off checkout, entitlement, status, receipt, ad preference, ad suppression, sensitive no-fill, settlement, and utility allocation UX decisions using R20. |
-| B8 | None | Not started - R20 UX required first | Complete each phase's UX Decisions file under R20 before implementation starts. |
+| B8 | None | Complete - pending commit stamp | Completed export scope, redaction, checksums, transfer verify/rollback, retained-record disclosure, API inventory, and readiness-summary UX decisions using R20. |
 
 Closeout rule for reopened phases:
 
@@ -758,6 +758,37 @@ Closeout rule for reopened phases:
 - **Evidence to record:** Workflow output, full regression output, API inventory output, export package
   checksums, API Review and UX Decisions paths, Skill/example paths, commit SHA.
 
+#### Second-Pass Execution Record - 2026-06-09
+
+- **R20 UX decisions:** Completed `Phase B8 - UX Decisions.md` with current export, import/export,
+  retention, provider migration, verification, and rollback/readiness references.
+- **Implementation outcome:** Added provider-transfer rollback to the local API contract and fake,
+  added `vt_provider-transfer_rollback`, added the export/migration workflow test, and added the
+  `vt_api_specs_complete` validator. The workflow validates import preview/replay, protected-field
+  routing, exportable custom schema enumeration, full/redacted export bundles, checksum evidence,
+  receipt inclusion, provider transfer verification, provider transfer rollback, and local latest-open
+  behavior.
+- **Skill/API artifacts:** Added `Skill/workflows/export-migration.md`, updated the master Skill
+  walkthrough, added export metadata to the book club, youth soccer, HOA, and mosque examples, and
+  completed `Phase B8 - API Review.md`.
+- **Manifest stamps:** api-spec-inventory `9d57761d8326`; provider-transfer-service
+  `7a931f77c1e1`; A4a ops test hash `28947a0e1dd0`; `wf_export-migration` test hash
+  `90ae5bef5a27`.
+- **Passed WSL checks:** `flutter test apps/loom_communities_demo/test/b8_export_migration_workflow_test.dart
+  apps/loom_communities_demo/test/b7_ad_off_workflow_test.dart
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; A4a/A4b/A5/A6 component
+  regression tests; API inventory validator; `dart analyze packages/core/loom_api_contracts`;
+  `dart analyze packages/core/loom_fake_backend`; `flutter analyze apps/loom_communities_demo`;
+  manifest and B8 phase gates; boundary lint; `git diff --check`.
+- **Commit:** pending B8 closeout commit.
+
 ## Gate Evidence Template
 
 For each completed phase, paste or link:
@@ -810,6 +841,7 @@ Use the component hash generated by `manifest_gate`.
 | public-registry-read-model | A2 | 092951c163e1 | A2 |
 | spaces-service | A2 | 669c7e405b9a | A2 |
 | workflow-inventory-registry | A2 | 7ab9c7b379ee | A2 |
+| api-spec-inventory | 0 | 9d57761d8326 | B8 |
 | phase-test-manifest-bridge | 0/A2 | 89e620c5af33 | A2 |
 | publishing-service | A3 | 0e31d279bf88 | A3 |
 | messaging-stream-service | A3 | 709572cac272 | A3 |
@@ -817,12 +849,15 @@ Use the component hash generated by `manifest_gate`.
 | events-service | A3 | dee493ff7d53 | A3 |
 | forms-voting-service | A3 | 72bf23f58102 | A3 |
 | export-service | A4a | 9079b5ad7e37 | B4 |
+| import-service | A4a | 0a178c20caba | B8 |
+| provider-transfer-service | A4a | 7a931f77c1e1 | B8 |
 | wallet-dues-donations | A4b | f49eb0bac62d | B7 |
 | ad-decision-service | A4b | e5a7593ee1ea | A4b |
 | search-service | A4b | 00f0b4124434 | A4b |
 | extension-runtime-bridge | A5 | 1aff2ed72457 | A5 |
 | extension-package-validator | A5 | 512380dc6848 | A5 |
 | initialization-package-schema | A5 | 1dd4a2b2ca52 | A5 |
+| data-schema-store | A5 | 6a09d351f11f | B8 |
 | app-shell-runtime | A6 | c7c0a602fdad | A6 |
 | loom-communities-demo-app | A6 | fe03608c5230 | B1a |
 | local-in-app-backend | A6 | 332432d7b39d | B1a |
