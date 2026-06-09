@@ -40,7 +40,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | A1 | Complete | 0 | [Foundation Components](./Phases/Phase%20A1%20-%20Foundation%20Components.md) | Foundation contracts, fakes, stores, validation tests, and provider test kits pass. | A1 contracts/fakes/schema/seed/test suite added; validation tests pass; consumer-contract kits are pending only for unbuilt counterparts; manifest and phase gates pass in WSL Ubuntu. | `e3c0357` |
 | A2 | Complete | A1 | [Registry and Control-Plane Components](./Phases/Phase%20A2%20-%20Registry%20and%20Control-Plane%20Components.md) | Registry/control-plane components pass tests to and from built providers. | A2 contracts/fakes/schema/seed/test suite added; A1 unblocked contract tests pass; App Shell counterpart tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `3d6a388` |
 | A3 | Complete | A2 | [Service Components I](./Phases/Phase%20A3%20-%20Service%20Components%20I%20%28Experience%20Core%29.md) | Experience service components pass validation and unblocked contract tests. | A3 contracts/fakes/schema/seed/test suite added; forms/protected-vault contract passes; A4b/A5/A6 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | `a4cc268` |
-| A4a | Not started | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | TBD | TBD |
+| A4a | Complete | A3 | [Service Components II](./Phases/Phase%20A4a%20-%20Service%20Components%20II%20%28Ops%20and%20Community%29.md) | Ops/community services pass validation and unblocked contract tests. | A4a contracts/fakes/schema/seed/test suite added; document/export, import/protected-vault, incident/certification contracts pass; A4b/A5 consumer tests remain pending; manifest and phase gates pass in WSL Ubuntu. | Pending A4a commit |
 | A4b | Not started | A4a | [Service Components III](./Phases/Phase%20A4b%20-%20Service%20Components%20III%20%28Economic%20Search%20and%20Ads%29.md) | Economic/search/ad services pass validation and unblocked contract tests. | TBD | TBD |
 | A5 | Not started | A4b | [Extension Engine Components](./Phases/Phase%20A5%20-%20Extension%20Engine%20Components.md) | Runtime, rules, workflows, package validator, and initialization package contracts pass. | TBD | TBD |
 | A6 | Not started | A5 | [UX Components](./Phases/Phase%20A6%20-%20UX%20Components.md) | App Shell, UX micro-components, Demo App, and Local Backend Adapter pass. | TBD | TBD |
@@ -203,6 +203,27 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
   use contracts instead of reading sibling storage directly.
 - **Evidence to record:** A4a gate output, component hashes, import/export contract evidence, API Review
   path, Skill guide paths, commit SHA.
+
+#### Execution Record - 2026-06-09
+
+- **Contracts:** Added `CommunityCaseTaskApi`, `CommunityDocumentsApi`, `CommunityFacilitiesApi`,
+  `CommunityImportApi`, `CommunityExportApi`, `CommunityProviderTransferApi`,
+  `CommunityAbuseReportApi`, `CommunityModerationApi`, `CommunityIncidentApi`, and
+  `CommunityDisputeApi`.
+- **Fakes and harness:** Added `CommunityOpsServicesFakeBackend`, A4a owned-table schema metadata, A4a
+  seed fixture, and `test/a4a_ops_services_test.dart`.
+- **Skill/API docs:** Added ten Skill component guides and completed `Phase A4a - API Review.md`.
+- **Manifest:** A4a validation tests and built-counterpart contract tests are stamped `pass`;
+  A4b/A5 consumer-contract tests remain `pending-counterpart`.
+- **Component versions:** abuse-report-service `5c220d916543`; case-task-service `e8924d019980`;
+  dispute-service `5f035552f46b`; documents-service `bc037ffdc17c`; export-service
+  `d4d34a47066a`; facilities-service `0c23efd3c350`; import-service `0a178c20caba`;
+  incident-service `d6d2177db39e`; moderation-case-service `860c5e41ffe4`;
+  provider-transfer-service `91de09a48370`.
+- **Passed WSL checks:** `dart test test/a1_foundation_components_test.dart
+  test/a2_registry_control_plane_test.dart test/a3_experience_services_test.dart
+  test/a4a_ops_services_test.dart`; `dart analyze` on touched A1-A4a packages; manifest and phase
+  gates; boundary lint.
 
 ### Phase A4b - Service Components III
 

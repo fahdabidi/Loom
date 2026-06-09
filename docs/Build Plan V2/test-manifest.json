@@ -255,80 +255,80 @@
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityAbuseReportApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "5c220d916543",
+      "fakePresent": true
     },
     {
       "id": "case-task-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityCaseTaskApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "e8924d019980",
+      "fakePresent": true
     },
     {
       "id": "dispute-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityDisputeApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "5f035552f46b",
+      "fakePresent": true
     },
     {
       "id": "documents-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityDocumentsApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "bc037ffdc17c",
+      "fakePresent": true
     },
     {
       "id": "export-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityExportApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "d4d34a47066a",
+      "fakePresent": true
     },
     {
       "id": "facilities-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityFacilitiesApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "0c23efd3c350",
+      "fakePresent": true
     },
     {
       "id": "import-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityImportApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "0a178c20caba",
+      "fakePresent": true
     },
     {
       "id": "incident-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityIncidentApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "d6d2177db39e",
+      "fakePresent": true
     },
     {
       "id": "moderation-case-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityModerationApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "860c5e41ffe4",
+      "fakePresent": true
     },
     {
       "id": "provider-transfer-service",
       "layer": "service",
       "phase": "A4a",
       "contract": "CommunityProviderTransferApi",
-      "version": "planned",
-      "fakePresent": false
+      "version": "91de09a48370",
+      "fakePresent": true
     },
     {
       "id": "ad-campaign-service",
@@ -1673,11 +1673,14 @@
         "export-service"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "documents-service": "bc037ffdc17c",
+        "export-service": "d4d34a47066a"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "ct_documents__search_index-visible-documents",
@@ -1765,11 +1768,14 @@
         "protected-visibility-vault"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "import-service": "0a178c20caba",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "ct_incident__certification_revoke",
@@ -1783,11 +1789,14 @@
         "certification-system"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "incident-service": "d6d2177db39e",
+        "certification-system": "7d026e0c94bc"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "ct_protected-vault__import-export_redaction",
@@ -1803,11 +1812,15 @@
         "export-service"
       ],
       "phase": "A4a",
-      "status": "pending-counterpart",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "protected-visibility-vault": "3795b6a09b20",
+        "import-service": "0a178c20caba",
+        "export-service": "d4d34a47066a"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_abuse-report_submit",
@@ -1818,11 +1831,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "abuse-report-service": "5c220d916543"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_case-task_transition",
@@ -1835,11 +1850,13 @@
         "workflow-engine"
       ],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "case-task-service": "e8924d019980"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_dispute_open-case",
@@ -1850,11 +1867,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "dispute-service": "5f035552f46b"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_documents_permissions",
@@ -1869,11 +1888,14 @@
         "export-service"
       ],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "documents-service": "bc037ffdc17c",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_export_assemble",
@@ -1884,11 +1906,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "export-service": "d4d34a47066a"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_export_redaction",
@@ -1902,11 +1926,14 @@
         "provider-transfer-service"
       ],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "export-service": "d4d34a47066a",
+        "protected-visibility-vault": "3795b6a09b20"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_facilities_reservation",
@@ -1919,11 +1946,13 @@
         "wallet-dues-donations"
       ],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "facilities-service": "0c23efd3c350"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_import_commit",
@@ -1934,11 +1963,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "import-service": "0a178c20caba"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_import_dry-run",
@@ -1949,11 +1980,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "import-service": "0a178c20caba"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_incident_create",
@@ -1964,11 +1997,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "incident-service": "d6d2177db39e"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_moderation_case-lifecycle",
@@ -1981,11 +2016,13 @@
         "incident-service"
       ],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "moderation-case-service": "860c5e41ffe4"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "vt_provider-transfer_execute-verify",
@@ -1996,11 +2033,13 @@
       ],
       "dependents": [],
       "phase": "A4a",
-      "status": "planned",
-      "testHash": "planned",
-      "lastRunTestHash": null,
-      "lastRunComponentVersions": {},
-      "lastRunAt": null
+      "status": "pass",
+      "testHash": "95ab341622ef",
+      "lastRunTestHash": "95ab341622ef",
+      "lastRunComponentVersions": {
+        "provider-transfer-service": "91de09a48370"
+      },
+      "lastRunAt": "2026-06-09T18:00:00Z"
     },
     {
       "testId": "ct_ad-decision__app-shell_banner-fill",

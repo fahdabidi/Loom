@@ -236,3 +236,7 @@ staleness. Use these before designing installation, discovery, or certification 
 Phase A3 adds experience-service guides for publishing, messaging, notifications, events, and
 forms/voting. Use these when implementing announcements, threads, RSVP flows, polls, or protected
 forms.
+
+Phase A4a adds ops/community guides for cases, documents, facilities, import/export, provider transfer,
+abuse reports, moderation, incidents, and disputes. Use these when implementing approval queues,
+document libraries, reservations, migration packages, safety escalation, and portability behavior.

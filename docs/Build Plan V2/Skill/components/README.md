@@ -47,3 +47,16 @@ Each guide must include:
 - [notification-service.md](./notification-service.md)
 - [events-service.md](./events-service.md)
 - [forms-voting-service.md](./forms-voting-service.md)
+
+## Phase A4a Guides
+
+- [case-task-service.md](./case-task-service.md)
+- [documents-service.md](./documents-service.md)
+- [facilities-service.md](./facilities-service.md)
+- [import-service.md](./import-service.md)
+- [export-service.md](./export-service.md)
+- [provider-transfer-service.md](./provider-transfer-service.md)
+- [abuse-report-service.md](./abuse-report-service.md)
+- [moderation-case-service.md](./moderation-case-service.md)
+- [incident-service.md](./incident-service.md)
+- [dispute-service.md](./dispute-service.md)

@@ -109,6 +109,32 @@ are deferred until a hosted Loom build and validation backend exists.
 | `ct_events__workflow-engine_event-registration` | contract | events-service | events-service, workflow-engine | pending-counterpart |
 | `ct_notification__workflow-engine_delivery` | contract | notification-service | notification-service, workflow-engine | pending-counterpart |
 
+## Phase A4a Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `vt_case-task_transition` | validation | case-task-service | case-task-service | pass |
+| `vt_documents_permissions` | validation | documents-service | documents-service, role-policy-consent-engine | pass |
+| `vt_facilities_reservation` | validation | facilities-service | facilities-service | pass |
+| `vt_import_dry-run` | validation | import-service | import-service | pass |
+| `vt_import_commit` | validation | import-service | import-service | pass |
+| `vt_export_assemble` | validation | export-service | export-service | pass |
+| `vt_export_redaction` | validation | export-service | export-service, protected-visibility-vault | pass |
+| `vt_provider-transfer_execute-verify` | validation | provider-transfer-service | provider-transfer-service | pass |
+| `vt_abuse-report_submit` | validation | abuse-report-service | abuse-report-service | pass |
+| `vt_moderation_case-lifecycle` | validation | moderation-case-service | moderation-case-service | pass |
+| `vt_incident_create` | validation | incident-service | incident-service | pass |
+| `vt_dispute_open-case` | validation | dispute-service | dispute-service | pass |
+| `ct_documents__export_include-documents` | contract | documents-service | documents-service, export-service | pass |
+| `ct_import__protected-vault_write` | contract | import-service | import-service, protected-visibility-vault | pass |
+| `ct_protected-vault__import-export_redaction` | contract | protected-visibility-vault | protected-visibility-vault, import-service, export-service | pass |
+| `ct_incident__certification_revoke` | contract | incident-service | incident-service, certification-system | pass |
+| `ct_case-task__workflow-engine_transition` | contract | case-task-service | case-task-service, workflow-engine | pending-counterpart |
+| `ct_documents__search_index-visible-documents` | contract | documents-service | documents-service, search-service | pending-counterpart |
+| `ct_export__components_enumerate` | contract | export-service | export-service, data-schema-store, provider-transfer-service | pending-counterpart |
+| `ct_facilities__wallet_reservation-payment` | contract | facilities-service | facilities-service, wallet-dues-donations | pending-counterpart |
+| `ct_fraud__dispute_resolution-path` | contract | fraud-signal-service | fraud-signal-service, dispute-service | pending-counterpart |
+
 ## Set B - Workflow Phases
 
 | Phase | Workflow test | Covered workflow |

@@ -1,6 +1,6 @@
 # Phase A4a - API Review
 
-Status: Template
+Status: Completed in A4a
 
 ## Scope
 
@@ -19,6 +19,50 @@ abuse reports, moderation, incidents, disputes.
 ## OpenAPI Outputs
 
 Record ops/community-service spec additions and gaps.
+
+## A4a Contract Additions
+
+- `CommunityCaseTaskApi`
+- `CommunityDocumentsApi`
+- `CommunityFacilitiesApi`
+- `CommunityImportApi`
+- `CommunityExportApi`
+- `CommunityProviderTransferApi`
+- `CommunityAbuseReportApi`
+- `CommunityModerationApi`
+- `CommunityIncidentApi`
+- `CommunityDisputeApi`
+
+These contracts are currently implemented as typed Dart contracts in
+`app/packages/core/loom_api_contracts/lib/clients/community_ops_apis.dart` and in-memory fakes in
+`app/packages/core/loom_fake_backend/lib/community_ops_fake.dart`.
+
+## OpenAPI Follow-Ups
+
+- Add public specs for case transitions, document visibility, facility reservations, import dry-run and
+  commit, export redaction, provider transfer verification, abuse reports, moderation lifecycle,
+  incidents, and disputes.
+- Keep wallet, search, workflow-engine, data-schema-store, and fraud consumer contracts pending until
+  A4b/A5 components exist.
+
+## Validation Evidence
+
+- `vt_case-task_transition`
+- `vt_documents_permissions`
+- `vt_facilities_reservation`
+- `vt_import_dry-run`
+- `vt_import_commit`
+- `vt_export_assemble`
+- `vt_export_redaction`
+- `vt_provider-transfer_execute-verify`
+- `vt_abuse-report_submit`
+- `vt_moderation_case-lifecycle`
+- `vt_incident_create`
+- `vt_dispute_open-case`
+- `ct_documents__export_include-documents`
+- `ct_import__protected-vault_write`
+- `ct_protected-vault__import-export_redaction`
+- `ct_incident__certification_revoke`
 
 ## WSL Ubuntu Tooling Requirement
 
