@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 import 'package:loom_extension_package/loom_extension_package.dart';
@@ -84,6 +85,25 @@ void main() {
       expect(report.importedSeedFiles, contains('seed/events.json'));
     });
 
+    test('vt_fake-backend_parse-arbitrary-zip-package-pair', () {
+      final backend = LocalInAppBackend();
+      final fixture = _writeArbitraryZipPackagePair();
+
+      final report = backend.installLocalPackagePairFromFiles(
+        extensionPackagePath: fixture.extensionPath,
+        initializationPackagePath: fixture.initializationPath,
+      );
+
+      expect(report.created, isTrue);
+      expect(report.community.communityId, 'community_camera_club');
+      expect(report.community.displayName, 'Camera Club');
+      expect(report.community.extensionId, 'ext_camera_club');
+      expect(report.community.cardImageAssetId, 'seed/assets/camera-card.png');
+      expect(report.community.logoAssetId, 'seed/assets/camera-logo.png');
+      expect(report.community.heroImageAssetId, 'seed/assets/camera-hero.png');
+      expect(backend.isExtensionLoaded('ext_camera_club'), isTrue);
+    });
+
     test('vt_fake-backend_import-init-package', () {
       final backend = LocalInAppBackend()..loadExtensionPackage(_extension());
       final report = backend.importInitializationPackage(_initialization());
@@ -149,6 +169,125 @@ void main() {
       expect(report.community.accentColor, '#246B62');
     });
   });
+}
+
+_PackagePairFixture _writeArbitraryZipPackagePair() {
+  final tempDir = Directory.systemTemp.createTempSync('loom_arbitrary_zip_');
+  final extensionFile = File('${tempDir.path}/camera-club.loom-extension.zip');
+  final initializationFile = File('${tempDir.path}/camera-club.loom-init.zip');
+  _writeStoredZip(
+    extensionFile,
+    LoomExtensionPackageFormat.extensionManifestFile,
+    jsonEncode({
+      'schemaVersion': 1,
+      'mode': 'local-demo',
+      'extensionId': 'ext_camera_club',
+      'displayName': 'Camera Club',
+      'version': '1.0.0',
+      'permissions': ['content.publish', 'events.write'],
+      'assets': {
+        'cardImage': 'assets/brand/camera-card.png',
+        'logo': 'assets/brand/camera-logo.png',
+      },
+    }),
+  );
+  _writeStoredZip(
+    initializationFile,
+    LoomExtensionPackageFormat.initializationManifestFile,
+    jsonEncode({
+      'schemaVersion': 1,
+      'communityId': 'community_camera_club',
+      'displayName': 'Camera Club',
+      'extensionId': 'ext_camera_club',
+      'seedDataFiles': ['seed/community.json'],
+      'branding': {
+        'cardImage': 'seed/assets/camera-card.png',
+        'logo': 'seed/assets/camera-logo.png',
+        'heroImage': 'seed/assets/camera-hero.png',
+        'accentColor': '#465C7B',
+      },
+    }),
+  );
+  return _PackagePairFixture(
+    extensionPath: extensionFile.path,
+    initializationPath: initializationFile.path,
+  );
+}
+
+void _writeStoredZip(File file, String entryName, String content) {
+  final nameBytes = utf8.encode(entryName);
+  final contentBytes = utf8.encode(content);
+  final crc = _crc32(contentBytes);
+  final bytes = BytesBuilder();
+
+  _writeU32(bytes, 0x04034b50);
+  _writeU16(bytes, 20);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU32(bytes, crc);
+  _writeU32(bytes, contentBytes.length);
+  _writeU32(bytes, contentBytes.length);
+  _writeU16(bytes, nameBytes.length);
+  _writeU16(bytes, 0);
+  bytes.add(nameBytes);
+  bytes.add(contentBytes);
+
+  final centralDirectoryOffset = bytes.length;
+  _writeU32(bytes, 0x02014b50);
+  _writeU16(bytes, 20);
+  _writeU16(bytes, 20);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU32(bytes, crc);
+  _writeU32(bytes, contentBytes.length);
+  _writeU32(bytes, contentBytes.length);
+  _writeU16(bytes, nameBytes.length);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU32(bytes, 0);
+  _writeU32(bytes, 0);
+  bytes.add(nameBytes);
+
+  final centralDirectorySize = bytes.length - centralDirectoryOffset;
+  _writeU32(bytes, 0x06054b50);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 0);
+  _writeU16(bytes, 1);
+  _writeU16(bytes, 1);
+  _writeU32(bytes, centralDirectorySize);
+  _writeU32(bytes, centralDirectoryOffset);
+  _writeU16(bytes, 0);
+
+  file.writeAsBytesSync(bytes.takeBytes());
+}
+
+void _writeU16(BytesBuilder bytes, int value) {
+  bytes.add(
+    Uint8List(2)..buffer.asByteData().setUint16(0, value, Endian.little),
+  );
+}
+
+void _writeU32(BytesBuilder bytes, int value) {
+  bytes.add(
+    Uint8List(4)..buffer.asByteData().setUint32(0, value, Endian.little),
+  );
+}
+
+int _crc32(List<int> bytes) {
+  var crc = 0xffffffff;
+  for (final byte in bytes) {
+    crc ^= byte;
+    for (var bit = 0; bit < 8; bit += 1) {
+      crc = (crc & 1) == 1 ? 0xedb88320 ^ (crc >> 1) : crc >> 1;
+    }
+  }
+  return (crc ^ 0xffffffff) & 0xffffffff;
 }
 
 _PackagePairFixture _writeArbitraryPackagePair() {

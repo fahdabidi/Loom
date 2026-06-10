@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:loom_extension_package/loom_extension_package.dart';
 
@@ -153,10 +154,12 @@ class LocalInAppBackend {
     final extension = _readJsonObject(
       extensionPackagePath,
       packageLabel: 'extension package',
+      manifestFileName: LoomExtensionPackageFormat.extensionManifestFile,
     );
     final initialization = _readJsonObject(
       initializationPackagePath,
       packageLabel: 'initialization package',
+      manifestFileName: LoomExtensionPackageFormat.initializationManifestFile,
     );
     final extensionPackage = LoomExtensionPackageSummary(
       extensionId: _requiredString(extension, 'extensionId'),
@@ -271,9 +274,19 @@ class LocalInAppBackend {
 Map<String, Object?> _readJsonObject(
   String path, {
   required String packageLabel,
+  required String manifestFileName,
 }) {
+  final bytes = File(path).readAsBytesSync();
+  final archivedManifest = _tryReadArchivedManifest(
+    bytes,
+    manifestFileName: manifestFileName,
+  );
+  if (archivedManifest != null) {
+    return archivedManifest;
+  }
+
   try {
-    final Object? decoded = jsonDecode(File(path).readAsStringSync());
+    final Object? decoded = jsonDecode(utf8.decode(bytes));
     if (decoded is Map<String, Object?>) {
       return decoded;
     }
@@ -283,6 +296,115 @@ Map<String, Object?> _readJsonObject(
     throw StateError('$packageLabel could not be read: ${error.message}');
   }
   throw StateError('$packageLabel must contain a JSON object.');
+}
+
+Map<String, Object?>? _tryReadArchivedManifest(
+  List<int> bytes, {
+  required String manifestFileName,
+}) {
+  try {
+    final archive = _ZipArchiveView(Uint8List.fromList(bytes));
+    final manifestBytes = archive.readFile(manifestFileName);
+    if (manifestBytes == null) {
+      throw StateError('Package archive must include $manifestFileName.');
+    }
+    final Object? decoded = jsonDecode(utf8.decode(manifestBytes));
+    if (decoded is Map<String, Object?>) {
+      return decoded;
+    }
+    throw StateError('$manifestFileName must contain a JSON object.');
+  } on _NotZipArchive {
+    return null;
+  }
+}
+
+class _ZipArchiveView {
+  _ZipArchiveView(this._bytes) : _data = ByteData.sublistView(_bytes);
+
+  final Uint8List _bytes;
+  final ByteData _data;
+
+  Uint8List? readFile(String name) {
+    final eocd = _findEndOfCentralDirectory();
+    if (eocd == -1) {
+      throw const _NotZipArchive();
+    }
+    final entries = _u16(eocd + 10);
+    var offset = _u32(eocd + 16);
+    for (var index = 0; index < entries; index += 1) {
+      if (_u32(offset) != 0x02014b50) {
+        throw StateError('Invalid ZIP central directory.');
+      }
+      final flags = _u16(offset + 8);
+      final method = _u16(offset + 10);
+      final compressedSize = _u32(offset + 20);
+      final nameLength = _u16(offset + 28);
+      final extraLength = _u16(offset + 30);
+      final commentLength = _u16(offset + 32);
+      final localHeaderOffset = _u32(offset + 42);
+      final entryName = utf8.decode(_slice(offset + 46, nameLength));
+      if (entryName == name) {
+        return _readLocalFile(
+          localHeaderOffset: localHeaderOffset,
+          compressedSize: compressedSize,
+          flags: flags,
+          method: method,
+        );
+      }
+      offset += 46 + nameLength + extraLength + commentLength;
+    }
+    return null;
+  }
+
+  Uint8List _readLocalFile({
+    required int localHeaderOffset,
+    required int compressedSize,
+    required int flags,
+    required int method,
+  }) {
+    if (_u32(localHeaderOffset) != 0x04034b50) {
+      throw StateError('Invalid ZIP local file header.');
+    }
+    if ((flags & 0x0001) != 0) {
+      throw StateError('Encrypted ZIP packages are not supported.');
+    }
+    final nameLength = _u16(localHeaderOffset + 26);
+    final extraLength = _u16(localHeaderOffset + 28);
+    final dataOffset = localHeaderOffset + 30 + nameLength + extraLength;
+    final compressed = _slice(dataOffset, compressedSize);
+    if (method == 0) {
+      return compressed;
+    }
+    if (method == 8) {
+      return Uint8List.fromList(ZLibDecoder(raw: true).convert(compressed));
+    }
+    throw StateError('Unsupported ZIP compression method: $method.');
+  }
+
+  int _findEndOfCentralDirectory() {
+    if (_bytes.length < 4) {
+      return -1;
+    }
+    final start = (_bytes.length - 22).clamp(0, _bytes.length - 4).toInt();
+    for (var offset = start; offset >= 0; offset -= 1) {
+      if (_u32(offset) == 0x06054b50) {
+        return offset;
+      }
+    }
+    return -1;
+  }
+
+  Uint8List _slice(int start, int length) {
+    return Uint8List.sublistView(_bytes, start, start + length);
+  }
+
+  int _u16(int offset) => _data.getUint16(offset, Endian.little);
+
+  int _u32(int offset) => _data.getUint32(offset, Endian.little);
+}
+
+class _NotZipArchive implements Exception {
+  const _NotZipArchive();
 }
 
 Map<String, Object?>? _objectMap(Object? value) {

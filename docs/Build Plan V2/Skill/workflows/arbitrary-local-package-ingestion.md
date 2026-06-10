@@ -6,10 +6,12 @@ worked vertical fixtures.
 ## Process
 
 1. Create `<extension-id>.loom-extension.zip` and `<extension-id>.loom-init.zip`.
-2. Ensure the extension package declares `extensionId`, `displayName`, `version`, permissions, and asset
-   IDs.
-3. Ensure the initialization package declares `communityId`, `communityName`, the matching
-   `extensionId`, seed data files, and branding asset IDs.
+2. Ensure the extension package either contains `loom.extension.json` inside the zip or is a direct
+   JSON payload with the locked package suffix. It must declare `extensionId`, `displayName`,
+   `version`, permissions, and asset IDs.
+3. Ensure the initialization package either contains `loom.initialization.json` inside the zip or is a
+   direct JSON payload with the locked package suffix. It must declare `communityId`, `communityName`
+   or `displayName`, the matching `extensionId`, seed data files, and branding asset IDs.
 4. Save both files to a path the Demo Loom Communities App can read.
 5. In the Demo App, choose Add Community and enter both local file paths.
 6. Validate and install the pair.
@@ -30,6 +32,7 @@ worked vertical fixtures.
 ## Covering Tests
 
 - `vt_fake-backend_parse-arbitrary-local-package-pair`
+- `vt_fake-backend_parse-arbitrary-zip-package-pair`
 - `vt_fake-backend_import-arbitrary-package-pair`
 - `vt_demo-app_arbitrary-local-extension-loads-card`
 - `wf_arbitrary-local-package-ingestion`

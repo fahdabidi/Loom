@@ -9,7 +9,8 @@ Skill output as usable.
    schemas, rules, jobs, assets, and UI guidelines.
 2. Generate the local-demo extension package and initialization package.
 3. Save the generated package manifests and debug transcript with the Skill example.
-4. Copy the generated manifests into files with the locked suffixes:
+4. Package the generated manifests into zip files with the locked suffixes, or copy the manifests
+   directly into files with those suffixes for a docs-artifact replay:
    - `<extension-id>.loom-extension.zip`
    - `<extension-id>.loom-init.zip`
 5. Load the pair through the Demo App Add Community flow or the Local In-App Backend replay harness.

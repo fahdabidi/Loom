@@ -42,16 +42,14 @@ Initialization package local-demo payload:
 
 | Decision | Rationale | Covering test |
 | --- | --- | --- |
-| File suffix remains `.loom-extension.zip` and `.loom-init.zip`. | Keeps the future archive format stable even while B9 reads JSON payloads directly for the local fake backend. | `vt_fake-backend_local-package-pair-validation` |
+| File suffix remains `.loom-extension.zip` and `.loom-init.zip`. | Keeps the package contract stable for both direct JSON test payloads and real zip packages. | `vt_fake-backend_local-package-pair-validation` |
 | The local install path requires readable files. | The Demo App must fail on bad local paths instead of silently installing fixtures. | `vt_demo-app_local-loader-invalid-extension-error` |
 | Extension and initialization `extensionId` must match. | Prevents loading one extension with another community's initialization payload. | `vt_fake-backend_parse-arbitrary-local-package-pair` |
 | Branding imports from either top-level fields or `branding`. | Lets the Skill emit a clean initialization package while preserving earlier examples. | `vt_fake-backend_import-arbitrary-package-pair` |
-| Archive decompression is deferred. | B9 proves arbitrary metadata ingestion; true zip archive extraction belongs in package builder/validator hardening. | `wf_arbitrary-local-package-ingestion` |
+| Zip manifest reading is supported. | Skill-generated local-demo zips can be loaded directly when they contain `loom.extension.json` or `loom.initialization.json`. | `vt_fake-backend_parse-arbitrary-zip-package-pair` |
 
 ## Open API Gaps
 
-- Add true zip archive reading once the package builder emits binary archives instead of JSON test
-  payloads with locked suffixes.
 - Add checksum verification between package manifests and local asset files.
 - Add package schema version enforcement and richer diagnostics for missing fields.
 - Add source-map/debug artifact ingestion for Skill iteration runs.
