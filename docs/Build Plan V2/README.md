@@ -56,6 +56,7 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | B8 | [Phase B8 - Export and Migration.md](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Workflows | Export/migration and redaction regressions pass. |
 | B9 | [Phase B9 - Arbitrary Local Package Ingestion.md](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Workflows | Arbitrary local package contents are parsed, imported, rendered, and opened without fixture substitution. |
 | B10 | [Phase B10 - Skill Arbitrary Extension Test Run.md](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Workflows | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. |
+| B11 | [Phase B11 - Skill Prompt Build Validate Complete.md](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Workflows | Owner prompt produces docs, packages, local install/open, workflow validation, and a complete report. |
 
 ## Shared Execution Convention
 

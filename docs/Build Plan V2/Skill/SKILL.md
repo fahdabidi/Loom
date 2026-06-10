@@ -33,6 +33,8 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     `Skill/setup/validation-environment.lock.json` is current and the Demo App smoke check passes.
 11. Bundle local icons/images for local-demo, declare their hashes/metadata, and preserve App
     Shell-owned community-card rendering and fallback priority.
+12. Do not report an arbitrary extension complete until the prompt-build-validate loop emits a
+    completion report with every requested workflow implemented and validated.
 
 ## Delivery Modes
 

@@ -15,7 +15,7 @@
       "layer": "skill",
       "phase": "0",
       "contract": "LoomExtensionSkill",
-      "version": "ebb94a52333e",
+      "version": "518c78e30a44",
       "fakePresent": true
     },
     {
@@ -39,7 +39,7 @@
       "layer": "tooling",
       "phase": "0",
       "contract": "SkillDebugHarness",
-      "version": "809fc9cb1902",
+      "version": "4e3ce721c363",
       "fakePresent": true
     },
     {
@@ -596,12 +596,12 @@
       "dependents": [],
       "phase": "0",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e"
+        "ai-skill-extension-builder": "518c78e30a44"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_skill-debug-harness_fixture-replay",
@@ -613,12 +613,12 @@
       "dependents": [],
       "phase": "0",
       "status": "pass",
-      "testHash": "809fc9cb1902",
-      "lastRunTestHash": "809fc9cb1902",
+      "testHash": "4e3ce721c363",
+      "lastRunTestHash": "4e3ce721c363",
       "lastRunComponentVersions": {
-        "skill-debug-harness": "809fc9cb1902"
+        "skill-debug-harness": "4e3ce721c363"
       },
-      "lastRunAt": "2026-06-10T01:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_skill-prereq_manifest-complete",
@@ -3630,12 +3630,12 @@
       "dependents": [],
       "phase": "B1a",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e"
+        "ai-skill-extension-builder": "518c78e30a44"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_skill-prereq_environment-lock",
@@ -3706,12 +3706,12 @@
       "dependents": [],
       "phase": "B1a",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e"
+        "ai-skill-extension-builder": "518c78e30a44"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_skill_generate-initialization-package",
@@ -3723,12 +3723,12 @@
       "dependents": [],
       "phase": "B1a",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e"
+        "ai-skill-extension-builder": "518c78e30a44"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_skill_generate-brand-assets",
@@ -3742,14 +3742,14 @@
       "dependents": [],
       "phase": "B1a",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e",
+        "ai-skill-extension-builder": "518c78e30a44",
         "extension-package-validator": "512380dc6848",
         "initialization-package-schema": "1dd4a2b2ca52"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "vt_demo-app_local-loader-opens",
@@ -3897,7 +3897,7 @@
       "lastRunComponentVersions": {
         "skill-prereq-setup": "8517e97898ef",
         "workflow-validation-harness": "09c26b466480",
-        "ai-skill-extension-builder": "ebb94a52333e",
+        "ai-skill-extension-builder": "518c78e30a44",
         "extension-package-validator": "512380dc6848",
         "initialization-package-schema": "1dd4a2b2ca52",
         "loom-communities-demo-app": "42175a068b2a",
@@ -3907,7 +3907,7 @@
         "app-shell-runtime": "c7c0a602fdad",
         "extension-runtime-bridge": "1aff2ed72457"
       },
-      "lastRunAt": "2026-06-10T10:00:00Z",
+      "lastRunAt": "2026-06-10T11:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     },
     {
@@ -3920,12 +3920,12 @@
       "dependents": [],
       "phase": "B1b",
       "status": "pass",
-      "testHash": "ebb94a52333e",
-      "lastRunTestHash": "ebb94a52333e",
+      "testHash": "518c78e30a44",
+      "lastRunTestHash": "518c78e30a44",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e"
+        "ai-skill-extension-builder": "518c78e30a44"
       },
-      "lastRunAt": "2026-06-10T04:00:00Z"
+      "lastRunAt": "2026-06-10T11:00:00Z"
     },
     {
       "testId": "wf_build-publish-discover-install",
@@ -3948,7 +3948,7 @@
       "testHash": "617a61fa0308",
       "lastRunTestHash": "617a61fa0308",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "1a5665e8b68d",
+        "ai-skill-extension-builder": "518c78e30a44",
         "builder-app-id-service": "46dfcdb9934e",
         "extension-registry": "845149fec120",
         "certification-system": "7d026e0c94bc",
@@ -3958,7 +3958,7 @@
         "local-in-app-backend": "5d1deb013df1",
         "community-card": "690cea54a8d2"
       },
-      "lastRunAt": "2026-06-10T10:00:00Z",
+      "lastRunAt": "2026-06-10T11:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     },
     {
@@ -4428,8 +4428,8 @@
       "testHash": "3831a8aa5a2b",
       "lastRunTestHash": "3831a8aa5a2b",
       "lastRunComponentVersions": {
-        "ai-skill-extension-builder": "ebb94a52333e",
-        "skill-debug-harness": "809fc9cb1902",
+        "ai-skill-extension-builder": "518c78e30a44",
+        "skill-debug-harness": "4e3ce721c363",
         "extension-package-validator": "512380dc6848",
         "initialization-package-schema": "1dd4a2b2ca52",
         "workflow-validation-harness": "09c26b466480",
@@ -4438,7 +4438,7 @@
         "community-card": "690cea54a8d2",
         "app-shell-runtime": "c7c0a602fdad"
       },
-      "lastRunAt": "2026-06-10T10:00:00Z",
+      "lastRunAt": "2026-06-10T11:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     },
     {
@@ -4463,6 +4463,40 @@
         "initialization-package-schema": "1dd4a2b2ca52"
       },
       "lastRunAt": "2026-06-10T10:00:00Z"
+    },
+    {
+      "testId": "wf_skill-prompt-build-validate-complete",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "ai-skill-extension-builder",
+        "skill-debug-harness",
+        "workflow-validation-harness",
+        "extension-package-validator",
+        "initialization-package-schema",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B11",
+      "status": "pass",
+      "testHash": "14cca9c94402",
+      "lastRunTestHash": "14cca9c94402",
+      "lastRunComponentVersions": {
+        "ai-skill-extension-builder": "518c78e30a44",
+        "skill-debug-harness": "4e3ce721c363",
+        "workflow-validation-harness": "09c26b466480",
+        "extension-package-validator": "512380dc6848",
+        "initialization-package-schema": "1dd4a2b2ca52",
+        "loom-communities-demo-app": "42175a068b2a",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-10T11:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],
   "skillModes": [

@@ -6,3 +6,14 @@ resolution: workspace
 
 environment:
   sdk: ^3.11.5
+
+dependencies:
+  loom_app_shell:
+    path: ../../core/loom_app_shell
+  loom_demo_local_backend:
+    path: ../../core/loom_demo_local_backend
+  loom_extension_package:
+    path: ../../core/loom_extension_package
+
+dev_dependencies:
+  test: ^1.26.3

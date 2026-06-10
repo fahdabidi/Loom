@@ -6,6 +6,7 @@ Initial folders:
 
 - `book-club`
 - `arbitrary-garden-club`
+- `arbitrary-camera-club`
 - `youth-soccer`
 - `hoa`
 - `mosque`

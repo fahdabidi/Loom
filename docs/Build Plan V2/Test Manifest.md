@@ -248,6 +248,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | B8 | `wf_export-migration` | Community export, protected redaction, provider transfer |
 | B9 | `wf_arbitrary-local-package-ingestion` | Arbitrary local package pair -> parsed import -> card -> local latest open |
 | B10 | `wf_skill-arbitrary-extension-test-run` | Arbitrary Skill example artifacts -> replay through local backend -> card -> local latest open |
+| B11 | `wf_skill-prompt-build-validate-complete` | Owner prompt -> workflow capture -> docs/packages -> local install/open -> workflow validation report complete |
 
 ## Phase B1a Execution Status
 
@@ -342,6 +343,12 @@ are deferred until a hosted Loom build and validation backend exists.
 | --- | --- | --- | --- | --- |
 | `wf_skill-arbitrary-extension-test-run` | workflow | none | ai-skill-extension-builder, skill-debug-harness, extension-package-validator, initialization-package-schema, workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
 
+## Phase B11 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_skill-prompt-build-validate-complete` | workflow | none | ai-skill-extension-builder, skill-debug-harness, workflow-validation-harness, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |
@@ -354,6 +361,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | Local persistence, branded card, and open | `vt_local-store_persist-reload`, `vt_demo-app_cards-after-load`, `vt_demo-app_card-image-after-load`, `vt_community-card_branding-priority`, `vt_demo-app_open-local-extension`, `ct_local-backend__community-card_branding-props`, `ct_extension-runtime__app-shell_local-session` |
 | Arbitrary package ingestion | `vt_fake-backend_parse-arbitrary-local-package-pair`, `vt_fake-backend_parse-arbitrary-zip-package-pair`, `vt_fake-backend_import-arbitrary-package-pair`, `vt_demo-app_arbitrary-local-extension-loads-card`, `wf_arbitrary-local-package-ingestion` |
 | Arbitrary Skill output replay | `wf_skill-arbitrary-extension-test-run` |
+| Prompt-driven Skill completion | `wf_skill-prompt-build-validate-complete` |
 | End to end | `wf_local-build-download-sideload-install` |
 
 ## Manifest Rules

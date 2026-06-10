@@ -58,6 +58,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B8 | Complete | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `762f556` |
 | B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp `4a91980` |
 | B10 | Complete | B9 | [Skill Arbitrary Extension Test Run](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. | B10 replay test, zip package parsing validation, B1a-B10 regressions, manifest gate, B10 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `6bee137`; archive hardening `ce667b6` |
+| B11 | Complete | B10 | [Skill Prompt Build Validate Complete](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Owner prompt produces captured workflows, review docs, package artifacts, local install/open behavior, workflow validation, and a complete report. | B11 prompt-build validation, B9/B10 regressions, manifest gate, B11 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `TBD`; tracker stamp `TBD` |
 
 ## Phase Outcome Summary
 
@@ -82,6 +83,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B8 | Closes portability and API inventory readiness. | Export/migration, redaction, transfer verification/rollback, full workflow regression, API spec inventory, Skill/example updates. | Every B1a-B8 workflow remains green and every required API/local contract in that scope is present and validated before arbitrary-ingestion hardening. |
 | B9 | Closes arbitrary local package ingestion. | File-backed package parsing, arbitrary init import, parsed branding/card rendering, local latest open, API/UX/Skill docs, manifest rows. | The Demo App can install an arbitrary Skill/developer-generated local package pair and display the parsed community instead of a built-in fixture. |
 | B10 | Closes arbitrary Skill output replay. | Skill arbitrary Garden Club example, alias-field parser support, replay workflow test, API/UX/Skill docs, manifest rows. | A Skill-generated arbitrary extension/init pair can be reviewed as docs artifacts, replayed through the local backend, rendered as a card, and opened locally. |
+| B11 | Closes prompt-to-complete Skill validation. | Skill prompt parser/build harness, arbitrary Camera Club prompt fixture, generated docs/package validation workflow, completion report schema, API/UX/Skill docs, manifest rows. | An arbitrary owner prompt can be converted into workflows, review docs, extension/init zip packages, local Demo App installation, workflow validation evidence, and a `complete=true` report before the Skill claims completion. |
 
 ## UX Methodology Reset - 2026-06-09
 
@@ -882,6 +884,55 @@ Closeout rule for reopened phases:
   manifest and B10 phase gates; boundary lint; `git diff --check`.
 - **Commit:** B10 implementation `6bee137`; tracker stamp `d5f0956`.
 
+### Phase B11 - Skill Prompt Build Validate Complete
+
+- **Achieves:** Validates the complete Skill execution loop from an arbitrary owner prompt through
+  workflow capture, docs generation, extension/init package generation, Demo App local install/open,
+  workflow validation, and completion reporting.
+- **Deliverables:** `loom_skill_debug_harness` prompt build/validation API, B11 Camera Club prompt
+  fixture, B11 workflow validation test, B11 phase/API/UX docs,
+  `Skill/workflows/prompt-build-validate-complete.md`,
+  `Skill/examples/arbitrary-camera-club/`, Skill completion-rule updates, and manifest rows.
+- **Completed when:** `wf_skill-prompt-build-validate-complete`, B9/B10 regressions, manifest gate,
+  B11 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu.
+- **Evidence to record:** Generated validation report output, generated package/docs paths, API Review
+  and UX Decisions paths, Skill example paths, component/test hashes, implementation commit SHA,
+  tracker stamp SHA.
+
+#### Execution Record - 2026-06-10
+
+- **Implementation outcome:** Added a deterministic Skill Debug Harness that accepts an arbitrary owner
+  prompt, extracts community identity and requested workflows, creates review docs, emits
+  `.loom-extension.zip` and `.loom-init.zip` artifacts, installs them through the Demo App Local
+  Backend, opens the generated extension through App Shell Runtime, validates each captured workflow,
+  and writes `validation-report.json` plus `validation-report.md`.
+- **Skill/API/UX artifacts:** Added `Phase B11 - Skill Prompt Build Validate Complete.md`,
+  `Phase B11 - API Review.md`, `Phase B11 - UX Decisions.md`,
+  `Skill/workflows/prompt-build-validate-complete.md`, and
+  `Skill/examples/arbitrary-camera-club/`.
+- **Manifest stamps:** `ai-skill-extension-builder` `518c78e30a44`; `skill-debug-harness`
+  `4e3ce721c363`; B11 workflow test hash `14cca9c94402`.
+- **Passed WSL checks:** `flutter test
+  apps/loom_communities_demo/test/b11_skill_prompt_build_validate_test.dart`; `flutter test
+  apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart
+  apps/loom_communities_demo/test/b10_skill_arbitrary_extension_test.dart
+  apps/loom_communities_demo/test/b11_skill_prompt_build_validate_test.dart`; `dart analyze
+  packages/tooling/loom_skill_debug_harness`; `flutter analyze apps/loom_communities_demo`;
+  manifest and B11 phase gates; boundary lint; `git diff --check`; full Demo App workflow sweep
+  `flutter test apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b7_ad_off_workflow_test.dart
+  apps/loom_communities_demo/test/b8_export_migration_workflow_test.dart
+  apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart
+  apps/loom_communities_demo/test/b10_skill_arbitrary_extension_test.dart
+  apps/loom_communities_demo/test/b11_skill_prompt_build_validate_test.dart`.
+- **Commit:** B11 implementation `TBD`; tracker stamp `TBD`.
+
 ## Gate Evidence Template
 
 For each completed phase, paste or link:
@@ -915,6 +966,8 @@ Use the component hash generated by `manifest_gate`.
 
 | Component | Phase built | Current version hash | Last phase verified |
 | --- | --- | --- | --- |
+| ai-skill-extension-builder | 0 | 518c78e30a44 | B11 |
+| skill-debug-harness | 0 | 4e3ce721c363 | B11 |
 | passport-ledger | A1 | f6e17f408e74 | A1 |
 | role-policy-consent-engine | A1 | 01288a26926f | A1 |
 | core-member-vault | A1 | 67421d04854e | A1 |

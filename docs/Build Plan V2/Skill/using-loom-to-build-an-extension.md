@@ -303,3 +303,10 @@ Phase B10 adds `workflows/skill-arbitrary-extension-test-run.md` and the
 output: save the generated manifests, replay them through the Demo App Local Backend, confirm the
 generated card and branding render, and open `local:<extension-id>@latest` before approving the
 extension or starting owner-requested iteration.
+
+Phase B11 adds `workflows/prompt-build-validate-complete.md` and the
+`examples/arbitrary-camera-club/owner-prompt.txt` prompt fixture. Use it for the full local Skill
+loop: start from an owner prompt, capture requested workflows, generate review docs and packages, load
+the package pair into the Demo App Local Backend, open the generated extension, validate every target
+workflow, and emit a completion report. Do not claim the extension is complete unless that report has
+`complete=true`.

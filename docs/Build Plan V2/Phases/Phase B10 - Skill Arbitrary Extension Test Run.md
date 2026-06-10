@@ -117,6 +117,4 @@ Before starting the next phase:
 
 ## 10. Next Phase
 
-End of Build Plan V2 local arbitrary-extension validation. Next step is to run an actual Codex Skill
-session against a new owner prompt, replay its generated artifacts through B10, and promote any missing
-capabilities into the next implementation phase.
+Proceed to [Phase B11 - Skill Prompt Build Validate Complete.md](./Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md).
