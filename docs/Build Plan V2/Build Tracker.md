@@ -57,7 +57,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B7 | Complete | B6 | [Ad-Off](./Phases/Phase%20B7%20-%20Ad-Off.md) | Ad-off purchase, ad suppression, receipts, settlement, and utility funding pass. | R20 UX Decisions completed; ad-off workflow, wallet community-ad-off validation, ad-decision validation, affected regressions, manifest gate, B7 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `b06d3c7` |
 | B8 | Complete | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `762f556` |
 | B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp `4a91980` |
-| B10 | In progress | B9 | [Skill Arbitrary Extension Test Run](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. | B10 implementation and gates in progress. | TBD |
+| B10 | Complete | B9 | [Skill Arbitrary Extension Test Run](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. | B10 replay test, B1a-B10 regressions, manifest gate, B10 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `6bee137`; tracker stamp TBD |
 
 ## Phase Outcome Summary
 
@@ -852,7 +852,34 @@ Closeout rule for reopened phases:
 
 #### Execution Record - 2026-06-09
 
-- **Status:** In progress.
+- **Implementation outcome:** Added parser alias support for Skill example fields, added an arbitrary
+  Garden Club Skill example, and added `wf_skill-arbitrary-extension-test-run` to replay those docs
+  artifacts through the Demo App Local Backend.
+- **Skill/API/UX artifacts:** Added `Phase B10 - Skill Arbitrary Extension Test Run.md`,
+  `Phase B10 - API Review.md`, `Phase B10 - UX Decisions.md`,
+  `Skill/workflows/skill-arbitrary-extension-test-run.md`, and
+  `Skill/examples/arbitrary-garden-club/`.
+- **Manifest stamps:** `local-in-app-backend` `86c66ae23974`; B10 workflow test hash
+  `3831a8aa5a2b`.
+- **Passed WSL checks:** `dart test packages/core/loom_demo_local_backend/test/a6_local_backend_test.dart`;
+  `flutter test apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart
+  apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart
+  apps/loom_communities_demo/test/b10_skill_arbitrary_extension_test.dart`;
+  `flutter test apps/loom_communities_demo/test/b1a_local_workflow_test.dart
+  apps/loom_communities_demo/test/b1b_publish_discover_install_test.dart
+  apps/loom_communities_demo/test/b2_book_club_workflow_test.dart
+  apps/loom_communities_demo/test/b3_youth_soccer_workflow_test.dart
+  apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
+  apps/loom_communities_demo/test/b5_mosque_workflow_test.dart
+  apps/loom_communities_demo/test/b6_messaging_ads_connections_workflow_test.dart
+  apps/loom_communities_demo/test/b7_ad_off_workflow_test.dart
+  apps/loom_communities_demo/test/b8_export_migration_workflow_test.dart
+  apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart
+  apps/loom_communities_demo/test/b10_skill_arbitrary_extension_test.dart`;
+  `dart analyze packages/core/loom_demo_local_backend`; `flutter analyze apps/loom_communities_demo`;
+  manifest and B10 phase gates; boundary lint; `git diff --check`.
+- **Commit:** B10 implementation `6bee137`; tracker stamp TBD.
 
 ## Gate Evidence Template
 
