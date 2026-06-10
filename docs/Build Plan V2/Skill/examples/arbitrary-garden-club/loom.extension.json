@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "extensionId": "ext_garden_club",
+  "displayName": "Garden Club",
+  "version": "1.0.0",
+  "mode": "local-demo",
+  "permissions": ["content.publish", "events.write", "forms.write"],
+  "assets": {
+    "logo": "assets/brand/garden-logo.png",
+    "cardImage": "assets/brand/garden-card.png",
+    "heroImage": "assets/brand/garden-hero.png",
+    "defaultCardImage": "assets/brand/garden-default-card.png"
+  },
+  "routes": [
+    {
+      "routeId": "home",
+      "title": "Garden Club",
+      "surface": "community-home"
+    }
+  ],
+  "export": {
+    "customSchemas": ["garden_event", "plant_exchange"],
+    "redactionPolicy": "no-sensitive-fields",
+    "includedComponents": ["events-service", "forms-voting-service"]
+  }
+}

@@ -174,12 +174,15 @@ class LocalInAppBackend {
     final branding = _objectMap(initialization['branding']);
     final initializationPackage = LoomInitializationPackageSummary(
       communityId: _requiredString(initialization, 'communityId'),
-      communityName: _requiredString(initialization, 'communityName'),
+      communityName:
+          _optionalString(initialization['communityName']) ??
+          _requiredString(initialization, 'displayName'),
       extensionId: initExtensionId,
       seedDataFiles: _stringList(initialization['seedDataFiles']),
       cardAssetId:
           _optionalString(initialization['cardAssetId']) ??
-          _optionalString(branding?['cardAssetId']),
+          _optionalString(branding?['cardAssetId']) ??
+          _optionalString(branding?['cardImage']),
     );
 
     return LocalPackagePairInstallPlan(
@@ -191,10 +194,12 @@ class LocalInAppBackend {
           '#246B62',
       logoAssetId:
           _optionalString(initialization['logoAssetId']) ??
-          _optionalString(branding?['logoAssetId']),
+          _optionalString(branding?['logoAssetId']) ??
+          _optionalString(branding?['logo']),
       heroImageAssetId:
           _optionalString(initialization['heroImageAssetId']) ??
-          _optionalString(branding?['heroImageAssetId']),
+          _optionalString(branding?['heroImageAssetId']) ??
+          _optionalString(branding?['heroImage']),
     );
   }
 

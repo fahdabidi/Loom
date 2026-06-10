@@ -297,3 +297,9 @@ Phase B9 adds `workflows/arbitrary-local-package-ingestion.md`. Use it whenever 
 new local-demo extension that is not one of the worked examples. The Demo App loader must consume the
 selected package contents, import the parsed community and branding, render the parsed card, and open
 `local:<extension-id>@latest`; seeing Book Club values in this flow is a validation failure.
+
+Phase B10 adds `workflows/skill-arbitrary-extension-test-run.md` and the
+`examples/arbitrary-garden-club/` replay fixture. Use it as the approval gate for arbitrary Skill
+output: save the generated manifests, replay them through the Demo App Local Backend, confirm the
+generated card and branding render, and open `local:<extension-id>@latest` before approving the
+extension or starting owner-requested iteration.
