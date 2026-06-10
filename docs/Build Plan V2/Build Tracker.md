@@ -58,7 +58,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B8 | Complete | B7 | [Export and Migration](./Phases/Phase%20B8%20-%20Export%20and%20Migration.md) | Export/migration, redaction, full workflow suite, and API spec inventory pass. | R20 UX Decisions completed; export/migration workflow, provider rollback validation, API inventory validation, full Set B regression, manifest gate, B8 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | `762f556` |
 | B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp `4a91980` |
 | B10 | Complete | B9 | [Skill Arbitrary Extension Test Run](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. | B10 replay test, zip package parsing validation, B1a-B10 regressions, manifest gate, B10 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `6bee137`; archive hardening `ce667b6` |
-| B11 | Complete | B10 | [Skill Prompt Build Validate Complete](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Owner prompt produces captured workflows, review docs, package artifacts, local install/open behavior, workflow validation, and a complete report. | B11 prompt-build validation, B9/B10 regressions, manifest gate, B11 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `TBD`; tracker stamp `TBD` |
+| B11 | Complete | B10 | [Skill Prompt Build Validate Complete](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Owner prompt produces captured workflows, review docs, package artifacts, local install/open behavior, workflow validation, and a complete report. | B11 prompt-build validation, B9/B10 regressions, manifest gate, B11 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `21c89db`; tracker stamp `TBD` |
 
 ## Phase Outcome Summary
 
@@ -931,7 +931,7 @@ Closeout rule for reopened phases:
   apps/loom_communities_demo/test/b9_arbitrary_local_package_ingestion_test.dart
   apps/loom_communities_demo/test/b10_skill_arbitrary_extension_test.dart
   apps/loom_communities_demo/test/b11_skill_prompt_build_validate_test.dart`.
-- **Commit:** B11 implementation `TBD`; tracker stamp `TBD`.
+- **Commit:** B11 implementation `21c89db`; tracker stamp `TBD`.
 
 ## Gate Evidence Template
 
