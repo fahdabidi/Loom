@@ -1,0 +1,30 @@
+{
+  "workflowId": "wf_youth-soccer-headline",
+  "communityType": "youth-soccer",
+  "spaces": ["U10 Falcons"],
+  "protectedFields": ["minor_birthdate"],
+  "payments": [
+    {
+      "kind": "dues",
+      "amountCents": 12500
+    }
+  ],
+  "events": [
+    {
+      "title": "Saturday practice",
+      "capacity": 18
+    }
+  ],
+  "notifications": ["Practice starts at 9 AM"],
+  "export": {
+    "customSchemas": ["registration", "roster"],
+    "redactionPolicy": "protected-minor-fields-redacted",
+    "includedComponents": [
+      "membership-service",
+      "spaces-service",
+      "protected-visibility-vault",
+      "wallet-dues-donations",
+      "events-service"
+    ]
+  }
+}

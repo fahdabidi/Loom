@@ -57,6 +57,8 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | B9 | [Phase B9 - Arbitrary Local Package Ingestion.md](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Workflows | Arbitrary local package contents are parsed, imported, rendered, and opened without fixture substitution. |
 | B10 | [Phase B10 - Skill Arbitrary Extension Test Run.md](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Workflows | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. |
 | B11 | [Phase B11 - Skill Prompt Build Validate Complete.md](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Workflows | Owner prompt produces docs, packages, local install/open, workflow validation, and a complete report. |
+| B12 | [Phase B12 - Skill Reference Methodology.md](./Phases/Phase%20B12%20-%20Skill%20Reference%20Methodology.md) | Workflows | The Skill uses Loom reference implementations, UX methodology, API maps, and phase templates before execution. |
+| B13 | [Phase B13 - Skill Multi Prompt Validation.md](./Phases/Phase%20B13%20-%20Skill%20Multi%20Prompt%20Validation.md) | Workflows | Multiple arbitrary community prompts generate packages that pass local Demo App workflow validation. |
 
 ## Shared Execution Convention
 

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "communityId": "community_book_club",
+  "communityName": "Neighborhood Book Club",
+  "extensionId": "ext_book_club",
+  "seedDataFiles": [
+    "seed/community.json",
+    "seed/publish.json",
+    "seed/certification.json"
+  ],
+  "branding": {
+    "cardAssetId": "asset_card_book_club",
+    "logoAssetId": "asset_logo_book_club",
+    "accentColor": "#246B62",
+    "altText": "Book club table"
+  }
+}

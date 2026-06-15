@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "status": "phase-0-skeleton",
+  "toolingEnvironment": {
+    "id": "wsl-ubuntu",
+    "required": true,
+    "hostCommandPrefix": "wsl.exe -d Ubuntu -- bash -lc 'cd \"/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app\" && <command>'",
+    "repoPathInWsl": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app"
+  },
+  "supportedExecutionTargets": [
+    "codex",
+    "claude-code"
+  ],
+  "deferredExecutionTargets": [
+    {
+      "id": "chatgpt-online",
+      "reason": "Requires hosted Loom build and validation backend before it can run local-demo workflow validation."
+    },
+    {
+      "id": "claude-ai-online",
+      "reason": "Requires hosted Loom build and validation backend before it can run local-demo workflow validation."
+    },
+    {
+      "id": "gemini-online",
+      "reason": "Requires hosted Loom build and validation backend before it can run local-demo workflow validation."
+    }
+  ],
+  "tools": [
+    {
+      "id": "wsl-ubuntu",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Install WSL2 with the Ubuntu distribution from the Windows host.",
+      "verify": "test -r /proc/version && grep -qi 'microsoft\\|wsl' /proc/version && test -r /etc/os-release && grep -qi '^ID=ubuntu' /etc/os-release"
+    },
+    {
+      "id": "git",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Use the host package manager.",
+      "verify": "git --version"
+    },
+    {
+      "id": "flutter",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Install Flutter SDK and add it to PATH.",
+      "verify": "flutter --version"
+    },
+    {
+      "id": "dart",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Provided by Flutter SDK or standalone Dart SDK.",
+      "verify": "dart --version"
+    },
+    {
+      "id": "melos",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "dart pub global activate melos",
+      "verify": "melos --version"
+    },
+    {
+      "id": "jdk",
+      "requiredFor": ["local-demo"],
+      "install": "Install a JDK compatible with the Flutter Android toolchain.",
+      "verify": "java -version"
+    },
+    {
+      "id": "android-sdk-platform-tools",
+      "requiredFor": ["local-demo"],
+      "install": "Install Android SDK platform tools.",
+      "verify": "adb version"
+    },
+    {
+      "id": "android-emulator",
+      "requiredFor": ["local-demo"],
+      "install": "Install Android emulator and a pinned test image.",
+      "verify": "emulator -version"
+    },
+    {
+      "id": "archive-tools",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Use host archive tools capable of creating and extracting zip files.",
+      "verify": "phase-gate validates archive command availability"
+    },
+    {
+      "id": "schema-validators",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Use repo-provided validators under app/packages/tooling.",
+      "verify": "melos run validate:extension"
+    },
+    {
+      "id": "loom-tooling",
+      "requiredFor": ["local-demo", "real-backend-publish"],
+      "install": "Created by Phase 0 workspace scaffolding.",
+      "verify": "dart run packages/tooling/phase_gate.dart --phase B1a --check-env"
+    }
+  ],
+  "validationReadyCommand": "dart run packages/tooling/phase_gate.dart --phase B1a --check-env",
+  "environmentLockPath": "docs/Build Plan V2/Skill/setup/validation-environment.lock.json"
+}
