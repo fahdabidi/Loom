@@ -240,6 +240,11 @@ blocker/major counts for that pass, newly introduced blocker/major counts, judge
 next action. The next UX feedback/remediation loop cannot begin until that scorecard is committed with
 the iteration evidence.
 
+B25 screenshot evidence must be produced by `b25_evidence_collector.dart` before the production judge
+runs. The collector owns screenshot metadata, hashes, timestamps, visible text source, device metadata,
+app commit SHA, and schema v4 screen-row scaffolding. It does not judge product quality or mark B25
+passed.
+
 A phase cannot complete when its required judge scorecard has a blocking criterion failure.
 
 ## Test Naming

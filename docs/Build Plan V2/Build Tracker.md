@@ -241,6 +241,11 @@ that pass, newly introduced blocker/major counts, production judge failures, dir
 status, and required next action. Use the scorecards to show the remediation loop is converging toward
 zero unresolved blocker/major findings.
 
+Before the judge runs, use `b25_evidence_collector.dart` to produce the schema v4 evidence from live
+workflow UI evidence. The collector is the deterministic Evidence Collector Tool for B25: it records
+screenshot paths, hashes, captured-at timestamps, device metadata, visible text source, app commit SHA,
+and screen-row scaffolding, but it cannot make the production UX pass/fail decision.
+
 Every B25 independent UX review must include:
 
 - Fresh walkthroughs of the actual app surfaces after B22-B24, using the visible Android emulator and
@@ -311,7 +316,7 @@ tools keep the implementation worker separate from the pass/fail judge.
 | B22 | `domain_surface_classifier.dart` | `domain-surface-scorecard.json/.md` | A primary workflow remains a generic workflow-card, checklist modal, metadata page, repeated card shell, or global workflow list. |
 | B23 | `persona_ux_judge.dart` | `persona-ux-scorecard.json/.md` | Actor, receiver, read-only, disabled, hidden, or unauthorized persona evidence is missing or contradictory. |
 | B24 | `evidence_integrity_auditor.dart` | `evidence-integrity-scorecard.json/.md` | Screenshots, hashes, timestamps, app commit SHA, device metadata, visible text, or generic-copy audit evidence is missing/stale. |
-| B25 | `production_ux_judge.dart`; `b25_iteration_scorecard.dart` | `production-ux-criteria-scorecard.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `holisticQuestionAnswers` and `workflowPersonaScorecards` in review JSON | Any B25 pass criterion has a blocking failure, either direct-question pass is missing/partial/unsupported, any primary workflow surface is not domain-native, or the iteration scorecard is missing for the pass. |
+| B25 | `b25_evidence_collector.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart` | `independent-production-ux-review.json/.md`, `product-ux-screen-review-matrix.md`, `production-ux-criteria-scorecard.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `holisticQuestionAnswers` and `workflowPersonaScorecards` in review JSON | Evidence was not collected by the deterministic collector, any B25 pass criterion has a blocking failure, either direct-question pass is missing/partial/unsupported, any primary workflow surface is not domain-native, or the iteration scorecard is missing for the pass. |
 
 Judge agents may receive only artifacts, screenshots, blueprint/contracts, pass criteria, evidence
 metadata, and remediation logs. They must not receive worker implementation notes or intended behavior
@@ -1638,6 +1643,12 @@ Closeout rule for reopened phases:
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
   pending.
+- **Current v4 pass:** `b25-v4-pass-1` has collected schema v4 evidence through
+  `b25_evidence_collector.dart` and generated
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-1.md`. The pass is currently
+  failed with one unresolved major finding, `B25-V4-REVIEW-PENDING`, because independent
+  screen-specific critique, holistic direct-question answers, and workflow/persona scorecards are not
+  complete. B25 remains reopened.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 closeout commit pending.
 
 ## Gate Evidence Template

@@ -199,6 +199,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     in that pass, newly introduced blocker/major findings, judge failures, direct-question pass status,
     and required next action. Do not start the next UX feedback/remediation loop without this committed
     scorecard.
+63. B25 screenshot evidence must be produced through the deterministic B25 evidence collector before
+    the judge runs. The collector owns screenshot paths, hashes, timestamps, visible text source,
+    emulator/device metadata, app commit SHA, and schema v4 screen-row scaffolding. The judge owns
+    product-quality decisions; do not let the collector mark production UX pass.
 
 ## Delivery Modes
 
@@ -307,20 +311,22 @@ Before reporting completion:
     relaunch the Demo App, recapture affected screenshots, rerun workflow and product UX evidence, and
     regenerate the screen review matrix. Commit that full iteration before starting the next UX
     feedback or correction loop.
-25. Run the B25 direct-question judge in two passes: one holistic product UX pass for the whole app, and
+25. Run the B25 evidence collector to generate or refresh schema v4 screenshot evidence before any
+    judge pass. Treat collector output as evidence capture only, not UX approval.
+26. Run the B25 direct-question judge in two passes: one holistic product UX pass for the whole app, and
     workflow/persona passes for every reviewed workflow/persona pair. Record `holisticQuestionAnswers`
     and `workflowPersonaScorecards` in the evidence and require both to be green.
-26. Generate the B25 iteration scorecard for the pass and record whether blocker/major findings are
+27. Generate the B25 iteration scorecard for the pass and record whether blocker/major findings are
     increasing, decreasing, or resolved. Use it as the convergence record for the remediation loop.
-27. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
+28. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
     primary workflow rows classified as generic workflow-card/checklist/modal/metadata-only, missing
     visible-text extracts, or pass verdicts that do not describe the actual visible UI.
-28. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
+29. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.
-29. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
+30. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
-30. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
+31. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
     finding, not as optional review feedback.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
@@ -358,6 +364,12 @@ prove the criterion, the criterion fails.
 For B25, the judge must also produce a holistic product UX direct-question pass and per-workflow/persona
 direct-question passes. The deterministic scorecard must include criterion `scope` and `question`, and
 the machine-readable evidence must include `holisticQuestionAnswers` and `workflowPersonaScorecards`.
+Before the judge runs, collect evidence with:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+```
+
 Every B25 pass must also run:
 
 ```powershell

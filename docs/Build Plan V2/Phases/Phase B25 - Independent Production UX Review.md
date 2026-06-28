@@ -155,17 +155,27 @@ the owner explicitly asks for review-only planning or pauses implementation.
 1. **Evidence integrity reset:** mark the prior B25 v3 pass as superseded, clear status placeholders,
    and create or refresh `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`.
 2. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
-   capture fresh screenshots for every screen/persona/state. Record screenshot hashes, timestamps,
-   emulator/device metadata, and app commit SHA.
-3. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
+   capture fresh screenshots for every screen/persona/state.
+3. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
+   evidence into schema v4 B25 artifacts with screenshot hashes, timestamps, emulator/device metadata,
+   visible text source, and app commit SHA:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+   ```
+
+   The collector is not the judge. It may mark B25 as failed/pending until the independent UX review
+   fills screen-specific critiques, holistic direct-question answers, workflow/persona scorecards,
+   findings, remediation links, and final decision.
+4. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
    form, confirmation, error, empty state, persona variant, and action result. Do not sample.
-4. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
+5. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
    screenshot hash/timestamp, app commit SHA, visible text, UI-pattern classification,
    primary/secondary surface type, row-specific critique, findings, remediation IDs, and unresolved
    severity counts.
-5. **Independent screenshot-first review:** run an adversarial product UX review from screenshots and the
+6. **Independent screenshot-first review:** run an adversarial product UX review from screenshots and the
    visible emulator only. The reviewer must not pass a row that cannot be justified from visible UI.
-6. **Holistic direct-question pass:** answer the whole-product questions in
+7. **Holistic direct-question pass:** answer the whole-product questions in
    `holisticQuestionAnswers`:
 
    - Does the whole experience feel like a real production community app for the target users, not
@@ -176,7 +186,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
      repeated-card, checklist-modal, and thin-content defects?
 
-7. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
+8. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
    `workflowPersonaScorecards` row answering:
 
    - Can this persona immediately understand what they are supposed to do?
@@ -188,7 +198,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Are unauthorized, read-only, hidden, or disabled states appropriate for this persona?
    - Does this workflow UI feel production-grade on its own?
 
-8. **Production UX judge scorecard:** run the independent judge tool against the v4 evidence:
+9. **Production UX judge scorecard:** run the independent judge tool against the v4 evidence:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
@@ -198,7 +208,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    worker implementation notes or attempted-fix summaries. The judge must fail if either the holistic
    direct-question pass or any workflow/persona direct-question pass is missing, partial, unsupported by
    visible evidence, or below the score threshold.
-9. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+10. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -207,13 +217,13 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-10. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+11. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-11. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
+12. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
    recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
    iteration before the next UX feedback or remediation batch.
-12. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+13. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
    pass is green, the production UX judge scorecard has no blocking criterion failures, all required

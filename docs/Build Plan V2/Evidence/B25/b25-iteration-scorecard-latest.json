@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-1",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-06-28T22:38:31.372491Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 1,
+    "criticalBlocker": 0,
+    "major": 1,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 1,
+    "unresolvedBlockingMajor": 1,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 1,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 1,
+    "remainingBlockingMajor": 1
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 12,
+    "passedCriteria": 5,
+    "failedCriteria": 7,
+    "blockingCriterionFailures": 7,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "B25-V4-REVIEW-PENDING",
+      "severity": "major",
+      "status": "open",
+      "title": "B25 v4 independent UX review is pending",
+      "requiredFix": "Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "B25-V4-REVIEW-PENDING",
+      "severity": "major",
+      "status": "open",
+      "title": "B25 v4 independent UX review is pending",
+      "requiredFix": "Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}

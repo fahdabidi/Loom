@@ -506,11 +506,193 @@ void runB25IterationScorecardCli(List<String> args) {
     File(outputPath).writeAsStringSync('$encoded\n');
   }
   if (markdownPath != null) {
-    File(markdownPath).writeAsStringSync(_b25IterationScorecardMarkdown(scorecard));
+    File(
+      markdownPath,
+    ).writeAsStringSync(_b25IterationScorecardMarkdown(scorecard));
   }
   stdout.writeln(
     'b25_iteration_scorecard: ${scorecard['status']} remainingBlockingMajor=${(scorecard['convergence'] as JsonMap)['remainingBlockingMajor']}',
   );
+}
+
+void runB25EvidenceCollectorCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_evidenceCollectorUsage());
+    return;
+  }
+  final evidenceRootPath = _argValue(args, '--evidence-root');
+  final outputPath = _argValue(args, '--output');
+  if (evidenceRootPath == null || outputPath == null) {
+    stderr.writeln('Missing required --evidence-root <dir> or --output <json>');
+    stdout.writeln(_evidenceCollectorUsage());
+    exit(64);
+  }
+  final markdownPath = _argValue(args, '--markdown-output');
+  final matrixPath = _argValue(args, '--matrix-output');
+  final runId =
+      _argValue(args, '--run-id') ??
+      'b25-v4-${DateTime.now().toUtc().toIso8601String()}';
+  final priorReviewPath = _argValue(args, '--prior-review');
+  final repoRootPath =
+      _argValue(args, '--repo-root') ?? Directory.current.parent.path;
+  final review = collectB25Evidence(
+    evidenceRootPath: evidenceRootPath,
+    repoRootPath: repoRootPath,
+    runId: runId,
+    priorReview: priorReviewPath == null
+        ? null
+        : _readJsonFile(priorReviewPath),
+  );
+  final encoded = const JsonEncoder.withIndent('  ').convert(review);
+  File(outputPath).writeAsStringSync('$encoded\n');
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25ReviewMarkdown(review));
+  }
+  if (matrixPath != null) {
+    File(matrixPath).writeAsStringSync(_b25ScreenMatrixMarkdown(review));
+  }
+  stdout.writeln(
+    'b25_evidence_collector: wrote ${_asMapList(review['screenRows']).length} screen rows to $outputPath',
+  );
+}
+
+JsonMap collectB25Evidence({
+  required String evidenceRootPath,
+  required String repoRootPath,
+  required String runId,
+  JsonMap? priorReview,
+}) {
+  final evidenceRoot = Directory(evidenceRootPath);
+  if (!evidenceRoot.existsSync()) {
+    throw StateError('Evidence root does not exist: $evidenceRootPath');
+  }
+  final appCommit = _gitShortSha(repoRootPath);
+  final manifests = _workflowManifestPaths(evidenceRoot, priorReview);
+  final screenRows = <JsonMap>[];
+  var rowIndex = 1;
+  for (final manifestPath in manifests) {
+    final manifest = _readJsonFile(manifestPath);
+    final workflows = _asMapList(manifest['workflows']);
+    for (final workflow in workflows) {
+      final screenshotPaths = _asStringList(workflow['screenshotPaths']);
+      final screenshotNames = _asStringList(workflow['screenshotNames']);
+      for (var i = 0; i < screenshotPaths.length; i += 1) {
+        final path = screenshotPaths[i];
+        final file = File(_hostPath(path));
+        final screenshotName = i < screenshotNames.length
+            ? screenshotNames[i]
+            : file.uri.pathSegments.last.replaceAll('.png', '');
+        final relativePath = _relativePath(file.path, repoRootPath);
+        final rowId =
+            'b25-v4-row-${rowIndex.toString().padLeft(3, '0')}-${_slug(_asString(workflow['workflowId'], fallback: screenshotName))}-$i';
+        screenRows.add(<String, Object?>{
+          'rowId': rowId,
+          'communityId': _asString(
+            workflow['communityId'],
+            fallback: _asString(workflow['appId']),
+          ),
+          'communityName': _asString(
+            workflow['communityName'],
+            fallback: _asString(workflow['appId']),
+          ),
+          'persona': _personaFromScreenshotName(screenshotName),
+          'workflowId': _asString(workflow['workflowId']),
+          'screenOrState': screenshotName,
+          'screenType': _screenTypeFromScreenshotName(screenshotName),
+          'screenshotPath': relativePath,
+          'screenshotHash': file.existsSync() ? _fileSha256(file.path) : '',
+          'screenshotCapturedAt': file.existsSync()
+              ? file.lastModifiedSync().toUtc().toIso8601String()
+              : '',
+          'appCommitSha': appCommit,
+          'deviceMetadata':
+              '${_asString(workflow['emulatorName'])}; ${_asString(workflow['deviceClass'])}; ${_asString(workflow['apiLevel'])}',
+          'visibleTextExtract': _asStringList(
+            workflow['expectedAssertions'],
+          ).join(' | '),
+          'visibleTextExtractionSource':
+              'workflow-ui-evidence expectedAssertions',
+          'uiPatternClassification': 'pending-independent-review',
+          'primarySurfaceType': 'pending-independent-review',
+          'screenSpecificCritique':
+              'Pending independent B25 UX critique for $screenshotName. Evidence collector captured screenshot metadata only.',
+          'verdict': 'pending',
+          'severity': 'major',
+          'findingIds': <String>['B25-V4-REVIEW-PENDING'],
+          'remediationIds': <String>[],
+          'retestResult': 'pending-independent-review',
+        });
+        rowIndex += 1;
+      }
+    }
+  }
+  final priorRunIds = <String>[
+    if (_asString(priorReview?['currentReviewRunId']).isNotEmpty)
+      _asString(priorReview?['currentReviewRunId']),
+    ..._asStringList(priorReview?['supersededReviewRunIds']),
+  ];
+  final blueprintCoverage = _asMapList(priorReview?['blueprintCoverage']);
+  return <String, Object?>{
+    'schemaVersion': 4,
+    'reviewStandardVersion': 'b25-production-ux-v4',
+    'currentReviewRunId': runId,
+    'supersededReviewRunIds': priorRunIds.toSet().toList(),
+    'status': 'needs-independent-review',
+    'finalDecision': 'fail',
+    'b25CanPass': false,
+    'requiresRemediation': true,
+    'requiresRerun': true,
+    'generatedAt': DateTime.now().toUtc().toIso8601String(),
+    'reviewInputEvidence': <String, Object?>{
+      'evidenceRoot': _relativePath(evidenceRoot.path, repoRootPath),
+      'workflowEvidenceManifestPaths': manifests
+          .map((path) => _relativePath(path, repoRootPath))
+          .toList(),
+      'workflowManifestCount': manifests.length,
+      'screenshotCount': screenRows.length,
+      'appCommitSha': appCommit,
+    },
+    'blueprintPath':
+        'docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md',
+    'screenMatrixPath':
+        'docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md',
+    'remediationLoopPath':
+        'docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md',
+    'blueprintCoverage': blueprintCoverage,
+    'screenRows': screenRows,
+    'findings': <JsonMap>[
+      <String, Object?>{
+        'findingId': 'B25-V4-REVIEW-PENDING',
+        'severity': 'major',
+        'status': 'open',
+        'title': 'B25 v4 independent UX review is pending',
+        'summary':
+            'Fresh screenshot metadata has been collected, but holistic direct-question review, workflow/persona direct-question review, and screen-specific UX critique have not been completed.',
+        'requiredFix':
+            'Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links.',
+        'blocksPass': true,
+      },
+    ],
+    'holisticQuestionAnswers': <JsonMap>[],
+    'workflowPersonaScorecards': <JsonMap>[],
+    'remediationIterations': <JsonMap>[
+      <String, Object?>{
+        'iteration': 1,
+        'status': 'evidence-collected-review-pending',
+        'screenshotsRefreshed': true,
+        'remainingBlockerFindings': 0,
+        'remainingMajorFindings': 1,
+        'testsRun': <String>['workflow_ui_evidence_test.dart'],
+        'commitSha': appCommit,
+      },
+    ],
+    'unresolvedBlockerFindings': <String>[],
+    'unresolvedMajorFindings': <String>['B25-V4-REVIEW-PENDING'],
+    'ownerAcceptedMinorFindings': <String>[],
+    'trackedPolish': <String>[],
+    'iterationScorecardPath':
+        'docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-latest.json',
+  };
 }
 
 JsonMap buildB25IterationScorecard({
@@ -655,7 +837,7 @@ CriterionResult _evaluateCriterion(
   }
 
   final missing = definition.requiredEvidenceFields
-      .where((field) => !_hasUsefulValue(evidence[field]))
+      .where((field) => !_hasRequiredEvidence(field, evidence[field]))
       .toList();
   if (missing.isNotEmpty) {
     return CriterionResult(
@@ -781,6 +963,144 @@ _DerivedFailure? _derivedFailure(
   return null;
 }
 
+List<String> _workflowManifestPaths(
+  Directory evidenceRoot,
+  JsonMap? priorReview,
+) {
+  final aggregate = File(
+    '${evidenceRoot.path}/B20/all-workflow-ui-evidence.json',
+  );
+  if (aggregate.existsSync()) {
+    final manifest = _readJsonFile(aggregate.path);
+    return _asStringList(
+      manifest['workflowEvidenceManifestPaths'],
+    ).map(_hostPath).where((path) => File(path).existsSync()).toList();
+  }
+  final paths = <String>[];
+  for (final entity in evidenceRoot.listSync(recursive: true)) {
+    if (entity is File && entity.path.endsWith('workflow-ui-evidence.json')) {
+      paths.add(entity.path);
+    }
+  }
+  if (paths.isNotEmpty) {
+    paths.sort();
+    return paths;
+  }
+  return _asStringList(
+    (priorReview?['reviewInputEvidence']
+        as JsonMap?)?['workflowEvidenceManifestPaths'],
+  ).map(_hostPath).where((path) => File(path).existsSync()).toList();
+}
+
+String _hostPath(String path) {
+  if (Platform.isWindows && path.startsWith('/mnt/c/')) {
+    return 'C:/${path.substring('/mnt/c/'.length)}'.replaceAll('/', r'\');
+  }
+  if (!Platform.isWindows && RegExp(r'^[A-Za-z]:[\\/]').hasMatch(path)) {
+    final drive = path.substring(0, 1).toLowerCase();
+    final rest = path.substring(2).replaceAll(r'\', '/');
+    return '/mnt/$drive$rest';
+  }
+  return path;
+}
+
+String _relativePath(String path, String repoRootPath) {
+  final normalizedPath = _hostPath(path).replaceAll(r'\', '/');
+  final normalizedRoot = _hostPath(repoRootPath).replaceAll(r'\', '/');
+  if (normalizedPath.startsWith('$normalizedRoot/')) {
+    return normalizedPath.substring(normalizedRoot.length + 1);
+  }
+  return normalizedPath;
+}
+
+String _gitShortSha(String repoRootPath) {
+  final result = Process.runSync('git', <String>[
+    '-C',
+    _hostPath(repoRootPath),
+    'rev-parse',
+    '--short',
+    'HEAD',
+  ], runInShell: true);
+  if (result.exitCode == 0) {
+    return result.stdout.toString().trim();
+  }
+  return 'unknown';
+}
+
+String _fileSha256(String path) {
+  final result = Process.runSync('sha256sum', <String>[_hostPath(path)]);
+  if (result.exitCode == 0) {
+    return result.stdout.toString().trim().split(RegExp(r'\s+')).first;
+  }
+  final certUtil = Process.runSync('certutil', <String>[
+    '-hashfile',
+    _hostPath(path),
+    'SHA256',
+  ], runInShell: true);
+  if (certUtil.exitCode == 0) {
+    final lines = certUtil.stdout
+        .toString()
+        .split(RegExp(r'\r?\n'))
+        .map((line) => line.trim())
+        .where((line) => RegExp(r'^[a-fA-F0-9]{64}$').hasMatch(line))
+        .toList();
+    if (lines.isNotEmpty) {
+      return lines.first.toLowerCase();
+    }
+  }
+  return '';
+}
+
+String _personaFromScreenshotName(String name) {
+  final lower = name.toLowerCase();
+  if (lower.contains('admin')) {
+    return 'admin';
+  }
+  if (lower.contains('member')) {
+    return 'member';
+  }
+  if (lower.contains('owner')) {
+    return 'owner';
+  }
+  if (lower.contains('organizer')) {
+    return 'organizer';
+  }
+  if (lower.contains('parent')) {
+    return 'parent';
+  }
+  if (lower.contains('coach')) {
+    return 'coach';
+  }
+  return 'persona-under-review';
+}
+
+String _screenTypeFromScreenshotName(String name) {
+  final lower = name.toLowerCase();
+  if (lower.contains('start')) {
+    return 'entry';
+  }
+  if (lower.contains('action') || lower.contains('dialog')) {
+    return 'action-or-review';
+  }
+  if (lower.contains('complete') || lower.contains('received')) {
+    return 'result';
+  }
+  if (lower.contains('ready')) {
+    return 'receiver-state';
+  }
+  if (lower.contains('picker')) {
+    return 'persona-picker';
+  }
+  return 'screen-state';
+}
+
+String _slug(String value) {
+  return value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
+}
+
 JsonMap _findingCounts(List<JsonMap> findings) {
   var total = 0;
   var criticalBlocker = 0;
@@ -861,7 +1181,8 @@ JsonMap _judgeSummary(JsonMap? judge) {
     'failedCriteria': failed.length,
     'blockingCriterionFailures': failed.length,
     'holisticPass':
-        holistic.isNotEmpty && holistic.every((row) => row['blocksPass'] != true),
+        holistic.isNotEmpty &&
+        holistic.every((row) => row['blocksPass'] != true),
     'workflowPersonaPass':
         workflowPersona.isNotEmpty &&
         workflowPersona.every((row) => row['blocksPass'] != true),
@@ -880,10 +1201,9 @@ Set<String> _previousBlockingFindingIds(JsonMap? previousScorecard) {
   if (previousScorecard == null) {
     return <String>{};
   }
-  return _asMapList(previousScorecard['blockingFindings'])
-      .map(_findingId)
-      .where((id) => id.isNotEmpty)
-      .toSet();
+  return _asMapList(
+    previousScorecard['blockingFindings'],
+  ).map(_findingId).where((id) => id.isNotEmpty).toSet();
 }
 
 int _countByIds(
@@ -938,7 +1258,9 @@ JsonMap _findingSummary(JsonMap finding) {
     'title': _asString(
       finding['title'] ?? finding['summary'] ?? finding['issue'],
     ),
-    'requiredFix': _asString(finding['requiredFix'] ?? finding['recommendedFix']),
+    'requiredFix': _asString(
+      finding['requiredFix'] ?? finding['recommendedFix'],
+    ),
   };
 }
 
@@ -951,13 +1273,23 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
     ..writeln()
     ..writeln('| Field | Value |')
     ..writeln('| --- | --- |')
-    ..writeln('| Review run | `${_escape(_asString(scorecard['reviewRunId']))}` |')
+    ..writeln(
+      '| Review run | `${_escape(_asString(scorecard['reviewRunId']))}` |',
+    )
     ..writeln('| Status | `${_escape(_asString(scorecard['status']))}` |')
-    ..writeln('| Final decision | `${_escape(_asString(scorecard['finalDecision']))}` |')
+    ..writeln(
+      '| Final decision | `${_escape(_asString(scorecard['finalDecision']))}` |',
+    )
     ..writeln('| B25 can pass | `${scorecard['b25CanPass']}` |')
-    ..writeln('| Remaining critical/blocker + major | ${convergence['remainingBlockingMajor']} |')
-    ..writeln('| Resolved critical/blocker + major this pass | ${convergence['resolvedBlockingMajorThisPass']} |')
-    ..writeln('| New critical/blocker + major this pass | ${convergence['newBlockingMajorThisPass']} |')
+    ..writeln(
+      '| Remaining critical/blocker + major | ${convergence['remainingBlockingMajor']} |',
+    )
+    ..writeln(
+      '| Resolved critical/blocker + major this pass | ${convergence['resolvedBlockingMajorThisPass']} |',
+    )
+    ..writeln(
+      '| New critical/blocker + major this pass | ${convergence['newBlockingMajorThisPass']} |',
+    )
     ..writeln()
     ..writeln('## Finding Counts')
     ..writeln()
@@ -977,10 +1309,16 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
     ..writeln('| Field | Value |')
     ..writeln('| --- | --- |')
     ..writeln('| Judge status | `${_escape(_asString(judge['status']))}` |')
-    ..writeln('| Criteria passed | ${judge['passedCriteria']} / ${judge['totalCriteria']} |')
-    ..writeln('| Blocking criterion failures | ${judge['blockingCriterionFailures']} |')
+    ..writeln(
+      '| Criteria passed | ${judge['passedCriteria']} / ${judge['totalCriteria']} |',
+    )
+    ..writeln(
+      '| Blocking criterion failures | ${judge['blockingCriterionFailures']} |',
+    )
     ..writeln('| Holistic direct-question pass | `${judge['holisticPass']}` |')
-    ..writeln('| Workflow/persona direct-question pass | `${judge['workflowPersonaPass']}` |')
+    ..writeln(
+      '| Workflow/persona direct-question pass | `${judge['workflowPersonaPass']}` |',
+    )
     ..writeln()
     ..writeln('## Blocking Findings')
     ..writeln()
@@ -1002,6 +1340,70 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
     ..writeln()
     ..writeln(_asString(scorecard['requiredNextAction']));
   return buffer.toString();
+}
+
+String _b25ReviewMarkdown(JsonMap review) {
+  final rows = _asMapList(review['screenRows']);
+  final findings = _asMapList(review['findings']);
+  final buffer = StringBuffer()
+    ..writeln('# B25 Independent Production UX Review')
+    ..writeln()
+    ..writeln(
+      'Review run: `${_escape(_asString(review['currentReviewRunId']))}`',
+    )
+    ..writeln()
+    ..writeln('Status: `${_escape(_asString(review['status']))}`')
+    ..writeln()
+    ..writeln(
+      'Final decision: `${_escape(_asString(review['finalDecision']))}`',
+    )
+    ..writeln()
+    ..writeln('Screen rows collected: ${rows.length}')
+    ..writeln()
+    ..writeln('## Current Findings')
+    ..writeln()
+    ..writeln('| Finding | Severity | Status | Required fix |')
+    ..writeln('| --- | --- | --- | --- |');
+  for (final finding in findings) {
+    buffer.writeln(
+      '| `${_escape(_findingId(finding))}` | ${_escape(_asString(finding['severity']))} | ${_escape(_asString(finding['status']))} | ${_escape(_asString(finding['requiredFix']))} |',
+    );
+  }
+  buffer
+    ..writeln()
+    ..writeln('## Review Note')
+    ..writeln()
+    ..writeln(
+      'This file was generated by the deterministic B25 evidence collector. It proves screenshot metadata capture, not product UX quality. The Production UX Judge Agent must fill screen-specific critiques, holistic direct-question answers, workflow/persona scorecards, findings, remediation links, and final pass/fail decision before B25 can close.',
+    );
+  return buffer.toString();
+}
+
+String _b25ScreenMatrixMarkdown(JsonMap review) {
+  final rows = _asMapList(review['screenRows']);
+  final buffer = StringBuffer()
+    ..writeln('# B25 Product UX Screen Review Matrix')
+    ..writeln()
+    ..writeln(
+      '| Row | Community | Persona | Workflow | Screen/state | Screenshot | Hash | Verdict | Critique |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (final row in rows) {
+    buffer.writeln(
+      '| `${_escape(_asString(row['rowId']))}` | ${_escape(_asString(row['communityName']))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['screenOrState']))} | ${_escape(_asString(row['screenshotPath']))} | `${_escape(_asString(row['screenshotHash']))}` | ${_escape(_asString(row['verdict']))} | ${_escape(_asString(row['screenSpecificCritique']))} |',
+    );
+  }
+  return buffer.toString();
+}
+
+String _evidenceCollectorUsage() {
+  return '''
+b25_evidence_collector (B25)
+Builds schema v4 B25 screenshot evidence from workflow UI evidence manifests.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root <docs/Build Plan V2/Evidence> --repo-root <repo-root> --run-id <id> --prior-review <old-review.json> --output <independent-production-ux-review.json> [--markdown-output <review.md>] [--matrix-output <matrix.md>]
+''';
 }
 
 String _iterationScorecardUsage() {
@@ -1382,6 +1784,16 @@ bool _hasUsefulValue(Object? value) {
     return value.isNotEmpty;
   }
   return true;
+}
+
+bool _hasRequiredEvidence(String field, Object? value) {
+  if (field == 'unresolvedBlockerFindings' ||
+      field == 'unresolvedMajorFindings' ||
+      field == 'ownerAcceptedMinorFindings' ||
+      field == 'trackedPolish') {
+    return value != null;
+  }
+  return _hasUsefulValue(value);
 }
 
 int _asInt(Object? value) {

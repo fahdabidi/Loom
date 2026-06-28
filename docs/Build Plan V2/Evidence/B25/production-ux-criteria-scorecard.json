@@ -1,0 +1,320 @@
+{
+  "toolId": "production-ux-judge",
+  "status": "fail",
+  "criteria": [
+    {
+      "criterionId": "b25-c01-no-blocker-major",
+      "title": "No unresolved blocker or major findings",
+      "question": "Are there zero unresolved blocker or major findings in the current production UX evidence?",
+      "scope": "evidence",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Unresolved blocker/major counts are blocker=0 major=1.",
+      "requiredFix": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c02-blueprint-complete",
+      "title": "Every community has a complete production UX blueprint",
+      "question": "Does every community or test app have a complete production UX blueprint that the review actually uses?",
+      "scope": "holistic",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c03-production-grade-experience",
+      "title": "Reviewer can state the experience feels production-grade",
+      "question": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
+      "scope": "holistic",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+      "requiredFix": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c04-modern-intentional-ui",
+      "title": "UI looks modern and intentionally designed",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+      "scope": "holistic",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+      "requiredFix": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c05-community-content-ia",
+      "title": "Screens are organized around community content and jobs-to-be-done",
+      "question": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
+      "scope": "holistic",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+      "requiredFix": "Rebuild home and primary screens around community content and user jobs.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c06-domain-native-primary-surfaces",
+      "title": "Primary workflows use domain-specific product surfaces",
+      "question": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
+      "scope": "workflow-persona",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+      "requiredFix": "Replace primary generic surfaces with domain-native product surfaces.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c07-screenshot-freshness",
+      "title": "Every screen row has fresh screenshot evidence",
+      "question": "Does every reviewed screen row use fresh screenshot evidence from the app version under review, with hash, timestamp, device metadata, and app commit SHA?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c08-visible-text-specific-critique",
+      "title": "Every row has visible text and screen-specific critique",
+      "question": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
+      "scope": "workflow-persona",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+      "requiredFix": "Extract visible text and write a specific critique for each screenshot row.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c09-no-layout-production-defects",
+      "title": "No blocking or major layout/content defects remain",
+      "question": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+      "scope": "holistic",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "No holistic direct-question answers were supplied.",
+      "requiredFix": "Fix layout/content defects and rerun the review.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c10-full-screen-inventory",
+      "title": "Every implemented screen/state appears in the matrix",
+      "question": "Does the screen inventory cover every user-facing screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c11-schema-v4-consistency",
+      "title": "Schema v4 JSON is complete and internally consistent",
+      "question": "Is the schema v4 evidence complete and internally consistent across JSON, markdown review, matrix, remediation log, screenshots, and tracker?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c12-remediation-proof",
+      "title": "Failed prior iterations have proof of remediation",
+      "question": "If any prior loop iteration failed, does the remediation log prove fixes, screenshot refresh, evidence regeneration, tests, commit SHA, and zero remaining blockers/majors?",
+      "scope": "remediation",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    }
+  ],
+  "errors": [
+    "b25-c01-no-blocker-major: Unresolved blocker/major counts are blocker=0 major=1.",
+    "b25-c03-production-grade-experience: The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+    "b25-c04-modern-intentional-ui: Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+    "b25-c05-community-content-ia: Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+    "b25-c06-domain-native-primary-surfaces: A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+    "b25-c08-visible-text-specific-critique: Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+    "b25-c09-no-layout-production-defects: No holistic direct-question answers were supplied.",
+    "finalDecision is fail, not pass.",
+    "holistic direct-question pass: No holistic direct-question answers were supplied.",
+    "workflow/persona direct-question pass: No workflow/persona direct-question scorecards were supplied.",
+    "Unresolved major finding: B25-V4-REVIEW-PENDING."
+  ],
+  "warnings": [],
+  "holisticProductScorecard": {
+    "questions": [],
+    "criteria": [
+      {
+        "criterionId": "b25-c02-blueprint-complete",
+        "title": "Every community has a complete production UX blueprint",
+        "question": "Does every community or test app have a complete production UX blueprint that the review actually uses?",
+        "scope": "holistic",
+        "score": 100,
+        "verdict": "pass",
+        "blocksPass": false,
+        "why": "Required evidence is present and no blocking derived failures were found.",
+        "requiredFix": "None.",
+        "evidenceUsed": []
+      },
+      {
+        "criterionId": "b25-c03-production-grade-experience",
+        "title": "Reviewer can state the experience feels production-grade",
+        "question": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
+        "scope": "holistic",
+        "score": 0,
+        "verdict": "fail",
+        "blocksPass": true,
+        "why": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+        "requiredFix": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
+        "evidenceUsed": []
+      },
+      {
+        "criterionId": "b25-c04-modern-intentional-ui",
+        "title": "UI looks modern and intentionally designed",
+        "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+        "scope": "holistic",
+        "score": 0,
+        "verdict": "fail",
+        "blocksPass": true,
+        "why": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+        "requiredFix": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
+        "evidenceUsed": []
+      },
+      {
+        "criterionId": "b25-c05-community-content-ia",
+        "title": "Screens are organized around community content and jobs-to-be-done",
+        "question": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
+        "scope": "holistic",
+        "score": 0,
+        "verdict": "fail",
+        "blocksPass": true,
+        "why": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+        "requiredFix": "Rebuild home and primary screens around community content and user jobs.",
+        "evidenceUsed": []
+      },
+      {
+        "criterionId": "b25-c09-no-layout-production-defects",
+        "title": "No blocking or major layout/content defects remain",
+        "question": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+        "scope": "holistic",
+        "score": 0,
+        "verdict": "fail",
+        "blocksPass": true,
+        "why": "No holistic direct-question answers were supplied.",
+        "requiredFix": "Fix layout/content defects and rerun the review.",
+        "evidenceUsed": []
+      }
+    ]
+  },
+  "workflowPersonaScorecards": [],
+  "workflowPersonaCriteria": [
+    {
+      "criterionId": "b25-c06-domain-native-primary-surfaces",
+      "title": "Primary workflows use domain-specific product surfaces",
+      "question": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
+      "scope": "workflow-persona",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+      "requiredFix": "Replace primary generic surfaces with domain-native product surfaces.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c08-visible-text-specific-critique",
+      "title": "Every row has visible text and screen-specific critique",
+      "question": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
+      "scope": "workflow-persona",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+      "requiredFix": "Extract visible text and write a specific critique for each screenshot row.",
+      "evidenceUsed": []
+    }
+  ],
+  "evidenceIntegrityCriteria": [
+    {
+      "criterionId": "b25-c01-no-blocker-major",
+      "title": "No unresolved blocker or major findings",
+      "question": "Are there zero unresolved blocker or major findings in the current production UX evidence?",
+      "scope": "evidence",
+      "score": 0,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "Unresolved blocker/major counts are blocker=0 major=1.",
+      "requiredFix": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c07-screenshot-freshness",
+      "title": "Every screen row has fresh screenshot evidence",
+      "question": "Does every reviewed screen row use fresh screenshot evidence from the app version under review, with hash, timestamp, device metadata, and app commit SHA?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c10-full-screen-inventory",
+      "title": "Every implemented screen/state appears in the matrix",
+      "question": "Does the screen inventory cover every user-facing screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    },
+    {
+      "criterionId": "b25-c11-schema-v4-consistency",
+      "title": "Schema v4 JSON is complete and internally consistent",
+      "question": "Is the schema v4 evidence complete and internally consistent across JSON, markdown review, matrix, remediation log, screenshots, and tracker?",
+      "scope": "evidence",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    }
+  ],
+  "remediationCriteria": [
+    {
+      "criterionId": "b25-c12-remediation-proof",
+      "title": "Failed prior iterations have proof of remediation",
+      "question": "If any prior loop iteration failed, does the remediation log prove fixes, screenshot refresh, evidence regeneration, tests, commit SHA, and zero remaining blockers/majors?",
+      "scope": "remediation",
+      "score": 100,
+      "verdict": "pass",
+      "blocksPass": false,
+      "why": "Required evidence is present and no blocking derived failures were found.",
+      "requiredFix": "None.",
+      "evidenceUsed": []
+    }
+  ]
+}
