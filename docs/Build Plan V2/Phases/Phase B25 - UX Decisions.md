@@ -9,9 +9,21 @@
 - Require a complete screen-by-screen review matrix before B25 can pass. The matrix must inventory every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
   variant, and action result across every example/test community and persona.
+- Require B25 schema version 4 evidence. Every screen row must include screenshot hash, captured-at
+  timestamp, app commit SHA, emulator/device metadata, visible-text extraction, UI-pattern
+  classification, primary/secondary surface type, row-specific critique, severity, finding IDs,
+  remediation IDs, and retest result.
+- Reject stale evidence. A screenshot is invalid when it predates the app commit/remediation it claims
+  to prove, when a resolved finding points to a pre-fix image, or when the JSON/markdown/tracker
+  disagree about the current review run.
 - Do not allow sampling. Every matrix row needs screenshot evidence, real-user task framing, a product
   UX verdict, critique across IA/content/visual/interaction/accessibility/mobile quality, severity,
   required fix or owner-acceptance rationale, and retest result.
+- Do not allow boilerplate critique. Every row must describe visible UI elements and visible text from
+  the screenshot. Reused generic rationale across unrelated screens invalidates the review.
+- Classify the primary UI pattern for every workflow surface. Primary workflows must use domain-native
+  surfaces; a generic workflow card, checklist/review modal, metadata/settings page, or repeated card
+  shell is a major finding even when labels are improved.
 - Treat exposed workflow machinery as a major or blocker UX issue when it appears in user-facing UI:
   `Community workflows`, `[category] surface`, framework rationale copy, metadata-only cards, global
   workflow lists, or test-harness state language.
@@ -32,9 +44,10 @@
 - Require a git commit after each B25 review/remediation iteration before the next UX feedback loop or
   correction batch starts. This preserves review evidence, fixes, refreshed screenshots or screenshot
   references, tests, remaining findings, and tracker updates as an auditable boundary.
-- Supersede the prior B25 pass. The existing evidence proved workflow-compliance improvements, but the
-  visible app still needs a stricter product UX review against the revised criteria before B25 can be
-  considered complete.
+- Supersede the prior B25 pass. The existing v3 evidence proved prototype/demo-harness improvements,
+  but the visible app still needs a stricter v4 product UX review against screenshot freshness,
+  non-boilerplate critique, and domain-native primary-surface criteria before B25 can be considered
+  complete.
 
 ## Evidence
 
@@ -42,7 +55,7 @@
 - `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`
 - `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`
 - `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`
-- Prior `wf_independent-production-ux-review` pass is superseded by the product-UX review v2 criteria
+- Prior `wf_independent-production-ux-review` pass is superseded by the product-UX review v4 criteria
   and must be rerun through the remediation loop until it passes.
 - Every B25 remediation-loop row must include the git commit SHA for that iteration before a subsequent
   UX feedback/remediation iteration begins.

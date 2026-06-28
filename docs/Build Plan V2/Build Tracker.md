@@ -29,7 +29,9 @@ For B25, treat each independent UX review/remediation iteration as its own commi
 starting the next UX feedback loop or correction batch, commit the current iteration's review evidence,
 remediation changes, refreshed screenshots or screenshot references, tests, remaining findings, and
 tracker/remediation-loop updates. Record the iteration commit SHA in the B25 remediation loop log and in
-this tracker.
+this tracker. Under the B25 v4 standard, the iteration cannot close without fresh screenshot hashes and
+timestamps, app commit SHA, visible-text extraction, UI-pattern classification, non-boilerplate
+screen-specific critiques, and a domain-native primary-surface audit.
 
 Set B workflow tests must run against the Demo Loom Communities App with the Local Backend. The Skill
 supports both `local-demo` and `real-backend-publish` modes, but no Set B gate may depend on an
@@ -78,7 +80,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Complete | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, and only passes when the UI feels production-grade for real community users. | B25 v3 iteration 3 created the production UX blueprint, regenerated schema v3 review evidence, closed four major findings, refreshed Android evidence, and passed with zero unresolved blocker or major findings. | Iteration 3 implementation `ccc3f40`; tracker stamp records this SHA |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | Prior B25 v3 iteration 3 is historical and superseded. B25 must rerun under v4 with screenshot freshness, non-boilerplate critique, visible-text extraction, UI-pattern classification, and zero generic primary workflow surfaces. | Historical v3 implementation `ccc3f40`; v4 closeout pending |
 
 ## Phase Outcome Summary
 
@@ -117,7 +119,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Replaces generic workflow harness UI with domain-specific production surfaces. | RSVP/event surfaces, payment/receipt surfaces, forms/protected-data surfaces, announcement/composer surfaces, approval surfaces, search/AI surfaces, export/migration surfaces, social/ad surfaces. | Users interact with real domain workflows instead of generic cards and "Complete workflow" dialogs. |
 | B23 | Makes the production surfaces persona-aware and stateful across roles. | Actor views, receiver views, read-only views, disabled/hidden rules, dependency-chain state, persona-specific screenshot tests. | A role that creates a record and a role that receives it each see a coherent production experience for their part of the workflow. |
 | B24 | Certifies the full suite against production UX evidence requirements. | Generic-copy failure tests, screenshot evidence audit, final B12-B24 evidence manifest, Skill completion-rule audit, regression sweep. | No example community can be marked complete while using generic workflow harness copy, missing inputs, missing success states, or untested persona handoffs. |
-| B25 | Reviews the finished UX independently. | Outside-in product UX review, severity-ranked findings, design-quality rubric, remediation evidence, final pass/fail decision. | The UX passes only when an independent review finds no unresolved blocker or major design issues and any minor issues are accepted or tracked. |
+| B25 | Reviews and certifies the finished UX independently. | Outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, remediation evidence, final pass/fail decision. | The UX passes only when an independent screenshot-first review finds no unresolved blocker or major design issues, every screenshot is fresh and traceable, every primary workflow is domain-native, and any minor issues are accepted or tracked. |
 
 ## Planned Full UX Workflow Evidence Matrix
 
@@ -246,10 +248,19 @@ Every B25 independent UX review must include:
   examples for every community/test app and persona.
 - A screen-specific critique requirement: every matrix row must include findings grounded in that
   screenshot and persona. Repeated boilerplate rationale across unrelated rows is invalid B25 evidence.
-- Schema version 3 machine-readable review evidence with review standard version, superseded prior run
-  IDs, blueprint coverage, unique screen-row IDs, screen-specific critiques, stable finding/remediation
-  IDs, before/after screenshot references, unresolved severity counts, rerun requirements, and final
-  pass/fail decision.
+- Schema version 4 machine-readable review evidence with review standard version, superseded prior run
+  IDs, blueprint coverage, unique screen-row IDs, screenshot hash, screenshot captured-at timestamp, app
+  commit SHA, emulator/device metadata, visible-text extract, UI-pattern classification, primary surface
+  type, screen-specific critiques, stable finding/remediation IDs, before/after screenshot references,
+  unresolved severity counts, rerun requirements, and final pass/fail decision.
+- Screenshot freshness validation. A row is invalid if its screenshot predates the app commit or
+  remediation it claims to prove, if a resolved finding points to a pre-fix screenshot, or if the JSON,
+  markdown, and tracker disagree about the active review run.
+- Domain-native primary-surface validation. Every primary workflow surface must be classified as
+  domain-native or fail. Generic workflow cards, checklist/review modals, metadata/settings pages, and
+  repeated-card shells may not pass as the primary UX for real community tasks.
+- Boilerplate review validation. Every row must describe visible elements and visible text from the
+  screenshot; repeated generic rationale across unrelated rows invalidates the review.
 - Per-screen verdicts that answer whether the surface feels like a real product screen, exposes
   implementation/test/workflow language, uses domain-native IA, contains realistic content, has natural
   labels/actions, is visually modern and mobile-appropriate, and supports the target user's real task.
@@ -297,7 +308,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Reopened | Prior product-UX v2 pass superseded by v3 criteria requiring per-community production UX blueprint, schema v3 evidence, and strict modern production UI review. |
+| B25 | None | Reopened | Prior product-UX v3 pass superseded by v4 criteria requiring per-community production UX blueprint, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, and domain-native primary workflow surfaces. |
 
 Closeout rule for reopened phases:
 
@@ -1516,19 +1527,21 @@ Closeout rule for reopened phases:
   rejects exposed workflow machinery, and makes a production-grade pass/fail decision independent of the
   implementation checklist.
 - **Deliverables:** Per-community production UX blueprint, independent UX review report, complete
-  product UX screen review matrix, schema version 3 machine-readable review evidence, remediation loop
-  log, severity-ranked findings, annotated screenshot references, remediation plan, resolved-finding
-  evidence, owner-accepted minor issue list if any, final UX pass/fail decision, B25 API Review if any
-  API issue is discovered, and B25 UX Decisions.
+  product UX screen review matrix, schema version 4 machine-readable review evidence, screenshot
+  freshness audit, visible-text extraction, UI-pattern classification, domain-native primary-surface
+  audit, boilerplate critique audit, remediation loop log, severity-ranked findings, annotated
+  screenshot references, remediation plan, resolved-finding evidence, owner-accepted minor issue list if
+  any, final UX pass/fail decision, B25 API Review if any API issue is discovered, and B25 UX Decisions.
 - **Completed when:** The reviewer has walked the actual app in the visible Android emulator across all
   example/test communities and personas, reviewed the final evidence screenshots, documented findings
   across design quality dimensions, and verified that no blocker or major UX issues remain unresolved.
   Minor issues must be fixed, accepted by the owner, or tracked with rationale before the phase can pass.
   A per-community production UX blueprint must exist before any pass verdict and must define the target
-  production experience for every community/test app and persona. Schema version 3 machine-readable
-  evidence must prove blueprint coverage, unique screenshot-backed screen rows, screen-specific
-  critiques, stable finding/remediation IDs, unresolved severity counts, rerun requirements, and final
-  decision.
+  production experience for every community/test app and persona. Schema version 4 machine-readable
+  evidence must prove blueprint coverage, unique screenshot-backed screen rows, screenshot hashes,
+  captured-at timestamps, app commit SHA, emulator/device metadata, visible-text extracts,
+  UI-pattern classification, primary-surface type, screen-specific critiques, stable
+  finding/remediation IDs, unresolved severity counts, rerun requirements, and final decision.
   The review must fail if the primary user-facing experience still exposes workflow machinery, global
   workflow lists, surface/category labels, role-state rationale, metadata-only cards, or weak placeholder
   content instead of domain-native community IA and realistic task content.
@@ -1538,34 +1551,42 @@ Closeout rule for reopened phases:
   product bar.
   The review must also fail if any implemented screen/state/dialog/card/feed/action result is missing
   from the product UX screen review matrix or lacks screenshot evidence and a row-level verdict.
+  The review must also fail if screenshot evidence is stale, if rows use boilerplate critique, if the
+  JSON/markdown/tracker disagree about the active run, or if any primary workflow surface remains a
+  generic workflow-card, checklist/review modal, metadata/settings page, or repeated card shell.
   If the B25 review standard changes, prior passes must be explicitly superseded and B25 must be
   reopened until the latest standard passes.
   When the review fails with any blocker or major finding, B25 must apply fixes and rerun the review
   loop. Each loop iteration must be committed before the next UX feedback or correction batch starts. A
   failed review-only report is not sufficient phase completion.
 - **Evidence to record:** Independent review report, product UX screen review matrix, findings table,
-  production UX blueprint, schema version 3 JSON evidence, annotated screenshots or screenshot paths,
+  production UX blueprint, schema version 4 JSON evidence, screenshot hashes/timestamps, app commit SHA,
+  emulator/device metadata, visible-text extraction, UI-pattern classification, domain-native
+  primary-surface audit, boilerplate critique audit, annotated screenshots or screenshot paths,
   remediation diffs/evidence, retest output for fixed findings, final pass/fail statement,
   manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check, per-iteration commit SHAs,
   and final closeout commit SHA.
-- **Execution record:** B25 v3 iteration 3 supersedes the historical v2 pass. The iteration created
+- **Execution record:** B25 v3 iteration 3 is now historical and superseded by the v4 production UX
+  standard. The historical iteration created
   `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`, regenerated schema version 3
   machine-readable review evidence, inventoried 202 screen rows, and closed four major findings:
   debug banner removal, FAB-safe community list spacing, domain-icon community identity, and
-  form-category copy/metadata replacement.
-- **Evidence:** Current v3 evidence is recorded in
+  form-category copy/metadata replacement. It did not enforce v4 screenshot freshness, visible-text
+  extraction, non-boilerplate critique, or domain-native primary-surface replacement gates.
+- **Evidence:** Historical v3 evidence is recorded in
   `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`,
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`,
   `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`,
   `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.md`, and
-  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`. Refreshed Android
-  workflow evidence was captured on `emulator-5554` into the B12-B20 screenshot manifests.
-- **Gate evidence:** `flutter test apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`;
+  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`. These artifacts must be
+  superseded by a v4 run before B25 can close again.
+- **Gate evidence:** Historical v3 checks passed:
+  `flutter test apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`;
   `flutter test apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; full
   `flutter test apps/loom_communities_demo/test`; Android `flutter drive` workflow evidence sweep;
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
-  diff check passed.
-- **Commit:** Iteration 3 implementation `ccc3f40`; tracker stamp records this SHA.
+  diff check passed. Required v4 checks are pending.
+- **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 closeout commit pending.
 
 ## Gate Evidence Template
 
@@ -1652,7 +1673,7 @@ Use the component hash generated by `manifest_gate`.
 | initialization-package-schema | A5 | 1dd4a2b2ca52 | A5 |
 | data-schema-store | A5 | 6a09d351f11f | B8 |
 | app-shell-runtime | A6 | c7c0a602fdad | A6 |
-| loom-communities-demo-app | A6 | e973568f1cfa | B25 iteration 3 |
+| loom-communities-demo-app | A6 | e973568f1cfa | B25 v3 historical; B25 v4 pending |
 | local-in-app-backend | A6 | 5d1deb013df1 | B10 archive hardening |
 
 ## Artifact Completion Checklist

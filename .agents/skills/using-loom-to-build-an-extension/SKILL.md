@@ -121,9 +121,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     that defines target personas, community identity, home information architecture, required product
     surfaces, workflow-to-surface mapping, realistic content requirements, visual/interaction standard,
     and concrete pass examples for every community/test app.
-40. The independent product UX review must produce schema version 3 machine-readable evidence with
+40. The independent product UX review must produce schema version 4 machine-readable evidence with
     review standard version, superseded prior run IDs, blueprint coverage, unique screen row IDs,
-    screen-specific critiques, stable finding/remediation IDs, before/after screenshot references,
+    screen-specific critiques, screenshot hashes/timestamps, app commit SHA, visible-text extracts,
+    UI-pattern classification, stable finding/remediation IDs, before/after screenshot references,
     unresolved severity counts, rerun requirements, and final pass/fail decision.
 41. The independent product UX review must inventory every implemented user-facing screen, state,
     dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result.
@@ -142,6 +143,29 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
 45. Commit every B25 loop iteration before starting the next UX feedback or remediation loop. Each
     iteration commit must include the review/remediation evidence, refreshed screenshots or explicit
     screenshot references, tests run, remaining findings, and tracker update for that iteration.
+46. Treat all B25 v3 or older passes as historical when the v4 standard applies. B25 cannot be marked
+    complete again until v4 evidence passes and explicitly supersedes the prior run IDs.
+47. Enforce screenshot freshness. Every B25 v4 screen row must include screenshot path, screenshot hash,
+    captured-at timestamp, emulator/device metadata, and app commit SHA. The evidence is invalid if a
+    screenshot predates the remediation it claims to prove or if a resolved finding points to a stale
+    before-state screenshot.
+48. Enforce screen-specific critique integrity. Every review row must describe visible UI elements and
+    visible text from its screenshot. Boilerplate critique, duplicated rationale across unrelated rows,
+    or a pass verdict without visible screen details is invalid evidence.
+49. Classify every user-facing primary surface as domain-native, secondary-supporting, or generic
+    workflow-card. A primary workflow may not pass when represented only by a generic workflow-card,
+    checklist modal, metadata page, or improved copy over the same repeated card shell.
+50. Require domain-native replacement plans for primary generic surfaces. The plan must name the target
+    product surface, such as event detail/RSVP, feed, inbox/thread, donation/payment, care request,
+    volunteer signup, admin review queue, receipt/history, search result, export wizard, or transfer
+    status screen.
+51. Separate implementer and reviewer roles during B25. The reviewer prompt must be screenshot-first
+    and adversarial: it must judge the visible product as a real user experience, not as the author of
+    the implementation or the workflow checklist.
+52. Do not allow B25 to pass on schema shape alone. Tests must validate screenshot freshness, non-empty
+    visible-text extracts, unique row IDs, non-boilerplate critiques, domain-native primary surfaces,
+    zero unresolved blocker/major findings, and internal consistency between markdown review, JSON
+    evidence, remediation log, screenshots, and tracker.
 
 ## Delivery Modes
 
@@ -241,18 +265,22 @@ Before reporting completion:
     brand treatment is expected, checklist modals instead of real domain detail/forms, chips that expose
     status without useful context, overlapping FAB/sticky controls, clipped text, thin placeholder
     content, or weak visual hierarchy that would not meet a modern production app standard.
-23. Produce schema version 3 machine-readable review evidence with blueprint coverage, unique
-    screen-row IDs, non-boilerplate critiques, stable finding/remediation IDs, screenshot references,
-    unresolved severity counts, rerun requirements, and the final pass/fail decision.
+23. Produce schema version 4 machine-readable review evidence with blueprint coverage, unique
+    screen-row IDs, screenshot hashes, captured-at timestamps, app commit SHA, visible-text extracts,
+    UI-pattern classification, non-boilerplate critiques, stable finding/remediation IDs, screenshot
+    references, unresolved severity counts, rerun requirements, and the final pass/fail decision.
 24. If the product UX review fails with any blocker or major finding, start the B25 remediation loop:
     cluster findings by root cause, create a remediation batch, apply UX/content/code fixes, rebuild and
     relaunch the Demo App, recapture affected screenshots, rerun workflow and product UX evidence, and
     regenerate the screen review matrix. Commit that full iteration before starting the next UX
     feedback or correction loop.
-25. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
+25. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
+    primary workflow rows classified as generic workflow-card/checklist/modal/metadata-only, missing
+    visible-text extracts, or pass verdicts that do not describe the actual visible UI.
+26. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.
-26. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
+27. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
@@ -263,11 +291,12 @@ any implemented screen/state missing from the product UX screen review matrix, h
 major independent product UX review findings, still looks like a generic demo scaffold rather than a
 modern production product, has unresolved overlap/clipping/repetitive-card/checklist-modal/thin-content
 issues ranked major or blocker, lacks a complete per-community production UX blueprint, lacks schema
-version 3 machine-readable B25 review evidence, has not completed the B25 remediation loop after a
-failed product UX review, lacks a final independent product UX pass decision, or is only represented by
-metadata. Return a gap report and keep the package incomplete until all workflow, persona, production UX
-blueprint, production UX evidence, B25 remediation-loop evidence, and independent product UX review
-evidence is green.
+version 4 machine-readable B25 review evidence, has stale screenshot evidence, has boilerplate screen
+critiques, classifies any primary workflow surface as a generic workflow-card/checklist/modal/metadata
+page, has not completed the B25 remediation loop after a failed product UX review, lacks a final
+independent product UX pass decision, or is only represented by metadata. Return a gap report and keep
+the package incomplete until all workflow, persona, production UX blueprint, production UX evidence,
+B25 remediation-loop evidence, and independent product UX review evidence is green.
 
 ## System Prereq Setup
 

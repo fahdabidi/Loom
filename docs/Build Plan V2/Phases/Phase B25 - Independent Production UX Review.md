@@ -66,11 +66,20 @@ a real user would expect.
 - Per-iteration git commit evidence. Each B25 review/remediation iteration must be committed before the
   next UX feedback loop or correction batch starts, and the remediation log must record that commit SHA.
 - Machine-readable review evidence at
-  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json` using schema version 3. The
+  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json` using schema version 4. The
   JSON must include the review standard version, superseded prior run IDs, blueprint path, every screen
-  row with a unique row ID and screen-specific critique, finding-to-remediation links, before/after
-  screenshot references for fixed issues, unresolved severity counts, rerun requirements, and the final
-  pass/fail decision.
+  row with a unique row ID, screenshot hash, captured-at timestamp, app commit SHA, emulator/device
+  metadata, visible-text extract, UI-pattern classification, screen-specific critique,
+  finding-to-remediation links, before/after screenshot references for fixed issues, unresolved severity
+  counts, rerun requirements, and the final pass/fail decision.
+- Screenshot freshness and evidence-integrity audit. Every referenced screenshot must exist, be captured
+  from the latest app commit or explicitly linked to the commit it represents, and be newer than the
+  remediation it claims to prove. Stale screenshots invalidate the review.
+- Boilerplate critique audit. The review must reject matrix rows whose critique/rationale is repeated
+  across unrelated screens or cannot identify visible elements from the screenshot.
+- Primary-surface classification audit. Every primary workflow surface must be classified as
+  `domain-native`, `secondary-supporting`, or `generic-workflow-card`. Primary workflows cannot pass as
+  `generic-workflow-card`, checklist modal, metadata page, or a repeated card with better copy.
 - Owner-accepted minor issue list, if any minor issues remain.
 - Final pass/fail UX decision.
 - B25 API Review if any API or platform contract issue is discovered, and B25 UX Decisions.
@@ -99,12 +108,48 @@ The phase must also remain incomplete when any implemented user-facing screen/st
 screen review matrix, lacks a screenshot reference, lacks a product-UX verdict, or has an unresolved
 blocker or major finding.
 
+The phase must also remain incomplete when the evidence is internally inconsistent: a screenshot is
+stale, a row claims remediation against an older image, a screenshot hash is missing, a row lacks
+visible-text extraction, critiques are boilerplate, or the JSON/markdown/tracker disagree about
+unresolved findings.
+
+The phase must also remain incomplete when any primary workflow surface is still represented only by a
+generic workflow card, checklist/review modal, metadata/settings page, or repeated card shell. These may
+remain only as secondary-supporting surfaces with explicit owner acceptance; they cannot be the primary
+production UX for events, donations, forms, messaging, care, volunteer, admin review, search, export, or
+other user-facing community jobs.
+
 If any blocker or major finding exists, B25 must enter the remediation loop: cluster findings by root
 cause, apply UX/content/code fixes, rebuild and relaunch the visible Demo App, recapture screenshots,
 rerun workflow and product UX evidence, regenerate the screen review matrix, and rerun the independent
 product UX review. Commit that complete iteration before starting the next UX feedback loop or
 correction batch. Repeat until blocker and major counts are zero. Do not stop at a failed review unless
 the owner explicitly asks for review-only planning or pauses implementation.
+
+## Required B25 v4 Gate Sequence
+
+1. **Evidence integrity reset:** mark the prior B25 v3 pass as superseded, clear status placeholders,
+   and create or refresh `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`.
+2. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
+   capture fresh screenshots for every screen/persona/state. Record screenshot hashes, timestamps,
+   emulator/device metadata, and app commit SHA.
+3. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
+   form, confirmation, error, empty state, persona variant, and action result. Do not sample.
+4. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
+   screenshot hash/timestamp, app commit SHA, visible text, UI-pattern classification,
+   primary/secondary surface type, row-specific critique, findings, remediation IDs, and unresolved
+   severity counts.
+5. **Independent screenshot-first review:** run an adversarial product UX review from screenshots and the
+   visible emulator only. The reviewer must not pass a row that cannot be justified from visible UI.
+6. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+   card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
+   create a target product-surface replacement plan.
+7. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
+   recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
+   iteration before the next UX feedback or remediation batch.
+8. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+   every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
+   is domain-native, all required tests/gates pass, and the tracker records the final iteration commit.
 
 ## Prompt To Use
 
@@ -244,13 +289,15 @@ For each screen review matrix row, record:
 - required fix or owner-acceptance rationale
 - retest result
 
-For the machine-readable JSON evidence, record schemaVersion 3 and include:
-- reviewStandardVersion: `b25-production-ux-v3`
+For the machine-readable JSON evidence, record schemaVersion 4 and include:
+- reviewStandardVersion: `b25-production-ux-v4`
 - currentReviewRunId and any supersededReviewRunIds
 - status and finalDecision
 - blueprintPath and blueprintCoverage for every community/test app
 - screenRows with unique rowId, community, persona, screen type, screenshot references, product verdict,
-  row-specific critique, severity, finding IDs, remediation IDs, and retest result
+  screenshot hash, screenshotCapturedAt, appCommitSha, emulator/device metadata, visibleTextExtract,
+  uiPatternClassification, primarySurfaceType, row-specific critique, severity, finding IDs,
+  remediation IDs, and retest result
 - findings with stable IDs, severity, affected rows, root-cause theme, required fix, and blocksPass
 - remediationIterations with fixes applied, tests run, screenshots refreshed, and remaining blocker or
   major counts
@@ -258,8 +305,9 @@ For the machine-readable JSON evidence, record schemaVersion 3 and include:
 - requiresRemediation, requiresRerun, and b25CanPass
 
 The JSON evidence is invalid if rows reuse boilerplate critique, omit screenshot references, omit
-blueprint coverage, lack stable finding/remediation IDs, or claim pass while unresolved blocker/major
-findings remain.
+screenshot hashes/timestamps, omit visible-text extracts, reference stale screenshots, omit blueprint
+coverage, lack stable finding/remediation IDs, classify a primary workflow as generic-workflow-card, or
+claim pass while unresolved blocker/major findings remain.
 
 Severity rules:
 - Blocker: prevents or seriously misleads task completion, creates privacy/payment/trust risk, exposes
@@ -286,11 +334,15 @@ Pass criteria:
 - The main user-facing screens are organized around community content and jobs-to-be-done, not a global
   workflow list or validation surface.
 - Primary workflows use domain-specific product surfaces, not just generic cards with better labels.
+- Every screen row uses fresh screenshots captured from the app version under review, with screenshot
+  hash, timestamp, device metadata, and app commit SHA recorded.
+- Every screen row includes visible-text extraction and a screen-specific critique that cannot be reused
+  unchanged for another unrelated screen.
 - The visible UI has no blocking or major overlap, clipping, crowding, default-scaffold, repeated-card,
   checklist-modal, or thin-content findings.
 - Every implemented screen/state/dialog/card/feed/action result appears in the screen review matrix with
   screenshot evidence and a pass verdict, owner-accepted minor issue, or tracked polish finding.
-- The schema version 3 JSON evidence is complete, non-boilerplate, screenshot-backed, and internally
+- The schema version 4 JSON evidence is complete, non-boilerplate, screenshot-backed, fresh, and internally
   consistent with the markdown review, screen matrix, remediation loop, and tracker.
 - If a prior loop iteration failed, the remediation loop log proves that fixes were applied, screenshots
   were refreshed, evidence was regenerated, and the latest review now has zero unresolved blocker or
@@ -319,7 +371,7 @@ The next UX feedback/remediation loop may not start from uncommitted B25 iterati
 
 ## Evidence To Record
 
-Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 3
+Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 4
 machine-readable review JSON, B25 remediation loop log, findings table, screenshot paths, remediation
 evidence, retest output, final pass/fail statement, manifest rows, phase gate, analyzer, boundary lint,
 diff check, per-iteration commit SHAs, and final closeout commit SHA.
