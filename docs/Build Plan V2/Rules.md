@@ -228,6 +228,12 @@ criteria, evidence metadata, and remediation logs. They must not receive worker 
 intended behavior summaries, or optimistic completion claims. If the artifact does not prove a
 criterion, the criterion fails.
 
+B25 must express production UX pass criteria as direct questions, not only as abstract checklist
+statements. The Production UX Judge must run one holistic product UX pass and one workflow/persona pass
+for every reviewed workflow/persona pair. Both passes must be green before B25 can close. A holistic
+pass cannot hide a weak workflow, and passing workflow/persona rows cannot hide an incoherent,
+non-modern, or non-production overall UI.
+
 A phase cannot complete when its required judge scorecard has a blocking criterion failure.
 
 ## Test Naming

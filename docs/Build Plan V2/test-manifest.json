@@ -4926,7 +4926,7 @@
       ],
       "dependents": [],
       "phase": "B25",
-      "status": "pass",
+      "status": "pending",
       "testHash": "9a24f061bd21",
       "lastRunTestHash": "9a24f061bd21",
       "lastRunComponentVersions": {
@@ -4938,6 +4938,7 @@
         "role-policy-consent-engine": "01288a26926f"
       },
       "lastRunAt": "2026-06-28T20:33:12.154Z",
+      "supersededBy": "b25-production-ux-v4-direct-question-gates",
       "executionTarget": "demo-loom-communities-app-local-backend"
     },
     {
@@ -4951,7 +4952,7 @@
       ],
       "dependents": [],
       "phase": "B25",
-      "status": "pass",
+      "status": "pending",
       "testHash": "9a24f061bd21",
       "lastRunTestHash": "9a24f061bd21",
       "lastRunComponentVersions": {
@@ -4960,6 +4961,7 @@
         "app-shell-runtime": "c7c0a602fdad"
       },
       "lastRunAt": "2026-06-28T20:33:12.154Z",
+      "supersededBy": "b25-production-ux-v4-direct-question-gates",
       "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],

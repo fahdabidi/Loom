@@ -9,6 +9,8 @@ class CriterionResult {
   CriterionResult({
     required this.id,
     required this.title,
+    required this.question,
+    required this.scope,
     required this.score,
     required this.verdict,
     required this.blocksPass,
@@ -19,6 +21,8 @@ class CriterionResult {
 
   final String id;
   final String title;
+  final String question;
+  final String scope;
   final int score;
   final String verdict;
   final bool blocksPass;
@@ -30,6 +34,8 @@ class CriterionResult {
     return <String, Object?>{
       'criterionId': id,
       'title': title,
+      'question': question,
+      'scope': scope,
       'score': score,
       'verdict': verdict,
       'blocksPass': blocksPass,
@@ -47,6 +53,7 @@ class JudgeResult {
     required this.criteria,
     required this.errors,
     required this.warnings,
+    this.extra = const <String, Object?>{},
   });
 
   final String toolId;
@@ -54,6 +61,7 @@ class JudgeResult {
   final List<CriterionResult> criteria;
   final List<String> errors;
   final List<String> warnings;
+  final JsonMap extra;
 
   bool get passed => status == 'pass';
 
@@ -64,6 +72,7 @@ class JudgeResult {
       'criteria': criteria.map((criterion) => criterion.toJson()).toList(),
       'errors': errors,
       'warnings': warnings,
+      ...extra,
     };
   }
 }
@@ -89,6 +98,8 @@ class CriterionDefinition {
     required this.requiredEvidenceFields,
     required this.failureMessage,
     required this.requiredFix,
+    this.question,
+    this.scope = 'general',
   });
 
   final String id;
@@ -96,6 +107,8 @@ class CriterionDefinition {
   final List<String> requiredEvidenceFields;
   final String failureMessage;
   final String requiredFix;
+  final String? question;
+  final String scope;
 }
 
 final specs = <String, JudgeSpec>{
@@ -256,6 +269,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c01-no-blocker-major',
         title: 'No unresolved blocker or major findings',
+        question:
+            'Are there zero unresolved blocker or major findings in the current production UX evidence?',
+        scope: 'evidence',
         requiredEvidenceFields: <String>[
           'unresolvedBlockerFindings',
           'unresolvedMajorFindings',
@@ -268,6 +284,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c02-blueprint-complete',
         title: 'Every community has a complete production UX blueprint',
+        question:
+            'Does every community or test app have a complete production UX blueprint that the review actually uses?',
+        scope: 'holistic',
         requiredEvidenceFields: <String>['blueprintCoverage'],
         failureMessage: 'Blueprint coverage is missing or incomplete.',
         requiredFix:
@@ -276,7 +295,13 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c03-production-grade-experience',
         title: 'Reviewer can state the experience feels production-grade',
-        requiredEvidenceFields: <String>['finalDecision'],
+        question:
+            'Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?',
+        scope: 'holistic',
+        requiredEvidenceFields: <String>[
+          'finalDecision',
+          'holisticQuestionAnswers',
+        ],
         failureMessage:
             'The evidence does not contain a defensible production-grade verdict.',
         requiredFix:
@@ -285,7 +310,13 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c04-modern-intentional-ui',
         title: 'UI looks modern and intentionally designed',
-        requiredEvidenceFields: <String>['screenRows'],
+        question:
+            'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?',
+        scope: 'holistic',
+        requiredEvidenceFields: <String>[
+          'screenRows',
+          'holisticQuestionAnswers',
+        ],
         failureMessage:
             'Screen rows do not prove modern hierarchy, spacing, and intentional design.',
         requiredFix:
@@ -295,7 +326,13 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c05-community-content-ia',
         title:
             'Screens are organized around community content and jobs-to-be-done',
-        requiredEvidenceFields: <String>['screenRows'],
+        question:
+            'Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?',
+        scope: 'holistic',
+        requiredEvidenceFields: <String>[
+          'screenRows',
+          'holisticQuestionAnswers',
+        ],
         failureMessage:
             'Primary screens still read as workflow lists, metadata, or validation surfaces.',
         requiredFix:
@@ -304,7 +341,13 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c06-domain-native-primary-surfaces',
         title: 'Primary workflows use domain-specific product surfaces',
-        requiredEvidenceFields: <String>['screenRows'],
+        question:
+            'For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?',
+        scope: 'workflow-persona',
+        requiredEvidenceFields: <String>[
+          'screenRows',
+          'workflowPersonaScorecards',
+        ],
         failureMessage:
             'A primary workflow is still generic-card/checklist/modal/metadata-only.',
         requiredFix:
@@ -313,6 +356,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c07-screenshot-freshness',
         title: 'Every screen row has fresh screenshot evidence',
+        question:
+            'Does every reviewed screen row use fresh screenshot evidence from the app version under review, with hash, timestamp, device metadata, and app commit SHA?',
+        scope: 'evidence',
         requiredEvidenceFields: <String>['screenRows'],
         failureMessage:
             'Screenshot path, hash, timestamp, device metadata, or app commit SHA is missing or stale.',
@@ -322,7 +368,13 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c08-visible-text-specific-critique',
         title: 'Every row has visible text and screen-specific critique',
-        requiredEvidenceFields: <String>['screenRows'],
+        question:
+            'Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?',
+        scope: 'workflow-persona',
+        requiredEvidenceFields: <String>[
+          'screenRows',
+          'workflowPersonaScorecards',
+        ],
         failureMessage:
             'Visible text or non-boilerplate row critique is missing.',
         requiredFix:
@@ -331,6 +383,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c09-no-layout-production-defects',
         title: 'No blocking or major layout/content defects remain',
+        question:
+            'Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?',
+        scope: 'holistic',
         requiredEvidenceFields: <String>['screenRows'],
         failureMessage:
             'The evidence still contains blocker/major overlap, clipping, scaffold, repeated-card, checklist, or thin-content findings.',
@@ -339,6 +394,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c10-full-screen-inventory',
         title: 'Every implemented screen/state appears in the matrix',
+        question:
+            'Does the screen inventory cover every user-facing screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result?',
+        scope: 'evidence',
         requiredEvidenceFields: <String>['screenRows'],
         failureMessage:
             'The evidence does not prove complete screen/state inventory coverage.',
@@ -348,6 +406,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c11-schema-v4-consistency',
         title: 'Schema v4 JSON is complete and internally consistent',
+        question:
+            'Is the schema v4 evidence complete and internally consistent across JSON, markdown review, matrix, remediation log, screenshots, and tracker?',
+        scope: 'evidence',
         requiredEvidenceFields: <String>[
           'schemaVersion',
           'reviewStandardVersion',
@@ -361,6 +422,9 @@ final specs = <String, JudgeSpec>{
       CriterionDefinition(
         id: 'b25-c12-remediation-proof',
         title: 'Failed prior iterations have proof of remediation',
+        question:
+            'If any prior loop iteration failed, does the remediation log prove fixes, screenshot refresh, evidence regeneration, tests, commit SHA, and zero remaining blockers/majors?',
+        scope: 'remediation',
         requiredEvidenceFields: <String>['remediationIterations'],
         failureMessage:
             'Prior failed iterations are not tied to fixes, screenshots, tests, and rerun result.',
@@ -434,6 +498,7 @@ JudgeResult judgeEvidence(
     criteria: criteria,
     errors: errors,
     warnings: warnings,
+    extra: _extraScorecards(spec, evidence, criteria),
   );
 }
 
@@ -455,6 +520,8 @@ CriterionResult _evaluateCriterion(
     return CriterionResult(
       id: definition.id,
       title: definition.title,
+      question: _questionFor(definition),
+      scope: definition.scope,
       score: score,
       verdict: blocksPass ? 'fail' : 'pass',
       blocksPass: blocksPass,
@@ -477,6 +544,8 @@ CriterionResult _evaluateCriterion(
     return CriterionResult(
       id: definition.id,
       title: definition.title,
+      question: _questionFor(definition),
+      scope: definition.scope,
       score: 0,
       verdict: 'fail',
       blocksPass: true,
@@ -491,6 +560,8 @@ CriterionResult _evaluateCriterion(
     return CriterionResult(
       id: definition.id,
       title: definition.title,
+      question: _questionFor(definition),
+      scope: definition.scope,
       score: derivedFailure.score,
       verdict: 'fail',
       blocksPass: true,
@@ -503,6 +574,8 @@ CriterionResult _evaluateCriterion(
   return CriterionResult(
     id: definition.id,
     title: definition.title,
+    question: _questionFor(definition),
+    scope: definition.scope,
     score: 100,
     verdict: 'pass',
     blocksPass: false,
@@ -538,7 +611,16 @@ _DerivedFailure? _derivedFailure(
       return _failOnGenericRows(_asMapList(evidence['contractRows']));
     case 'b22-c01-primary-surfaces-domain-native':
     case 'b25-c06-domain-native-primary-surfaces':
-      return _failOnGenericRows(screenRows);
+      return _failOnGenericRows(screenRows) ??
+          _failOnWorkflowPersonaScorecards(evidence);
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return _failOnDirectQuestionAnswers(
+        _asMapList(evidence['holisticQuestionAnswers']),
+        requiredScope: 'holistic',
+      );
     case 'b23-c01-persona-state-coverage':
     case 'b23-c02-unauthorized-behavior':
       final rows = _asMapList(evidence['personaRows']);
@@ -555,7 +637,8 @@ _DerivedFailure? _derivedFailure(
       return _failOnScreenshotIntegrity(screenRows, basePath);
     case 'b24-c02-visible-text-and-copy-audit':
     case 'b25-c08-visible-text-specific-critique':
-      return _failOnVisibleTextOrBoilerplate(screenRows);
+      return _failOnVisibleTextOrBoilerplate(screenRows) ??
+          _failOnWorkflowPersonaScorecards(evidence);
     case 'b25-c01-no-blocker-major':
       final blockers = _count(evidence['unresolvedBlockerFindings']);
       final majors = _count(evidence['unresolvedMajorFindings']);
@@ -577,6 +660,126 @@ _DerivedFailure? _derivedFailure(
         );
       }
       break;
+  }
+  return null;
+}
+
+JsonMap _extraScorecards(
+  JudgeSpec spec,
+  JsonMap evidence,
+  List<CriterionResult> criteria,
+) {
+  if (spec.toolId != 'production-ux-judge') {
+    return <String, Object?>{};
+  }
+  return <String, Object?>{
+    'holisticProductScorecard': <String, Object?>{
+      'questions': _asMapList(evidence['holisticQuestionAnswers']),
+      'criteria': criteria
+          .where((criterion) => criterion.scope == 'holistic')
+          .map((criterion) => criterion.toJson())
+          .toList(),
+    },
+    'workflowPersonaScorecards': _asMapList(
+      evidence['workflowPersonaScorecards'],
+    ),
+    'workflowPersonaCriteria': criteria
+        .where((criterion) => criterion.scope == 'workflow-persona')
+        .map((criterion) => criterion.toJson())
+        .toList(),
+    'evidenceIntegrityCriteria': criteria
+        .where((criterion) => criterion.scope == 'evidence')
+        .map((criterion) => criterion.toJson())
+        .toList(),
+    'remediationCriteria': criteria
+        .where((criterion) => criterion.scope == 'remediation')
+        .map((criterion) => criterion.toJson())
+        .toList(),
+  };
+}
+
+String _questionFor(CriterionDefinition definition) {
+  return definition.question ?? definition.title;
+}
+
+_DerivedFailure? _failOnDirectQuestionAnswers(
+  List<JsonMap> answers, {
+  required String requiredScope,
+}) {
+  if (answers.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message: 'No $requiredScope direct-question answers were supplied.',
+    );
+  }
+  final failing = <String>[];
+  for (final answer in answers) {
+    final answerValue = _asString(answer['answer'] ?? answer['verdict']);
+    final score = _asInt(answer['score']);
+    final blocksPass = answer['blocksPass'] == true;
+    final visibleEvidence = _asString(
+      answer['visibleEvidence'] ?? answer['evidence'] ?? answer['visibleText'],
+    );
+    final question = _asString(answer['question']);
+    final critique = _asString(
+      answer['why'] ?? answer['whyItFails'] ?? answer['critique'],
+    );
+    final badAnswer =
+        answerValue == 'no' ||
+        answerValue == 'fail' ||
+        answerValue == 'partial' ||
+        blocksPass ||
+        score < 80;
+    if (question.isEmpty ||
+        visibleEvidence.trim().length < 12 ||
+        critique.trim().length < 12 ||
+        badAnswer) {
+      failing.add(_rowId(answer));
+    }
+  }
+  if (failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: 55,
+      message:
+          '$requiredScope direct-question answers are missing, weak, partial, or blocking: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnWorkflowPersonaScorecards(JsonMap evidence) {
+  final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
+  if (scorecards.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message: 'No workflow/persona direct-question scorecards were supplied.',
+    );
+  }
+  final failing = <String>[];
+  for (final scorecard in scorecards) {
+    final workflowId = _asString(scorecard['workflowId']);
+    final persona = _asString(scorecard['persona']);
+    final questions = _asMapList(scorecard['questions']);
+    if (workflowId.isEmpty || persona.isEmpty || questions.isEmpty) {
+      failing.add(_rowId(scorecard));
+      continue;
+    }
+    final questionFailure = _failOnDirectQuestionAnswers(
+      questions,
+      requiredScope: 'workflow/persona $workflowId/$persona',
+    );
+    if (questionFailure != null) {
+      failing.add('$workflowId/$persona');
+    }
+  }
+  if (failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: 55,
+      message:
+          'Workflow/persona direct-question scorecards have missing or blocking answers: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
   }
   return null;
 }
@@ -704,6 +907,19 @@ void _runCommonEvidenceChecks(
     if (finalDecision.isNotEmpty && finalDecision != 'pass') {
       errors.add('finalDecision is $finalDecision, not pass.');
     }
+    final holisticFailure = _failOnDirectQuestionAnswers(
+      _asMapList(evidence['holisticQuestionAnswers']),
+      requiredScope: 'holistic',
+    );
+    if (holisticFailure != null) {
+      errors.add('holistic direct-question pass: ${holisticFailure.message}');
+    }
+    final workflowPersonaFailure = _failOnWorkflowPersonaScorecards(evidence);
+    if (workflowPersonaFailure != null) {
+      errors.add(
+        'workflow/persona direct-question pass: ${workflowPersonaFailure.message}',
+      );
+    }
   }
   final findings = _asMapList(evidence['findings']);
   for (final finding in findings) {
@@ -763,12 +979,12 @@ String _toMarkdown(JudgeResult result) {
     ..writeln('Status: `${result.status}`')
     ..writeln()
     ..writeln(
-      '| Criterion | Score | Verdict | Blocks pass | Why | Required fix |',
+      '| Criterion | Scope | Direct question | Score | Verdict | Blocks pass | Why | Required fix |',
     )
-    ..writeln('| --- | ---: | --- | --- | --- | --- |');
+    ..writeln('| --- | --- | --- | ---: | --- | --- | --- | --- |');
   for (final criterion in result.criteria) {
     buffer.writeln(
-      '| `${criterion.id}` ${_escape(criterion.title)} | ${criterion.score} | ${criterion.verdict} | ${criterion.blocksPass} | ${_escape(criterion.why)} | ${_escape(criterion.requiredFix)} |',
+      '| `${criterion.id}` ${_escape(criterion.title)} | ${criterion.scope} | ${_escape(criterion.question)} | ${criterion.score} | ${criterion.verdict} | ${criterion.blocksPass} | ${_escape(criterion.why)} | ${_escape(criterion.requiredFix)} |',
     );
   }
   if (result.errors.isNotEmpty) {

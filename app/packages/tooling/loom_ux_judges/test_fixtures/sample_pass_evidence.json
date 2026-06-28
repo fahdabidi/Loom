@@ -65,6 +65,87 @@
   "blueprintCoverage": {
     "Garden Club": "complete"
   },
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "holistic-production-feel",
+      "question": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
+      "answer": "yes",
+      "score": 92,
+      "visibleEvidence": "The Garden Club home and event detail surfaces use garden workday content, event timing, and member RSVP context.",
+      "why": "The visible UI is framed around garden club activities and member tasks rather than workflow mechanics.",
+      "requiredFix": "None.",
+      "blocksPass": false
+    },
+    {
+      "questionId": "holistic-modern-ui",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+      "answer": "yes",
+      "score": 90,
+      "visibleEvidence": "The event detail surface has a clear title, time/place hierarchy, and one semantic RSVP action.",
+      "why": "The screen presents the primary task with a clear structure and avoids harness language.",
+      "requiredFix": "None.",
+      "blocksPass": false
+    },
+    {
+      "questionId": "holistic-community-ia",
+      "question": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
+      "answer": "yes",
+      "score": 91,
+      "visibleEvidence": "The reviewed surface is an event detail for a garden workday rather than a global workflow list.",
+      "why": "The user sees event content and RSVP affordance directly.",
+      "requiredFix": "None.",
+      "blocksPass": false
+    },
+    {
+      "questionId": "holistic-layout-defects",
+      "question": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+      "answer": "yes",
+      "score": 93,
+      "visibleEvidence": "The sample row records a single event detail surface with no overlap or checklist modal.",
+      "why": "No blocking or major layout/content defects are present in the supplied sample evidence.",
+      "requiredFix": "None.",
+      "blocksPass": false
+    }
+  ],
+  "workflowPersonaScorecards": [
+    {
+      "workflowId": "garden-event-rsvp",
+      "persona": "member",
+      "screenRowIds": ["screen-garden-event"],
+      "questions": [
+        {
+          "questionId": "workflow-understand-task",
+          "question": "Can this persona immediately understand what they are supposed to do in this workflow?",
+          "answer": "yes",
+          "score": 92,
+          "visibleEvidence": "The visible text says Garden workday RSVP with time and place context.",
+          "why": "The member can identify the event and RSVP action without reading workflow mechanics.",
+          "requiredFix": "None.",
+          "blocksPass": false
+        },
+        {
+          "questionId": "workflow-domain-surface",
+          "question": "Is the primary UI designed around the real task rather than workflow mechanics?",
+          "answer": "yes",
+          "score": 94,
+          "visibleEvidence": "The surface is classified as event-detail and displays garden workday details.",
+          "why": "The UI is domain-native for an event RSVP task.",
+          "requiredFix": "None.",
+          "blocksPass": false
+        },
+        {
+          "questionId": "workflow-result-state",
+          "question": "Does the workflow have a clear success or result state for this persona?",
+          "answer": "yes",
+          "score": 90,
+          "visibleEvidence": "The contract records RSVP recorded as the success state and organizer attendee count as the receiver state.",
+          "why": "The sample evidence ties the member action to an explicit result and receiver state.",
+          "requiredFix": "None.",
+          "blocksPass": false
+        }
+      ]
+    }
+  ],
   "finalDecision": "pass",
   "findings": [],
   "unresolvedBlockerFindings": 0,

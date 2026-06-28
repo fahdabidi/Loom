@@ -263,7 +263,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | B22 | `wf_domain-specific-workflow-surfaces` | Generic workflow UI -> domain-specific production surfaces -> semantic actions and results |
 | B23 | `wf_persona-production-ux-cross-persona-state` | Production persona surfaces -> actor creates state -> receiver sees real recipient surface |
 | B24 | `wf_production-ux-evidence-certification-sweep` | Full example suite -> production UX screenshots -> generic-copy gate and final certification evidence |
-| B25 | `wf_independent-production-ux-review` | Implemented production UX -> independent critique -> severity findings resolved -> final UX pass decision |
+| B25 | `wf_independent-production-ux-review` | Implemented production UX -> holistic direct-question review + workflow/persona direct-question review -> severity findings resolved -> final UX pass decision |
 
 ## Phase B1a Execution Status
 
@@ -447,8 +447,8 @@ are deferred until a hosted Loom build and validation backend exists.
 
 | Test | Type | Owner | Covers | Status |
 | --- | --- | --- | --- | --- |
-| `wf_independent-production-ux-review` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | pass |
-| `wf_b25-local-shell-production-polish-gates` | workflow | none | loom-communities-demo-app, community-card, app-shell-runtime | pass |
+| `wf_independent-production-ux-review` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | pending v4 direct-question rerun |
+| `wf_b25-local-shell-production-polish-gates` | workflow | none | loom-communities-demo-app, community-card, app-shell-runtime | pending v4 direct-question rerun |
 
 ## Required B1a Local Flow Coverage
 

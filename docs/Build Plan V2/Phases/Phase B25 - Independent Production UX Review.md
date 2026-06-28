@@ -83,7 +83,15 @@ a real user would expect.
 - Production UX judge scorecard at
   `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.json` and
   `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`. The scorecard must assign a
-  score and pass/fail verdict to each B25 pass criterion from artifacts only.
+  scope, direct question, score, and pass/fail verdict to each B25 pass criterion from artifacts only.
+- Holistic product UX direct-question scorecard in the machine-readable evidence. It must answer
+  whether the whole experience feels production-grade, whether the UI is modern/easy/appealing,
+  whether navigation and information architecture center community jobs-to-be-done, and whether the
+  overall visible UI avoids blocking or major layout/content defects.
+- Workflow/persona direct-question scorecards in the machine-readable evidence. Every workflow/persona
+  pair must have its own answers about task clarity, domain-native primary surface, natural actions,
+  input/validation/result states, receiver or unauthorized states, and whether that specific workflow
+  feels production-grade on its own.
 - Owner-accepted minor issue list, if any minor issues remain.
 - Final pass/fail UX decision.
 - B25 API Review if any API or platform contract issue is discovered, and B25 UX Decisions.
@@ -117,6 +125,11 @@ stale, a row claims remediation against an older image, a screenshot hash is mis
 visible-text extraction, critiques are boilerplate, or the JSON/markdown/tracker disagree about
 unresolved findings.
 
+The phase must also remain incomplete when either direct-question pass is absent or weak. The holistic
+pass must judge the whole product experience. The workflow/persona pass must judge each workflow for
+each persona separately. A broad statement that the app looks good cannot substitute for per-workflow
+evidence, and many local workflow passes cannot substitute for a coherent production-grade overall UI.
+
 The phase must also remain incomplete when any primary workflow surface is still represented only by a
 generic workflow card, checklist/review modal, metadata/settings page, or repeated card shell. These may
 remain only as secondary-supporting surfaces with explicit owner acceptance; they cannot be the primary
@@ -145,23 +158,49 @@ the owner explicitly asks for review-only planning or pauses implementation.
    severity counts.
 5. **Independent screenshot-first review:** run an adversarial product UX review from screenshots and the
    visible emulator only. The reviewer must not pass a row that cannot be justified from visible UI.
-6. **Production UX judge scorecard:** run the independent judge tool against the v4 evidence:
+6. **Holistic direct-question pass:** answer the whole-product questions in
+   `holisticQuestionAnswers`:
+
+   - Does the whole experience feel like a real production community app for the target users, not
+     merely an implemented workflow harness?
+   - Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?
+   - Is the overall information architecture organized around community content and real
+     jobs-to-be-done instead of workflow lists or validation surfaces?
+   - Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
+     repeated-card, checklist-modal, and thin-content defects?
+
+7. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
+   `workflowPersonaScorecards` row answering:
+
+   - Can this persona immediately understand what they are supposed to do?
+   - Is the primary UI designed around the real community task rather than workflow mechanics?
+   - Is the primary surface domain-native, not a generic card, checklist modal, or metadata page?
+   - Are action labels natural and specific to the user job?
+   - Are required inputs, validation, empty/error/review states, and success/result states clear?
+   - If another persona receives or acts on the state, is that receiver UX clear?
+   - Are unauthorized, read-only, hidden, or disabled states appropriate for this persona?
+   - Does this workflow UI feel production-grade on its own?
+
+8. **Production UX judge scorecard:** run the independent judge tool against the v4 evidence:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
    ```
 
    The judge sees only artifacts, screenshots, pass criteria, and evidence metadata. It must not receive
-   worker implementation notes or attempted-fix summaries.
-7. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+   worker implementation notes or attempted-fix summaries. The judge must fail if either the holistic
+   direct-question pass or any workflow/persona direct-question pass is missing, partial, unsupported by
+   visible evidence, or below the score threshold.
+9. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-8. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
+10. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
    recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
    iteration before the next UX feedback or remediation batch.
-9. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+11. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
-   is domain-native, the production UX judge scorecard has no blocking criterion failures, all required
+   is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
+   pass is green, the production UX judge scorecard has no blocking criterion failures, all required
    tests/gates pass, and the tracker records the final iteration commit.
 
 ## Required B25 Agent/Tool Split
@@ -239,6 +278,12 @@ a checklist. Answer:
 - What is the real user trying to do here?
 - What is missing, confusing, too dense, too technical, or visually weak?
 - What must change before this row can pass?
+
+After the row-level critique, run the UX Judge in two direct-question passes. First answer the holistic
+product questions once for the whole app/community experience. Then answer the workflow/persona
+questions for each workflow/persona pair. Keep workflow/persona batches small enough that each answer
+references visible text, screenshot evidence, and the real user task; do not collapse all workflows
+into a single generic pass statement.
 
 Do not use repeated boilerplate rationale across matrix rows. Each screen/state must receive a specific
 critique grounded in what is visible in the screenshot and what that persona is trying to do. If the
@@ -326,6 +371,10 @@ For the machine-readable JSON evidence, record schemaVersion 4 and include:
   uiPatternClassification, primarySurfaceType, row-specific critique, severity, finding IDs,
   remediation IDs, and retest result
 - findings with stable IDs, severity, affected rows, root-cause theme, required fix, and blocksPass
+- holisticQuestionAnswers with direct questions, yes/no/partial answer, score, visible evidence,
+  critique, and required fix
+- workflowPersonaScorecards with one row per workflow/persona, each containing direct questions,
+  answer, score, visible evidence, critique, and required fix
 - remediationIterations with fixes applied, tests run, screenshots refreshed, and remaining blocker or
   major counts
 - unresolvedBlockerFindings, unresolvedMajorFindings, ownerAcceptedMinorFindings, and trackedPolish
@@ -361,6 +410,8 @@ Pass criteria:
 - The main user-facing screens are organized around community content and jobs-to-be-done, not a global
   workflow list or validation surface.
 - Primary workflows use domain-specific product surfaces, not just generic cards with better labels.
+- The holistic product UX direct-question pass is green.
+- Every workflow/persona direct-question pass is green.
 - Every screen row uses fresh screenshots captured from the app version under review, with screenshot
   hash, timestamp, device metadata, and app commit SHA recorded.
 - Every screen row includes visible-text extraction and a screen-specific critique that cannot be reused

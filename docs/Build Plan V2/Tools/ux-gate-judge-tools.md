@@ -38,9 +38,19 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 - `production-ux-criteria-scorecard.json`
 - `production-ux-criteria-scorecard.md`
 
+B25 uses direct questions rather than only declarative pass criteria. The production judge must run:
+
+1. **One holistic product UX pass** over the entire app/community experience.
+2. **One workflow/persona pass for every reviewed workflow and persona pair.**
+
+Both passes must be green before B25 can close. A holistic pass cannot excuse a weak workflow, and a set
+of workflow passes cannot excuse a visually incoherent or non-production overall experience.
+
 Each criterion row includes:
 
 - `criterionId`
+- `scope`
+- `question`
 - `score`
 - `verdict`
 - `blocksPass`
@@ -48,7 +58,47 @@ Each criterion row includes:
 - `why`
 - `requiredFix`
 
+B25 evidence must include:
+
+- `holisticQuestionAnswers`: direct answers to whole-product questions about production feel, modern
+  visual design, navigation, community-centered information architecture, and layout/content defects.
+- `workflowPersonaScorecards`: direct-question scorecards for each workflow/persona pair, including
+  task clarity, domain-native primary surface, natural actions, validation/error/result states,
+  receiver/unauthorized states, and whether that workflow UI feels production-grade on its own.
+
 B25 cannot pass from an average score. One unresolved blocker/major criterion failure blocks the phase.
+The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted
+by screenshot evidence.
+
+## B25 Direct Questions
+
+Use direct questions because they force concrete judgment from the artifacts.
+
+Holistic product UX pass:
+
+- Does the whole experience feel like a real production community app for the target users, not merely
+  an implemented workflow harness?
+- Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?
+- Is the overall information architecture organized around community content and real jobs-to-be-done
+  instead of workflow lists or validation surfaces?
+- Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
+  repeated-card, checklist-modal, and thin-content defects?
+
+Workflow/persona pass, repeated for every workflow/persona pair:
+
+- Can this persona immediately understand what they are supposed to do?
+- Is the primary UI designed around the real community task rather than workflow mechanics?
+- Is the primary surface domain-native, not a generic card, checklist modal, or metadata page?
+- Are action labels natural and specific to the user job?
+- Are required inputs, validation, empty/error/review states, and success/result states clear?
+- If another persona receives or acts on the state, is that receiver UX clear?
+- Are unauthorized, read-only, hidden, or disabled states appropriate for this persona?
+- Does this workflow UI feel production-grade on its own?
+
+Do not batch all workflow/persona questions into one giant answer. The UX Judge Agent may perform the
+holistic pass once, then process workflow/persona groups in batches small enough to preserve fresh,
+screen-specific critique. Each answer must cite visible evidence and explain why it passes or what must
+change.
 
 ## Judge Agent Prompt Contract
 
@@ -71,8 +121,10 @@ Use only the supplied artifacts:
 Do not use worker implementation notes or intended behavior. If the artifact does not prove it, mark it
 missing. If the screenshot does not show it, the UX did not pass.
 
-Score each criterion independently. Return pass only when every blocking criterion passes, screenshots
-are fresh, critiques are screen-specific, and primary workflow surfaces are domain-native.
+First answer the holistic direct questions for the entire app. Then answer the workflow/persona direct
+questions for each reviewed workflow/persona pair. Score each criterion independently. Return pass only
+when every blocking criterion passes, both direct-question passes are green, screenshots are fresh,
+critiques are screen-specific, and primary workflow surfaces are domain-native.
 ```
 
 ## Remediation Planner Contract
@@ -87,4 +139,3 @@ The remediation planner receives only judge failures and phase docs. It must out
 - commit boundary for the iteration
 
 The Worker Agent receives the remediation plan, not a softened pass/fail summary.
-

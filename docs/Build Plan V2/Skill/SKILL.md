@@ -176,6 +176,23 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
 55. B25 cannot pass until `production_ux_judge.dart` emits
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
     every B25 pass criterion and no blocking criterion failures.
+56. B25 production UX criteria must be asked as direct questions. Avoid vague prompts such as "looks
+    modern"; ask concrete questions such as "Is the UI modern, easy to use, easy to navigate, and
+    visually appealing for the target persona?" and require screenshot-backed yes/no/partial answers.
+57. B25 requires two independent direct-question passes: one holistic product UX pass for the whole app
+    or community experience, and one workflow/persona pass for every reviewed workflow/persona pair.
+    Both must be green before B25 can close.
+58. The holistic product UX pass judges coherence, navigation, visual identity, community-centered
+    information architecture, production feel, and major layout/content defects across the whole
+    experience.
+59. The workflow/persona pass judges task clarity, domain-native primary surface, natural actions,
+    input/validation/result states, receiver states, unauthorized/read-only/disabled behavior, and
+    whether that workflow UI feels production-grade on its own.
+60. Do not batch all workflow/persona UX review into one broad answer. Use batches small enough that
+    every answer cites visible text, screenshot evidence, the target persona, and the real user task.
+61. `production_ux_judge.dart` must fail B25 when `holisticQuestionAnswers` or
+    `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
+    or contradicted by screenshots.
 
 ## Delivery Modes
 
@@ -284,15 +301,18 @@ Before reporting completion:
     relaunch the Demo App, recapture affected screenshots, rerun workflow and product UX evidence, and
     regenerate the screen review matrix. Commit that full iteration before starting the next UX
     feedback or correction loop.
-25. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
+25. Run the B25 direct-question judge in two passes: one holistic product UX pass for the whole app, and
+    workflow/persona passes for every reviewed workflow/persona pair. Record `holisticQuestionAnswers`
+    and `workflowPersonaScorecards` in the evidence and require both to be green.
+26. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
     primary workflow rows classified as generic workflow-card/checklist/modal/metadata-only, missing
     visible-text extracts, or pass verdicts that do not describe the actual visible UI.
-26. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
+27. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.
-27. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
+28. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
-28. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
+29. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
     finding, not as optional review feedback.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
@@ -308,7 +328,8 @@ critiques, classifies any primary workflow surface as a generic workflow-card/ch
 page, has not completed the B25 remediation loop after a failed product UX review, lacks a final
 independent product UX pass decision, or is only represented by metadata. Return a gap report and keep
 the package incomplete until all workflow, persona, production UX blueprint, production UX evidence,
-B25 remediation-loop evidence, and independent product UX review evidence is green.
+B25 remediation-loop evidence, holistic direct-question evidence, workflow/persona direct-question
+evidence, and independent product UX review evidence is green.
 
 ## UX Judge Tools
 
@@ -325,6 +346,10 @@ judge CLIs are:
 The agent split is mandatory: Worker Agent implements, Evidence Collector captures, Judge Agent scores
 artifacts only, and Remediation Planner converts failures into fix batches. If the artifact does not
 prove the criterion, the criterion fails.
+
+For B25, the judge must also produce a holistic product UX direct-question pass and per-workflow/persona
+direct-question passes. The deterministic scorecard must include criterion `scope` and `question`, and
+the machine-readable evidence must include `holisticQuestionAnswers` and `workflowPersonaScorecards`.
 
 ## System Prereq Setup
 

@@ -30,6 +30,18 @@
 - Require the production UX judge scorecard. B25 cannot pass until
   `production-ux-criteria-scorecard.json` and `.md` assign score/verdict/blocksPass/why/requiredFix to
   every B25 pass criterion with no blocking failures.
+- Require direct questions in the B25 judge. Declarative criteria such as "looks modern" are not enough;
+  the judge must answer concrete questions like "Is the UI modern, easy to use, easy to navigate, and
+  visually appealing for the target persona?" from screenshots and visible text.
+- Split the judge into one holistic product UX pass plus many workflow/persona passes. The holistic pass
+  protects whole-app coherence, navigation, visual identity, and product feel. The workflow/persona
+  passes protect task-level usability, domain-native surfaces, natural actions, validation/result
+  states, receiver states, and unauthorized/read-only behavior.
+- Require both direct-question passes to be green. A polished overall shell cannot hide a weak workflow,
+  and many technically usable workflow screens cannot hide an incoherent or non-production overall UI.
+- Batch workflow/persona review in small evidence groups when needed. Do not ask the judge to summarize
+  all workflows in one answer; every workflow/persona answer must cite visible screenshot evidence and
+  a screen-specific critique.
 - Treat exposed workflow machinery as a major or blocker UX issue when it appears in user-facing UI:
   `Community workflows`, `[category] surface`, framework rationale copy, metadata-only cards, global
   workflow lists, or test-harness state language.
