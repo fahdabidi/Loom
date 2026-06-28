@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
@@ -130,12 +133,108 @@ void main() {
   });
 
   test('wf_independent-production-ux-review', () {
-    const unresolvedBlockerFindings = <String>[];
-    const unresolvedMajorFindings = <String>[];
-    const finalPassDecision = 'pass';
+    final reviewFile = File(
+      '$_repoRoot/docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json',
+    );
+    final blueprintFile = File(
+      '$_repoRoot/docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md',
+    );
+    expect(reviewFile.existsSync(), isTrue);
+    expect(blueprintFile.existsSync(), isTrue);
 
-    expect(unresolvedBlockerFindings, isEmpty);
-    expect(unresolvedMajorFindings, isEmpty);
-    expect(finalPassDecision, 'pass');
+    final review =
+        jsonDecode(reviewFile.readAsStringSync()) as Map<String, Object?>;
+    expect(review['schemaVersion'], 3);
+    expect(review['reviewStandardVersion'], 'b25-production-ux-v3');
+    expect(review['status'], 'pass');
+    expect(review['finalDecision'], 'pass');
+    expect(review['b25CanPass'], isTrue);
+    expect(review['requiresRemediation'], isFalse);
+    expect(review['requiresRerun'], isFalse);
+    expect(review['unresolvedBlockerFindings'], isEmpty);
+    expect(review['unresolvedMajorFindings'], isEmpty);
+
+    final blueprintCoverage = (review['blueprintCoverage'] as List<Object?>)
+        .cast<Map<String, Object?>>();
+    expect(blueprintCoverage.length, greaterThanOrEqualTo(10));
+    expect(blueprintCoverage.every((row) => row['status'] == 'pass'), isTrue);
+
+    final screenRows = (review['screenRows'] as List<Object?>)
+        .cast<Map<String, Object?>>();
+    expect(screenRows.length, greaterThanOrEqualTo(200));
+    final rowIds = <String>{};
+    for (final row in screenRows) {
+      final rowId = row['rowId'] as String? ?? '';
+      expect(rowId, isNotEmpty);
+      expect(rowIds.add(rowId), isTrue, reason: 'Duplicate rowId: $rowId');
+      expect(row['communityName'], isNotEmpty);
+      expect(row['persona'], isNotEmpty);
+      expect(row['screenOrState'], isNotEmpty);
+      expect(row['screenshotPath'], isNotEmpty);
+      expect(row['productUxCritique'], isNotEmpty);
+      expect(row['verdict'], isNot('pending'));
+    }
+
+    final findings = (review['findings'] as List<Object?>)
+        .cast<Map<String, Object?>>();
+    expect(
+      findings
+          .where(
+            (finding) =>
+                finding['severity'] == 'blocker' &&
+                finding['status'] != 'resolved',
+          )
+          .toList(),
+      isEmpty,
+    );
+    expect(
+      findings
+          .where(
+            (finding) =>
+                finding['severity'] == 'major' &&
+                finding['status'] != 'resolved',
+          )
+          .toList(),
+      isEmpty,
+    );
   });
+
+  testWidgets('wf_b25-local-shell-production-polish-gates', (tester) async {
+    await tester.pumpWidget(const LoomCommunitiesDemoApp());
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.debugShowCheckedModeBanner, isFalse);
+
+    final target = loomEvidenceTargets.singleWhere(
+      (target) => target.extensionId == 'ext_garden_club',
+    );
+    await installEvidenceTarget(tester, target);
+
+    final list = tester.widget<ListView>(
+      find.byKey(const ValueKey('community-list')),
+    );
+    final padding = list.padding!.resolve(TextDirection.ltr);
+    expect(padding.bottom, greaterThanOrEqualTo(120));
+
+    expect(
+      find.byKey(
+        const ValueKey('community-card-identity-community_garden_club'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('G'), findsNothing);
+  });
+}
+
+String get _repoRoot {
+  final candidates = [
+    Directory.current.parent.path,
+    Directory.current.parent.parent.parent.path,
+  ];
+  for (final candidate in candidates) {
+    if (File('$candidate/docs/Build Plan V2/Skill/SKILL.md').existsSync()) {
+      return candidate;
+    }
+  }
+  fail('Could not find repo root from ${Directory.current.path}');
 }

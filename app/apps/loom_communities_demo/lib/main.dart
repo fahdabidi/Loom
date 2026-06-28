@@ -16,6 +16,7 @@ class LoomCommunitiesDemoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Loom Communities Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff246b62)),
         useMaterial3: true,
@@ -123,7 +124,8 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                   ),
                 Expanded(
                   child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    key: const ValueKey('community-list'),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 128),
                     itemCount: communities.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 8),
@@ -141,7 +143,16 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                           title: Text(community.displayName),
                           subtitle: Text(experience.tagline),
                           leading: CircleAvatar(
-                            child: Text(community.displayName.substring(0, 1)),
+                            key: ValueKey(
+                              'community-card-identity-${community.communityId}',
+                            ),
+                            backgroundColor: Color(
+                              experience.accentColor,
+                            ).withValues(alpha: 0.18),
+                            child: Icon(
+                              _communityIconFor(experience.extensionId),
+                              color: Color(experience.accentColor),
+                            ),
                           ),
                           onTap: () {
                             Navigator.of(context).push<void>(
@@ -419,13 +430,17 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
               child: Column(
                 children: [
                   CircleAvatar(
+                    key: ValueKey(
+                      'opened-community-identity-${community.communityId}',
+                    ),
                     radius: 34,
                     backgroundColor: Color(
                       experience.accentColor,
                     ).withValues(alpha: 0.28),
-                    child: Text(
-                      community.displayName.substring(0, 1),
-                      style: textTheme.headlineMedium,
+                    child: Icon(
+                      _communityIconFor(experience.extensionId),
+                      size: 36,
+                      color: Color(experience.accentColor),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -580,6 +595,32 @@ const List<String> _orderedSectionTitles = [
   'Messages and connections',
   'Member tools',
 ];
+
+IconData _communityIconFor(String extensionId) {
+  switch (extensionId) {
+    case 'ext_garden_club':
+      return Icons.local_florist_outlined;
+    case 'ext_book_club':
+      return Icons.menu_book_outlined;
+    case 'ext_youth_soccer':
+      return Icons.sports_soccer_outlined;
+    case 'ext_hoa':
+      return Icons.apartment_outlined;
+    case 'ext_mosque':
+      return Icons.volunteer_activism_outlined;
+    case 'ext_chess_club':
+      return Icons.extension_outlined;
+    case 'ext_camera_club':
+      return Icons.photo_camera_outlined;
+    case 'ext_platform_social':
+      return Icons.forum_outlined;
+    case 'ext_ad_off':
+      return Icons.block_outlined;
+    case 'ext_export_migration':
+      return Icons.import_export_outlined;
+  }
+  return Icons.groups_outlined;
+}
 
 String _sectionTitleFor(LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
@@ -912,6 +953,8 @@ String _domainSummaryFor(
         return 'A data package update is ready to inspect.';
       case 'Platform':
         return 'A member communication or preference update is ready.';
+      case 'Form':
+        return 'A submitted member form is ready for review and follow-up.';
     }
     return 'A community update is ready to review.';
   }
@@ -951,7 +994,7 @@ String _domainSummaryFor(
   if (id.contains('ad')) {
     return 'Ad preference and sponsored-message behavior are ready to review.';
   }
-  return 'Community details are ready for review and submission.';
+  return 'Member form captures labeled details, privacy choices, and reviewer handoff.';
 }
 
 String _waitingSummaryFor(String category) {
@@ -968,6 +1011,8 @@ String _waitingSummaryFor(String category) {
       return 'Waiting for the export package to be prepared.';
     case 'Platform':
       return 'Waiting for the related member action.';
+    case 'Form':
+      return 'Waiting for the member form to be submitted.';
   }
   return 'Waiting for the first community action.';
 }
@@ -1009,8 +1054,10 @@ List<String> _domainMetadataFor(
       return const ['Redacted copy', 'Checksum ready', 'Exportable'];
     case 'Platform':
       return const ['Private by default', 'Membership scoped', 'Ready'];
+    case 'Form':
+      return const ['Labeled fields', 'Privacy checked', 'Review handoff'];
   }
-  return const ['Details ready', 'Private where needed', 'Saved to community'];
+  return const ['Labeled fields', 'Privacy checked', 'Review handoff'];
 }
 
 IconData _metadataIconFor(String detail) {

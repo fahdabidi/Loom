@@ -495,7 +495,7 @@
       "layer": "ux",
       "phase": "A6",
       "contract": "CommunityCardProps",
-      "version": "690cea54a8d2",
+      "version": "e973568f1cfa",
       "fakePresent": true
     },
     {
@@ -527,7 +527,7 @@
       "layer": "ux",
       "phase": "A6",
       "contract": "LoomCommunitiesDemoApp",
-      "version": "20ba48fdc81a",
+      "version": "e973568f1cfa",
       "fakePresent": true
     },
     {
@@ -3456,14 +3456,14 @@
       "dependents": [],
       "phase": "A6",
       "status": "pass",
-      "testHash": "d4401d6651a",
-      "lastRunTestHash": "d4401d6651a",
+      "testHash": "6666189edef8",
+      "lastRunTestHash": "6666189edef8",
       "lastRunComponentVersions": {
-        "loom-communities-demo-app": "42175a068b2a",
-        "community-card": "690cea54a8d2",
+        "loom-communities-demo-app": "e973568f1cfa",
+        "community-card": "e973568f1cfa",
         "local-in-app-backend": "5d1deb013df1"
       },
-      "lastRunAt": "2026-06-10T10:00:00Z"
+      "lastRunAt": "2026-06-28T20:33:12.154Z"
     },
     {
       "testId": "vt_demo-app_empty-community-state",
@@ -4926,18 +4926,40 @@
       ],
       "dependents": [],
       "phase": "B25",
-      "status": "stale",
-      "testHash": "b25-production-ux-v3",
-      "lastRunTestHash": "02bd693d382e",
+      "status": "pass",
+      "testHash": "d4d08d474666",
+      "lastRunTestHash": "d4d08d474666",
       "lastRunComponentVersions": {
         "workflow-validation-harness": "09c26b466480",
-        "loom-communities-demo-app": "20ba48fdc81a",
+        "loom-communities-demo-app": "e973568f1cfa",
         "local-in-app-backend": "5d1deb013df1",
-        "community-card": "690cea54a8d2",
+        "community-card": "e973568f1cfa",
         "app-shell-runtime": "c7c0a602fdad",
         "role-policy-consent-engine": "01288a26926f"
       },
-      "lastRunAt": "2026-06-28T00:00:00Z",
+      "lastRunAt": "2026-06-28T20:33:12.154Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_b25-local-shell-production-polish-gates",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "loom-communities-demo-app",
+        "community-card",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B25",
+      "status": "pass",
+      "testHash": "d4d08d474666",
+      "lastRunTestHash": "d4d08d474666",
+      "lastRunComponentVersions": {
+        "loom-communities-demo-app": "e973568f1cfa",
+        "community-card": "e973568f1cfa",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-28T20:33:12.154Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],

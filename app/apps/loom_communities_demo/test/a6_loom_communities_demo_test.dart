@@ -118,7 +118,13 @@ void main() {
 
     await _installLocalCommunity(tester);
 
-    expect(find.text('G'), findsOneWidget);
+    expect(
+      find.byKey(
+        const ValueKey('community-card-identity-community_garden_club'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('G'), findsNothing);
   });
 
   testWidgets('vt_demo-app_open-local-extension', (tester) async {
@@ -131,6 +137,12 @@ void main() {
 
     expect(
       find.byKey(const ValueKey('local-extension-ext_garden_club')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(
+        const ValueKey('opened-community-identity-community_garden_club'),
+      ),
       findsOneWidget,
     );
     expect(find.text('local:ext_garden_club@latest'), findsNothing);

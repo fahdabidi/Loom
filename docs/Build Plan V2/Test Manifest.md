@@ -447,7 +447,8 @@ are deferred until a hosted Loom build and validation backend exists.
 
 | Test | Type | Owner | Covers | Status |
 | --- | --- | --- | --- | --- |
-| `wf_independent-production-ux-review` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | stale |
+| `wf_independent-production-ux-review` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | pass |
+| `wf_b25-local-shell-production-polish-gates` | workflow | none | loom-communities-demo-app, community-card, app-shell-runtime | pass |
 
 ## Required B1a Local Flow Coverage
 
@@ -462,7 +463,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | Arbitrary package ingestion | `vt_fake-backend_parse-arbitrary-local-package-pair`, `vt_fake-backend_parse-arbitrary-zip-package-pair`, `vt_fake-backend_import-arbitrary-package-pair`, `vt_demo-app_arbitrary-local-extension-loads-card`, `wf_arbitrary-local-package-ingestion` |
 | Arbitrary Skill output replay | `wf_skill-arbitrary-extension-test-run` |
 | Prompt-driven Skill completion | `wf_skill-prompt-build-validate-complete` |
-| Full UI workflow screenshot evidence | `wf_example-workflow-ux-evidence-harness`, `wf_garden-club-full-ui-workflow-evidence`, `wf_anchor-examples-full-ui-workflow-evidence`, `wf_arbitrary-prompt-full-ui-workflow-evidence`, `wf_platform-full-ui-workflow-evidence`, `wf_persona-role-inventory-capability-matrix`, `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, `wf_multi-persona-workflow-evidence`, `wf_full-ui-screenshot-evidence-b12-b20`, `wf_production-workflow-ux-contract-matrix`, `wf_domain-specific-workflow-surfaces`, `wf_persona-production-ux-cross-persona-state`, `wf_production-ux-evidence-certification-sweep`, `wf_independent-production-ux-review` |
+| Full UI workflow screenshot evidence | `wf_example-workflow-ux-evidence-harness`, `wf_garden-club-full-ui-workflow-evidence`, `wf_anchor-examples-full-ui-workflow-evidence`, `wf_arbitrary-prompt-full-ui-workflow-evidence`, `wf_platform-full-ui-workflow-evidence`, `wf_persona-role-inventory-capability-matrix`, `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, `wf_multi-persona-workflow-evidence`, `wf_full-ui-screenshot-evidence-b12-b20`, `wf_production-workflow-ux-contract-matrix`, `wf_domain-specific-workflow-surfaces`, `wf_persona-production-ux-cross-persona-state`, `wf_production-ux-evidence-certification-sweep`, `wf_independent-production-ux-review`, `wf_b25-local-shell-production-polish-gates` |
 | End to end | `wf_local-build-download-sideload-install` |
 
 ## Manifest Rules
