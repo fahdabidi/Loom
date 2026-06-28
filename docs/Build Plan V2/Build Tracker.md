@@ -1648,7 +1648,7 @@ Closeout rule for reopened phases:
   `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-1.md`. The pass is currently
   failed with one unresolved major finding, `B25-V4-REVIEW-PENDING`, because independent
   screen-specific critique, holistic direct-question answers, and workflow/persona scorecards are not
-  complete. B25 remains reopened.
+  complete. B25 remains reopened. Iteration commit: `647c38f`.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 closeout commit pending.
 
 ## Gate Evidence Template
