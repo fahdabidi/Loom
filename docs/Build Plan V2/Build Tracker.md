@@ -25,6 +25,12 @@ For each phase:
 8. Record component version hashes, API/UX/Skill artifacts, gate evidence, and the resulting commit SHA.
 9. Start the next phase only after the commit exists and this tracker points to that SHA.
 
+For B25, treat each independent UX review/remediation iteration as its own commit boundary. Before
+starting the next UX feedback loop or correction batch, commit the current iteration's review evidence,
+remediation changes, refreshed screenshots or screenshot references, tests, remaining findings, and
+tracker/remediation-loop updates. Record the iteration commit SHA in the B25 remediation loop log and in
+this tracker.
+
 Set B workflow tests must run against the Demo Loom Communities App with the Local Backend. The Skill
 supports both `local-demo` and `real-backend-publish` modes, but no Set B gate may depend on an
 external backend. The first supported Skill execution targets are Codex and Claude Code; online-only
@@ -212,6 +218,9 @@ and removing obvious workflow-harness copy does not imply a B25 pass.
 If B25 fails with any blocker or major finding, the phase enters a remediation loop: fix, rebuild,
 relaunch, recapture evidence, regenerate the screen matrix, rerun the review, and repeat until blocker
 and major counts are zero.
+Each B25 loop iteration must be committed before the next UX feedback or remediation loop starts. The
+iteration commit must include the current review/remediation evidence, screenshots or screenshot
+references, tests run, remaining findings, and tracker/remediation-loop updates.
 
 Every B25 independent UX review must include:
 
@@ -249,6 +258,7 @@ Every B25 independent UX review must include:
   resolved, explicitly accepted by the owner, or tracked with rationale.
 - A remediation loop log for every failed B25 run, including root-cause clusters, fix batches, tests,
   refreshed screenshots, remaining blocker/major counts, and the next iteration decision.
+- A git commit SHA for every B25 loop iteration before the next UX feedback or correction batch starts.
 - A supersession rule: when the B25 review standard changes, any prior pass is historical only. The
   phase must be reopened, the prior evidence must be marked stale/superseded, and B25 cannot pass again
   until the latest standard is rerun successfully.
@@ -1531,11 +1541,13 @@ Closeout rule for reopened phases:
   If the B25 review standard changes, prior passes must be explicitly superseded and B25 must be
   reopened until the latest standard passes.
   When the review fails with any blocker or major finding, B25 must apply fixes and rerun the review
-  loop. A failed review-only report is not sufficient phase completion.
+  loop. Each loop iteration must be committed before the next UX feedback or correction batch starts. A
+  failed review-only report is not sufficient phase completion.
 - **Evidence to record:** Independent review report, product UX screen review matrix, findings table,
   production UX blueprint, schema version 3 JSON evidence, annotated screenshots or screenshot paths,
   remediation diffs/evidence, retest output for fixed findings, final pass/fail statement,
-  manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check, and commit SHA.
+  manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check, per-iteration commit SHAs,
+  and final closeout commit SHA.
 - **Execution record:** Prior B25 product UX review v2 pass is superseded by B25 production UX v3. The
   phase is reopened until a per-community production UX blueprint exists, schema version 3
   machine-readable review evidence is generated, the visible app is re-reviewed under the stricter

@@ -63,6 +63,8 @@ a real user would expect.
   `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`, recording each review-fix-retest
   iteration, fixes applied, tests run, screenshots refreshed, remaining blocker/major findings, and the
   iteration decision.
+- Per-iteration git commit evidence. Each B25 review/remediation iteration must be committed before the
+  next UX feedback loop or correction batch starts, and the remediation log must record that commit SHA.
 - Machine-readable review evidence at
   `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json` using schema version 3. The
   JSON must include the review standard version, superseded prior run IDs, blueprint path, every screen
@@ -100,7 +102,8 @@ blocker or major finding.
 If any blocker or major finding exists, B25 must enter the remediation loop: cluster findings by root
 cause, apply UX/content/code fixes, rebuild and relaunch the visible Demo App, recapture screenshots,
 rerun workflow and product UX evidence, regenerate the screen review matrix, and rerun the independent
-product UX review. Repeat until blocker and major counts are zero. Do not stop at a failed review unless
+product UX review. Commit that complete iteration before starting the next UX feedback loop or
+correction batch. Repeat until blocker and major counts are zero. Do not stop at a failed review unless
 the owner explicitly asks for review-only planning or pauses implementation.
 
 ## Prompt To Use
@@ -295,12 +298,28 @@ Pass criteria:
 
 If the UX does not meet the bar, do not stop with only a failed report. Produce a remediation batch,
 apply the fixes, retest, recapture evidence, rerun this review, and update the loop log. Keep the phase
-incomplete until the latest loop iteration passes.
+incomplete until the latest loop iteration passes. Commit every completed B25 iteration before starting
+the next feedback/remediation loop; the next loop may not begin from uncommitted review, evidence, test,
+or remediation changes.
 ```
+
+## Iteration Commit Gate
+
+Before starting any next B25 UX feedback loop or correction batch:
+
+- Stage only the current iteration's intended review, evidence, screenshot, test, remediation, tracker,
+  and manifest changes.
+- Run `git diff --staged` and confirm the staged scope belongs to the current B25 iteration.
+- Run the affected validation commands listed in that iteration's remediation log.
+- Commit the current iteration.
+- Record the iteration commit SHA in
+  `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md` and this tracker.
+
+The next UX feedback/remediation loop may not start from uncommitted B25 iteration changes.
 
 ## Evidence To Record
 
 Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 3
 machine-readable review JSON, B25 remediation loop log, findings table, screenshot paths, remediation
 evidence, retest output, final pass/fail statement, manifest rows, phase gate, analyzer, boundary lint,
-diff check, and commit SHA.
+diff check, per-iteration commit SHAs, and final closeout commit SHA.

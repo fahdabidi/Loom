@@ -139,6 +139,9 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
 44. Every B25 remediation loop iteration must record the review result, fixes applied, tests run,
     screenshots refreshed, remaining findings, and pass/fail decision. Do not stop after producing a
     failed review unless the owner explicitly asks for review-only planning or pauses implementation.
+45. Commit every B25 loop iteration before starting the next UX feedback or remediation loop. Each
+    iteration commit must include the review/remediation evidence, refreshed screenshots or explicit
+    screenshot references, tests run, remaining findings, and tracker update for that iteration.
 
 ## Delivery Modes
 
@@ -244,7 +247,8 @@ Before reporting completion:
 24. If the product UX review fails with any blocker or major finding, start the B25 remediation loop:
     cluster findings by root cause, create a remediation batch, apply UX/content/code fixes, rebuild and
     relaunch the Demo App, recapture affected screenshots, rerun workflow and product UX evidence, and
-    regenerate the screen review matrix.
+    regenerate the screen review matrix. Commit that full iteration before starting the next UX
+    feedback or correction loop.
 25. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.

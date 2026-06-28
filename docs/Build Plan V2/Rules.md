@@ -92,6 +92,11 @@ A phase is done only when:
 No next phase may start from uncommitted prior-phase changes. If a fix-up is needed after the commit,
 make a follow-up commit and update the tracker to the latest applicable SHA before advancing.
 
+For B25 specifically, every independent UX review/remediation iteration has the same commit boundary as
+a phase. Do not start the next UX feedback loop or correction batch until the current B25 iteration's
+review evidence, fixes, refreshed screenshots or screenshot references, tests, remaining findings, and
+tracker updates are committed and the remediation loop log records that commit SHA.
+
 ## R13 Reuse the V1 harness
 
 Use `loom_api_contracts`, `loom_fake_backend`, `loom_local_store`, `loom_seed_data`,

@@ -29,6 +29,9 @@
 - Require a B25 remediation loop log for each iteration, including review result, root-cause clusters,
   fixes applied, tests run, screenshots refreshed, remaining blocker/major findings, and latest
   pass/fail decision.
+- Require a git commit after each B25 review/remediation iteration before the next UX feedback loop or
+  correction batch starts. This preserves review evidence, fixes, refreshed screenshots or screenshot
+  references, tests, remaining findings, and tracker updates as an auditable boundary.
 - Supersede the prior B25 pass. The existing evidence proved workflow-compliance improvements, but the
   visible app still needs a stricter product UX review against the revised criteria before B25 can be
   considered complete.
@@ -41,3 +44,5 @@
 - `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`
 - Prior `wf_independent-production-ux-review` pass is superseded by the product-UX review v2 criteria
   and must be rerun through the remediation loop until it passes.
+- Every B25 remediation-loop row must include the git commit SHA for that iteration before a subsequent
+  UX feedback/remediation iteration begins.
