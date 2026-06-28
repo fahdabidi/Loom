@@ -60,7 +60,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Extension package must end with .loom-extension.zip.'),
+      find.textContaining(
+        'Extension package must end with .loom-extension.zip.',
+      ),
       findsOneWidget,
     );
   });
@@ -73,7 +75,10 @@ void main() {
     await _installLocalCommunity(tester);
 
     expect(find.text('Garden Club'), findsOneWidget);
-    expect(find.text('ext_garden_club'), findsOneWidget);
+    expect(
+      find.text('Coordinate garden events and plant exchange requests.'),
+      findsOneWidget,
+    );
     expect(
       find.byKey(const ValueKey('community-card-community_garden_club')),
       findsOneWidget,
@@ -124,7 +129,29 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Opening Garden Club'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('local-extension-ext_garden_club')),
+      findsOneWidget,
+    );
+    expect(find.text('local:ext_garden_club@latest'), findsNothing);
+    expect(
+      find.text('local:ext_garden_club@latest', skipOffstage: false),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Local package details'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+      maxScrolls: 50,
+    );
+    await tester.tap(find.text('Local package details'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('seed/events.json'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('seed/events.json'), findsOneWidget);
   });
 
   testWidgets('vt_demo-app_duplicate-local-import-status', (tester) async {

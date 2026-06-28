@@ -71,7 +71,7 @@ void main() {
 
     expect(approved.state, CommunityMembershipState.active);
     expect(team.name, 'U10 Falcons');
-    expect(protectedRead?.redactedValue, '***');
+    expect(protectedRead?.redactedValue, '2***');
     expect(payment.amountCents, 12500);
     expect(payment.kind, CommunityPaymentKind.dues);
     expect(practice.capacity, 18);

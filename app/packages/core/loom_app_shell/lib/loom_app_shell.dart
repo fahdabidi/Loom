@@ -656,6 +656,8 @@ class CommunityCardViewModel {
   final String imageAssetId;
   final String accentColor;
   final String altText;
+
+  String get displayName => title;
 }
 
 CommunityCardViewModel bindCommunityCard(CommunityCardProps props) {

@@ -49,7 +49,10 @@ void main() {
     expect(report.community.logoAssetId, 'asset_logo_chess');
     expect(report.community.heroImageAssetId, 'asset_hero_chess');
     expect(bindCommunityCard(shell.cards.single).displayName, 'Chess Club');
-    expect(bindCommunityCard(shell.cards.single).imageAssetId, 'asset_card_chess');
+    expect(
+      bindCommunityCard(shell.cards.single).imageAssetId,
+      'asset_card_chess',
+    );
     expect(shell.openExtensionId, 'local:ext_chess_club@latest');
   });
 }
@@ -76,9 +79,17 @@ _PackagePairFixture _writePackagePair({
       'version': '1.0.0',
       'permissions': ['content.publish', 'events.write', 'community.install'],
       'assets': [
-        {'assetId': cardAssetId, 'kind': 'cardImage', 'path': 'assets/card.png'},
+        {
+          'assetId': cardAssetId,
+          'kind': 'cardImage',
+          'path': 'assets/card.png',
+        },
         {'assetId': logoAssetId, 'kind': 'logo', 'path': 'assets/logo.png'},
-        {'assetId': heroImageAssetId, 'kind': 'hero', 'path': 'assets/hero.png'},
+        {
+          'assetId': heroImageAssetId,
+          'kind': 'hero',
+          'path': 'assets/hero.png',
+        },
       ],
     }),
   );

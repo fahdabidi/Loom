@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "phase": "B20",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 1,
+  "workflows": [
+    {
+      "phase": "B20",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "wf_multi-persona-workflow-evidence",
+      "expectedAssertions": [
+        "admin creates the public announcement",
+        "member receives the same announcement after admin completion",
+        "widget sweep covers all demo app workflow/persona rows"
+      ],
+      "screenshotNames": [
+        "B20_announcement_admin_start",
+        "B20_announcement_admin_action",
+        "B20_announcement_admin_complete",
+        "B20_announcement_member_ready",
+        "B20_announcement_member_action",
+        "B20_announcement_member_received"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_ready.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_received.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

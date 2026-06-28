@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
 
+const bool _preloadExampleCommunities = bool.fromEnvironment(
+  'LOOM_PRELOAD_EXAMPLE_COMMUNITIES',
+);
+
 void main() {
   runApp(const LoomCommunitiesDemoApp());
 }
@@ -29,8 +33,25 @@ class LoomCommunitiesHome extends StatefulWidget {
 }
 
 class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
-  final LocalInAppBackend _backend = LocalInAppBackend();
+  late final LocalInAppBackend _backend;
+  late final Map<String, List<String>> _importedSeedFilesByCommunityId;
   String? _lastLocalImportMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _backend = LocalInAppBackend(
+      snapshot: _preloadExampleCommunities
+          ? _preloadedExampleCommunitiesSnapshot()
+          : null,
+    );
+    _importedSeedFilesByCommunityId = _preloadExampleCommunities
+        ? _preloadedSeedFilesByCommunityId()
+        : {};
+    _lastLocalImportMessage = _preloadExampleCommunities
+        ? 'Loaded ${loomEvidenceTargets.length} example communities'
+        : null;
+  }
 
   Future<void> _showLocalPackageLoader() async {
     await showDialog<void>(
@@ -55,6 +76,8 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
       return error.message;
     }
     setState(() {
+      _importedSeedFilesByCommunityId[report.community.communityId] =
+          report.importedSeedFiles;
       _lastLocalImportMessage = reportMessage(
         communityName: report.community.displayName,
         created: report.created,
@@ -106,21 +129,29 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                         const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final community = communities[index];
+                      final experience = experienceForExtensionId(
+                        community.extensionId,
+                        displayName: community.displayName,
+                      );
                       return Card(
                         child: ListTile(
                           key: ValueKey(
                             'community-card-${community.communityId}',
                           ),
                           title: Text(community.displayName),
-                          subtitle: Text(community.extensionId),
+                          subtitle: Text(experience.tagline),
                           leading: CircleAvatar(
                             child: Text(community.displayName.substring(0, 1)),
                           ),
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Opening ${community.displayName}',
+                            Navigator.of(context).push<void>(
+                              MaterialPageRoute<void>(
+                                builder: (context) => _LocalExtensionScreen(
+                                  community: community,
+                                  seedDataFiles:
+                                      _importedSeedFilesByCommunityId[community
+                                          .communityId] ??
+                                      const [],
                                 ),
                               ),
                             );
@@ -135,13 +166,1193 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     );
   }
 
-  String reportMessage({
-    required String communityName,
-    required bool created,
-  }) {
+  String reportMessage({required String communityName, required bool created}) {
     return created
         ? 'Installed $communityName from local packages'
         : 'Updated $communityName from local packages';
+  }
+}
+
+class _LocalExtensionScreen extends StatefulWidget {
+  const _LocalExtensionScreen({
+    required this.community,
+    required this.seedDataFiles,
+  });
+
+  final LocalInstalledCommunity community;
+  final List<String> seedDataFiles;
+
+  @override
+  State<_LocalExtensionScreen> createState() => _LocalExtensionScreenState();
+}
+
+class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
+  final Set<String> _completedWorkflowIds = {};
+  final Set<String> _receivedWorkflowPersonaKeys = {};
+  String? _selectedPersonaId;
+
+  LocalInstalledCommunity get community => widget.community;
+  List<String> get seedDataFiles => widget.seedDataFiles;
+  String get _route => 'local:${community.extensionId}@latest';
+
+  LoomPersonaDefinition _activePersona(LoomExperienceDefinition experience) {
+    final personas = personasForExtensionId(experience.extensionId);
+    final selectedPersonaId = _selectedPersonaId;
+    if (selectedPersonaId != null) {
+      for (final persona in personas) {
+        if (persona.personaId == selectedPersonaId) {
+          return persona;
+        }
+      }
+    }
+    return personas.first;
+  }
+
+  Future<void> _confirmWorkflow(LoomWorkflowDefinition workflow) async {
+    final contract = productionWorkflowContractFor(
+      extensionId: community.extensionId,
+      workflow: workflow,
+    );
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              key: ValueKey('workflow-action-dialog-${workflow.workflowId}'),
+              title: Text(contract.screenTitle),
+              content: _WorkflowReviewContent(
+                contract: contract,
+                personaAction: contract.primaryActionLabel,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  key: ValueKey('workflow-confirm-${workflow.workflowId}'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(contract.primaryActionLabel),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+    if (!confirmed) {
+      return;
+    }
+    setState(() {
+      _completedWorkflowIds.add(workflow.workflowId);
+    });
+  }
+
+  Future<void> _receiveWorkflow({
+    required LoomWorkflowDefinition workflow,
+    required LoomPersonaDefinition persona,
+    required LoomWorkflowPersonaPolicy policy,
+  }) async {
+    final contract = productionWorkflowContractFor(
+      extensionId: community.extensionId,
+      workflow: workflow,
+    );
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              key: ValueKey('workflow-receive-dialog-${workflow.workflowId}'),
+              title: Text(contract.receiverSurfaceTitle),
+              content: _WorkflowReviewContent(
+                contract: contract,
+                personaAction: _receiverActionLabel(
+                  workflow: workflow,
+                  policy: policy,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  key: ValueKey(
+                    'workflow-receive-confirm-${workflow.workflowId}',
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    _receiverActionLabel(workflow: workflow, policy: policy),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+    if (!confirmed) {
+      return;
+    }
+    setState(() {
+      _receivedWorkflowPersonaKeys.add(
+        workflowPersonaReceiptKey(
+          workflowId: workflow.workflowId,
+          personaId: persona.personaId,
+        ),
+      );
+    });
+  }
+
+  Future<void> _showPersonaPicker(
+    LoomExperienceDefinition experience,
+    LoomPersonaDefinition activePersona,
+  ) async {
+    final personas = personasForExtensionId(experience.extensionId);
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          key: const ValueKey('persona-picker-dialog'),
+          title: const Text('Choose persona'),
+          content: SizedBox(
+            width: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Preview the community experience for each member role.',
+                  ),
+                  const SizedBox(height: 8),
+                  for (final persona in personas)
+                    ListTile(
+                      key: ValueKey('persona-option-${persona.personaId}'),
+                      selected: persona.personaId == activePersona.personaId,
+                      leading: Icon(
+                        persona.personaId == activePersona.personaId
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                      ),
+                      title: Text(persona.label),
+                      subtitle: Text(
+                        '${persona.roleLabel} - ${persona.description}',
+                      ),
+                      onTap: () => Navigator.of(context).pop(persona.personaId),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+    if (selected == null) {
+      return;
+    }
+    setState(() {
+      _selectedPersonaId = selected;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+    );
+    final activePersona = _activePersona(experience);
+    final textTheme = Theme.of(context).textTheme;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(community.displayName),
+        actions: [
+          IconButton(
+            key: const ValueKey('messages-button'),
+            tooltip: 'Messages',
+            onPressed: () {},
+            icon: const Icon(Icons.chat_bubble_outline),
+          ),
+          IconButton(
+            key: const ValueKey('persona-picker-button'),
+            tooltip: 'Personas',
+            onPressed: () => _showPersonaPicker(experience, activePersona),
+            icon: const Icon(Icons.people_outline),
+          ),
+        ],
+      ),
+      body: ListView(
+        key: ValueKey('local-extension-${community.extensionId}'),
+        padding: const EdgeInsets.all(16),
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Icon(Icons.campaign_outlined),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('No sponsored message right now.')),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Color(experience.accentColor).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Color(experience.accentColor).withValues(alpha: 0.24),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 34,
+                    backgroundColor: Color(
+                      experience.accentColor,
+                    ).withValues(alpha: 0.28),
+                    child: Text(
+                      community.displayName.substring(0, 1),
+                      style: textTheme.headlineMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    community.displayName,
+                    key: ValueKey('opened-community-${community.communityId}'),
+                    style: textTheme.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    experience.tagline,
+                    key: ValueKey(
+                      'experience-tagline-${community.extensionId}',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Offstage(
+                    child: Text(
+                      _route,
+                      key: ValueKey('opened-route-${community.extensionId}'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _PersonaStatusTile(
+            persona: activePersona,
+            personaCount: personasForExtensionId(experience.extensionId).length,
+          ),
+          const SizedBox(height: 16),
+          for (final section in _communitySectionsFor(experience)) ...[
+            _CommunitySectionHeader(
+              title: section.title,
+              subtitle: section.subtitle,
+              icon: section.icon,
+            ),
+            const SizedBox(height: 8),
+            for (final workflow in section.workflows)
+              Builder(
+                builder: (context) {
+                  final policy = personaPolicyForWorkflow(
+                    experience.extensionId,
+                    workflow.workflowId,
+                  );
+                  final view = personaWorkflowViewFor(
+                    extensionId: experience.extensionId,
+                    workflow: workflow,
+                    personaId: activePersona.personaId,
+                    completedWorkflowIds: _completedWorkflowIds,
+                    receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
+                  );
+                  return _WorkflowTile(
+                    extensionId: experience.extensionId,
+                    workflow: workflow,
+                    view: view,
+                    onPressed: () => _confirmWorkflow(workflow),
+                    onReceivePressed: () => _receiveWorkflow(
+                      workflow: workflow,
+                      persona: activePersona,
+                      policy: policy,
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: 20),
+          ],
+          const SizedBox(height: 24),
+          ExpansionTile(
+            title: const Text('Local package details'),
+            leading: const Icon(Icons.inventory_2_outlined),
+            children: [
+              _ExtensionInfoTile(
+                icon: Icons.extension_outlined,
+                title: 'Package',
+                value: community.extensionId,
+              ),
+              _ExtensionInfoTile(
+                icon: Icons.palette_outlined,
+                title: 'Accent',
+                value: community.accentColor,
+              ),
+              _ExtensionInfoTile(
+                icon: Icons.image_outlined,
+                title: 'Card image',
+                value: community.cardImageAssetId ?? 'generated fallback',
+              ),
+              if (seedDataFiles.isEmpty)
+                const ListTile(
+                  dense: true,
+                  leading: Icon(Icons.description_outlined),
+                  title: Text('No seed files recorded.'),
+                )
+              else
+                for (final seedDataFile in seedDataFiles)
+                  ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(seedDataFile),
+                  ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommunityWorkflowSection {
+  const _CommunityWorkflowSection({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.workflows,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<LoomWorkflowDefinition> workflows;
+}
+
+List<_CommunityWorkflowSection> _communitySectionsFor(
+  LoomExperienceDefinition experience,
+) {
+  final groups = <String, List<LoomWorkflowDefinition>>{};
+  for (final workflow in experience.workflows) {
+    groups.putIfAbsent(_sectionTitleFor(workflow), () => []).add(workflow);
+  }
+  return [
+    for (final title in _orderedSectionTitles)
+      if ((groups[title] ?? const []).isNotEmpty)
+        _CommunityWorkflowSection(
+          title: title,
+          subtitle: _sectionSubtitleFor(title, experience),
+          icon: _sectionIconFor(title),
+          workflows: groups[title]!,
+        ),
+  ];
+}
+
+const List<String> _orderedSectionTitles = [
+  'Announcements',
+  'Upcoming events',
+  'Giving',
+  'Care and volunteers',
+  'Requests and approvals',
+  'Documents and data',
+  'Messages and connections',
+  'Member tools',
+];
+
+String _sectionTitleFor(LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  final title = workflow.title.toLowerCase();
+  if (id.contains('announcement') ||
+      id.contains('publish') ||
+      id.contains('notification') ||
+      id.contains('reminder') ||
+      id.contains('digest') ||
+      id.contains('search-ai')) {
+    return 'Announcements';
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('schedule') ||
+      title.contains('event') ||
+      title.contains('photo-walk')) {
+    return 'Upcoming events';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off') ||
+      title.contains('receipt') ||
+      title.contains('reservation')) {
+    return 'Giving';
+  }
+  if (id.contains('care') ||
+      id.contains('volunteer') ||
+      id.contains('signup') ||
+      id.contains('submission') ||
+      id.contains('exchange')) {
+    return 'Care and volunteers';
+  }
+  if (id.contains('approval') ||
+      id.contains('decision') ||
+      id.contains('review') ||
+      id.contains('request')) {
+    return 'Requests and approvals';
+  }
+  if (id.contains('document') ||
+      id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('redaction') ||
+      id.contains('checksum')) {
+    return 'Documents and data';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite') ||
+      id.contains('blocked')) {
+    return 'Messages and connections';
+  }
+  return 'Member tools';
+}
+
+String _sectionSubtitleFor(String title, LoomExperienceDefinition experience) {
+  switch (title) {
+    case 'Announcements':
+      return 'Updates, reminders, and member notices for ${experience.displayName}.';
+    case 'Upcoming events':
+      return 'Dates, capacity, and attendance actions.';
+    case 'Giving':
+      return 'Payments, donations, receipts, and member preferences.';
+    case 'Care and volunteers':
+      return 'Private requests, volunteer shifts, and member support.';
+    case 'Requests and approvals':
+      return 'Requests that need a decision or member follow-up.';
+    case 'Documents and data':
+      return 'Documents, exports, imports, and transfer records.';
+    case 'Messages and connections':
+      return 'Member communication and relationship controls.';
+  }
+  return 'Useful actions for this community.';
+}
+
+IconData _sectionIconFor(String title) {
+  switch (title) {
+    case 'Announcements':
+      return Icons.campaign_outlined;
+    case 'Upcoming events':
+      return Icons.event_outlined;
+    case 'Giving':
+      return Icons.volunteer_activism_outlined;
+    case 'Care and volunteers':
+      return Icons.handshake_outlined;
+    case 'Requests and approvals':
+      return Icons.task_alt_outlined;
+    case 'Documents and data':
+      return Icons.folder_open_outlined;
+    case 'Messages and connections':
+      return Icons.forum_outlined;
+  }
+  return Icons.apps_outlined;
+}
+
+class _CommunitySectionHeader extends StatelessWidget {
+  const _CommunitySectionHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: textTheme.titleLarge),
+                const SizedBox(height: 2),
+                Text(subtitle, style: textTheme.bodyMedium),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkflowTile extends StatelessWidget {
+  const _WorkflowTile({
+    required this.extensionId,
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final String extensionId;
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final complete = view.completed || view.received;
+    final contract = productionWorkflowContractFor(
+      extensionId: extensionId,
+      workflow: workflow,
+    );
+    final metadata = _domainMetadataFor(contract.category, workflow);
+    return Card(
+      key: ValueKey('workflow-${workflow.workflowId}'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  complete
+                      ? Icons.check_circle_outline
+                      : view.state == LoomPersonaWorkflowState.receiver
+                      ? Icons.notifications_none
+                      : view.state == LoomPersonaWorkflowState.actor
+                      ? Icons.radio_button_unchecked
+                      : view.state == LoomPersonaWorkflowState.readOnly
+                      ? Icons.visibility_outlined
+                      : Icons.radio_button_unchecked,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _displayTitleFor(workflow),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _domainSummaryFor(contract.category, workflow, view),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          for (final detail in metadata)
+                            Chip(
+                              visualDensity: VisualDensity.compact,
+                              avatar: Icon(_metadataIconFor(detail), size: 18),
+                              label: Text(detail),
+                            ),
+                        ],
+                      ),
+                      Offstage(
+                        child: Text(
+                          view.personaRationale,
+                          key: ValueKey(
+                            'workflow-persona-state-${workflow.workflowId}',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (view.completed)
+              _WorkflowResultPanel(
+                key: ValueKey('workflow-result-${workflow.workflowId}'),
+                title: contract.successTitle,
+                body: contract.resultSummary,
+                icon: contract.icon,
+              )
+            else if (view.received)
+              _WorkflowResultPanel(
+                key: ValueKey(
+                  'workflow-received-result-${workflow.workflowId}',
+                ),
+                title: contract.receiverSurfaceTitle,
+                body: _receiverBodyFor(contract.category),
+                icon: Icons.inbox_outlined,
+              )
+            else
+              _WorkflowAction(
+                contract: contract,
+                workflow: workflow,
+                view: view,
+                onPressed: onPressed,
+                onReceivePressed: onReceivePressed,
+              ),
+            if (view.completed)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Chip(
+                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
+                  avatar: const Icon(Icons.done, size: 18),
+                  label: Text(contract.successChipLabel),
+                ),
+              ),
+            if (view.received)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Chip(
+                  key: ValueKey('workflow-received-${workflow.workflowId}'),
+                  avatar: const Icon(Icons.mark_email_read_outlined, size: 18),
+                  label: const Text('Received'),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _displayTitleFor(LoomWorkflowDefinition workflow) {
+  switch (workflow.workflowId) {
+    case 'hoa-committee-decision':
+      return 'Committee decision';
+    case 'hoa-export-evidence':
+      return 'HOA export';
+    case 'ad-off-receipt-evidence':
+      return 'Receipt history';
+    case 'export-checksum-evidence':
+      return 'Checksum record';
+    case 'platform-messages-entry':
+      return 'Messages';
+    case 'platform-connections-entry':
+      return 'Connections';
+    case 'platform-in-stream-ad':
+      return 'Sponsored message';
+    case 'platform-top-banner-no-fill':
+      return 'Top banner status';
+    case 'platform-sensitive-no-fill':
+      return 'Sensitive page ad status';
+    case 'chess-route-home':
+      return 'Chess Club home';
+  }
+
+  var title = workflow.title
+      .replaceAll(RegExp(r'\bworkflow\b', caseSensitive: false), '')
+      .replaceAll(RegExp(r'\bevidence\b', caseSensitive: false), 'record')
+      .replaceAll(RegExp(r'\bsurface\b', caseSensitive: false), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+  if (title.isEmpty) {
+    title = 'Community item';
+  }
+  return title.substring(0, 1).toUpperCase() + title.substring(1);
+}
+
+String _domainSummaryFor(
+  String category,
+  LoomWorkflowDefinition workflow,
+  LoomPersonaWorkflowView view,
+) {
+  if (view.waitingForPrerequisite) {
+    return _waitingSummaryFor(category);
+  }
+  if (view.state == LoomPersonaWorkflowState.disabled) {
+    return 'Another community role manages this item.';
+  }
+  if (view.state == LoomPersonaWorkflowState.readOnly) {
+    return 'You can review the current details without changing them.';
+  }
+  if (view.state == LoomPersonaWorkflowState.receiver) {
+    switch (category) {
+      case 'Event':
+        return 'An event update is ready with your attendance status.';
+      case 'Payment':
+        return 'A receipt or giving preference is ready to review.';
+      case 'Publishing':
+        return 'A community update is ready in your inbox.';
+      case 'Approval':
+        return 'A decision update is ready with next steps.';
+      case 'Portability':
+        return 'A data package update is ready to inspect.';
+      case 'Platform':
+        return 'A member communication or preference update is ready.';
+    }
+    return 'A community update is ready to review.';
+  }
+
+  final id = workflow.workflowId;
+  if (id.contains('announcement')) {
+    return 'Draft message includes audience, timing, and delivery details.';
+  }
+  if (id.contains('rsvp') || id.contains('event')) {
+    return 'Event details include date, location, capacity, and attendance.';
+  }
+  if (id.contains('donation')) {
+    return 'Record a 50.00 USD donation with receipt and privacy choices.';
+  }
+  if (id.contains('dues') || id.contains('payment')) {
+    return 'Payment details include amount, payer, and receipt destination.';
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return 'Volunteer details include shift, availability, and protected contact.';
+  }
+  if (id.contains('care')) {
+    return 'Care request keeps private details protected for the care team.';
+  }
+  if (id.contains('request') || id.contains('approval')) {
+    return 'Submitted details are ready for a decision and member follow-up.';
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('redaction') ||
+      id.contains('checksum')) {
+    return 'Data package includes scope, protected fields, and handoff status.';
+  }
+  if (id.contains('message') || id.contains('connection')) {
+    return 'Member communication stays scoped to the community relationship.';
+  }
+  if (id.contains('ad')) {
+    return 'Ad preference and sponsored-message behavior are ready to review.';
+  }
+  return 'Community details are ready for review and submission.';
+}
+
+String _waitingSummaryFor(String category) {
+  switch (category) {
+    case 'Event':
+      return 'Waiting for the organizer to publish the event update.';
+    case 'Payment':
+      return 'Waiting for the member payment or preference to be saved.';
+    case 'Publishing':
+      return 'Waiting for the announcement to be sent.';
+    case 'Approval':
+      return 'Waiting for the request to be submitted first.';
+    case 'Portability':
+      return 'Waiting for the export package to be prepared.';
+    case 'Platform':
+      return 'Waiting for the related member action.';
+  }
+  return 'Waiting for the first community action.';
+}
+
+List<String> _domainMetadataFor(
+  String category,
+  LoomWorkflowDefinition workflow,
+) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement')) {
+    return const ['Members', 'Today', 'Inbox + push'];
+  }
+  if (id.contains('rsvp') || id.contains('event')) {
+    return const ['This week', 'Community venue', 'Capacity tracked'];
+  }
+  if (id.contains('donation')) {
+    return const ['50.00 USD', 'Receipt saved', 'Private option'];
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return const ['Open shift', 'Contact protected', 'Coordinator notified'];
+  }
+  if (id.contains('care')) {
+    return const ['Private details', 'Care team', 'Consent checked'];
+  }
+  if (id.contains('ad')) {
+    return const ['No ad shown', 'Preference saved', 'Receipt ready'];
+  }
+
+  switch (category) {
+    case 'Event':
+      return const ['This week', 'Community venue', 'Capacity tracked'];
+    case 'Payment':
+      return const ['Amount ready', 'Receipt saved', 'Member-owned'];
+    case 'Publishing':
+      return const ['Members', 'Today', 'Inbox + push'];
+    case 'Approval':
+      return const ['Needs decision', 'Private notes', 'Member notified'];
+    case 'Portability':
+      return const ['Redacted copy', 'Checksum ready', 'Exportable'];
+    case 'Platform':
+      return const ['Private by default', 'Membership scoped', 'Ready'];
+  }
+  return const ['Details ready', 'Private where needed', 'Saved to community'];
+}
+
+IconData _metadataIconFor(String detail) {
+  final lower = detail.toLowerCase();
+  if (lower.contains('receipt') || lower.contains('usd')) {
+    return Icons.receipt_long_outlined;
+  }
+  if (lower.contains('private') ||
+      lower.contains('protected') ||
+      lower.contains('consent')) {
+    return Icons.verified_user_outlined;
+  }
+  if (lower.contains('week') ||
+      lower.contains('today') ||
+      lower.contains('venue') ||
+      lower.contains('shift')) {
+    return Icons.event_outlined;
+  }
+  if (lower.contains('inbox') ||
+      lower.contains('notified') ||
+      lower.contains('members')) {
+    return Icons.notifications_outlined;
+  }
+  if (lower.contains('export') ||
+      lower.contains('checksum') ||
+      lower.contains('copy')) {
+    return Icons.folder_open_outlined;
+  }
+  return Icons.check_circle_outline;
+}
+
+String _receiverBodyFor(String category) {
+  switch (category) {
+    case 'Event':
+      return 'Your attendance status and event details are saved.';
+    case 'Payment':
+      return 'The receipt or preference is available in your records.';
+    case 'Publishing':
+      return 'The update is now available in the member inbox.';
+    case 'Approval':
+      return 'The decision is available with the next step for the member.';
+    case 'Portability':
+      return 'The package status is available with redaction details.';
+    case 'Platform':
+      return 'The member communication state is up to date.';
+  }
+  return 'The community update is saved for this member.';
+}
+
+String _reviewDetailFor(String category) {
+  switch (category) {
+    case 'Event':
+      return 'Date, location, capacity, and attendee details are ready.';
+    case 'Payment':
+      return 'Amount, payer, privacy choice, and receipt details are ready.';
+    case 'Publishing':
+      return 'Message, audience, preview, and send timing are ready.';
+    case 'Approval':
+      return 'Request details, decision, and member follow-up are ready.';
+    case 'Portability':
+      return 'Data scope, protected fields, and handoff details are ready.';
+    case 'Platform':
+      return 'Member communication and preference details are ready.';
+  }
+  return 'Required details are ready.';
+}
+
+String _reviewCheckFor(String category) {
+  switch (category) {
+    case 'Payment':
+      return 'Receipt and privacy settings will be saved with the payment.';
+    case 'Publishing':
+      return 'Audience and delivery settings will be checked before sending.';
+    case 'Portability':
+      return 'Protected fields and checksum details will be checked.';
+    case 'Platform':
+      return 'Membership and privacy settings will be respected.';
+  }
+  return 'Required details will be checked before submission.';
+}
+
+String _reviewResultFor(String category) {
+  switch (category) {
+    case 'Event':
+      return 'Attendance status will be updated.';
+    case 'Payment':
+      return 'A receipt will be saved.';
+    case 'Publishing':
+      return 'Members will receive the update.';
+    case 'Approval':
+      return 'The member will receive the decision.';
+    case 'Portability':
+      return 'The data package status will be updated.';
+    case 'Platform':
+      return 'The member setting will be updated.';
+  }
+  return 'The community record will be saved.';
+}
+
+String _reviewTrustFor(String category) {
+  switch (category) {
+    case 'Payment':
+      return 'Payment records stay tied to the member account and receipt history.';
+    case 'Publishing':
+      return 'Only the selected audience receives this update.';
+    case 'Portability':
+      return 'Protected data stays redacted before sharing.';
+    case 'Platform':
+      return 'Private member relationships stay scoped to this community.';
+  }
+  return 'Private member details stay protected.';
+}
+
+class _WorkflowAction extends StatelessWidget {
+  const _WorkflowAction({
+    required this.contract,
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final LoomProductionWorkflowContract contract;
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    if (view.waitingForPrerequisite) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Chip(
+          key: ValueKey('workflow-waiting-${workflow.workflowId}'),
+          avatar: const Icon(Icons.schedule, size: 18),
+          label: Text(view.waitingText),
+        ),
+      );
+    }
+    if (view.state == LoomPersonaWorkflowState.actor) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            key: ValueKey('workflow-button-${workflow.workflowId}'),
+            onPressed: onPressed,
+            icon: Icon(contract.icon, size: 18),
+            label: Text(view.actionText, textAlign: TextAlign.center),
+          ),
+        ),
+      );
+    }
+    if (view.state == LoomPersonaWorkflowState.receiver) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: SizedBox(
+          width: double.infinity,
+          child: FilledButton.tonalIcon(
+            key: ValueKey('workflow-receive-button-${workflow.workflowId}'),
+            onPressed: onReceivePressed,
+            icon: const Icon(Icons.inbox_outlined, size: 18),
+            label: Text(view.actionText, textAlign: TextAlign.center),
+          ),
+        ),
+      );
+    }
+    if (view.state == LoomPersonaWorkflowState.readOnly) {
+      return Align(
+        alignment: Alignment.centerRight,
+        child: Chip(
+          key: ValueKey('workflow-read-only-${workflow.workflowId}'),
+          avatar: const Icon(Icons.visibility_outlined, size: 18),
+          label: const Text('Read only'),
+        ),
+      );
+    }
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Chip(
+        key: ValueKey('workflow-disabled-${workflow.workflowId}'),
+        avatar: const Icon(Icons.block, size: 18),
+        label: Text(view.actionText),
+      ),
+    );
+  }
+}
+
+class _WorkflowReviewContent extends StatelessWidget {
+  const _WorkflowReviewContent({
+    required this.contract,
+    required this.personaAction,
+  });
+
+  final LoomProductionWorkflowContract contract;
+  final String personaAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 420),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _WorkflowDetailRow(icon: contract.icon, label: personaAction),
+          const SizedBox(height: 12),
+          _WorkflowDetailRow(
+            icon: Icons.edit_note_outlined,
+            label: _reviewDetailFor(contract.category),
+          ),
+          const SizedBox(height: 8),
+          _WorkflowDetailRow(
+            icon: Icons.fact_check_outlined,
+            label: _reviewCheckFor(contract.category),
+          ),
+          const SizedBox(height: 8),
+          _WorkflowDetailRow(
+            icon: Icons.check_circle_outline,
+            label: _reviewResultFor(contract.category),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _reviewTrustFor(contract.category),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkflowDetailRow extends StatelessWidget {
+  const _WorkflowDetailRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(label)),
+      ],
+    );
+  }
+}
+
+class _WorkflowResultPanel extends StatelessWidget {
+  const _WorkflowResultPanel({
+    super.key,
+    required this.title,
+    required this.body,
+    required this.icon,
+  });
+
+  final String title;
+  final String body;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 4),
+                  Text(body),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonaStatusTile extends StatelessWidget {
+  const _PersonaStatusTile({required this.persona, required this.personaCount});
+
+  final LoomPersonaDefinition persona;
+  final int personaCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      key: const ValueKey('active-persona-card'),
+      child: ListTile(
+        leading: const Icon(Icons.people_outline),
+        title: Text(
+          persona.label,
+          key: ValueKey('active-persona-${persona.personaId}'),
+        ),
+        subtitle: Text('${persona.roleLabel} - ${persona.description}'),
+        trailing: Chip(
+          key: const ValueKey('active-persona-count'),
+          label: Text('$personaCount personas'),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExtensionInfoTile extends StatelessWidget {
+  const _ExtensionInfoTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(value),
+      ),
+    );
   }
 }
 
@@ -151,7 +1362,8 @@ class _LocalPackageLoaderDialog extends StatefulWidget {
   final String? Function({
     required String extensionPackagePath,
     required String initializationPackagePath,
-  }) onInstall;
+  })
+  onInstall;
 
   @override
   State<_LocalPackageLoaderDialog> createState() =>
@@ -167,10 +1379,12 @@ class _LocalPackageLoaderDialogState extends State<_LocalPackageLoaderDialog> {
   void initState() {
     super.initState();
     _extensionPathController = TextEditingController(
-      text: '/emulator/Download/book-club.loom-extension.zip',
+      text:
+          '/data/user/0/com.example.loom_communities_demo/files/book-club.loom-extension.zip',
     );
     _initializationPathController = TextEditingController(
-      text: '/emulator/Download/book-club.loom-init.zip',
+      text:
+          '/data/user/0/com.example.loom_communities_demo/files/book-club.loom-init.zip',
     );
   }
 
@@ -286,3 +1500,2202 @@ class _EmptyCommunityState extends StatelessWidget {
     );
   }
 }
+
+class LoomWorkflowDefinition {
+  const LoomWorkflowDefinition({
+    required this.workflowId,
+    required this.title,
+    required this.entryText,
+    required this.actionText,
+    required this.resultText,
+  });
+
+  final String workflowId;
+  final String title;
+  final String entryText;
+  final String actionText;
+  final String resultText;
+}
+
+class LoomProductionWorkflowContract {
+  const LoomProductionWorkflowContract({
+    required this.workflowId,
+    required this.category,
+    required this.surfaceLabel,
+    required this.objectLabel,
+    required this.screenTitle,
+    required this.primaryActionLabel,
+    required this.inputSummary,
+    required this.validationSummary,
+    required this.resultSummary,
+    required this.successTitle,
+    required this.successChipLabel,
+    required this.receiverSurfaceTitle,
+    required this.trustSummary,
+    required this.icon,
+  });
+
+  final String workflowId;
+  final String category;
+  final String surfaceLabel;
+  final String objectLabel;
+  final String screenTitle;
+  final String primaryActionLabel;
+  final String inputSummary;
+  final String validationSummary;
+  final String resultSummary;
+  final String successTitle;
+  final String successChipLabel;
+  final String receiverSurfaceTitle;
+  final String trustSummary;
+  final IconData icon;
+}
+
+class LoomExperienceDefinition {
+  const LoomExperienceDefinition({
+    required this.extensionId,
+    required this.displayName,
+    required this.tagline,
+    required this.accentColor,
+    required this.workflows,
+  });
+
+  final String extensionId;
+  final String displayName;
+  final String tagline;
+  final int accentColor;
+  final List<LoomWorkflowDefinition> workflows;
+}
+
+class LoomEvidenceTarget {
+  const LoomEvidenceTarget({
+    required this.phase,
+    required this.communityId,
+    required this.communityName,
+    required this.handle,
+    required this.extensionId,
+    required this.accentColor,
+    required this.seedDataFiles,
+  });
+
+  final String phase;
+  final String communityId;
+  final String communityName;
+  final String handle;
+  final String extensionId;
+  final String accentColor;
+  final List<String> seedDataFiles;
+}
+
+class LoomPersonaDefinition {
+  const LoomPersonaDefinition({
+    required this.personaId,
+    required this.label,
+    required this.roleLabel,
+    required this.description,
+  });
+
+  final String personaId;
+  final String label;
+  final String roleLabel;
+  final String description;
+}
+
+enum LoomPersonaWorkflowState { actor, receiver, readOnly, disabled }
+
+class LoomWorkflowPersonaPolicy {
+  const LoomWorkflowPersonaPolicy({
+    required this.actorPersonaIds,
+    this.receiverPersonaIds = const [],
+    this.readOnlyPersonaIds = const [],
+    this.prerequisiteWorkflowId,
+    this.receiverEntryText,
+    this.receiverActionText,
+    this.receiverResultText,
+    this.readOnlyText,
+    this.disabledReason = 'Not available for this persona',
+  });
+
+  final List<String> actorPersonaIds;
+  final List<String> receiverPersonaIds;
+  final List<String> readOnlyPersonaIds;
+  final String? prerequisiteWorkflowId;
+  final String? receiverEntryText;
+  final String? receiverActionText;
+  final String? receiverResultText;
+  final String? readOnlyText;
+  final String disabledReason;
+}
+
+class LoomPersonaWorkflowView {
+  const LoomPersonaWorkflowView({
+    required this.state,
+    required this.completed,
+    required this.received,
+    required this.waitingForPrerequisite,
+    required this.entryText,
+    required this.actionText,
+    required this.resultText,
+    required this.personaRationale,
+    required this.waitingText,
+  });
+
+  final LoomPersonaWorkflowState state;
+  final bool completed;
+  final bool received;
+  final bool waitingForPrerequisite;
+  final String entryText;
+  final String actionText;
+  final String resultText;
+  final String personaRationale;
+  final String waitingText;
+}
+
+class LoomPersonaWorkflowMatrixRow {
+  const LoomPersonaWorkflowMatrixRow({
+    required this.extensionId,
+    required this.workflowId,
+    required this.personaId,
+    required this.state,
+    required this.rationale,
+    this.prerequisiteWorkflowId,
+  });
+
+  final String extensionId;
+  final String workflowId;
+  final String personaId;
+  final LoomPersonaWorkflowState state;
+  final String rationale;
+  final String? prerequisiteWorkflowId;
+}
+
+class LoomWorkflowDependency {
+  const LoomWorkflowDependency({
+    required this.extensionId,
+    required this.workflowId,
+    required this.actorPersonaId,
+    required this.receiverPersonaId,
+    required this.prerequisiteWorkflowId,
+  });
+
+  final String extensionId;
+  final String workflowId;
+  final String actorPersonaId;
+  final String receiverPersonaId;
+  final String prerequisiteWorkflowId;
+}
+
+List<LoomPersonaDefinition> personasForExtensionId(String extensionId) {
+  return _personasByExtensionId[extensionId] ?? _fallbackPersonas;
+}
+
+LoomWorkflowPersonaPolicy personaPolicyForWorkflow(
+  String extensionId,
+  String workflowId,
+) {
+  switch (extensionId) {
+    case 'ext_garden_club':
+      return _gardenPolicy(workflowId);
+    case 'ext_book_club':
+      return _bookPolicy(workflowId);
+    case 'ext_youth_soccer':
+      return _soccerPolicy(workflowId);
+    case 'ext_hoa':
+      return _hoaPolicy(workflowId);
+    case 'ext_mosque':
+      return _mosquePolicy(workflowId);
+    case 'ext_chess_club':
+      return _chessPolicy(workflowId);
+    case 'ext_camera_club':
+      return _cameraPolicy(workflowId);
+    case 'ext_platform_social':
+      return _platformPolicy(workflowId);
+    case 'ext_ad_off':
+      return _adOffPolicy(workflowId);
+    case 'ext_export_migration':
+      return _exportPolicy(workflowId);
+  }
+  return const LoomWorkflowPersonaPolicy(
+    actorPersonaIds: ['local-owner'],
+    receiverPersonaIds: ['local-member'],
+    receiverEntryText: 'A local community update is available.',
+    receiverActionText: 'Receive',
+    receiverResultText: 'Local community update received.',
+  );
+}
+
+LoomPersonaWorkflowState personaWorkflowStateFor({
+  required String extensionId,
+  required String workflowId,
+  required String personaId,
+}) {
+  final policy = personaPolicyForWorkflow(extensionId, workflowId);
+  if (policy.actorPersonaIds.contains(personaId)) {
+    return LoomPersonaWorkflowState.actor;
+  }
+  if (policy.receiverPersonaIds.contains(personaId)) {
+    return LoomPersonaWorkflowState.receiver;
+  }
+  if (policy.readOnlyPersonaIds.contains(personaId)) {
+    return LoomPersonaWorkflowState.readOnly;
+  }
+  return LoomPersonaWorkflowState.disabled;
+}
+
+LoomPersonaWorkflowView personaWorkflowViewFor({
+  required String extensionId,
+  required LoomWorkflowDefinition workflow,
+  required String personaId,
+  required Set<String> completedWorkflowIds,
+  required Set<String> receivedWorkflowPersonaKeys,
+}) {
+  final policy = personaPolicyForWorkflow(extensionId, workflow.workflowId);
+  final state = personaWorkflowStateFor(
+    extensionId: extensionId,
+    workflowId: workflow.workflowId,
+    personaId: personaId,
+  );
+  final workflowCompleted = completedWorkflowIds.contains(workflow.workflowId);
+  final completed =
+      workflowCompleted && state == LoomPersonaWorkflowState.actor;
+  final received = receivedWorkflowPersonaKeys.contains(
+    workflowPersonaReceiptKey(
+      workflowId: workflow.workflowId,
+      personaId: personaId,
+    ),
+  );
+  final actorWaiting =
+      state == LoomPersonaWorkflowState.actor &&
+      policy.prerequisiteWorkflowId != null &&
+      !completedWorkflowIds.contains(policy.prerequisiteWorkflowId);
+  final receiverPrerequisite =
+      policy.prerequisiteWorkflowId ?? workflow.workflowId;
+  final receiverWaiting =
+      state == LoomPersonaWorkflowState.receiver &&
+      !completedWorkflowIds.contains(receiverPrerequisite);
+  final waitingForPrerequisite =
+      !completed && !received && (actorWaiting || receiverWaiting);
+  final entryText = _entryTextForState(
+    state: state,
+    workflow: workflow,
+    policy: policy,
+    waiting: waitingForPrerequisite,
+  );
+  return LoomPersonaWorkflowView(
+    state: state,
+    completed: completed,
+    received: received,
+    waitingForPrerequisite: waitingForPrerequisite,
+    entryText: entryText,
+    actionText: _actionTextForState(state, policy, workflow),
+    resultText: _resultTextForState(workflow, policy, state),
+    personaRationale: _rationaleForState(state, policy),
+    waitingText: 'Waiting',
+  );
+}
+
+List<LoomPersonaWorkflowMatrixRow> personaWorkflowMatrixForExtensionId(
+  String extensionId,
+) {
+  final experience = experienceForExtensionId(extensionId);
+  final personas = personasForExtensionId(extensionId);
+  return [
+    for (final workflow in experience.workflows)
+      for (final persona in personas)
+        LoomPersonaWorkflowMatrixRow(
+          extensionId: extensionId,
+          workflowId: workflow.workflowId,
+          personaId: persona.personaId,
+          state: personaWorkflowStateFor(
+            extensionId: extensionId,
+            workflowId: workflow.workflowId,
+            personaId: persona.personaId,
+          ),
+          rationale: _rationaleForState(
+            personaWorkflowStateFor(
+              extensionId: extensionId,
+              workflowId: workflow.workflowId,
+              personaId: persona.personaId,
+            ),
+            personaPolicyForWorkflow(extensionId, workflow.workflowId),
+          ),
+          prerequisiteWorkflowId: personaPolicyForWorkflow(
+            extensionId,
+            workflow.workflowId,
+          ).prerequisiteWorkflowId,
+        ),
+  ];
+}
+
+List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
+  String extensionId,
+) {
+  final experience = experienceForExtensionId(extensionId);
+  return [
+    for (final workflow in experience.workflows)
+      for (final receiverPersonaId in personaPolicyForWorkflow(
+        extensionId,
+        workflow.workflowId,
+      ).receiverPersonaIds)
+        LoomWorkflowDependency(
+          extensionId: extensionId,
+          workflowId: workflow.workflowId,
+          actorPersonaId: personaPolicyForWorkflow(
+            extensionId,
+            workflow.workflowId,
+          ).actorPersonaIds.first,
+          receiverPersonaId: receiverPersonaId,
+          prerequisiteWorkflowId:
+              personaPolicyForWorkflow(
+                extensionId,
+                workflow.workflowId,
+              ).prerequisiteWorkflowId ??
+              workflow.workflowId,
+        ),
+  ];
+}
+
+String workflowPersonaReceiptKey({
+  required String workflowId,
+  required String personaId,
+}) {
+  return '$workflowId::$personaId';
+}
+
+LoomProductionWorkflowContract productionWorkflowContractFor({
+  required String extensionId,
+  required LoomWorkflowDefinition workflow,
+}) {
+  final category = _workflowCategoryFor(workflow);
+  final objectLabel = _objectLabelFor(workflow);
+  return LoomProductionWorkflowContract(
+    workflowId: workflow.workflowId,
+    category: category,
+    surfaceLabel: _surfaceLabelFor(category),
+    objectLabel: objectLabel,
+    screenTitle: _screenTitleFor(category, workflow),
+    primaryActionLabel: _primaryActionLabelFor(workflow),
+    inputSummary: _inputSummaryFor(category, workflow),
+    validationSummary: _validationSummaryFor(category),
+    resultSummary: _successBodyFor(category, workflow),
+    successTitle: _successTitleFor(category, workflow),
+    successChipLabel: _successChipLabelFor(category),
+    receiverSurfaceTitle: _receiverTitleFor(category, objectLabel),
+    trustSummary: _trustSummaryFor(category),
+    icon: _iconFor(category),
+  );
+}
+
+List<String> productionUxGenericCopyViolations() {
+  const banned = [
+    'Community workflows',
+    'Complete workflow',
+    'Can perform this workflow',
+    'Action available for this role',
+    'Receives the result',
+    'Uses ',
+    ' surface',
+    'App Shell',
+    'Shell-owned',
+    'Workflow result',
+    'workflow evidence',
+    'evidence',
+    'Workflow checklist',
+    'local route',
+    'workflow route',
+  ];
+  LoomPersonaWorkflowView viewFor(
+    LoomPersonaWorkflowState state, {
+    bool waiting = false,
+  }) {
+    return LoomPersonaWorkflowView(
+      state: state,
+      completed: false,
+      received: false,
+      waitingForPrerequisite: waiting,
+      entryText: '',
+      actionText: '',
+      resultText: '',
+      personaRationale: '',
+      waitingText: '',
+    );
+  }
+
+  final surfaces = <String>[
+    for (final title in _orderedSectionTitles) title,
+    for (final target in loomEvidenceTargets)
+      for (final section in _communitySectionsFor(
+        experienceForExtensionId(target.extensionId),
+      )) ...[
+        section.title,
+        section.subtitle,
+        for (final workflow in section.workflows) ...[
+          _displayTitleFor(workflow),
+          _domainSummaryFor(
+            _workflowCategoryFor(workflow),
+            workflow,
+            viewFor(LoomPersonaWorkflowState.actor),
+          ),
+          _domainSummaryFor(
+            _workflowCategoryFor(workflow),
+            workflow,
+            viewFor(LoomPersonaWorkflowState.receiver),
+          ),
+          _domainSummaryFor(
+            _workflowCategoryFor(workflow),
+            workflow,
+            viewFor(LoomPersonaWorkflowState.readOnly),
+          ),
+          _domainSummaryFor(
+            _workflowCategoryFor(workflow),
+            workflow,
+            viewFor(LoomPersonaWorkflowState.disabled),
+          ),
+          _domainSummaryFor(
+            _workflowCategoryFor(workflow),
+            workflow,
+            viewFor(LoomPersonaWorkflowState.actor, waiting: true),
+          ),
+          ..._domainMetadataFor(_workflowCategoryFor(workflow), workflow),
+          _reviewDetailFor(_workflowCategoryFor(workflow)),
+          _reviewCheckFor(_workflowCategoryFor(workflow)),
+          _reviewResultFor(_workflowCategoryFor(workflow)),
+          _reviewTrustFor(_workflowCategoryFor(workflow)),
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).surfaceLabel,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).screenTitle,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).primaryActionLabel,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).inputSummary,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).validationSummary,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).resultSummary,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).successTitle,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).successChipLabel,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).receiverSurfaceTitle,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).trustSummary,
+        ],
+      ],
+    _rationaleForState(
+      LoomPersonaWorkflowState.actor,
+      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+    ),
+    _rationaleForState(
+      LoomPersonaWorkflowState.receiver,
+      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+    ),
+    _rationaleForState(
+      LoomPersonaWorkflowState.readOnly,
+      const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+    ),
+    _entryTextForState(
+      state: LoomPersonaWorkflowState.readOnly,
+      workflow: experienceForExtensionId('unknown').workflows.first,
+      policy: const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      waiting: false,
+    ),
+    _entryTextForState(
+      state: LoomPersonaWorkflowState.actor,
+      workflow: experienceForExtensionId('unknown').workflows.first,
+      policy: const LoomWorkflowPersonaPolicy(actorPersonaIds: ['actor']),
+      waiting: true,
+    ),
+  ];
+  return [
+    for (final surface in surfaces)
+      for (final bannedText in banned)
+        if (surface.toLowerCase().contains(bannedText.toLowerCase()))
+          '$bannedText -> $surface',
+  ];
+}
+
+String _entryTextForState({
+  required LoomPersonaWorkflowState state,
+  required LoomWorkflowDefinition workflow,
+  required LoomWorkflowPersonaPolicy policy,
+  required bool waiting,
+}) {
+  if (waiting) {
+    return 'Waiting for the required prior action.';
+  }
+  if (state == LoomPersonaWorkflowState.receiver) {
+    return policy.receiverEntryText ??
+        'A completed result is ready for this role.';
+  }
+  if (state == LoomPersonaWorkflowState.readOnly) {
+    return policy.readOnlyText ??
+        'This role can review the current record without editing.';
+  }
+  if (state == LoomPersonaWorkflowState.disabled) {
+    return policy.disabledReason;
+  }
+  return workflow.entryText;
+}
+
+String _actionTextForState(
+  LoomPersonaWorkflowState state,
+  LoomWorkflowPersonaPolicy policy,
+  LoomWorkflowDefinition workflow,
+) {
+  if (state == LoomPersonaWorkflowState.receiver) {
+    return _receiverActionLabel(workflow: workflow, policy: policy);
+  }
+  if (state == LoomPersonaWorkflowState.readOnly) {
+    return 'View only';
+  }
+  if (state == LoomPersonaWorkflowState.disabled) {
+    return 'Not available';
+  }
+  return _primaryActionLabelFor(workflow);
+}
+
+String _resultTextForState(
+  LoomWorkflowDefinition workflow,
+  LoomWorkflowPersonaPolicy policy,
+  LoomPersonaWorkflowState state,
+) {
+  if (state == LoomPersonaWorkflowState.receiver) {
+    return policy.receiverResultText ?? 'Community update received.';
+  }
+  return workflow.resultText;
+}
+
+String _rationaleForState(
+  LoomPersonaWorkflowState state,
+  LoomWorkflowPersonaPolicy policy,
+) {
+  switch (state) {
+    case LoomPersonaWorkflowState.actor:
+      return 'You can manage this item.';
+    case LoomPersonaWorkflowState.receiver:
+      return 'This item is ready after the first action is finished.';
+    case LoomPersonaWorkflowState.readOnly:
+      return 'You can review this item without editing it.';
+    case LoomPersonaWorkflowState.disabled:
+      return policy.disabledReason;
+  }
+}
+
+String _receiverActionLabel({
+  required LoomWorkflowDefinition workflow,
+  required LoomWorkflowPersonaPolicy policy,
+}) {
+  final label = policy.receiverActionText;
+  if (label == null || label == 'Receive') {
+    return 'Open ${_objectLabelFor(workflow)}';
+  }
+  if (label == 'Review') {
+    return 'Review ${_objectLabelFor(workflow)}';
+  }
+  return label;
+}
+
+String _workflowCategoryFor(LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  final title = workflow.title.toLowerCase();
+  if (id.contains('rsvp') ||
+      title.contains('event') ||
+      title.contains('schedule') ||
+      title.contains('photo-walk')) {
+    return 'Event';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off') ||
+      title.contains('receipt') ||
+      title.contains('reservation')) {
+    return 'Payment';
+  }
+  if (id.contains('announcement') ||
+      id.contains('publish') ||
+      id.contains('notification') ||
+      id.contains('digest') ||
+      id.contains('search-ai')) {
+    return 'Publishing';
+  }
+  if (id.contains('approval') ||
+      id.contains('decision') ||
+      id.contains('review')) {
+    return 'Approval';
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('redaction') ||
+      id.contains('checksum')) {
+    return 'Portability';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('ad') ||
+      id.contains('banner') ||
+      id.contains('blocked') ||
+      id.contains('stream')) {
+    return 'Platform';
+  }
+  return 'Form';
+}
+
+String _surfaceLabelFor(String category) {
+  switch (category) {
+    case 'Event':
+      return 'Event details';
+    case 'Payment':
+      return 'Payment details';
+    case 'Publishing':
+      return 'Member update';
+    case 'Approval':
+      return 'Request review';
+    case 'Portability':
+      return 'Data package';
+    case 'Platform':
+      return 'Community setting';
+  }
+  return 'Member form';
+}
+
+String _objectLabelFor(LoomWorkflowDefinition workflow) {
+  var title = _displayTitleFor(workflow).toLowerCase();
+  title = title
+      .replaceAll(' and ', ' ')
+      .replaceAll(',', '')
+      .replaceAll('protected ', '')
+      .trim();
+  if (title.length > 34) {
+    return title.substring(0, 34).trim();
+  }
+  return title;
+}
+
+String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  if (id.contains('rsvp')) {
+    return 'RSVP to event';
+  }
+  if (id.contains('payment') || id.contains('dues')) {
+    return 'Pay and save receipt';
+  }
+  if (id.contains('donation')) {
+    return 'Record donation';
+  }
+  if (id.contains('checkout')) {
+    return 'Buy ad-off';
+  }
+  if (id.contains('announcement')) {
+    return 'Publish announcement';
+  }
+  if (id.contains('publish') || id.contains('selection')) {
+    return 'Publish selection';
+  }
+  if (id.contains('schedule')) {
+    return 'Publish schedule';
+  }
+  if (id.contains('reminder')) {
+    return 'Send reminder';
+  }
+  if (id.contains('notification')) {
+    return 'Send notification';
+  }
+  if (id.contains('approval') || id.contains('decision')) {
+    return 'Approve request';
+  }
+  if (id.contains('export')) {
+    return 'Generate export';
+  }
+  if (id.contains('import')) {
+    return 'Preview import';
+  }
+  if (id.contains('transfer-verification')) {
+    return 'Verify transfer';
+  }
+  if (id.contains('rollback')) {
+    return 'Run rollback';
+  }
+  if (id.contains('search') || id.contains('digest')) {
+    return 'Generate cited answer';
+  }
+  if (id.contains('invite')) {
+    return 'Send invite';
+  }
+  if (id.contains('messages')) {
+    return 'Open Messages';
+  }
+  if (id.contains('connections')) {
+    return 'Open Connections';
+  }
+  if (id.contains('blocked')) {
+    return 'Check blocked state';
+  }
+  if (id.contains('ad') || id.contains('banner')) {
+    return 'Review ad state';
+  }
+  if (id.contains('vote')) {
+    return 'Record vote';
+  }
+  if (id.contains('nomination')) {
+    return 'Submit nomination';
+  }
+  if (id.contains('message')) {
+    return 'Post message';
+  }
+  if (id.contains('request')) {
+    return 'Submit request';
+  }
+  if (id.contains('signup')) {
+    return 'Submit signup';
+  }
+  if (id.contains('submission')) {
+    return 'Submit entry';
+  }
+  if (id.contains('reservation')) {
+    return 'Reserve and pay';
+  }
+  if (id.contains('document')) {
+    return 'Open document';
+  }
+  if (id.contains('roster')) {
+    return 'Open roster';
+  }
+  if (id.contains('redaction')) {
+    return 'Preview redaction';
+  }
+  if (id.contains('visibility')) {
+    return 'Save visibility';
+  }
+  if (id.contains('route') || id.contains('open')) {
+    return 'Open community home';
+  }
+  if (id.contains('match-result')) {
+    return 'Record match result';
+  }
+  final action = workflow.actionText.replaceAll(RegExp(r'\.$'), '');
+  return action.length <= 36 ? action : 'Start ${_objectLabelFor(workflow)}';
+}
+
+String _screenTitleFor(String category, LoomWorkflowDefinition workflow) {
+  switch (category) {
+    case 'Event':
+      return 'Review event details';
+    case 'Payment':
+      return 'Review payment';
+    case 'Publishing':
+      return 'Review update';
+    case 'Approval':
+      return 'Review request';
+    case 'Portability':
+      return 'Review data package';
+    case 'Platform':
+      return 'Review setting';
+  }
+  return 'Review ${_objectLabelFor(workflow)}';
+}
+
+String _inputSummaryFor(String category, LoomWorkflowDefinition workflow) {
+  switch (category) {
+    case 'Event':
+      return 'Date, location, capacity, and attendee details are ready.';
+    case 'Payment':
+      return 'Amount, payer, privacy choice, and receipt details are ready.';
+    case 'Publishing':
+      return 'Message, audience, preview, and send timing are ready.';
+    case 'Approval':
+      return 'Request details, decision, and follow-up are ready.';
+    case 'Portability':
+      return 'Data scope, redaction, checksum, and handoff details are ready.';
+    case 'Platform':
+      return 'Member communication and preference details are ready.';
+  }
+  if (workflow.workflowId.contains('care')) {
+    return 'Public summary, private details, and consent choices are ready.';
+  }
+  return 'Required details are ready.';
+}
+
+String _validationSummaryFor(String category) {
+  switch (category) {
+    case 'Payment':
+      return 'Receipt and privacy settings are saved with the payment.';
+    case 'Publishing':
+      return 'Audience, citation, and notification scope are reviewed before send.';
+    case 'Portability':
+      return 'Protected fields, redaction, and checksums are verified.';
+    case 'Platform':
+      return 'Membership and privacy settings are respected.';
+  }
+  return 'Required details are checked before submission.';
+}
+
+String _successTitleFor(String category, LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement')) {
+    return 'Announcement posted';
+  }
+  if (id.contains('rsvp')) {
+    return 'RSVP confirmed';
+  }
+  if (id.contains('donation')) {
+    return 'Donation recorded';
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return 'Signup saved';
+  }
+  if (id.contains('care')) {
+    return 'Care request sent';
+  }
+  switch (category) {
+    case 'Payment':
+      return 'Receipt saved';
+    case 'Publishing':
+      return 'Update sent';
+    case 'Approval':
+      return 'Decision saved';
+    case 'Portability':
+      return 'Data package ready';
+    case 'Platform':
+      return 'Setting saved';
+    case 'Event':
+      return 'Event updated';
+  }
+  return 'Record saved';
+}
+
+String _successBodyFor(String category, LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement')) {
+    return 'Members can now read the announcement in their community inbox.';
+  }
+  if (id.contains('rsvp')) {
+    return 'Attendance, capacity, and confirmation details are up to date.';
+  }
+  if (id.contains('donation')) {
+    return 'The donation and receipt are saved with the selected privacy choice.';
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return 'The coordinator can review the signup and protected contact details.';
+  }
+  if (id.contains('care')) {
+    return 'The care team can review the private request details.';
+  }
+  switch (category) {
+    case 'Event':
+      return 'Event details and attendance records are up to date.';
+    case 'Payment':
+      return 'The receipt is saved and available to the member.';
+    case 'Publishing':
+      return 'The update is available to the selected audience.';
+    case 'Approval':
+      return 'The decision is saved and ready for member follow-up.';
+    case 'Portability':
+      return 'The data package is ready with protected fields handled.';
+    case 'Platform':
+      return 'The member setting is up to date.';
+  }
+  return 'The community record is saved.';
+}
+
+String _receiverTitleFor(String category, String objectLabel) {
+  switch (category) {
+    case 'Event':
+      return 'Event update ready';
+    case 'Payment':
+      return 'Receipt ready';
+    case 'Publishing':
+      return 'Update ready';
+    case 'Approval':
+      return 'Decision ready';
+    case 'Portability':
+      return 'Data package ready';
+    case 'Platform':
+      return 'Member update ready';
+  }
+  return '${objectLabel.substring(0, 1).toUpperCase()}${objectLabel.substring(1)} ready';
+}
+
+String _successChipLabelFor(String category) {
+  switch (category) {
+    case 'Payment':
+      return 'Receipt';
+    case 'Publishing':
+      return 'Sent';
+    case 'Approval':
+      return 'Decided';
+    case 'Portability':
+      return 'Ready';
+    case 'Platform':
+      return 'Verified';
+    case 'Event':
+      return 'Going';
+  }
+  return 'Saved';
+}
+
+String _trustSummaryFor(String category) {
+  switch (category) {
+    case 'Payment':
+      return 'Payments and receipts stay tied to the member account.';
+    case 'Publishing':
+      return 'Only the selected audience receives the update.';
+    case 'Portability':
+      return 'Protected data stays redacted before sharing.';
+    case 'Platform':
+      return 'Private member relationships stay scoped to this community.';
+  }
+  return 'Private member details stay protected.';
+}
+
+IconData _iconFor(String category) {
+  switch (category) {
+    case 'Event':
+      return Icons.event_available_outlined;
+    case 'Payment':
+      return Icons.receipt_long_outlined;
+    case 'Publishing':
+      return Icons.campaign_outlined;
+    case 'Approval':
+      return Icons.task_alt_outlined;
+    case 'Portability':
+      return Icons.file_download_outlined;
+    case 'Platform':
+      return Icons.hub_outlined;
+  }
+  return Icons.assignment_outlined;
+}
+
+LoomExperienceDefinition experienceForExtensionId(
+  String extensionId, {
+  String? displayName,
+}) {
+  final known = _experienceByExtensionId[extensionId];
+  if (known != null) {
+    return known;
+  }
+  return LoomExperienceDefinition(
+    extensionId: extensionId,
+    displayName: displayName ?? 'Local Community',
+    tagline: 'Local community tools and member actions.',
+    accentColor: 0xff246b62,
+    workflows: const [
+      LoomWorkflowDefinition(
+        workflowId: 'local-home-open',
+        title: 'Open local home',
+        entryText: 'Local community home is available from the installed card.',
+        actionText: 'Open the local community home.',
+        resultText: 'Local home opened with community tools available.',
+      ),
+    ],
+  );
+}
+
+const List<LoomEvidenceTarget> loomEvidenceTargets = [
+  LoomEvidenceTarget(
+    phase: 'B13',
+    communityId: 'community_garden_club',
+    communityName: 'Garden Club',
+    handle: 'garden-club',
+    extensionId: 'ext_garden_club',
+    accentColor: '#3A7D44',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/events.json',
+    ],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B14',
+    communityId: 'community_book_club',
+    communityName: 'Neighborhood Book Club',
+    handle: 'book-club',
+    extensionId: 'ext_book_club',
+    accentColor: '#246B62',
+    seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B14',
+    communityId: 'community_youth_soccer',
+    communityName: 'Riverside Youth Soccer',
+    handle: 'youth-soccer',
+    extensionId: 'ext_youth_soccer',
+    accentColor: '#1F7A5C',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/events.json',
+    ],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B14',
+    communityId: 'community_hoa',
+    communityName: 'Cedar Commons HOA',
+    handle: 'cedar-hoa',
+    extensionId: 'ext_hoa',
+    accentColor: '#3E6B8F',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/documents.json',
+    ],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B14',
+    communityId: 'community_mosque',
+    communityName: 'Masjid Nur',
+    handle: 'masjid-nur',
+    extensionId: 'ext_mosque',
+    accentColor: '#2D6A4F',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/events.json',
+    ],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B15',
+    communityId: 'community_chess_club',
+    communityName: 'Chess Club',
+    handle: 'chess-club',
+    extensionId: 'ext_chess_club',
+    accentColor: '#58432F',
+    seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B15',
+    communityId: 'community_camera_club',
+    communityName: 'Camera Club',
+    handle: 'camera-club',
+    extensionId: 'ext_camera_club',
+    accentColor: '#465C7B',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/events.json',
+    ],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B16',
+    communityId: 'community_platform_social',
+    communityName: 'Member Social Space',
+    handle: 'platform-social',
+    extensionId: 'ext_platform_social',
+    accentColor: '#315C8A',
+    seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B16',
+    communityId: 'community_ad_off',
+    communityName: 'Ad-Free Community',
+    handle: 'ad-off-demo',
+    extensionId: 'ext_ad_off',
+    accentColor: '#5B5F97',
+    seedDataFiles: ['seed/community.json', 'seed/workflows.json'],
+  ),
+  LoomEvidenceTarget(
+    phase: 'B16',
+    communityId: 'community_export_migration',
+    communityName: 'Data Portability Community',
+    handle: 'portability-demo',
+    extensionId: 'ext_export_migration',
+    accentColor: '#536878',
+    seedDataFiles: [
+      'seed/community.json',
+      'seed/workflows.json',
+      'seed/export.json',
+    ],
+  ),
+];
+
+LocalBackendSnapshot _preloadedExampleCommunitiesSnapshot() {
+  return LocalBackendSnapshot(
+    communities: [
+      for (final target in loomEvidenceTargets)
+        LocalInstalledCommunity(
+          communityId: target.communityId,
+          displayName: target.communityName,
+          extensionId: target.extensionId,
+          logoAssetId: 'seed/assets/${target.handle}-logo.png',
+          cardImageAssetId: 'seed/assets/${target.handle}-card.png',
+          heroImageAssetId: 'seed/assets/${target.handle}-hero.png',
+          accentColor: target.accentColor,
+        ),
+    ],
+    loadedExtensionIds: [
+      for (final target in loomEvidenceTargets) target.extensionId,
+    ],
+  );
+}
+
+Map<String, List<String>> _preloadedSeedFilesByCommunityId() {
+  return {
+    for (final target in loomEvidenceTargets)
+      target.communityId: target.seedDataFiles,
+  };
+}
+
+const List<LoomPersonaDefinition> _fallbackPersonas = [
+  LoomPersonaDefinition(
+    personaId: 'local-owner',
+    label: 'Local Owner',
+    roleLabel: 'Owner',
+    description: 'Manages local community setup and member actions.',
+  ),
+  LoomPersonaDefinition(
+    personaId: 'local-member',
+    label: 'Local Member',
+    roleLabel: 'Member',
+    description: 'Uses local community member tools.',
+  ),
+];
+
+const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
+  'ext_garden_club': [
+    LoomPersonaDefinition(
+      personaId: 'garden-coordinator',
+      label: 'Garden Coordinator',
+      roleLabel: 'Coordinator',
+      description: 'Reviews events, exchanges, and garden exports.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'garden-member',
+      label: 'Garden Member',
+      roleLabel: 'Member',
+      description: 'RSVPs to garden events and submits exchange offers.',
+    ),
+  ],
+  'ext_book_club': [
+    LoomPersonaDefinition(
+      personaId: 'book-organizer',
+      label: 'Book Organizer',
+      roleLabel: 'Organizer',
+      description: 'Publishes selections and manages club records.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'book-member',
+      label: 'Book Member',
+      roleLabel: 'Member',
+      description: 'Nominates, votes, attends, and discusses books.',
+    ),
+  ],
+  'ext_youth_soccer': [
+    LoomPersonaDefinition(
+      personaId: 'soccer-coach',
+      label: 'Coach',
+      roleLabel: 'Team staff',
+      description: 'Approves guardians and publishes team operations.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'soccer-guardian',
+      label: 'Guardian',
+      roleLabel: 'Guardian',
+      description: 'Handles player registration, payments, and reminders.',
+    ),
+  ],
+  'ext_hoa': [
+    LoomPersonaDefinition(
+      personaId: 'hoa-board',
+      label: 'HOA Board',
+      roleLabel: 'Board',
+      description: 'Reviews requests, sends decisions, and exports records.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'hoa-homeowner',
+      label: 'Homeowner',
+      roleLabel: 'Member',
+      description: 'Pays dues, reserves facilities, and submits requests.',
+    ),
+  ],
+  'ext_mosque': [
+    LoomPersonaDefinition(
+      personaId: 'mosque-admin',
+      label: 'Masjid Admin',
+      roleLabel: 'Admin',
+      description: 'Publishes announcements and sends neutral notifications.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'mosque-member',
+      label: 'Community Member',
+      roleLabel: 'Member',
+      description:
+          'Receives announcements, RSVPs, volunteers, gives, and requests care.',
+    ),
+  ],
+  'ext_chess_club': [
+    LoomPersonaDefinition(
+      personaId: 'chess-organizer',
+      label: 'Chess Organizer',
+      roleLabel: 'Organizer',
+      description: 'Reviews community homes and match records.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'chess-player',
+      label: 'Chess Player',
+      roleLabel: 'Member',
+      description: 'Opens club routes and records match results.',
+    ),
+  ],
+  'ext_camera_club': [
+    LoomPersonaDefinition(
+      personaId: 'camera-organizer',
+      label: 'Camera Organizer',
+      roleLabel: 'Organizer',
+      description: 'Reviews RSVPs, critiques, and gear-loan requests.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'camera-member',
+      label: 'Camera Member',
+      roleLabel: 'Member',
+      description: 'RSVPs, submits critiques, and requests shared gear.',
+    ),
+  ],
+  'ext_platform_social': [
+    LoomPersonaDefinition(
+      personaId: 'platform-member',
+      label: 'Platform Member',
+      roleLabel: 'Member',
+      description: 'Uses allowed messages, connections, and ad preferences.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'platform-moderator',
+      label: 'Moderator',
+      roleLabel: 'Moderator',
+      description: 'Reviews prevention and sensitive-page behavior.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'platform-blocked-member',
+      label: 'Blocked Member',
+      roleLabel: 'Restricted',
+      description: 'Confirms blocked social capabilities stay unavailable.',
+    ),
+  ],
+  'ext_ad_off': [
+    LoomPersonaDefinition(
+      personaId: 'ad-off-member',
+      label: 'Ad-Off Member',
+      roleLabel: 'Member',
+      description: 'Purchases and verifies member ad-off entitlement.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'ad-off-admin',
+      label: 'Community Admin',
+      roleLabel: 'Admin',
+      description: 'Purchases community ad-off and audits settlement.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'ad-off-viewer',
+      label: 'Ad-Free Viewer',
+      roleLabel: 'Viewer',
+      description: 'Receives entitlement effects without checkout ownership.',
+    ),
+  ],
+  'ext_export_migration': [
+    LoomPersonaDefinition(
+      personaId: 'export-owner',
+      label: 'Data Owner',
+      roleLabel: 'Owner',
+      description: 'Runs import, export, redaction, and checksum actions.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'export-member',
+      label: 'Export Member',
+      roleLabel: 'Member',
+      description: 'Inspects redacted data without accessing protected values.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'export-provider',
+      label: 'Receiving Provider',
+      roleLabel: 'Provider',
+      description: 'Verifies transfer and rollback outcomes.',
+    ),
+  ],
+};
+
+LoomWorkflowPersonaPolicy _gardenPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'garden-event-rsvp':
+    case 'plant-exchange-submission':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['garden-member'],
+        receiverPersonaIds: ['garden-coordinator'],
+        receiverEntryText: 'A member garden submission is ready for review.',
+        receiverActionText: 'Review',
+        receiverResultText:
+            'Garden coordinator received the member submission.',
+      );
+    case 'garden-export-custom-schemas':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['garden-coordinator'],
+        readOnlyPersonaIds: ['garden-member'],
+        readOnlyText: 'Members can inspect that their garden records export.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(
+    actorPersonaIds: ['garden-coordinator'],
+  );
+}
+
+LoomWorkflowPersonaPolicy _bookPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'book-nomination':
+    case 'book-vote':
+    case 'book-meeting-rsvp':
+    case 'book-discussion-message':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['book-member'],
+        receiverPersonaIds: ['book-organizer'],
+        receiverEntryText:
+            'A member book-club contribution is ready for organizer review.',
+        receiverActionText: 'Review',
+        receiverResultText:
+            'Organizer received the member book-club contribution.',
+      );
+    case 'book-selection-publish':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['book-organizer'],
+        receiverPersonaIds: ['book-member'],
+        receiverEntryText:
+            'The published monthly selection is ready to receive.',
+        receiverActionText: 'Receive selection',
+        receiverResultText: 'Member received the selected-book announcement.',
+      );
+    case 'book-search-ai-digest':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['book-member', 'book-organizer'],
+      );
+    case 'book-export-metadata':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['book-organizer'],
+        readOnlyPersonaIds: ['book-member'],
+        readOnlyText:
+            'Members can inspect export metadata without creating it.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['book-organizer']);
+}
+
+LoomWorkflowPersonaPolicy _soccerPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'soccer-guardian-join-approval':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['soccer-coach'],
+        receiverPersonaIds: ['soccer-guardian'],
+        receiverEntryText: 'Guardian approval is ready to receive.',
+        receiverActionText: 'Receive approval',
+        receiverResultText: 'Guardian received active membership approval.',
+      );
+    case 'soccer-team-roster':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['soccer-coach', 'soccer-guardian'],
+      );
+    case 'soccer-minor-redaction':
+    case 'soccer-registration-payment':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['soccer-guardian'],
+        readOnlyPersonaIds: ['soccer-coach'],
+        readOnlyText: 'Coach sees only permission-safe evidence.',
+      );
+    case 'soccer-practice-schedule':
+    case 'soccer-reminder-notification':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['soccer-coach'],
+        receiverPersonaIds: ['soccer-guardian'],
+        receiverEntryText: 'Team update is ready for guardian receipt.',
+        receiverActionText: 'Receive update',
+        receiverResultText: 'Guardian received the team update.',
+      );
+    case 'soccer-export-metadata':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['soccer-coach'],
+        readOnlyPersonaIds: ['soccer-guardian'],
+        readOnlyText: 'Guardian can inspect protected export coverage.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['soccer-coach']);
+}
+
+LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'hoa-dues-payment':
+    case 'hoa-member-document':
+    case 'hoa-facility-reservation':
+    case 'hoa-architectural-request':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['hoa-homeowner'],
+        receiverPersonaIds: ['hoa-board'],
+        receiverEntryText: 'A homeowner action is ready for board review.',
+        receiverActionText: 'Review',
+        receiverResultText: 'Board received the homeowner workflow result.',
+      );
+    case 'hoa-committee-decision':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['hoa-board'],
+        receiverPersonaIds: ['hoa-homeowner'],
+        prerequisiteWorkflowId: 'hoa-architectural-request',
+        receiverEntryText: 'The committee decision is ready for the homeowner.',
+        receiverActionText: 'Receive decision',
+        receiverResultText: 'Homeowner received the architectural decision.',
+      );
+    case 'hoa-owner-notification':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['hoa-board'],
+        receiverPersonaIds: ['hoa-homeowner'],
+        prerequisiteWorkflowId: 'hoa-committee-decision',
+        receiverEntryText: 'The owner notification is ready to receive.',
+        receiverActionText: 'Receive notice',
+        receiverResultText: 'Homeowner received the owner notification.',
+      );
+    case 'hoa-export-evidence':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['hoa-board'],
+        readOnlyPersonaIds: ['hoa-homeowner'],
+        readOnlyText: 'Homeowners can inspect export evidence.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['hoa-board']);
+}
+
+LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
+  switch (workflowId) {
+    case 'mosque-announcement':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin'],
+        receiverPersonaIds: ['mosque-member'],
+        receiverEntryText: 'A public announcement is ready to receive.',
+        receiverActionText: 'Receive announcement',
+        receiverResultText: 'Member received the public announcement.',
+      );
+    case 'mosque-event-rsvp':
+    case 'mosque-volunteer-signup':
+    case 'mosque-donor-visibility':
+    case 'mosque-donation-payment':
+    case 'mosque-care-request':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-member'],
+        receiverPersonaIds: ['mosque-admin'],
+        receiverEntryText:
+            'A member workflow result is ready for admin review.',
+        receiverActionText: 'Review',
+        receiverResultText: 'Admin received the member workflow result.',
+      );
+    case 'mosque-neutral-notification':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin'],
+        receiverPersonaIds: ['mosque-member'],
+        prerequisiteWorkflowId: 'mosque-care-request',
+        receiverEntryText: 'A neutral care notification is ready to receive.',
+        receiverActionText: 'Receive notice',
+        receiverResultText: 'Member received the neutral care notification.',
+      );
+    case 'mosque-search-ai-citation':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+        prerequisiteWorkflowId: 'mosque-announcement',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['mosque-admin']);
+}
+
+LoomWorkflowPersonaPolicy _chessPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'chess-local-install-open':
+    case 'chess-route-home':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['chess-organizer', 'chess-player'],
+      );
+    case 'chess-match-result':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['chess-player'],
+        receiverPersonaIds: ['chess-organizer'],
+        receiverEntryText: 'A match result is ready for organizer review.',
+        receiverActionText: 'Review result',
+        receiverResultText: 'Organizer received the chess match result.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['chess-organizer']);
+}
+
+LoomWorkflowPersonaPolicy _cameraPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'photo-walk-rsvp':
+    case 'critique-submission':
+    case 'gear-loan-request':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['camera-member'],
+        receiverPersonaIds: ['camera-organizer'],
+        receiverEntryText: 'A member camera-club action is ready for review.',
+        receiverActionText: 'Review',
+        receiverResultText: 'Camera organizer received the member action.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['camera-organizer']);
+}
+
+LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'platform-messages-entry':
+    case 'platform-connections-entry':
+    case 'platform-message-stream':
+    case 'platform-in-stream-ad':
+    case 'platform-top-banner-no-fill':
+    case 'platform-sensitive-no-fill':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['platform-member', 'platform-moderator'],
+        readOnlyPersonaIds: ['platform-blocked-member'],
+        readOnlyText:
+            'Blocked persona can inspect shell state but cannot initiate social actions.',
+      );
+    case 'platform-connection-invite':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['platform-member'],
+        receiverPersonaIds: ['platform-moderator'],
+        disabledReason:
+            'Blocked or moderator personas do not send this member invite.',
+        receiverEntryText:
+            'A member invite attempt is ready for moderation review.',
+        receiverActionText: 'Review invite',
+        receiverResultText:
+            'Moderator received the connection invite evidence.',
+      );
+    case 'platform-blocked-target':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['platform-moderator'],
+        receiverPersonaIds: ['platform-member'],
+        disabledReason: 'Blocked persona remains unable to receive invites.',
+        receiverEntryText: 'Blocked-target prevention result is ready.',
+        receiverActionText: 'Receive prevention',
+        receiverResultText:
+            'Member received blocked-target prevention evidence.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(
+    actorPersonaIds: ['platform-moderator'],
+  );
+}
+
+LoomWorkflowPersonaPolicy _adOffPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'ad-off-member-checkout':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['ad-off-member'],
+        receiverPersonaIds: ['ad-off-viewer'],
+        receiverEntryText: 'Member ad-off entitlement is ready to observe.',
+        receiverActionText: 'Receive entitlement',
+        receiverResultText:
+            'Ad-free viewer received member entitlement evidence.',
+      );
+    case 'ad-off-community-checkout':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['ad-off-admin'],
+        receiverPersonaIds: ['ad-off-member', 'ad-off-viewer'],
+        receiverEntryText: 'Community ad-off entitlement is ready to receive.',
+        receiverActionText: 'Receive entitlement',
+        receiverResultText:
+            'Persona received community ad-off entitlement evidence.',
+      );
+    case 'ad-off-entitlement-status':
+    case 'ad-off-receipt-evidence':
+    case 'ad-off-ad-suppression':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['ad-off-member', 'ad-off-admin', 'ad-off-viewer'],
+      );
+    case 'ad-off-settlement-utility':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['ad-off-admin'],
+        readOnlyPersonaIds: ['ad-off-member', 'ad-off-viewer'],
+        readOnlyText:
+            'Non-admin personas can inspect economics without recalculating settlement.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['ad-off-admin']);
+}
+
+LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
+  switch (workflowId) {
+    case 'export-import-preview':
+    case 'export-import-replay':
+    case 'export-protected-redaction':
+    case 'export-schema-listing':
+    case 'export-redacted-bundle':
+    case 'export-checksum-evidence':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['export-owner'],
+        readOnlyPersonaIds: ['export-member', 'export-provider'],
+        readOnlyText:
+            'Non-owner personas inspect redacted portability evidence.',
+      );
+    case 'export-full-bundle':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['export-owner'],
+        receiverPersonaIds: ['export-provider'],
+        readOnlyPersonaIds: ['export-member'],
+        receiverEntryText:
+            'Export bundle is ready for receiving-provider validation.',
+        receiverActionText: 'Receive bundle',
+        receiverResultText: 'Receiving provider received the export bundle.',
+      );
+    case 'export-transfer-verification':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['export-provider'],
+        receiverPersonaIds: ['export-owner'],
+        readOnlyPersonaIds: ['export-member'],
+        prerequisiteWorkflowId: 'export-full-bundle',
+        receiverEntryText: 'Provider verification is ready for the data owner.',
+        receiverActionText: 'Receive verification',
+        receiverResultText:
+            'Data owner received provider transfer verification.',
+      );
+    case 'export-transfer-rollback':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['export-provider'],
+        receiverPersonaIds: ['export-owner'],
+        readOnlyPersonaIds: ['export-member'],
+        prerequisiteWorkflowId: 'export-checksum-evidence',
+        receiverEntryText:
+            'Provider rollback result is ready for the data owner.',
+        receiverActionText: 'Receive rollback',
+        receiverResultText: 'Data owner received provider rollback result.',
+      );
+  }
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['export-owner']);
+}
+
+const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
+  'ext_garden_club': LoomExperienceDefinition(
+    extensionId: 'ext_garden_club',
+    displayName: 'Garden Club',
+    tagline: 'Coordinate garden events and plant exchange requests.',
+    accentColor: 0xff3a7d44,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'garden-event-rsvp',
+        title: 'Garden event RSVP',
+        entryText: 'Spring planting workshop is open for member RSVP.',
+        actionText:
+            'RSVP to the spring planting workshop through the Garden Club UI.',
+        resultText: 'RSVP recorded for Spring planting workshop.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'plant-exchange-submission',
+        title: 'Plant exchange submission',
+        entryText: 'Members can offer seedlings and request exchange matches.',
+        actionText:
+            'Submit a basil seedling offer to the plant exchange workflow.',
+        resultText: 'Plant exchange record created for basil seedlings.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'garden-export-custom-schemas',
+        title: 'Garden export custom schemas',
+        entryText: 'Garden event and plant exchange schemas are exportable.',
+        actionText: 'Generate Garden Club export evidence for custom schemas.',
+        resultText: 'Export includes garden_event and plant_exchange schemas.',
+      ),
+    ],
+  ),
+  'ext_book_club': LoomExperienceDefinition(
+    extensionId: 'ext_book_club',
+    displayName: 'Neighborhood Book Club',
+    tagline: 'Nominate, vote, meet, discuss, and digest club selections.',
+    accentColor: 0xff246b62,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'book-nomination',
+        title: 'Book nomination',
+        entryText: 'Nomination form is ready for the next monthly selection.',
+        actionText: 'Submit Parable of the Sower as the member nomination.',
+        resultText: 'Nomination saved for Parable of the Sower.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-vote',
+        title: 'Book vote',
+        entryText: 'Monthly poll accepts member votes.',
+        actionText: 'Record one vote for Parable of the Sower.',
+        resultText: 'Vote count updated for Parable of the Sower.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-meeting-rsvp',
+        title: 'Meeting event RSVP',
+        entryText: 'Discussion event has available capacity.',
+        actionText: 'RSVP to Discuss Parable of the Sower.',
+        resultText: 'Meeting RSVP ticket issued.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-discussion-message',
+        title: 'Discussion message',
+        entryText: 'Book discussion thread is open.',
+        actionText: 'Post a discussion-prep message to the thread.',
+        resultText: 'Discussion message posted to book_discussion.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-selection-publish',
+        title: 'Selected-book publishing',
+        entryText: 'Owner can publish the monthly winning selection.',
+        actionText: 'Publish January selection for Parable of the Sower.',
+        resultText: 'Selected-book announcement published.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-search-ai-digest',
+        title: 'Search, AI answer, and digest',
+        entryText: 'Public selection content is indexable for cited summaries.',
+        actionText: 'Generate a cited digest for the Parable selection.',
+        resultText: 'Digest generated with citation evidence.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'book-export-metadata',
+        title: 'Book export metadata',
+        entryText: 'Nomination and vote schemas are exportable.',
+        actionText: 'Create export metadata for Book Club custom data.',
+        resultText: 'Export includes book_nomination and book_vote schemas.',
+      ),
+    ],
+  ),
+  'ext_youth_soccer': LoomExperienceDefinition(
+    extensionId: 'ext_youth_soccer',
+    displayName: 'Riverside Youth Soccer',
+    tagline: 'Manage guardian flows, teams, privacy, payments, and schedules.',
+    accentColor: 0xff1f7a5c,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-guardian-join-approval',
+        title: 'Guardian join and approval',
+        entryText: 'Guardian membership request is waiting for approval.',
+        actionText: 'Approve the guardian membership request.',
+        resultText: 'Guardian membership is active.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-team-roster',
+        title: 'Team and roster view',
+        entryText: 'U10 Falcons team space is ready for roster display.',
+        actionText: 'Open the U10 Falcons team roster.',
+        resultText: 'Roster view displays U10 Falcons.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-minor-redaction',
+        title: 'Protected minor-data redaction',
+        entryText: 'Minor birthdate is stored behind protected permissions.',
+        actionText: 'Read protected minor data through permission-gated UI.',
+        resultText: 'Minor birthdate renders as redacted value 2***.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-registration-payment',
+        title: 'Registration payment',
+        entryText: 'Registration checkout is owned by Loom payment surface.',
+        actionText: 'Pay the 125.00 USD registration dues.',
+        resultText: 'Registration payment receipt recorded.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-practice-schedule',
+        title: 'Practice schedule',
+        entryText: 'Saturday practice event has capacity for the team.',
+        actionText: 'Publish Saturday practice to the schedule.',
+        resultText: 'Practice event scheduled with capacity 18.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-reminder-notification',
+        title: 'Reminder notification',
+        entryText: 'Practice reminder can be delivered to guardians.',
+        actionText: 'Send Practice starts at 9 AM reminder.',
+        resultText: 'Practice reminder delivered once.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-export-metadata',
+        title: 'Youth soccer export metadata',
+        entryText: 'Registration and roster schemas are exportable.',
+        actionText: 'Generate protected export metadata for youth soccer.',
+        resultText: 'Export metadata includes registration and roster schemas.',
+      ),
+    ],
+  ),
+  'ext_hoa': LoomExperienceDefinition(
+    extensionId: 'ext_hoa',
+    displayName: 'Cedar Commons HOA',
+    tagline: 'Run dues, documents, facilities, reviews, and exports.',
+    accentColor: 0xff3e6b8f,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-dues-payment',
+        title: 'Dues payment',
+        entryText: 'Quarterly dues checkout is ready.',
+        actionText: 'Record a 450.00 USD HOA dues payment.',
+        resultText: 'Dues payment receipt recorded.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-member-document',
+        title: 'Member-visible document',
+        entryText: 'Community Rules document is visible to members.',
+        actionText: 'Open the member-visible governing document.',
+        resultText: 'Community Rules document displayed.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-facility-reservation',
+        title: 'Facility reservation and payment',
+        entryText: 'Clubhouse Room A can be reserved with payment.',
+        actionText: 'Reserve Clubhouse Room A and pay reservation fee.',
+        resultText: 'Facility reservation held with payment.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-architectural-request',
+        title: 'Architectural request',
+        entryText: 'Fence color request is ready for workflow review.',
+        actionText: 'Submit architectural request for committee review.',
+        resultText: 'Architectural request case opened.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-committee-decision',
+        title: 'Committee workflow decision',
+        entryText: 'Committee review step is waiting.',
+        actionText: 'Approve the architectural review workflow.',
+        resultText: 'Workflow completed with approved decision.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-owner-notification',
+        title: 'Owner notification',
+        entryText: 'Owner notification can be delivered after decision.',
+        actionText: 'Notify owner that the architectural request was approved.',
+        resultText: 'Owner notification delivered.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'hoa-export-evidence',
+        title: 'HOA export evidence',
+        entryText: 'Documents, facilities, wallet, receipts, and cases export.',
+        actionText: 'Generate HOA export coverage evidence.',
+        resultText: 'Export includes HOA document and operational components.',
+      ),
+    ],
+  ),
+  'ext_mosque': LoomExperienceDefinition(
+    extensionId: 'ext_mosque',
+    displayName: 'Masjid Nur',
+    tagline: 'Coordinate announcements, events, volunteers, giving, and care.',
+    accentColor: 0xff2d6a4f,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-announcement',
+        title: 'Public announcement',
+        entryText: 'Ramadan community night announcement is ready.',
+        actionText: 'Publish Ramadan community night announcement.',
+        resultText: 'Public announcement published.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-event-rsvp',
+        title: 'Community event RSVP',
+        entryText: 'Community iftar event has available capacity.',
+        actionText: 'RSVP to the community iftar.',
+        resultText: 'Community iftar RSVP ticket issued.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-volunteer-signup',
+        title: 'Volunteer signup',
+        entryText: 'Iftar volunteer form protects contact details.',
+        actionText: 'Submit setup shift with protected phone field.',
+        resultText: 'Volunteer signup saved and phone field protected.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-donor-visibility',
+        title: 'Anonymous donor visibility',
+        entryText: 'Donation visibility preference is member-owned.',
+        actionText: 'Set donor visibility to anonymous.',
+        resultText: 'Donor visibility preference saved as anonymous.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-donation-payment',
+        title: 'Donation payment and receipt',
+        entryText: 'Donation checkout is available through Loom wallet.',
+        actionText: 'Record a 50.00 USD donation.',
+        resultText: 'Donation payment receipt recorded.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-care-request',
+        title: 'Protected care request',
+        entryText:
+            'Care request form separates public summary and private details.',
+        actionText:
+            'Submit a meal-support care request with protected details.',
+        resultText: 'Care request saved with protected details redacted.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-neutral-notification',
+        title: 'Neutral care notification',
+        entryText:
+            'Care request acknowledgement avoids sensitive detail leakage.',
+        actionText: 'Send neutral care-request receipt notification.',
+        resultText: 'Neutral care-request notification delivered.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-search-ai-citation',
+        title: 'Announcement search and AI citation',
+        entryText: 'Public announcement can be searched and cited.',
+        actionText: 'Ask for iftar information from indexed announcements.',
+        resultText: 'AI answer includes public announcement citation.',
+      ),
+    ],
+  ),
+  'ext_chess_club': LoomExperienceDefinition(
+    extensionId: 'ext_chess_club',
+    displayName: 'Chess Club',
+    tagline: 'Open the club home and record friendly match results.',
+    accentColor: 0xff58432f,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'chess-local-install-open',
+        title: 'Arbitrary install and open',
+        entryText: 'Chess Club was loaded from arbitrary package contents.',
+        actionText: 'Confirm parsed branding and local latest route.',
+        resultText: 'Chess Club arbitrary package opened locally.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-route-home',
+        title: 'Route-defined home',
+        entryText: 'Chess Club route renders a domain-specific home.',
+        actionText: 'Open the Chess Club home workflow route.',
+        resultText: 'Chess Club home route rendered.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'chess-match-result',
+        title: 'Match result record',
+        entryText: 'Members can record a friendly match result.',
+        actionText: 'Record a match result for Board 1.',
+        resultText: 'Chess match result saved for Board 1.',
+      ),
+    ],
+  ),
+  'ext_camera_club': LoomExperienceDefinition(
+    extensionId: 'ext_camera_club',
+    displayName: 'Camera Club',
+    tagline: 'Plan photo walks, critique work, and loan gear.',
+    accentColor: 0xff465c7b,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'photo-walk-rsvp',
+        title: 'Photo-walk RSVP',
+        entryText: 'Downtown photo walk is accepting member RSVPs.',
+        actionText: 'RSVP to the next photo walk.',
+        resultText: 'Photo-walk RSVP recorded.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'critique-submission',
+        title: 'Critique submission',
+        entryText: 'Critique board accepts new photo submissions.',
+        actionText: 'Submit a street portrait for critique.',
+        resultText: 'Critique submission saved.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'gear-loan-request',
+        title: 'Gear-loan request',
+        entryText: 'Members can request shared gear loans.',
+        actionText: 'Request the 35mm prime lens loan.',
+        resultText: 'Gear-loan request created and pending review.',
+      ),
+    ],
+  ),
+  'ext_platform_social': LoomExperienceDefinition(
+    extensionId: 'ext_platform_social',
+    displayName: 'Member Social Space',
+    tagline: 'Manage messages, connections, and sponsored-message settings.',
+    accentColor: 0xff315c8a,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'platform-messages-entry',
+        title: 'Messages entry',
+        entryText: 'Shell-owned Messages surface is visible.',
+        actionText: 'Open Messages entry from the app bar.',
+        resultText: 'Messages entry is reachable.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-connections-entry',
+        title: 'Connections entry',
+        entryText: 'Shell-owned Connections surface is visible.',
+        actionText: 'Open Connections entry from the app bar.',
+        resultText: 'Connections entry is reachable.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-connection-invite',
+        title: 'Connection invite',
+        entryText: 'Member can invite an unblocked owner connection.',
+        actionText: 'Send connection invite.',
+        resultText: 'Connection invite state is invited.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-blocked-target',
+        title: 'Blocked-target prevention',
+        entryText: 'Blocked target cannot receive a connection invite.',
+        actionText: 'Attempt blocked-target invite.',
+        resultText: 'Blocked-target invite prevented.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-message-stream',
+        title: 'Message stream rendering',
+        entryText: 'Community general thread has messages.',
+        actionText: 'Render the community message stream.',
+        resultText: 'Message stream renders two messages.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-in-stream-ad',
+        title: 'In-stream ad disclosure',
+        entryText: 'In-stream ad slot can fill with disclosure.',
+        actionText: 'Render sponsored in-stream ad item.',
+        resultText: 'Sponsored disclosure is visible.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-top-banner-no-fill',
+        title: 'Top-banner fill and no-fill',
+        entryText: 'Required top banner ad slot is preserved.',
+        actionText: 'Evaluate top banner fill and no-fill states.',
+        resultText: 'Top banner records required no-fill state.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'platform-sensitive-no-fill',
+        title: 'Sensitive-context no-fill',
+        entryText: 'Sensitive contexts suppress ad fills.',
+        actionText: 'Request ad decision in sensitive context.',
+        resultText: 'Sensitive-context ad decision is no-fill.',
+      ),
+    ],
+  ),
+  'ext_ad_off': LoomExperienceDefinition(
+    extensionId: 'ext_ad_off',
+    displayName: 'Ad-Free Community',
+    tagline: 'Manage ad-free options, receipts, and member benefits.',
+    accentColor: 0xff5b5f97,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-member-checkout',
+        title: 'Member ad-off checkout',
+        entryText: 'Member ad-off purchase is shell-owned.',
+        actionText: 'Complete member ad-off checkout.',
+        resultText: 'Member ad-off entitlement active.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-community-checkout',
+        title: 'Community ad-off checkout',
+        entryText: 'Community-wide ad-off purchase is shell-owned.',
+        actionText: 'Complete community ad-off checkout.',
+        resultText: 'Community ad-off entitlement active.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-entitlement-status',
+        title: 'Entitlement status',
+        entryText: 'Ad-off entitlement can be restored and checked.',
+        actionText: 'Verify member and community entitlement status.',
+        resultText: 'Entitlement status shows active.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-receipt-evidence',
+        title: 'Receipt evidence',
+        entryText: 'Ad-off purchases link to receipt ledger records.',
+        actionText: 'Open ad-off receipt evidence.',
+        resultText: 'Ad-off receipt evidence displayed.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-ad-suppression',
+        title: 'Ad suppression',
+        entryText: 'Ad decision changes after entitlement.',
+        actionText: 'Evaluate ad decision after ad-off purchase.',
+        resultText: 'Ads suppressed by ad-off entitlement.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'ad-off-settlement-utility',
+        title: 'Settlement and utility allocation',
+        entryText: 'Ad-off economics produce auditable settlement records.',
+        actionText: 'Calculate settlement and utility allocation.',
+        resultText: 'Settlement and utility allocation recorded.',
+      ),
+    ],
+  ),
+  'ext_export_migration': LoomExperienceDefinition(
+    extensionId: 'ext_export_migration',
+    displayName: 'Data Portability Community',
+    tagline: 'Move community data with redaction and transfer checks.',
+    accentColor: 0xff536878,
+    workflows: [
+      LoomWorkflowDefinition(
+        workflowId: 'export-import-preview',
+        title: 'Import preview',
+        entryText: 'Legacy import can be previewed for sensitive fields.',
+        actionText: 'Preview legacy CSV import.',
+        resultText: 'Import preview reports one sensitive field.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-import-replay',
+        title: 'Import replay and idempotency',
+        entryText: 'Import replay should reuse the committed import result.',
+        actionText: 'Replay import with the same idempotency key.',
+        resultText: 'Import replay returns the existing import result.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-protected-redaction',
+        title: 'Protected field routing and redaction',
+        entryText: 'Imported phone number routes to protected vault.',
+        actionText: 'Open protected field redaction evidence.',
+        resultText: 'Protected phone field renders redacted.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-schema-listing',
+        title: 'Exportable custom-schema listing',
+        entryText: 'Custom member note schema is exportable.',
+        actionText: 'List exportable extension schemas.',
+        resultText: 'custom_member_note appears in exportable schema list.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-full-bundle',
+        title: 'Full export bundle',
+        entryText: 'Full export includes documents and receipts.',
+        actionText: 'Create full export bundle.',
+        resultText: 'Full export bundle includes document and receipt IDs.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-redacted-bundle',
+        title: 'Redacted export bundle',
+        entryText: 'Redacted export excludes protected raw values.',
+        actionText: 'Create redacted export bundle.',
+        resultText: 'Redacted export marks protected vault as redacted.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-checksum-evidence',
+        title: 'Checksum evidence',
+        entryText: 'Export bundle should carry checksum evidence.',
+        actionText: 'Verify export checksum.',
+        resultText: 'Export checksum evidence recorded.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-transfer-verification',
+        title: 'Provider transfer verification',
+        entryText: 'Provider transfer can be verified after export.',
+        actionText: 'Verify provider transfer.',
+        resultText: 'Provider transfer verified.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'export-transfer-rollback',
+        title: 'Provider transfer rollback',
+        entryText: 'Failed target checksum can trigger rollback.',
+        actionText: 'Rollback provider transfer after checksum mismatch.',
+        resultText: 'Provider transfer rolled back.',
+      ),
+    ],
+  ),
+};

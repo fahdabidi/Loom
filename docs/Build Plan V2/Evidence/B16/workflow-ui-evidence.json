@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "phase": "B16",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 23,
+  "workflows": [
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-messages-entry",
+      "expectedAssertions": [
+        "Shell-owned Messages surface is visible.",
+        "Open Messages entry from the app bar.",
+        "Messages entry is reachable."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-messages-entry_start",
+        "B16_ext_platform_social_platform-messages-entry_action",
+        "B16_ext_platform_social_platform-messages-entry_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-connections-entry",
+      "expectedAssertions": [
+        "Shell-owned Connections surface is visible.",
+        "Open Connections entry from the app bar.",
+        "Connections entry is reachable."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-connections-entry_start",
+        "B16_ext_platform_social_platform-connections-entry_action",
+        "B16_ext_platform_social_platform-connections-entry_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-connection-invite",
+      "expectedAssertions": [
+        "Member can invite an unblocked owner connection.",
+        "Send connection invite.",
+        "Connection invite state is invited."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-connection-invite_start",
+        "B16_ext_platform_social_platform-connection-invite_action",
+        "B16_ext_platform_social_platform-connection-invite_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-blocked-target",
+      "expectedAssertions": [
+        "Blocked target cannot receive a connection invite.",
+        "Attempt blocked-target invite.",
+        "Blocked-target invite prevented."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-blocked-target_start",
+        "B16_ext_platform_social_platform-blocked-target_action",
+        "B16_ext_platform_social_platform-blocked-target_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-message-stream",
+      "expectedAssertions": [
+        "Community general thread has messages.",
+        "Render the community message stream.",
+        "Message stream renders two messages."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-message-stream_start",
+        "B16_ext_platform_social_platform-message-stream_action",
+        "B16_ext_platform_social_platform-message-stream_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-in-stream-ad",
+      "expectedAssertions": [
+        "In-stream ad slot can fill with disclosure.",
+        "Render sponsored in-stream ad item.",
+        "Sponsored disclosure is visible."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-in-stream-ad_start",
+        "B16_ext_platform_social_platform-in-stream-ad_action",
+        "B16_ext_platform_social_platform-in-stream-ad_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-top-banner-no-fill",
+      "expectedAssertions": [
+        "Required top banner ad slot is preserved.",
+        "Evaluate top banner fill and no-fill states.",
+        "Top banner records required no-fill state."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-top-banner-no-fill_start",
+        "B16_ext_platform_social_platform-top-banner-no-fill_action",
+        "B16_ext_platform_social_platform-top-banner-no-fill_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-sensitive-no-fill",
+      "expectedAssertions": [
+        "Sensitive contexts suppress ad fills.",
+        "Request ad decision in sensitive context.",
+        "Sensitive-context ad decision is no-fill."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-sensitive-no-fill_start",
+        "B16_ext_platform_social_platform-sensitive-no-fill_action",
+        "B16_ext_platform_social_platform-sensitive-no-fill_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-member-checkout",
+      "expectedAssertions": [
+        "Member ad-off purchase is shell-owned.",
+        "Complete member ad-off checkout.",
+        "Member ad-off entitlement active."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-member-checkout_start",
+        "B16_ext_ad_off_ad-off-member-checkout_action",
+        "B16_ext_ad_off_ad-off-member-checkout_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-community-checkout",
+      "expectedAssertions": [
+        "Community-wide ad-off purchase is shell-owned.",
+        "Complete community ad-off checkout.",
+        "Community ad-off entitlement active."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-community-checkout_start",
+        "B16_ext_ad_off_ad-off-community-checkout_action",
+        "B16_ext_ad_off_ad-off-community-checkout_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-entitlement-status",
+      "expectedAssertions": [
+        "Ad-off entitlement can be restored and checked.",
+        "Verify member and community entitlement status.",
+        "Entitlement status shows active."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-entitlement-status_start",
+        "B16_ext_ad_off_ad-off-entitlement-status_action",
+        "B16_ext_ad_off_ad-off-entitlement-status_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-receipt-evidence",
+      "expectedAssertions": [
+        "Ad-off purchases link to receipt ledger records.",
+        "Open ad-off receipt evidence.",
+        "Ad-off receipt evidence displayed."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-receipt-evidence_start",
+        "B16_ext_ad_off_ad-off-receipt-evidence_action",
+        "B16_ext_ad_off_ad-off-receipt-evidence_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-ad-suppression",
+      "expectedAssertions": [
+        "Ad decision changes after entitlement.",
+        "Evaluate ad decision after ad-off purchase.",
+        "Ads suppressed by ad-off entitlement."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-ad-suppression_start",
+        "B16_ext_ad_off_ad-off-ad-suppression_action",
+        "B16_ext_ad_off_ad-off-ad-suppression_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-settlement-utility",
+      "expectedAssertions": [
+        "Ad-off economics produce auditable settlement records.",
+        "Calculate settlement and utility allocation.",
+        "Settlement and utility allocation recorded."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-settlement-utility_start",
+        "B16_ext_ad_off_ad-off-settlement-utility_action",
+        "B16_ext_ad_off_ad-off-settlement-utility_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-import-preview",
+      "expectedAssertions": [
+        "Legacy import can be previewed for sensitive fields.",
+        "Preview legacy CSV import.",
+        "Import preview reports one sensitive field."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-import-preview_start",
+        "B16_ext_export_migration_export-import-preview_action",
+        "B16_ext_export_migration_export-import-preview_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-import-replay",
+      "expectedAssertions": [
+        "Import replay should reuse the committed import result.",
+        "Replay import with the same idempotency key.",
+        "Import replay returns the existing import result."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-import-replay_start",
+        "B16_ext_export_migration_export-import-replay_action",
+        "B16_ext_export_migration_export-import-replay_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-protected-redaction",
+      "expectedAssertions": [
+        "Imported phone number routes to protected vault.",
+        "Open protected field redaction evidence.",
+        "Protected phone field renders redacted."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-protected-redaction_start",
+        "B16_ext_export_migration_export-protected-redaction_action",
+        "B16_ext_export_migration_export-protected-redaction_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-schema-listing",
+      "expectedAssertions": [
+        "Custom member note schema is exportable.",
+        "List exportable extension schemas.",
+        "custom_member_note appears in exportable schema list."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-schema-listing_start",
+        "B16_ext_export_migration_export-schema-listing_action",
+        "B16_ext_export_migration_export-schema-listing_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-full-bundle",
+      "expectedAssertions": [
+        "Full export includes documents and receipts.",
+        "Create full export bundle.",
+        "Full export bundle includes document and receipt IDs."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-full-bundle_start",
+        "B16_ext_export_migration_export-full-bundle_action",
+        "B16_ext_export_migration_export-full-bundle_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-redacted-bundle",
+      "expectedAssertions": [
+        "Redacted export excludes protected raw values.",
+        "Create redacted export bundle.",
+        "Redacted export marks protected vault as redacted."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-redacted-bundle_start",
+        "B16_ext_export_migration_export-redacted-bundle_action",
+        "B16_ext_export_migration_export-redacted-bundle_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-checksum-evidence",
+      "expectedAssertions": [
+        "Export bundle should carry checksum evidence.",
+        "Verify export checksum.",
+        "Export checksum evidence recorded."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-checksum-evidence_start",
+        "B16_ext_export_migration_export-checksum-evidence_action",
+        "B16_ext_export_migration_export-checksum-evidence_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-transfer-verification",
+      "expectedAssertions": [
+        "Provider transfer can be verified after export.",
+        "Verify provider transfer.",
+        "Provider transfer verified."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-transfer-verification_start",
+        "B16_ext_export_migration_export-transfer-verification_action",
+        "B16_ext_export_migration_export-transfer-verification_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-transfer-rollback",
+      "expectedAssertions": [
+        "Failed target checksum can trigger rollback.",
+        "Rollback provider transfer after checksum mismatch.",
+        "Provider transfer rolled back."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-transfer-rollback_start",
+        "B16_ext_export_migration_export-transfer-rollback_action",
+        "B16_ext_export_migration_export-transfer-rollback_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

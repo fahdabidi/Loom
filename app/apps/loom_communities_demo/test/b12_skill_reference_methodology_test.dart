@@ -20,8 +20,9 @@ void main() {
     for (final reference in requiredReferences) {
       expect(skill, contains('references/$reference'));
       expect(
-        File('$_repoRoot/docs/Build Plan V2/Skill/references/$reference')
-            .existsSync(),
+        File(
+          '$_repoRoot/docs/Build Plan V2/Skill/references/$reference',
+        ).existsSync(),
         isTrue,
         reason: reference,
       );

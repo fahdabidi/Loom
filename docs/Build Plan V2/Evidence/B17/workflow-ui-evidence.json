@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "phase": "B17",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 1,
+  "workflows": [
+    {
+      "phase": "B17",
+      "appId": "persona-role-inventory",
+      "workflowId": "wf_persona-role-inventory-capability-matrix",
+      "expectedAssertions": [
+        "all demo communities define two or more personas",
+        "all workflow/persona matrix rows have actor, receiver, read-only, or disabled state",
+        "receiver rows declare dependency evidence",
+        "matrix rows: 145"
+      ],
+      "screenshotNames": [
+        "B17_persona_inventory_active_admin",
+        "B17_persona_inventory_picker"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_active_admin.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_picker.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

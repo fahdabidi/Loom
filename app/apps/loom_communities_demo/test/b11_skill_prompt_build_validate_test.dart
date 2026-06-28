@@ -30,10 +30,7 @@ void main() {
         'gear-loan-request',
       ]),
     );
-    expect(
-      report.workflowResults.every((result) => result.complete),
-      isTrue,
-    );
+    expect(report.workflowResults.every((result) => result.complete), isTrue);
 
     for (final path in report.generatedArtifacts.allPaths) {
       expect(File(path).existsSync(), isTrue, reason: path);
@@ -51,19 +48,20 @@ void main() {
       isTrue,
     );
 
-    final validationReport = jsonDecode(
-      File('${outputDirectory.path}/validation-report.json').readAsStringSync(),
-    ) as Map<String, Object?>;
+    final validationReport =
+        jsonDecode(
+              File(
+                '${outputDirectory.path}/validation-report.json',
+              ).readAsStringSync(),
+            )
+            as Map<String, Object?>;
     expect(validationReport['complete'], isTrue);
     expect(validationReport['openExtensionId'], 'local:ext_camera_club@latest');
   });
 }
 
 String _readText(String path) {
-  final candidates = [
-    '../$path',
-    '../../../$path',
-  ];
+  final candidates = ['../$path', '../../../$path'];
   for (final candidate in candidates) {
     final file = File(candidate);
     if (file.existsSync()) {

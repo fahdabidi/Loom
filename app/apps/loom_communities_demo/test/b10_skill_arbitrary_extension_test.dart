@@ -34,7 +34,8 @@ void main() {
           logoAssetId: report.community.logoAssetId,
           cardImageAssetId: report.community.cardImageAssetId,
           heroImageAssetId: report.community.heroImageAssetId,
-          extensionDefaultCardImageAssetId: 'assets/brand/garden-default-card.png',
+          extensionDefaultCardImageAssetId:
+              'assets/brand/garden-default-card.png',
         ),
       ),
     );
@@ -59,10 +60,7 @@ void main() {
 }
 
 Map<String, Object?> _readJson(String path) {
-  final candidates = [
-    '../$path',
-    '../../../$path',
-  ];
+  final candidates = ['../$path', '../../../$path'];
   File? file;
   for (final candidate in candidates) {
     final candidateFile = File(candidate);

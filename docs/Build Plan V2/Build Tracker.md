@@ -6,7 +6,7 @@ This tracker records what each phase is intended to achieve, what it must delive
 completed, and the evidence captured when the phase is closed. Update it at the end of every phase
 before starting the next phase.
 
-Source rules: [Rules.md](./Rules.md)  
+Source rules: [Rules.md](./Rules.md)
 Source manifest: [test-manifest.json](./test-manifest.json)
 
 ## How To Use This Tracker
@@ -59,6 +59,20 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B9 | Complete | B8 | [Arbitrary Local Package Ingestion](./Phases/Phase%20B9%20-%20Arbitrary%20Local%20Package%20Ingestion.md) | Arbitrary local package pairs install from selected file contents without Book Club fixture substitution. | B9 backend/widget/workflow tests, B1a-B8 regressions, manifest gate, B9 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `db3c476`; tracker stamp `4a91980` |
 | B10 | Complete | B9 | [Skill Arbitrary Extension Test Run](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. | B10 replay test, zip package parsing validation, B1a-B10 regressions, manifest gate, B10 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `6bee137`; archive hardening `ce667b6` |
 | B11 | Complete | B10 | [Skill Prompt Build Validate Complete](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Owner prompt produces captured workflows, review docs, package artifacts, local install/open behavior, workflow validation, and a complete report. | B11 prompt-build validation, B9/B10 regressions, manifest gate, B11 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Implementation `21c89db`; tracker stamp `7ddb30d` |
+| B12 | Complete | B11 | [Example Workflow UX Evidence Harness](./Phases/Phase%20B12%20-%20Example%20Workflow%20UX%20Evidence%20Harness.md) | Screenshot-backed emulator workflow evidence standard and capture harness exist for all example and test apps. | R20 UX Decisions completed; harness test, Android emulator screenshot capture, evidence manifest/audit, manifest gate, B12 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B13 | Complete | B12 | [Garden Club Full UX Workflow Evidence](./Phases/Phase%20B13%20-%20Garden%20Club%20Full%20UX%20Workflow%20Evidence.md) | Garden Club opens a real extension experience and every declared Garden Club workflow completes through visible UI. | R20 UX Decisions completed; Garden Club opens real workflow UI; 3 Garden Club workflows have 9 Android screenshots; manifest gate, B13 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B14 | Complete | B13 | [Anchor Example Full UX Workflow Evidence](./Phases/Phase%20B14%20-%20Anchor%20Example%20Full%20UX%20Workflow%20Evidence.md) | Book Club, Youth Soccer, HOA, and Mosque workflows complete through visible UI with screenshots. | R20 UX Decisions completed; 29 anchor workflows have 87 Android screenshots; full B1a-B16 regression sweep, manifest gate, B14 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B15 | Complete | B14 | [Arbitrary and Prompt Example Full UX Workflow Evidence](./Phases/Phase%20B15%20-%20Arbitrary%20and%20Prompt%20Example%20Full%20UX%20Workflow%20Evidence.md) | Chess Club arbitrary ingestion and Camera Club prompt-generated workflows render and complete through visible UI. | R20 UX Decisions completed; Chess and Camera workflows have 18 Android screenshots; full B1a-B16 workflow sweep, manifest gate, B15 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B16 | Complete | B15 | [Platform Workflow UX Evidence Sweep](./Phases/Phase%20B16%20-%20Platform%20Workflow%20UX%20Evidence%20Sweep.md) | Platform social, ad-off, and export/migration test apps complete required workflows through visible UI with screenshots. | R20 UX Decisions completed; 23 platform workflows have 69 Android screenshots; final B12-B16 manifest passes with 62 workflows and 186 screenshots; full workflow sweep, manifest gate, B16 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B17 | Complete | B16 | [Persona Role Inventory and Capability Matrix](./Phases/Phase%20B17%20-%20Persona%20Role%20Inventory%20and%20Capability%20Matrix.md) | Every example community has explicit test personas, role permissions, workflow ownership, recipient behavior, prerequisite chains, and hidden/disabled/read-only UX rules. | Persona model, capability matrix, dependency graph helpers, B17 widget test, B17 Android evidence manifest, analyze, full widget sweep, manifest gate, B17 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B18 | Complete | B17 | [Demo App Persona Picker](./Phases/Phase%20B18%20-%20Demo%20App%20Persona%20Picker.md) | The people icon opens a test-only persona picker and the selected persona is carried through each community experience. | People-icon picker, active persona card, local identity disclaimer, B18 widget test, B18 Android screenshots, analyze, manifest gate, B18 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B19 | Complete | B18 | [Community Persona-Aware UX](./Phases/Phase%20B19%20-%20Community%20Persona-Aware%20UX.md) | Community experiences hide, disable, or transform workflows based on the selected persona and role permissions. | Actor/receiver/read-only/disabled workflow rendering, Masjid Nur admin/member gating proof, B19 widget test, B19 Android screenshots, analyze, manifest gate, B19 phase gate, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B20 | Complete | B19 | [Multi-Persona Workflow Evidence Sweep](./Phases/Phase%20B20%20-%20Multi-Persona%20Workflow%20Evidence%20Sweep.md) | Every per-persona workflow row passes, including prerequisite chains where one persona creates state another persona receives or continues. | Full per-persona workflow sweep, prerequisite producer/receiver tests, Masjid Nur announcement create/receive evidence, final B12-B20 manifest, full 39-test sweep, manifest gate, B20 phase gate, analyze, boundary lint, and diff check pass in WSL Ubuntu. | Pending commit in current workspace |
+| B21 | Complete | B20 | [Production Workflow UX Contract Matrix](./Phases/Phase%20B21%20-%20Production%20Workflow%20UX%20Contract%20Matrix.md) | Every workflow/persona row has a production UX contract that defines the real user task, domain screen, inputs, validation, semantic actions, success state, receiver state, and evidence IDs. | Evidence: production UX contract helper and matrix, generic-copy audit pass, `wf_production-workflow-ux-contract-matrix`, API/UX reviews, manifest/phase gates. | Pending commit in current workspace |
+| B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Pending commit in current workspace |
+| B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Pending commit in current workspace |
+| B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Pending commit in current workspace |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, and only passes when the UI feels production-grade for real community users. | Prior B25 v2 pass superseded by stricter production UX v3 criteria; requires per-community production UX blueprint, schema v3 evidence, and a rerun/remediation loop until zero blocker or major findings. | Pending commit in current workspace |
 
 ## Phase Outcome Summary
 
@@ -84,6 +98,171 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B9 | Closes arbitrary local package ingestion. | File-backed package parsing, arbitrary init import, parsed branding/card rendering, local latest open, API/UX/Skill docs, manifest rows. | The Demo App can install an arbitrary Skill/developer-generated local package pair and display the parsed community instead of a built-in fixture. |
 | B10 | Closes arbitrary Skill output replay. | Skill arbitrary Garden Club example, alias-field parser support, replay workflow test, API/UX/Skill docs, manifest rows. | A Skill-generated arbitrary extension/init pair can be reviewed as docs artifacts, replayed through the local backend, rendered as a card, and opened locally. |
 | B11 | Closes prompt-to-complete Skill validation. | Skill prompt parser/build harness, arbitrary Camera Club prompt fixture, generated docs/package validation workflow, completion report schema, API/UX/Skill docs, manifest rows. | An arbitrary owner prompt can be converted into workflows, review docs, extension/init zip packages, local Demo App installation, workflow validation evidence, and a `complete=true` report before the Skill claims completion. |
+| B12 | Establishes the full UI evidence gate. | Workflow evidence matrix, screenshot manifest schema, emulator capture harness, evidence folder conventions, failure artifact conventions, manifest rows. | Later phases cannot claim user-facing workflow completion without screenshot-backed Android emulator evidence for start, critical action, and completion states. |
+| B13 | Closes the Garden Club UX gap. | Garden Club extension experience, declared Garden Club workflow tests, screenshot evidence bundle, Garden Club workflow docs/example updates. | Garden Club no longer opens only metadata/settings; it renders a domain experience and all declared Garden Club workflows complete through visible UI. |
+| B14 | Closes full UX evidence for anchor vertical examples. | Book Club, Youth Soccer, HOA, and Mosque UI workflow tests, screenshot bundles, example docs updates, backend parity checks. | Each anchor example has visible UI evidence for every workflow previously proven only by direct service/harness calls. |
+| B15 | Closes full UX evidence for arbitrary/generated examples. | Chess Club arbitrary-ingestion UI evidence, Camera Club prompt-generated UI workflow tests, screenshot bundles, completion report updates. | Arbitrary and prompt-generated examples prove not only package/card/open behavior, but visible workflow execution through the Demo App. |
+| B16 | Closes full UX evidence for platform workflow test apps. | Platform Social, Ad-Off, and Export/Migration UI workflow tests, screenshot bundles, final evidence manifest, full workflow regression sweep. | Platform-required workflows are visibly exercised in the Demo App and the evidence package proves completion across all example and test apps. |
+| B17 | Defines persona and role behavior before implementation. | Persona inventory, role/capability matrix, workflow actor/recipient mapping, workflow dependency graph, hidden/disabled/read-only UX policy, API/UX review. | The project knows which personas can create, approve, receive, search, export, pay, or only read each workflow, including prerequisites that another persona must perform first, before the UI changes. |
+| B18 | Adds a test-only persona picker to the Demo App. | People-icon persona picker, active persona state, persona labels/descriptions, persona context passed into community screens, widget evidence. | Testers can switch persona from the people icon in each community without pretending this is production identity behavior. |
+| B19 | Applies persona-aware UX to every example community. | Role-filtered workflow list, disabled/read-only workflow states, recipient surfaces, persona-specific copy, backend permission parity tests. | Community capabilities change when the selected persona changes, and admin-only workflows no longer appear as generally executable member actions. |
+| B20 | Proves multi-persona workflows end to end. | Per-persona workflow matrix tests, persona-switch UI tests, prerequisite producer/receiver sequences, screenshot evidence manifests, cross-persona backend state assertions, full regression sweep. | Every persona/workflow row is either proven with UI evidence or explicitly marked not applicable; dependent workflows prove the prerequisite actor state before the receiving persona state. |
+| B21 | Defines the production UX quality bar before implementation. | Production workflow UX contract matrix, workflow-type pattern selection, semantic action labels, copy/validation checklist, screenshot evidence plan, prompt set. | The team knows exactly what production-quality UX means for every workflow/persona row before any app code changes. |
+| B22 | Replaces generic workflow harness UI with domain-specific production surfaces. | RSVP/event surfaces, payment/receipt surfaces, forms/protected-data surfaces, announcement/composer surfaces, approval surfaces, search/AI surfaces, export/migration surfaces, social/ad surfaces. | Users interact with real domain workflows instead of generic cards and "Complete workflow" dialogs. |
+| B23 | Makes the production surfaces persona-aware and stateful across roles. | Actor views, receiver views, read-only views, disabled/hidden rules, dependency-chain state, persona-specific screenshot tests. | A role that creates a record and a role that receives it each see a coherent production experience for their part of the workflow. |
+| B24 | Certifies the full suite against production UX evidence requirements. | Generic-copy failure tests, screenshot evidence audit, final B12-B24 evidence manifest, Skill completion-rule audit, regression sweep. | No example community can be marked complete while using generic workflow harness copy, missing inputs, missing success states, or untested persona handoffs. |
+| B25 | Reviews the finished UX independently. | Outside-in product UX review, severity-ranked findings, design-quality rubric, remediation evidence, final pass/fail decision. | The UX passes only when an independent review finds no unresolved blocker or major design issues and any minor issues are accepted or tracked. |
+
+## Planned Full UX Workflow Evidence Matrix
+
+These phases extend the earlier Set B contract tests. Existing B1a-B11 completion evidence remains
+valid for its original scope, but it does not satisfy this matrix unless the workflow is completed
+through the visible Android emulator UI and recorded in screenshot evidence.
+
+Every workflow evidence bundle must include:
+
+- Start screenshot: installed card or workflow entry point visible in the Demo App.
+- Critical-action screenshot: the user action that changes workflow state, such as submit, RSVP,
+  pay, approve, export, or block.
+- Completion screenshot: success state, resulting record, receipt, route, or redacted/exported result.
+- Evidence manifest: `workflow-ui-evidence.json` with workflow ID, app/example ID, emulator name,
+  screenshot paths, command output path, expected assertions, and pass/fail status.
+
+| App or test target | Workflows that require visible UI completion evidence | Evidence phase |
+| --- | --- | --- |
+| Garden Club | Local package install/open into a real Garden Club home, required App Shell surfaces, garden event RSVP, plant exchange/form submission, Garden Club export/custom-schema evidence for `garden_event` and `plant_exchange`. | B13 |
+| Book Club | Local install/open, book nomination, voting, meeting event RSVP, discussion message, selected-book publishing, search/AI answer, cited digest, export metadata. | B14 |
+| Youth Soccer | Local install/open, guardian join and approval, team/roster view, protected minor-data redaction, registration payment through Loom payment surface, practice schedule, reminder notification, export metadata. | B14 |
+| HOA | Local install/open, dues payment, member-visible document, facility reservation and payment, architectural request submission, committee workflow decision, owner notification, export evidence. | B14 |
+| Mosque | Local install/open, public announcement, event RSVP, volunteer signup with protected contact field, anonymous donor visibility preference, donation payment and receipt, protected care request, neutral notification, public announcement search/AI citation. | B14 |
+| Chess Club arbitrary package | Arbitrary package pair selection/import, parsed branding/card rendering, local latest open, route-defined home or workflow actions declared by the arbitrary package fixture. | B15 |
+| Camera Club prompt-generated package | Prompt-generated local install/open, photo-walk RSVP, critique submission, gear-loan request, completion report with screenshot links for each workflow. | B15 |
+| Platform Social test app | Messages entry, Connections entry, connection invite, blocked-target prevention, message stream rendering, in-stream ad disclosure, top-banner fill/no-fill, sensitive-context no-fill. | B16 |
+| Ad-Off test app | Member ad-off checkout, community ad-off checkout, entitlement status, receipt evidence, ad suppression, settlement and utility allocation evidence. | B16 |
+| Export/Migration test app | Import preview, import replay/idempotency, protected field routing/redaction, exportable custom-schema listing, full export, redacted export, checksum evidence, provider transfer verification, provider transfer rollback. | B16 |
+
+## Planned Persona and Role Validation Matrix
+
+The Demo App persona picker is a test harness only. In production, the active persona comes from the
+logged-in user's identity, memberships, roles, and policy grants. The people icon in the Demo App lets
+testers switch the simulated actor so each community can prove role-specific capability behavior.
+
+Every B17-B20 persona evidence bundle must include:
+
+- Persona inventory: community personas, role labels, actor IDs, grants, and relevant protected-data
+  permissions.
+- Workflow actor mapping: creator/initiator, approver/moderator, receiver/reader, payer, exporter, and
+  blocked or unauthenticated states where applicable.
+- Workflow dependency graph: prerequisite persona actions, records created, receiving personas, and
+  ordering/idempotency requirements for dependent workflows.
+- UX policy: whether each workflow is hidden, disabled with reason text, read-only, or transformed into
+  a receiving surface for the selected persona.
+- Multi-persona evidence: screenshots before persona switch, after persona switch, and at the receiving
+  or continuation state.
+- Per-persona workflow coverage: one test row for every persona/workflow combination, including
+  authorized action, unauthorized action, hidden state, disabled state, read-only state, receiving state,
+  or a documented not-applicable rationale.
+- Backend parity: assertions that unauthorized personas cannot perform admin-only mutations and that
+  receiving personas can observe only the records they should see.
+
+| Community or test app | Personas and role-sensitive workflows to model | Phase |
+| --- | --- | --- |
+| Garden Club | Coordinator can create events, manage plant exchange, and export custom schemas; member can RSVP, submit exchange offers, and view relevant results. | B17-B20 |
+| Book Club | Organizer can publish nominations, selected-book results, and digest prompts; member can nominate, vote, RSVP, discuss, search, and read digest output. | B17-B20 |
+| Youth Soccer | Coach/admin can approve guardians, manage roster/schedule, and send reminders; guardian can register, pay, view permitted roster/schedule, and receive notifications; minor data remains protected. | B17-B20 |
+| HOA | Board/committee can publish documents, decide architectural requests, and export records; homeowner can pay dues, reserve facilities, submit requests, and receive decisions. | B17-B20 |
+| Mosque | Admin can publish public announcements, create events, coordinate volunteers, and send neutral care notifications; member can receive/search announcements, RSVP, volunteer, donate, choose donor visibility, and submit protected care requests. | B17-B20 |
+| Chess Club arbitrary package | Organizer can schedule matches and export records; player can view schedule, join available matches, and receive updates. | B17-B20 |
+| Camera Club prompt-generated package | Organizer can publish photo walks, review critique submissions, and manage gear loans; member can RSVP, submit critique, request gear, and receive status. | B17-B20 |
+| Platform Social test app | Member, invited member, blocked user, and moderator/admin personas validate message, connection, block, stream, ad, and no-fill states. | B17-B20 |
+| Ad-Off test app | Member purchaser, community admin purchaser, and ordinary member personas validate checkout, entitlement visibility, ad suppression, receipts, settlement, and utility allocation. | B17-B20 |
+| Export/Migration test app | Provider admin, community owner, member, and receiving provider personas validate import preview/replay, protected redaction, exports, transfer verification, and rollback. | B17-B20 |
+
+## Planned Production Workflow UX Quality Matrix
+
+B21-B25 close the remaining gap between technically executable workflow evidence and production-level
+workflow UX. A workflow is not production-ready when it is represented only by a generic workflow card,
+metadata/settings page, test-harness text, or a dialog whose primary action is `Complete` or
+`Complete workflow`.
+
+Every B21-B24 production UX implementation bundle must include:
+
+- Production workflow contract: real user goal, workflow type, actor persona, receiver persona,
+  prerequisite state, Loom-owned services, extension-owned data, and expected end state.
+- Domain surface: screen sections, real inputs, review/preview step when appropriate, validation
+  errors, empty/loading states, destructive/secondary actions, and success or receipt state.
+- Semantic actions: button labels must name the action a user is taking, such as `Publish announcement`,
+  `RSVP to event`, `Submit care request`, `Approve request`, `Pay dues`, `Send invite`, `Export data`,
+  or `Start transfer`.
+- Persona behavior: actor, receiver, read-only, hidden, disabled-with-reason, and unrelated persona
+  states must be specified and tested with production copy.
+- Multi-persona continuity: when one persona creates, approves, or sends state, the receiving persona
+  must see that state in a real recipient surface, not only in a test completion card.
+- Evidence: screenshots for entry, input, validation or review, action, success/result, persona switch,
+  receiver state, and unauthorized persona behavior where applicable.
+- Failure gate: tests must fail if production workflow screens contain generic harness phrases such as
+  `Complete workflow`, `Can perform this workflow`, `workflow evidence`, `local route`, or equivalent
+  implementation-oriented copy.
+
+B25 is a separate post-implementation product UX review. It must not be treated as a checklist that
+simply confirms the planned workflow contract was implemented. The reviewer must inspect the visible
+product experience from the user's perspective, identify improvements, and issue an explicit pass/fail
+decision against production-grade UX standards. Passing workflow automation does not imply a B25 pass,
+and removing obvious workflow-harness copy does not imply a B25 pass.
+If B25 fails with any blocker or major finding, the phase enters a remediation loop: fix, rebuild,
+relaunch, recapture evidence, regenerate the screen matrix, rerun the review, and repeat until blocker
+and major counts are zero.
+
+Every B25 independent UX review must include:
+
+- Fresh walkthroughs of the actual app surfaces after B22-B24, using the visible Android emulator and
+  screenshots from the final evidence bundle.
+- A complete product UX screen review matrix with one row for every implemented screen, state, dialog,
+  card, feed item, form, confirmation, error, empty state, persona variant, and action result. Sampling
+  is not allowed.
+- Findings ranked by severity: blocker, major, minor, or polish.
+- Review dimensions covering information architecture, visual hierarchy, interaction clarity, semantic
+  labels, mobile layout, accessibility, empty/loading/error states, trust/privacy/payment clarity,
+  persona relevance, multi-persona handoffs, content tone, brand/community identity, modern visual
+  quality, component variety, information density, and overall product fit.
+- A product-readiness critique that fails user-facing global workflow lists, exposed category/surface
+  taxonomy, implementation rationale copy, metadata-only cards, missing domain-native sections, or
+  missing realistic task content.
+- A modern-product critique that fails generic demo-scaffold styling, repeated workflow-card primary
+  UX, checklist modals, overlapping floating controls, clipped text, weak visual hierarchy, thin
+  placeholder content, and screens that look materially below a shippable mobile app.
+- A per-community production UX blueprint before any pass verdict. The blueprint must define target
+  personas, community identity, home information architecture, required product surfaces, workflow-to-
+  surface mapping, realistic content requirements, visual/interaction standards, and concrete pass
+  examples for every community/test app and persona.
+- A screen-specific critique requirement: every matrix row must include findings grounded in that
+  screenshot and persona. Repeated boilerplate rationale across unrelated rows is invalid B25 evidence.
+- Schema version 3 machine-readable review evidence with review standard version, superseded prior run
+  IDs, blueprint coverage, unique screen-row IDs, screen-specific critiques, stable finding/remediation
+  IDs, before/after screenshot references, unresolved severity counts, rerun requirements, and final
+  pass/fail decision.
+- Per-screen verdicts that answer whether the surface feels like a real product screen, exposes
+  implementation/test/workflow language, uses domain-native IA, contains realistic content, has natural
+  labels/actions, is visually modern and mobile-appropriate, and supports the target user's real task.
+- Improvement recommendations that are not limited to missing workflow requirements.
+- A pass/fail decision. Passing requires no unresolved blocker or major UX issues; minor issues must be
+  resolved, explicitly accepted by the owner, or tracked with rationale.
+- A remediation loop log for every failed B25 run, including root-cause clusters, fix batches, tests,
+  refreshed screenshots, remaining blocker/major counts, and the next iteration decision.
+- A supersession rule: when the B25 review standard changes, any prior pass is historical only. The
+  phase must be reopened, the prior evidence must be marked stale/superseded, and B25 cannot pass again
+  until the latest standard is rerun successfully.
+
+| Workflow category | Production UX requirements | Evidence phase |
+| --- | --- | --- |
+| Event and RSVP workflows | Event details, schedule/location/capacity when available, RSVP state, cancel/change action if supported, confirmation surface, receiver calendar/notification state. | B21-B25 |
+| Payment, donation, dues, and ad-off workflows | Amount, payer, visibility or entitlement choice, Loom payment surface handoff, receipt, settlement/utility state when relevant, failure and retry state. | B21-B25 |
+| Forms, protected care, volunteer, exchange, critique, and gear workflows | Labeled fields, protected/private data indicators, validation, submit/review, saved request state, recipient/admin review state. | B21-B25 |
+| Announcement, publishing, notification, and digest workflows | Compose or source selection, audience, preview, publish/send action, recipient inbox/feed/search state, citation/source state for AI output. | B21-B25 |
+| Approval, moderation, and decision workflows | Pending record details, approve/reject/comment actions, decision audit, requester notification/receiver state, unauthorized denial. | B21-B25 |
+| Search, AI, and discovery workflows | Query input, scoped result list, cited answer/source, empty/error state, privacy/protected-data guardrails. | B21-B25 |
+| Export, import, migration, and transfer workflows | Scope selection, redaction preview, checksum/status, transfer verification, rollback/failure path, downloadable/export evidence. | B21-B25 |
+| Messages, connections, ads, and platform shell workflows | Real message/connection/ad surfaces, invite/block outcomes, ad disclosure or no-fill state, required App Shell navigation preserved. | B21-B25 |
 
 ## UX Methodology Reset - 2026-06-09
 
@@ -105,6 +284,10 @@ new method and the affected regressions pass again.
 | B6 | None | Complete | Completed Messages, Connections, stream rendering, in-stream ad disclosure, top banner, no-fill, and block/invite UX decisions using R20. |
 | B7 | None | Complete | Completed ad-off checkout, entitlement, status, receipt, ad preference, ad suppression, sensitive no-fill, settlement, and utility allocation UX decisions using R20. |
 | B8 | None | Complete | Completed export scope, redaction, checksums, transfer verify/rollback, retained-record disclosure, API inventory, and readiness-summary UX decisions using R20. |
+| B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
+| B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
+| B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
+| B25 | None | Reopened | Prior product-UX v2 pass superseded by v3 criteria requiring per-community production UX blueprint, schema v3 evidence, and strict modern production UI review. |
 
 Closeout rule for reopened phases:
 
@@ -933,6 +1116,442 @@ Closeout rule for reopened phases:
   apps/loom_communities_demo/test/b11_skill_prompt_build_validate_test.dart`.
 - **Commit:** B11 implementation `21c89db`; tracker stamp `7ddb30d`.
 
+### Phase B12 - Example Workflow UX Evidence Harness
+
+- **Achieves:** Creates the standard and tooling required to prove user-facing workflow completion with
+  Android emulator screenshots.
+- **Deliverables:** Full UX workflow evidence matrix, `workflow-ui-evidence.json` schema, screenshot
+  naming/folder conventions, emulator capture harness, failure artifact capture, screenshot evidence
+  audit, manifest rows, `Phase B12 - API Review.md`, and `Phase B12 - UX Decisions.md`.
+- **Completed when:** The matrix covers every example/test target listed above; the capture harness can
+  install or seed a local package, open the card, capture PNG screenshots for start, critical action,
+  and completion states, write a machine-readable evidence manifest, and fail when any screenshot file
+  or required assertion is missing.
+- **Evidence to record:** Harness command output, emulator/device name and API level, sample passing
+  screenshot bundle under `docs/Build Plan V2/Evidence/B12/`, sample failure artifact, evidence
+  manifest schema path, manifest/test stamps, phase gate, analyze, boundary lint, diff check, and commit
+  SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added the shared workflow UI evidence harness, Android integration driver,
+  screenshot writer, evidence manifest/audit generation, and a visible workflow checklist in the Demo
+  App for every evidence target.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json` records 1 harness
+  workflow with 3 Android emulator screenshots under `docs/Build Plan V2/Evidence/B12/screenshots/`.
+- **Skill/API/UX artifacts:** Added `Phase B12 - Example Workflow UX Evidence Harness.md`,
+  `Phase B12 - API Review.md`, `Phase B12 - UX Decisions.md`, and updated the Skill rule that workflow
+  completion requires full visible UI evidence.
+- **Manifest stamps:** `loom-communities-demo-app` `cf7f1769af4a`; B12 workflow test hash
+  `de0b06e7a2a5`; full screenshot evidence test hash `f8b3bf556309`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep from A6/B1a through B16 passed
+  with 34 tests; `bash apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; `flutter analyze
+  apps/loom_communities_demo`; `dart analyze packages/tooling/loom_lints`; manifest gate; B12 phase
+  gate; boundary lint; `git -c core.whitespace=blank-at-eof,space-before-tab,cr-at-eol diff --check`.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B13 - Garden Club Full UX Workflow Evidence
+
+- **Achieves:** Closes the current Garden Club gap by replacing metadata-only open behavior with a real
+  Garden Club extension experience that completes visible workflows.
+- **Deliverables:** Garden Club home route, local package/install/open UI flow, Garden Club event RSVP,
+  plant exchange/form submission, Garden Club export/custom-schema evidence, screenshot bundle,
+  `workflow-ui-evidence.json`, updated Garden Club example docs, updated Skill workflow guidance,
+  `Phase B13 - API Review.md`, and `Phase B13 - UX Decisions.md`.
+- **Completed when:** Tapping the Garden Club card opens the Garden Club experience instead of the
+  generic settings/metadata screen; required App Shell surfaces remain visible; every declared Garden
+  Club workflow is completed through UI interactions on the Android emulator; completion screenshots
+  show the resulting RSVP, plant exchange/form record, and export/custom-schema evidence.
+- **Evidence to record:** Garden Club install/open screenshots, Garden Club home screenshot, event RSVP
+  start/action/completion screenshots, plant exchange/form start/action/completion screenshots, export
+  evidence screenshot, evidence manifest, Flutter/emulator test output, manifest/test stamps, phase
+  gate, analyze, boundary lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Garden Club now opens a domain workflow experience instead of only the
+  extension metadata/settings view, while preserving the App Shell banner, Messages, Connections,
+  payment surface, and seed-file evidence.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json` records
+  `garden-event-rsvp`, `plant-exchange-submission`, and `garden-export-custom-schemas` with 9 Android
+  emulator screenshots.
+- **Skill/API/UX artifacts:** Added `Phase B13 - Garden Club Full UX Workflow Evidence.md`,
+  `Phase B13 - API Review.md`, and `Phase B13 - UX Decisions.md`.
+- **Manifest stamps:** `loom-communities-demo-app` `cf7f1769af4a`; B13 workflow test hash
+  `ad5240a0ffce`; full screenshot evidence test hash `f8b3bf556309`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep from A6/B1a through B16 passed
+  with 34 tests; `bash apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; manifest gate;
+  B13 phase gate; analyze; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B14 - Anchor Example Full UX Workflow Evidence
+
+- **Achieves:** Proves the anchor vertical examples through visible UI, not only direct fake-backend API
+  calls.
+- **Deliverables:** Book Club, Youth Soccer, HOA, and Mosque UI workflow tests; screenshot bundles for
+  every workflow in the matrix; one evidence manifest per app; backend parity assertions that the UI
+  results match the existing service-level workflow expectations; updated example READMEs and Skill
+  workflow docs; `Phase B14 - API Review.md`; and `Phase B14 - UX Decisions.md`.
+- **Completed when:** Book Club nomination/vote/event/discussion/digest, Youth Soccer guardian/team/
+  protected-data/payment/schedule/notification, HOA dues/documents/facility/architectural/export, and
+  Mosque announcement/event/volunteer/donation/care/search workflows all complete through visible UI on
+  the Android emulator and have start/action/completion screenshots.
+- **Evidence to record:** Screenshot bundles under `docs/Build Plan V2/Evidence/B14/`, evidence
+  manifests for Book Club, Youth Soccer, HOA, and Mosque, Flutter/emulator test output, backend parity
+  output, full B1a-B14 regression output, manifest/test stamps, phase gate, analyze, boundary lint,
+  diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added visible UI workflow evidence targets for Book Club, Youth Soccer,
+  HOA, and Mosque so the anchor examples are validated through Demo App interactions instead of only
+  backend/service calls.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json` records 29
+  workflows with 87 Android screenshots: Book Club 7, Youth Soccer 7, HOA 7, and Mosque 8.
+- **Skill/API/UX artifacts:** Added `Phase B14 - Anchor Example Full UX Workflow Evidence.md`,
+  `Phase B14 - API Review.md`, and `Phase B14 - UX Decisions.md`.
+- **Manifest stamps:** `loom-communities-demo-app` `cf7f1769af4a`; B14 workflow test hash
+  `36302c13f8cc`; full screenshot evidence test hash `f8b3bf556309`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep from A6/B1a through B16 passed
+  with 34 tests; `bash apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; manifest gate;
+  B14 phase gate; analyze; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B15 - Arbitrary and Prompt Example Full UX Workflow Evidence
+
+- **Achieves:** Proves arbitrary and prompt-generated examples as visible extension experiences, not
+  only package parsing, card rendering, local route opening, or manifest-based completion.
+- **Deliverables:** Chess Club arbitrary-ingestion UI evidence, Camera Club prompt-generated UI
+  workflows, photo-walk RSVP UI, critique submission UI, gear-loan request UI, screenshot bundles,
+  completion report links to screenshot evidence, updated prompt-build validation report schema,
+  updated example docs, `Phase B15 - API Review.md`, and `Phase B15 - UX Decisions.md`.
+- **Completed when:** The Chess Club arbitrary package completes its declared install/open and
+  route-defined UI behavior with screenshots, and the Camera Club generated package completes
+  photo-walk RSVP, critique submission, and gear-loan request through visible UI with a completion
+  report that links every workflow result to screenshot evidence.
+- **Evidence to record:** Chess and Camera screenshot bundles under `docs/Build Plan V2/Evidence/B15/`,
+  evidence manifests, generated validation report, Flutter/emulator test output, B9-B15 regression
+  output, manifest/test stamps, phase gate, analyze, boundary lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added visible UI workflow evidence for the arbitrary Chess Club package
+  and prompt-generated Camera Club package, covering install/open behavior plus the declared domain
+  actions.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json` records 6
+  workflows with 18 Android screenshots: Chess Club 3 and Camera Club 3.
+- **Skill/API/UX artifacts:** Added `Phase B15 - Arbitrary and Prompt Example Full UX Workflow Evidence.md`,
+  `Phase B15 - API Review.md`, and `Phase B15 - UX Decisions.md`.
+- **Manifest stamps:** `loom-communities-demo-app` `cf7f1769af4a`; B15 workflow test hash
+  `896bf2a7068b`; full screenshot evidence test hash `f8b3bf556309`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep from A6/B1a through B16 passed
+  with 34 tests; `bash apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; manifest gate;
+  B15 phase gate; analyze; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B16 - Platform Workflow UX Evidence Sweep
+
+- **Achieves:** Proves platform-required workflows through visible UI and closes the full example/test
+  app workflow evidence sweep.
+- **Deliverables:** Platform Social UI evidence for Messages, Connections, stream, ads, and no-fill;
+  Ad-Off UI evidence for checkout, entitlement, suppression, receipts, settlement, and utility
+  allocation; Export/Migration UI evidence for import preview/replay, protected redaction, full and
+  redacted exports, checksums, transfer verification, and rollback; final B12-B16 evidence manifest;
+  `Phase B16 - API Review.md`; and `Phase B16 - UX Decisions.md`.
+- **Completed when:** Platform Social, Ad-Off, and Export/Migration workflows complete through visible
+  Android emulator UI; every required workflow has start/action/completion screenshots; the final
+  evidence manifest confirms no missing screenshot paths; and the full B1a-B16 workflow suite passes.
+- **Evidence to record:** Platform screenshot bundles under `docs/Build Plan V2/Evidence/B16/`, final
+  B12-B16 evidence manifest, Flutter/emulator output, full workflow sweep output, manifest/test stamps,
+  phase gate, analyze, boundary lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added visible platform evidence targets for Platform Social, Ad-Off, and
+  Export/Migration, and generated the final cross-phase evidence manifest for B12-B16.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json` records 23
+  workflows with 69 Android screenshots: Platform Social 8, Ad-Off 6, and Export/Migration 9. The final
+  `docs/Build Plan V2/Evidence/B16/all-workflow-ui-evidence.json` reports `status=pass`, 62 workflows,
+  and 186 screenshots across B12-B16.
+- **Skill/API/UX artifacts:** Added `Phase B16 - Platform Workflow UX Evidence Sweep.md`,
+  `Phase B16 - API Review.md`, and `Phase B16 - UX Decisions.md`.
+- **Manifest stamps:** `loom-communities-demo-app` `cf7f1769af4a`; B16 workflow test hash
+  `c3e4f0a7a438`; full screenshot evidence test hash `f8b3bf556309`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep from A6/B1a through B16 passed
+  with 34 tests; `bash apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; manifest gate;
+  B16 phase gate; `flutter analyze apps/loom_communities_demo`; `dart analyze
+  packages/tooling/loom_lints`; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B17 - Persona Role Inventory and Capability Matrix
+
+- **Achieves:** Converts each example community's implicit actors into explicit test personas, role
+  grants, workflow actor/receiver mappings, and UX gating policy before code changes.
+- **Deliverables:** Persona inventory for every example/test app, workflow-to-role capability matrix,
+  workflow dependency graph, unauthorized-action matrix, per-persona workflow test matrix,
+  multi-persona workflow list, persona evidence schema updates, B17 API Review, and B17 UX Decisions.
+- **Completed when:** Every workflow lists which persona can initiate it, which persona receives or
+  continues it, which permissions or role grants are required, whether non-authorized personas see it as
+  hidden/disabled/read-only, which prerequisite workflow state is required, and which screenshot
+  evidence IDs will prove every persona/workflow row.
+- **Evidence to record:** Matrix path, dependency graph path, role/permission source review, Masjid Nur
+  announcement admin-create/member-receive mapping, all other community role mappings, manifest/test
+  stamps, B17 phase gate, analyze, boundary lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added explicit personas for every example/test community and centralized
+  workflow policies that classify each persona/workflow row as actor, receiver, read-only, or disabled.
+  Masjid Nur public announcement is admin-created and member-received, not member-created.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json` records the
+  persona inventory evidence with 2 Android screenshots; the widget audit covers the full persona
+  matrix across all 10 evidence targets.
+- **Manifest stamps:** `loom-communities-demo-app` `ec9b8abeb4f1`; B17 test hash
+  `32eae6f13b58`; full screenshot evidence test hash `b22ab1592317`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep passed with 39 tests; `bash
+  apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; `flutter analyze
+  apps/loom_communities_demo`; manifest gate; B17 phase gate; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B18 - Demo App Persona Picker
+
+- **Achieves:** Adds a test-only persona picker behind the App Shell people icon so testers can switch
+  simulated actor/role while reviewing a community.
+- **Deliverables:** People-icon picker interaction, active persona model, community-scoped persona list,
+  selected persona banner/chip, persona context passed into workflow rendering and backend test harnesses,
+  widget tests, screenshot evidence, B18 API Review, and B18 UX Decisions.
+- **Completed when:** Tapping the people icon opens a picker for the current community's declared
+  personas, selecting a persona updates the visible actor state without restarting the app, and the app
+  clearly marks the picker as a local testing harness rather than production identity.
+- **Evidence to record:** Picker screenshots for at least Masjid Nur and one non-anchor example, widget
+  test output, active persona state assertions, manifest/test stamps, B18 phase gate, analyze, boundary
+  lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** The people icon now opens a test-only persona picker, selecting a persona
+  updates the active persona state in-place, and the picker states that production identity comes from
+  the logged-in user.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json` records 1 workflow
+  with 2 Android screenshots showing the picker and Masjid Nur member selection.
+- **Manifest stamps:** `loom-communities-demo-app` `ec9b8abeb4f1`; B18 test hash
+  `b9d6f42b6184`; full screenshot evidence test hash `b22ab1592317`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep passed with 39 tests; Android
+  evidence sweep; analyze; manifest gate; B18 phase gate; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B19 - Community Persona-Aware UX
+
+- **Achieves:** Applies the selected persona to every community experience so capabilities and workflow
+  surfaces match the persona's role.
+- **Deliverables:** Role-aware workflow rendering for every example/test app, disabled-state reason copy,
+  receiving/read-only workflow surfaces, permission parity checks against fake backend role policy,
+  updated example docs, screenshot evidence, B19 API Review, and B19 UX Decisions.
+- **Completed when:** Admin-only actions such as Masjid Nur public announcement publishing are not
+  generally executable by member personas; member personas instead see receiving/search/read workflows;
+  each community has screenshots proving at least one authorized and one unauthorized persona state.
+- **Evidence to record:** Role-aware screenshots for all examples, backend denial/assertion output for
+  unauthorized mutation attempts, example docs, manifest/test stamps, B19 phase gate, analyze, boundary
+  lint, diff check, and commit SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Workflow cards now render actor, receiver, waiting, read-only, and
+  disabled states from the selected persona. Existing complete buttons remain available only to actor
+  personas, preserving earlier workflow tests through explicit actor selection.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json` records 1 workflow
+  with 3 Android screenshots showing member-owned care request, member-blocked public announcement,
+  and admin-enabled public announcement.
+- **Manifest stamps:** `loom-communities-demo-app` `ec9b8abeb4f1`; B19 test hash
+  `e76addf3dbfd`; full screenshot evidence test hash `b22ab1592317`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep passed with 39 tests; Android
+  evidence sweep; analyze; manifest gate; B19 phase gate; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B20 - Multi-Persona Workflow Evidence Sweep
+
+- **Achieves:** Proves cross-persona workflows where one persona creates, approves, or sends something
+  and another persona receives, reads, pays, reviews, or continues the workflow.
+- **Deliverables:** Android emulator workflow tests that switch personas mid-flow, per-persona workflow
+  matrix audit, prerequisite producer/receiver scenario tests, screenshot manifests with persona IDs,
+  backend state assertions for cross-persona continuity, final B17-B20 evidence manifest, full B1a-B20
+  regression sweep, B20 API Review, and B20 UX Decisions.
+- **Completed when:** Every persona/workflow matrix row for every example community is either proven
+  through visible UI evidence or marked not applicable with rationale. Masjid Nur can publish a public
+  announcement as an admin persona and then switch to a member persona that receives/searches the
+  announcement; equivalent prerequisite-driven cross-role flows pass for the other anchor and platform
+  examples; all screenshot manifests include persona context and no workflow is marked complete using a
+  single all-powerful test actor.
+- **Evidence to record:** Multi-persona screenshot bundles under `docs/Build Plan V2/Evidence/B20/`,
+  final B17-B20 evidence manifest, per-persona workflow matrix audit, Flutter/emulator output, full
+  workflow sweep output, manifest/test stamps, phase gate, analyze, boundary lint, diff check, and commit
+  SHA.
+
+#### Execution Record - 2026-06-27
+
+- **Implementation outcome:** Added a full sweep that installs every example/test community, completes
+  every workflow with the declared actor persona, switches to every receiver persona, and asserts
+  read-only/disabled states for all remaining personas.
+- **Evidence captured:** `docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json` records the Masjid
+  Nur admin-create/member-receive announcement flow with 6 Android screenshots. The final
+  `docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json` reports `status=pass`, 66 workflows,
+  and 198 screenshots across B12-B20.
+- **Manifest stamps:** `loom-communities-demo-app` `ec9b8abeb4f1`; B20 test hash
+  `40d23e274712`; full screenshot evidence test hash `b22ab1592317`.
+- **Passed WSL checks:** `flutter test` full Demo App workflow sweep passed with 39 tests; `bash
+  apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh`; `flutter analyze
+  apps/loom_communities_demo`; manifest gate; B20 phase gate; `dart analyze
+  packages/tooling/loom_lints`; boundary lint; diff check.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B21 - Production Workflow UX Contract Matrix
+
+- **Achieves:** Turns every example workflow/persona row into a production UX contract before app code
+  changes. The contract must state the real user goal, workflow type, actor/receiver personas,
+  prerequisite state, required inputs, validation, semantic actions, success/receipt state, and
+  evidence IDs.
+- **Deliverables:** Production UX contract matrix for every example/test app, workflow-type pattern
+  assignment, generic-copy audit, persona-specific screen map, screenshot plan, B21 API Review, B21 UX
+  Decisions, and prompt transcript used for the phase.
+- **Completed when:** Every workflow/persona row has a reviewed production UX contract and no row is
+  allowed to proceed with a generic workflow card, metadata-only page, `Complete workflow` dialog, or
+  test-harness copy as its intended user experience.
+- **Evidence to record:** Matrix path, generic-copy audit, prompt transcript, owner review notes,
+  manifest/test stamps, B21 phase gate, boundary lint, diff check, and commit SHA.
+- **Execution record:** Added the production workflow UX contract helper and matrix covering all example
+  workflow/persona rows, plus the generic-copy rejection audit.
+- **Evidence:** `docs/Build Plan V2/Evidence/B21/production-workflow-ux-contract-matrix.md`;
+  `wf_production-workflow-ux-contract-matrix` passed with test hash `02bd693d382e`; demo app hash
+  `20ba48fdc81a`.
+- **Gate evidence:** `flutter test apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`;
+  `flutter test apps/loom_communities_demo/test`; Android workflow UI evidence sweep; manifest gate; B21
+  phase gate.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B22 - Domain-Specific Workflow Surfaces
+
+- **Achieves:** Replaces generic workflow harness UI with production surfaces that fit each workflow's
+  domain: events/RSVP, payment, protected forms, announcements, approvals, search/AI, exports,
+  migration, messages, connections, and ads.
+- **Deliverables:** Domain-specific workflow screens/components, semantic labels, real input fields,
+  validation/error states, loading/empty states, review/preview steps where needed, success/receipt
+  surfaces, backend parity tests, B22 API Review, and B22 UX Decisions.
+- **Completed when:** Every example/test workflow can be completed through a production-like surface
+  with user-meaningful labels and state transitions. Tests fail when generic labels such as `Complete`
+  or `Complete workflow` appear on production workflow screens.
+- **Evidence to record:** Before/after screenshots for each workflow category, widget/integration test
+  output, backend assertions, manifest/test stamps, B22 phase gate, analyze, boundary lint, diff check,
+  and commit SHA.
+- **Execution record:** Replaced the generic workflow checklist/card/dialog surface with production
+  workflow rows, domain category and surface chips, semantic actor/receiver labels, structured review
+  dialogs, and domain result states.
+- **Evidence:** `docs/Build Plan V2/Phases/Phase B22 - UX Decisions.md`; `wf_domain-specific-workflow-surfaces`
+  passed with test hash `02bd693d382e`; demo app hash `20ba48fdc81a`.
+- **Gate evidence:** Focused B21-B25 production UX test passed; full demo widget suite passed 44 tests;
+  Android workflow UI evidence sweep passed.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B23 - Persona Production UX and Cross-Persona State
+
+- **Achieves:** Applies the production workflow surfaces per persona so actor, receiver, read-only,
+  disabled, hidden, and unrelated personas each see a coherent product experience.
+- **Deliverables:** Persona-specific production screens, receiving surfaces, disabled reason copy,
+  unauthorized mutation denial tests, dependency-chain UI tests, cross-persona state assertions, B23
+  API Review, and B23 UX Decisions.
+- **Completed when:** Multi-persona workflows prove the producer persona creates or approves state,
+  the receiving persona sees that state in a real recipient surface, and unrelated personas cannot act
+  outside their role. The Masjid Nur announcement flow must prove admin publish and member receive as a
+  representative dependency chain, with equivalent coverage for the other examples.
+- **Evidence to record:** Actor screenshots, persona-switch screenshots, receiver screenshots,
+  unauthorized persona screenshots, backend parity output, manifest/test stamps, B23 phase gate,
+  analyze, boundary lint, diff check, and commit SHA.
+- **Execution record:** Applied the production UX contract per persona so actors see submit/publish/pay
+  actions, receivers see receive/review actions, read-only personas see non-mutating state, and waiting
+  personas see prerequisite copy without admin-only actions.
+- **Evidence:** `wf_persona-production-ux-cross-persona-state` proves the Masjid Nur admin publishes a
+  public announcement and the member persona receives the published result; B20 screenshot evidence
+  remains the full cross-community screenshot source.
+- **Gate evidence:** Focused B21-B25 production UX test passed; Android workflow UI evidence sweep passed.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B24 - Production UX Evidence and Certification Sweep
+
+- **Achieves:** Certifies the full example suite against the production UX standard and updates the Skill
+  completion rules so future communities cannot be delivered with generic, incomplete, or untested
+  workflows.
+- **Deliverables:** Full B12-B24 screenshot evidence manifest, generic-copy failure gate, per-workflow
+  production UX audit, per-persona production UX audit, Skill completion-rule update, B24 API Review,
+  and B24 UX Decisions.
+- **Completed when:** All example/test apps pass production UX workflow tests, every workflow has
+  entry/input/review/action/result evidence, every multi-persona workflow has receiver evidence, and
+  automated gates fail if user-facing workflow surfaces contain generic harness copy or omit required
+  user actions.
+- **Evidence to record:** Final B12-B24 evidence manifest, screenshot bundle paths, generic-copy gate
+  output, full workflow/emulator sweep output, manifest/test stamps, B24 phase gate, analyze, boundary
+  lint, diff check, and commit SHA.
+- **Execution record:** Added automated generic-copy failure coverage and certified the refreshed Android
+  emulator screenshot evidence against the production UX bar.
+- **Evidence:** `docs/Build Plan V2/Evidence/B24/production-ux-certification.json` references
+  `docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json` with 66 workflows and 198 screenshots;
+  `productionUxGenericCopyViolations()` returned no violations.
+- **Gate evidence:** `wf_production-ux-evidence-certification-sweep` passed with test hash
+  `02bd693d382e`; `apps/loom_communities_demo/tool/run_workflow_ui_evidence.sh` passed on the Android
+  emulator.
+- **Commit:** Pending commit in current workspace.
+
+### Phase B25 - Independent Production UX Review
+
+- **Achieves:** Runs an outside-in post-implementation product UX review after B22-B24. The review
+  critiques the actual visible app experience, identifies design issues and improvement opportunities,
+  rejects exposed workflow machinery, and makes a production-grade pass/fail decision independent of the
+  implementation checklist.
+- **Deliverables:** Per-community production UX blueprint, independent UX review report, complete
+  product UX screen review matrix, schema version 3 machine-readable review evidence, remediation loop
+  log, severity-ranked findings, annotated screenshot references, remediation plan, resolved-finding
+  evidence, owner-accepted minor issue list if any, final UX pass/fail decision, B25 API Review if any
+  API issue is discovered, and B25 UX Decisions.
+- **Completed when:** The reviewer has walked the actual app in the visible Android emulator across all
+  example/test communities and personas, reviewed the final evidence screenshots, documented findings
+  across design quality dimensions, and verified that no blocker or major UX issues remain unresolved.
+  Minor issues must be fixed, accepted by the owner, or tracked with rationale before the phase can pass.
+  A per-community production UX blueprint must exist before any pass verdict and must define the target
+  production experience for every community/test app and persona. Schema version 3 machine-readable
+  evidence must prove blueprint coverage, unique screenshot-backed screen rows, screen-specific
+  critiques, stable finding/remediation IDs, unresolved severity counts, rerun requirements, and final
+  decision.
+  The review must fail if the primary user-facing experience still exposes workflow machinery, global
+  workflow lists, surface/category labels, role-state rationale, metadata-only cards, or weak placeholder
+  content instead of domain-native community IA and realistic task content.
+  The review must also fail if screens still look like a generic demo scaffold, rely on repeated
+  workflow-card layouts as the primary experience, use checklist-style action dialogs, show clipped or
+  overlapping controls, lack modern mobile hierarchy, or use placeholder content below a shippable
+  product bar.
+  The review must also fail if any implemented screen/state/dialog/card/feed/action result is missing
+  from the product UX screen review matrix or lacks screenshot evidence and a row-level verdict.
+  If the B25 review standard changes, prior passes must be explicitly superseded and B25 must be
+  reopened until the latest standard passes.
+  When the review fails with any blocker or major finding, B25 must apply fixes and rerun the review
+  loop. A failed review-only report is not sufficient phase completion.
+- **Evidence to record:** Independent review report, product UX screen review matrix, findings table,
+  production UX blueprint, schema version 3 JSON evidence, annotated screenshots or screenshot paths,
+  remediation diffs/evidence, retest output for fixed findings, final pass/fail statement,
+  manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check, and commit SHA.
+- **Execution record:** Prior B25 product UX review v2 pass is superseded by B25 production UX v3. The
+  phase is reopened until a per-community production UX blueprint exists, schema version 3
+  machine-readable review evidence is generated, the visible app is re-reviewed under the stricter
+  modern production UX standard, and the remediation loop reaches zero unresolved blocker or major
+  findings.
+- **Evidence:** Historical superseded v2 evidence is retained at
+  `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`,
+  `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`,
+  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.md`,
+  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`, and live emulator
+  screenshots under `docs/Build Plan V2/Evidence/B25/screenshots/`. Current v3 evidence must add
+  `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` and refreshed schema v3 review JSON.
+- **Gate evidence:** `wf_independent-production-ux-review` is stale/pending rerun under
+  `b25-production-ux-v3`; previous v2 evidence remains historical only.
+- **Commit:** Pending commit in current workspace.
+
 ## Gate Evidence Template
 
 For each completed phase, paste or link:
@@ -952,6 +1571,19 @@ For each completed phase, paste or link:
 - Skill files updated
 - Component version hashes
 - Test hash updates
+- Screenshot evidence bundle path, for B12+ UI evidence phases
+- `workflow-ui-evidence.json` path and audit output, for B12+ UI evidence phases
+- Android emulator/device name, API level, screenshot capture command, and command output path, for
+  B12+ UI evidence phases
+- Failure screenshots, logs, or videos when any UI evidence step fails, for B12+ UI evidence phases
+- Persona inventory, role/capability matrix, workflow dependency graph, per-persona workflow matrix,
+  selected-persona screenshots, prerequisite-chain evidence, and cross-persona workflow evidence
+  manifests, for B17+ persona phases
+- Production workflow UX contract matrix, workflow-type pattern map, generic-copy failure gate,
+  entry/input/review/action/result screenshots, persona receiver screenshots, and production UX audit,
+  for B21+ production UX phases
+- Independent post-implementation UX review report, severity-ranked findings, remediation evidence, and
+  final pass/fail decision, for B25+ independent UX review phases
 - Commit SHA
 
 Run each command above through WSL Ubuntu from `app/`, for example:
@@ -1005,7 +1637,7 @@ Use the component hash generated by `manifest_gate`.
 | initialization-package-schema | A5 | 1dd4a2b2ca52 | A5 |
 | data-schema-store | A5 | 6a09d351f11f | B8 |
 | app-shell-runtime | A6 | c7c0a602fdad | A6 |
-| loom-communities-demo-app | A6 | 42175a068b2a | B9 |
+| loom-communities-demo-app | A6 | 20ba48fdc81a | B25 |
 | local-in-app-backend | A6 | 5d1deb013df1 | B10 archive hardening |
 
 ## Artifact Completion Checklist

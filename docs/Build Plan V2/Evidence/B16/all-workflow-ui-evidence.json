@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "phases": [
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16"
+  ],
+  "workflowCount": 62,
+  "screenshotCount": 186,
+  "workflowEvidenceManifestPaths": [
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json"
+  ]
+}

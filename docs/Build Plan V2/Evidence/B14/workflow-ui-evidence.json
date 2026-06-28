@@ -1,0 +1,824 @@
+{
+  "schemaVersion": 1,
+  "phase": "B14",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 29,
+  "workflows": [
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-nomination",
+      "expectedAssertions": [
+        "Nomination form is ready for the next monthly selection.",
+        "Submit Parable of the Sower as the member nomination.",
+        "Nomination saved for Parable of the Sower."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-nomination_start",
+        "B14_ext_book_club_book-nomination_action",
+        "B14_ext_book_club_book-nomination_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-vote",
+      "expectedAssertions": [
+        "Monthly poll accepts member votes.",
+        "Record one vote for Parable of the Sower.",
+        "Vote count updated for Parable of the Sower."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-vote_start",
+        "B14_ext_book_club_book-vote_action",
+        "B14_ext_book_club_book-vote_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-meeting-rsvp",
+      "expectedAssertions": [
+        "Discussion event has available capacity.",
+        "RSVP to Discuss Parable of the Sower.",
+        "Meeting RSVP ticket issued."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-meeting-rsvp_start",
+        "B14_ext_book_club_book-meeting-rsvp_action",
+        "B14_ext_book_club_book-meeting-rsvp_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-discussion-message",
+      "expectedAssertions": [
+        "Book discussion thread is open.",
+        "Post a discussion-prep message to the thread.",
+        "Discussion message posted to book_discussion."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-discussion-message_start",
+        "B14_ext_book_club_book-discussion-message_action",
+        "B14_ext_book_club_book-discussion-message_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-selection-publish",
+      "expectedAssertions": [
+        "Owner can publish the monthly winning selection.",
+        "Publish January selection for Parable of the Sower.",
+        "Selected-book announcement published."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-selection-publish_start",
+        "B14_ext_book_club_book-selection-publish_action",
+        "B14_ext_book_club_book-selection-publish_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-search-ai-digest",
+      "expectedAssertions": [
+        "Public selection content is indexable for cited summaries.",
+        "Generate a cited digest for the Parable selection.",
+        "Digest generated with citation evidence."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-search-ai-digest_start",
+        "B14_ext_book_club_book-search-ai-digest_action",
+        "B14_ext_book_club_book-search-ai-digest_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_book_club",
+      "communityId": "community_book_club",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-export-metadata",
+      "expectedAssertions": [
+        "Nomination and vote schemas are exportable.",
+        "Create export metadata for Book Club custom data.",
+        "Export includes book_nomination and book_vote schemas."
+      ],
+      "screenshotNames": [
+        "B14_ext_book_club_book-export-metadata_start",
+        "B14_ext_book_club_book-export-metadata_action",
+        "B14_ext_book_club_book-export-metadata_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-guardian-join-approval",
+      "expectedAssertions": [
+        "Guardian membership request is waiting for approval.",
+        "Approve the guardian membership request.",
+        "Guardian membership is active."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-guardian-join-approval_start",
+        "B14_ext_youth_soccer_soccer-guardian-join-approval_action",
+        "B14_ext_youth_soccer_soccer-guardian-join-approval_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-team-roster",
+      "expectedAssertions": [
+        "U10 Falcons team space is ready for roster display.",
+        "Open the U10 Falcons team roster.",
+        "Roster view displays U10 Falcons."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-team-roster_start",
+        "B14_ext_youth_soccer_soccer-team-roster_action",
+        "B14_ext_youth_soccer_soccer-team-roster_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-minor-redaction",
+      "expectedAssertions": [
+        "Minor birthdate is stored behind protected permissions.",
+        "Read protected minor data through permission-gated UI.",
+        "Minor birthdate renders as redacted value 2***."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-minor-redaction_start",
+        "B14_ext_youth_soccer_soccer-minor-redaction_action",
+        "B14_ext_youth_soccer_soccer-minor-redaction_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-registration-payment",
+      "expectedAssertions": [
+        "Registration checkout is owned by Loom payment surface.",
+        "Pay the 125.00 USD registration dues.",
+        "Registration payment receipt recorded."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-registration-payment_start",
+        "B14_ext_youth_soccer_soccer-registration-payment_action",
+        "B14_ext_youth_soccer_soccer-registration-payment_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-practice-schedule",
+      "expectedAssertions": [
+        "Saturday practice event has capacity for the team.",
+        "Publish Saturday practice to the schedule.",
+        "Practice event scheduled with capacity 18."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-practice-schedule_start",
+        "B14_ext_youth_soccer_soccer-practice-schedule_action",
+        "B14_ext_youth_soccer_soccer-practice-schedule_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-reminder-notification",
+      "expectedAssertions": [
+        "Practice reminder can be delivered to guardians.",
+        "Send Practice starts at 9 AM reminder.",
+        "Practice reminder delivered once."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-reminder-notification_start",
+        "B14_ext_youth_soccer_soccer-reminder-notification_action",
+        "B14_ext_youth_soccer_soccer-reminder-notification_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_youth_soccer",
+      "communityId": "community_youth_soccer",
+      "communityName": "Riverside Youth Soccer",
+      "workflowId": "soccer-export-metadata",
+      "expectedAssertions": [
+        "Registration and roster schemas are exportable.",
+        "Generate protected export metadata for youth soccer.",
+        "Export metadata includes registration and roster schemas."
+      ],
+      "screenshotNames": [
+        "B14_ext_youth_soccer_soccer-export-metadata_start",
+        "B14_ext_youth_soccer_soccer-export-metadata_action",
+        "B14_ext_youth_soccer_soccer-export-metadata_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-dues-payment",
+      "expectedAssertions": [
+        "Quarterly dues checkout is ready.",
+        "Record a 450.00 USD HOA dues payment.",
+        "Dues payment receipt recorded."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-dues-payment_start",
+        "B14_ext_hoa_hoa-dues-payment_action",
+        "B14_ext_hoa_hoa-dues-payment_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-member-document",
+      "expectedAssertions": [
+        "Community Rules document is visible to members.",
+        "Open the member-visible governing document.",
+        "Community Rules document displayed."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-member-document_start",
+        "B14_ext_hoa_hoa-member-document_action",
+        "B14_ext_hoa_hoa-member-document_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-facility-reservation",
+      "expectedAssertions": [
+        "Clubhouse Room A can be reserved with payment.",
+        "Reserve Clubhouse Room A and pay reservation fee.",
+        "Facility reservation held with payment."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-facility-reservation_start",
+        "B14_ext_hoa_hoa-facility-reservation_action",
+        "B14_ext_hoa_hoa-facility-reservation_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-architectural-request",
+      "expectedAssertions": [
+        "Fence color request is ready for workflow review.",
+        "Submit architectural request for committee review.",
+        "Architectural request case opened."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-architectural-request_start",
+        "B14_ext_hoa_hoa-architectural-request_action",
+        "B14_ext_hoa_hoa-architectural-request_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-committee-decision",
+      "expectedAssertions": [
+        "Committee review step is waiting.",
+        "Approve the architectural review workflow.",
+        "Workflow completed with approved decision."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-committee-decision_start",
+        "B14_ext_hoa_hoa-committee-decision_action",
+        "B14_ext_hoa_hoa-committee-decision_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-owner-notification",
+      "expectedAssertions": [
+        "Owner notification can be delivered after decision.",
+        "Notify owner that the architectural request was approved.",
+        "Owner notification delivered."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-owner-notification_start",
+        "B14_ext_hoa_hoa-owner-notification_action",
+        "B14_ext_hoa_hoa-owner-notification_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_hoa",
+      "communityId": "community_hoa",
+      "communityName": "Cedar Commons HOA",
+      "workflowId": "hoa-export-evidence",
+      "expectedAssertions": [
+        "Documents, facilities, wallet, receipts, and cases export.",
+        "Generate HOA export coverage evidence.",
+        "Export includes HOA document and operational components."
+      ],
+      "screenshotNames": [
+        "B14_ext_hoa_hoa-export-evidence_start",
+        "B14_ext_hoa_hoa-export-evidence_action",
+        "B14_ext_hoa_hoa-export-evidence_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-announcement",
+      "expectedAssertions": [
+        "Ramadan community night announcement is ready.",
+        "Publish Ramadan community night announcement.",
+        "Public announcement published."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-announcement_start",
+        "B14_ext_mosque_mosque-announcement_action",
+        "B14_ext_mosque_mosque-announcement_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-event-rsvp",
+      "expectedAssertions": [
+        "Community iftar event has available capacity.",
+        "RSVP to the community iftar.",
+        "Community iftar RSVP ticket issued."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-event-rsvp_start",
+        "B14_ext_mosque_mosque-event-rsvp_action",
+        "B14_ext_mosque_mosque-event-rsvp_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-volunteer-signup",
+      "expectedAssertions": [
+        "Iftar volunteer form protects contact details.",
+        "Submit setup shift with protected phone field.",
+        "Volunteer signup saved and phone field protected."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-volunteer-signup_start",
+        "B14_ext_mosque_mosque-volunteer-signup_action",
+        "B14_ext_mosque_mosque-volunteer-signup_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-donor-visibility",
+      "expectedAssertions": [
+        "Donation visibility preference is member-owned.",
+        "Set donor visibility to anonymous.",
+        "Donor visibility preference saved as anonymous."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-donor-visibility_start",
+        "B14_ext_mosque_mosque-donor-visibility_action",
+        "B14_ext_mosque_mosque-donor-visibility_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-donation-payment",
+      "expectedAssertions": [
+        "Donation checkout is available through Loom wallet.",
+        "Record a 50.00 USD donation.",
+        "Donation payment receipt recorded."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-donation-payment_start",
+        "B14_ext_mosque_mosque-donation-payment_action",
+        "B14_ext_mosque_mosque-donation-payment_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-care-request",
+      "expectedAssertions": [
+        "Care request form separates public summary and private details.",
+        "Submit a meal-support care request with protected details.",
+        "Care request saved with protected details redacted."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-care-request_start",
+        "B14_ext_mosque_mosque-care-request_action",
+        "B14_ext_mosque_mosque-care-request_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-neutral-notification",
+      "expectedAssertions": [
+        "Care request acknowledgement avoids sensitive detail leakage.",
+        "Send neutral care-request receipt notification.",
+        "Neutral care-request notification delivered."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-neutral-notification_start",
+        "B14_ext_mosque_mosque-neutral-notification_action",
+        "B14_ext_mosque_mosque-neutral-notification_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B14",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-search-ai-citation",
+      "expectedAssertions": [
+        "Public announcement can be searched and cited.",
+        "Ask for iftar information from indexed announcements.",
+        "AI answer includes public announcement citation."
+      ],
+      "screenshotNames": [
+        "B14_ext_mosque_mosque-search-ai-citation_start",
+        "B14_ext_mosque_mosque-search-ai-citation_action",
+        "B14_ext_mosque_mosque-search-ai-citation_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

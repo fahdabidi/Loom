@@ -1,5 +1,3 @@
-import 'community_foundation_seed_data.dart';
-
 class CommunityRegistrySeed {
   const CommunityRegistrySeed({
     required this.handle,
@@ -27,4 +25,4 @@ const communityRegistrySeed = CommunityRegistrySeed(
   packageId: 'pkg_book_club_1',
 );
 
-const communityRegistrySeedCommunityId = communityFoundationSeed.communityId;
+const communityRegistrySeedCommunityId = 'community_book_club';

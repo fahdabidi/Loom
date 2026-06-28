@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "phase": "B15",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 6,
+  "workflows": [
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-local-install-open",
+      "expectedAssertions": [
+        "Chess Club was loaded from arbitrary package contents.",
+        "Confirm parsed branding and local latest route.",
+        "Chess Club arbitrary package opened locally."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-local-install-open_start",
+        "B15_ext_chess_club_chess-local-install-open_action",
+        "B15_ext_chess_club_chess-local-install-open_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-route-home",
+      "expectedAssertions": [
+        "Chess Club route renders a domain-specific home.",
+        "Open the Chess Club home workflow route.",
+        "Chess Club home route rendered."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-route-home_start",
+        "B15_ext_chess_club_chess-route-home_action",
+        "B15_ext_chess_club_chess-route-home_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-match-result",
+      "expectedAssertions": [
+        "Members can record a friendly match result.",
+        "Record a match result for Board 1.",
+        "Chess match result saved for Board 1."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-match-result_start",
+        "B15_ext_chess_club_chess-match-result_action",
+        "B15_ext_chess_club_chess-match-result_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "photo-walk-rsvp",
+      "expectedAssertions": [
+        "Downtown photo walk is accepting member RSVPs.",
+        "RSVP to the next photo walk.",
+        "Photo-walk RSVP recorded."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_photo-walk-rsvp_start",
+        "B15_ext_camera_club_photo-walk-rsvp_action",
+        "B15_ext_camera_club_photo-walk-rsvp_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "critique-submission",
+      "expectedAssertions": [
+        "Critique board accepts new photo submissions.",
+        "Submit a street portrait for critique.",
+        "Critique submission saved."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_critique-submission_start",
+        "B15_ext_camera_club_critique-submission_action",
+        "B15_ext_camera_club_critique-submission_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "gear-loan-request",
+      "expectedAssertions": [
+        "Members can request shared gear loans.",
+        "Request the 35mm prime lens loan.",
+        "Gear-loan request created and pending review."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_gear-loan-request_start",
+        "B15_ext_camera_club_gear-loan-request_action",
+        "B15_ext_camera_club_gear-loan-request_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

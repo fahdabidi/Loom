@@ -249,6 +249,21 @@ are deferred until a hosted Loom build and validation backend exists.
 | B9 | `wf_arbitrary-local-package-ingestion` | Arbitrary local package pair -> parsed import -> card -> local latest open |
 | B10 | `wf_skill-arbitrary-extension-test-run` | Arbitrary Skill example artifacts -> replay through local backend -> card -> local latest open |
 | B11 | `wf_skill-prompt-build-validate-complete` | Owner prompt -> workflow capture -> docs/packages -> local install/open -> workflow validation report complete |
+| B12 | `wf_example-workflow-ux-evidence-harness` | UI evidence harness -> screenshot schema -> Android emulator capture -> evidence manifest audit |
+| B13 | `wf_garden-club-full-ui-workflow-evidence` | Garden Club card -> real experience -> event RSVP -> plant exchange -> export schema evidence |
+| B14 | `wf_anchor-examples-full-ui-workflow-evidence` | Book Club, Youth Soccer, HOA, and Mosque workflows -> visible UI completion -> screenshot evidence |
+| B15 | `wf_arbitrary-prompt-full-ui-workflow-evidence` | Chess Club and Camera Club generated examples -> visible UI completion -> screenshot evidence |
+| B16 | `wf_platform-full-ui-workflow-evidence` | Platform Social, Ad-Off, and Export/Migration test apps -> visible UI completion -> screenshot evidence |
+| B17 | `wf_persona-role-inventory-capability-matrix` | Persona inventory -> workflow capability matrix -> dependency and receiver mapping |
+| B18 | `wf_demo-app-persona-picker` | People icon -> test persona picker -> active persona carried into community experience |
+| B19 | `wf_community-persona-aware-ux` | Selected persona -> actor/receiver/read-only/disabled workflow UX |
+| B20 | `wf_multi-persona-workflow-evidence` | Actor persona creates state -> receiver persona receives or continues workflow -> all persona rows audited |
+| B20 | `wf_full-ui-screenshot-evidence-b12-b20` | Android emulator screenshot sweep -> B12-B20 manifests -> final all-workflow evidence manifest |
+| B21 | `wf_production-workflow-ux-contract-matrix` | Workflow/persona rows -> production UX contract matrix -> generic-copy rejection plan |
+| B22 | `wf_domain-specific-workflow-surfaces` | Generic workflow UI -> domain-specific production surfaces -> semantic actions and results |
+| B23 | `wf_persona-production-ux-cross-persona-state` | Production persona surfaces -> actor creates state -> receiver sees real recipient surface |
+| B24 | `wf_production-ux-evidence-certification-sweep` | Full example suite -> production UX screenshots -> generic-copy gate and final certification evidence |
+| B25 | `wf_independent-production-ux-review` | Implemented production UX -> independent critique -> severity findings resolved -> final UX pass decision |
 
 ## Phase B1a Execution Status
 
@@ -349,6 +364,91 @@ are deferred until a hosted Loom build and validation backend exists.
 | --- | --- | --- | --- | --- |
 | `wf_skill-prompt-build-validate-complete` | workflow | none | ai-skill-extension-builder, skill-debug-harness, workflow-validation-harness, extension-package-validator, initialization-package-schema, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
 
+## Phase B12 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_example-workflow-ux-evidence-harness` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
+
+## Phase B13 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_garden-club-full-ui-workflow-evidence` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, events-service, forms-voting-service, export-service | pass |
+
+## Phase B14 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_anchor-examples-full-ui-workflow-evidence` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, events-service, forms-voting-service, wallet-dues-donations, protected-visibility-vault, export-service | pass |
+
+## Phase B15 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_arbitrary-prompt-full-ui-workflow-evidence` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, extension-package-validator, initialization-package-schema, ai-skill-extension-builder, skill-debug-harness | pass |
+
+## Phase B16 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_platform-full-ui-workflow-evidence` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, messaging-stream-service, connections-graph, ad-decision-service, wallet-dues-donations, receipt-ledger, settlement-engine, utility-funding-service, import-service, export-service, provider-transfer-service, protected-visibility-vault, data-schema-store | pass |
+
+## Phase B17 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_persona-role-inventory-capability-matrix` | workflow | none | workflow-validation-harness, loom-communities-demo-app, app-shell-runtime, role-policy-consent-engine | pass |
+
+## Phase B18 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_demo-app-persona-picker` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, app-shell-runtime | pass |
+
+## Phase B19 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_community-persona-aware-ux` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, app-shell-runtime, role-policy-consent-engine | pass |
+
+## Phase B20 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_multi-persona-workflow-evidence` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | pass |
+| `wf_full-ui-screenshot-evidence-b12-b20` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime | pass |
+
+## Phase B21 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_production-workflow-ux-contract-matrix` | workflow | none | workflow-validation-harness, loom-communities-demo-app, app-shell-runtime, role-policy-consent-engine | pass |
+
+## Phase B22 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_domain-specific-workflow-surfaces` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, payment-surface, stream-renderer, connections-shell, ad-slots | pass |
+
+## Phase B23 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_persona-production-ux-cross-persona-state` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine, notification-service, messaging-stream-service | pass |
+
+## Phase B24 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_production-ux-evidence-certification-sweep` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | pass |
+
+## Phase B25 Execution Status
+
+| Test | Type | Owner | Covers | Status |
+| --- | --- | --- | --- | --- |
+| `wf_independent-production-ux-review` | workflow | none | workflow-validation-harness, loom-communities-demo-app, local-in-app-backend, community-card, app-shell-runtime, role-policy-consent-engine | stale |
+
 ## Required B1a Local Flow Coverage
 
 | Capability | Test IDs |
@@ -362,6 +462,7 @@ are deferred until a hosted Loom build and validation backend exists.
 | Arbitrary package ingestion | `vt_fake-backend_parse-arbitrary-local-package-pair`, `vt_fake-backend_parse-arbitrary-zip-package-pair`, `vt_fake-backend_import-arbitrary-package-pair`, `vt_demo-app_arbitrary-local-extension-loads-card`, `wf_arbitrary-local-package-ingestion` |
 | Arbitrary Skill output replay | `wf_skill-arbitrary-extension-test-run` |
 | Prompt-driven Skill completion | `wf_skill-prompt-build-validate-complete` |
+| Full UI workflow screenshot evidence | `wf_example-workflow-ux-evidence-harness`, `wf_garden-club-full-ui-workflow-evidence`, `wf_anchor-examples-full-ui-workflow-evidence`, `wf_arbitrary-prompt-full-ui-workflow-evidence`, `wf_platform-full-ui-workflow-evidence`, `wf_persona-role-inventory-capability-matrix`, `wf_demo-app-persona-picker`, `wf_community-persona-aware-ux`, `wf_multi-persona-workflow-evidence`, `wf_full-ui-screenshot-evidence-b12-b20`, `wf_production-workflow-ux-contract-matrix`, `wf_domain-specific-workflow-surfaces`, `wf_persona-production-ux-cross-persona-state`, `wf_production-ux-evidence-certification-sweep`, `wf_independent-production-ux-review` |
 | End to end | `wf_local-build-download-sideload-install` |
 
 ## Manifest Rules

@@ -527,7 +527,7 @@
       "layer": "ux",
       "phase": "A6",
       "contract": "LoomCommunitiesDemoApp",
-      "version": "42175a068b2a",
+      "version": "20ba48fdc81a",
       "fakePresent": true
     },
     {
@@ -4496,6 +4496,448 @@
         "app-shell-runtime": "c7c0a602fdad"
       },
       "lastRunAt": "2026-06-10T11:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_example-workflow-ux-evidence-harness",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B12",
+      "status": "pass",
+      "testHash": "de0b06e7a2a5",
+      "lastRunTestHash": "de0b06e7a2a5",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_garden-club-full-ui-workflow-evidence",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "events-service",
+        "forms-voting-service",
+        "export-service"
+      ],
+      "dependents": [],
+      "phase": "B13",
+      "status": "pass",
+      "testHash": "ad5240a0ffce",
+      "lastRunTestHash": "ad5240a0ffce",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "events-service": "dee493ff7d53",
+        "forms-voting-service": "72bf23f58102",
+        "export-service": "9079b5ad7e37"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_anchor-examples-full-ui-workflow-evidence",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "events-service",
+        "forms-voting-service",
+        "wallet-dues-donations",
+        "protected-visibility-vault",
+        "export-service"
+      ],
+      "dependents": [],
+      "phase": "B14",
+      "status": "pass",
+      "testHash": "36302c13f8cc",
+      "lastRunTestHash": "36302c13f8cc",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "events-service": "dee493ff7d53",
+        "forms-voting-service": "72bf23f58102",
+        "wallet-dues-donations": "f49eb0bac62d",
+        "protected-visibility-vault": "3795b6a09b20",
+        "export-service": "9079b5ad7e37"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_arbitrary-prompt-full-ui-workflow-evidence",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "extension-package-validator",
+        "initialization-package-schema",
+        "ai-skill-extension-builder",
+        "skill-debug-harness"
+      ],
+      "dependents": [],
+      "phase": "B15",
+      "status": "pass",
+      "testHash": "896bf2a7068b",
+      "lastRunTestHash": "896bf2a7068b",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "extension-package-validator": "512380dc6848",
+        "initialization-package-schema": "1dd4a2b2ca52",
+        "ai-skill-extension-builder": "518c78e30a44",
+        "skill-debug-harness": "4e3ce721c363"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_platform-full-ui-workflow-evidence",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "messaging-stream-service",
+        "connections-graph",
+        "ad-decision-service",
+        "wallet-dues-donations",
+        "receipt-ledger",
+        "settlement-engine",
+        "utility-funding-service",
+        "import-service",
+        "export-service",
+        "provider-transfer-service",
+        "protected-visibility-vault",
+        "data-schema-store"
+      ],
+      "dependents": [],
+      "phase": "B16",
+      "status": "pass",
+      "testHash": "c3e4f0a7a438",
+      "lastRunTestHash": "c3e4f0a7a438",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "messaging-stream-service": "709572cac272",
+        "connections-graph": "297b5d201b5f",
+        "ad-decision-service": "e5a7593ee1ea",
+        "wallet-dues-donations": "f49eb0bac62d",
+        "receipt-ledger": "9f9e82fd4a2f",
+        "settlement-engine": "12129ce8f929",
+        "utility-funding-service": "9e0362c7cc0f",
+        "import-service": "0a178c20caba",
+        "export-service": "9079b5ad7e37",
+        "provider-transfer-service": "7a931f77c1e1",
+        "protected-visibility-vault": "3795b6a09b20",
+        "data-schema-store": "6a09d351f11f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_full-ui-screenshot-evidence-b12-b20",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B20",
+      "status": "pass",
+      "testHash": "b22ab1592317",
+      "lastRunTestHash": "b22ab1592317",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_persona-role-inventory-capability-matrix",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B17",
+      "status": "pass",
+      "testHash": "32eae6f13b58",
+      "lastRunTestHash": "32eae6f13b58",
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      }
+    },
+    {
+      "testId": "wf_demo-app-persona-picker",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "app-shell-runtime"
+      ],
+      "dependents": [],
+      "phase": "B18",
+      "status": "pass",
+      "testHash": "b9d6f42b6184",
+      "lastRunTestHash": "b9d6f42b6184",
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "app-shell-runtime": "c7c0a602fdad"
+      }
+    },
+    {
+      "testId": "wf_community-persona-aware-ux",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B19",
+      "status": "pass",
+      "testHash": "e76addf3dbfd",
+      "lastRunTestHash": "e76addf3dbfd",
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      }
+    },
+    {
+      "testId": "wf_multi-persona-workflow-evidence",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B20",
+      "status": "pass",
+      "testHash": "40d23e274712",
+      "lastRunTestHash": "40d23e274712",
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "ec9b8abeb4f1",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      }
+    },
+    {
+      "testId": "wf_production-workflow-ux-contract-matrix",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B21",
+      "status": "pass",
+      "testHash": "02bd693d382e",
+      "lastRunTestHash": "02bd693d382e",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "20ba48fdc81a",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_domain-specific-workflow-surfaces",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B22",
+      "status": "pass",
+      "testHash": "02bd693d382e",
+      "lastRunTestHash": "02bd693d382e",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "20ba48fdc81a",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_persona-production-ux-cross-persona-state",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B23",
+      "status": "pass",
+      "testHash": "02bd693d382e",
+      "lastRunTestHash": "02bd693d382e",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "20ba48fdc81a",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_production-ux-evidence-certification-sweep",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B24",
+      "status": "pass",
+      "testHash": "02bd693d382e",
+      "lastRunTestHash": "02bd693d382e",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "20ba48fdc81a",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_independent-production-ux-review",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "local-in-app-backend",
+        "community-card",
+        "app-shell-runtime",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B25",
+      "status": "stale",
+      "testHash": "b25-production-ux-v3",
+      "lastRunTestHash": "02bd693d382e",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "20ba48fdc81a",
+        "local-in-app-backend": "5d1deb013df1",
+        "community-card": "690cea54a8d2",
+        "app-shell-runtime": "c7c0a602fdad",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "lastRunAt": "2026-06-28T00:00:00Z",
       "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],

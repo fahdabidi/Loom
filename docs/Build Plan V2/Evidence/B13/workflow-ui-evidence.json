@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "phase": "B13",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 3,
+  "workflows": [
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-event-rsvp",
+      "expectedAssertions": [
+        "Spring planting workshop is open for member RSVP.",
+        "RSVP to the spring planting workshop through the Garden Club UI.",
+        "RSVP recorded for Spring planting workshop."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_garden-event-rsvp_start",
+        "B13_ext_garden_club_garden-event-rsvp_action",
+        "B13_ext_garden_club_garden-event-rsvp_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "plant-exchange-submission",
+      "expectedAssertions": [
+        "Members can offer seedlings and request exchange matches.",
+        "Submit a basil seedling offer to the plant exchange workflow.",
+        "Plant exchange record created for basil seedlings."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_plant-exchange-submission_start",
+        "B13_ext_garden_club_plant-exchange-submission_action",
+        "B13_ext_garden_club_plant-exchange-submission_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B13",
+      "appId": "ext_garden_club",
+      "communityId": "community_garden_club",
+      "communityName": "Garden Club",
+      "workflowId": "garden-export-custom-schemas",
+      "expectedAssertions": [
+        "Garden event and plant exchange schemas are exportable.",
+        "Generate Garden Club export evidence for custom schemas.",
+        "Export includes garden_event and plant_exchange schemas."
+      ],
+      "screenshotNames": [
+        "B13_ext_garden_club_garden-export-custom-schemas_start",
+        "B13_ext_garden_club_garden-export-custom-schemas_action",
+        "B13_ext_garden_club_garden-export-custom-schemas_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

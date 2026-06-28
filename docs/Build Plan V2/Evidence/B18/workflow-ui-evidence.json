@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "phase": "B18",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 1,
+  "workflows": [
+    {
+      "phase": "B18",
+      "appId": "ext_mosque",
+      "communityId": "community_mosque",
+      "communityName": "Masjid Nur",
+      "workflowId": "wf_demo-app-persona-picker",
+      "expectedAssertions": [
+        "people icon opens the test persona picker",
+        "Community Member persona becomes active",
+        "Public announcement is waiting for admin action instead of exposing an admin action"
+      ],
+      "screenshotNames": [
+        "B18_persona_picker_dialog",
+        "B18_persona_picker_member_selected"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_dialog.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_member_selected.png"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

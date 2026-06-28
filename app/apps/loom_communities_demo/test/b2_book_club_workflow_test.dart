@@ -82,7 +82,10 @@ void main() {
     expect(rsvp.ticketCode, isNotNull);
     expect(indexed.sourceComponent, 'publishing-service');
     expect(digest.citationRecordIds, contains(indexed.recordId));
-    expect(bindCommunityCard(harness.shell.cards.single).displayName, 'Neighborhood Book Club');
+    expect(
+      bindCommunityCard(harness.shell.cards.single).displayName,
+      'Neighborhood Book Club',
+    );
     expect(harness.shell.openExtensionId, 'local:ext_book_club@latest');
   });
 }

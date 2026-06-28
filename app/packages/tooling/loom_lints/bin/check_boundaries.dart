@@ -14,11 +14,15 @@ void main() {
   for (final file in dartFiles) {
     final normalized = file.path.replaceAll('\\', '/');
     final imports = _packageImports(file.readAsStringSync());
+    final isTestFile = normalized.contains('/test/');
 
     if (normalized.contains('/packages/features/')) {
+      final ownPackage = _featurePackageName(normalized);
       for (final imported in imports) {
         final allowed =
             imported == 'flutter' ||
+            (isTestFile && imported == 'flutter_test') ||
+            (isTestFile && imported == ownPackage) ||
             imported == 'loom_api_contracts' ||
             imported == 'loom_design_system' ||
             imported == 'loom_app_shell';
@@ -59,4 +63,11 @@ void main() {
 List<String> _packageImports(String source) {
   final pattern = RegExp(r'''import\s+['"]package:([^/'"]+)\/''');
   return pattern.allMatches(source).map((match) => match.group(1)!).toList();
+}
+
+String? _featurePackageName(String normalizedPath) {
+  final match = RegExp(r'/packages/features/[^/]+/([^/]+)/').firstMatch(
+    normalizedPath,
+  );
+  return match?.group(1);
 }

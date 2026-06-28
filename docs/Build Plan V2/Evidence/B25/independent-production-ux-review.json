@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 3,
+  "phase": "B25",
+  "reviewType": "independent-product-ux-review-v2-screen-matrix",
+  "reviewStandardVersion": "b25-production-ux-v2",
+  "status": "superseded",
+  "finalDecision": "superseded-pass",
+  "currentReviewRunId": "b25-v2-iteration-2",
+  "supersededReviewRunIds": [],
+  "supersededByReviewStandard": "b25-production-ux-v3",
+  "supersededReason": "B25 production UX now requires a per-community production UX blueprint, schema version 3 machine-readable review evidence, screen-specific non-boilerplate critiques, and a stricter modern production UI review. The prior v2 pass is historical only and cannot satisfy the current B25 gate.",
+  "previousReviewStatus": "superseded-fail",
+  "reviewRunAt": "2026-06-28T00:00:00Z",
+  "emulatorName": "emulator-5554",
+  "blueprintPath": "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+  "blueprintCoverage": {
+    "status": "missing-for-current-v3-review",
+    "blocksPass": true
+  },
+  "screenMatrixPath": "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+  "remediationLoopPath": "docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md",
+  "currentLoopIteration": 2,
+  "nextRequiredLoopIteration": 3,
+  "rowsReviewed": 202,
+  "screenshotBackedWorkflowRows": 199,
+  "uniqueB12B20ScreenshotFiles": 198,
+  "duplicateScreenshotReferences": [
+    "docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_member_selected.png"
+  ],
+  "liveEmulatorRows": 3,
+  "unresolvedBlockerFindings": [],
+  "unresolvedMajorFindings": [],
+  "minorFindings": [
+    {
+      "id": "B25-PUX-POLISH-001",
+      "finding": "Local shell FAB can overlap the lowest list card while scrolling.",
+      "evidence": [
+        "docs/Build Plan V2/Evidence/B25/screenshots/B25_live_community_list_after_remediation.png"
+      ],
+      "requiredFixOrAcceptance": "Previously tracked as local-demo shell polish under v2; must be reconsidered under the v3 modern production UI standard.",
+      "disposition": "superseded-tracked-polish"
+    }
+  ],
+  "polishFindings": [],
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "reviewOnlyRerunAllowed": false,
+  "b25CanPass": false,
+  "reviewInputs": [
+    "docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md",
+    "docs/Build Plan V2/Evidence/B25/screenshots/B25_live_community_list_after_remediation.png",
+    "docs/Build Plan V2/Evidence/B25/screenshots/B25_live_masjid_product_home_after_remediation.png",
+    "docs/Build Plan V2/Evidence/B25/screenshots/B25_live_hoa_product_home_after_remediation.png"
+  ],
+  "completedRemediationThemes": [
+    "Replaced global workflow-card presentation with domain-native community sections.",
+    "Removed user-facing workflow, surface, category, evidence, and role-rationale language.",
+    "Added realistic domain summaries, metadata, actions, and confirmations for workflow categories.",
+    "Regenerated workflow screenshots and reran the product UX screen review matrix."
+  ],
+  "currentV3Requirements": [
+    "Create the per-community production UX blueprint before assigning any pass verdict.",
+    "Review every screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result against the blueprint.",
+    "Produce schema version 3 machine-readable review evidence with unique screen row IDs, stable finding/remediation IDs, screenshot references, before/after evidence, unresolved severity counts, rerun requirements, and final decision.",
+    "Repeat remediation and review until unresolved blocker and major finding counts are zero under b25-production-ux-v3."
+  ]
+}

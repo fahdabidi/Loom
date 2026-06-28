@@ -8,7 +8,9 @@ import 'package:loom_extension_package/loom_extension_package.dart';
 
 void main() {
   test('wf_local-demo-prereq-to-validation-ready', () {
-    final prereq = _readJson('docs/Build Plan V2/Skill/setup/prereq-manifest.json');
+    final prereq = _readJson(
+      'docs/Build Plan V2/Skill/setup/prereq-manifest.json',
+    );
     final lock = _readJson(
       'docs/Build Plan V2/Skill/setup/validation-environment.lock.json',
     );
@@ -48,16 +50,16 @@ void main() {
     shell.openExtension('local:${report.community.extensionId}@latest');
 
     expect(backend.listCommunities(), hasLength(1));
-    expect(bindCommunityCard(shell.cards.single).imageAssetId, 'asset_card_book_club');
+    expect(
+      bindCommunityCard(shell.cards.single).imageAssetId,
+      'asset_card_book_club',
+    );
     expect(shell.openExtensionId, 'local:ext_book_club@latest');
   });
 }
 
 Map<String, Object?> _readJson(String path) {
-  final candidates = [
-    '../$path',
-    '../../../$path',
-  ];
+  final candidates = ['../$path', '../../../$path'];
   File? file;
   for (final candidate in candidates) {
     final candidateFile = File(candidate);

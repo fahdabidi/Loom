@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "phase": "B24",
+  "status": "pass",
+  "workflowEvidenceSource": "docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
+  "workflowCount": 66,
+  "screenshotCount": 198,
+  "productionUxTests": [
+    "wf_production-workflow-ux-contract-matrix",
+    "wf_domain-specific-workflow-surfaces",
+    "wf_persona-production-ux-cross-persona-state",
+    "wf_production-ux-evidence-certification-sweep"
+  ],
+  "genericCopyGate": {
+    "status": "pass",
+    "violations": []
+  },
+  "evidenceManifests": [
+    "docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json"
+  ]
+}

@@ -46,9 +46,8 @@ void main() {
       exportable: false,
       idempotencyKey: 'b8-schema-private',
     );
-    final exportableSchemas = await harness.engine.dataSchemas.exportableSchemas(
-      'ext_export_migration',
-    );
+    final exportableSchemas = await harness.engine.dataSchemas
+        .exportableSchemas('ext_export_migration');
 
     final preview = await harness.ops.imports.dryRun(
       sourceKind: 'legacy-csv',
@@ -104,12 +103,13 @@ void main() {
       transferId: transfer.transferId,
       idempotencyKey: 'b8-transfer-verify',
     );
-    final rollbackTransfer = await harness.ops.providerTransfers.executeTransfer(
-      communityId: harness.communityId,
-      exportId: redactedExport.exportId,
-      targetProviderId: 'provider_rollback',
-      idempotencyKey: 'b8-transfer-for-rollback',
-    );
+    final rollbackTransfer = await harness.ops.providerTransfers
+        .executeTransfer(
+          communityId: harness.communityId,
+          exportId: redactedExport.exportId,
+          targetProviderId: 'provider_rollback',
+          idempotencyKey: 'b8-transfer-for-rollback',
+        );
     final rolledBack = await harness.ops.providerTransfers.rollbackTransfer(
       transferId: rollbackTransfer.transferId,
       reason: 'target checksum mismatch',

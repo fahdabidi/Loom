@@ -1,0 +1,491 @@
+{
+  "text": "",
+  "html": "<body flt-embedding=\"full-page\" flt-renderer=\"canvaskit\" flt-build-mode=\"debug\" spellcheck=\"false\" style=\"position: fixed; inset: 0px; overflow: hidden; padding: 0px; margin: 0px; user-select: none; touch-action: none;\"><flt-semantics-placeholder role=\"button\" aria-live=\"polite\" tabindex=\"0\" aria-label=\"Enable accessibility\" style=\"position: absolute; left: -1px; top: -1px; width: 1px; height: 1px;\"></flt-semantics-placeholder>\n  <!--\n    You can customize the \"flutter_bootstrap.js\" script.\n    This is useful to provide a custom configuration to the Flutter loader\n    or to give the user feedback during the initialization process.\n\n    For more details:\n    * https://docs.flutter.dev/platform-integration/web/initialization\n  -->\n  <script src=\"flutter_bootstrap.js\" async=\"\"></script>\n\n\n<p aria-hidden=\"true\" style=\"position: fixed; bottom: 100%; visibility: hidden; opacity: 0; pointer-events: none; width: auto; height: auto; white-space: nowrap; line-height: 9999px; letter-spacing: 9999px; word-spacing: 9999px; margin: 0px 0px 9999px;\">flutter typography measurement</p><flt-announcement-host><flt-announcement-polite aria-live=\"polite\" style=\"position: fixed; overflow: hidden; transform: translate(-99999px, -99999px); width: 1px; height: 1px;\"></flt-announcement-polite><flt-announcement-assertive aria-live=\"assertive\" style=\"position: fixed; overflow: hidden; transform: translate(-99999px, -99999px); width: 1px; height: 1px;\"></flt-announcement-assertive></flt-announcement-host><flutter-view flt-view-id=\"0\" tabindex=\"-1\" style=\"position: absolute; inset: 0px; width: 1256px; height: 801px;\"><flt-glass-pane></flt-glass-pane><flt-text-editing-host></flt-text-editing-host><flt-semantics-host style=\"position: absolute; transform-origin: 0px 0px 0px; transform: scale(1);\"></flt-semantics-host><style id=\"flt-text-editing-stylesheet\">flutter-view flt-scene-host {  font: normal normal 14px sans-serif;}flutter-view flt-semantics input[type=range] {  appearance: none;  -webkit-appearance: none;  width: 100%;  position: absolute;  border: none;  top: 0;  right: 0;  bottom: 0;  left: 0;}flutter-view input::selection {  background-color: transparent;}flutter-view textarea::selection {  background-color: transparent;}flutter-view flt-semantics input,flutter-view flt-semantics textarea,flutter-view flt-semantics [contentEditable=\"true\"] {  caret-color: transparent;}flutter-view .flt-text-editing::placeholder {  opacity: 0;}flutter-view:focus { outline: rgb(0, 0, 0) none 0px;}flutter-view .transparentTextEditing:-webkit-autofill,flutter-view .transparentTextEditing:-webkit-autofill:hover,flutter-view .transparentTextEditing:-webkit-autofill:focus,flutter-view .transparentTextEditing:-webkit-autofill:active {  opacity: 0 !important;}</style></flutter-view></body>",
+  "events": [
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "debug",
+        "args": [
+          {
+            "type": "string",
+            "value": "Injecting <script> tag. Using callback."
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1782586648933.024,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "_loadJSEntrypoint",
+              "scriptId": "5",
+              "url": "http://localhost:8080/flutter_bootstrap.js",
+              "lineNumber": 0,
+              "columnNumber": 2477
+            },
+            {
+              "functionName": "load",
+              "scriptId": "5",
+              "url": "http://localhost:8080/flutter_bootstrap.js",
+              "lineNumber": 0,
+              "columnNumber": 2004
+            },
+            {
+              "functionName": "load",
+              "scriptId": "5",
+              "url": "http://localhost:8080/flutter_bootstrap.js",
+              "lineNumber": 29,
+              "columnNumber": 1466
+            },
+            {
+              "functionName": "",
+              "scriptId": "5",
+              "url": "http://localhost:8080/flutter_bootstrap.js",
+              "lineNumber": 37,
+              "columnNumber": 16
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "info",
+        "args": [
+          {
+            "type": "string",
+            "value": "DDC is about to load 1/2 scripts with pool size = 1000"
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1782586648952.511,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "addScriptsToQueue",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 1014,
+              "columnNumber": 16
+            },
+            {
+              "functionName": "loadConfig.loadScriptFn",
+              "scriptId": "6",
+              "url": "http://localhost:8080/main.dart.js",
+              "lineNumber": 177,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "DDCLoader.nextAttempt",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 925,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "afterPrerequisiteLogic",
+              "scriptId": "6",
+              "url": "http://localhost:8080/main.dart.js",
+              "lineNumber": 195,
+              "columnNumber": 11
+            },
+            {
+              "functionName": "",
+              "scriptId": "6",
+              "url": "http://localhost:8080/main.dart.js",
+              "lineNumber": 145,
+              "columnNumber": 45
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "info",
+        "args": [
+          {
+            "type": "string",
+            "value": "DDC is about to load 480/480 scripts with pool size = 1000"
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1782586649413.601,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "addScriptsToQueue",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 1014,
+              "columnNumber": 16
+            },
+            {
+              "functionName": "window.$dartLoader.loadConfig.loadScriptFn",
+              "scriptId": "11",
+              "url": "http://localhost:8080/main_module.bootstrap.js",
+              "lineNumber": 2005,
+              "columnNumber": 9
+            },
+            {
+              "functionName": "DDCLoader.nextAttempt",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 925,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "",
+              "scriptId": "11",
+              "url": "http://localhost:8080/main_module.bootstrap.js",
+              "lineNumber": 2008,
+              "columnNumber": 26
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "Page.loadEventFired",
+      "params": {
+        "timestamp": 607110.734129
+      }
+    },
+    {
+      "method": "Runtime.consoleAPICalled",
+      "params": {
+        "type": "log",
+        "args": [
+          {
+            "type": "string",
+            "value": "Starting application from main method in: org-dartlang-app:/web_entrypoint.dart."
+          }
+        ],
+        "executionContextId": 2,
+        "timestamp": 1782586651028.757,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "runMain",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 1585,
+              "columnNumber": 14
+            },
+            {
+              "functionName": "runMain",
+              "scriptId": "7",
+              "url": "http://localhost:8080/ddc_module_loader.js",
+              "lineNumber": 2139,
+              "columnNumber": 21
+            },
+            {
+              "functionName": "child.main",
+              "scriptId": "11",
+              "url": "http://localhost:8080/main_module.bootstrap.js",
+              "lineNumber": 24,
+              "columnNumber": 22
+            },
+            {
+              "functionName": "",
+              "scriptId": "11",
+              "url": "http://localhost:8080/main_module.bootstrap.js",
+              "lineNumber": 32,
+              "columnNumber": 9
+            },
+            {
+              "functionName": "window.$dartRunMain",
+              "scriptId": "11",
+              "url": "http://localhost:8080/main_module.bootstrap.js",
+              "lineNumber": 31,
+              "columnNumber": 31
+            },
+            {
+              "functionName": "",
+              "scriptId": "495",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 7
+            },
+            {
+              "functionName": "runMain",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 10453,
+              "columnNumber": 9
+            },
+            {
+              "functionName": "",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 28255,
+              "columnNumber": 18
+            },
+            {
+              "functionName": "",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 3892,
+              "columnNumber": 14
+            },
+            {
+              "functionName": "call$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 13642,
+              "columnNumber": 11
+            },
+            {
+              "functionName": "_asyncStartSync",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 3856,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "$call$body$main__closure",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 28324,
+              "columnNumber": 15
+            },
+            {
+              "functionName": "call$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 28162,
+              "columnNumber": 18
+            },
+            {
+              "functionName": "_rootRunUnary",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4316,
+              "columnNumber": 17
+            },
+            {
+              "functionName": "runUnary$2$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15139,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "runUnaryGuarded$1$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15086,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "_sendData$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14586,
+              "columnNumber": 18
+            },
+            {
+              "functionName": "_add$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14531,
+              "columnNumber": 14
+            },
+            {
+              "functionName": "_add$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14965,
+              "columnNumber": 11
+            },
+            {
+              "functionName": "_handleData$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15025,
+              "columnNumber": 11
+            },
+            {
+              "functionName": "_handleData$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14991,
+              "columnNumber": 19
+            },
+            {
+              "functionName": "",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 1636,
+              "columnNumber": 44
+            },
+            {
+              "functionName": "_rootRunUnary",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4316,
+              "columnNumber": 17
+            },
+            {
+              "functionName": "runUnary$2$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15139,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "runUnaryGuarded$1$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15086,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "__internal$_onData$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 11650,
+              "columnNumber": 29
+            },
+            {
+              "functionName": "",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 1636,
+              "columnNumber": 44
+            },
+            {
+              "functionName": "_rootRunUnary",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4316,
+              "columnNumber": 17
+            },
+            {
+              "functionName": "runUnary$2$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15139,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "runUnaryGuarded$1$2",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15086,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "_sendData$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14586,
+              "columnNumber": 18
+            },
+            {
+              "functionName": "perform$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14761,
+              "columnNumber": 58
+            },
+            {
+              "functionName": "call$0",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 14820,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "_rootRun",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4297,
+              "columnNumber": 17
+            },
+            {
+              "functionName": "run$1$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15131,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "runGuarded$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15074,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "call$0",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15263,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "_rootRun",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4301,
+              "columnNumber": 15
+            },
+            {
+              "functionName": "run$1$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15131,
+              "columnNumber": 38
+            },
+            {
+              "functionName": "runGuarded$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15074,
+              "columnNumber": 13
+            },
+            {
+              "functionName": "call$0",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 15263,
+              "columnNumber": 24
+            },
+            {
+              "functionName": "_microtaskLoop",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4147,
+              "columnNumber": 23
+            },
+            {
+              "functionName": "_startMicrotaskLoop",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 4153,
+              "columnNumber": 10
+            },
+            {
+              "functionName": "call$1",
+              "scriptId": "494",
+              "url": "http://localhost:8080/dwds/src/injected/client.js",
+              "lineNumber": 13520,
+              "columnNumber": 8
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "chromeLogs": [
+    "\r\nDevTools listening on ws://127.0.0.1:9222/devtools/browser/ef521c43-8bac-4675-ab84-f968f218270d\r\n",
+    "[50840:53084:0627/115732.088:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\r\n",
+    "[50840:53084:0627/115732.093:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\r\n",
+    "[50840:53084:0627/115732.093:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR\r\n",
+    "Created TensorFlow Lite XNNPACK delegate for CPU.\r\n",
+    "[50840:53084:0627/115752.698:ERROR:google_apis\\gcm\\engine\\registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT\r\n"
+  ]
+}

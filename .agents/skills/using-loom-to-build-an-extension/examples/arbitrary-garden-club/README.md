@@ -19,3 +19,10 @@ suffixes:
 
 The Demo App Local Backend parses those files, imports the declared community, renders the Garden Club
 card, and opens `local:ext_garden_club@latest`.
+
+## UI Evidence
+
+Phase B13 validates that tapping the Garden Club card opens the Garden Club workflow experience, not a
+metadata/settings-only page. Evidence is recorded in
+`docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json` with 3 Garden Club workflows and
+start/action/completion screenshots under `docs/Build Plan V2/Evidence/B13/screenshots/`.

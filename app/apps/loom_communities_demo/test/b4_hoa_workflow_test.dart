@@ -14,6 +14,7 @@ void main() {
       logoAssetId: 'asset_logo_hoa',
       accentColor: '#3E6B8F',
     );
+    await harness.grant('documents.write');
 
     final dues = await harness.economic.wallet.recordPayment(
       communityId: harness.communityId,

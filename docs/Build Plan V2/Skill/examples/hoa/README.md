@@ -23,3 +23,10 @@ Run:
 cd app
 flutter test apps/loom_communities_demo/test/b4_hoa_workflow_test.dart
 ```
+
+## UI Evidence
+
+Phase B14 validates the HOA workflows through visible Demo App UI on Android emulator
+`emulator-5554`. Evidence is recorded in
+`docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json` with 7 HOA workflows and
+start/action/completion screenshots under `docs/Build Plan V2/Evidence/B14/screenshots/`.

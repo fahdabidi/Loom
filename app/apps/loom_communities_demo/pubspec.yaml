@@ -10,15 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  loom_app_shell:
+    path: ../../packages/core/loom_app_shell
   loom_demo_local_backend:
     path: ../../packages/core/loom_demo_local_backend
   loom_extension_package:
     path: ../../packages/core/loom_extension_package
-  loom_app_shell:
-    path: ../../packages/core/loom_app_shell
 
 dev_dependencies:
+  flutter_driver:
+    sdk: flutter
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   loom_api_contracts:
     path: ../../packages/core/loom_api_contracts
