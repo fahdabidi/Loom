@@ -156,7 +156,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -182,7 +184,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -208,7 +212,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -234,7 +240,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -260,7 +268,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -286,7 +296,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -312,7 +324,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -338,7 +352,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -364,7 +380,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -390,7 +408,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -416,7 +436,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -442,7 +464,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -468,7 +492,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -494,7 +520,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -520,7 +548,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -546,7 +576,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -572,7 +604,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -598,7 +632,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -624,7 +660,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -650,7 +688,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -676,7 +716,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -702,7 +744,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -728,7 +772,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -754,7 +800,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -780,7 +828,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -806,7 +856,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -832,7 +884,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -858,7 +912,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -884,7 +940,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -910,7 +968,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -936,7 +996,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -962,7 +1024,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -988,7 +1052,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1014,7 +1080,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1040,7 +1108,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1066,7 +1136,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1092,7 +1164,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1118,7 +1192,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1144,7 +1220,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1170,7 +1248,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1196,7 +1276,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1222,7 +1304,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1248,7 +1332,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1274,7 +1360,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1300,7 +1388,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1326,7 +1416,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1352,7 +1444,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1378,7 +1472,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1404,7 +1500,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1430,7 +1528,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1456,7 +1556,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1482,7 +1584,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1508,7 +1612,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1534,7 +1640,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1560,7 +1668,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1586,7 +1696,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1612,7 +1724,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1638,7 +1752,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1664,7 +1780,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1690,7 +1808,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1716,7 +1836,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1742,7 +1864,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1768,7 +1892,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1794,7 +1920,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1820,7 +1948,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1846,7 +1976,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1872,7 +2004,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1898,7 +2032,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1924,7 +2060,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1950,7 +2088,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -1976,7 +2116,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2002,7 +2144,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2028,7 +2172,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2054,7 +2200,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2080,7 +2228,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2106,7 +2256,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2132,7 +2284,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2158,7 +2312,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2184,7 +2340,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2210,7 +2368,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2236,7 +2396,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2262,7 +2424,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2288,7 +2452,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2314,7 +2480,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2340,7 +2508,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2366,7 +2536,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2392,7 +2564,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2418,7 +2592,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2444,7 +2620,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2470,7 +2648,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2496,7 +2676,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2522,7 +2704,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2548,7 +2732,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2574,7 +2760,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2600,7 +2788,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2626,7 +2816,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2652,7 +2844,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2678,7 +2872,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2704,7 +2900,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2730,7 +2928,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2756,7 +2956,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2782,7 +2984,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2808,7 +3012,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2834,7 +3040,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2860,7 +3068,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2886,7 +3096,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2912,7 +3124,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2938,7 +3152,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2964,7 +3180,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -2990,7 +3208,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3016,7 +3236,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3042,7 +3264,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3068,7 +3292,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3094,7 +3320,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3120,7 +3348,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3146,7 +3376,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3172,7 +3404,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3198,7 +3432,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3224,7 +3460,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3250,7 +3488,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3276,7 +3516,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3302,7 +3544,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3328,7 +3572,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3354,7 +3600,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3380,7 +3628,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3406,7 +3656,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3432,7 +3684,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3458,7 +3712,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3484,7 +3740,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3510,7 +3768,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3536,7 +3796,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3562,7 +3824,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3588,7 +3852,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3614,7 +3880,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3640,7 +3908,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3666,7 +3936,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3692,7 +3964,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3718,7 +3992,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3744,7 +4020,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3770,7 +4048,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3796,7 +4076,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3822,7 +4104,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3848,7 +4132,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3874,7 +4160,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3900,7 +4188,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3926,7 +4216,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3952,7 +4244,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -3978,7 +4272,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4004,7 +4300,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4030,7 +4328,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4056,7 +4356,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4082,7 +4384,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4108,7 +4412,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4134,7 +4440,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4160,7 +4468,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4186,7 +4496,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4212,7 +4524,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4238,7 +4552,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4264,7 +4580,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4290,7 +4608,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4316,7 +4636,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4342,7 +4664,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4368,7 +4692,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4394,7 +4720,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4420,7 +4748,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4446,7 +4776,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4472,7 +4804,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4498,7 +4832,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4524,7 +4860,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4550,7 +4888,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4576,7 +4916,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4602,7 +4944,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4628,7 +4972,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4654,7 +5000,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4680,7 +5028,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4706,7 +5056,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4732,7 +5084,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4758,7 +5112,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4784,7 +5140,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4810,7 +5168,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4836,7 +5196,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4862,7 +5224,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4888,7 +5252,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4914,7 +5280,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4940,7 +5308,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4966,7 +5336,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -4992,7 +5364,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5018,7 +5392,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5044,7 +5420,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5070,7 +5448,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5096,7 +5476,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5122,7 +5504,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5148,7 +5532,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5174,7 +5560,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5200,7 +5588,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5226,7 +5616,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5252,7 +5644,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5278,7 +5672,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5304,7 +5700,9 @@
       "verdict": "pending",
       "severity": "major",
       "findingIds": [
-        "B25-V4-REVIEW-PENDING"
+        "B25-V4-REVIEW-PENDING",
+        "B25-HOLISTIC-UNPROVEN",
+        "B25-WORKFLOW-PERSONA-UNPROVEN"
       ],
       "remediationIds": [],
       "retestResult": "pending-independent-review"
@@ -5316,8 +5714,26 @@
       "severity": "major",
       "status": "open",
       "title": "B25 v4 independent UX review is pending",
-      "summary": "Fresh screenshot metadata has been collected, but holistic direct-question review, workflow/persona direct-question review, and screen-specific UX critique have not been completed.",
-      "requiredFix": "Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links.",
+      "summary": "Fresh screenshot metadata exists, but holistic direct-question review, workflow/persona review, and screen-specific UX critique are not complete.",
+      "requiredFix": "Run Production UX Judge Agent against screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links.",
+      "blocksPass": true
+    },
+    {
+      "findingId": "B25-HOLISTIC-UNPROVEN",
+      "severity": "major",
+      "status": "open",
+      "title": "Holistic production UX is unproven",
+      "summary": "The pass 1 evidence does not prove production-grade experience, modern visual design, community-centered information architecture, or absence of major layout/content defects.",
+      "requiredFix": "Complete screenshot-grounded holistic direct-question answers and remediate any failed whole-product UI issues before rerunning the judge.",
+      "blocksPass": true
+    },
+    {
+      "findingId": "B25-WORKFLOW-PERSONA-UNPROVEN",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow/persona UX cannot be judged",
+      "summary": "No workflow/persona scorecards are present, and all reviewed screen rows still have pending collector-generated critique rather than screen-specific UX judgment.",
+      "requiredFix": "Add per-workflow/persona scorecards with visible evidence, domain-native surface judgment, task-specific critique, pass/fail result, and finding/remediation links.",
       "blocksPass": true
     }
   ],
@@ -5338,7 +5754,9 @@
   ],
   "unresolvedBlockerFindings": [],
   "unresolvedMajorFindings": [
-    "B25-V4-REVIEW-PENDING"
+    "B25-V4-REVIEW-PENDING",
+    "B25-HOLISTIC-UNPROVEN",
+    "B25-WORKFLOW-PERSONA-UNPROVEN"
   ],
   "ownerAcceptedMinorFindings": [],
   "trackedPolish": [],

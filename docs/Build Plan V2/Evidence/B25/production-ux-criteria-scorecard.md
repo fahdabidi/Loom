@@ -4,7 +4,7 @@ Status: `fail`
 
 | Criterion | Scope | Direct question | Score | Verdict | Blocks pass | Why | Required fix |
 | --- | --- | --- | ---: | --- | --- | --- | --- |
-| `b25-c01-no-blocker-major` No unresolved blocker or major findings | evidence | Are there zero unresolved blocker or major findings in the current production UX evidence? | 0 | fail | true | Unresolved blocker/major counts are blocker=0 major=1. | Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings. |
+| `b25-c01-no-blocker-major` No unresolved blocker or major findings | evidence | Are there zero unresolved blocker or major findings in the current production UX evidence? | 0 | fail | true | Unresolved blocker/major counts are blocker=0 major=3. | Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings. |
 | `b25-c02-blueprint-complete` Every community has a complete production UX blueprint | holistic | Does every community or test app have a complete production UX blueprint that the review actually uses? | 100 | pass | false | Required evidence is present and no blocking derived failures were found. | None. |
 | `b25-c03-production-grade-experience` Reviewer can state the experience feels production-grade | holistic | Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | 0 | fail | true | The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers. | Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence. |
 | `b25-c04-modern-intentional-ui` UI looks modern and intentionally designed | holistic | Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | 0 | fail | true | Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers. | Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots. |
@@ -18,7 +18,7 @@ Status: `fail`
 | `b25-c12-remediation-proof` Failed prior iterations have proof of remediation | remediation | If any prior loop iteration failed, does the remediation log prove fixes, screenshot refresh, evidence regeneration, tests, commit SHA, and zero remaining blockers/majors? | 100 | pass | false | Required evidence is present and no blocking derived failures were found. | None. |
 
 ## Errors
-- b25-c01-no-blocker-major: Unresolved blocker/major counts are blocker=0 major=1.
+- b25-c01-no-blocker-major: Unresolved blocker/major counts are blocker=0 major=3.
 - b25-c03-production-grade-experience: The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.
 - b25-c04-modern-intentional-ui: Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.
 - b25-c05-community-content-ia: Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.
@@ -29,3 +29,5 @@ Status: `fail`
 - holistic direct-question pass: No holistic direct-question answers were supplied.
 - workflow/persona direct-question pass: No workflow/persona direct-question scorecards were supplied.
 - Unresolved major finding: B25-V4-REVIEW-PENDING.
+- Unresolved major finding: B25-HOLISTIC-UNPROVEN.
+- Unresolved major finding: B25-WORKFLOW-PERSONA-UNPROVEN.

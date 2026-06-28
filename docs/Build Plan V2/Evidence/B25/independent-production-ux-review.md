@@ -13,6 +13,22 @@ Screen rows collected: 199
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
 | `B25-V4-REVIEW-PENDING` | major | open | Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links. |
+| `B25-HOLISTIC-UNPROVEN` | major | open | Complete screenshot-grounded holistic direct-question answers and remediate any failed whole-product UI issues before rerunning the judge. |
+| `B25-WORKFLOW-PERSONA-UNPROVEN` | major | open | Add per-workflow/persona scorecards with visible evidence, domain-native surface judgment, task-specific critique, pass/fail result, and finding/remediation links. |
+
+## Pass 1 Scorecard
+
+| Field | Result |
+| --- | --- |
+| Pass | `b25-v4-pass-1` |
+| Decision | `fail` |
+| Critical/blocker findings | 0 |
+| Major findings | 3 |
+| Minor/polish findings | 0 |
+| Production UX criteria passed | 5 / 12 |
+| Blocking criteria failed | 7 |
+| Holistic direct-question pass | `false` |
+| Workflow/persona direct-question pass | `false` |
 
 ## Review Note
 

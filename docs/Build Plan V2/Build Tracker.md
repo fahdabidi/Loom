@@ -84,7 +84,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | Prior B25 v3 iteration 3 is historical and superseded. B25 must rerun under v4 with screenshot freshness, non-boilerplate critique, visible-text extraction, UI-pattern classification, zero generic primary workflow surfaces, a green holistic direct-question pass, green workflow/persona direct-question passes, a passing production UX judge scorecard, and an iteration scorecard after every pass. | Historical v3 implementation `ccc3f40`; v4 closeout pending |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 3 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. Required next: complete independent screen-specific critique and direct-question scorecards, remediate resulting issues, recapture evidence, rerun judge and iteration scorecard. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification pending |
 
 ## Phase Outcome Summary
 
@@ -1645,10 +1645,13 @@ Closeout rule for reopened phases:
   pending.
 - **Current v4 pass:** `b25-v4-pass-1` has collected schema v4 evidence through
   `b25_evidence_collector.dart` and generated
-  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-1.md`. The pass is currently
-  failed with one unresolved major finding, `B25-V4-REVIEW-PENDING`, because independent
-  screen-specific critique, holistic direct-question answers, and workflow/persona scorecards are not
-  complete. B25 remains reopened. Iteration commit: `647c38f`.
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-1.md`. The pass failed with
+  0 blockers, 3 unresolved major findings, 0 minor/polish findings, and 7 blocking production UX
+  criteria failures. The unresolved major findings are `B25-V4-REVIEW-PENDING`,
+  `B25-HOLISTIC-UNPROVEN`, and `B25-WORKFLOW-PERSONA-UNPROVEN`. The holistic direct-question pass is
+  false and the workflow/persona direct-question pass is false because independent screen-specific
+  critique, holistic answers, and workflow/persona scorecards are not complete. B25 remains reopened.
+  Iteration commit: `647c38f`; pass-result clarification commit pending.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 closeout commit pending.
 
 ## Gate Evidence Template

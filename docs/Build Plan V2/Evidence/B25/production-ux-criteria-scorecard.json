@@ -10,7 +10,7 @@
       "score": 0,
       "verdict": "fail",
       "blocksPass": true,
-      "why": "Unresolved blocker/major counts are blocker=0 major=1.",
+      "why": "Unresolved blocker/major counts are blocker=0 major=3.",
       "requiredFix": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
       "evidenceUsed": []
     },
@@ -148,7 +148,7 @@
     }
   ],
   "errors": [
-    "b25-c01-no-blocker-major: Unresolved blocker/major counts are blocker=0 major=1.",
+    "b25-c01-no-blocker-major: Unresolved blocker/major counts are blocker=0 major=3.",
     "b25-c03-production-grade-experience: The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
     "b25-c04-modern-intentional-ui: Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
     "b25-c05-community-content-ia: Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
@@ -158,7 +158,9 @@
     "finalDecision is fail, not pass.",
     "holistic direct-question pass: No holistic direct-question answers were supplied.",
     "workflow/persona direct-question pass: No workflow/persona direct-question scorecards were supplied.",
-    "Unresolved major finding: B25-V4-REVIEW-PENDING."
+    "Unresolved major finding: B25-V4-REVIEW-PENDING.",
+    "Unresolved major finding: B25-HOLISTIC-UNPROVEN.",
+    "Unresolved major finding: B25-WORKFLOW-PERSONA-UNPROVEN."
   ],
   "warnings": [],
   "holisticProductScorecard": {
@@ -262,7 +264,7 @@
       "score": 0,
       "verdict": "fail",
       "blocksPass": true,
-      "why": "Unresolved blocker/major counts are blocker=0 major=1.",
+      "why": "Unresolved blocker/major counts are blocker=0 major=3.",
       "requiredFix": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
       "evidenceUsed": []
     },
