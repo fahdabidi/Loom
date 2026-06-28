@@ -78,7 +78,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Complete pending stamp | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, and only passes when the UI feels production-grade for real community users. | B25 v3 iteration 3 created the production UX blueprint, regenerated schema v3 review evidence, closed four major findings, refreshed Android evidence, and passed with zero unresolved blocker or major findings. | Iteration 3 implementation commit pending; tracker stamp pending |
+| B25 | Complete | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, and only passes when the UI feels production-grade for real community users. | B25 v3 iteration 3 created the production UX blueprint, regenerated schema v3 review evidence, closed four major findings, refreshed Android evidence, and passed with zero unresolved blocker or major findings. | Iteration 3 implementation `ccc3f40`; tracker stamp records this SHA |
 
 ## Phase Outcome Summary
 
@@ -1565,7 +1565,7 @@ Closeout rule for reopened phases:
   `flutter test apps/loom_communities_demo/test`; Android `flutter drive` workflow evidence sweep;
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed.
-- **Commit:** Iteration 3 implementation commit pending; tracker stamp pending.
+- **Commit:** Iteration 3 implementation `ccc3f40`; tracker stamp records this SHA.
 
 ## Gate Evidence Template
 

@@ -18,8 +18,8 @@ Each iteration must include review input evidence, blocker/major/minor counts, r
 
 ## Iteration 3 Commit Boundary
 
-- Implementation commit: pending-iteration-commit
-- Tracker/evidence stamp commit: pending-stamp-commit
+- Implementation commit: ccc3f40
+- Tracker/evidence stamp commit: this follow-up stamp records the implementation SHA.
 
 ## Remaining Findings
 

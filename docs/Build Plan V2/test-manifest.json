@@ -4927,8 +4927,8 @@
       "dependents": [],
       "phase": "B25",
       "status": "pass",
-      "testHash": "d4d08d474666",
-      "lastRunTestHash": "d4d08d474666",
+      "testHash": "9a24f061bd21",
+      "lastRunTestHash": "9a24f061bd21",
       "lastRunComponentVersions": {
         "workflow-validation-harness": "09c26b466480",
         "loom-communities-demo-app": "e973568f1cfa",
@@ -4952,8 +4952,8 @@
       "dependents": [],
       "phase": "B25",
       "status": "pass",
-      "testHash": "d4d08d474666",
-      "lastRunTestHash": "d4d08d474666",
+      "testHash": "9a24f061bd21",
+      "lastRunTestHash": "9a24f061bd21",
       "lastRunComponentVersions": {
         "loom-communities-demo-app": "e973568f1cfa",
         "community-card": "e973568f1cfa",
