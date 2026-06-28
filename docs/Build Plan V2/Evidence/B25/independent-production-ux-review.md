@@ -29,6 +29,8 @@ Screen rows collected: 199
 | Blocking criteria failed | 7 |
 | Holistic direct-question pass | `false` |
 | Workflow/persona direct-question pass | `false` |
+| Remediation tickets | [b25-remediation-tickets-b25-v4-pass-1.md](./b25-remediation-tickets-b25-v4-pass-1.md) |
+| Next-pass remediation plan | [b25-remediation-plan-b25-v4-pass-2.md](./b25-remediation-plan-b25-v4-pass-2.md) |
 
 ## Review Note
 

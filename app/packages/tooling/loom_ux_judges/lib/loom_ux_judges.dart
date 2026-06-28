@@ -453,6 +453,8 @@ void runJudgeCli(List<String> args, String toolId) {
   }
   final outputPath = _argValue(args, '--output');
   final markdownPath = _argValue(args, '--markdown-output');
+  final ticketsOutputPath = _argValue(args, '--tickets-output');
+  final ticketsMarkdownPath = _argValue(args, '--tickets-markdown-output');
   final basePath = _argValue(args, '--base') ?? Directory.current.path;
   final evidence = _readJsonFile(inputPath);
   final result = judgeEvidence(spec, evidence, basePath: basePath);
@@ -464,6 +466,28 @@ void runJudgeCli(List<String> args, String toolId) {
   }
   if (markdownPath != null) {
     File(markdownPath).writeAsStringSync(_toMarkdown(result));
+  }
+  final remediationTickets = _asMapList(result.extra['remediationTickets']);
+  if (ticketsOutputPath != null) {
+    final ticketsDocument = <String, Object?>{
+      'schemaVersion': 1,
+      'toolId': result.toolId,
+      'status': result.status,
+      'generatedAt': DateTime.now().toUtc().toIso8601String(),
+      'tickets': remediationTickets,
+    };
+    File(ticketsOutputPath).writeAsStringSync(
+      '${const JsonEncoder.withIndent('  ').convert(ticketsDocument)}\n',
+    );
+  }
+  if (ticketsMarkdownPath != null) {
+    File(ticketsMarkdownPath).writeAsStringSync(
+      _remediationTicketsMarkdown(
+        toolId: result.toolId,
+        status: result.status,
+        tickets: remediationTickets,
+      ),
+    );
   }
   if (!result.passed) {
     stderr.writeln('${spec.toolId}: ${result.status}');
@@ -512,6 +536,45 @@ void runB25IterationScorecardCli(List<String> args) {
   }
   stdout.writeln(
     'b25_iteration_scorecard: ${scorecard['status']} remainingBlockingMajor=${(scorecard['convergence'] as JsonMap)['remainingBlockingMajor']}',
+  );
+}
+
+void runB25RemediationPlannerCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_remediationPlannerUsage());
+    return;
+  }
+  final ticketsPath = _argValue(args, '--tickets');
+  if (ticketsPath == null) {
+    stderr.writeln('Missing required --tickets <json>');
+    stdout.writeln(_remediationPlannerUsage());
+    exit(64);
+  }
+  final outputPath = _argValue(args, '--output');
+  final markdownPath = _argValue(args, '--markdown-output');
+  final reviewPath = _argValue(args, '--review');
+  final scorecardPath = _argValue(args, '--scorecard');
+
+  final ticketsDocument = _readJsonFile(ticketsPath);
+  final review = reviewPath == null ? null : _readJsonFile(reviewPath);
+  final scorecard = scorecardPath == null ? null : _readJsonFile(scorecardPath);
+  final plan = buildB25RemediationPlan(
+    ticketsDocument: ticketsDocument,
+    review: review,
+    scorecard: scorecard,
+    ticketsPath: ticketsPath,
+  );
+  final encoded = const JsonEncoder.withIndent('  ').convert(plan);
+  if (outputPath == null) {
+    stdout.writeln(encoded);
+  } else {
+    File(outputPath).writeAsStringSync('$encoded\n');
+  }
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25RemediationPlanMarkdown(plan));
+  }
+  stdout.writeln(
+    'b25_remediation_planner: batches=${_asMapList(plan['batches']).length} tickets=${_asMapList(plan['sourceTickets']).length}',
   );
 }
 
@@ -772,6 +835,159 @@ JsonMap buildB25IterationScorecard({
         ? 'B25 can close after required gates pass and tracker/manifest are stamped.'
         : 'Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard.',
   };
+}
+
+JsonMap buildB25RemediationPlan({
+  required JsonMap ticketsDocument,
+  JsonMap? review,
+  JsonMap? scorecard,
+  required String ticketsPath,
+}) {
+  final tickets = _asMapList(ticketsDocument['tickets']);
+  final firstTicket = tickets.isEmpty ? null : tickets.first;
+  final runId = _asString(
+    review?['currentReviewRunId'] ??
+        firstTicket?['reviewRunId'] ??
+        scorecard?['reviewRunId'],
+    fallback: 'unknown-review-run',
+  );
+  final batches = <JsonMap>[
+    _remediationBatch(
+      batchId: 'B25-RB-001-independent-review-evidence',
+      title: 'Complete independent review evidence and critique',
+      purpose:
+          'Turn captured screenshots into complete independent UX review evidence before attempting UI remediation.',
+      tickets: _ticketsForCriteria(tickets, <String>{
+        'b25-c03-production-grade-experience',
+        'b25-c04-modern-intentional-ui',
+        'b25-c08-visible-text-specific-critique',
+        'b25-c09-no-layout-production-defects',
+      }),
+      actions: <String>[
+        'Fill holistic direct-question answers with screenshot-grounded yes/no/partial judgments.',
+        'Fill every screen row with visible text and screen-specific critique.',
+        'Fill workflow/persona scorecards for every reviewed workflow/persona pair.',
+        'Keep reviewer context limited to screenshots, blueprint, evidence, and pass criteria.',
+      ],
+    ),
+    _remediationBatch(
+      batchId: 'B25-RB-002-domain-native-ux-remediation',
+      title: 'Remediate domain-native IA and primary workflow surfaces',
+      purpose:
+          'Apply product UX fixes found by the independent critique so primary screens feel like production community surfaces.',
+      tickets: _ticketsForCriteria(tickets, <String>{
+        'b25-c05-community-content-ia',
+        'b25-c06-domain-native-primary-surfaces',
+        'b25-c04-modern-intentional-ui',
+        'b25-c09-no-layout-production-defects',
+      }),
+      actions: <String>[
+        'Replace any primary global workflow lists, metadata pages, checklist modals, or repeated generic cards with domain-native surfaces.',
+        'Rebuild primary homes and flows around community content and jobs-to-be-done.',
+        'Improve hierarchy, spacing, typography, component quality, navigation clarity, and mobile layout.',
+        'Update copy/content so visible UI speaks to the target persona and task, not to validation mechanics.',
+      ],
+    ),
+    _remediationBatch(
+      batchId: 'B25-RB-003-recapture-rerun-closeout',
+      title: 'Recapture evidence, rerun judges, and close resolved tickets',
+      purpose:
+          'Prove the remediation with fresh screenshots, scorecards, and a committed iteration boundary.',
+      tickets: tickets,
+      actions: <String>[
+        'Rebuild and relaunch the Demo App on the reviewed emulator/device.',
+        'Recapture affected screenshots with hashes, timestamps, device metadata, and app commit SHA.',
+        'Regenerate B25 schema v4 review JSON, markdown review, screen matrix, remediation tickets, and iteration scorecard.',
+        'Commit the full iteration before starting the next UX feedback loop.',
+      ],
+    ),
+  ].where((batch) => _asMapList(batch['tickets']).isNotEmpty).toList();
+
+  return <String, Object?>{
+    'schemaVersion': 1,
+    'planType': 'b25-remediation-plan',
+    'reviewRunId': runId,
+    'status': tickets.isEmpty ? 'no-open-tickets' : 'open',
+    'generatedAt': DateTime.now().toUtc().toIso8601String(),
+    'sourceTicketsPath': ticketsPath,
+    'sourceTicketCount': tickets.length,
+    'sourceTickets': tickets
+        .map(
+          (ticket) => <String, Object?>{
+            'ticketId': _asString(ticket['ticketId']),
+            'sourceCriterionId': _asString(ticket['sourceCriterionId']),
+            'severity': _asString(ticket['severity']),
+            'status': _asString(ticket['status']),
+            'title': _asString(ticket['title']),
+          },
+        )
+        .toList(),
+    'scorecardSummary': <String, Object?>{
+      'status': _asString(scorecard?['status']),
+      'remainingBlockingMajor': _asInt(
+        (scorecard?['convergence'] as JsonMap?)?['remainingBlockingMajor'],
+      ),
+      'blockingCriterionFailures': _asInt(
+        (scorecard?['judgeSummary'] as JsonMap?)?['blockingCriterionFailures'],
+      ),
+    },
+    'batches': batches,
+    'plannerRules': <String>[
+      'Worker agents implement from remediation batches, not from optimistic summaries.',
+      'The independent judge must rerun after each batch that changes UI, evidence, or critique.',
+      'No next UX feedback loop starts until the current remediation iteration is committed.',
+    ],
+  };
+}
+
+JsonMap _remediationBatch({
+  required String batchId,
+  required String title,
+  required String purpose,
+  required List<JsonMap> tickets,
+  required List<String> actions,
+}) {
+  final ticketIds = tickets
+      .map((ticket) => _asString(ticket['ticketId']))
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final evidence = <String>{
+    for (final ticket in tickets) ..._asStringList(ticket['affectedEvidence']),
+    for (final ticket in tickets) ..._asStringList(ticket['evidenceToCollect']),
+  }.toList();
+  final acceptance = <String>{
+    for (final ticket in tickets) ..._asStringList(ticket['acceptanceChecks']),
+  }.toList();
+  final rerun = <String>{
+    for (final ticket in tickets) ..._asStringList(ticket['rerunCommands']),
+  }.toList();
+  final implementation = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['implementationGuidance']),
+  }.toList();
+  return <String, Object?>{
+    'batchId': batchId,
+    'status': 'open',
+    'title': title,
+    'purpose': purpose,
+    'ticketIds': ticketIds,
+    'tickets': tickets,
+    'workerActions': actions,
+    'implementationGuidance': implementation,
+    'evidenceToUpdate': evidence,
+    'acceptanceChecks': acceptance,
+    'rerunCommands': rerun,
+    'commitBoundary':
+        'Commit this remediation batch, refreshed evidence, judge outputs, scorecards, and tracker updates before the next UX feedback loop. If the committed pass still fails, the following pass starts by sending its tickets to the Remediation Planner.',
+  };
+}
+
+List<JsonMap> _ticketsForCriteria(List<JsonMap> tickets, Set<String> criteria) {
+  return tickets
+      .where(
+        (ticket) => criteria.contains(_asString(ticket['sourceCriterionId'])),
+      )
+      .toList();
 }
 
 JudgeResult judgeEvidence(
@@ -1416,6 +1632,117 @@ Usage:
 ''';
 }
 
+String _remediationPlannerUsage() {
+  return '''
+b25_remediation_planner (B25)
+Converts B25 remediation tickets into ordered worker-agent remediation batches.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_remediation_planner.dart --tickets <b25-remediation-tickets.json> [--review <independent-production-ux-review.json>] [--scorecard <b25-iteration-scorecard.json>] [--output <plan.json>] [--markdown-output <plan.md>]
+''';
+}
+
+String _b25RemediationPlanMarkdown(JsonMap plan) {
+  final batches = _asMapList(plan['batches']);
+  final sourceTickets = _asMapList(plan['sourceTickets']);
+  final scorecard = plan['scorecardSummary'] as JsonMap? ?? <String, Object?>{};
+  final buffer = StringBuffer()
+    ..writeln('# B25 Remediation Plan')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Review run | `${_escape(_asString(plan['reviewRunId']))}` |')
+    ..writeln('| Status | `${_escape(_asString(plan['status']))}` |')
+    ..writeln(
+      '| Source tickets | `${_escape(_asString(plan['sourceTicketsPath']))}` |',
+    )
+    ..writeln('| Ticket count | ${plan['sourceTicketCount']} |')
+    ..writeln(
+      '| Scorecard status | `${_escape(_asString(scorecard['status']))}` |',
+    )
+    ..writeln(
+      '| Remaining blocker/major | ${scorecard['remainingBlockingMajor']} |',
+    )
+    ..writeln(
+      '| Blocking criteria failures | ${scorecard['blockingCriterionFailures']} |',
+    )
+    ..writeln()
+    ..writeln('## Source Tickets')
+    ..writeln()
+    ..writeln('| Ticket | Source criterion | Severity | Status | Title |')
+    ..writeln('| --- | --- | --- | --- | --- |');
+  if (sourceTickets.isEmpty) {
+    buffer.writeln('| None | n/a | n/a | n/a | n/a |');
+  } else {
+    for (final ticket in sourceTickets) {
+      buffer.writeln(
+        '| `${_escape(_asString(ticket['ticketId']))}` | `${_escape(_asString(ticket['sourceCriterionId']))}` | ${_escape(_asString(ticket['severity']))} | ${_escape(_asString(ticket['status']))} | ${_escape(_asString(ticket['title']))} |',
+      );
+    }
+  }
+  buffer.writeln();
+  for (final batch in batches) {
+    buffer
+      ..writeln(
+        '## ${_escape(_asString(batch['batchId']))}: ${_escape(_asString(batch['title']))}',
+      )
+      ..writeln()
+      ..writeln(_escape(_asString(batch['purpose'])))
+      ..writeln()
+      ..writeln('| Field | Value |')
+      ..writeln('| --- | --- |')
+      ..writeln('| Status | ${_escape(_asString(batch['status']))} |')
+      ..writeln(
+        '| Ticket IDs | ${_escape(_asStringList(batch['ticketIds']).join(', '))} |',
+      )
+      ..writeln()
+      ..writeln('### Worker Actions');
+    for (final action in _asStringList(batch['workerActions'])) {
+      buffer.writeln('- ${_escape(action)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Implementation Guidance');
+    for (final guidance in _asStringList(batch['implementationGuidance'])) {
+      buffer.writeln('- ${_escape(guidance)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Evidence To Update');
+    for (final evidence in _asStringList(batch['evidenceToUpdate'])) {
+      buffer.writeln('- ${_escape(evidence)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Acceptance Checks');
+    for (final check in _asStringList(batch['acceptanceChecks'])) {
+      buffer.writeln('- ${_escape(check)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Rerun Commands');
+    for (final command in _asStringList(batch['rerunCommands'])) {
+      buffer.writeln('- `${_escape(command)}`');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Commit Boundary')
+      ..writeln()
+      ..writeln(_escape(_asString(batch['commitBoundary'])))
+      ..writeln();
+  }
+  final rules = _asStringList(plan['plannerRules']);
+  if (rules.isNotEmpty) {
+    buffer
+      ..writeln('## Planner Rules')
+      ..writeln();
+    for (final rule in rules) {
+      buffer.writeln('- ${_escape(rule)}');
+    }
+  }
+  return buffer.toString();
+}
+
 JsonMap _extraScorecards(
   JudgeSpec spec,
   JsonMap evidence,
@@ -1424,6 +1751,7 @@ JsonMap _extraScorecards(
   if (spec.toolId != 'production-ux-judge') {
     return <String, Object?>{};
   }
+  final remediationTickets = _b25RemediationTickets(evidence, criteria);
   return <String, Object?>{
     'holisticProductScorecard': <String, Object?>{
       'questions': _asMapList(evidence['holisticQuestionAnswers']),
@@ -1447,7 +1775,486 @@ JsonMap _extraScorecards(
         .where((criterion) => criterion.scope == 'remediation')
         .map((criterion) => criterion.toJson())
         .toList(),
+    'remediationTickets': remediationTickets,
   };
+}
+
+List<JsonMap> _b25RemediationTickets(
+  JsonMap evidence,
+  List<CriterionResult> criteria,
+) {
+  final findings = _asMapList(evidence['findings']);
+  final runId = _asString(
+    evidence['currentReviewRunId'],
+    fallback: 'unknown-review-run',
+  );
+  final allBlockingFindingIds = findings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final tickets = <JsonMap>[];
+  var index = 1;
+  for (final criterion in criteria.where((criterion) => criterion.blocksPass)) {
+    final relatedFindings = _relatedB25FindingIds(
+      criterion,
+      allBlockingFindingIds,
+    );
+    final ticketId =
+        'B25-RT-${index.toString().padLeft(3, '0')}-${_slug(criterion.id)}';
+    tickets.add(<String, Object?>{
+      'ticketId': ticketId,
+      'ticketSchemaVersion': 1,
+      'phase': 'B25',
+      'reviewRunId': runId,
+      'status': 'open',
+      'severity': 'major',
+      'priority': 'P1',
+      'sourceCriterionId': criterion.id,
+      'sourceFindingIds': relatedFindings,
+      'title': criterion.title,
+      'directQuestion': criterion.question,
+      'whyItFailed': criterion.why,
+      'requiredOutcome': criterion.requiredFix,
+      'affectedScope': _affectedScopeForB25Criterion(criterion.id, criterion),
+      'problemStatement': _problemStatementForB25Criterion(criterion.id),
+      'rootCauseHypothesis': _rootCauseForB25Criterion(criterion.id),
+      'targetExperience': _targetExperienceForB25Criterion(criterion.id),
+      'uxPrinciples': _uxPrinciplesForB25Criterion(criterion.id),
+      'concreteImprovements': _improvementsForB25Criterion(criterion.id),
+      'implementationGuidance': _implementationGuidanceForB25Criterion(
+        criterion.id,
+      ),
+      'contentGuidance': _contentGuidanceForB25Criterion(criterion.id),
+      'visualGuidance': _visualGuidanceForB25Criterion(criterion.id),
+      'affectedEvidence': _affectedEvidenceForB25Criterion(criterion.id),
+      'evidenceToCollect': _evidenceToCollectForB25Criterion(criterion.id),
+      'acceptanceChecks': _acceptanceChecksForB25Criterion(criterion.id),
+      'rerunCommands': _b25RerunCommands(),
+      'nonGoals': _nonGoalsForB25Criterion(criterion.id),
+      'commitBoundary':
+          'Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop.',
+    });
+    index += 1;
+  }
+  return tickets;
+}
+
+JsonMap _affectedScopeForB25Criterion(
+  String criterionId,
+  CriterionResult criterion,
+) {
+  return <String, Object?>{
+    'scope': criterion.scope,
+    'communities': criterion.scope == 'holistic'
+        ? <String>['all reviewed communities/test apps']
+        : <String>['communities referenced by failing workflow/persona rows'],
+    'personas': criterion.scope == 'workflow-persona'
+        ? <String>['personas referenced by failing workflow/persona rows']
+        : <String>['all reviewed target personas'],
+    'workflows': criterion.scope == 'workflow-persona'
+        ? <String>['workflows referenced by failing scorecards']
+        : <String>['all primary reviewed workflows'],
+    'screenRows': criterion.evidenceUsed.isEmpty
+        ? <String>['derive from independent-production-ux-review.json']
+        : criterion.evidenceUsed,
+    'screenshots': <String>[
+      'fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md',
+    ],
+  };
+}
+
+String _problemStatementForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c01-no-blocker-major':
+      return 'B25 still has unresolved major production UX findings, so the app cannot be considered production-grade.';
+    case 'b25-c03-production-grade-experience':
+      return 'The evidence does not prove that target users experience the app as a real production community product rather than a workflow validation harness.';
+    case 'b25-c04-modern-intentional-ui':
+      return 'The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target personas.';
+    case 'b25-c05-community-content-ia':
+      return 'The evidence does not prove that primary screens are organized around community content and jobs-to-be-done instead of workflow lists or validation surfaces.';
+    case 'b25-c06-domain-native-primary-surfaces':
+      return 'The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.';
+    case 'b25-c08-visible-text-specific-critique':
+      return 'The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.';
+    case 'b25-c09-no-layout-production-defects':
+      return 'The evidence does not prove that the visible UI is free of major overlap, clipping, crowding, repeated-card, checklist-modal, or thin-content defects.';
+    default:
+      return 'The B25 production UX criterion failed and requires a concrete remediation plan.';
+  }
+}
+
+String _rootCauseForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c01-no-blocker-major':
+      return 'The review loop has not yet converted all blocking judge failures into completed, evidence-backed fixes.';
+    case 'b25-c03-production-grade-experience':
+      return 'The pass has evidence capture, but not a completed independent product-quality judgment grounded in screenshots.';
+    case 'b25-c04-modern-intentional-ui':
+      return 'The pass lacks screenshot-backed judgment of hierarchy, spacing, navigation clarity, component polish, and visual identity.';
+    case 'b25-c05-community-content-ia':
+      return 'The app may still be organized around implementation/workflow concepts instead of the mental model and daily jobs of community users.';
+    case 'b25-c06-domain-native-primary-surfaces':
+      return 'Primary workflow surfaces may still rely on generic repeated cards or validation-state UI instead of task-specific product screens.';
+    case 'b25-c08-visible-text-specific-critique':
+      return 'The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.';
+    case 'b25-c09-no-layout-production-defects':
+      return 'The pass has not performed a screenshot-grounded defect audit for mobile layout, density, component quality, and content depth.';
+    default:
+      return 'The evidence does not yet satisfy the B25 production UX standard.';
+  }
+}
+
+String _targetExperienceForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+      return 'A target user should immediately understand the community, see relevant content, and complete meaningful tasks without recognizing the app as a test harness.';
+    case 'b25-c04-modern-intentional-ui':
+      return 'Screens should feel intentionally designed, polished, readable, well-spaced, navigable, and visually coherent on the reviewed device.';
+    case 'b25-c05-community-content-ia':
+      return 'The home and primary flows should lead with community-specific sections, content, and jobs-to-be-done rather than implementation categories.';
+    case 'b25-c06-domain-native-primary-surfaces':
+      return 'Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.';
+    case 'b25-c08-visible-text-specific-critique':
+      return 'Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.';
+    case 'b25-c09-no-layout-production-defects':
+      return 'The reviewed UI should have no major overlap, clipping, crowding, default scaffold feel, repeated-card primary UX, checklist-modal primary UX, or thin placeholder content.';
+    case 'b25-c01-no-blocker-major':
+    default:
+      return 'The next B25 pass should show zero unresolved blocker/major findings and a scorecard that can close the phase.';
+  }
+}
+
+List<String> _uxPrinciplesForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+      return <String>[
+        'Judge what the visible product proves, not what the implementation intended.',
+        'Prioritize target-user comprehension, task completion, and product credibility.',
+      ];
+    case 'b25-c04-modern-intentional-ui':
+      return <String>[
+        'Clear visual hierarchy',
+        'Predictable navigation',
+        'Consistent spacing and component quality',
+        'Modern mobile readability and touch targets',
+      ];
+    case 'b25-c05-community-content-ia':
+      return <String>[
+        'Community content first',
+        'Jobs-to-be-done information architecture',
+        'No global workflow-list primary UX',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Primary surfaces must match the domain task',
+        'Generic cards are acceptable only as secondary support, not primary workflow UI',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Evidence must cite visible UI and text',
+        'Critique must be screen-specific and non-boilerplate',
+      ];
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'No major layout defects',
+        'No thin placeholder content',
+        'No checklist or scaffold feel on primary screens',
+      ];
+    default:
+      return <String>['Resolve blocking UX evidence before closing B25'];
+  }
+}
+
+List<String> _relatedB25FindingIds(
+  CriterionResult criterion,
+  List<String> allBlockingFindingIds,
+) {
+  switch (criterion.id) {
+    case 'b25-c01-no-blocker-major':
+      return allBlockingFindingIds;
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return allBlockingFindingIds.contains('B25-HOLISTIC-UNPROVEN')
+          ? <String>['B25-HOLISTIC-UNPROVEN']
+          : allBlockingFindingIds;
+    case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c08-visible-text-specific-critique':
+      return allBlockingFindingIds.contains('B25-WORKFLOW-PERSONA-UNPROVEN')
+          ? <String>['B25-WORKFLOW-PERSONA-UNPROVEN']
+          : allBlockingFindingIds;
+    default:
+      return allBlockingFindingIds;
+  }
+}
+
+List<String> _improvementsForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c01-no-blocker-major':
+      return <String>[
+        'Resolve every open blocker/major remediation ticket or downgrade only with owner acceptance and evidence.',
+        'Update `findings`, unresolved finding arrays, remediation log, and iteration scorecard after fixes.',
+        'Rerun the production UX judge and verify unresolved blocker/major counts are zero.',
+      ];
+    case 'b25-c03-production-grade-experience':
+      return <String>[
+        'Run a screenshot-first holistic review of the full community experience from the target-user perspective.',
+        'Record direct yes/no answers that cite visible UI and explain whether the experience feels like a real production community app.',
+        'Fix any whole-product issues where screens feel like validation harnesses, implementation summaries, or thin prototypes.',
+      ];
+    case 'b25-c04-modern-intentional-ui':
+      return <String>[
+        'Improve visual hierarchy, typography scale, spacing rhythm, component polish, and content grouping on primary screens.',
+        'Ensure navigation and primary actions are obvious without reading implementation or workflow taxonomy.',
+        'Recapture screenshots and cite visible evidence proving the UI is modern, easy to use, easy to navigate, and visually appealing.',
+      ];
+    case 'b25-c05-community-content-ia':
+      return <String>[
+        'Rework primary home/detail screens around community jobs-to-be-done and domain content.',
+        'Replace any global workflow-list organization with sections such as announcements, events, dues, messages, documents, care requests, teams, or equivalent community-specific content.',
+        'Update holistic answers and screen critiques to prove users see community tasks and content first.',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Review every primary workflow/persona row and classify the visible UI as domain-native, secondary-supporting, or generic.',
+        'Replace primary generic cards, checklist modals, metadata pages, or repeated card shells with domain-specific product surfaces.',
+        'Create workflow/persona scorecards proving each primary workflow surface is domain-native for its target persona.',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Extract visible text for every reviewed screenshot row.',
+        'Write a non-boilerplate critique for every row that names visible UI elements, visible text, the persona, and the user task.',
+        'Remove duplicated or reusable critiques; each critique must be specific enough that it cannot apply unchanged to an unrelated screen.',
+      ];
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'Audit screenshots for overlap, clipping, crowding, default scaffold appearance, repeated-card primary UX, checklist-modal UX, and thin placeholder content.',
+        'Fix any blocking or major layout/content defects and document before/after screenshot references.',
+        'Update holistic direct-question answers with screenshot-backed proof that no major layout/content defects remain.',
+      ];
+    default:
+      return <String>[
+        'Fix the failed criterion, update evidence, rerun judge tools, and record the result in the iteration scorecard.',
+      ];
+  }
+}
+
+List<String> _affectedEvidenceForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'independent-production-ux-review.json holisticQuestionAnswers',
+        'independent-production-ux-review.md holistic review summary',
+        'product-ux-screen-review-matrix.md relevant screen rows',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'independent-production-ux-review.json workflowPersonaScorecards',
+        'independent-production-ux-review.json screenRows',
+        'product-ux-screen-review-matrix.md every workflow/persona row',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
+    case 'b25-c01-no-blocker-major':
+      return <String>[
+        'independent-production-ux-review.json findings',
+        'product-ux-remediation-loop.md',
+        'b25-iteration-scorecard-latest.json/.md',
+        'Build Tracker.md B25 row and execution ledger',
+      ];
+    default:
+      return <String>[
+        'independent-production-ux-review.json',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
+  }
+}
+
+List<String> _implementationGuidanceForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.',
+        'Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.',
+        'Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes.',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.',
+        'Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.',
+        'Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states.',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Update the B25 judge/review artifact, not only app UI code.',
+        'Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.',
+        'Regenerate markdown review and matrix files from the updated schema v4 JSON.',
+      ];
+    case 'b25-c01-no-blocker-major':
+    default:
+      return <String>[
+        'Use each open remediation ticket as the implementation backlog.',
+        'Update review JSON, remediation log, scorecards, tracker, and screenshots together.',
+      ];
+  }
+}
+
+List<String> _contentGuidanceForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c05-community-content-ia':
+      return <String>[
+        'Lead screens with community-specific content: announcements, events, requests, payments, documents, messages, teams, facilities, or equivalent domain sections.',
+        'Remove or demote labels that describe workflow categories, evidence, local routes, or implementation mechanics.',
+        'Use realistic names, dates, amounts, authors, locations, status, receipts, and next steps where the workflow requires them.',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.',
+        'Each primary surface should include the domain data a user needs to decide and act.',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Quote or summarize visible labels, headings, section names, action text, and result copy in the critique.',
+        'Explain why that visible content does or does not support the persona and task.',
+      ];
+    default:
+      return <String>[
+        'Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.',
+        'Use content that helps the target persona understand status, options, consequences, and next steps.',
+      ];
+  }
+}
+
+List<String> _visualGuidanceForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c04-modern-intentional-ui':
+      return <String>[
+        'Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.',
+        'Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.',
+        'Use consistent component styling and avoid default scaffold or test-harness appearance.',
+      ];
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'Audit screenshots for overlap, clipping, crowding, bottom control collisions, dense repeated cards, and modals that hide primary workflow context.',
+        'Prefer stable responsive dimensions and scroll-safe spacing for cards, lists, dialogs, and floating actions.',
+      ];
+    case 'b25-c05-community-content-ia':
+      return <String>[
+        'Group content into scannable community sections with clear visual hierarchy.',
+        'Make the primary path visible without requiring users to scan a global workflow list.',
+      ];
+    default:
+      return <String>[
+        'Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device.',
+      ];
+  }
+}
+
+List<String> _evidenceToCollectForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.',
+        '`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.',
+        'Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.',
+        '`workflowPersonaScorecards` with task-specific domain-native surface judgments.',
+        'Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows.',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Visible text extracts for every reviewed row.',
+        'Non-boilerplate screen-specific critique for every reviewed row.',
+        'Updated markdown matrix matching the JSON evidence.',
+      ];
+    default:
+      return <String>[
+        'Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion.',
+      ];
+  }
+}
+
+List<String> _acceptanceChecksForB25Criterion(String criterionId) {
+  final shared = <String>[
+    '`production_ux_judge.dart` has no blocking failure for this criterion.',
+    '`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.',
+    'Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version.',
+  ];
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return <String>[
+        'Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.',
+        ...shared,
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.',
+        ...shared,
+      ];
+    case 'b25-c01-no-blocker-major':
+      return <String>[
+        'Unresolved blocker and major finding counts are both zero.',
+        ...shared,
+      ];
+    default:
+      return shared;
+  }
+}
+
+List<String> _nonGoalsForB25Criterion(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+      return <String>[
+        'Do not pass based on implementation intent or code structure.',
+        'Do not treat a captured screenshot as proof of product quality without direct-question answers.',
+        'Do not fix only labels while leaving generic scaffold structure unchanged.',
+      ];
+    case 'b25-c05-community-content-ia':
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'Do not rename a generic workflow card and call it domain-native.',
+        'Do not keep global workflow lists as the primary home or primary workflow UI.',
+        'Do not use metadata/settings pages as substitutes for task-specific product surfaces.',
+      ];
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        'Do not reuse the same critique across unrelated screens.',
+        'Do not write critique that could apply without seeing the screenshot.',
+      ];
+    default:
+      return <String>[
+        'Do not close the ticket without fresh evidence and a passing judge rerun.',
+      ];
+  }
+}
+
+List<String> _b25RerunCommands() {
+  return <String>[
+    'dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
+    'dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md',
+    'dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md',
+  ];
 }
 
 String _questionFor(CriterionDefinition definition) {
@@ -1720,8 +2527,135 @@ ${spec.toolId} (${spec.phase})
 ${spec.description}
 
 Usage:
-  dart run packages/tooling/loom_ux_judges/bin/${spec.toolId.replaceAll('-', '_')}.dart --input <evidence.json> [--base <repo-root>] [--output <scorecard.json>] [--markdown-output <scorecard.md>]
+  dart run packages/tooling/loom_ux_judges/bin/${spec.toolId.replaceAll('-', '_')}.dart --input <evidence.json> [--base <repo-root>] [--output <scorecard.json>] [--markdown-output <scorecard.md>] [--tickets-output <tickets.json>] [--tickets-markdown-output <tickets.md>]
 ''';
+}
+
+String _remediationTicketsMarkdown({
+  required String toolId,
+  required String status,
+  required List<JsonMap> tickets,
+}) {
+  final buffer = StringBuffer()
+    ..writeln('# Remediation Tickets')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Tool | `${_escape(toolId)}` |')
+    ..writeln('| Status | `${_escape(status)}` |')
+    ..writeln('| Open tickets | ${tickets.length} |');
+  if (tickets.isEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('No remediation tickets.');
+    return buffer.toString();
+  }
+  for (final ticket in tickets) {
+    buffer
+      ..writeln()
+      ..writeln('## ${_escape(_asString(ticket['ticketId']))}')
+      ..writeln()
+      ..writeln('| Field | Value |')
+      ..writeln('| --- | --- |')
+      ..writeln('| Severity | ${_escape(_asString(ticket['severity']))} |')
+      ..writeln('| Priority | ${_escape(_asString(ticket['priority']))} |')
+      ..writeln('| Status | ${_escape(_asString(ticket['status']))} |')
+      ..writeln(
+        '| Review run | `${_escape(_asString(ticket['reviewRunId']))}` |',
+      )
+      ..writeln(
+        '| Source criterion | `${_escape(_asString(ticket['sourceCriterionId']))}` |',
+      )
+      ..writeln(
+        '| Source findings | ${_escape(_asStringList(ticket['sourceFindingIds']).join(', '))} |',
+      )
+      ..writeln('| Title | ${_escape(_asString(ticket['title']))} |')
+      ..writeln(
+        '| Direct question | ${_escape(_asString(ticket['directQuestion']))} |',
+      )
+      ..writeln(
+        '| Why it failed | ${_escape(_asString(ticket['whyItFailed']))} |',
+      )
+      ..writeln(
+        '| Required outcome | ${_escape(_asString(ticket['requiredOutcome']))} |',
+      )
+      ..writeln()
+      ..writeln('### Problem Statement')
+      ..writeln()
+      ..writeln(_escape(_asString(ticket['problemStatement'])))
+      ..writeln()
+      ..writeln('### Root Cause Hypothesis')
+      ..writeln()
+      ..writeln(_escape(_asString(ticket['rootCauseHypothesis'])))
+      ..writeln()
+      ..writeln('### Target Experience')
+      ..writeln()
+      ..writeln(_escape(_asString(ticket['targetExperience'])))
+      ..writeln()
+      ..writeln('### UX Principles');
+    for (final principle in _asStringList(ticket['uxPrinciples'])) {
+      buffer.writeln('- ${_escape(principle)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Concrete Improvements');
+    for (final improvement in _asStringList(ticket['concreteImprovements'])) {
+      buffer.writeln('- ${_escape(improvement)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Implementation Guidance');
+    for (final guidance in _asStringList(ticket['implementationGuidance'])) {
+      buffer.writeln('- ${_escape(guidance)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Content Guidance');
+    for (final guidance in _asStringList(ticket['contentGuidance'])) {
+      buffer.writeln('- ${_escape(guidance)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Visual Guidance');
+    for (final guidance in _asStringList(ticket['visualGuidance'])) {
+      buffer.writeln('- ${_escape(guidance)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Affected Evidence');
+    for (final artifact in _asStringList(ticket['affectedEvidence'])) {
+      buffer.writeln('- `${_escape(artifact)}`');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Evidence To Collect');
+    for (final artifact in _asStringList(ticket['evidenceToCollect'])) {
+      buffer.writeln('- ${_escape(artifact)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Acceptance Checks');
+    for (final check in _asStringList(ticket['acceptanceChecks'])) {
+      buffer.writeln('- ${_escape(check)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Non-Goals');
+    for (final nonGoal in _asStringList(ticket['nonGoals'])) {
+      buffer.writeln('- ${_escape(nonGoal)}');
+    }
+    buffer
+      ..writeln()
+      ..writeln('### Commit Boundary')
+      ..writeln()
+      ..writeln(_escape(_asString(ticket['commitBoundary'])))
+      ..writeln()
+      ..writeln('### Rerun Commands');
+    for (final command in _asStringList(ticket['rerunCommands'])) {
+      buffer.writeln('- `${_escape(command)}`');
+    }
+  }
+  return buffer.toString();
 }
 
 String _toMarkdown(JudgeResult result) {
@@ -1745,6 +2679,28 @@ String _toMarkdown(JudgeResult result) {
       ..writeln('## Errors');
     for (final error in result.errors) {
       buffer.writeln('- ${_escape(error)}');
+    }
+  }
+  final remediationTickets = _asMapList(result.extra['remediationTickets']);
+  if (remediationTickets.isNotEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('## Remediation Tickets')
+      ..writeln()
+      ..writeln(
+        '| Ticket | Severity | Source | Title | Concrete improvements | Acceptance checks |',
+      )
+      ..writeln('| --- | --- | --- | --- | --- | --- |');
+    for (final ticket in remediationTickets) {
+      final improvements = _asStringList(
+        ticket['concreteImprovements'],
+      ).map((item) => '- $item').join('<br>');
+      final checks = _asStringList(
+        ticket['acceptanceChecks'],
+      ).map((item) => '- $item').join('<br>');
+      buffer.writeln(
+        '| `${_escape(_asString(ticket['ticketId']))}` | ${_escape(_asString(ticket['severity']))} | `${_escape(_asString(ticket['sourceCriterionId']))}` | ${_escape(_asString(ticket['title']))} | ${_escape(improvements)} | ${_escape(checks)} |',
+      );
     }
   }
   if (result.warnings.isNotEmpty) {

@@ -1,0 +1,1574 @@
+{
+  "schemaVersion": 1,
+  "planType": "b25-remediation-plan",
+  "reviewRunId": "b25-v4-pass-1",
+  "status": "open",
+  "generatedAt": "2026-06-28T23:17:36.534748Z",
+  "sourceTicketsPath": "../docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json",
+  "sourceTicketCount": 7,
+  "sourceTickets": [
+    {
+      "ticketId": "B25-RT-001-b25-c01-no-blocker-major",
+      "sourceCriterionId": "b25-c01-no-blocker-major",
+      "severity": "major",
+      "status": "open",
+      "title": "No unresolved blocker or major findings"
+    },
+    {
+      "ticketId": "B25-RT-002-b25-c03-production-grade-experience",
+      "sourceCriterionId": "b25-c03-production-grade-experience",
+      "severity": "major",
+      "status": "open",
+      "title": "Reviewer can state the experience feels production-grade"
+    },
+    {
+      "ticketId": "B25-RT-003-b25-c04-modern-intentional-ui",
+      "sourceCriterionId": "b25-c04-modern-intentional-ui",
+      "severity": "major",
+      "status": "open",
+      "title": "UI looks modern and intentionally designed"
+    },
+    {
+      "ticketId": "B25-RT-004-b25-c05-community-content-ia",
+      "sourceCriterionId": "b25-c05-community-content-ia",
+      "severity": "major",
+      "status": "open",
+      "title": "Screens are organized around community content and jobs-to-be-done"
+    },
+    {
+      "ticketId": "B25-RT-005-b25-c06-domain-native-primary-surfaces",
+      "sourceCriterionId": "b25-c06-domain-native-primary-surfaces",
+      "severity": "major",
+      "status": "open",
+      "title": "Primary workflows use domain-specific product surfaces"
+    },
+    {
+      "ticketId": "B25-RT-006-b25-c08-visible-text-specific-critique",
+      "sourceCriterionId": "b25-c08-visible-text-specific-critique",
+      "severity": "major",
+      "status": "open",
+      "title": "Every row has visible text and screen-specific critique"
+    },
+    {
+      "ticketId": "B25-RT-007-b25-c09-no-layout-production-defects",
+      "sourceCriterionId": "b25-c09-no-layout-production-defects",
+      "severity": "major",
+      "status": "open",
+      "title": "No blocking or major layout/content defects remain"
+    }
+  ],
+  "scorecardSummary": {
+    "status": "fail",
+    "remainingBlockingMajor": 3,
+    "blockingCriterionFailures": 7
+  },
+  "batches": [
+    {
+      "batchId": "B25-RB-001-independent-review-evidence",
+      "status": "open",
+      "title": "Complete independent review evidence and critique",
+      "purpose": "Turn captured screenshots into complete independent UX review evidence before attempting UI remediation.",
+      "ticketIds": [
+        "B25-RT-002-b25-c03-production-grade-experience",
+        "B25-RT-003-b25-c04-modern-intentional-ui",
+        "B25-RT-006-b25-c08-visible-text-specific-critique",
+        "B25-RT-007-b25-c09-no-layout-production-defects"
+      ],
+      "tickets": [
+        {
+          "ticketId": "B25-RT-002-b25-c03-production-grade-experience",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c03-production-grade-experience",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "Reviewer can state the experience feels production-grade",
+          "directQuestion": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
+          "whyItFailed": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that target users experience the app as a real production community product rather than a workflow validation harness.",
+          "rootCauseHypothesis": "The pass has evidence capture, but not a completed independent product-quality judgment grounded in screenshots.",
+          "targetExperience": "A target user should immediately understand the community, see relevant content, and complete meaningful tasks without recognizing the app as a test harness.",
+          "uxPrinciples": [
+            "Judge what the visible product proves, not what the implementation intended.",
+            "Prioritize target-user comprehension, task completion, and product credibility."
+          ],
+          "concreteImprovements": [
+            "Run a screenshot-first holistic review of the full community experience from the target-user perspective.",
+            "Record direct yes/no answers that cite visible UI and explain whether the experience feels like a real production community app.",
+            "Fix any whole-product issues where screens feel like validation harnesses, implementation summaries, or thin prototypes."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not pass based on implementation intent or code structure.",
+            "Do not treat a captured screenshot as proof of product quality without direct-question answers.",
+            "Do not fix only labels while leaving generic scaffold structure unchanged."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-003-b25-c04-modern-intentional-ui",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c04-modern-intentional-ui",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "UI looks modern and intentionally designed",
+          "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target personas.",
+          "rootCauseHypothesis": "The pass lacks screenshot-backed judgment of hierarchy, spacing, navigation clarity, component polish, and visual identity.",
+          "targetExperience": "Screens should feel intentionally designed, polished, readable, well-spaced, navigable, and visually coherent on the reviewed device.",
+          "uxPrinciples": [
+            "Clear visual hierarchy",
+            "Predictable navigation",
+            "Consistent spacing and component quality",
+            "Modern mobile readability and touch targets"
+          ],
+          "concreteImprovements": [
+            "Improve visual hierarchy, typography scale, spacing rhythm, component polish, and content grouping on primary screens.",
+            "Ensure navigation and primary actions are obvious without reading implementation or workflow taxonomy.",
+            "Recapture screenshots and cite visible evidence proving the UI is modern, easy to use, easy to navigate, and visually appealing."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.",
+            "Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.",
+            "Use consistent component styling and avoid default scaffold or test-harness appearance."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not pass based on implementation intent or code structure.",
+            "Do not treat a captured screenshot as proof of product quality without direct-question answers.",
+            "Do not fix only labels while leaving generic scaffold structure unchanged."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-006-b25-c08-visible-text-specific-critique",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c08-visible-text-specific-critique",
+          "sourceFindingIds": [
+            "B25-WORKFLOW-PERSONA-UNPROVEN"
+          ],
+          "title": "Every row has visible text and screen-specific critique",
+          "directQuestion": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
+          "whyItFailed": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+          "requiredOutcome": "Extract visible text and write a specific critique for each screenshot row.",
+          "affectedScope": {
+            "scope": "workflow-persona",
+            "communities": [
+              "communities referenced by failing workflow/persona rows"
+            ],
+            "personas": [
+              "personas referenced by failing workflow/persona rows"
+            ],
+            "workflows": [
+              "workflows referenced by failing scorecards"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.",
+          "rootCauseHypothesis": "The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.",
+          "targetExperience": "Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.",
+          "uxPrinciples": [
+            "Evidence must cite visible UI and text",
+            "Critique must be screen-specific and non-boilerplate"
+          ],
+          "concreteImprovements": [
+            "Extract visible text for every reviewed screenshot row.",
+            "Write a non-boilerplate critique for every row that names visible UI elements, visible text, the persona, and the user task.",
+            "Remove duplicated or reusable critiques; each critique must be specific enough that it cannot apply unchanged to an unrelated screen."
+          ],
+          "implementationGuidance": [
+            "Update the B25 judge/review artifact, not only app UI code.",
+            "Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.",
+            "Regenerate markdown review and matrix files from the updated schema v4 JSON."
+          ],
+          "contentGuidance": [
+            "Quote or summarize visible labels, headings, section names, action text, and result copy in the critique.",
+            "Explain why that visible content does or does not support the persona and task."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json workflowPersonaScorecards",
+            "independent-production-ux-review.json screenRows",
+            "product-ux-screen-review-matrix.md every workflow/persona row",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Visible text extracts for every reviewed row.",
+            "Non-boilerplate screen-specific critique for every reviewed row.",
+            "Updated markdown matrix matching the JSON evidence."
+          ],
+          "acceptanceChecks": [
+            "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not reuse the same critique across unrelated screens.",
+            "Do not write critique that could apply without seeing the screenshot."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-007-b25-c09-no-layout-production-defects",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c09-no-layout-production-defects",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "No blocking or major layout/content defects remain",
+          "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "requiredOutcome": "Fix layout/content defects and rerun the review.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the visible UI is free of major overlap, clipping, crowding, repeated-card, checklist-modal, or thin-content defects.",
+          "rootCauseHypothesis": "The pass has not performed a screenshot-grounded defect audit for mobile layout, density, component quality, and content depth.",
+          "targetExperience": "The reviewed UI should have no major overlap, clipping, crowding, default scaffold feel, repeated-card primary UX, checklist-modal primary UX, or thin placeholder content.",
+          "uxPrinciples": [
+            "No major layout defects",
+            "No thin placeholder content",
+            "No checklist or scaffold feel on primary screens"
+          ],
+          "concreteImprovements": [
+            "Audit screenshots for overlap, clipping, crowding, default scaffold appearance, repeated-card primary UX, checklist-modal UX, and thin placeholder content.",
+            "Fix any blocking or major layout/content defects and document before/after screenshot references.",
+            "Update holistic direct-question answers with screenshot-backed proof that no major layout/content defects remain."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Audit screenshots for overlap, clipping, crowding, bottom control collisions, dense repeated cards, and modals that hide primary workflow context.",
+            "Prefer stable responsive dimensions and scroll-safe spacing for cards, lists, dialogs, and floating actions."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not close the ticket without fresh evidence and a passing judge rerun."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        }
+      ],
+      "workerActions": [
+        "Fill holistic direct-question answers with screenshot-grounded yes/no/partial judgments.",
+        "Fill every screen row with visible text and screen-specific critique.",
+        "Fill workflow/persona scorecards for every reviewed workflow/persona pair.",
+        "Keep reviewer context limited to screenshots, blueprint, evidence, and pass criteria."
+      ],
+      "implementationGuidance": [
+        "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+        "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+        "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes.",
+        "Update the B25 judge/review artifact, not only app UI code.",
+        "Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.",
+        "Regenerate markdown review and matrix files from the updated schema v4 JSON."
+      ],
+      "evidenceToUpdate": [
+        "independent-production-ux-review.json holisticQuestionAnswers",
+        "independent-production-ux-review.md holistic review summary",
+        "product-ux-screen-review-matrix.md relevant screen rows",
+        "production-ux-criteria-scorecard.json/.md",
+        "independent-production-ux-review.json workflowPersonaScorecards",
+        "independent-production-ux-review.json screenRows",
+        "product-ux-screen-review-matrix.md every workflow/persona row",
+        "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+        "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+        "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.",
+        "Visible text extracts for every reviewed row.",
+        "Non-boilerplate screen-specific critique for every reviewed row.",
+        "Updated markdown matrix matching the JSON evidence."
+      ],
+      "acceptanceChecks": [
+        "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version.",
+        "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "commitBoundary": "Commit this remediation batch, refreshed evidence, judge outputs, scorecards, and tracker updates before the next UX feedback loop. If the committed pass still fails, the following pass starts by sending its tickets to the Remediation Planner."
+    },
+    {
+      "batchId": "B25-RB-002-domain-native-ux-remediation",
+      "status": "open",
+      "title": "Remediate domain-native IA and primary workflow surfaces",
+      "purpose": "Apply product UX fixes found by the independent critique so primary screens feel like production community surfaces.",
+      "ticketIds": [
+        "B25-RT-003-b25-c04-modern-intentional-ui",
+        "B25-RT-004-b25-c05-community-content-ia",
+        "B25-RT-005-b25-c06-domain-native-primary-surfaces",
+        "B25-RT-007-b25-c09-no-layout-production-defects"
+      ],
+      "tickets": [
+        {
+          "ticketId": "B25-RT-003-b25-c04-modern-intentional-ui",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c04-modern-intentional-ui",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "UI looks modern and intentionally designed",
+          "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target personas.",
+          "rootCauseHypothesis": "The pass lacks screenshot-backed judgment of hierarchy, spacing, navigation clarity, component polish, and visual identity.",
+          "targetExperience": "Screens should feel intentionally designed, polished, readable, well-spaced, navigable, and visually coherent on the reviewed device.",
+          "uxPrinciples": [
+            "Clear visual hierarchy",
+            "Predictable navigation",
+            "Consistent spacing and component quality",
+            "Modern mobile readability and touch targets"
+          ],
+          "concreteImprovements": [
+            "Improve visual hierarchy, typography scale, spacing rhythm, component polish, and content grouping on primary screens.",
+            "Ensure navigation and primary actions are obvious without reading implementation or workflow taxonomy.",
+            "Recapture screenshots and cite visible evidence proving the UI is modern, easy to use, easy to navigate, and visually appealing."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.",
+            "Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.",
+            "Use consistent component styling and avoid default scaffold or test-harness appearance."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not pass based on implementation intent or code structure.",
+            "Do not treat a captured screenshot as proof of product quality without direct-question answers.",
+            "Do not fix only labels while leaving generic scaffold structure unchanged."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-004-b25-c05-community-content-ia",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c05-community-content-ia",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "Screens are organized around community content and jobs-to-be-done",
+          "directQuestion": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
+          "whyItFailed": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Rebuild home and primary screens around community content and user jobs.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that primary screens are organized around community content and jobs-to-be-done instead of workflow lists or validation surfaces.",
+          "rootCauseHypothesis": "The app may still be organized around implementation/workflow concepts instead of the mental model and daily jobs of community users.",
+          "targetExperience": "The home and primary flows should lead with community-specific sections, content, and jobs-to-be-done rather than implementation categories.",
+          "uxPrinciples": [
+            "Community content first",
+            "Jobs-to-be-done information architecture",
+            "No global workflow-list primary UX"
+          ],
+          "concreteImprovements": [
+            "Rework primary home/detail screens around community jobs-to-be-done and domain content.",
+            "Replace any global workflow-list organization with sections such as announcements, events, dues, messages, documents, care requests, teams, or equivalent community-specific content.",
+            "Update holistic answers and screen critiques to prove users see community tasks and content first."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Lead screens with community-specific content: announcements, events, requests, payments, documents, messages, teams, facilities, or equivalent domain sections.",
+            "Remove or demote labels that describe workflow categories, evidence, local routes, or implementation mechanics.",
+            "Use realistic names, dates, amounts, authors, locations, status, receipts, and next steps where the workflow requires them."
+          ],
+          "visualGuidance": [
+            "Group content into scannable community sections with clear visual hierarchy.",
+            "Make the primary path visible without requiring users to scan a global workflow list."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not rename a generic workflow card and call it domain-native.",
+            "Do not keep global workflow lists as the primary home or primary workflow UI.",
+            "Do not use metadata/settings pages as substitutes for task-specific product surfaces."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-005-b25-c06-domain-native-primary-surfaces",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c06-domain-native-primary-surfaces",
+          "sourceFindingIds": [
+            "B25-WORKFLOW-PERSONA-UNPROVEN"
+          ],
+          "title": "Primary workflows use domain-specific product surfaces",
+          "directQuestion": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
+          "whyItFailed": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+          "requiredOutcome": "Replace primary generic surfaces with domain-native product surfaces.",
+          "affectedScope": {
+            "scope": "workflow-persona",
+            "communities": [
+              "communities referenced by failing workflow/persona rows"
+            ],
+            "personas": [
+              "personas referenced by failing workflow/persona rows"
+            ],
+            "workflows": [
+              "workflows referenced by failing scorecards"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.",
+          "rootCauseHypothesis": "Primary workflow surfaces may still rely on generic repeated cards or validation-state UI instead of task-specific product screens.",
+          "targetExperience": "Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.",
+          "uxPrinciples": [
+            "Primary surfaces must match the domain task",
+            "Generic cards are acceptable only as secondary support, not primary workflow UI"
+          ],
+          "concreteImprovements": [
+            "Review every primary workflow/persona row and classify the visible UI as domain-native, secondary-supporting, or generic.",
+            "Replace primary generic cards, checklist modals, metadata pages, or repeated card shells with domain-specific product surfaces.",
+            "Create workflow/persona scorecards proving each primary workflow surface is domain-native for its target persona."
+          ],
+          "implementationGuidance": [
+            "Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.",
+            "Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.",
+            "Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states."
+          ],
+          "contentGuidance": [
+            "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+            "Each primary surface should include the domain data a user needs to decide and act."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json workflowPersonaScorecards",
+            "independent-production-ux-review.json screenRows",
+            "product-ux-screen-review-matrix.md every workflow/persona row",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.",
+            "`workflowPersonaScorecards` with task-specific domain-native surface judgments.",
+            "Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows."
+          ],
+          "acceptanceChecks": [
+            "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not rename a generic workflow card and call it domain-native.",
+            "Do not keep global workflow lists as the primary home or primary workflow UI.",
+            "Do not use metadata/settings pages as substitutes for task-specific product surfaces."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-007-b25-c09-no-layout-production-defects",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c09-no-layout-production-defects",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "No blocking or major layout/content defects remain",
+          "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "requiredOutcome": "Fix layout/content defects and rerun the review.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the visible UI is free of major overlap, clipping, crowding, repeated-card, checklist-modal, or thin-content defects.",
+          "rootCauseHypothesis": "The pass has not performed a screenshot-grounded defect audit for mobile layout, density, component quality, and content depth.",
+          "targetExperience": "The reviewed UI should have no major overlap, clipping, crowding, default scaffold feel, repeated-card primary UX, checklist-modal primary UX, or thin placeholder content.",
+          "uxPrinciples": [
+            "No major layout defects",
+            "No thin placeholder content",
+            "No checklist or scaffold feel on primary screens"
+          ],
+          "concreteImprovements": [
+            "Audit screenshots for overlap, clipping, crowding, default scaffold appearance, repeated-card primary UX, checklist-modal UX, and thin placeholder content.",
+            "Fix any blocking or major layout/content defects and document before/after screenshot references.",
+            "Update holistic direct-question answers with screenshot-backed proof that no major layout/content defects remain."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Audit screenshots for overlap, clipping, crowding, bottom control collisions, dense repeated cards, and modals that hide primary workflow context.",
+            "Prefer stable responsive dimensions and scroll-safe spacing for cards, lists, dialogs, and floating actions."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not close the ticket without fresh evidence and a passing judge rerun."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        }
+      ],
+      "workerActions": [
+        "Replace any primary global workflow lists, metadata pages, checklist modals, or repeated generic cards with domain-native surfaces.",
+        "Rebuild primary homes and flows around community content and jobs-to-be-done.",
+        "Improve hierarchy, spacing, typography, component quality, navigation clarity, and mobile layout.",
+        "Update copy/content so visible UI speaks to the target persona and task, not to validation mechanics."
+      ],
+      "implementationGuidance": [
+        "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+        "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+        "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes.",
+        "Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.",
+        "Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.",
+        "Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states."
+      ],
+      "evidenceToUpdate": [
+        "independent-production-ux-review.json holisticQuestionAnswers",
+        "independent-production-ux-review.md holistic review summary",
+        "product-ux-screen-review-matrix.md relevant screen rows",
+        "production-ux-criteria-scorecard.json/.md",
+        "independent-production-ux-review.json workflowPersonaScorecards",
+        "independent-production-ux-review.json screenRows",
+        "product-ux-screen-review-matrix.md every workflow/persona row",
+        "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+        "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+        "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.",
+        "Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.",
+        "`workflowPersonaScorecards` with task-specific domain-native surface judgments.",
+        "Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows."
+      ],
+      "acceptanceChecks": [
+        "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version.",
+        "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "commitBoundary": "Commit this remediation batch, refreshed evidence, judge outputs, scorecards, and tracker updates before the next UX feedback loop. If the committed pass still fails, the following pass starts by sending its tickets to the Remediation Planner."
+    },
+    {
+      "batchId": "B25-RB-003-recapture-rerun-closeout",
+      "status": "open",
+      "title": "Recapture evidence, rerun judges, and close resolved tickets",
+      "purpose": "Prove the remediation with fresh screenshots, scorecards, and a committed iteration boundary.",
+      "ticketIds": [
+        "B25-RT-001-b25-c01-no-blocker-major",
+        "B25-RT-002-b25-c03-production-grade-experience",
+        "B25-RT-003-b25-c04-modern-intentional-ui",
+        "B25-RT-004-b25-c05-community-content-ia",
+        "B25-RT-005-b25-c06-domain-native-primary-surfaces",
+        "B25-RT-006-b25-c08-visible-text-specific-critique",
+        "B25-RT-007-b25-c09-no-layout-production-defects"
+      ],
+      "tickets": [
+        {
+          "ticketId": "B25-RT-001-b25-c01-no-blocker-major",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c01-no-blocker-major",
+          "sourceFindingIds": [
+            "B25-V4-REVIEW-PENDING",
+            "B25-HOLISTIC-UNPROVEN",
+            "B25-WORKFLOW-PERSONA-UNPROVEN"
+          ],
+          "title": "No unresolved blocker or major findings",
+          "directQuestion": "Are there zero unresolved blocker or major findings in the current production UX evidence?",
+          "whyItFailed": "Unresolved blocker/major counts are blocker=0 major=3.",
+          "requiredOutcome": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
+          "affectedScope": {
+            "scope": "evidence",
+            "communities": [
+              "communities referenced by failing workflow/persona rows"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "B25 still has unresolved major production UX findings, so the app cannot be considered production-grade.",
+          "rootCauseHypothesis": "The review loop has not yet converted all blocking judge failures into completed, evidence-backed fixes.",
+          "targetExperience": "The next B25 pass should show zero unresolved blocker/major findings and a scorecard that can close the phase.",
+          "uxPrinciples": [
+            "Resolve blocking UX evidence before closing B25"
+          ],
+          "concreteImprovements": [
+            "Resolve every open blocker/major remediation ticket or downgrade only with owner acceptance and evidence.",
+            "Update `findings`, unresolved finding arrays, remediation log, and iteration scorecard after fixes.",
+            "Rerun the production UX judge and verify unresolved blocker/major counts are zero."
+          ],
+          "implementationGuidance": [
+            "Use each open remediation ticket as the implementation backlog.",
+            "Update review JSON, remediation log, scorecards, tracker, and screenshots together."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json findings",
+            "product-ux-remediation-loop.md",
+            "b25-iteration-scorecard-latest.json/.md",
+            "Build Tracker.md B25 row and execution ledger"
+          ],
+          "evidenceToCollect": [
+            "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+          ],
+          "acceptanceChecks": [
+            "Unresolved blocker and major finding counts are both zero.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not close the ticket without fresh evidence and a passing judge rerun."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-002-b25-c03-production-grade-experience",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c03-production-grade-experience",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "Reviewer can state the experience feels production-grade",
+          "directQuestion": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
+          "whyItFailed": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that target users experience the app as a real production community product rather than a workflow validation harness.",
+          "rootCauseHypothesis": "The pass has evidence capture, but not a completed independent product-quality judgment grounded in screenshots.",
+          "targetExperience": "A target user should immediately understand the community, see relevant content, and complete meaningful tasks without recognizing the app as a test harness.",
+          "uxPrinciples": [
+            "Judge what the visible product proves, not what the implementation intended.",
+            "Prioritize target-user comprehension, task completion, and product credibility."
+          ],
+          "concreteImprovements": [
+            "Run a screenshot-first holistic review of the full community experience from the target-user perspective.",
+            "Record direct yes/no answers that cite visible UI and explain whether the experience feels like a real production community app.",
+            "Fix any whole-product issues where screens feel like validation harnesses, implementation summaries, or thin prototypes."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not pass based on implementation intent or code structure.",
+            "Do not treat a captured screenshot as proof of product quality without direct-question answers.",
+            "Do not fix only labels while leaving generic scaffold structure unchanged."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-003-b25-c04-modern-intentional-ui",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c04-modern-intentional-ui",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "UI looks modern and intentionally designed",
+          "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the UI is modern, visually intentional, easy to navigate, and appealing for the target personas.",
+          "rootCauseHypothesis": "The pass lacks screenshot-backed judgment of hierarchy, spacing, navigation clarity, component polish, and visual identity.",
+          "targetExperience": "Screens should feel intentionally designed, polished, readable, well-spaced, navigable, and visually coherent on the reviewed device.",
+          "uxPrinciples": [
+            "Clear visual hierarchy",
+            "Predictable navigation",
+            "Consistent spacing and component quality",
+            "Modern mobile readability and touch targets"
+          ],
+          "concreteImprovements": [
+            "Improve visual hierarchy, typography scale, spacing rhythm, component polish, and content grouping on primary screens.",
+            "Ensure navigation and primary actions are obvious without reading implementation or workflow taxonomy.",
+            "Recapture screenshots and cite visible evidence proving the UI is modern, easy to use, easy to navigate, and visually appealing."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.",
+            "Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.",
+            "Use consistent component styling and avoid default scaffold or test-harness appearance."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not pass based on implementation intent or code structure.",
+            "Do not treat a captured screenshot as proof of product quality without direct-question answers.",
+            "Do not fix only labels while leaving generic scaffold structure unchanged."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-004-b25-c05-community-content-ia",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c05-community-content-ia",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "Screens are organized around community content and jobs-to-be-done",
+          "directQuestion": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
+          "whyItFailed": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+          "requiredOutcome": "Rebuild home and primary screens around community content and user jobs.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that primary screens are organized around community content and jobs-to-be-done instead of workflow lists or validation surfaces.",
+          "rootCauseHypothesis": "The app may still be organized around implementation/workflow concepts instead of the mental model and daily jobs of community users.",
+          "targetExperience": "The home and primary flows should lead with community-specific sections, content, and jobs-to-be-done rather than implementation categories.",
+          "uxPrinciples": [
+            "Community content first",
+            "Jobs-to-be-done information architecture",
+            "No global workflow-list primary UX"
+          ],
+          "concreteImprovements": [
+            "Rework primary home/detail screens around community jobs-to-be-done and domain content.",
+            "Replace any global workflow-list organization with sections such as announcements, events, dues, messages, documents, care requests, teams, or equivalent community-specific content.",
+            "Update holistic answers and screen critiques to prove users see community tasks and content first."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Lead screens with community-specific content: announcements, events, requests, payments, documents, messages, teams, facilities, or equivalent domain sections.",
+            "Remove or demote labels that describe workflow categories, evidence, local routes, or implementation mechanics.",
+            "Use realistic names, dates, amounts, authors, locations, status, receipts, and next steps where the workflow requires them."
+          ],
+          "visualGuidance": [
+            "Group content into scannable community sections with clear visual hierarchy.",
+            "Make the primary path visible without requiring users to scan a global workflow list."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not rename a generic workflow card and call it domain-native.",
+            "Do not keep global workflow lists as the primary home or primary workflow UI.",
+            "Do not use metadata/settings pages as substitutes for task-specific product surfaces."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-005-b25-c06-domain-native-primary-surfaces",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c06-domain-native-primary-surfaces",
+          "sourceFindingIds": [
+            "B25-WORKFLOW-PERSONA-UNPROVEN"
+          ],
+          "title": "Primary workflows use domain-specific product surfaces",
+          "directQuestion": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
+          "whyItFailed": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+          "requiredOutcome": "Replace primary generic surfaces with domain-native product surfaces.",
+          "affectedScope": {
+            "scope": "workflow-persona",
+            "communities": [
+              "communities referenced by failing workflow/persona rows"
+            ],
+            "personas": [
+              "personas referenced by failing workflow/persona rows"
+            ],
+            "workflows": [
+              "workflows referenced by failing scorecards"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.",
+          "rootCauseHypothesis": "Primary workflow surfaces may still rely on generic repeated cards or validation-state UI instead of task-specific product screens.",
+          "targetExperience": "Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.",
+          "uxPrinciples": [
+            "Primary surfaces must match the domain task",
+            "Generic cards are acceptable only as secondary support, not primary workflow UI"
+          ],
+          "concreteImprovements": [
+            "Review every primary workflow/persona row and classify the visible UI as domain-native, secondary-supporting, or generic.",
+            "Replace primary generic cards, checklist modals, metadata pages, or repeated card shells with domain-specific product surfaces.",
+            "Create workflow/persona scorecards proving each primary workflow surface is domain-native for its target persona."
+          ],
+          "implementationGuidance": [
+            "Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.",
+            "Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.",
+            "Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states."
+          ],
+          "contentGuidance": [
+            "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+            "Each primary surface should include the domain data a user needs to decide and act."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json workflowPersonaScorecards",
+            "independent-production-ux-review.json screenRows",
+            "product-ux-screen-review-matrix.md every workflow/persona row",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.",
+            "`workflowPersonaScorecards` with task-specific domain-native surface judgments.",
+            "Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows."
+          ],
+          "acceptanceChecks": [
+            "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not rename a generic workflow card and call it domain-native.",
+            "Do not keep global workflow lists as the primary home or primary workflow UI.",
+            "Do not use metadata/settings pages as substitutes for task-specific product surfaces."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-006-b25-c08-visible-text-specific-critique",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c08-visible-text-specific-critique",
+          "sourceFindingIds": [
+            "B25-WORKFLOW-PERSONA-UNPROVEN"
+          ],
+          "title": "Every row has visible text and screen-specific critique",
+          "directQuestion": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
+          "whyItFailed": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+          "requiredOutcome": "Extract visible text and write a specific critique for each screenshot row.",
+          "affectedScope": {
+            "scope": "workflow-persona",
+            "communities": [
+              "communities referenced by failing workflow/persona rows"
+            ],
+            "personas": [
+              "personas referenced by failing workflow/persona rows"
+            ],
+            "workflows": [
+              "workflows referenced by failing scorecards"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.",
+          "rootCauseHypothesis": "The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.",
+          "targetExperience": "Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.",
+          "uxPrinciples": [
+            "Evidence must cite visible UI and text",
+            "Critique must be screen-specific and non-boilerplate"
+          ],
+          "concreteImprovements": [
+            "Extract visible text for every reviewed screenshot row.",
+            "Write a non-boilerplate critique for every row that names visible UI elements, visible text, the persona, and the user task.",
+            "Remove duplicated or reusable critiques; each critique must be specific enough that it cannot apply unchanged to an unrelated screen."
+          ],
+          "implementationGuidance": [
+            "Update the B25 judge/review artifact, not only app UI code.",
+            "Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.",
+            "Regenerate markdown review and matrix files from the updated schema v4 JSON."
+          ],
+          "contentGuidance": [
+            "Quote or summarize visible labels, headings, section names, action text, and result copy in the critique.",
+            "Explain why that visible content does or does not support the persona and task."
+          ],
+          "visualGuidance": [
+            "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json workflowPersonaScorecards",
+            "independent-production-ux-review.json screenRows",
+            "product-ux-screen-review-matrix.md every workflow/persona row",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Visible text extracts for every reviewed row.",
+            "Non-boilerplate screen-specific critique for every reviewed row.",
+            "Updated markdown matrix matching the JSON evidence."
+          ],
+          "acceptanceChecks": [
+            "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not reuse the same critique across unrelated screens.",
+            "Do not write critique that could apply without seeing the screenshot."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        },
+        {
+          "ticketId": "B25-RT-007-b25-c09-no-layout-production-defects",
+          "ticketSchemaVersion": 1,
+          "phase": "B25",
+          "reviewRunId": "b25-v4-pass-1",
+          "status": "open",
+          "severity": "major",
+          "priority": "P1",
+          "sourceCriterionId": "b25-c09-no-layout-production-defects",
+          "sourceFindingIds": [
+            "B25-HOLISTIC-UNPROVEN"
+          ],
+          "title": "No blocking or major layout/content defects remain",
+          "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
+          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "requiredOutcome": "Fix layout/content defects and rerun the review.",
+          "affectedScope": {
+            "scope": "holistic",
+            "communities": [
+              "all reviewed communities/test apps"
+            ],
+            "personas": [
+              "all reviewed target personas"
+            ],
+            "workflows": [
+              "all primary reviewed workflows"
+            ],
+            "screenRows": [
+              "derive from independent-production-ux-review.json"
+            ],
+            "screenshots": [
+              "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
+            ]
+          },
+          "problemStatement": "The evidence does not prove that the visible UI is free of major overlap, clipping, crowding, repeated-card, checklist-modal, or thin-content defects.",
+          "rootCauseHypothesis": "The pass has not performed a screenshot-grounded defect audit for mobile layout, density, component quality, and content depth.",
+          "targetExperience": "The reviewed UI should have no major overlap, clipping, crowding, default scaffold feel, repeated-card primary UX, checklist-modal primary UX, or thin placeholder content.",
+          "uxPrinciples": [
+            "No major layout defects",
+            "No thin placeholder content",
+            "No checklist or scaffold feel on primary screens"
+          ],
+          "concreteImprovements": [
+            "Audit screenshots for overlap, clipping, crowding, default scaffold appearance, repeated-card primary UX, checklist-modal UX, and thin placeholder content.",
+            "Fix any blocking or major layout/content defects and document before/after screenshot references.",
+            "Update holistic direct-question answers with screenshot-backed proof that no major layout/content defects remain."
+          ],
+          "implementationGuidance": [
+            "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+            "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+            "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes."
+          ],
+          "contentGuidance": [
+            "Replace placeholder, framework, workflow, evidence, or metadata language with user-facing product copy.",
+            "Use content that helps the target persona understand status, options, consequences, and next steps."
+          ],
+          "visualGuidance": [
+            "Audit screenshots for overlap, clipping, crowding, bottom control collisions, dense repeated cards, and modals that hide primary workflow context.",
+            "Prefer stable responsive dimensions and scroll-safe spacing for cards, lists, dialogs, and floating actions."
+          ],
+          "affectedEvidence": [
+            "independent-production-ux-review.json holisticQuestionAnswers",
+            "independent-production-ux-review.md holistic review summary",
+            "product-ux-screen-review-matrix.md relevant screen rows",
+            "production-ux-criteria-scorecard.json/.md"
+          ],
+          "evidenceToCollect": [
+            "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+            "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+            "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+          ],
+          "acceptanceChecks": [
+            "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+            "`production_ux_judge.dart` has no blocking failure for this criterion.",
+            "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+            "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+          ],
+          "rerunCommands": [
+            "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+          ],
+          "nonGoals": [
+            "Do not close the ticket without fresh evidence and a passing judge rerun."
+          ],
+          "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+        }
+      ],
+      "workerActions": [
+        "Rebuild and relaunch the Demo App on the reviewed emulator/device.",
+        "Recapture affected screenshots with hashes, timestamps, device metadata, and app commit SHA.",
+        "Regenerate B25 schema v4 review JSON, markdown review, screen matrix, remediation tickets, and iteration scorecard.",
+        "Commit the full iteration before starting the next UX feedback loop."
+      ],
+      "implementationGuidance": [
+        "Use each open remediation ticket as the implementation backlog.",
+        "Update review JSON, remediation log, scorecards, tracker, and screenshots together.",
+        "Inspect `apps/loom_communities_demo/lib` for the primary community home, shell, card, detail, and workflow surface widgets.",
+        "Compare every change against `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md` before coding.",
+        "Update widget tests and B25 evidence expectations when user-facing hierarchy, copy, or surface structure changes.",
+        "Inspect workflow surface builders and replace primary generic card/checklist/modal renderers with task-specific widgets.",
+        "Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.",
+        "Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states.",
+        "Update the B25 judge/review artifact, not only app UI code.",
+        "Fill `screenRows[].visibleTextExtract`, `screenRows[].screenSpecificCritique`, `holisticQuestionAnswers`, and `workflowPersonaScorecards` with screenshot-specific content.",
+        "Regenerate markdown review and matrix files from the updated schema v4 JSON."
+      ],
+      "evidenceToUpdate": [
+        "independent-production-ux-review.json findings",
+        "product-ux-remediation-loop.md",
+        "b25-iteration-scorecard-latest.json/.md",
+        "Build Tracker.md B25 row and execution ledger",
+        "independent-production-ux-review.json holisticQuestionAnswers",
+        "independent-production-ux-review.md holistic review summary",
+        "product-ux-screen-review-matrix.md relevant screen rows",
+        "production-ux-criteria-scorecard.json/.md",
+        "independent-production-ux-review.json workflowPersonaScorecards",
+        "independent-production-ux-review.json screenRows",
+        "product-ux-screen-review-matrix.md every workflow/persona row",
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion.",
+        "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+        "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+        "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.",
+        "Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.",
+        "`workflowPersonaScorecards` with task-specific domain-native surface judgments.",
+        "Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows.",
+        "Visible text extracts for every reviewed row.",
+        "Non-boilerplate screen-specific critique for every reviewed row.",
+        "Updated markdown matrix matching the JSON evidence."
+      ],
+      "acceptanceChecks": [
+        "Unresolved blocker and major finding counts are both zero.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version.",
+        "Holistic direct-question answers are present, screenshot-backed, non-boilerplate, and pass.",
+        "Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "commitBoundary": "Commit this remediation batch, refreshed evidence, judge outputs, scorecards, and tracker updates before the next UX feedback loop. If the committed pass still fails, the following pass starts by sending its tickets to the Remediation Planner."
+    }
+  ],
+  "plannerRules": [
+    "Worker agents implement from remediation batches, not from optimistic summaries.",
+    "The independent judge must rerun after each batch that changes UI, evidence, or critique.",
+    "No next UX feedback loop starts until the current remediation iteration is committed."
+  ]
+}

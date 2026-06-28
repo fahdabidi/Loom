@@ -84,7 +84,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 3 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. Required next: complete independent screen-specific critique and direct-question scorecards, remediate resulting issues, recapture evidence, rerun judge and iteration scorecard. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 3 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. Current pass closeout artifacts are evidence, judge scorecard, remediation tickets, iteration scorecard, remediation log, tracker, and commit. Required next: start `b25-v4-pass-2` by sending the committed tickets to the Remediation Planner, then implement fixes, recapture evidence, rerun judge, regenerate scorecard, and commit that pass. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6` |
 
 ## Phase Outcome Summary
 
@@ -123,7 +123,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Replaces generic workflow harness UI with domain-specific production surfaces. | RSVP/event surfaces, payment/receipt surfaces, forms/protected-data surfaces, announcement/composer surfaces, approval surfaces, search/AI surfaces, export/migration surfaces, social/ad surfaces. | Users interact with real domain workflows instead of generic cards and "Complete workflow" dialogs. |
 | B23 | Makes the production surfaces persona-aware and stateful across roles. | Actor views, receiver views, read-only views, disabled/hidden rules, dependency-chain state, persona-specific screenshot tests. | A role that creates a record and a role that receives it each see a coherent production experience for their part of the workflow. |
 | B24 | Certifies the full suite against production UX evidence requirements. | Generic-copy failure tests, screenshot evidence audit, final B12-B24 evidence manifest, Skill completion-rule audit, regression sweep. | No example community can be marked complete while using generic workflow harness copy, missing inputs, missing success states, or untested persona handoffs. |
-| B25 | Reviews and certifies the finished UX independently. | Outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, holistic direct-question scorecard, workflow/persona direct-question scorecards, production UX judge scorecard, iteration scorecards, remediation evidence, final pass/fail decision. | The UX passes only when an independent screenshot-first review and the production UX judge find no unresolved blocker or major design issues, every screenshot is fresh and traceable, every primary workflow is domain-native, the holistic and workflow/persona direct-question passes are green, every pass has a convergence scorecard, and any minor issues are accepted or tracked. |
+| B25 | Reviews and certifies the finished UX independently. | Outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, holistic direct-question scorecard, workflow/persona direct-question scorecards, production UX judge scorecard, detailed remediation tickets, iteration scorecards, remediation evidence, final pass/fail decision; failed-pass tickets feed the next pass's remediation planner. | The UX passes only when an independent screenshot-first review and the production UX judge find no unresolved blocker or major design issues, every screenshot is fresh and traceable, every primary workflow is domain-native, the holistic and workflow/persona direct-question passes are green, every failed pass has template-complete remediation tickets and a convergence scorecard, and any minor issues are accepted or tracked. A remediation pass may not begin implementation until the prior pass's tickets have been converted into a remediation plan. |
 
 ## Planned Full UX Workflow Evidence Matrix
 
@@ -316,7 +316,7 @@ tools keep the implementation worker separate from the pass/fail judge.
 | B22 | `domain_surface_classifier.dart` | `domain-surface-scorecard.json/.md` | A primary workflow remains a generic workflow-card, checklist modal, metadata page, repeated card shell, or global workflow list. |
 | B23 | `persona_ux_judge.dart` | `persona-ux-scorecard.json/.md` | Actor, receiver, read-only, disabled, hidden, or unauthorized persona evidence is missing or contradictory. |
 | B24 | `evidence_integrity_auditor.dart` | `evidence-integrity-scorecard.json/.md` | Screenshots, hashes, timestamps, app commit SHA, device metadata, visible text, or generic-copy audit evidence is missing/stale. |
-| B25 | `b25_evidence_collector.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart` | `independent-production-ux-review.json/.md`, `product-ux-screen-review-matrix.md`, `production-ux-criteria-scorecard.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `holisticQuestionAnswers` and `workflowPersonaScorecards` in review JSON | Evidence was not collected by the deterministic collector, any B25 pass criterion has a blocking failure, either direct-question pass is missing/partial/unsupported, any primary workflow surface is not domain-native, or the iteration scorecard is missing for the pass. |
+| B25 | `b25_evidence_collector.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart`; next-pass `b25_remediation_planner.dart` | Current pass: `independent-production-ux-review.json/.md`, `product-ux-screen-review-matrix.md`, `production-ux-criteria-scorecard.json/.md`, `b25-remediation-tickets-<run-id>.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `holisticQuestionAnswers` and `workflowPersonaScorecards` in review JSON. Next pass kickoff: `b25-remediation-plan-<prior-run-id>.json/.md`. | Evidence was not collected by the deterministic collector, any B25 pass criterion has a blocking failure without a template-complete remediation ticket, either direct-question pass is missing/partial/unsupported, any primary workflow surface is not domain-native, or the iteration scorecard is missing for the pass. A remediation pass fails before implementation if the prior pass's tickets were not sent to the planner. |
 
 Judge agents may receive only artifacts, screenshots, blueprint/contracts, pass criteria, evidence
 metadata, and remediation logs. They must not receive worker implementation notes or intended behavior
@@ -1579,7 +1579,7 @@ Closeout rule for reopened phases:
   freshness audit, visible-text extraction, UI-pattern classification, domain-native primary-surface
   audit, boilerplate critique audit, holistic product UX direct-question scorecard,
   workflow/persona direct-question scorecards, production UX judge scorecard, B25 iteration scorecards,
-  remediation loop log, severity-ranked findings, annotated screenshot references, remediation plan, resolved-finding
+  B25 remediation tickets, remediation loop log, severity-ranked findings, annotated screenshot references, resolved-finding
   evidence, owner-accepted minor issue list if any, final UX pass/fail decision, B25 API Review if any
   API issue is discovered, and B25 UX Decisions.
 - **Completed when:** The reviewer has walked the actual app in the visible Android emulator across all
@@ -1618,7 +1618,7 @@ Closeout rule for reopened phases:
   emulator/device metadata, visible-text extraction, UI-pattern classification, domain-native
   primary-surface audit, boilerplate critique audit, holistic direct-question answers,
   workflow/persona direct-question scorecards, production UX judge scorecard, B25 iteration scorecards,
-  annotated screenshots or screenshot paths, remediation diffs/evidence, retest output for fixed
+  B25 remediation tickets, annotated screenshots or screenshot paths, remediation diffs/evidence, retest output for fixed
   findings, final pass/fail statement, manifest/test stamps, B25 phase gate, analyze, boundary lint,
   diff check, per-iteration commit SHAs, and final closeout commit SHA.
 - **Execution record:** B25 v3 iteration 3 is now historical and superseded by the v4 production UX
@@ -1650,8 +1650,11 @@ Closeout rule for reopened phases:
   criteria failures. The unresolved major findings are `B25-V4-REVIEW-PENDING`,
   `B25-HOLISTIC-UNPROVEN`, and `B25-WORKFLOW-PERSONA-UNPROVEN`. The holistic direct-question pass is
   false and the workflow/persona direct-question pass is false because independent screen-specific
-  critique, holistic answers, and workflow/persona scorecards are not complete. B25 remains reopened.
-  Iteration commit: `647c38f`; pass-result clarification commit `c5799e6`.
+  critique, holistic answers, and workflow/persona scorecards are not complete. Pass 1 closes after
+  its judge tickets and scorecard are committed; the next worker iteration must start from
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-2.md`, which consumes the
+  committed pass-1 tickets. B25 remains reopened. Iteration commit: `647c38f`; pass-result
+  clarification commit `c5799e6`.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 closeout commit pending.
 
 ## Gate Evidence Template
@@ -1690,6 +1693,9 @@ For each completed phase, paste or link:
   persona UX, evidence integrity, and production UX criteria, as applicable
 - For B25 specifically, holistic product UX direct-question answers and workflow/persona
   direct-question scorecards, both green
+- For B25 specifically, remediation ticket JSON/Markdown for every failed blocking criterion
+- For failed B25 passes, remediation planner JSON/Markdown is the first artifact of the next
+  remediation pass, converting the prior pass's tickets into ordered worker batches
 - For B25 specifically, B25 iteration scorecard JSON/Markdown for the pass, including resolved and
   remaining blocker/major counts
 - Commit SHA

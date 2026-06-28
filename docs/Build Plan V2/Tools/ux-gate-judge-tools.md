@@ -20,8 +20,15 @@ Run from `app/` with WSL Ubuntu:
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
-wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
+```
+
+That sequence finishes the current pass. If the committed pass fails, the next pass starts by consuming
+the prior pass's tickets:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_remediation_planner.dart --tickets ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --scorecard ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-2.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-2.md'
 ```
 
 | Tool | Phase | Purpose |
@@ -34,6 +41,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `b25_evidence_collector.dart` | B25 | Convert workflow UI evidence manifests into B25 schema v4 screenshot evidence with hashes, timestamps, device metadata, visible text source, and app commit SHA. |
 | `production_ux_judge.dart` | B25 | Score every B25 production UX pass criterion and fail any missing or weak evidence. |
 | `b25_iteration_scorecard.dart` | B25 | Summarize each B25 review/remediation pass with current blocker/major counts, resolved counts, new counts, judge failures, and convergence status. |
+| `b25_remediation_planner.dart` | B25 | Convert judge-generated remediation tickets into ordered worker-agent remediation batches. |
 
 ## Required B25 Scorecard
 
@@ -41,6 +49,42 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 - `production-ux-criteria-scorecard.json`
 - `production-ux-criteria-scorecard.md`
+- `b25-remediation-tickets-<run-id>.json`
+- `b25-remediation-tickets-<run-id>.md`
+
+Each remediation ticket includes:
+
+- `ticketId`
+- `ticketSchemaVersion`
+- `phase`
+- `reviewRunId`
+- `status`
+- `severity`
+- `priority`
+- failed source criterion
+- related finding IDs
+- direct question
+- why it failed
+- affected scope: communities, personas, workflows, screen rows, and screenshots
+- user-facing problem statement
+- root-cause hypothesis
+- target experience
+- UX principles
+- concrete improvements
+- implementation guidance
+- content guidance
+- visual guidance
+- affected evidence
+- evidence to collect
+- acceptance checks
+- rerun commands
+- non-goals
+- commit boundary
+
+The detailed schema and markdown shape live in
+[b25-remediation-ticket-template.md](./b25-remediation-ticket-template.md). A ticket that only repeats
+the failed criterion is invalid; it must give the remediation agent enough UI, content, evidence, and
+acceptance context to implement the next pass.
 
 `b25_iteration_scorecard.dart` emits after every B25 pass:
 
@@ -48,6 +92,12 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 - `b25-iteration-scorecard-<run-id>.md`
 - `b25-iteration-scorecard-latest.json`
 - `b25-iteration-scorecard-latest.md`
+
+`b25_remediation_planner.dart` emits at the start of the next B25 remediation pass, using the prior
+failed pass's tickets:
+
+- `b25-remediation-plan-<run-id>.json`
+- `b25-remediation-plan-<run-id>.md`
 
 B25 uses direct questions rather than only declarative pass criteria. The production judge must run:
 
@@ -91,6 +141,11 @@ The iteration scorecard does not replace the judge. It records whether the loop 
 - holistic direct-question pass status
 - workflow/persona direct-question pass status
 - required next action before the next UX feedback/remediation loop
+
+The remediation tickets do not replace the judge or scorecard either. They are committed with the failed
+pass. At the start of the next pass, the tickets are sent to the Remediation Planner, and the planner
+output becomes that next Worker Agent's fix backlog. A failed B25 pass without remediation tickets is
+incomplete evidence; a remediation pass that begins without a planner output is also incomplete.
 
 ## B25 Direct Questions
 
@@ -151,7 +206,8 @@ critiques are screen-specific, and primary workflow surfaces are domain-native.
 
 ## Remediation Planner Contract
 
-The remediation planner receives only judge failures and phase docs. It must output:
+The remediation planner does not implement remediations. It receives only committed judge failures,
+remediation tickets, scorecards, and phase docs from the prior pass. It must output:
 
 - root-cause cluster
 - affected communities/screens/personas/workflows
@@ -159,5 +215,7 @@ The remediation planner receives only judge failures and phase docs. It must out
 - files likely needing changes
 - tests/evidence to rerun
 - commit boundary for the iteration
+- ticket IDs from `b25-remediation-tickets-<run-id>.json/.md`
+- ordered remediation batch IDs from `b25-remediation-plan-<run-id>.json/.md`
 
 The Worker Agent receives the remediation plan, not a softened pass/fail summary.
