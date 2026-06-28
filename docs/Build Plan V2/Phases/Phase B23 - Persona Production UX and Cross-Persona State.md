@@ -24,6 +24,17 @@ sees that state in a real recipient surface, and unrelated personas cannot act o
 Masjid Nur announcement flow must prove admin publish and member receive as a representative dependency
 chain, with equivalent coverage for the other examples.
 
+## Persona UX Judge Gate
+
+Run `persona_ux_judge.dart` against the B23 persona evidence:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B23/persona-ux-evidence.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B23/persona-ux-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B23/persona-ux-scorecard.md'
+```
+
+The judge must fail if actor, receiver, read-only, disabled, hidden, or unauthorized states are missing
+from evidence, or if one all-powerful persona can satisfy a multi-persona workflow.
+
 ## Prompt To Use
 
 Use this prompt when executing B23:
@@ -56,5 +67,5 @@ check. Record B23 API Review and B23 UX Decisions.
 ## Evidence To Record
 
 Actor screenshots, persona-switch screenshots, receiver screenshots, unauthorized persona screenshots,
-backend parity output, per-persona workflow matrix audit, manifest rows, phase gate, analyzer, boundary
-lint, diff check, and commit SHA.
+backend parity output, per-persona workflow matrix audit, persona UX judge scorecard, manifest rows,
+phase gate, analyzer, boundary lint, diff check, and commit SHA.

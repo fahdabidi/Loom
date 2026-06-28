@@ -32,3 +32,21 @@ scripts:
   skill:prereq:setup:
     run: dart run packages/tooling/skill_prereq_setup.dart --target codex --mode local-demo
     description: Print the Skill prerequisite setup plan for Codex local-demo execution.
+  judge:workflow-completeness:
+    run: dart run packages/tooling/loom_ux_judges/bin/workflow_completeness_judge.dart
+    description: Judge B11 owner-prompt workflow completeness evidence.
+  judge:ux-contract:
+    run: dart run packages/tooling/loom_ux_judges/bin/ux_contract_judge.dart
+    description: Judge B21 production UX contract evidence.
+  judge:domain-surface:
+    run: dart run packages/tooling/loom_ux_judges/bin/domain_surface_classifier.dart
+    description: Judge B22 domain-native surface classification evidence.
+  judge:persona-ux:
+    run: dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart
+    description: Judge B23 persona-state UX evidence.
+  judge:evidence-integrity:
+    run: dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart
+    description: Judge B24 screenshot and evidence integrity.
+  judge:production-ux:
+    run: dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart
+    description: Judge B25 production UX pass-criteria evidence.

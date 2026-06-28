@@ -23,6 +23,18 @@ All example/test apps pass production UX workflow tests, every workflow has prod
 multi-persona workflow has receiver evidence, and automated gates fail if user-facing workflow surfaces
 contain generic harness copy or omit required user actions.
 
+## Evidence Integrity Auditor Gate
+
+Run `evidence_integrity_auditor.dart` against the B24 evidence:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B24/production-ux-evidence-integrity.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B24/evidence-integrity-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B24/evidence-integrity-scorecard.md'
+```
+
+The auditor is deterministic. It must fail missing screenshot paths, hashes, timestamps, app commit SHA,
+device metadata, visible-text extracts, stale references, or generic harness copy. B25 may not start
+from un-audited B24 evidence.
+
 ## Prompt To Use
 
 Use this prompt when executing B24:
@@ -53,6 +65,6 @@ record B24 API Review and B24 UX Decisions.
 
 ## Evidence To Record
 
-Final B12-B24 evidence manifest, production UX audit, generic-copy gate output, screenshot bundle
-paths, full workflow/emulator output, Skill diff, manifest rows, phase gate, analyzer, boundary lint,
-diff check, and commit SHA.
+Final B12-B24 evidence manifest, production UX audit, evidence integrity scorecard, generic-copy gate
+output, screenshot bundle paths, full workflow/emulator output, Skill diff, manifest rows, phase gate,
+analyzer, boundary lint, diff check, and commit SHA.

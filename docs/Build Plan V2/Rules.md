@@ -208,6 +208,28 @@ sibling `Phase X - UX Decisions.md` before implementation. The UX Decisions file
 A phase cannot complete with a UX Decisions file that only contains generic notes or unreviewed
 placeholders.
 
+## R21 Independent UX judge tools
+
+UX pass/fail gates must separate implementation from judgment. The Worker Agent implements fixes, the
+Evidence Collector Tool captures artifacts, the Judge Agent scores only supplied evidence, and the
+Remediation Planner converts judge failures into the next fix batch.
+
+The required judge tools are:
+
+- B11 `workflow_completeness_judge.dart`
+- B21 `ux_contract_judge.dart`
+- B22 `domain_surface_classifier.dart`
+- B23 `persona_ux_judge.dart`
+- B24 `evidence_integrity_auditor.dart`
+- B25 `production_ux_judge.dart`
+
+Judge agents and judge tools may receive only artifacts, screenshots, blueprint/contracts, pass
+criteria, evidence metadata, and remediation logs. They must not receive worker implementation notes,
+intended behavior summaries, or optimistic completion claims. If the artifact does not prove a
+criterion, the criterion fails.
+
+A phase cannot complete when its required judge scorecard has a blocking criterion failure.
+
 ## Test Naming
 
 | Type | Pattern | Example |

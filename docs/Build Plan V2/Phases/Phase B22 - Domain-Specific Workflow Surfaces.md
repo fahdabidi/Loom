@@ -31,6 +31,18 @@ labels, inputs, validation, and results. Tests fail if production workflow scree
 labels such as `Complete` or `Complete workflow`, or copy such as `Can perform this workflow` and
 `workflow evidence`.
 
+## Domain Surface Classifier Gate
+
+Run `domain_surface_classifier.dart` against the B22 surface evidence:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/domain_surface_classifier.dart --input ../docs/Build\ Plan\ V2/Evidence/B22/domain-surface-evidence.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B22/domain-surface-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B22/domain-surface-scorecard.md'
+```
+
+The classifier must fail any primary workflow row still classified as `generic-workflow-card`,
+`checklist-modal`, `metadata-page`, `repeated-card-shell`, or `global-workflow-list`. B22 cannot pass on
+semantic copy changes alone.
+
 ## Prompt To Use
 
 Use this prompt when executing B22:
@@ -57,6 +69,6 @@ analyze, boundary lint, and diff check. Record B22 API Review and B22 UX Decisio
 
 ## Evidence To Record
 
-Before/after screenshots, per-category workflow evidence, generic-copy gate output, widget/integration
-test output, backend assertion output, manifest rows, phase gate, analyzer, boundary lint, diff check,
-and commit SHA.
+Before/after screenshots, per-category workflow evidence, domain surface classifier scorecard,
+generic-copy gate output, widget/integration test output, backend assertion output, manifest rows, phase
+gate, analyzer, boundary lint, diff check, and commit SHA.

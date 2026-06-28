@@ -32,6 +32,7 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | [Skill/using-loom-to-build-an-extension.md](./Skill/using-loom-to-build-an-extension.md) | Master walkthrough the Skill follows. |
 | [Skill/setup/system-prereqs.md](./Skill/setup/system-prereqs.md) | Local setup and validation-ready contract for Codex and Claude Code execution targets. |
 | [Skill/setup/prereq-manifest.json](./Skill/setup/prereq-manifest.json) | Machine-readable setup manifest for required validation tools. |
+| [Tools/ux-gate-judge-tools.md](./Tools/ux-gate-judge-tools.md) | Independent UX judge tool contracts and CLI usage for B11 and B21-B25. |
 
 ## Phase Index
 
@@ -58,7 +59,7 @@ V2 changes the ordering. It is component-first, then workflow-first:
 | B10 | [Phase B10 - Skill Arbitrary Extension Test Run.md](./Phases/Phase%20B10%20-%20Skill%20Arbitrary%20Extension%20Test%20Run.md) | Workflows | Arbitrary Skill-generated artifacts replay through the Demo App Local Backend and open locally. |
 | B11 | [Phase B11 - Skill Prompt Build Validate Complete.md](./Phases/Phase%20B11%20-%20Skill%20Prompt%20Build%20Validate%20Complete.md) | Workflows | Owner prompt produces docs, packages, local install/open, workflow validation, and a complete report. |
 | B12 | [Phase B12 - Skill Reference Methodology.md](./Phases/Phase%20B12%20-%20Skill%20Reference%20Methodology.md) | Workflows | The Skill uses Loom reference implementations, UX methodology, API maps, and phase templates before execution. |
-| B13 | [Phase B13 - Skill Multi Prompt Validation.md](./Phases/Phase%20B13%20-%20Skill%20Multi%20Prompt%20Validation.md) | Workflows | Multiple arbitrary community prompts generate packages that pass local Demo App workflow validation. |
+| B13 | [Phase B13 - Garden Club Full UX Workflow Evidence.md](./Phases/Phase%20B13%20-%20Garden%20Club%20Full%20UX%20Workflow%20Evidence.md) | Workflows | Garden Club opens a real extension experience and every declared Garden Club workflow completes through visible UI. |
 
 ## Shared Execution Convention
 
@@ -93,6 +94,12 @@ Baseline commands:
 | Workflow validation target | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && melos run test:workflows:demo-local'` |
 | Manifest gate | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/manifest_gate.dart --manifest ../docs/Build\\ Plan\\ V2/test-manifest.json'` |
 | Phase gate | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/phase_gate.dart --phase <phase>'` |
+| B11 workflow completeness judge | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/workflow_completeness_judge.dart --input <evidence.json>'` |
+| B21 UX contract judge | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/ux_contract_judge.dart --input <evidence.json>'` |
+| B22 domain surface classifier | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/domain_surface_classifier.dart --input <evidence.json>'` |
+| B23 persona UX judge | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart --input <evidence.json>'` |
+| B24 evidence integrity auditor | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart --input <evidence.json>'` |
+| B25 production UX judge | `wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input <evidence.json>'` |
 
 ## Required Sibling Docs
 

@@ -80,6 +80,10 @@ a real user would expect.
 - Primary-surface classification audit. Every primary workflow surface must be classified as
   `domain-native`, `secondary-supporting`, or `generic-workflow-card`. Primary workflows cannot pass as
   `generic-workflow-card`, checklist modal, metadata page, or a repeated card with better copy.
+- Production UX judge scorecard at
+  `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.json` and
+  `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`. The scorecard must assign a
+  score and pass/fail verdict to each B25 pass criterion from artifacts only.
 - Owner-accepted minor issue list, if any minor issues remain.
 - Final pass/fail UX decision.
 - B25 API Review if any API or platform contract issue is discovered, and B25 UX Decisions.
@@ -141,15 +145,38 @@ the owner explicitly asks for review-only planning or pauses implementation.
    severity counts.
 5. **Independent screenshot-first review:** run an adversarial product UX review from screenshots and the
    visible emulator only. The reviewer must not pass a row that cannot be justified from visible UI.
-6. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+6. **Production UX judge scorecard:** run the independent judge tool against the v4 evidence:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
+   ```
+
+   The judge sees only artifacts, screenshots, pass criteria, and evidence metadata. It must not receive
+   worker implementation notes or attempted-fix summaries.
+7. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-7. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
+8. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
    recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
    iteration before the next UX feedback or remediation batch.
-8. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+9. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
-   is domain-native, all required tests/gates pass, and the tracker records the final iteration commit.
+   is domain-native, the production UX judge scorecard has no blocking criterion failures, all required
+   tests/gates pass, and the tracker records the final iteration commit.
+
+## Required B25 Agent/Tool Split
+
+Use the split defined in [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judge-tools.md):
+
+| Role | B25 responsibility |
+| --- | --- |
+| Worker Agent | Applies UX/content/code/test fixes from a remediation plan. |
+| Evidence Collector Tool | Captures screenshots, hashes, timestamps, visible text, app commit SHA, device metadata, and command output. |
+| Production UX Judge Agent | Reviews only artifacts and screenshots, scores every pass criterion, and emits the scorecard/findings. |
+| Remediation Planner | Converts judge failures into fix batches for the Worker Agent. |
+
+The Worker Agent may not mark B25 complete. Only the Production UX Judge scorecard plus the deterministic
+phase gates can allow closeout.
 
 ## Prompt To Use
 
@@ -344,6 +371,8 @@ Pass criteria:
   screenshot evidence and a pass verdict, owner-accepted minor issue, or tracked polish finding.
 - The schema version 4 JSON evidence is complete, non-boilerplate, screenshot-backed, fresh, and internally
   consistent with the markdown review, screen matrix, remediation loop, and tracker.
+- The production UX judge scorecard assigns pass scores to every B25 pass criterion and has no blocking
+  failures.
 - If a prior loop iteration failed, the remediation loop log proves that fixes were applied, screenshots
   were refreshed, evidence was regenerated, and the latest review now has zero unresolved blocker or
   major findings.
@@ -372,6 +401,6 @@ The next UX feedback/remediation loop may not start from uncommitted B25 iterati
 ## Evidence To Record
 
 Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 4
-machine-readable review JSON, B25 remediation loop log, findings table, screenshot paths, remediation
-evidence, retest output, final pass/fail statement, manifest rows, phase gate, analyzer, boundary lint,
-diff check, per-iteration commit SHAs, and final closeout commit SHA.
+machine-readable review JSON, production UX judge scorecard, B25 remediation loop log, findings table,
+screenshot paths, remediation evidence, retest output, final pass/fail statement, manifest rows, phase
+gate, analyzer, boundary lint, diff check, per-iteration commit SHAs, and final closeout commit SHA.

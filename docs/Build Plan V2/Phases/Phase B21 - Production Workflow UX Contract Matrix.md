@@ -24,6 +24,18 @@ Every workflow/persona row has a reviewed production UX contract and no row is a
 `Complete`, `Complete workflow`, `Can perform this workflow`, `workflow evidence`, `local route`, or
 equivalent implementation-oriented copy as the intended user experience.
 
+## UX Contract Judge Gate
+
+Run `ux_contract_judge.dart` against the B21 contract evidence before B22 implementation starts:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/ux_contract_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B21/ux-contract-evidence.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B21/ux-contract-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B21/ux-contract-scorecard.md'
+```
+
+The judge must fail if any workflow/persona row lacks real user goal, domain surface, inputs,
+validation, semantic action, success state, receiver state, or screenshot plan. The Worker Agent may not
+start B22 from an unjudged or failed B21 contract.
+
 ## Prompt To Use
 
 Use this prompt when executing B21:
@@ -58,5 +70,5 @@ review before Phase B22 implementation.
 
 ## Evidence To Record
 
-Matrix path, generic-copy audit path, prompt transcript, owner review notes, manifest rows, phase gate,
-boundary lint, diff check, and commit SHA.
+Matrix path, generic-copy audit path, UX contract judge scorecard, prompt transcript, owner review
+notes, manifest rows, phase gate, boundary lint, diff check, and commit SHA.

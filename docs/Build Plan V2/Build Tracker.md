@@ -80,7 +80,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | Prior B25 v3 iteration 3 is historical and superseded. B25 must rerun under v4 with screenshot freshness, non-boilerplate critique, visible-text extraction, UI-pattern classification, and zero generic primary workflow surfaces. | Historical v3 implementation `ccc3f40`; v4 closeout pending |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | Prior B25 v3 iteration 3 is historical and superseded. B25 must rerun under v4 with screenshot freshness, non-boilerplate critique, visible-text extraction, UI-pattern classification, zero generic primary workflow surfaces, and a passing production UX judge scorecard. | Historical v3 implementation `ccc3f40`; v4 closeout pending |
 
 ## Phase Outcome Summary
 
@@ -119,7 +119,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Replaces generic workflow harness UI with domain-specific production surfaces. | RSVP/event surfaces, payment/receipt surfaces, forms/protected-data surfaces, announcement/composer surfaces, approval surfaces, search/AI surfaces, export/migration surfaces, social/ad surfaces. | Users interact with real domain workflows instead of generic cards and "Complete workflow" dialogs. |
 | B23 | Makes the production surfaces persona-aware and stateful across roles. | Actor views, receiver views, read-only views, disabled/hidden rules, dependency-chain state, persona-specific screenshot tests. | A role that creates a record and a role that receives it each see a coherent production experience for their part of the workflow. |
 | B24 | Certifies the full suite against production UX evidence requirements. | Generic-copy failure tests, screenshot evidence audit, final B12-B24 evidence manifest, Skill completion-rule audit, regression sweep. | No example community can be marked complete while using generic workflow harness copy, missing inputs, missing success states, or untested persona handoffs. |
-| B25 | Reviews and certifies the finished UX independently. | Outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, remediation evidence, final pass/fail decision. | The UX passes only when an independent screenshot-first review finds no unresolved blocker or major design issues, every screenshot is fresh and traceable, every primary workflow is domain-native, and any minor issues are accepted or tracked. |
+| B25 | Reviews and certifies the finished UX independently. | Outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, production UX judge scorecard, remediation evidence, final pass/fail decision. | The UX passes only when an independent screenshot-first review and the production UX judge find no unresolved blocker or major design issues, every screenshot is fresh and traceable, every primary workflow is domain-native, and any minor issues are accepted or tracked. |
 
 ## Planned Full UX Workflow Evidence Matrix
 
@@ -274,6 +274,24 @@ Every B25 independent UX review must include:
   phase must be reopened, the prior evidence must be marked stale/superseded, and B25 cannot pass again
   until the latest standard is rerun successfully.
 
+## Independent UX Judge Tool Gates
+
+Use the judge tool contracts in [Tools/ux-gate-judge-tools.md](./Tools/ux-gate-judge-tools.md). These
+tools keep the implementation worker separate from the pass/fail judge.
+
+| Phase | Judge tool | Required output | Blocks phase when |
+| --- | --- | --- | --- |
+| B11 | `workflow_completeness_judge.dart` | `workflow-completeness-scorecard.json/.md` | The Skill drops a requested workflow, omits package artifacts, or lacks Demo App validation. |
+| B21 | `ux_contract_judge.dart` | `ux-contract-scorecard.json/.md` | A workflow/persona contract lacks real user goal, domain surface, inputs, validation, semantic action, success state, receiver state, or screenshot plan. |
+| B22 | `domain_surface_classifier.dart` | `domain-surface-scorecard.json/.md` | A primary workflow remains a generic workflow-card, checklist modal, metadata page, repeated card shell, or global workflow list. |
+| B23 | `persona_ux_judge.dart` | `persona-ux-scorecard.json/.md` | Actor, receiver, read-only, disabled, hidden, or unauthorized persona evidence is missing or contradictory. |
+| B24 | `evidence_integrity_auditor.dart` | `evidence-integrity-scorecard.json/.md` | Screenshots, hashes, timestamps, app commit SHA, device metadata, visible text, or generic-copy audit evidence is missing/stale. |
+| B25 | `production_ux_judge.dart` | `production-ux-criteria-scorecard.json/.md` | Any B25 pass criterion has a blocking failure or any primary workflow surface is not domain-native. |
+
+Judge agents may receive only artifacts, screenshots, blueprint/contracts, pass criteria, evidence
+metadata, and remediation logs. They must not receive worker implementation notes or intended behavior
+summaries. If the evidence does not prove a criterion, the criterion fails.
+
 | Workflow category | Production UX requirements | Evidence phase |
 | --- | --- | --- |
 | Event and RSVP workflows | Event details, schedule/location/capacity when available, RSVP state, cancel/change action if supported, confirmation surface, receiver calendar/notification state. | B21-B25 |
@@ -308,7 +326,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Reopened | Prior product-UX v3 pass superseded by v4 criteria requiring per-community production UX blueprint, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, and domain-native primary workflow surfaces. |
+| B25 | None | Reopened | Prior product-UX v3 pass superseded by v4 criteria requiring per-community production UX blueprint, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, domain-native primary workflow surfaces, and production UX judge scorecard. |
 
 Closeout rule for reopened phases:
 
@@ -1529,9 +1547,10 @@ Closeout rule for reopened phases:
 - **Deliverables:** Per-community production UX blueprint, independent UX review report, complete
   product UX screen review matrix, schema version 4 machine-readable review evidence, screenshot
   freshness audit, visible-text extraction, UI-pattern classification, domain-native primary-surface
-  audit, boilerplate critique audit, remediation loop log, severity-ranked findings, annotated
-  screenshot references, remediation plan, resolved-finding evidence, owner-accepted minor issue list if
-  any, final UX pass/fail decision, B25 API Review if any API issue is discovered, and B25 UX Decisions.
+  audit, boilerplate critique audit, production UX judge scorecard, remediation loop log,
+  severity-ranked findings, annotated screenshot references, remediation plan, resolved-finding
+  evidence, owner-accepted minor issue list if any, final UX pass/fail decision, B25 API Review if any
+  API issue is discovered, and B25 UX Decisions.
 - **Completed when:** The reviewer has walked the actual app in the visible Android emulator across all
   example/test communities and personas, reviewed the final evidence screenshots, documented findings
   across design quality dimensions, and verified that no blocker or major UX issues remain unresolved.
@@ -1554,6 +1573,7 @@ Closeout rule for reopened phases:
   The review must also fail if screenshot evidence is stale, if rows use boilerplate critique, if the
   JSON/markdown/tracker disagree about the active run, or if any primary workflow surface remains a
   generic workflow-card, checklist/review modal, metadata/settings page, or repeated card shell.
+  The review must also fail if `production_ux_judge.dart` produces any blocking criterion failure.
   If the B25 review standard changes, prior passes must be explicitly superseded and B25 must be
   reopened until the latest standard passes.
   When the review fails with any blocker or major finding, B25 must apply fixes and rerun the review
@@ -1562,10 +1582,10 @@ Closeout rule for reopened phases:
 - **Evidence to record:** Independent review report, product UX screen review matrix, findings table,
   production UX blueprint, schema version 4 JSON evidence, screenshot hashes/timestamps, app commit SHA,
   emulator/device metadata, visible-text extraction, UI-pattern classification, domain-native
-  primary-surface audit, boilerplate critique audit, annotated screenshots or screenshot paths,
-  remediation diffs/evidence, retest output for fixed findings, final pass/fail statement,
-  manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check, per-iteration commit SHAs,
-  and final closeout commit SHA.
+  primary-surface audit, boilerplate critique audit, production UX judge scorecard, annotated
+  screenshots or screenshot paths, remediation diffs/evidence, retest output for fixed findings, final
+  pass/fail statement, manifest/test stamps, B25 phase gate, analyze, boundary lint, diff check,
+  per-iteration commit SHAs, and final closeout commit SHA.
 - **Execution record:** B25 v3 iteration 3 is now historical and superseded by the v4 production UX
   standard. The historical iteration created
   `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`, regenerated schema version 3
@@ -1620,6 +1640,8 @@ For each completed phase, paste or link:
   for B21+ production UX phases
 - Independent post-implementation UX review report, severity-ranked findings, remediation evidence, and
   final pass/fail decision, for B25+ independent UX review phases
+- Judge tool scorecards for B11 and B21-B25: workflow completeness, UX contract, domain surface,
+  persona UX, evidence integrity, and production UX criteria, as applicable
 - Commit SHA
 
 Run each command above through WSL Ubuntu from `app/`, for example:

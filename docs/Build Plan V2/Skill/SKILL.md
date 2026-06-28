@@ -166,6 +166,16 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     visible-text extracts, unique row IDs, non-boilerplate critiques, domain-native primary surfaces,
     zero unresolved blocker/major findings, and internal consistency between markdown review, JSON
     evidence, remediation log, screenshots, and tracker.
+53. Use separate judge tools for UX gates so worker agents do not grade their own implementation. B11
+    must run the workflow-completeness judge; B21 the UX-contract judge; B22 the domain-surface
+    classifier; B23 the persona-UX judge; B24 the evidence-integrity auditor; and B25 the
+    production-UX judge.
+54. The Production UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
+    metadata, blueprint/contracts, and remediation logs. Do not give it worker implementation notes,
+    intended behavior explanations, or optimistic completion summaries.
+55. B25 cannot pass until `production_ux_judge.dart` emits
+    `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
+    every B25 pass criterion and no blocking criterion failures.
 
 ## Delivery Modes
 
@@ -282,6 +292,8 @@ Before reporting completion:
     only.
 27. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
+28. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
+    finding, not as optional review feedback.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
 workflow or persona/workflow row is untested, has missing screenshots, lacks prerequisite-chain
@@ -297,6 +309,22 @@ page, has not completed the B25 remediation loop after a failed product UX revie
 independent product UX pass decision, or is only represented by metadata. Return a gap report and keep
 the package incomplete until all workflow, persona, production UX blueprint, production UX evidence,
 B25 remediation-loop evidence, and independent product UX review evidence is green.
+
+## UX Judge Tools
+
+For UX gates, use [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judge-tools.md). The required
+judge CLIs are:
+
+- B11: `dart run packages/tooling/loom_ux_judges/bin/workflow_completeness_judge.dart`
+- B21: `dart run packages/tooling/loom_ux_judges/bin/ux_contract_judge.dart`
+- B22: `dart run packages/tooling/loom_ux_judges/bin/domain_surface_classifier.dart`
+- B23: `dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart`
+- B24: `dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart`
+- B25: `dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart`
+
+The agent split is mandatory: Worker Agent implements, Evidence Collector captures, Judge Agent scores
+artifacts only, and Remediation Planner converts failures into fix batches. If the artifact does not
+prove the criterion, the criterion fails.
 
 ## System Prereq Setup
 

@@ -18,9 +18,12 @@ require stricter review-evidence contracts because B25 v4 supersedes the prior v
   `generic-workflow-card`, checklist modal, metadata page, or repeated-card shell cannot pass.
 - Treat visible-text extraction and screen-specific critique as required evidence. Boilerplate rows are
   invalid even if the JSON schema parses.
+- Require `production_ux_judge.dart` output as the final criteria scorecard. The scorecard is a
+  separate artifact from the review JSON and must assign score/verdict/blocksPass/why/requiredFix to
+  each B25 pass criterion.
 
 ## Result
 
 No Loom runtime API contract changes are required for B25. The review-evidence contract changes from
 schema v3 to schema v4 and must be implemented in the B25 review generator, tests, phase gate inputs,
-and tracker evidence before the phase can pass again.
+judge tool scorecard, and tracker evidence before the phase can pass again.

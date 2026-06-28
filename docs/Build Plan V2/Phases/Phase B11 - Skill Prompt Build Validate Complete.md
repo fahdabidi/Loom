@@ -82,7 +82,20 @@ Run:
 - `dart analyze packages/tooling/loom_skill_debug_harness`
 - `flutter analyze apps/loom_communities_demo`
 
-## 6. Skill Contribution
+## 6. Workflow Completeness Judge Gate
+
+Run the B11 judge tool against the prompt-build validation evidence before claiming the Skill completed
+the requested extension:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/workflow_completeness_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B11/workflow-completeness-evidence.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B11/workflow-completeness-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B11/workflow-completeness-scorecard.md'
+```
+
+The judge sees only the owner prompt, requested workflow list, generated docs/packages, Demo App
+validation report, and completion report. It must fail if the Skill quietly drops a requested workflow,
+does not generate both package artifacts, or reports completion without local Demo App validation.
+
+## 7. Skill Contribution
 
 Add:
 
@@ -93,21 +106,22 @@ Add:
 Update the master Skill walkthrough to require the B11 completion report before claiming a generated
 extension is implemented.
 
-## 7. Manifest Update
+## 8. Manifest Update
 
 Stamp `wf_skill-prompt-build-validate-complete`, `skill-debug-harness`, and affected Demo App test
 hashes. Any change to the prompt fixture or generated artifact contract updates the workflow test hash.
 
-## 8. API Review
+## 9. API Review
 
 Create `Phase B11 - API Review.md`. Record the Skill harness API, prompt capture fields, generated
 artifact paths, workflow validation result schema, and completion report schema.
 
-## 9. Definition of Done
+## 10. Definition of Done
 
 B11 is complete only when the prompt-driven Skill harness generates review docs and package artifacts,
 loads them into the Demo App Local Backend, validates every requested workflow, emits
-`complete=true`, passes regressions, updates docs/manifest/tracker, and records the commit SHA.
+`complete=true`, passes the workflow-completeness judge, passes regressions, updates
+docs/manifest/tracker, and records the commit SHA.
 
 ## Commit Gate
 
@@ -118,7 +132,7 @@ Before starting any follow-on phase:
 - Commit the phase changes.
 - Record the resulting commit SHA in [../Build Tracker.md](../Build%20Tracker.md).
 
-## 10. Next Phase
+## 11. Next Phase
 
 End of current local Skill validation. Next step is a manual Codex Skill session using a new owner
 prompt, then compare its emitted artifacts against the B11 harness report.

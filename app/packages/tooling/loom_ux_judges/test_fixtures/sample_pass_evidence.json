@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 4,
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "ownerPrompt": "Create a garden club extension with event RSVP and plant exchange workflows.",
+  "requestedWorkflows": ["garden-event-rsvp"],
+  "capturedWorkflows": ["garden-event-rsvp"],
+  "extensionPackage": "build/garden-club.loom-extension.zip",
+  "initializationPackage": "build/garden-club.loom-init.zip",
+  "demoAppValidation": {
+    "installed": true,
+    "opened": true
+  },
+  "workflowResults": [
+    {
+      "workflowId": "garden-event-rsvp",
+      "implemented": true,
+      "validated": true,
+      "complete": true
+    }
+  ],
+  "contractRows": [
+    {
+      "workflowId": "garden-event-rsvp",
+      "persona": "member",
+      "realUserGoal": "RSVP to a garden workday.",
+      "domainSurface": "event-detail",
+      "requiredInputs": ["attendance"],
+      "validation": "Attendance choice is required.",
+      "semanticAction": "RSVP to workday",
+      "successState": "RSVP recorded",
+      "receiverState": "Organizer sees attendee count",
+      "screenshotEvidenceIds": ["screen-garden-event"]
+    }
+  ],
+  "screenRows": [
+    {
+      "rowId": "screen-garden-event",
+      "community": "Garden Club",
+      "persona": "member",
+      "screenType": "event-detail",
+      "primary": true,
+      "surfacePriority": "primary",
+      "primarySurfaceType": "primary",
+      "uiPatternClassification": "domain-native",
+      "screenshotPath": "docs/Build Plan V2/Tools/ux-gate-judge-tools.md",
+      "screenshotHash": "sample-hash",
+      "screenshotCapturedAt": "2026-06-28T12:00:00Z",
+      "appCommitSha": "sample-commit",
+      "device": "emulator-5554 Android",
+      "visibleTextExtract": "Garden workday RSVP Saturday 9 AM Community greenhouse",
+      "screenSpecificCritique": "The visible screen is framed as a garden workday event detail with time, place, and a clear RSVP action for the member persona.",
+      "productVerdict": "pass",
+      "severity": "pass"
+    }
+  ],
+  "personaRows": [
+    {
+      "rowId": "persona-member-rsvp",
+      "workflowId": "garden-event-rsvp",
+      "persona": "member",
+      "stateType": "actor",
+      "verdict": "pass"
+    }
+  ],
+  "blueprintCoverage": {
+    "Garden Club": "complete"
+  },
+  "finalDecision": "pass",
+  "findings": [],
+  "unresolvedBlockerFindings": 0,
+  "unresolvedMajorFindings": 0,
+  "ownerAcceptedMinorFindings": [],
+  "trackedPolish": [],
+  "remediationIterations": [
+    {
+      "iterationId": "sample",
+      "fixesApplied": [],
+      "testsRun": ["sample"],
+      "screenshotsRefreshed": ["screen-garden-event"],
+      "remainingBlockerFindings": 0,
+      "remainingMajorFindings": 0,
+      "commitSha": "sample-commit"
+    }
+  ],
+  "requiresRemediation": false,
+  "requiresRerun": false,
+  "b25CanPass": true
+}

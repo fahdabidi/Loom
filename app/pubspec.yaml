@@ -44,6 +44,7 @@ workspace:
   - packages/tooling/loom_lints
   - packages/tooling/loom_skill_debug_harness
   - packages/tooling/loom_skill_prereq_setup
+  - packages/tooling/loom_ux_judges
 
 melos:
   scripts:

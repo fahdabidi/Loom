@@ -24,6 +24,12 @@
 - Classify the primary UI pattern for every workflow surface. Primary workflows must use domain-native
   surfaces; a generic workflow card, checklist/review modal, metadata/settings page, or repeated card
   shell is a major finding even when labels are improved.
+- Separate the B25 roles. The Worker Agent implements fixes, the Evidence Collector Tool captures
+  artifacts, the Production UX Judge Agent scores artifacts only, and the Remediation Planner turns
+  judge failures into the next fix batch.
+- Require the production UX judge scorecard. B25 cannot pass until
+  `production-ux-criteria-scorecard.json` and `.md` assign score/verdict/blocksPass/why/requiredFix to
+  every B25 pass criterion with no blocking failures.
 - Treat exposed workflow machinery as a major or blocker UX issue when it appears in user-facing UI:
   `Community workflows`, `[category] surface`, framework rationale copy, metadata-only cards, global
   workflow lists, or test-harness state language.
@@ -53,6 +59,8 @@
 
 - `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.md`
 - `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`
+- `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.json`
+- `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`
 - `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`
 - `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`
 - Prior `wf_independent-production-ux-review` pass is superseded by the product-UX review v4 criteria

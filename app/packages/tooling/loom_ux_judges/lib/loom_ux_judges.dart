@@ -1,0 +1,906 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'dart:convert';
+import 'dart:io';
+
+typedef JsonMap = Map<String, Object?>;
+
+class CriterionResult {
+  CriterionResult({
+    required this.id,
+    required this.title,
+    required this.score,
+    required this.verdict,
+    required this.blocksPass,
+    required this.why,
+    required this.requiredFix,
+    this.evidenceUsed = const <String>[],
+  });
+
+  final String id;
+  final String title;
+  final int score;
+  final String verdict;
+  final bool blocksPass;
+  final String why;
+  final String requiredFix;
+  final List<String> evidenceUsed;
+
+  JsonMap toJson() {
+    return <String, Object?>{
+      'criterionId': id,
+      'title': title,
+      'score': score,
+      'verdict': verdict,
+      'blocksPass': blocksPass,
+      'why': why,
+      'requiredFix': requiredFix,
+      'evidenceUsed': evidenceUsed,
+    };
+  }
+}
+
+class JudgeResult {
+  JudgeResult({
+    required this.toolId,
+    required this.status,
+    required this.criteria,
+    required this.errors,
+    required this.warnings,
+  });
+
+  final String toolId;
+  final String status;
+  final List<CriterionResult> criteria;
+  final List<String> errors;
+  final List<String> warnings;
+
+  bool get passed => status == 'pass';
+
+  JsonMap toJson() {
+    return <String, Object?>{
+      'toolId': toolId,
+      'status': status,
+      'criteria': criteria.map((criterion) => criterion.toJson()).toList(),
+      'errors': errors,
+      'warnings': warnings,
+    };
+  }
+}
+
+class JudgeSpec {
+  const JudgeSpec({
+    required this.toolId,
+    required this.phase,
+    required this.description,
+    required this.criteria,
+  });
+
+  final String toolId;
+  final String phase;
+  final String description;
+  final List<CriterionDefinition> criteria;
+}
+
+class CriterionDefinition {
+  const CriterionDefinition({
+    required this.id,
+    required this.title,
+    required this.requiredEvidenceFields,
+    required this.failureMessage,
+    required this.requiredFix,
+  });
+
+  final String id;
+  final String title;
+  final List<String> requiredEvidenceFields;
+  final String failureMessage;
+  final String requiredFix;
+}
+
+final specs = <String, JudgeSpec>{
+  'workflow-completeness-judge': JudgeSpec(
+    toolId: 'workflow-completeness-judge',
+    phase: 'B11',
+    description:
+        'Compares the owner prompt to generated workflows, packages, validation report, and Demo App replay.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b11-c01-owner-prompt-captured',
+        title: 'Owner prompt and requested workflows are captured',
+        requiredEvidenceFields: <String>['ownerPrompt', 'requestedWorkflows'],
+        failureMessage:
+            'The evidence does not prove the original owner prompt and requested workflow list were captured.',
+        requiredFix:
+            'Record the owner prompt and enumerate requested workflows before generating packages.',
+      ),
+      CriterionDefinition(
+        id: 'b11-c02-workflows-implemented',
+        title: 'Every requested workflow is implemented',
+        requiredEvidenceFields: <String>['workflowResults'],
+        failureMessage:
+            'At least one requested workflow lacks implemented=true, validated=true, and complete=true.',
+        requiredFix:
+            'Add the missing route, seed data, UI test, and workflow result before claiming completion.',
+      ),
+      CriterionDefinition(
+        id: 'b11-c03-packages-generated',
+        title: 'Extension and initialization packages are generated',
+        requiredEvidenceFields: <String>[
+          'extensionPackage',
+          'initializationPackage',
+        ],
+        failureMessage: 'The evidence does not include both package artifacts.',
+        requiredFix:
+            'Generate and record the .loom-extension.zip and .loom-init.zip paths.',
+      ),
+      CriterionDefinition(
+        id: 'b11-c04-demo-app-validation',
+        title: 'Generated packages load and validate in the Demo App',
+        requiredEvidenceFields: <String>['demoAppValidation'],
+        failureMessage:
+            'The evidence does not prove local install/open/workflow validation in the Demo App.',
+        requiredFix:
+            'Run the Demo App local backend validation and attach the validation report.',
+      ),
+    ],
+  ),
+  'ux-contract-judge': JudgeSpec(
+    toolId: 'ux-contract-judge',
+    phase: 'B21',
+    description:
+        'Checks every workflow/persona row has a production UX contract before implementation.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b21-c01-contract-rows-complete',
+        title: 'Every workflow/persona row has a production UX contract',
+        requiredEvidenceFields: <String>['contractRows'],
+        failureMessage: 'Contract rows are missing or incomplete.',
+        requiredFix:
+            'Add rows with workflowId, persona, realUserGoal, domainSurface, inputs, validation, action, success state, receiver state, and screenshot plan.',
+      ),
+      CriterionDefinition(
+        id: 'b21-c02-domain-surface-planned',
+        title: 'Every primary workflow has a planned domain surface',
+        requiredEvidenceFields: <String>['contractRows'],
+        failureMessage:
+            'A primary workflow contract still allows generic workflow-card UX.',
+        requiredFix:
+            'Replace generic surfaces with concrete event, feed, form, payment, inbox, admin, receipt, search, export, or transfer surfaces.',
+      ),
+    ],
+  ),
+  'domain-surface-classifier': JudgeSpec(
+    toolId: 'domain-surface-classifier',
+    phase: 'B22',
+    description:
+        'Classifies implemented surfaces and fails primary generic workflow cards.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b22-c01-primary-surfaces-domain-native',
+        title: 'Primary workflow surfaces are domain-native',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'A primary screen is classified as generic-workflow-card, checklist-modal, metadata-page, or repeated-card-shell.',
+        requiredFix:
+            'Replace the primary UI with a domain-native product surface and recapture evidence.',
+      ),
+      CriterionDefinition(
+        id: 'b22-c02-semantic-actions',
+        title: 'Primary actions use user-facing semantic labels',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'One or more primary actions use harness or implementation labels.',
+        requiredFix:
+            'Rename actions to the real user task and update UI tests.',
+      ),
+    ],
+  ),
+  'persona-ux-judge': JudgeSpec(
+    toolId: 'persona-ux-judge',
+    phase: 'B23',
+    description:
+        'Verifies actor, receiver, read-only, disabled, hidden, and unauthorized states from evidence.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b23-c01-persona-state-coverage',
+        title: 'Every persona/workflow state has visible evidence',
+        requiredEvidenceFields: <String>['personaRows'],
+        failureMessage:
+            'Persona state evidence is missing for one or more actor/receiver/unauthorized rows.',
+        requiredFix:
+            'Capture each persona state and record hidden, disabled, read-only, receiver, or actor behavior.',
+      ),
+      CriterionDefinition(
+        id: 'b23-c02-unauthorized-behavior',
+        title: 'Unauthorized personas cannot perform restricted workflows',
+        requiredEvidenceFields: <String>['personaRows'],
+        failureMessage:
+            'Unauthorized behavior is missing or incorrectly passable.',
+        requiredFix:
+            'Implement and test hidden/disabled/read-only denial behavior for unauthorized personas.',
+      ),
+    ],
+  ),
+  'evidence-integrity-auditor': JudgeSpec(
+    toolId: 'evidence-integrity-auditor',
+    phase: 'B24',
+    description:
+        'Audits screenshot existence, hashes, freshness, app commit SHA, visible text, and generic-copy scan.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b24-c01-screenshot-integrity',
+        title:
+            'Screenshot paths, hashes, timestamps, and app commit SHA are present',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage: 'Screenshot integrity metadata is missing or stale.',
+        requiredFix:
+            'Recapture screenshots from the current app commit and record hashes, timestamps, device metadata, and app commit SHA.',
+      ),
+      CriterionDefinition(
+        id: 'b24-c02-visible-text-and-copy-audit',
+        title: 'Visible text exists and generic harness copy is absent',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'Visible text extraction is missing or generic harness copy remains.',
+        requiredFix:
+            'Extract visible text for each row and remove user-facing harness/implementation copy.',
+      ),
+    ],
+  ),
+  'production-ux-judge': JudgeSpec(
+    toolId: 'production-ux-judge',
+    phase: 'B25',
+    description: 'Scores B25 production UX pass criteria from artifacts only.',
+    criteria: <CriterionDefinition>[
+      CriterionDefinition(
+        id: 'b25-c01-no-blocker-major',
+        title: 'No unresolved blocker or major findings',
+        requiredEvidenceFields: <String>[
+          'unresolvedBlockerFindings',
+          'unresolvedMajorFindings',
+        ],
+        failureMessage:
+            'Unresolved blocker or major findings remain, or the counts are missing.',
+        requiredFix:
+            'Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c02-blueprint-complete',
+        title: 'Every community has a complete production UX blueprint',
+        requiredEvidenceFields: <String>['blueprintCoverage'],
+        failureMessage: 'Blueprint coverage is missing or incomplete.',
+        requiredFix:
+            'Complete the per-community blueprint and judge every screen against it.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c03-production-grade-experience',
+        title: 'Reviewer can state the experience feels production-grade',
+        requiredEvidenceFields: <String>['finalDecision'],
+        failureMessage:
+            'The evidence does not contain a defensible production-grade verdict.',
+        requiredFix:
+            'Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c04-modern-intentional-ui',
+        title: 'UI looks modern and intentionally designed',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'Screen rows do not prove modern hierarchy, spacing, and intentional design.',
+        requiredFix:
+            'Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c05-community-content-ia',
+        title:
+            'Screens are organized around community content and jobs-to-be-done',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'Primary screens still read as workflow lists, metadata, or validation surfaces.',
+        requiredFix:
+            'Rebuild home and primary screens around community content and user jobs.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c06-domain-native-primary-surfaces',
+        title: 'Primary workflows use domain-specific product surfaces',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'A primary workflow is still generic-card/checklist/modal/metadata-only.',
+        requiredFix:
+            'Replace primary generic surfaces with domain-native product surfaces.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c07-screenshot-freshness',
+        title: 'Every screen row has fresh screenshot evidence',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'Screenshot path, hash, timestamp, device metadata, or app commit SHA is missing or stale.',
+        requiredFix:
+            'Relaunch the current app, recapture screenshots, and regenerate evidence.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c08-visible-text-specific-critique',
+        title: 'Every row has visible text and screen-specific critique',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'Visible text or non-boilerplate row critique is missing.',
+        requiredFix:
+            'Extract visible text and write a specific critique for each screenshot row.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c09-no-layout-production-defects',
+        title: 'No blocking or major layout/content defects remain',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'The evidence still contains blocker/major overlap, clipping, scaffold, repeated-card, checklist, or thin-content findings.',
+        requiredFix: 'Fix layout/content defects and rerun the review.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c10-full-screen-inventory',
+        title: 'Every implemented screen/state appears in the matrix',
+        requiredEvidenceFields: <String>['screenRows'],
+        failureMessage:
+            'The evidence does not prove complete screen/state inventory coverage.',
+        requiredFix:
+            'Inventory every screen, dialog, card, feed item, form, state, persona variant, and action result.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c11-schema-v4-consistency',
+        title: 'Schema v4 JSON is complete and internally consistent',
+        requiredEvidenceFields: <String>[
+          'schemaVersion',
+          'reviewStandardVersion',
+          'screenRows',
+        ],
+        failureMessage:
+            'The JSON is not schema v4 or is internally inconsistent.',
+        requiredFix:
+            'Regenerate schema v4 evidence and align JSON, markdown review, remediation log, and tracker.',
+      ),
+      CriterionDefinition(
+        id: 'b25-c12-remediation-proof',
+        title: 'Failed prior iterations have proof of remediation',
+        requiredEvidenceFields: <String>['remediationIterations'],
+        failureMessage:
+            'Prior failed iterations are not tied to fixes, screenshots, tests, and rerun result.',
+        requiredFix:
+            'Update the remediation loop with fixes, screenshot refresh, test commands, remaining findings, and iteration commit SHA.',
+      ),
+    ],
+  ),
+};
+
+void runJudgeCli(List<String> args, String toolId) {
+  final spec = specs[toolId];
+  if (spec == null) {
+    stderr.writeln('Unknown judge tool: $toolId');
+    exit(64);
+  }
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_usage(spec));
+    return;
+  }
+  final inputPath = _argValue(args, '--input');
+  if (inputPath == null) {
+    stderr.writeln('Missing required --input <json>');
+    stdout.writeln(_usage(spec));
+    exit(64);
+  }
+  final outputPath = _argValue(args, '--output');
+  final markdownPath = _argValue(args, '--markdown-output');
+  final basePath = _argValue(args, '--base') ?? Directory.current.path;
+  final evidence = _readJsonFile(inputPath);
+  final result = judgeEvidence(spec, evidence, basePath: basePath);
+  final encoded = const JsonEncoder.withIndent('  ').convert(result.toJson());
+  if (outputPath == null) {
+    stdout.writeln(encoded);
+  } else {
+    File(outputPath).writeAsStringSync('$encoded\n');
+  }
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_toMarkdown(result));
+  }
+  if (!result.passed) {
+    stderr.writeln('${spec.toolId}: ${result.status}');
+    for (final error in result.errors) {
+      stderr.writeln('- $error');
+    }
+    exit(1);
+  }
+  stdout.writeln('${spec.toolId}: pass');
+}
+
+JudgeResult judgeEvidence(
+  JudgeSpec spec,
+  JsonMap evidence, {
+  required String basePath,
+}) {
+  final errors = <String>[];
+  final warnings = <String>[];
+  final criteria = <CriterionResult>[];
+  for (final definition in spec.criteria) {
+    final result = _evaluateCriterion(definition, evidence, basePath);
+    criteria.add(result);
+    if (result.blocksPass) {
+      errors.add('${definition.id}: ${result.why}');
+    }
+  }
+  _runCommonEvidenceChecks(spec.toolId, evidence, basePath, errors, warnings);
+  final status = errors.isEmpty ? 'pass' : 'fail';
+  return JudgeResult(
+    toolId: spec.toolId,
+    status: status,
+    criteria: criteria,
+    errors: errors,
+    warnings: warnings,
+  );
+}
+
+CriterionResult _evaluateCriterion(
+  CriterionDefinition definition,
+  JsonMap evidence,
+  String basePath,
+) {
+  final explicit = _explicitCriterion(definition.id, evidence);
+  if (explicit != null) {
+    final score = _asInt(explicit['score']);
+    final verdict = _asString(explicit['verdict']);
+    final blocksPass =
+        explicit['blocksPass'] == true ||
+        verdict == 'fail' ||
+        verdict == 'blocker' ||
+        verdict == 'major' ||
+        score < 80;
+    return CriterionResult(
+      id: definition.id,
+      title: definition.title,
+      score: score,
+      verdict: blocksPass ? 'fail' : 'pass',
+      blocksPass: blocksPass,
+      why: _asString(
+        explicit['why'],
+        fallback: blocksPass ? definition.failureMessage : 'Criterion passed.',
+      ),
+      requiredFix: _asString(
+        explicit['requiredFix'],
+        fallback: blocksPass ? definition.requiredFix : 'None.',
+      ),
+      evidenceUsed: _asStringList(explicit['evidenceUsed']),
+    );
+  }
+
+  final missing = definition.requiredEvidenceFields
+      .where((field) => !_hasUsefulValue(evidence[field]))
+      .toList();
+  if (missing.isNotEmpty) {
+    return CriterionResult(
+      id: definition.id,
+      title: definition.title,
+      score: 0,
+      verdict: 'fail',
+      blocksPass: true,
+      why:
+          '${definition.failureMessage} Missing evidence fields: ${missing.join(', ')}.',
+      requiredFix: definition.requiredFix,
+    );
+  }
+
+  final derivedFailure = _derivedFailure(definition.id, evidence, basePath);
+  if (derivedFailure != null) {
+    return CriterionResult(
+      id: definition.id,
+      title: definition.title,
+      score: derivedFailure.score,
+      verdict: 'fail',
+      blocksPass: true,
+      why: derivedFailure.message,
+      requiredFix: definition.requiredFix,
+      evidenceUsed: derivedFailure.evidenceUsed,
+    );
+  }
+
+  return CriterionResult(
+    id: definition.id,
+    title: definition.title,
+    score: 100,
+    verdict: 'pass',
+    blocksPass: false,
+    why:
+        'Required evidence is present and no blocking derived failures were found.',
+    requiredFix: 'None.',
+  );
+}
+
+_DerivedFailure? _derivedFailure(
+  String criterionId,
+  JsonMap evidence,
+  String basePath,
+) {
+  final screenRows = _asMapList(evidence['screenRows']);
+  switch (criterionId) {
+    case 'b11-c02-workflows-implemented':
+      final workflowResults = _asMapList(evidence['workflowResults']);
+      final failing = workflowResults.where((row) {
+        return row['implemented'] != true ||
+            row['validated'] != true ||
+            row['complete'] != true;
+      }).toList();
+      if (workflowResults.isEmpty || failing.isNotEmpty) {
+        return _DerivedFailure(
+          score: 40,
+          message:
+              'Workflow results are empty or contain workflows that are not implemented, validated, and complete.',
+        );
+      }
+      break;
+    case 'b21-c02-domain-surface-planned':
+      return _failOnGenericRows(_asMapList(evidence['contractRows']));
+    case 'b22-c01-primary-surfaces-domain-native':
+    case 'b25-c06-domain-native-primary-surfaces':
+      return _failOnGenericRows(screenRows);
+    case 'b23-c01-persona-state-coverage':
+    case 'b23-c02-unauthorized-behavior':
+      final rows = _asMapList(evidence['personaRows']);
+      if (rows.isEmpty || rows.any((row) => row['verdict'] == 'fail')) {
+        return _DerivedFailure(
+          score: 50,
+          message:
+              'Persona rows are empty or include failed persona-state evidence.',
+        );
+      }
+      break;
+    case 'b24-c01-screenshot-integrity':
+    case 'b25-c07-screenshot-freshness':
+      return _failOnScreenshotIntegrity(screenRows, basePath);
+    case 'b24-c02-visible-text-and-copy-audit':
+    case 'b25-c08-visible-text-specific-critique':
+      return _failOnVisibleTextOrBoilerplate(screenRows);
+    case 'b25-c01-no-blocker-major':
+      final blockers = _count(evidence['unresolvedBlockerFindings']);
+      final majors = _count(evidence['unresolvedMajorFindings']);
+      if (blockers > 0 || majors > 0) {
+        return _DerivedFailure(
+          score: 0,
+          message:
+              'Unresolved blocker/major counts are blocker=$blockers major=$majors.',
+        );
+      }
+      break;
+    case 'b25-c11-schema-v4-consistency':
+      if (evidence['schemaVersion'] != 4 ||
+          evidence['reviewStandardVersion'] != 'b25-production-ux-v4') {
+        return _DerivedFailure(
+          score: 0,
+          message:
+              'Expected schemaVersion=4 and reviewStandardVersion=b25-production-ux-v4.',
+        );
+      }
+      break;
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnGenericRows(List<JsonMap> rows) {
+  final genericValues = <String>{
+    'generic-workflow-card',
+    'checklist-modal',
+    'metadata-page',
+    'repeated-card-shell',
+    'global-workflow-list',
+  };
+  final failing = <String>[];
+  for (final row in rows) {
+    final primary =
+        row['primary'] == true ||
+        row['primarySurface'] == true ||
+        row['surfacePriority'] == 'primary' ||
+        row['primarySurfaceType'] == 'primary';
+    final classification = _asString(
+      row['uiPatternClassification'] ??
+          row['surfaceClassification'] ??
+          row['domainSurface'],
+    );
+    if (primary && genericValues.contains(classification)) {
+      failing.add(_rowId(row));
+    }
+  }
+  if (rows.isEmpty || failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: rows.isEmpty ? 0 : 55,
+      message: rows.isEmpty
+          ? 'No rows were supplied for surface classification.'
+          : 'Primary generic surfaces found: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnScreenshotIntegrity(
+  List<JsonMap> rows,
+  String basePath,
+) {
+  final failing = <String>[];
+  for (final row in rows) {
+    final path = _asString(row['screenshotPath'] ?? row['screenshot']);
+    final hash = _asString(row['screenshotHash']);
+    final capturedAt = _asString(
+      row['screenshotCapturedAt'] ?? row['capturedAt'],
+    );
+    final commit = _asString(row['appCommitSha']);
+    final device = _asString(
+      row['device'] ?? row['emulatorDevice'] ?? row['deviceMetadata'],
+    );
+    if (path.isEmpty ||
+        hash.isEmpty ||
+        capturedAt.isEmpty ||
+        commit.isEmpty ||
+        device.isEmpty ||
+        !_fileExists(basePath, path)) {
+      failing.add(_rowId(row));
+    }
+  }
+  if (rows.isEmpty || failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: rows.isEmpty ? 0 : 60,
+      message: rows.isEmpty
+          ? 'No screen rows were supplied for screenshot integrity.'
+          : 'Rows with missing or invalid screenshot metadata: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnVisibleTextOrBoilerplate(List<JsonMap> rows) {
+  final failing = <String>[];
+  final critiques = <String, List<String>>{};
+  for (final row in rows) {
+    final rowId = _rowId(row);
+    final visibleText = _asString(
+      row['visibleTextExtract'] ?? row['visibleText'],
+    );
+    final critique = _asString(
+      row['screenSpecificCritique'] ?? row['critique'],
+    );
+    if (visibleText.trim().length < 8 || critique.trim().length < 24) {
+      failing.add(rowId);
+    }
+    final normalized = critique
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (normalized.isNotEmpty) {
+      critiques.putIfAbsent(normalized, () => <String>[]).add(rowId);
+    }
+  }
+  for (final entry in critiques.entries) {
+    if (entry.value.length > 1) {
+      failing.addAll(entry.value.map((id) => '$id duplicate-critique'));
+    }
+  }
+  if (rows.isEmpty || failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: rows.isEmpty ? 0 : 55,
+      message: rows.isEmpty
+          ? 'No screen rows were supplied for visible-text/critique audit.'
+          : 'Rows with missing visible text, weak critique, or duplicate critique: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+void _runCommonEvidenceChecks(
+  String toolId,
+  JsonMap evidence,
+  String basePath,
+  List<String> errors,
+  List<String> warnings,
+) {
+  if (toolId == 'production-ux-judge') {
+    final finalDecision = _asString(evidence['finalDecision']);
+    if (finalDecision.isNotEmpty && finalDecision != 'pass') {
+      errors.add('finalDecision is $finalDecision, not pass.');
+    }
+  }
+  final findings = _asMapList(evidence['findings']);
+  for (final finding in findings) {
+    final severity = _asString(finding['severity']);
+    final unresolved =
+        finding['resolved'] != true && finding['status'] != 'resolved';
+    if (unresolved && (severity == 'blocker' || severity == 'major')) {
+      errors.add('Unresolved $severity finding: ${_rowId(finding)}.');
+    }
+  }
+  final unknownKeys = evidence.keys
+      .where((key) => key.startsWith('TODO'))
+      .toList();
+  if (unknownKeys.isNotEmpty) {
+    warnings.add('Evidence contains TODO keys: ${unknownKeys.join(', ')}.');
+  }
+}
+
+JsonMap _readJsonFile(String path) {
+  final file = File(path);
+  if (!file.existsSync()) {
+    stderr.writeln('Input not found: $path');
+    exit(66);
+  }
+  final decoded = jsonDecode(file.readAsStringSync());
+  if (decoded is! JsonMap) {
+    stderr.writeln('Input must be a JSON object: $path');
+    exit(65);
+  }
+  return decoded;
+}
+
+JsonMap? _explicitCriterion(String id, JsonMap evidence) {
+  final criteria = evidence['criteriaScores'] ?? evidence['criteria'];
+  for (final row in _asMapList(criteria)) {
+    if (row['criterionId'] == id || row['id'] == id) {
+      return row;
+    }
+  }
+  return null;
+}
+
+String _usage(JudgeSpec spec) {
+  return '''
+${spec.toolId} (${spec.phase})
+${spec.description}
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/${spec.toolId.replaceAll('-', '_')}.dart --input <evidence.json> [--base <repo-root>] [--output <scorecard.json>] [--markdown-output <scorecard.md>]
+''';
+}
+
+String _toMarkdown(JudgeResult result) {
+  final buffer = StringBuffer()
+    ..writeln('# ${result.toolId} Scorecard')
+    ..writeln()
+    ..writeln('Status: `${result.status}`')
+    ..writeln()
+    ..writeln(
+      '| Criterion | Score | Verdict | Blocks pass | Why | Required fix |',
+    )
+    ..writeln('| --- | ---: | --- | --- | --- | --- |');
+  for (final criterion in result.criteria) {
+    buffer.writeln(
+      '| `${criterion.id}` ${_escape(criterion.title)} | ${criterion.score} | ${criterion.verdict} | ${criterion.blocksPass} | ${_escape(criterion.why)} | ${_escape(criterion.requiredFix)} |',
+    );
+  }
+  if (result.errors.isNotEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('## Errors');
+    for (final error in result.errors) {
+      buffer.writeln('- ${_escape(error)}');
+    }
+  }
+  if (result.warnings.isNotEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('## Warnings');
+    for (final warning in result.warnings) {
+      buffer.writeln('- ${_escape(warning)}');
+    }
+  }
+  return buffer.toString();
+}
+
+String _escape(String value) {
+  return value.replaceAll('|', r'\|').replaceAll('\n', ' ');
+}
+
+String? _argValue(List<String> args, String name) {
+  final index = args.indexOf(name);
+  if (index == -1 || index + 1 >= args.length) {
+    return null;
+  }
+  return args[index + 1];
+}
+
+bool _hasUsefulValue(Object? value) {
+  if (value == null) {
+    return false;
+  }
+  if (value is String) {
+    return value.trim().isNotEmpty;
+  }
+  if (value is Iterable) {
+    return value.isNotEmpty;
+  }
+  if (value is Map) {
+    return value.isNotEmpty;
+  }
+  return true;
+}
+
+int _asInt(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.round();
+  }
+  if (value is String) {
+    return int.tryParse(value) ?? 0;
+  }
+  return 0;
+}
+
+String _asString(Object? value, {String fallback = ''}) {
+  if (value == null) {
+    return fallback;
+  }
+  if (value is String) {
+    return value;
+  }
+  return value.toString();
+}
+
+List<String> _asStringList(Object? value) {
+  if (value is List) {
+    return value
+        .map((item) => _asString(item))
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+  return <String>[];
+}
+
+List<JsonMap> _asMapList(Object? value) {
+  if (value is List) {
+    return value.whereType<JsonMap>().toList();
+  }
+  return <JsonMap>[];
+}
+
+int _count(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is num) {
+    return value.round();
+  }
+  if (value is List) {
+    return value.length;
+  }
+  if (value == null) {
+    return -1;
+  }
+  return int.tryParse(value.toString()) ?? -1;
+}
+
+String _rowId(JsonMap row) {
+  return _asString(
+    row['rowId'] ??
+        row['findingId'] ??
+        row['workflowId'] ??
+        row['personaId'] ??
+        row['id'] ??
+        'unknown-row',
+  );
+}
+
+bool _fileExists(String basePath, String path) {
+  final direct = File(path);
+  if (direct.existsSync()) {
+    return true;
+  }
+  return File('$basePath/$path').existsSync();
+}
+
+class _DerivedFailure {
+  _DerivedFailure({
+    required this.score,
+    required this.message,
+    this.evidenceUsed = const <String>[],
+  });
+
+  final int score;
+  final String message;
+  final List<String> evidenceUsed;
+}
