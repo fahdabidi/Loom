@@ -234,6 +234,12 @@ for every reviewed workflow/persona pair. Both passes must be green before B25 c
 pass cannot hide a weak workflow, and passing workflow/persona rows cannot hide an incoherent,
 non-modern, or non-production overall UI.
 
+B25 must also emit an iteration scorecard after every review/remediation pass. The scorecard must show
+the pass status, current critical/blocker and major counts, unresolved blocker/major counts, resolved
+blocker/major counts for that pass, newly introduced blocker/major counts, judge failures, and required
+next action. The next UX feedback/remediation loop cannot begin until that scorecard is committed with
+the iteration evidence.
+
 A phase cannot complete when its required judge scorecard has a blocking criterion failure.
 
 ## Test Naming

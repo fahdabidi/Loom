@@ -20,6 +20,7 @@ Run from `app/` with WSL Ubuntu:
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
 ```
 
 | Tool | Phase | Purpose |
@@ -30,6 +31,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `persona_ux_judge.dart` | B23 | Verify actor, receiver, read-only, disabled, hidden, and unauthorized persona evidence. |
 | `evidence_integrity_auditor.dart` | B24 | Check screenshot path/hash/timestamp/app commit/device/visible text and generic-copy evidence. |
 | `production_ux_judge.dart` | B25 | Score every B25 production UX pass criterion and fail any missing or weak evidence. |
+| `b25_iteration_scorecard.dart` | B25 | Summarize each B25 review/remediation pass with current blocker/major counts, resolved counts, new counts, judge failures, and convergence status. |
 
 ## Required B25 Scorecard
 
@@ -37,6 +39,13 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 - `production-ux-criteria-scorecard.json`
 - `production-ux-criteria-scorecard.md`
+
+`b25_iteration_scorecard.dart` emits after every B25 pass:
+
+- `b25-iteration-scorecard-<run-id>.json`
+- `b25-iteration-scorecard-<run-id>.md`
+- `b25-iteration-scorecard-latest.json`
+- `b25-iteration-scorecard-latest.md`
 
 B25 uses direct questions rather than only declarative pass criteria. The production judge must run:
 
@@ -69,6 +78,17 @@ B25 evidence must include:
 B25 cannot pass from an average score. One unresolved blocker/major criterion failure blocks the phase.
 The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted
 by screenshot evidence.
+
+The iteration scorecard does not replace the judge. It records whether the loop is converging:
+
+- current critical/blocker, major, minor, and polish counts
+- unresolved critical/blocker and major counts
+- resolved critical/blocker and major findings in this pass
+- new critical/blocker and major findings in this pass
+- production judge status and blocking criterion failures
+- holistic direct-question pass status
+- workflow/persona direct-question pass status
+- required next action before the next UX feedback/remediation loop
 
 ## B25 Direct Questions
 

@@ -193,6 +193,12 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
 61. `production_ux_judge.dart` must fail B25 when `holisticQuestionAnswers` or
     `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
     or contradicted by screenshots.
+62. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
+    Markdown scorecard with the pass evidence. The scorecard must show pass/fail, current
+    critical/blocker and major counts, unresolved blocker/major counts, blocker/major findings resolved
+    in that pass, newly introduced blocker/major findings, judge failures, direct-question pass status,
+    and required next action. Do not start the next UX feedback/remediation loop without this committed
+    scorecard.
 
 ## Delivery Modes
 
@@ -304,15 +310,17 @@ Before reporting completion:
 25. Run the B25 direct-question judge in two passes: one holistic product UX pass for the whole app, and
     workflow/persona passes for every reviewed workflow/persona pair. Record `holisticQuestionAnswers`
     and `workflowPersonaScorecards` in the evidence and require both to be green.
-26. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
+26. Generate the B25 iteration scorecard for the pass and record whether blocker/major findings are
+    increasing, decreasing, or resolved. Use it as the convergence record for the remediation loop.
+27. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
     primary workflow rows classified as generic workflow-card/checklist/modal/metadata-only, missing
     visible-text extracts, or pass verdicts that do not describe the actual visible UI.
-27. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
+28. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.
-28. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
+29. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
-29. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
+30. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
     finding, not as optional review feedback.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
@@ -329,7 +337,7 @@ page, has not completed the B25 remediation loop after a failed product UX revie
 independent product UX pass decision, or is only represented by metadata. Return a gap report and keep
 the package incomplete until all workflow, persona, production UX blueprint, production UX evidence,
 B25 remediation-loop evidence, holistic direct-question evidence, workflow/persona direct-question
-evidence, and independent product UX review evidence is green.
+evidence, B25 iteration scorecard evidence, and independent product UX review evidence is green.
 
 ## UX Judge Tools
 
@@ -350,6 +358,11 @@ prove the criterion, the criterion fails.
 For B25, the judge must also produce a holistic product UX direct-question pass and per-workflow/persona
 direct-question passes. The deterministic scorecard must include criterion `scope` and `question`, and
 the machine-readable evidence must include `holisticQuestionAnswers` and `workflowPersonaScorecards`.
+Every B25 pass must also run:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
+```
 
 ## System Prereq Setup
 

@@ -42,6 +42,10 @@
 - Batch workflow/persona review in small evidence groups when needed. Do not ask the judge to summarize
   all workflows in one answer; every workflow/persona answer must cite visible screenshot evidence and
   a screen-specific critique.
+- Require an iteration scorecard after every B25 pass. The scorecard must show whether the pass
+  succeeded, current critical/blocker and major counts, unresolved counts, how many blocker/major
+  findings were resolved in that pass, how many new blocker/major findings appeared, judge failures, and
+  the next action. This makes convergence visible instead of relying on a single final pass/fail row.
 - Treat exposed workflow machinery as a major or blocker UX issue when it appears in user-facing UI:
   `Community workflows`, `[category] surface`, framework rationale copy, metadata-only cards, global
   workflow lists, or test-harness state language.

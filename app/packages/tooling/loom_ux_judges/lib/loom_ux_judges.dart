@@ -475,6 +475,123 @@ void runJudgeCli(List<String> args, String toolId) {
   stdout.writeln('${spec.toolId}: pass');
 }
 
+void runB25IterationScorecardCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_iterationScorecardUsage());
+    return;
+  }
+  final reviewPath = _argValue(args, '--review');
+  if (reviewPath == null) {
+    stderr.writeln('Missing required --review <json>');
+    stdout.writeln(_iterationScorecardUsage());
+    exit(64);
+  }
+  final outputPath = _argValue(args, '--output');
+  final markdownPath = _argValue(args, '--markdown-output');
+  final judgePath = _argValue(args, '--judge');
+  final previousPath = _argValue(args, '--previous');
+
+  final review = _readJsonFile(reviewPath);
+  final judge = judgePath == null ? null : _readJsonFile(judgePath);
+  final previous = previousPath == null ? null : _readJsonFile(previousPath);
+  final scorecard = buildB25IterationScorecard(
+    review: review,
+    judge: judge,
+    previousScorecard: previous,
+  );
+  final encoded = const JsonEncoder.withIndent('  ').convert(scorecard);
+  if (outputPath == null) {
+    stdout.writeln(encoded);
+  } else {
+    File(outputPath).writeAsStringSync('$encoded\n');
+  }
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25IterationScorecardMarkdown(scorecard));
+  }
+  stdout.writeln(
+    'b25_iteration_scorecard: ${scorecard['status']} remainingBlockingMajor=${(scorecard['convergence'] as JsonMap)['remainingBlockingMajor']}',
+  );
+}
+
+JsonMap buildB25IterationScorecard({
+  required JsonMap review,
+  JsonMap? judge,
+  JsonMap? previousScorecard,
+}) {
+  final findings = _asMapList(review['findings']);
+  final counts = _findingCounts(findings);
+  final currentBlocking = _blockingFindingIds(findings);
+  final previousBlocking = _previousBlockingFindingIds(previousScorecard);
+  final resolvedThisPass = previousBlocking.difference(currentBlocking);
+  final newThisPass = currentBlocking.difference(previousBlocking);
+  final judgeSummary = _judgeSummary(judge);
+  final blockingCriterionFailures = _asInt(
+    judgeSummary['blockingCriterionFailures'],
+  );
+  final finalDecision = _asString(review['finalDecision']);
+  final b25CanPass =
+      review['b25CanPass'] == true &&
+      finalDecision == 'pass' &&
+      _asInt(counts['unresolvedCriticalBlocker']) == 0 &&
+      _asInt(counts['unresolvedMajor']) == 0 &&
+      (judge == null || _asString(judge['status']) == 'pass') &&
+      blockingCriterionFailures == 0;
+  final status = b25CanPass ? 'pass' : 'fail';
+  final blockingFindings = findings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .map(_findingSummary)
+      .toList();
+  final resolvedFindingsThisPass = findings
+      .where((finding) => resolvedThisPass.contains(_findingId(finding)))
+      .map(_findingSummary)
+      .toList();
+  final newFindingsThisPass = findings
+      .where((finding) => newThisPass.contains(_findingId(finding)))
+      .map(_findingSummary)
+      .toList();
+
+  return <String, Object?>{
+    'schemaVersion': 1,
+    'scorecardType': 'b25-iteration',
+    'reviewRunId': _asString(review['currentReviewRunId'], fallback: 'unknown'),
+    'reviewStandardVersion': _asString(review['reviewStandardVersion']),
+    'generatedAt': DateTime.now().toUtc().toIso8601String(),
+    'status': status,
+    'finalDecision': finalDecision,
+    'b25CanPass': b25CanPass,
+    'findingCounts': counts,
+    'convergence': <String, Object?>{
+      'previousReviewRunId': _asString(previousScorecard?['reviewRunId']),
+      'resolvedCriticalBlockerThisPass': _countByIds(
+        findings,
+        resolvedThisPass,
+        severity: 'critical-blocker',
+      ),
+      'resolvedMajorThisPass': _countByIds(
+        findings,
+        resolvedThisPass,
+        severity: 'major',
+      ),
+      'newCriticalBlockerThisPass': _countByIds(
+        findings,
+        newThisPass,
+        severity: 'critical-blocker',
+      ),
+      'newMajorThisPass': _countByIds(findings, newThisPass, severity: 'major'),
+      'resolvedBlockingMajorThisPass': resolvedThisPass.length,
+      'newBlockingMajorThisPass': newThisPass.length,
+      'remainingBlockingMajor': currentBlocking.length,
+    },
+    'judgeSummary': judgeSummary,
+    'blockingFindings': blockingFindings,
+    'resolvedBlockingFindingsThisPass': resolvedFindingsThisPass,
+    'newBlockingFindingsThisPass': newFindingsThisPass,
+    'requiredNextAction': b25CanPass
+        ? 'B25 can close after required gates pass and tracker/manifest are stamped.'
+        : 'Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard.',
+  };
+}
+
 JudgeResult judgeEvidence(
   JudgeSpec spec,
   JsonMap evidence, {
@@ -662,6 +779,239 @@ _DerivedFailure? _derivedFailure(
       break;
   }
   return null;
+}
+
+JsonMap _findingCounts(List<JsonMap> findings) {
+  var total = 0;
+  var criticalBlocker = 0;
+  var major = 0;
+  var minor = 0;
+  var polish = 0;
+  var unresolvedCriticalBlocker = 0;
+  var unresolvedMajor = 0;
+  var resolvedCriticalBlocker = 0;
+  var resolvedMajor = 0;
+  for (final finding in findings) {
+    total += 1;
+    final severity = _normalizedSeverity(finding);
+    final resolved = _isResolved(finding);
+    if (severity == 'critical-blocker') {
+      criticalBlocker += 1;
+      if (resolved) {
+        resolvedCriticalBlocker += 1;
+      } else {
+        unresolvedCriticalBlocker += 1;
+      }
+    } else if (severity == 'major') {
+      major += 1;
+      if (resolved) {
+        resolvedMajor += 1;
+      } else {
+        unresolvedMajor += 1;
+      }
+    } else if (severity == 'minor') {
+      minor += 1;
+    } else if (severity == 'polish') {
+      polish += 1;
+    }
+  }
+  return <String, Object?>{
+    'total': total,
+    'criticalBlocker': criticalBlocker,
+    'major': major,
+    'minor': minor,
+    'polish': polish,
+    'unresolvedCriticalBlocker': unresolvedCriticalBlocker,
+    'unresolvedMajor': unresolvedMajor,
+    'unresolvedBlockingMajor': unresolvedCriticalBlocker + unresolvedMajor,
+    'resolvedCriticalBlocker': resolvedCriticalBlocker,
+    'resolvedMajor': resolvedMajor,
+    'resolvedBlockingMajor': resolvedCriticalBlocker + resolvedMajor,
+  };
+}
+
+JsonMap _judgeSummary(JsonMap? judge) {
+  if (judge == null) {
+    return <String, Object?>{
+      'status': 'not-supplied',
+      'totalCriteria': 0,
+      'passedCriteria': 0,
+      'failedCriteria': 0,
+      'blockingCriterionFailures': 0,
+      'holisticPass': false,
+      'workflowPersonaPass': false,
+    };
+  }
+  final criteria = _asMapList(judge['criteria']);
+  final failed = criteria
+      .where(
+        (criterion) =>
+            criterion['blocksPass'] == true ||
+            _asString(criterion['verdict']) == 'fail',
+      )
+      .toList();
+  final holistic = _asMapList(
+    (judge['holisticProductScorecard'] as JsonMap?)?['criteria'],
+  );
+  final workflowPersona = _asMapList(judge['workflowPersonaCriteria']);
+  return <String, Object?>{
+    'status': _asString(judge['status']),
+    'totalCriteria': criteria.length,
+    'passedCriteria': criteria.length - failed.length,
+    'failedCriteria': failed.length,
+    'blockingCriterionFailures': failed.length,
+    'holisticPass':
+        holistic.isNotEmpty && holistic.every((row) => row['blocksPass'] != true),
+    'workflowPersonaPass':
+        workflowPersona.isNotEmpty &&
+        workflowPersona.every((row) => row['blocksPass'] != true),
+  };
+}
+
+Set<String> _blockingFindingIds(List<JsonMap> findings) {
+  return findings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toSet();
+}
+
+Set<String> _previousBlockingFindingIds(JsonMap? previousScorecard) {
+  if (previousScorecard == null) {
+    return <String>{};
+  }
+  return _asMapList(previousScorecard['blockingFindings'])
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toSet();
+}
+
+int _countByIds(
+  List<JsonMap> findings,
+  Set<String> ids, {
+  required String severity,
+}) {
+  return findings
+      .where((finding) => ids.contains(_findingId(finding)))
+      .where((finding) => _normalizedSeverity(finding) == severity)
+      .length;
+}
+
+bool _isBlockingSeverity(JsonMap finding) {
+  final severity = _normalizedSeverity(finding);
+  return severity == 'critical-blocker' || severity == 'major';
+}
+
+bool _isResolved(JsonMap finding) {
+  final status = _asString(finding['status']).toLowerCase();
+  return finding['resolved'] == true || status == 'resolved';
+}
+
+String _normalizedSeverity(JsonMap finding) {
+  final severity = _asString(finding['severity']).toLowerCase();
+  if (severity == 'critical' || severity == 'blocker') {
+    return 'critical-blocker';
+  }
+  if (severity == 'major') {
+    return 'major';
+  }
+  if (severity == 'minor') {
+    return 'minor';
+  }
+  if (severity == 'polish') {
+    return 'polish';
+  }
+  return severity;
+}
+
+String _findingId(JsonMap finding) {
+  return _asString(
+    finding['findingId'] ?? finding['id'] ?? finding['rowId'] ?? 'unknown',
+  );
+}
+
+JsonMap _findingSummary(JsonMap finding) {
+  return <String, Object?>{
+    'findingId': _findingId(finding),
+    'severity': _normalizedSeverity(finding),
+    'status': _asString(finding['status']),
+    'title': _asString(
+      finding['title'] ?? finding['summary'] ?? finding['issue'],
+    ),
+    'requiredFix': _asString(finding['requiredFix'] ?? finding['recommendedFix']),
+  };
+}
+
+String _b25IterationScorecardMarkdown(JsonMap scorecard) {
+  final counts = scorecard['findingCounts'] as JsonMap;
+  final convergence = scorecard['convergence'] as JsonMap;
+  final judge = scorecard['judgeSummary'] as JsonMap;
+  final buffer = StringBuffer()
+    ..writeln('# B25 Iteration Scorecard')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Review run | `${_escape(_asString(scorecard['reviewRunId']))}` |')
+    ..writeln('| Status | `${_escape(_asString(scorecard['status']))}` |')
+    ..writeln('| Final decision | `${_escape(_asString(scorecard['finalDecision']))}` |')
+    ..writeln('| B25 can pass | `${scorecard['b25CanPass']}` |')
+    ..writeln('| Remaining critical/blocker + major | ${convergence['remainingBlockingMajor']} |')
+    ..writeln('| Resolved critical/blocker + major this pass | ${convergence['resolvedBlockingMajorThisPass']} |')
+    ..writeln('| New critical/blocker + major this pass | ${convergence['newBlockingMajorThisPass']} |')
+    ..writeln()
+    ..writeln('## Finding Counts')
+    ..writeln()
+    ..writeln('| Severity | Total | Unresolved | Resolved |')
+    ..writeln('| --- | ---: | ---: | ---: |')
+    ..writeln(
+      '| Critical/blocker | ${counts['criticalBlocker']} | ${counts['unresolvedCriticalBlocker']} | ${counts['resolvedCriticalBlocker']} |',
+    )
+    ..writeln(
+      '| Major | ${counts['major']} | ${counts['unresolvedMajor']} | ${counts['resolvedMajor']} |',
+    )
+    ..writeln('| Minor | ${counts['minor']} | n/a | n/a |')
+    ..writeln('| Polish | ${counts['polish']} | n/a | n/a |')
+    ..writeln()
+    ..writeln('## Judge Summary')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Judge status | `${_escape(_asString(judge['status']))}` |')
+    ..writeln('| Criteria passed | ${judge['passedCriteria']} / ${judge['totalCriteria']} |')
+    ..writeln('| Blocking criterion failures | ${judge['blockingCriterionFailures']} |')
+    ..writeln('| Holistic direct-question pass | `${judge['holisticPass']}` |')
+    ..writeln('| Workflow/persona direct-question pass | `${judge['workflowPersonaPass']}` |')
+    ..writeln()
+    ..writeln('## Blocking Findings')
+    ..writeln()
+    ..writeln('| Finding | Severity | Status | Required fix |')
+    ..writeln('| --- | --- | --- | --- |');
+  final blocking = _asMapList(scorecard['blockingFindings']);
+  if (blocking.isEmpty) {
+    buffer.writeln('| None | n/a | n/a | n/a |');
+  } else {
+    for (final finding in blocking) {
+      buffer.writeln(
+        '| `${_escape(_findingId(finding))}` | ${_escape(_asString(finding['severity']))} | ${_escape(_asString(finding['status']))} | ${_escape(_asString(finding['requiredFix']))} |',
+      );
+    }
+  }
+  buffer
+    ..writeln()
+    ..writeln('## Required Next Action')
+    ..writeln()
+    ..writeln(_asString(scorecard['requiredNextAction']));
+  return buffer.toString();
+}
+
+String _iterationScorecardUsage() {
+  return '''
+b25_iteration_scorecard (B25)
+Summarizes one B25 review/remediation pass and tracks convergence.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review <independent-production-ux-review.json> [--judge <production-ux-criteria-scorecard.json>] [--previous <previous-scorecard.json>] [--output <scorecard.json>] [--markdown-output <scorecard.md>]
+''';
 }
 
 JsonMap _extraScorecards(

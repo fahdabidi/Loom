@@ -84,6 +84,13 @@ a real user would expect.
   `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.json` and
   `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`. The scorecard must assign a
   scope, direct question, score, and pass/fail verdict to each B25 pass criterion from artifacts only.
+- B25 iteration scorecard after every review/remediation pass. Write both per-run and latest files:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-<run-id>.json`,
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-<run-id>.md`,
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-latest.json`, and
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-latest.md`. The scorecard must state what
+  passed or failed, current critical/blocker and major counts, how many critical/blocker and major
+  findings were resolved in the pass, how many new ones appeared, judge failures, and the next action.
 - Holistic product UX direct-question scorecard in the machine-readable evidence. It must answer
   whether the whole experience feels production-grade, whether the UI is modern/easy/appealing,
   whether navigation and information architecture center community jobs-to-be-done, and whether the
@@ -191,17 +198,27 @@ the owner explicitly asks for review-only planning or pauses implementation.
    worker implementation notes or attempted-fix summaries. The judge must fail if either the holistic
    direct-question pass or any workflow/persona direct-question pass is missing, partial, unsupported by
    visible evidence, or below the score threshold.
-9. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+9. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
+   ```
+
+   Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
+   is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
+   count blocker/major findings resolved and introduced in the current pass.
+10. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-10. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
+11. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
    recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
    iteration before the next UX feedback or remediation batch.
-11. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+12. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
    pass is green, the production UX judge scorecard has no blocking criterion failures, all required
-   tests/gates pass, and the tracker records the final iteration commit.
+   tests/gates pass, every pass has a B25 iteration scorecard proving convergence, and the tracker
+   records the final iteration commit.
 
 ## Required B25 Agent/Tool Split
 
@@ -377,6 +394,7 @@ For the machine-readable JSON evidence, record schemaVersion 4 and include:
   answer, score, visible evidence, critique, and required fix
 - remediationIterations with fixes applied, tests run, screenshots refreshed, and remaining blocker or
   major counts
+- iterationScorecardPath and priorIterationScorecardPath, when available
 - unresolvedBlockerFindings, unresolvedMajorFindings, ownerAcceptedMinorFindings, and trackedPolish
 - requiresRemediation, requiresRerun, and b25CanPass
 
@@ -424,6 +442,9 @@ Pass criteria:
   consistent with the markdown review, screen matrix, remediation loop, and tracker.
 - The production UX judge scorecard assigns pass scores to every B25 pass criterion and has no blocking
   failures.
+- Every review/remediation pass has an iteration scorecard that shows pass/fail, current unresolved
+  critical/blocker and major counts, blocker/major findings resolved in the pass, new blocker/major
+  findings introduced in the pass, judge failures, and next action.
 - If a prior loop iteration failed, the remediation loop log proves that fixes were applied, screenshots
   were refreshed, evidence was regenerated, and the latest review now has zero unresolved blocker or
   major findings.
@@ -452,6 +473,7 @@ The next UX feedback/remediation loop may not start from uncommitted B25 iterati
 ## Evidence To Record
 
 Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 4
-machine-readable review JSON, production UX judge scorecard, B25 remediation loop log, findings table,
-screenshot paths, remediation evidence, retest output, final pass/fail statement, manifest rows, phase
-gate, analyzer, boundary lint, diff check, per-iteration commit SHAs, and final closeout commit SHA.
+machine-readable review JSON, production UX judge scorecard, B25 iteration scorecards, B25 remediation
+loop log, findings table, screenshot paths, remediation evidence, retest output, final pass/fail
+statement, manifest rows, phase gate, analyzer, boundary lint, diff check, per-iteration commit SHAs,
+and final closeout commit SHA.
