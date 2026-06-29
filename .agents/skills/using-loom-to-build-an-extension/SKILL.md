@@ -222,13 +222,17 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     rerun commands. Each ticket must follow
     [../Tools/b25-remediation-ticket-template.md](../Tools/b25-remediation-ticket-template.md) and
     include user-facing problem statement, root-cause hypothesis, target experience, UX principles,
-    implementation guidance, content guidance, visual guidance, evidence to collect, non-goals, and
-    commit boundary. The next Worker Agent iteration must use those tickets as its fix backlog.
+    implementation guidance, content guidance, visual guidance, evidence to collect, non-goals, commit
+    boundary, remediation mode, worker readiness, implementation blockers, evidence-repair work items,
+    and UI-remediation work items. The next Worker Agent iteration must use those tickets as its fix
+    backlog.
 66. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,
-    evidence updates, acceptance checks, rerun commands, and the commit boundary for that next
-    iteration.
+    evidence updates, acceptance checks, rerun commands, work-item summaries, evidence-repair work
+    items, UI-remediation work items, and the commit boundary for that next iteration. Planner output
+    must keep evidence repair separate from UI implementation; UI remediation for a community/workflow/
+    persona may not start until its matching evidence-repair item has rerun clean.
 
 ## Delivery Modes
 

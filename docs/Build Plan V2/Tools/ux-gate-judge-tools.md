@@ -70,7 +70,13 @@ Each remediation ticket includes:
 - related finding IDs
 - direct question
 - why it failed
+- remediation mode
+- worker readiness
+- first required step
+- implementation blockers
 - affected scope: communities, personas, workflows, screen rows, and screenshots
+- evidence-repair work items scoped by community/workflow/persona
+- UI-remediation work items scoped by community/workflow/persona
 - user-facing problem statement
 - root-cause hypothesis
 - target experience
@@ -151,6 +157,9 @@ The remediation tickets do not replace the judge or scorecard either. They are c
 pass. At the start of the next pass, the tickets are sent to the Remediation Planner, and the planner
 output becomes that next Worker Agent's fix backlog. A failed B25 pass without remediation tickets is
 incomplete evidence; a remediation pass that begins without a planner output is also incomplete.
+The planner must preserve sequencing: evidence-repair work items come first, then UI-remediation work
+items for the same community/workflow/persona, then recapture/rerun/closeout. A Worker Agent should not
+start broad UI changes from a ticket whose `workerReadiness` says evidence repair is still required.
 
 ## B25 Direct Questions
 
@@ -217,6 +226,9 @@ remediation tickets, scorecards, and phase docs from the prior pass. It must out
 - root-cause cluster
 - affected communities/screens/personas/workflows
 - target production surface
+- evidence-repair work items with concrete persona, screenshot, visible-text, and critique requirements
+- UI-remediation work items with target production surface, likely files/widgets, worker actions, and
+  concrete acceptance criteria
 - files likely needing changes
 - tests/evidence to rerun
 - commit boundary for the iteration

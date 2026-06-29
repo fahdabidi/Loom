@@ -10,7 +10,7 @@ or a generic pass/fail summary.
 | Field | Required content |
 | --- | --- |
 | `ticketId` | Stable ID for the remediation ticket, such as `B25-RT-001-b25-c04-modern-intentional-ui`. |
-| `ticketSchemaVersion` | Current schema version. Use `2` for tickets with concrete screen, coverage, scorecard, and screenshot context. |
+| `ticketSchemaVersion` | Current schema version. Use `3` for tickets with worker-readiness, evidence-repair work items, and UI-remediation work items. |
 | `phase` | `B25`. |
 | `reviewRunId` | The review pass that produced the ticket, such as `b25-v4-pass-1`. |
 | `status` | `open`, `in-progress`, `resolved`, `owner-accepted`, or `deferred-with-rationale`. |
@@ -20,6 +20,10 @@ or a generic pass/fail summary.
 | `sourceFindingIds` | Related finding IDs from the review JSON. |
 | `directQuestion` | The exact direct question the evidence failed to satisfy. |
 | `whyItFailed` | Evidence-grounded explanation of why the criterion failed. |
+| `remediationMode` | `evidence-repair-first`, `evidence-repair-before-ui-remediation`, `ui-remediation-ready`, `closeout-after-all-remediation`, or `review-only`. |
+| `workerReadiness` | Whether a Worker Agent can implement UI changes now, or whether evidence repair/rejudge must happen first. |
+| `firstRequiredStep` | The first action the next pass must take before implementation or closeout. |
+| `implementationBlockedBy` | Concrete blockers that prevent direct UI implementation, such as generic personas, missing screenshot-derived visible text, or missing screen-specific critique. |
 | `affectedScope` | Communities, personas, workflows, screen rows, and screenshots affected. |
 | `affectedCoverageRowIds` | Machine-readable workflow/persona coverage row IDs affected by this ticket. |
 | `affectedScreenRowIds` | Machine-readable screen row IDs affected by this ticket. |
@@ -27,6 +31,8 @@ or a generic pass/fail summary.
 | `affectedScreenRows` | Concrete screen rows, including screen row ID, community, workflow, persona, screen/state, screenshot path/hash/timestamp, app commit SHA, visible text excerpt, current classification, exact UX failure, target production surface, likely files/widgets, and row-level acceptance criteria. |
 | `failingWorkflowPersonaScorecards` | Failing workflow/persona scorecards, including failed direct questions, screen row IDs, screenshot paths, and required fixes. |
 | `failingDirectQuestions` | Holistic or workflow/persona direct questions that failed, including score, why, required fix, and evidence used. |
+| `evidenceRepairWorkItems` | Smaller community/workflow/persona work items for fixing evidence quality before UI implementation. Each item includes affected row IDs, screenshot paths/hashes, visible text excerpts, current failures, worker actions, and acceptance criteria. |
+| `uiRemediationWorkItems` | Smaller community/workflow/persona work items for actual UI/design implementation once evidence repair has passed. Each item names the target production surface, likely files/widgets, worker actions, and acceptance criteria. |
 | `likelyFilesOrWidgets` | Specific code, test, evidence, or documentation files likely needing updates. |
 | `concreteAcceptanceCriteria` | Screen/workflow/persona-specific checks the remediation must satisfy before rerun. |
 | `problemStatement` | Plain-language user-facing problem, not implementation jargon. |
@@ -58,6 +64,15 @@ Each ticket Markdown section should use this structure:
 | Source criterion | b25-c04-modern-intentional-ui |
 | Source findings | B25-HOLISTIC-UNPROVEN |
 | Direct question | Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? |
+| Remediation mode | evidence-repair-before-ui-remediation |
+| Worker readiness | not ready for UI implementation until evidence repair work items are completed and the independent judge reruns |
+| First required step | Complete evidenceRepairWorkItems, then rerun collector/judge tools before assigning UI work. |
+
+### Implementation Blocked By
+
+- Affected rows still use generic or missing persona data.
+- Visible text is not proven from screenshot OCR/manual extraction.
+- Screen-specific critiques are incomplete or reusable.
 
 ### Why It Failed
 
@@ -82,6 +97,18 @@ Evidence-grounded explanation.
 | Screen row | Community | Workflow | Persona | State | Screenshot | Hash | Visible text | Current surface | Exact UX failure | Target surface |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `b25-v4-row-...` | Example Community | `workflow-id` | member | action | `/path/screenshot.png` | `abc123...` | Visible text excerpt | generic / unverified | Exact reason this row failed | Target production surface |
+
+### Evidence Repair Work Items
+
+| Work item | Stage | Community | Workflow | Persona | Screens | Coverage | Target surface | Blocked until |
+| --- | --- | --- | --- | --- | ---: | ---: | --- | --- |
+| `b25-wi-evidence-repair-example-workflow-member` | evidence-repair | Example Community | `workflow-id` | member | 3 | 1 | Event detail with RSVP action and result state |  |
+
+### UI Remediation Work Items
+
+| Work item | Stage | Community | Workflow | Persona | Screens | Coverage | Target surface | Blocked until |
+| --- | --- | --- | --- | --- | ---: | ---: | --- | --- |
+| `b25-wi-ui-remediation-example-workflow-member` | ui-remediation | Example Community | `workflow-id` | member | 3 | 1 | Event detail with RSVP action and result state | Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/personaId, and a non-boilerplate critique. |
 
 ### Failing Direct Questions
 

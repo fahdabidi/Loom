@@ -926,8 +926,10 @@ JsonMap buildB25RemediationPlan({
         'Fill holistic direct-question answers with screenshot-grounded yes/no/partial judgments.',
         'Fill every screen row with visible text and screen-specific critique.',
         'Fill workflow/persona scorecards for every reviewed workflow/persona pair.',
+        'Resolve every evidenceRepairWorkItem before assigning UI implementation work for that same community/workflow/persona.',
         'Keep reviewer context limited to screenshots, blueprint, evidence, and pass criteria.',
       ],
+      includeUiWorkItems: false,
     ),
     _remediationBatch(
       batchId: 'B25-RB-002-domain-native-ux-remediation',
@@ -941,11 +943,13 @@ JsonMap buildB25RemediationPlan({
         'b25-c09-no-layout-production-defects',
       }),
       actions: <String>[
+        'Start only after the matching evidenceRepairWorkItems have concrete personas, screenshot-derived visible text, and screen-specific critiques.',
         'Replace any primary global workflow lists, metadata pages, checklist modals, or repeated generic cards with domain-native surfaces.',
         'Rebuild primary homes and flows around community content and jobs-to-be-done.',
         'Improve hierarchy, spacing, typography, component quality, navigation clarity, and mobile layout.',
         'Update copy/content so visible UI speaks to the target persona and task, not to validation mechanics.',
       ],
+      includeEvidenceWorkItems: false,
     ),
     _remediationBatch(
       batchId: 'B25-RB-003-recapture-rerun-closeout',
@@ -963,7 +967,7 @@ JsonMap buildB25RemediationPlan({
   ].where((batch) => _asMapList(batch['tickets']).isNotEmpty).toList();
 
   return <String, Object?>{
-    'schemaVersion': 1,
+    'schemaVersion': 2,
     'planType': 'b25-remediation-plan',
     'reviewRunId': runId,
     'status': tickets.isEmpty ? 'no-open-tickets' : 'open',
@@ -990,9 +994,12 @@ JsonMap buildB25RemediationPlan({
         (scorecard?['judgeSummary'] as JsonMap?)?['blockingCriterionFailures'],
       ),
     },
+    'workItemSummary': _b25WorkItemSummary(batches),
     'batches': batches,
     'plannerRules': <String>[
       'Worker agents implement from remediation batches, not from optimistic summaries.',
+      'Evidence repair work items must be completed and rerun before UI remediation work items for the same community/workflow/persona are assigned.',
+      'UI remediation work must be scoped by community/workflow/persona and target production surface, not by a broad global ticket summary.',
       'The independent judge must rerun after each batch that changes UI, evidence, or critique.',
       'No next UX feedback loop starts until the current remediation iteration is committed.',
     ],
@@ -1656,6 +1663,8 @@ JsonMap _remediationBatch({
   required String purpose,
   required List<JsonMap> tickets,
   required List<String> actions,
+  bool includeEvidenceWorkItems = true,
+  bool includeUiWorkItems = true,
 }) {
   final ticketIds = tickets
       .map((ticket) => _asString(ticket['ticketId']))
@@ -1706,6 +1715,18 @@ JsonMap _remediationBatch({
     for (final ticket in tickets)
       ..._asStringList(ticket['concreteAcceptanceCriteria']),
   }.toList();
+  final evidenceRepairWorkItems = includeEvidenceWorkItems
+      ? _dedupeWorkItems(<JsonMap>[
+          for (final ticket in tickets)
+            ..._asMapList(ticket['evidenceRepairWorkItems']).map(JsonMap.of),
+        ])
+      : <JsonMap>[];
+  final uiRemediationWorkItems = includeUiWorkItems
+      ? _dedupeWorkItems(<JsonMap>[
+          for (final ticket in tickets)
+            ..._asMapList(ticket['uiRemediationWorkItems']).map(JsonMap.of),
+        ])
+      : <JsonMap>[];
   return <String, Object?>{
     'batchId': batchId,
     'status': 'open',
@@ -1721,6 +1742,8 @@ JsonMap _remediationBatch({
     'affectedScreenRows': screenRowsById.values.toList(),
     'affectedCoverageRows': coverageRowsById.values.toList(),
     'failingWorkflowPersonaScorecards': scorecardsById.values.toList(),
+    'evidenceRepairWorkItems': evidenceRepairWorkItems,
+    'uiRemediationWorkItems': uiRemediationWorkItems,
     'evidenceToUpdate': evidence,
     'acceptanceChecks': acceptance,
     'concreteAcceptanceCriteria': concreteAcceptance,
@@ -1736,6 +1759,42 @@ List<JsonMap> _ticketsForCriteria(List<JsonMap> tickets, Set<String> criteria) {
         (ticket) => criteria.contains(_asString(ticket['sourceCriterionId'])),
       )
       .toList();
+}
+
+JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
+  final evidenceItems = <String>{};
+  final uiItems = <String>{};
+  final communities = <String>{};
+  final workflows = <String>{};
+  final personas = <String>{};
+  for (final batch in batches) {
+    for (final item in _asMapList(batch['evidenceRepairWorkItems'])) {
+      evidenceItems.add(_asString(item['workItemId']));
+      communities.add(_asString(item['communityName']));
+      workflows.add(_asString(item['workflowId']));
+      personas.add(_asString(item['persona']));
+    }
+    for (final item in _asMapList(batch['uiRemediationWorkItems'])) {
+      uiItems.add(_asString(item['workItemId']));
+      communities.add(_asString(item['communityName']));
+      workflows.add(_asString(item['workflowId']));
+      personas.add(_asString(item['persona']));
+    }
+  }
+  evidenceItems.remove('');
+  uiItems.remove('');
+  communities.remove('');
+  workflows.remove('');
+  personas.remove('');
+  return <String, Object?>{
+    'evidenceRepairWorkItemCount': evidenceItems.length,
+    'uiRemediationWorkItemCount': uiItems.length,
+    'communityCount': communities.length,
+    'workflowCount': workflows.length,
+    'personaCount': personas.length,
+    'sequencing':
+        'Evidence repair work items must be completed and rerun before matching UI remediation work items are assigned.',
+  };
 }
 
 JudgeResult judgeEvidence(
@@ -2511,6 +2570,8 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
   final batches = _asMapList(plan['batches']);
   final sourceTickets = _asMapList(plan['sourceTickets']);
   final scorecard = plan['scorecardSummary'] as JsonMap? ?? <String, Object?>{};
+  final workItemSummary =
+      plan['workItemSummary'] as JsonMap? ?? <String, Object?>{};
   final buffer = StringBuffer()
     ..writeln('# B25 Remediation Plan')
     ..writeln()
@@ -2530,6 +2591,15 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
     )
     ..writeln(
       '| Blocking criteria failures | ${scorecard['blockingCriterionFailures']} |',
+    )
+    ..writeln(
+      '| Evidence repair work items | ${workItemSummary['evidenceRepairWorkItemCount'] ?? 0} |',
+    )
+    ..writeln(
+      '| UI remediation work items | ${workItemSummary['uiRemediationWorkItemCount'] ?? 0} |',
+    )
+    ..writeln(
+      '| Work item sequencing | ${_escape(_asString(workItemSummary['sequencing']))} |',
     )
     ..writeln()
     ..writeln('## Source Tickets')
@@ -2580,6 +2650,16 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
         buffer.writeln('- `${_escape(file)}`');
       }
     }
+    _writeWorkItemsMarkdown(
+      buffer,
+      'Evidence Repair Work Items',
+      _asMapList(batch['evidenceRepairWorkItems']),
+    );
+    _writeWorkItemsMarkdown(
+      buffer,
+      'UI Remediation Work Items',
+      _asMapList(batch['uiRemediationWorkItems']),
+    );
     final coverageRows = _asMapList(batch['affectedCoverageRows']);
     if (coverageRows.isNotEmpty) {
       buffer
@@ -2730,11 +2810,12 @@ List<JsonMap> _b25RemediationTickets(
       criterion,
       relatedFindings,
     );
+    final remediationMode = _b25RemediationMode(criterion, ticketContext);
     final ticketId =
         'B25-RT-${index.toString().padLeft(3, '0')}-${_slug(criterion.id)}';
     tickets.add(<String, Object?>{
       'ticketId': ticketId,
-      'ticketSchemaVersion': 2,
+      'ticketSchemaVersion': 3,
       'phase': 'B25',
       'reviewRunId': runId,
       'status': 'open',
@@ -2746,6 +2827,10 @@ List<JsonMap> _b25RemediationTickets(
       'directQuestion': criterion.question,
       'whyItFailed': criterion.why,
       'requiredOutcome': criterion.requiredFix,
+      'remediationMode': remediationMode['mode'],
+      'workerReadiness': remediationMode['workerReadiness'],
+      'firstRequiredStep': remediationMode['firstRequiredStep'],
+      'implementationBlockedBy': remediationMode['implementationBlockedBy'],
       'affectedScope': ticketContext['affectedScope'],
       'affectedCoverageRowIds': ticketContext['affectedCoverageRowIds'],
       'affectedScreenRowIds': ticketContext['affectedScreenRowIds'],
@@ -2754,6 +2839,8 @@ List<JsonMap> _b25RemediationTickets(
       'failingWorkflowPersonaScorecards':
           ticketContext['failingWorkflowPersonaScorecards'],
       'failingDirectQuestions': ticketContext['failingDirectQuestions'],
+      'evidenceRepairWorkItems': ticketContext['evidenceRepairWorkItems'],
+      'uiRemediationWorkItems': ticketContext['uiRemediationWorkItems'],
       'likelyFilesOrWidgets': ticketContext['likelyFilesOrWidgets'],
       'concreteAcceptanceCriteria': ticketContext['concreteAcceptanceCriteria'],
       'problemStatement': _problemStatementForB25Criterion(criterion.id),
@@ -2937,6 +3024,20 @@ JsonMap _b25TicketContext(
     for (final row in affectedCoverageRows.take(12))
       ..._asStringList(row['acceptanceCriteria']),
   }.where((value) => value.isNotEmpty).toList();
+  final evidenceRepairWorkItems = _b25WorkItems(
+    stage: 'evidence-repair',
+    criterionId: criterion.id,
+    screenRows: affectedScreenRows,
+    coverageRows: affectedCoverageRows,
+    scorecards: failingScorecards,
+  );
+  final uiRemediationWorkItems = _b25WorkItems(
+    stage: 'ui-remediation',
+    criterionId: criterion.id,
+    screenRows: affectedScreenRows,
+    coverageRows: affectedCoverageRows,
+    scorecards: failingScorecards,
+  );
 
   return <String, Object?>{
     'affectedScope': _concreteAffectedScope(
@@ -2956,6 +3057,8 @@ JsonMap _b25TicketContext(
     'affectedScreenRows': affectedScreenRows,
     'failingWorkflowPersonaScorecards': failingScorecards,
     'failingDirectQuestions': failingQuestions,
+    'evidenceRepairWorkItems': evidenceRepairWorkItems,
+    'uiRemediationWorkItems': uiRemediationWorkItems,
     'likelyFilesOrWidgets': likelyFiles,
     'concreteAcceptanceCriteria': concreteAcceptance,
   };
@@ -2971,6 +3074,356 @@ Set<String> _workflowPersonaEvidenceKeys(JsonMap row) {
     _asString(row['scorecardId']),
     _asString(row['coverageRowId']),
   }..removeWhere((value) => value.isEmpty);
+}
+
+JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
+  final evidenceItems = _asMapList(ticketContext['evidenceRepairWorkItems']);
+  final uiItems = _asMapList(ticketContext['uiRemediationWorkItems']);
+  if (criterion.id == 'b25-c01-no-blocker-major') {
+    return <String, Object?>{
+      'mode': 'closeout-after-all-remediation',
+      'workerReadiness':
+          'blocked until the evidence and UI remediation tickets are resolved',
+      'firstRequiredStep':
+          'Do not implement from this summary ticket directly; resolve the referenced evidence and UI tickets, then rerun the production UX judge.',
+      'implementationBlockedBy': <String>[
+        'Open blocker/major B25 tickets remain.',
+        'The scorecard cannot close until those tickets rerun clean.',
+      ],
+    };
+  }
+  if (evidenceItems.isNotEmpty) {
+    return <String, Object?>{
+      'mode': uiItems.isEmpty
+          ? 'evidence-repair-first'
+          : 'evidence-repair-before-ui-remediation',
+      'workerReadiness':
+          'not ready for UI implementation until evidence repair work items are completed and the independent judge reruns',
+      'firstRequiredStep':
+          'Complete the evidenceRepairWorkItems: concrete persona/personaId, screenshot-derived visible text, screen-specific critique, coverage row proof, and workflow/persona scorecards.',
+      'implementationBlockedBy': <String>[
+        'Affected rows still use generic or missing persona data.',
+        'Visible text is not proven from screenshot OCR/manual extraction.',
+        'Screen-specific critiques are incomplete or reusable.',
+        'Primary surface classification is incomplete or unverified.',
+      ],
+    };
+  }
+  if (uiItems.isNotEmpty) {
+    return <String, Object?>{
+      'mode': 'ui-remediation-ready',
+      'workerReadiness':
+          'ready for worker implementation using the uiRemediationWorkItems',
+      'firstRequiredStep':
+          'Implement the target production surfaces and content specified in uiRemediationWorkItems, then recapture screenshots.',
+      'implementationBlockedBy': <String>[],
+    };
+  }
+  return <String, Object?>{
+    'mode': 'review-only',
+    'workerReadiness':
+        'no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker',
+    'firstRequiredStep':
+        'Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.',
+    'implementationBlockedBy': <String>[
+      'The ticket lacks row-level implementation evidence.',
+    ],
+  };
+}
+
+List<JsonMap> _b25WorkItems({
+  required String stage,
+  required String criterionId,
+  required List<JsonMap> screenRows,
+  required List<JsonMap> coverageRows,
+  required List<JsonMap> scorecards,
+}) {
+  if (criterionId == 'b25-c01-no-blocker-major') {
+    return <JsonMap>[];
+  }
+  final includeUi = _isB25UiRemediationCriterion(criterionId);
+  final includeEvidence =
+      stage == 'evidence-repair' ||
+      criterionId == 'b25-c08-visible-text-specific-critique';
+  if (stage == 'ui-remediation' && !includeUi) {
+    return <JsonMap>[];
+  }
+  if (stage == 'evidence-repair' && !includeEvidence) {
+    return <JsonMap>[];
+  }
+
+  final itemsByKey = <String, JsonMap>{};
+  JsonMap ensureItem({
+    required String communityId,
+    required String communityName,
+    required String workflowId,
+    required String persona,
+    required String personaId,
+  }) {
+    final key = [
+      communityId,
+      workflowId,
+      personaId.isNotEmpty ? personaId : persona,
+      stage,
+    ].join('::');
+    return itemsByKey.putIfAbsent(key, () {
+      final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+      return <String, Object?>{
+        'workItemId':
+            'b25-wi-${_slug(stage)}-${_slug(communityId.isNotEmpty ? communityId : communityName)}-${_slug(workflowId)}-${_slug(personaId.isNotEmpty ? personaId : persona)}',
+        'stage': stage,
+        'criterionId': criterionId,
+        'communityId': communityId,
+        'communityName': communityName,
+        'workflowId': workflowId,
+        'persona': persona,
+        'personaId': personaId,
+        'targetProductionSurface': targetSurface,
+        'affectedScreenRowIds': <String>[],
+        'affectedCoverageRowIds': <String>[],
+        'affectedScorecardIds': <String>[],
+        'screenshotPaths': <String>[],
+        'screenshotHashes': <String>[],
+        'visibleTextExcerpts': <String>[],
+        'currentFailures': <String>[],
+        'likelyFilesOrWidgets': <String>{}.toList(),
+        'workerActions': stage == 'evidence-repair'
+            ? _evidenceRepairWorkerActions(workflowId, persona, targetSurface)
+            : _uiRemediationWorkerActions(workflowId, persona, targetSurface),
+        'acceptanceCriteria': stage == 'evidence-repair'
+            ? _evidenceRepairAcceptanceCriteria(workflowId, persona)
+            : _uiRemediationAcceptanceCriteria(
+                workflowId,
+                persona,
+                targetSurface,
+              ),
+        'blockedUntil': stage == 'ui-remediation'
+            ? 'Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/personaId, and a non-boilerplate critique.'
+            : '',
+      };
+    });
+  }
+
+  void addUnique(JsonMap item, String field, Iterable<String> values) {
+    final current = <String>{
+      ..._asStringList(item[field]),
+      for (final value in values)
+        if (value.trim().isNotEmpty) value.trim(),
+    }.toList();
+    item[field] = current;
+  }
+
+  for (final row in screenRows) {
+    if (stage == 'evidence-repair' && !_screenDetailNeedsEvidenceRepair(row)) {
+      continue;
+    }
+    final workflowId = _asString(row['workflowId']);
+    final item = ensureItem(
+      communityId: _asString(row['communityId']),
+      communityName: _asString(row['communityName']),
+      workflowId: workflowId,
+      persona: _asString(row['persona']),
+      personaId: _asString(row['personaId']),
+    );
+    addUnique(item, 'affectedScreenRowIds', [_asString(row['screenRowId'])]);
+    addUnique(item, 'screenshotPaths', [_asString(row['screenshotPath'])]);
+    addUnique(item, 'screenshotHashes', [_asString(row['screenshotHash'])]);
+    addUnique(item, 'visibleTextExcerpts', [
+      _asString(row['visibleTextExcerpt']),
+    ]);
+    addUnique(item, 'currentFailures', [_asString(row['exactUxFailure'])]);
+    addUnique(
+      item,
+      'likelyFilesOrWidgets',
+      _asStringList(row['likelyFilesOrWidgets']),
+    );
+    addUnique(
+      item,
+      'acceptanceCriteria',
+      _asStringList(row['acceptanceCriteria']),
+    );
+  }
+
+  for (final coverage in coverageRows) {
+    final item = ensureItem(
+      communityId: _asString(coverage['communityId']),
+      communityName: _asString(coverage['communityName']),
+      workflowId: _asString(coverage['workflowId']),
+      persona: _asString(coverage['persona']),
+      personaId: _asString(coverage['personaId']),
+    );
+    addUnique(item, 'affectedCoverageRowIds', [
+      _asString(coverage['coverageRowId']),
+    ]);
+    addUnique(
+      item,
+      'affectedScreenRowIds',
+      _asStringList(coverage['screenRowIds']),
+    );
+    addUnique(
+      item,
+      'screenshotPaths',
+      _asStringList(coverage['screenshotPaths']),
+    );
+    addUnique(
+      item,
+      'currentFailures',
+      _asStringList(coverage['missingEvidence']),
+    );
+    addUnique(
+      item,
+      'acceptanceCriteria',
+      _asStringList(coverage['acceptanceCriteria']),
+    );
+  }
+
+  for (final scorecard in scorecards) {
+    final item = ensureItem(
+      communityId: _asString(scorecard['communityId']),
+      communityName: _asString(scorecard['communityName']),
+      workflowId: _asString(scorecard['workflowId']),
+      persona: _asString(scorecard['persona']),
+      personaId: _asString(scorecard['personaId']),
+    );
+    addUnique(item, 'affectedScorecardIds', [
+      _asString(scorecard['scorecardId']),
+    ]);
+    addUnique(
+      item,
+      'affectedScreenRowIds',
+      _asStringList(scorecard['screenRowIds']),
+    );
+    addUnique(
+      item,
+      'screenshotPaths',
+      _asStringList(scorecard['screenshotPaths']),
+    );
+    addUnique(item, 'currentFailures', [_asString(scorecard['summary'])]);
+    addUnique(
+      item,
+      'acceptanceCriteria',
+      _asStringList(scorecard['acceptanceCriteria']),
+    );
+  }
+
+  return _dedupeWorkItems(itemsByKey.values.toList());
+}
+
+bool _isB25UiRemediationCriterion(String criterionId) {
+  return <String>{
+    'b25-c03-production-grade-experience',
+    'b25-c04-modern-intentional-ui',
+    'b25-c05-community-content-ia',
+    'b25-c06-domain-native-primary-surfaces',
+    'b25-c09-no-layout-production-defects',
+  }.contains(criterionId);
+}
+
+bool _screenDetailNeedsEvidenceRepair(JsonMap row) {
+  final persona = _asString(row['persona']);
+  final personaId = _asString(row['personaId']);
+  final source = _asString(row['visibleTextSource']).toLowerCase();
+  final surface = _asString(row['currentSurfaceClassification']).toLowerCase();
+  final primarySurface = _asString(
+    row['currentPrimarySurfaceType'],
+  ).toLowerCase();
+  final critique = _asString(row['currentCritique']).toLowerCase();
+  return !_isSpecificPersona(persona, personaId) ||
+      !(source.contains('screenshot') ||
+          source.contains('ocr') ||
+          source.contains('manual')) ||
+      surface.contains('incomplete') ||
+      surface.contains('pending') ||
+      primarySurface.contains('unverified') ||
+      critique.isEmpty ||
+      critique.contains('pending') ||
+      critique.contains('does not identify');
+}
+
+List<JsonMap> _dedupeWorkItems(List<JsonMap> workItems) {
+  final byId = <String, JsonMap>{};
+  for (final item in workItems) {
+    final id = _asString(item['workItemId']);
+    if (id.isEmpty) {
+      continue;
+    }
+    final existing = byId[id];
+    if (existing == null) {
+      byId[id] = item;
+      continue;
+    }
+    for (final field in <String>[
+      'affectedScreenRowIds',
+      'affectedCoverageRowIds',
+      'affectedScorecardIds',
+      'screenshotPaths',
+      'screenshotHashes',
+      'visibleTextExcerpts',
+      'currentFailures',
+      'likelyFilesOrWidgets',
+      'acceptanceCriteria',
+    ]) {
+      existing[field] = _uniqueStrings(<String>[
+        ..._asStringList(existing[field]),
+        ..._asStringList(item[field]),
+      ]);
+    }
+  }
+  return byId.values.toList();
+}
+
+List<String> _evidenceRepairWorkerActions(
+  String workflowId,
+  String persona,
+  String targetSurface,
+) {
+  return <String>[
+    'Replace generic persona `${persona.isEmpty ? 'persona-under-review' : persona}` with the concrete actor/receiver persona and personaId for `${workflowId}`.',
+    'Verify entry, action/review, and result/receiver screenshots exist for `${workflowId}` and are tied to the concrete persona.',
+    'Extract visible text from the listed screenshots or manually transcribe exactly what is visible.',
+    'Write a non-reusable critique that names the visible UI, visible text, persona, user task, current failure, and target surface: ${targetSurface}.',
+    'Rerun the workflow/persona coverage collector and independent UX judge before assigning UI implementation work.',
+  ];
+}
+
+List<String> _uiRemediationWorkerActions(
+  String workflowId,
+  String persona,
+  String targetSurface,
+) {
+  return <String>[
+    'Replace the current primary surface for `${workflowId}` with ${targetSurface}.',
+    'Build the entry, action/review, and result states for `${persona.isEmpty ? 'the target persona' : persona}` using domain content and semantic action labels.',
+    'Remove workflow-harness, validation, metadata, checklist, or generic repeated-card language from the user-facing surface.',
+    'Update widget/integration tests and B25 evidence expectations for the changed UI.',
+    'Recapture screenshots and rerun the workflow/persona direct-question scorecard.',
+  ];
+}
+
+List<String> _evidenceRepairAcceptanceCriteria(
+  String workflowId,
+  String persona,
+) {
+  return <String>[
+    '`${workflowId}` has concrete persona/personaId coverage, not `persona-under-review`.',
+    'Entry/action/result screenshot rows exist for `${workflowId}` and each row has screenshot path, hash, timestamp, device metadata, and app commit SHA.',
+    'Visible text is screenshot-derived or manually transcribed from the screenshot for every affected row.',
+    'Each affected row has a screen-specific critique that cannot be reused unchanged for another workflow.',
+    'Workflow/persona coverage collector no longer flags missing persona or screenshot evidence for `${workflowId}`.',
+  ];
+}
+
+List<String> _uiRemediationAcceptanceCriteria(
+  String workflowId,
+  String persona,
+  String targetSurface,
+) {
+  return <String>[
+    'The primary `${workflowId}` screen is ${targetSurface}, not a generic workflow card, metadata page, checklist modal, or validation surface.',
+    'Visible content includes the real domain data, user goal, semantic action, validation/review state, and result/receipt/receiver state expected for `${persona.isEmpty ? 'the target persona' : persona}`.',
+    'The workflow/persona direct-question scorecard passes for task clarity, domain-native surface, natural actions, and production-grade UI.',
+    'Fresh screenshots prove the remediated entry/action/result states after the code change.',
+  ];
 }
 
 JsonMap _concreteAffectedScope(
@@ -3052,6 +3505,24 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     'currentCritique': _truncate(_asString(row['screenSpecificCritique']), 360),
     'exactUxFailure': _exactUxFailureForScreenRow(row, criterionId),
     'targetProductionSurface': targetSurface,
+    'evidenceRepairNeeded': _screenDetailNeedsEvidenceRepair(<String, Object?>{
+      'persona': _asString(row['persona']),
+      'personaId': _asString(row['personaId']),
+      'visibleTextSource': _asString(row['visibleTextExtractionSource']),
+      'currentSurfaceClassification': _asString(row['uiPatternClassification']),
+      'currentPrimarySurfaceType': _asString(row['primarySurfaceType']),
+      'currentCritique': _asString(row['screenSpecificCritique']),
+    }),
+    'evidenceRepairActions': _evidenceRepairWorkerActions(
+      workflowId,
+      _asString(row['persona']),
+      targetSurface,
+    ),
+    'uiRemediationActions': _uiRemediationWorkerActions(
+      workflowId,
+      _asString(row['persona']),
+      targetSurface,
+    ),
     'likelyFilesOrWidgets': _likelyFilesForB25Row(row, criterionId),
     'acceptanceCriteria': _screenRowAcceptanceCriteria(row, criterionId),
   };
@@ -4051,6 +4522,15 @@ String _remediationTicketsMarkdown({
       ..writeln(
         '| Required outcome | ${_escape(_asString(ticket['requiredOutcome']))} |',
       )
+      ..writeln(
+        '| Remediation mode | `${_escape(_asString(ticket['remediationMode']))}` |',
+      )
+      ..writeln(
+        '| Worker readiness | ${_escape(_asString(ticket['workerReadiness']))} |',
+      )
+      ..writeln(
+        '| First required step | ${_escape(_asString(ticket['firstRequiredStep']))} |',
+      )
       ..writeln()
       ..writeln('### Problem Statement')
       ..writeln()
@@ -4092,6 +4572,25 @@ String _remediationTicketsMarkdown({
     for (final guidance in _asStringList(ticket['visualGuidance'])) {
       buffer.writeln('- ${_escape(guidance)}');
     }
+    final blockedBy = _asStringList(ticket['implementationBlockedBy']);
+    if (blockedBy.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Implementation Blocked By');
+      for (final blocker in blockedBy) {
+        buffer.writeln('- ${_escape(blocker)}');
+      }
+    }
+    _writeWorkItemsMarkdown(
+      buffer,
+      'Evidence Repair Work Items',
+      _asMapList(ticket['evidenceRepairWorkItems']),
+    );
+    _writeWorkItemsMarkdown(
+      buffer,
+      'UI Remediation Work Items',
+      _asMapList(ticket['uiRemediationWorkItems']),
+    );
     final coverageRows = _asMapList(ticket['affectedCoverageRows']);
     if (coverageRows.isNotEmpty) {
       buffer
@@ -4224,6 +4723,33 @@ String _remediationTicketsMarkdown({
     }
   }
   return buffer.toString();
+}
+
+void _writeWorkItemsMarkdown(
+  StringBuffer buffer,
+  String title,
+  List<JsonMap> workItems,
+) {
+  if (workItems.isEmpty) {
+    return;
+  }
+  buffer
+    ..writeln()
+    ..writeln('### ${_escape(title)}')
+    ..writeln()
+    ..writeln(
+      'Showing ${workItems.take(30).length} of ${workItems.length} work items. Full detail is in the JSON artifact.',
+    )
+    ..writeln()
+    ..writeln(
+      '| Work item | Stage | Community | Workflow | Persona | Screens | Coverage | Target surface | Blocked until |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | ---: | ---: | --- | --- |');
+  for (final item in workItems.take(30)) {
+    buffer.writeln(
+      '| `${_escape(_asString(item['workItemId']))}` | `${_escape(_asString(item['stage']))}` | ${_escape(_asString(item['communityName']))} | `${_escape(_asString(item['workflowId']))}` | ${_escape(_asString(item['persona']))} | ${_asStringList(item['affectedScreenRowIds']).length} | ${_asStringList(item['affectedCoverageRowIds']).length} | ${_escape(_asString(item['targetProductionSurface']))} | ${_escape(_asString(item['blockedUntil']))} |',
+    );
+  }
 }
 
 String _toMarkdown(JudgeResult result) {
