@@ -1675,6 +1675,37 @@ JsonMap _remediationBatch({
     for (final ticket in tickets)
       ..._asStringList(ticket['implementationGuidance']),
   }.toList();
+  final likelyFiles = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['likelyFilesOrWidgets']),
+  }.toList();
+  final screenRowIds = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['affectedScreenRowIds']),
+  }.toList();
+  final coverageRowIds = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['affectedCoverageRowIds']),
+  }.toList();
+  final screenRowsById = <String, JsonMap>{
+    for (final ticket in tickets)
+      for (final row in _asMapList(ticket['affectedScreenRows']))
+        _asString(row['screenRowId']): JsonMap.of(row),
+  }..remove('');
+  final coverageRowsById = <String, JsonMap>{
+    for (final ticket in tickets)
+      for (final row in _asMapList(ticket['affectedCoverageRows']))
+        _asString(row['coverageRowId']): JsonMap.of(row),
+  }..remove('');
+  final scorecardsById = <String, JsonMap>{
+    for (final ticket in tickets)
+      for (final row in _asMapList(ticket['failingWorkflowPersonaScorecards']))
+        _asString(row['scorecardId']): JsonMap.of(row),
+  }..remove('');
+  final concreteAcceptance = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['concreteAcceptanceCriteria']),
+  }.toList();
   return <String, Object?>{
     'batchId': batchId,
     'status': 'open',
@@ -1684,8 +1715,15 @@ JsonMap _remediationBatch({
     'tickets': tickets,
     'workerActions': actions,
     'implementationGuidance': implementation,
+    'likelyFilesOrWidgets': likelyFiles,
+    'affectedScreenRowIds': screenRowIds,
+    'affectedCoverageRowIds': coverageRowIds,
+    'affectedScreenRows': screenRowsById.values.toList(),
+    'affectedCoverageRows': coverageRowsById.values.toList(),
+    'failingWorkflowPersonaScorecards': scorecardsById.values.toList(),
     'evidenceToUpdate': evidence,
     'acceptanceChecks': acceptance,
+    'concreteAcceptanceCriteria': concreteAcceptance,
     'rerunCommands': rerun,
     'commitBoundary':
         'Commit this remediation batch, refreshed evidence, judge outputs, scorecards, and tracker updates before the next UX feedback loop. If the committed pass still fails, the following pass starts by sending its tickets to the Remediation Planner.',
@@ -2533,6 +2571,55 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
     for (final guidance in _asStringList(batch['implementationGuidance'])) {
       buffer.writeln('- ${_escape(guidance)}');
     }
+    final likelyFiles = _asStringList(batch['likelyFilesOrWidgets']);
+    if (likelyFiles.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Likely Files / Widgets');
+      for (final file in likelyFiles) {
+        buffer.writeln('- `${_escape(file)}`');
+      }
+    }
+    final coverageRows = _asMapList(batch['affectedCoverageRows']);
+    if (coverageRows.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Coverage Rows')
+        ..writeln()
+        ..writeln(
+          'Showing ${coverageRows.take(30).length} of ${coverageRows.length} affected coverage rows.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Coverage row | Community | Workflow | Persona | Missing evidence |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- |');
+      for (final row in coverageRows.take(30)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['coverageRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} |',
+        );
+      }
+    }
+    final screenRows = _asMapList(batch['affectedScreenRows']);
+    if (screenRows.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Screen Rows')
+        ..writeln()
+        ..writeln(
+          'Showing ${screenRows.take(30).length} of ${screenRows.length} affected screen rows.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Screen row | Community | Workflow | Persona | State | Exact UX failure |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- | --- |');
+      for (final row in screenRows.take(30)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asString(row['screenState']))} | ${_escape(_asString(row['exactUxFailure']))} |',
+        );
+      }
+    }
     buffer
       ..writeln()
       ..writeln('### Evidence To Update');
@@ -2544,6 +2631,17 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
       ..writeln('### Acceptance Checks');
     for (final check in _asStringList(batch['acceptanceChecks'])) {
       buffer.writeln('- ${_escape(check)}');
+    }
+    final concreteAcceptance = _asStringList(
+      batch['concreteAcceptanceCriteria'],
+    );
+    if (concreteAcceptance.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Concrete Acceptance Criteria');
+      for (final check in concreteAcceptance.take(40)) {
+        buffer.writeln('- ${_escape(check)}');
+      }
     }
     buffer
       ..writeln()
@@ -2627,11 +2725,16 @@ List<JsonMap> _b25RemediationTickets(
       criterion,
       allBlockingFindingIds,
     );
+    final ticketContext = _b25TicketContext(
+      evidence,
+      criterion,
+      relatedFindings,
+    );
     final ticketId =
         'B25-RT-${index.toString().padLeft(3, '0')}-${_slug(criterion.id)}';
     tickets.add(<String, Object?>{
       'ticketId': ticketId,
-      'ticketSchemaVersion': 1,
+      'ticketSchemaVersion': 2,
       'phase': 'B25',
       'reviewRunId': runId,
       'status': 'open',
@@ -2643,7 +2746,16 @@ List<JsonMap> _b25RemediationTickets(
       'directQuestion': criterion.question,
       'whyItFailed': criterion.why,
       'requiredOutcome': criterion.requiredFix,
-      'affectedScope': _affectedScopeForB25Criterion(criterion.id, criterion),
+      'affectedScope': ticketContext['affectedScope'],
+      'affectedCoverageRowIds': ticketContext['affectedCoverageRowIds'],
+      'affectedScreenRowIds': ticketContext['affectedScreenRowIds'],
+      'affectedCoverageRows': ticketContext['affectedCoverageRows'],
+      'affectedScreenRows': ticketContext['affectedScreenRows'],
+      'failingWorkflowPersonaScorecards':
+          ticketContext['failingWorkflowPersonaScorecards'],
+      'failingDirectQuestions': ticketContext['failingDirectQuestions'],
+      'likelyFilesOrWidgets': ticketContext['likelyFilesOrWidgets'],
+      'concreteAcceptanceCriteria': ticketContext['concreteAcceptanceCriteria'],
       'problemStatement': _problemStatementForB25Criterion(criterion.id),
       'rootCauseHypothesis': _rootCauseForB25Criterion(criterion.id),
       'targetExperience': _targetExperienceForB25Criterion(criterion.id),
@@ -2667,28 +2779,543 @@ List<JsonMap> _b25RemediationTickets(
   return tickets;
 }
 
-JsonMap _affectedScopeForB25Criterion(
-  String criterionId,
+JsonMap _b25TicketContext(
+  JsonMap evidence,
   CriterionResult criterion,
+  List<String> relatedFindingIds,
 ) {
+  final screenRows = _asMapList(evidence['screenRows']);
+  final coverageRows = _asMapList(evidence['workflowPersonaCoverage']);
+  final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
+  final holisticAnswers = _asMapList(evidence['holisticQuestionAnswers']);
+  final findings = _asMapList(evidence['findings']);
+  final screenById = <String, JsonMap>{
+    for (final row in screenRows) _rowId(row): row,
+  };
+  final coverageById = <String, JsonMap>{
+    for (final row in coverageRows) _asString(row['coverageRowId']): row,
+  };
+  final scorecardById = <String, JsonMap>{
+    for (final row in scorecards) _asString(row['scorecardId']): row,
+  };
+  final questionById = <String, JsonMap>{
+    for (final row in holisticAnswers) _asString(row['questionId']): row,
+  };
+  final coverageIds = <String>{};
+  final scorecardIds = <String>{};
+  final screenIds = <String>{};
+  final questionIds = <String>{};
+
+  for (final finding in findings) {
+    if (!relatedFindingIds.contains(_findingId(finding))) {
+      continue;
+    }
+    coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
+    scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
+    screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
+    questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
+  }
+
+  for (final token in criterion.evidenceUsed) {
+    if (screenById.containsKey(token)) {
+      screenIds.add(token);
+      continue;
+    }
+    if (coverageById.containsKey(token)) {
+      coverageIds.add(token);
+      continue;
+    }
+    if (scorecardById.containsKey(token)) {
+      scorecardIds.add(token);
+      continue;
+    }
+    if (questionById.containsKey(token)) {
+      questionIds.add(token);
+      continue;
+    }
+    for (final scorecard in scorecards) {
+      if (_workflowPersonaEvidenceKeys(scorecard).contains(token)) {
+        scorecardIds.add(_asString(scorecard['scorecardId']));
+      }
+    }
+    for (final coverage in coverageRows) {
+      if (_workflowPersonaEvidenceKeys(coverage).contains(token)) {
+        coverageIds.add(_asString(coverage['coverageRowId']));
+      }
+    }
+  }
+
+  if (criterion.scope == 'holistic') {
+    questionIds.addAll(
+      holisticAnswers
+          .where((answer) => answer['blocksPass'] == true)
+          .map((answer) => _asString(answer['questionId'])),
+    );
+    if (screenIds.isEmpty) {
+      screenIds.addAll(
+        screenRows
+            .where((row) => _asString(row['verdict']) != 'pass')
+            .map(_rowId),
+      );
+    }
+  }
+
+  if (criterion.scope == 'workflow-persona') {
+    if (scorecardIds.isEmpty) {
+      scorecardIds.addAll(
+        scorecards
+            .where((scorecard) => scorecard['blocksPass'] == true)
+            .map((scorecard) => _asString(scorecard['scorecardId'])),
+      );
+    }
+    for (final scorecardId in scorecardIds.toList()) {
+      final scorecard = scorecardById[scorecardId];
+      if (scorecard == null) {
+        continue;
+      }
+      screenIds.addAll(_asStringList(scorecard['screenRowIds']));
+      if (coverageById.containsKey(scorecardId)) {
+        coverageIds.add(scorecardId);
+      }
+    }
+  }
+
+  if (criterion.id == 'b25-c01-no-blocker-major') {
+    for (final finding in findings.where((finding) => !_isResolved(finding))) {
+      coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
+      scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
+      screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
+      questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
+    }
+    if (screenIds.isEmpty) {
+      screenIds.addAll(
+        screenRows
+            .where((row) => _asString(row['verdict']) != 'pass')
+            .map(_rowId),
+      );
+    }
+  }
+
+  for (final coverageId in coverageIds.toList()) {
+    final coverage = coverageById[coverageId];
+    if (coverage != null) {
+      screenIds.addAll(_asStringList(coverage['screenRowIds']));
+    }
+  }
+  for (final scorecardId in scorecardIds.toList()) {
+    final scorecard = scorecardById[scorecardId];
+    if (scorecard != null) {
+      screenIds.addAll(_asStringList(scorecard['screenRowIds']));
+    }
+  }
+
+  final affectedCoverageRows = coverageRows
+      .where((row) => coverageIds.contains(_asString(row['coverageRowId'])))
+      .map(_coverageTicketDetail)
+      .toList();
+  final affectedScreenRows = screenRows
+      .where((row) => screenIds.contains(_rowId(row)))
+      .map((row) => _screenRowTicketDetail(row, criterion.id))
+      .toList();
+  final failingScorecards = scorecards
+      .where((row) => scorecardIds.contains(_asString(row['scorecardId'])))
+      .map((row) => _scorecardTicketDetail(row, criterion.id))
+      .toList();
+  final failingQuestions = holisticAnswers
+      .where((row) => questionIds.contains(_asString(row['questionId'])))
+      .map(_directQuestionTicketDetail)
+      .toList();
+  final likelyFiles = <String>{
+    ..._likelyFilesForB25Criterion(criterion.id),
+    for (final row in affectedScreenRows)
+      ..._asStringList(row['likelyFilesOrWidgets']),
+  }.where((value) => value.isNotEmpty).toList();
+  final concreteAcceptance = <String>{
+    ..._acceptanceChecksForB25Criterion(criterion.id),
+    for (final row in affectedScreenRows.take(12))
+      ..._asStringList(row['acceptanceCriteria']),
+    for (final row in affectedCoverageRows.take(12))
+      ..._asStringList(row['acceptanceCriteria']),
+  }.where((value) => value.isNotEmpty).toList();
+
+  return <String, Object?>{
+    'affectedScope': _concreteAffectedScope(
+      criterion,
+      affectedScreenRows,
+      affectedCoverageRows,
+      failingScorecards,
+      failingQuestions,
+    ),
+    'affectedCoverageRowIds': [
+      for (final row in affectedCoverageRows) _asString(row['coverageRowId']),
+    ],
+    'affectedScreenRowIds': [
+      for (final row in affectedScreenRows) _asString(row['screenRowId']),
+    ],
+    'affectedCoverageRows': affectedCoverageRows,
+    'affectedScreenRows': affectedScreenRows,
+    'failingWorkflowPersonaScorecards': failingScorecards,
+    'failingDirectQuestions': failingQuestions,
+    'likelyFilesOrWidgets': likelyFiles,
+    'concreteAcceptanceCriteria': concreteAcceptance,
+  };
+}
+
+Set<String> _workflowPersonaEvidenceKeys(JsonMap row) {
+  final workflowId = _asString(row['workflowId']);
+  final persona = _asString(row['persona']);
+  final personaId = _asString(row['personaId']);
+  return <String>{
+    if (workflowId.isNotEmpty && persona.isNotEmpty) '$workflowId/$persona',
+    if (workflowId.isNotEmpty && personaId.isNotEmpty) '$workflowId/$personaId',
+    _asString(row['scorecardId']),
+    _asString(row['coverageRowId']),
+  }..removeWhere((value) => value.isEmpty);
+}
+
+JsonMap _concreteAffectedScope(
+  CriterionResult criterion,
+  List<JsonMap> screenRows,
+  List<JsonMap> coverageRows,
+  List<JsonMap> scorecards,
+  List<JsonMap> directQuestions,
+) {
+  final communities = _uniqueStrings(<String>[
+    for (final row in screenRows) _asString(row['communityName']),
+    for (final row in coverageRows) _asString(row['communityName']),
+    for (final row in scorecards) _asString(row['communityName']),
+  ]);
+  final personas = _uniqueStrings(<String>[
+    for (final row in screenRows) _asString(row['persona']),
+    for (final row in coverageRows) _asString(row['persona']),
+    for (final row in scorecards) _asString(row['persona']),
+  ]);
+  final workflows = _uniqueStrings(<String>[
+    for (final row in screenRows) _asString(row['workflowId']),
+    for (final row in coverageRows) _asString(row['workflowId']),
+    for (final row in scorecards) _asString(row['workflowId']),
+  ]);
+  final screenshots = _uniqueStrings(<String>[
+    for (final row in screenRows) _asString(row['screenshotPath']),
+    for (final row in coverageRows) ..._asStringList(row['screenshotPaths']),
+  ]);
   return <String, Object?>{
     'scope': criterion.scope,
-    'communities': criterion.scope == 'holistic'
+    'communities': communities.isEmpty
         ? <String>['all reviewed communities/test apps']
-        : <String>['communities referenced by failing workflow/persona rows'],
-    'personas': criterion.scope == 'workflow-persona'
-        ? <String>['personas referenced by failing workflow/persona rows']
-        : <String>['all reviewed target personas'],
-    'workflows': criterion.scope == 'workflow-persona'
-        ? <String>['workflows referenced by failing scorecards']
-        : <String>['all primary reviewed workflows'],
-    'screenRows': criterion.evidenceUsed.isEmpty
-        ? <String>['derive from independent-production-ux-review.json']
-        : criterion.evidenceUsed,
-    'screenshots': <String>[
-      'fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md',
+        : communities,
+    'personas': personas.isEmpty
+        ? <String>['all reviewed target personas']
+        : personas,
+    'workflows': workflows.isEmpty
+        ? <String>['all primary reviewed workflows']
+        : workflows,
+    'screenRows': screenRows
+        .map((row) => _asString(row['screenRowId']))
+        .toList(),
+    'coverageRows': coverageRows
+        .map((row) => _asString(row['coverageRowId']))
+        .toList(),
+    'scorecards': scorecards
+        .map((row) => _asString(row['scorecardId']))
+        .toList(),
+    'directQuestions': directQuestions
+        .map((row) => _asString(row['questionId']))
+        .toList(),
+    'screenshots': screenshots,
+  };
+}
+
+JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
+  final workflowId = _asString(row['workflowId']);
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  return <String, Object?>{
+    'screenRowId': _rowId(row),
+    'communityId': _asString(row['communityId']),
+    'communityName': _asString(row['communityName']),
+    'workflowId': workflowId,
+    'persona': _asString(row['persona']),
+    'personaId': _asString(row['personaId']),
+    'screenState': _asString(row['screenOrState']),
+    'screenType': _asString(row['screenType']),
+    'screenshotPath': _asString(row['screenshotPath']),
+    'screenshotHash': _asString(row['screenshotHash']),
+    'screenshotCapturedAt': _asString(row['screenshotCapturedAt']),
+    'appCommitSha': _asString(row['appCommitSha']),
+    'deviceMetadata': _asString(row['deviceMetadata']),
+    'visibleTextExcerpt': _truncate(_asString(row['visibleTextExtract']), 280),
+    'visibleTextSource': _asString(row['visibleTextExtractionSource']),
+    'currentSurfaceClassification': _asString(row['uiPatternClassification']),
+    'currentPrimarySurfaceType': _asString(row['primarySurfaceType']),
+    'currentVerdict': _asString(row['verdict']),
+    'currentSeverity': _asString(row['severity']),
+    'currentCritique': _truncate(_asString(row['screenSpecificCritique']), 360),
+    'exactUxFailure': _exactUxFailureForScreenRow(row, criterionId),
+    'targetProductionSurface': targetSurface,
+    'likelyFilesOrWidgets': _likelyFilesForB25Row(row, criterionId),
+    'acceptanceCriteria': _screenRowAcceptanceCriteria(row, criterionId),
+  };
+}
+
+JsonMap _coverageTicketDetail(JsonMap row) {
+  final workflowId = _asString(row['workflowId']);
+  return <String, Object?>{
+    'coverageRowId': _asString(row['coverageRowId']),
+    'status': _asString(row['status']),
+    'communityId': _asString(row['communityId']),
+    'communityName': _asString(row['communityName']),
+    'workflowId': workflowId,
+    'persona': _asString(row['persona']),
+    'personaId': _asString(row['personaId']),
+    'screenRowIds': _asStringList(row['screenRowIds']),
+    'screenshotPaths': _asStringList(row['screenshotPaths']),
+    'screenStates': _asStringList(row['screenStates']),
+    'missingEvidence': _asStringList(row['missingEvidence']),
+    'requiredFix': _asString(row['requiredFix']),
+    'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'acceptanceCriteria': <String>[
+      'Coverage row has a specific persona and personaId.',
+      'Coverage row has entry, action/review, and result/receiver screenshots.',
+      'Every listed screenshot path exists and has a fresh hash/timestamp/app commit SHA.',
+      'The workflow/persona scorecard passes after rerun.',
     ],
   };
+}
+
+JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
+  final workflowId = _asString(scorecard['workflowId']);
+  final failingQuestions = _asMapList(scorecard['questions'])
+      .where((question) => question['blocksPass'] == true)
+      .map(_directQuestionTicketDetail)
+      .toList();
+  return <String, Object?>{
+    'scorecardId': _asString(scorecard['scorecardId']),
+    'status': _asString(scorecard['status']),
+    'communityId': _asString(scorecard['communityId']),
+    'communityName': _asString(scorecard['communityName']),
+    'workflowId': workflowId,
+    'persona': _asString(scorecard['persona']),
+    'personaId': _asString(scorecard['personaId']),
+    'screenRowIds': _asStringList(scorecard['screenRowIds']),
+    'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
+    'summary': _asString(scorecard['summary']),
+    'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'failingQuestions': failingQuestions,
+    'acceptanceCriteria': <String>[
+      'All direct questions in this workflow/persona scorecard pass.',
+      'The primary surface is domain-native for `${workflowId}` and the target persona.',
+      'Visible text and critique cite the actual screenshots for every screen row.',
+      ..._screenRowAcceptanceCriteria(scorecard, criterionId),
+    ],
+  };
+}
+
+JsonMap _directQuestionTicketDetail(JsonMap question) {
+  return <String, Object?>{
+    'questionId': _asString(question['questionId']),
+    'scope': _asString(question['scope']),
+    'question': _asString(question['question']),
+    'answer': _asString(question['answer']),
+    'score': _asInt(question['score']),
+    'verdict': _asString(question['verdict']),
+    'why': _asString(question['why']),
+    'requiredFix': _asString(question['requiredFix']),
+    'evidenceUsed': _asStringList(question['evidenceUsed']),
+    'visibleEvidence': _asStringList(question['visibleEvidence']),
+  };
+}
+
+String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
+  final failures = <String>[];
+  final persona = _asString(row['persona']);
+  final personaId = _asString(row['personaId']);
+  if (!_isSpecificPersona(persona, personaId)) {
+    failures.add(
+      'Persona is generic or missing; the worker cannot know which role this screen serves.',
+    );
+  }
+  final source = _asString(row['visibleTextExtractionSource']).toLowerCase();
+  if (!(source.contains('screenshot') ||
+      source.contains('ocr') ||
+      source.contains('manual'))) {
+    failures.add(
+      'Visible text is not proven from screenshot OCR/manual extraction.',
+    );
+  }
+  final classification = _asString(row['uiPatternClassification']);
+  final primarySurface = _asString(row['primarySurfaceType']);
+  if (classification.contains('incomplete') ||
+      classification.contains('pending') ||
+      primarySurface.contains('unverified')) {
+    failures.add('Primary surface classification is incomplete or unverified.');
+  }
+  final critique = _asString(row['screenSpecificCritique']);
+  if (critique.isEmpty ||
+      critique.contains('does not identify') ||
+      critique.contains('Pending')) {
+    failures.add(
+      'Screen-specific critique does not yet explain visible UI, persona, task, and remediation.',
+    );
+  }
+  if (_asString(row['verdict']) != 'pass') {
+    failures.add(
+      'Current row verdict is `${_asString(row['verdict'])}` with severity `${_asString(row['severity'])}`.',
+    );
+  }
+  if (criterionId == 'b25-c06-domain-native-primary-surfaces') {
+    failures.add(
+      'Ticket must prove the primary screen is a domain-native surface, not a generic card/checklist/metadata surface.',
+    );
+  }
+  if (criterionId == 'b25-c08-visible-text-specific-critique') {
+    failures.add(
+      'Ticket must add screenshot-backed visible text and a non-reusable critique for this exact screen.',
+    );
+  }
+  return failures.isEmpty
+      ? 'No row-specific failure recorded.'
+      : failures.join(' ');
+}
+
+List<String> _screenRowAcceptanceCriteria(JsonMap row, String criterionId) {
+  final workflowId = _asString(row['workflowId']);
+  final persona = _asString(row['persona'], fallback: 'target persona');
+  return <String>[
+    'Screen row `${_rowId(row)}` has a specific persona/personaId, not `persona-under-review`.',
+    'Visible text for `${_rowId(row)}` is extracted from the screenshot or manually transcribed from the screenshot.',
+    'Critique for `${_rowId(row)}` names visible UI elements, visible text, persona `${persona}`, workflow `${workflowId}`, and the exact product UX issue.',
+    'Primary surface for `${workflowId}` is documented as `${_targetProductionSurfaceForWorkflow(workflowId)}` or another explicit domain-native surface.',
+    'Fresh screenshot path/hash/timestamp/app commit SHA are recorded after the fix.',
+    if (criterionId == 'b25-c06-domain-native-primary-surfaces')
+      'The workflow/persona direct-question scorecard passes the domain-native primary surface question.',
+    if (criterionId == 'b25-c08-visible-text-specific-critique')
+      'The workflow/persona direct-question scorecard passes the visible-text and task-specific critique question.',
+  ];
+}
+
+List<String> _likelyFilesForB25Row(JsonMap row, String criterionId) {
+  return <String>{
+    ..._likelyFilesForB25Criterion(criterionId),
+    'app/apps/loom_communities_demo/lib/main.dart',
+    'app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart',
+    'app/apps/loom_communities_demo/integration_test/workflow_ui_evidence_test.dart',
+    'app/apps/loom_communities_demo/test/workflow_ui_test_harness.dart',
+    'docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json',
+    'docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md',
+  }.toList();
+}
+
+List<String> _likelyFilesForB25Criterion(String criterionId) {
+  final common = <String>[
+    'app/apps/loom_communities_demo/lib/main.dart',
+    'app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart',
+    'docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md',
+    'docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json',
+    'docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md',
+  ];
+  switch (criterionId) {
+    case 'b25-c08-visible-text-specific-critique':
+      return <String>[
+        ...common,
+        'app/packages/tooling/loom_ux_judges/lib/loom_ux_judges.dart',
+        'docs/Build Plan V2/Evidence/B25/independent-production-ux-review.md',
+      ];
+    case 'b25-c01-no-blocker-major':
+      return <String>[
+        ...common,
+        'docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md',
+        'docs/Build Plan V2/Build Tracker.md',
+      ];
+    default:
+      return common;
+  }
+}
+
+String _targetProductionSurfaceForWorkflow(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return 'event detail with schedule, location, capacity/status, RSVP action, and result state';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('receipt') ||
+      id.contains('ad-off')) {
+    return 'payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail';
+  }
+  if (id.contains('announcement') || id.contains('publish')) {
+    return 'announcement feed/composer with audience, author, timestamp, body, and receiver state';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite') ||
+      id.contains('blocked')) {
+    return 'inbox, message thread, connection card, invite, or block-state surface';
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('rollback') ||
+      id.contains('schema')) {
+    return 'export/import wizard with preview, redaction, checksum, transfer status, and rollback state';
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return 'search/AI answer surface with query, result, citation, source, and follow-up action';
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return 'volunteer signup surface with role, time, protected contact fields, and confirmation';
+  }
+  if (id.contains('care')) {
+    return 'protected care request form and private response/status surface';
+  }
+  if (id.contains('architectural') ||
+      id.contains('committee') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return 'request detail and admin review queue with submitted data, decision action, status, and notification';
+  }
+  if (id.contains('document')) {
+    return 'document library/detail surface with title, audience, file metadata, and access state';
+  }
+  if (id.contains('facility') || id.contains('reservation')) {
+    return 'facility detail/reservation flow with availability, payment/status, and confirmation';
+  }
+  if (id.contains('roster') || id.contains('team')) {
+    return 'team roster/schedule surface with role-filtered member details and protected-data treatment';
+  }
+  if (id.contains('nomination') || id.contains('vote') || id.contains('book')) {
+    return 'book club reading/voting surface with nominations, vote state, selected book, meeting context, and discussion';
+  }
+  if (id.contains('gear')) {
+    return 'gear loan request surface with item, availability, borrower, status, and handoff details';
+  }
+  if (id.contains('critique')) {
+    return 'critique submission/review surface with image/work title, comments, reviewer state, and result';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'match schedule/result surface with players, round, outcome, and next action';
+  }
+  return 'explicit domain-native product surface selected from the B21 production UX contract';
+}
+
+List<String> _uniqueStrings(Iterable<String> values) {
+  return <String>{
+    for (final value in values)
+      if (value.trim().isNotEmpty) value.trim(),
+  }.toList();
+}
+
+String _truncate(String value, int maxLength) {
+  if (value.length <= maxLength) {
+    return value;
+  }
+  return '${value.substring(0, maxLength - 3)}...';
 }
 
 String _problemStatementForB25Criterion(String criterionId) {
@@ -3464,6 +4091,102 @@ String _remediationTicketsMarkdown({
       ..writeln('### Visual Guidance');
     for (final guidance in _asStringList(ticket['visualGuidance'])) {
       buffer.writeln('- ${_escape(guidance)}');
+    }
+    final coverageRows = _asMapList(ticket['affectedCoverageRows']);
+    if (coverageRows.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Workflow/Persona Coverage')
+        ..writeln()
+        ..writeln(
+          'Showing ${coverageRows.take(40).length} of ${coverageRows.length} affected coverage rows. Full detail is in the JSON ticket.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Coverage row | Status | Community | Workflow | Persona | Missing evidence | Screen rows | Target surface |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- | --- | ---: | --- |');
+      for (final row in coverageRows.take(40)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['coverageRowId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingEvidence']).join('; '))} | ${_asStringList(row['screenRowIds']).length} | ${_escape(_asString(row['targetProductionSurface']))} |',
+        );
+      }
+    }
+    final screenRows = _asMapList(ticket['affectedScreenRows']);
+    if (screenRows.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Screen Rows')
+        ..writeln()
+        ..writeln(
+          'Showing ${screenRows.take(40).length} of ${screenRows.length} affected screen rows. Full detail is in the JSON ticket.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Screen row | Community | Workflow | Persona | State | Screenshot | Hash | Visible text | Current surface | Exact UX failure | Target surface |',
+        )
+        ..writeln(
+          '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+        );
+      for (final row in screenRows.take(40)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['screenRowId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asString(row['screenState']))} | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_truncate(_asString(row['screenshotHash']), 16))}` | ${_escape(_asString(row['visibleTextExcerpt']))} | ${_escape(_asString(row['currentSurfaceClassification']))} / ${_escape(_asString(row['currentPrimarySurfaceType']))} | ${_escape(_asString(row['exactUxFailure']))} | ${_escape(_asString(row['targetProductionSurface']))} |',
+        );
+      }
+    }
+    final scorecards = _asMapList(ticket['failingWorkflowPersonaScorecards']);
+    if (scorecards.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Failing Workflow/Persona Scorecards')
+        ..writeln()
+        ..writeln(
+          'Showing ${scorecards.take(40).length} of ${scorecards.length} failing scorecards. Full detail is in the JSON ticket.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Scorecard | Community | Workflow | Persona | Failed questions | Target surface |',
+        )
+        ..writeln('| --- | --- | --- | --- | ---: | --- |');
+      for (final scorecard in scorecards.take(40)) {
+        buffer.writeln(
+          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['persona']))} | ${_asMapList(scorecard['failingQuestions']).length} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
+        );
+      }
+    }
+    final directQuestions = _asMapList(ticket['failingDirectQuestions']);
+    if (directQuestions.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Failing Direct Questions')
+        ..writeln()
+        ..writeln('| Question | Scope | Score | Why | Required fix |')
+        ..writeln('| --- | --- | ---: | --- | --- |');
+      for (final question in directQuestions) {
+        buffer.writeln(
+          '| ${_escape(_asString(question['question']))} | ${_escape(_asString(question['scope']))} | ${question['score'] ?? 0} | ${_escape(_asString(question['why']))} | ${_escape(_asString(question['requiredFix']))} |',
+        );
+      }
+    }
+    final likelyFiles = _asStringList(ticket['likelyFilesOrWidgets']);
+    if (likelyFiles.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Likely Files / Widgets');
+      for (final file in likelyFiles) {
+        buffer.writeln('- `${_escape(file)}`');
+      }
+    }
+    final concreteAcceptance = _asStringList(
+      ticket['concreteAcceptanceCriteria'],
+    );
+    if (concreteAcceptance.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Concrete Acceptance Criteria');
+      for (final check in concreteAcceptance) {
+        buffer.writeln('- ${_escape(check)}');
+      }
     }
     buffer
       ..writeln()

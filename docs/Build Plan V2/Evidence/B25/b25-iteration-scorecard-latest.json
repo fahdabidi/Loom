@@ -3,7 +3,7 @@
   "scorecardType": "b25-iteration",
   "reviewRunId": "b25-v4-pass-1",
   "reviewStandardVersion": "b25-production-ux-v4",
-  "generatedAt": "2026-06-29T00:05:54.813784Z",
+  "generatedAt": "2026-06-29T00:27:49.213823Z",
   "status": "fail",
   "finalDecision": "fail",
   "b25CanPass": false,
@@ -21,13 +21,13 @@
     "resolvedBlockingMajor": 0
   },
   "convergence": {
-    "previousReviewRunId": "b25-v4-pass-1",
+    "previousReviewRunId": "",
     "resolvedCriticalBlockerThisPass": 0,
     "resolvedMajorThisPass": 0,
     "newCriticalBlockerThisPass": 0,
-    "newMajorThisPass": 0,
+    "newMajorThisPass": 4,
     "resolvedBlockingMajorThisPass": 0,
-    "newBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 4,
     "remainingBlockingMajor": 4
   },
   "judgeSummary": {
@@ -70,6 +70,35 @@
     }
   ],
   "resolvedBlockingFindingsThisPass": [],
-  "newBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow/persona coverage is incomplete",
+      "requiredFix": "Capture full workflow/persona evidence before rerunning the independent UX judge."
+    },
+    {
+      "findingId": "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Screen-specific critique is not fully screenshot-backed",
+      "requiredFix": "Extract visible text from screenshots and write screen-specific critiques for affected rows."
+    },
+    {
+      "findingId": "B25-WORKFLOW-PERSONA-UX-FAILED",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow/persona UX scorecards failed",
+      "requiredFix": "Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence."
+    },
+    {
+      "findingId": "B25-HOLISTIC-UX-FAILED",
+      "severity": "major",
+      "status": "open",
+      "title": "Holistic production UX review failed",
+      "requiredFix": "Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review."
+    }
+  ],
   "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
 }

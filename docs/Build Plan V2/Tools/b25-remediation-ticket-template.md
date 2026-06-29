@@ -10,7 +10,7 @@ or a generic pass/fail summary.
 | Field | Required content |
 | --- | --- |
 | `ticketId` | Stable ID for the remediation ticket, such as `B25-RT-001-b25-c04-modern-intentional-ui`. |
-| `ticketSchemaVersion` | Current schema version. Use `1` until the template changes. |
+| `ticketSchemaVersion` | Current schema version. Use `2` for tickets with concrete screen, coverage, scorecard, and screenshot context. |
 | `phase` | `B25`. |
 | `reviewRunId` | The review pass that produced the ticket, such as `b25-v4-pass-1`. |
 | `status` | `open`, `in-progress`, `resolved`, `owner-accepted`, or `deferred-with-rationale`. |
@@ -21,6 +21,14 @@ or a generic pass/fail summary.
 | `directQuestion` | The exact direct question the evidence failed to satisfy. |
 | `whyItFailed` | Evidence-grounded explanation of why the criterion failed. |
 | `affectedScope` | Communities, personas, workflows, screen rows, and screenshots affected. |
+| `affectedCoverageRowIds` | Machine-readable workflow/persona coverage row IDs affected by this ticket. |
+| `affectedScreenRowIds` | Machine-readable screen row IDs affected by this ticket. |
+| `affectedCoverageRows` | Concrete workflow/persona coverage rows, including coverage row ID, community, workflow, persona/personaId, missing evidence, screen row IDs, screenshot paths, and target production surface. |
+| `affectedScreenRows` | Concrete screen rows, including screen row ID, community, workflow, persona, screen/state, screenshot path/hash/timestamp, app commit SHA, visible text excerpt, current classification, exact UX failure, target production surface, likely files/widgets, and row-level acceptance criteria. |
+| `failingWorkflowPersonaScorecards` | Failing workflow/persona scorecards, including failed direct questions, screen row IDs, screenshot paths, and required fixes. |
+| `failingDirectQuestions` | Holistic or workflow/persona direct questions that failed, including score, why, required fix, and evidence used. |
+| `likelyFilesOrWidgets` | Specific code, test, evidence, or documentation files likely needing updates. |
+| `concreteAcceptanceCriteria` | Screen/workflow/persona-specific checks the remediation must satisfy before rerun. |
 | `problemStatement` | Plain-language user-facing problem, not implementation jargon. |
 | `rootCauseHypothesis` | Likely UX/design root cause behind the failure. |
 | `targetExperience` | What the user should see, understand, and be able to do after the fix. |
@@ -63,6 +71,30 @@ Evidence-grounded explanation.
 - Screen rows:
 - Screenshots:
 
+### Affected Workflow/Persona Coverage
+
+| Coverage row | Status | Community | Workflow | Persona | Missing evidence | Screen rows | Target surface |
+| --- | --- | --- | --- | --- | --- | ---: | --- |
+| `b25-wp-...` | fail | Example Community | `workflow-id` | member | specific persona/personaId | 3 | Event detail with RSVP action and result state |
+
+### Affected Screen Rows
+
+| Screen row | Community | Workflow | Persona | State | Screenshot | Hash | Visible text | Current surface | Exact UX failure | Target surface |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `b25-v4-row-...` | Example Community | `workflow-id` | member | action | `/path/screenshot.png` | `abc123...` | Visible text excerpt | generic / unverified | Exact reason this row failed | Target production surface |
+
+### Failing Direct Questions
+
+| Question | Scope | Score | Why | Required fix |
+| --- | --- | ---: | --- | --- |
+| Is the primary surface domain-native? | workflow-persona | 35 | Evidence shows generic surface. | Replace with target domain surface and recapture. |
+
+### Likely Files / Widgets
+
+- `app/apps/loom_communities_demo/lib/main.dart`
+- `app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`
+- `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`
+
 ### Target Experience
 
 What the target user should experience after the fix.
@@ -88,6 +120,14 @@ What the target user should experience after the fix.
 - Judge criterion no longer blocks pass.
 - Screenshots and hashes are fresh.
 - Iteration scorecard shows the ticket resolved or non-blocking.
+
+### Concrete Acceptance Criteria
+
+- Affected screen row has a specific persona/personaId.
+- Visible text is extracted from the screenshot or manually transcribed from the screenshot.
+- Screen-specific critique names visible UI, visible text, persona, workflow, and exact issue.
+- Primary surface is the target domain-native surface, not a generic card/checklist/metadata page.
+- Workflow/persona scorecard passes after rerun.
 
 ### Rerun Commands
 
