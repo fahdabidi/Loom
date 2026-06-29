@@ -6,16 +6,16 @@
 | Status | `fail` |
 | Final decision | `fail` |
 | B25 can pass | `false` |
-| Remaining critical/blocker + major | 3 |
+| Remaining critical/blocker + major | 4 |
 | Resolved critical/blocker + major this pass | 0 |
-| New critical/blocker + major this pass | 3 |
+| New critical/blocker + major this pass | 0 |
 
 ## Finding Counts
 
 | Severity | Total | Unresolved | Resolved |
 | --- | ---: | ---: | ---: |
 | Critical/blocker | 0 | 0 | 0 |
-| Major | 3 | 3 | 0 |
+| Major | 4 | 4 | 0 |
 | Minor | 0 | n/a | n/a |
 | Polish | 0 | n/a | n/a |
 
@@ -33,9 +33,10 @@
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
-| `B25-V4-REVIEW-PENDING` | major | open | Run Production UX Judge Agent against screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links. |
-| `B25-HOLISTIC-UNPROVEN` | major | open | Complete screenshot-grounded holistic direct-question answers and remediate any failed whole-product UI issues before rerunning the judge. |
-| `B25-WORKFLOW-PERSONA-UNPROVEN` | major | open | Add per-workflow/persona scorecards with visible evidence, domain-native surface judgment, task-specific critique, pass/fail result, and finding/remediation links. |
+| `B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE` | major | open | Capture full workflow/persona evidence before rerunning the independent UX judge. |
+| `B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE` | major | open | Extract visible text from screenshots and write screen-specific critiques for affected rows. |
+| `B25-WORKFLOW-PERSONA-UX-FAILED` | major | open | Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence. |
+| `B25-HOLISTIC-UX-FAILED` | major | open | Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review. |
 
 ## Required Next Action
 

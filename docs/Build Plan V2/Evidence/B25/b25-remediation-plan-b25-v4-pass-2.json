@@ -3,7 +3,7 @@
   "planType": "b25-remediation-plan",
   "reviewRunId": "b25-v4-pass-1",
   "status": "open",
-  "generatedAt": "2026-06-28T23:17:36.534748Z",
+  "generatedAt": "2026-06-29T00:06:07.303204Z",
   "sourceTicketsPath": "../docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json",
   "sourceTicketCount": 7,
   "sourceTickets": [
@@ -59,7 +59,7 @@
   ],
   "scorecardSummary": {
     "status": "fail",
-    "remainingBlockingMajor": 3,
+    "remainingBlockingMajor": 4,
     "blockingCriterionFailures": 7
   },
   "batches": [
@@ -85,11 +85,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c03-production-grade-experience",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "Reviewer can state the experience feels production-grade",
           "directQuestion": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
-          "whyItFailed": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
           "affectedScope": {
             "scope": "holistic",
@@ -103,7 +105,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -152,6 +157,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -172,11 +179,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c04-modern-intentional-ui",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "UI looks modern and intentionally designed",
           "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
-          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
           "affectedScope": {
             "scope": "holistic",
@@ -190,7 +199,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -243,6 +255,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -263,11 +277,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c08-visible-text-specific-critique",
           "sourceFindingIds": [
-            "B25-WORKFLOW-PERSONA-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-WORKFLOW-PERSONA-UX-FAILED"
           ],
           "title": "Every row has visible text and screen-specific critique",
           "directQuestion": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
-          "whyItFailed": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+          "whyItFailed": "Workflow/persona direct-question scorecards have missing or blocking answers: workflow-ui-evidence-harness/persona-under-review, garden-event-rsvp/persona-under-review, plant-exchange-submission/persona-under-review, garden-export-custom-schemas/persona-under-review, book-nomination/persona-under-review, book-vote/persona-under-review, book-meeting-rsvp/persona-under-review, book-discussion-message/persona-under-review, book-selection-publish/persona-under-review, book-search-ai-digest/persona-under-review, book-export-metadata/persona-under-review, soccer-guardian-join-approval/persona-under-review, soccer-team-roster/persona-under-review, soccer-minor-redaction/persona-under-review, soccer-registration-payment/persona-under-review, soccer-practice-schedule/persona-under-review, soccer-reminder-notification/persona-under-review, soccer-export-metadata/persona-under-review, hoa-dues-payment/persona-under-review, hoa-member-document/member, hoa-facility-reservation/persona-under-review, hoa-architectural-request/persona-under-review, hoa-committee-decision/persona-under-review, hoa-owner-notification/owner, hoa-export-evidence/persona-under-review, mosque-announcement/persona-under-review, mosque-event-rsvp/persona-under-review, mosque-volunteer-signup/persona-under-review, mosque-donor-visibility/persona-under-review, mosque-donation-payment/persona-under-review, mosque-care-request/persona-under-review, mosque-neutral-notification/persona-under-review, mosque-search-ai-citation/persona-under-review, chess-local-install-open/persona-under-review, chess-route-home/persona-under-review, chess-match-result/persona-under-review, photo-walk-rsvp/persona-under-review, critique-submission/persona-under-review, gear-loan-request/persona-under-review, platform-messages-entry/persona-under-review, platform-connections-entry/persona-under-review, platform-connection-invite/persona-under-review, platform-blocked-target/persona-under-review, platform-message-stream/persona-under-review, platform-in-stream-ad/persona-under-review, platform-top-banner-no-fill/persona-under-review, platform-sensitive-no-fill/persona-under-review, ad-off-member-checkout/member, ad-off-community-checkout/persona-under-review, ad-off-entitlement-status/persona-under-review, ad-off-receipt-evidence/persona-under-review, ad-off-ad-suppression/persona-under-review, ad-off-settlement-utility/persona-under-review, export-import-preview/persona-under-review, export-import-replay/persona-under-review, export-protected-redaction/persona-under-review, export-schema-listing/persona-under-review, export-full-bundle/persona-under-review, export-redacted-bundle/persona-under-review, export-checksum-evidence/persona-under-review, export-transfer-verification/persona-under-review, export-transfer-rollback/persona-under-review, wf_persona-role-inventory-capability-matrix/admin, wf_persona-role-inventory-capability-matrix/persona-under-review, wf_demo-app-persona-picker/persona-under-review, wf_demo-app-persona-picker/member, wf_community-persona-aware-ux/member, wf_community-persona-aware-ux/admin, wf_multi-persona-workflow-evidence/admin, wf_multi-persona-workflow-evidence/member.",
           "requiredOutcome": "Extract visible text and write a specific critique for each screenshot row.",
           "affectedScope": {
             "scope": "workflow-persona",
@@ -281,7 +297,76 @@
               "workflows referenced by failing scorecards"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "workflow-ui-evidence-harness/persona-under-review",
+              "garden-event-rsvp/persona-under-review",
+              "plant-exchange-submission/persona-under-review",
+              "garden-export-custom-schemas/persona-under-review",
+              "book-nomination/persona-under-review",
+              "book-vote/persona-under-review",
+              "book-meeting-rsvp/persona-under-review",
+              "book-discussion-message/persona-under-review",
+              "book-selection-publish/persona-under-review",
+              "book-search-ai-digest/persona-under-review",
+              "book-export-metadata/persona-under-review",
+              "soccer-guardian-join-approval/persona-under-review",
+              "soccer-team-roster/persona-under-review",
+              "soccer-minor-redaction/persona-under-review",
+              "soccer-registration-payment/persona-under-review",
+              "soccer-practice-schedule/persona-under-review",
+              "soccer-reminder-notification/persona-under-review",
+              "soccer-export-metadata/persona-under-review",
+              "hoa-dues-payment/persona-under-review",
+              "hoa-member-document/member",
+              "hoa-facility-reservation/persona-under-review",
+              "hoa-architectural-request/persona-under-review",
+              "hoa-committee-decision/persona-under-review",
+              "hoa-owner-notification/owner",
+              "hoa-export-evidence/persona-under-review",
+              "mosque-announcement/persona-under-review",
+              "mosque-event-rsvp/persona-under-review",
+              "mosque-volunteer-signup/persona-under-review",
+              "mosque-donor-visibility/persona-under-review",
+              "mosque-donation-payment/persona-under-review",
+              "mosque-care-request/persona-under-review",
+              "mosque-neutral-notification/persona-under-review",
+              "mosque-search-ai-citation/persona-under-review",
+              "chess-local-install-open/persona-under-review",
+              "chess-route-home/persona-under-review",
+              "chess-match-result/persona-under-review",
+              "photo-walk-rsvp/persona-under-review",
+              "critique-submission/persona-under-review",
+              "gear-loan-request/persona-under-review",
+              "platform-messages-entry/persona-under-review",
+              "platform-connections-entry/persona-under-review",
+              "platform-connection-invite/persona-under-review",
+              "platform-blocked-target/persona-under-review",
+              "platform-message-stream/persona-under-review",
+              "platform-in-stream-ad/persona-under-review",
+              "platform-top-banner-no-fill/persona-under-review",
+              "platform-sensitive-no-fill/persona-under-review",
+              "ad-off-member-checkout/member",
+              "ad-off-community-checkout/persona-under-review",
+              "ad-off-entitlement-status/persona-under-review",
+              "ad-off-receipt-evidence/persona-under-review",
+              "ad-off-ad-suppression/persona-under-review",
+              "ad-off-settlement-utility/persona-under-review",
+              "export-import-preview/persona-under-review",
+              "export-import-replay/persona-under-review",
+              "export-protected-redaction/persona-under-review",
+              "export-schema-listing/persona-under-review",
+              "export-full-bundle/persona-under-review",
+              "export-redacted-bundle/persona-under-review",
+              "export-checksum-evidence/persona-under-review",
+              "export-transfer-verification/persona-under-review",
+              "export-transfer-rollback/persona-under-review",
+              "wf_persona-role-inventory-capability-matrix/admin",
+              "wf_persona-role-inventory-capability-matrix/persona-under-review",
+              "wf_demo-app-persona-picker/persona-under-review",
+              "wf_demo-app-persona-picker/member",
+              "wf_community-persona-aware-ux/member",
+              "wf_community-persona-aware-ux/admin",
+              "wf_multi-persona-workflow-evidence/admin",
+              "wf_multi-persona-workflow-evidence/member"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -330,6 +415,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -349,11 +436,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c09-no-layout-production-defects",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "No blocking or major layout/content defects remain",
           "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
-          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Fix layout/content defects and rerun the review.",
           "affectedScope": {
             "scope": "holistic",
@@ -367,7 +456,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -418,6 +510,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -465,6 +559,8 @@
       ],
       "rerunCommands": [
         "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
         "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
         "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
       ],
@@ -492,11 +588,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c04-modern-intentional-ui",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "UI looks modern and intentionally designed",
           "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
-          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
           "affectedScope": {
             "scope": "holistic",
@@ -510,7 +608,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -563,6 +664,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -583,11 +686,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c05-community-content-ia",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "Screens are organized around community content and jobs-to-be-done",
           "directQuestion": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
-          "whyItFailed": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Rebuild home and primary screens around community content and user jobs.",
           "affectedScope": {
             "scope": "holistic",
@@ -601,7 +706,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -653,6 +761,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -673,11 +783,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c06-domain-native-primary-surfaces",
           "sourceFindingIds": [
-            "B25-WORKFLOW-PERSONA-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-WORKFLOW-PERSONA-UX-FAILED"
           ],
           "title": "Primary workflows use domain-specific product surfaces",
           "directQuestion": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
-          "whyItFailed": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+          "whyItFailed": "Workflow/persona direct-question scorecards have missing or blocking answers: workflow-ui-evidence-harness/persona-under-review, garden-event-rsvp/persona-under-review, plant-exchange-submission/persona-under-review, garden-export-custom-schemas/persona-under-review, book-nomination/persona-under-review, book-vote/persona-under-review, book-meeting-rsvp/persona-under-review, book-discussion-message/persona-under-review, book-selection-publish/persona-under-review, book-search-ai-digest/persona-under-review, book-export-metadata/persona-under-review, soccer-guardian-join-approval/persona-under-review, soccer-team-roster/persona-under-review, soccer-minor-redaction/persona-under-review, soccer-registration-payment/persona-under-review, soccer-practice-schedule/persona-under-review, soccer-reminder-notification/persona-under-review, soccer-export-metadata/persona-under-review, hoa-dues-payment/persona-under-review, hoa-member-document/member, hoa-facility-reservation/persona-under-review, hoa-architectural-request/persona-under-review, hoa-committee-decision/persona-under-review, hoa-owner-notification/owner, hoa-export-evidence/persona-under-review, mosque-announcement/persona-under-review, mosque-event-rsvp/persona-under-review, mosque-volunteer-signup/persona-under-review, mosque-donor-visibility/persona-under-review, mosque-donation-payment/persona-under-review, mosque-care-request/persona-under-review, mosque-neutral-notification/persona-under-review, mosque-search-ai-citation/persona-under-review, chess-local-install-open/persona-under-review, chess-route-home/persona-under-review, chess-match-result/persona-under-review, photo-walk-rsvp/persona-under-review, critique-submission/persona-under-review, gear-loan-request/persona-under-review, platform-messages-entry/persona-under-review, platform-connections-entry/persona-under-review, platform-connection-invite/persona-under-review, platform-blocked-target/persona-under-review, platform-message-stream/persona-under-review, platform-in-stream-ad/persona-under-review, platform-top-banner-no-fill/persona-under-review, platform-sensitive-no-fill/persona-under-review, ad-off-member-checkout/member, ad-off-community-checkout/persona-under-review, ad-off-entitlement-status/persona-under-review, ad-off-receipt-evidence/persona-under-review, ad-off-ad-suppression/persona-under-review, ad-off-settlement-utility/persona-under-review, export-import-preview/persona-under-review, export-import-replay/persona-under-review, export-protected-redaction/persona-under-review, export-schema-listing/persona-under-review, export-full-bundle/persona-under-review, export-redacted-bundle/persona-under-review, export-checksum-evidence/persona-under-review, export-transfer-verification/persona-under-review, export-transfer-rollback/persona-under-review, wf_persona-role-inventory-capability-matrix/admin, wf_persona-role-inventory-capability-matrix/persona-under-review, wf_demo-app-persona-picker/persona-under-review, wf_demo-app-persona-picker/member, wf_community-persona-aware-ux/member, wf_community-persona-aware-ux/admin, wf_multi-persona-workflow-evidence/admin, wf_multi-persona-workflow-evidence/member.",
           "requiredOutcome": "Replace primary generic surfaces with domain-native product surfaces.",
           "affectedScope": {
             "scope": "workflow-persona",
@@ -691,7 +803,76 @@
               "workflows referenced by failing scorecards"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "workflow-ui-evidence-harness/persona-under-review",
+              "garden-event-rsvp/persona-under-review",
+              "plant-exchange-submission/persona-under-review",
+              "garden-export-custom-schemas/persona-under-review",
+              "book-nomination/persona-under-review",
+              "book-vote/persona-under-review",
+              "book-meeting-rsvp/persona-under-review",
+              "book-discussion-message/persona-under-review",
+              "book-selection-publish/persona-under-review",
+              "book-search-ai-digest/persona-under-review",
+              "book-export-metadata/persona-under-review",
+              "soccer-guardian-join-approval/persona-under-review",
+              "soccer-team-roster/persona-under-review",
+              "soccer-minor-redaction/persona-under-review",
+              "soccer-registration-payment/persona-under-review",
+              "soccer-practice-schedule/persona-under-review",
+              "soccer-reminder-notification/persona-under-review",
+              "soccer-export-metadata/persona-under-review",
+              "hoa-dues-payment/persona-under-review",
+              "hoa-member-document/member",
+              "hoa-facility-reservation/persona-under-review",
+              "hoa-architectural-request/persona-under-review",
+              "hoa-committee-decision/persona-under-review",
+              "hoa-owner-notification/owner",
+              "hoa-export-evidence/persona-under-review",
+              "mosque-announcement/persona-under-review",
+              "mosque-event-rsvp/persona-under-review",
+              "mosque-volunteer-signup/persona-under-review",
+              "mosque-donor-visibility/persona-under-review",
+              "mosque-donation-payment/persona-under-review",
+              "mosque-care-request/persona-under-review",
+              "mosque-neutral-notification/persona-under-review",
+              "mosque-search-ai-citation/persona-under-review",
+              "chess-local-install-open/persona-under-review",
+              "chess-route-home/persona-under-review",
+              "chess-match-result/persona-under-review",
+              "photo-walk-rsvp/persona-under-review",
+              "critique-submission/persona-under-review",
+              "gear-loan-request/persona-under-review",
+              "platform-messages-entry/persona-under-review",
+              "platform-connections-entry/persona-under-review",
+              "platform-connection-invite/persona-under-review",
+              "platform-blocked-target/persona-under-review",
+              "platform-message-stream/persona-under-review",
+              "platform-in-stream-ad/persona-under-review",
+              "platform-top-banner-no-fill/persona-under-review",
+              "platform-sensitive-no-fill/persona-under-review",
+              "ad-off-member-checkout/member",
+              "ad-off-community-checkout/persona-under-review",
+              "ad-off-entitlement-status/persona-under-review",
+              "ad-off-receipt-evidence/persona-under-review",
+              "ad-off-ad-suppression/persona-under-review",
+              "ad-off-settlement-utility/persona-under-review",
+              "export-import-preview/persona-under-review",
+              "export-import-replay/persona-under-review",
+              "export-protected-redaction/persona-under-review",
+              "export-schema-listing/persona-under-review",
+              "export-full-bundle/persona-under-review",
+              "export-redacted-bundle/persona-under-review",
+              "export-checksum-evidence/persona-under-review",
+              "export-transfer-verification/persona-under-review",
+              "export-transfer-rollback/persona-under-review",
+              "wf_persona-role-inventory-capability-matrix/admin",
+              "wf_persona-role-inventory-capability-matrix/persona-under-review",
+              "wf_demo-app-persona-picker/persona-under-review",
+              "wf_demo-app-persona-picker/member",
+              "wf_community-persona-aware-ux/member",
+              "wf_community-persona-aware-ux/admin",
+              "wf_multi-persona-workflow-evidence/admin",
+              "wf_multi-persona-workflow-evidence/member"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -740,6 +921,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -760,11 +943,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c09-no-layout-production-defects",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "No blocking or major layout/content defects remain",
           "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
-          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Fix layout/content defects and rerun the review.",
           "affectedScope": {
             "scope": "holistic",
@@ -778,7 +963,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -829,6 +1017,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -876,6 +1066,8 @@
       ],
       "rerunCommands": [
         "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
         "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
         "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
       ],
@@ -906,13 +1098,14 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c01-no-blocker-major",
           "sourceFindingIds": [
-            "B25-V4-REVIEW-PENDING",
-            "B25-HOLISTIC-UNPROVEN",
-            "B25-WORKFLOW-PERSONA-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-WORKFLOW-PERSONA-UX-FAILED",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "No unresolved blocker or major findings",
           "directQuestion": "Are there zero unresolved blocker or major findings in the current production UX evidence?",
-          "whyItFailed": "Unresolved blocker/major counts are blocker=0 major=3.",
+          "whyItFailed": "Unresolved blocker/major counts are blocker=0 major=4.",
           "requiredOutcome": "Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.",
           "affectedScope": {
             "scope": "evidence",
@@ -971,6 +1164,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -989,11 +1184,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c03-production-grade-experience",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "Reviewer can state the experience feels production-grade",
           "directQuestion": "Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?",
-          "whyItFailed": "The evidence does not contain a defensible production-grade verdict. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.",
           "affectedScope": {
             "scope": "holistic",
@@ -1007,7 +1204,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1056,6 +1256,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1076,11 +1278,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c04-modern-intentional-ui",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "UI looks modern and intentionally designed",
           "directQuestion": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
-          "whyItFailed": "Screen rows do not prove modern hierarchy, spacing, and intentional design. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Remediate visual hierarchy, spacing, typography, component quality, and recapture screenshots.",
           "affectedScope": {
             "scope": "holistic",
@@ -1094,7 +1298,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1147,6 +1354,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1167,11 +1376,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c05-community-content-ia",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "Screens are organized around community content and jobs-to-be-done",
           "directQuestion": "Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?",
-          "whyItFailed": "Primary screens still read as workflow lists, metadata, or validation surfaces. Missing evidence fields: holisticQuestionAnswers.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Rebuild home and primary screens around community content and user jobs.",
           "affectedScope": {
             "scope": "holistic",
@@ -1185,7 +1396,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1237,6 +1451,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1257,11 +1473,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c06-domain-native-primary-surfaces",
           "sourceFindingIds": [
-            "B25-WORKFLOW-PERSONA-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-WORKFLOW-PERSONA-UX-FAILED"
           ],
           "title": "Primary workflows use domain-specific product surfaces",
           "directQuestion": "For every workflow and persona, is the primary UI a domain-native product surface rather than a generic card, checklist modal, or metadata page?",
-          "whyItFailed": "A primary workflow is still generic-card/checklist/modal/metadata-only. Missing evidence fields: workflowPersonaScorecards.",
+          "whyItFailed": "Workflow/persona direct-question scorecards have missing or blocking answers: workflow-ui-evidence-harness/persona-under-review, garden-event-rsvp/persona-under-review, plant-exchange-submission/persona-under-review, garden-export-custom-schemas/persona-under-review, book-nomination/persona-under-review, book-vote/persona-under-review, book-meeting-rsvp/persona-under-review, book-discussion-message/persona-under-review, book-selection-publish/persona-under-review, book-search-ai-digest/persona-under-review, book-export-metadata/persona-under-review, soccer-guardian-join-approval/persona-under-review, soccer-team-roster/persona-under-review, soccer-minor-redaction/persona-under-review, soccer-registration-payment/persona-under-review, soccer-practice-schedule/persona-under-review, soccer-reminder-notification/persona-under-review, soccer-export-metadata/persona-under-review, hoa-dues-payment/persona-under-review, hoa-member-document/member, hoa-facility-reservation/persona-under-review, hoa-architectural-request/persona-under-review, hoa-committee-decision/persona-under-review, hoa-owner-notification/owner, hoa-export-evidence/persona-under-review, mosque-announcement/persona-under-review, mosque-event-rsvp/persona-under-review, mosque-volunteer-signup/persona-under-review, mosque-donor-visibility/persona-under-review, mosque-donation-payment/persona-under-review, mosque-care-request/persona-under-review, mosque-neutral-notification/persona-under-review, mosque-search-ai-citation/persona-under-review, chess-local-install-open/persona-under-review, chess-route-home/persona-under-review, chess-match-result/persona-under-review, photo-walk-rsvp/persona-under-review, critique-submission/persona-under-review, gear-loan-request/persona-under-review, platform-messages-entry/persona-under-review, platform-connections-entry/persona-under-review, platform-connection-invite/persona-under-review, platform-blocked-target/persona-under-review, platform-message-stream/persona-under-review, platform-in-stream-ad/persona-under-review, platform-top-banner-no-fill/persona-under-review, platform-sensitive-no-fill/persona-under-review, ad-off-member-checkout/member, ad-off-community-checkout/persona-under-review, ad-off-entitlement-status/persona-under-review, ad-off-receipt-evidence/persona-under-review, ad-off-ad-suppression/persona-under-review, ad-off-settlement-utility/persona-under-review, export-import-preview/persona-under-review, export-import-replay/persona-under-review, export-protected-redaction/persona-under-review, export-schema-listing/persona-under-review, export-full-bundle/persona-under-review, export-redacted-bundle/persona-under-review, export-checksum-evidence/persona-under-review, export-transfer-verification/persona-under-review, export-transfer-rollback/persona-under-review, wf_persona-role-inventory-capability-matrix/admin, wf_persona-role-inventory-capability-matrix/persona-under-review, wf_demo-app-persona-picker/persona-under-review, wf_demo-app-persona-picker/member, wf_community-persona-aware-ux/member, wf_community-persona-aware-ux/admin, wf_multi-persona-workflow-evidence/admin, wf_multi-persona-workflow-evidence/member.",
           "requiredOutcome": "Replace primary generic surfaces with domain-native product surfaces.",
           "affectedScope": {
             "scope": "workflow-persona",
@@ -1275,7 +1493,76 @@
               "workflows referenced by failing scorecards"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "workflow-ui-evidence-harness/persona-under-review",
+              "garden-event-rsvp/persona-under-review",
+              "plant-exchange-submission/persona-under-review",
+              "garden-export-custom-schemas/persona-under-review",
+              "book-nomination/persona-under-review",
+              "book-vote/persona-under-review",
+              "book-meeting-rsvp/persona-under-review",
+              "book-discussion-message/persona-under-review",
+              "book-selection-publish/persona-under-review",
+              "book-search-ai-digest/persona-under-review",
+              "book-export-metadata/persona-under-review",
+              "soccer-guardian-join-approval/persona-under-review",
+              "soccer-team-roster/persona-under-review",
+              "soccer-minor-redaction/persona-under-review",
+              "soccer-registration-payment/persona-under-review",
+              "soccer-practice-schedule/persona-under-review",
+              "soccer-reminder-notification/persona-under-review",
+              "soccer-export-metadata/persona-under-review",
+              "hoa-dues-payment/persona-under-review",
+              "hoa-member-document/member",
+              "hoa-facility-reservation/persona-under-review",
+              "hoa-architectural-request/persona-under-review",
+              "hoa-committee-decision/persona-under-review",
+              "hoa-owner-notification/owner",
+              "hoa-export-evidence/persona-under-review",
+              "mosque-announcement/persona-under-review",
+              "mosque-event-rsvp/persona-under-review",
+              "mosque-volunteer-signup/persona-under-review",
+              "mosque-donor-visibility/persona-under-review",
+              "mosque-donation-payment/persona-under-review",
+              "mosque-care-request/persona-under-review",
+              "mosque-neutral-notification/persona-under-review",
+              "mosque-search-ai-citation/persona-under-review",
+              "chess-local-install-open/persona-under-review",
+              "chess-route-home/persona-under-review",
+              "chess-match-result/persona-under-review",
+              "photo-walk-rsvp/persona-under-review",
+              "critique-submission/persona-under-review",
+              "gear-loan-request/persona-under-review",
+              "platform-messages-entry/persona-under-review",
+              "platform-connections-entry/persona-under-review",
+              "platform-connection-invite/persona-under-review",
+              "platform-blocked-target/persona-under-review",
+              "platform-message-stream/persona-under-review",
+              "platform-in-stream-ad/persona-under-review",
+              "platform-top-banner-no-fill/persona-under-review",
+              "platform-sensitive-no-fill/persona-under-review",
+              "ad-off-member-checkout/member",
+              "ad-off-community-checkout/persona-under-review",
+              "ad-off-entitlement-status/persona-under-review",
+              "ad-off-receipt-evidence/persona-under-review",
+              "ad-off-ad-suppression/persona-under-review",
+              "ad-off-settlement-utility/persona-under-review",
+              "export-import-preview/persona-under-review",
+              "export-import-replay/persona-under-review",
+              "export-protected-redaction/persona-under-review",
+              "export-schema-listing/persona-under-review",
+              "export-full-bundle/persona-under-review",
+              "export-redacted-bundle/persona-under-review",
+              "export-checksum-evidence/persona-under-review",
+              "export-transfer-verification/persona-under-review",
+              "export-transfer-rollback/persona-under-review",
+              "wf_persona-role-inventory-capability-matrix/admin",
+              "wf_persona-role-inventory-capability-matrix/persona-under-review",
+              "wf_demo-app-persona-picker/persona-under-review",
+              "wf_demo-app-persona-picker/member",
+              "wf_community-persona-aware-ux/member",
+              "wf_community-persona-aware-ux/admin",
+              "wf_multi-persona-workflow-evidence/admin",
+              "wf_multi-persona-workflow-evidence/member"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1324,6 +1611,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1344,11 +1633,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c08-visible-text-specific-critique",
           "sourceFindingIds": [
-            "B25-WORKFLOW-PERSONA-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-WORKFLOW-PERSONA-UX-FAILED"
           ],
           "title": "Every row has visible text and screen-specific critique",
           "directQuestion": "Does every holistic and workflow/persona review answer cite visible UI/text and provide a critique specific to that screenshot and user task?",
-          "whyItFailed": "Visible text or non-boilerplate row critique is missing. Missing evidence fields: workflowPersonaScorecards.",
+          "whyItFailed": "Workflow/persona direct-question scorecards have missing or blocking answers: workflow-ui-evidence-harness/persona-under-review, garden-event-rsvp/persona-under-review, plant-exchange-submission/persona-under-review, garden-export-custom-schemas/persona-under-review, book-nomination/persona-under-review, book-vote/persona-under-review, book-meeting-rsvp/persona-under-review, book-discussion-message/persona-under-review, book-selection-publish/persona-under-review, book-search-ai-digest/persona-under-review, book-export-metadata/persona-under-review, soccer-guardian-join-approval/persona-under-review, soccer-team-roster/persona-under-review, soccer-minor-redaction/persona-under-review, soccer-registration-payment/persona-under-review, soccer-practice-schedule/persona-under-review, soccer-reminder-notification/persona-under-review, soccer-export-metadata/persona-under-review, hoa-dues-payment/persona-under-review, hoa-member-document/member, hoa-facility-reservation/persona-under-review, hoa-architectural-request/persona-under-review, hoa-committee-decision/persona-under-review, hoa-owner-notification/owner, hoa-export-evidence/persona-under-review, mosque-announcement/persona-under-review, mosque-event-rsvp/persona-under-review, mosque-volunteer-signup/persona-under-review, mosque-donor-visibility/persona-under-review, mosque-donation-payment/persona-under-review, mosque-care-request/persona-under-review, mosque-neutral-notification/persona-under-review, mosque-search-ai-citation/persona-under-review, chess-local-install-open/persona-under-review, chess-route-home/persona-under-review, chess-match-result/persona-under-review, photo-walk-rsvp/persona-under-review, critique-submission/persona-under-review, gear-loan-request/persona-under-review, platform-messages-entry/persona-under-review, platform-connections-entry/persona-under-review, platform-connection-invite/persona-under-review, platform-blocked-target/persona-under-review, platform-message-stream/persona-under-review, platform-in-stream-ad/persona-under-review, platform-top-banner-no-fill/persona-under-review, platform-sensitive-no-fill/persona-under-review, ad-off-member-checkout/member, ad-off-community-checkout/persona-under-review, ad-off-entitlement-status/persona-under-review, ad-off-receipt-evidence/persona-under-review, ad-off-ad-suppression/persona-under-review, ad-off-settlement-utility/persona-under-review, export-import-preview/persona-under-review, export-import-replay/persona-under-review, export-protected-redaction/persona-under-review, export-schema-listing/persona-under-review, export-full-bundle/persona-under-review, export-redacted-bundle/persona-under-review, export-checksum-evidence/persona-under-review, export-transfer-verification/persona-under-review, export-transfer-rollback/persona-under-review, wf_persona-role-inventory-capability-matrix/admin, wf_persona-role-inventory-capability-matrix/persona-under-review, wf_demo-app-persona-picker/persona-under-review, wf_demo-app-persona-picker/member, wf_community-persona-aware-ux/member, wf_community-persona-aware-ux/admin, wf_multi-persona-workflow-evidence/admin, wf_multi-persona-workflow-evidence/member.",
           "requiredOutcome": "Extract visible text and write a specific critique for each screenshot row.",
           "affectedScope": {
             "scope": "workflow-persona",
@@ -1362,7 +1653,76 @@
               "workflows referenced by failing scorecards"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "workflow-ui-evidence-harness/persona-under-review",
+              "garden-event-rsvp/persona-under-review",
+              "plant-exchange-submission/persona-under-review",
+              "garden-export-custom-schemas/persona-under-review",
+              "book-nomination/persona-under-review",
+              "book-vote/persona-under-review",
+              "book-meeting-rsvp/persona-under-review",
+              "book-discussion-message/persona-under-review",
+              "book-selection-publish/persona-under-review",
+              "book-search-ai-digest/persona-under-review",
+              "book-export-metadata/persona-under-review",
+              "soccer-guardian-join-approval/persona-under-review",
+              "soccer-team-roster/persona-under-review",
+              "soccer-minor-redaction/persona-under-review",
+              "soccer-registration-payment/persona-under-review",
+              "soccer-practice-schedule/persona-under-review",
+              "soccer-reminder-notification/persona-under-review",
+              "soccer-export-metadata/persona-under-review",
+              "hoa-dues-payment/persona-under-review",
+              "hoa-member-document/member",
+              "hoa-facility-reservation/persona-under-review",
+              "hoa-architectural-request/persona-under-review",
+              "hoa-committee-decision/persona-under-review",
+              "hoa-owner-notification/owner",
+              "hoa-export-evidence/persona-under-review",
+              "mosque-announcement/persona-under-review",
+              "mosque-event-rsvp/persona-under-review",
+              "mosque-volunteer-signup/persona-under-review",
+              "mosque-donor-visibility/persona-under-review",
+              "mosque-donation-payment/persona-under-review",
+              "mosque-care-request/persona-under-review",
+              "mosque-neutral-notification/persona-under-review",
+              "mosque-search-ai-citation/persona-under-review",
+              "chess-local-install-open/persona-under-review",
+              "chess-route-home/persona-under-review",
+              "chess-match-result/persona-under-review",
+              "photo-walk-rsvp/persona-under-review",
+              "critique-submission/persona-under-review",
+              "gear-loan-request/persona-under-review",
+              "platform-messages-entry/persona-under-review",
+              "platform-connections-entry/persona-under-review",
+              "platform-connection-invite/persona-under-review",
+              "platform-blocked-target/persona-under-review",
+              "platform-message-stream/persona-under-review",
+              "platform-in-stream-ad/persona-under-review",
+              "platform-top-banner-no-fill/persona-under-review",
+              "platform-sensitive-no-fill/persona-under-review",
+              "ad-off-member-checkout/member",
+              "ad-off-community-checkout/persona-under-review",
+              "ad-off-entitlement-status/persona-under-review",
+              "ad-off-receipt-evidence/persona-under-review",
+              "ad-off-ad-suppression/persona-under-review",
+              "ad-off-settlement-utility/persona-under-review",
+              "export-import-preview/persona-under-review",
+              "export-import-replay/persona-under-review",
+              "export-protected-redaction/persona-under-review",
+              "export-schema-listing/persona-under-review",
+              "export-full-bundle/persona-under-review",
+              "export-redacted-bundle/persona-under-review",
+              "export-checksum-evidence/persona-under-review",
+              "export-transfer-verification/persona-under-review",
+              "export-transfer-rollback/persona-under-review",
+              "wf_persona-role-inventory-capability-matrix/admin",
+              "wf_persona-role-inventory-capability-matrix/persona-under-review",
+              "wf_demo-app-persona-picker/persona-under-review",
+              "wf_demo-app-persona-picker/member",
+              "wf_community-persona-aware-ux/member",
+              "wf_community-persona-aware-ux/admin",
+              "wf_multi-persona-workflow-evidence/admin",
+              "wf_multi-persona-workflow-evidence/member"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1411,6 +1771,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1430,11 +1792,13 @@
           "priority": "P1",
           "sourceCriterionId": "b25-c09-no-layout-production-defects",
           "sourceFindingIds": [
-            "B25-HOLISTIC-UNPROVEN"
+            "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
+            "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
+            "B25-HOLISTIC-UX-FAILED"
           ],
           "title": "No blocking or major layout/content defects remain",
           "directQuestion": "Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?",
-          "whyItFailed": "No holistic direct-question answers were supplied.",
+          "whyItFailed": "holistic direct-question answers are missing, weak, partial, or blocking: b25-holistic-production-grade, b25-holistic-modern-intentional, b25-holistic-community-ia, b25-holistic-layout-defects.",
           "requiredOutcome": "Fix layout/content defects and rerun the review.",
           "affectedScope": {
             "scope": "holistic",
@@ -1448,7 +1812,10 @@
               "all primary reviewed workflows"
             ],
             "screenRows": [
-              "derive from independent-production-ux-review.json"
+              "b25-holistic-production-grade",
+              "b25-holistic-modern-intentional",
+              "b25-holistic-community-ia",
+              "b25-holistic-layout-defects"
             ],
             "screenshots": [
               "fresh B25 screenshot rows linked from product-ux-screen-review-matrix.md"
@@ -1499,6 +1866,8 @@
           ],
           "rerunCommands": [
             "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+            "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
             "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
             "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
           ],
@@ -1560,6 +1929,8 @@
       ],
       "rerunCommands": [
         "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
         "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
         "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
       ],

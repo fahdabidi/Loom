@@ -36,6 +36,10 @@ direct-question pass, and green workflow/persona direct-question passes for ever
 workflow/persona pair. Each pass must also emit and commit a B25 iteration scorecard showing pass/fail,
 current critical/blocker and major counts, blocker/major findings resolved in that pass, newly
 introduced blocker/major findings, judge failures, and the next action.
+The B25 tool sequence is evidence collector -> workflow/persona coverage collector -> independent UX
+judge -> deterministic production UX judge -> remediation tickets -> iteration scorecard -> commit.
+The next remediation pass starts by feeding the committed tickets and scorecard to the remediation
+planner before any worker implements fixes.
 
 Set B workflow tests must run against the Demo Loom Communities App with the Local Backend. The Skill
 supports both `local-demo` and `real-backend-publish` modes, but no Set B gate may depend on an
@@ -84,7 +88,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 3 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. Current pass closeout artifacts are evidence, judge scorecard, remediation tickets, iteration scorecard, remediation log, tracker, and commit. Required next: start `b25-v4-pass-2` by sending the committed tickets to the Remediation Planner, then implement fixes, recapture evidence, rerun judge, regenerate scorecard, and commit that pass. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 4 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. The coverage collector found 70 workflow/persona rows with 66 failing persona-specific coverage. Current pass closeout artifacts are evidence, workflow/persona coverage matrix, independent judge output, production judge scorecard, remediation tickets, iteration scorecard, remediation log, tracker, and commit. Required next: start `b25-v4-pass-2` by sending the committed tickets to the Remediation Planner, then implement fixes, recapture evidence, rerun coverage + independent + production judges, regenerate scorecard, and commit that pass. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update pending commit |
 
 ## Phase Outcome Summary
 
@@ -241,10 +245,14 @@ that pass, newly introduced blocker/major counts, production judge failures, dir
 status, and required next action. Use the scorecards to show the remediation loop is converging toward
 zero unresolved blocker/major findings.
 
-Before the judge runs, use `b25_evidence_collector.dart` to produce the schema v4 evidence from live
+Before the judges run, use `b25_evidence_collector.dart` to produce the schema v4 evidence from live
 workflow UI evidence. The collector is the deterministic Evidence Collector Tool for B25: it records
 screenshot paths, hashes, captured-at timestamps, device metadata, visible text source, app commit SHA,
-and screen-row scaffolding, but it cannot make the production UX pass/fail decision.
+and screen-row scaffolding, but it cannot make the production UX pass/fail decision. Then run
+`b25_workflow_persona_coverage_collector.dart` to prove that every reviewed workflow/persona
+combination has explicit evidence before `b25_independent_ux_judge.dart` writes holistic answers,
+workflow/persona scorecards, screen-specific critiques, and findings. `production_ux_judge.dart` is
+the deterministic validator that scores those independent judge outputs and emits remediation tickets.
 
 Every B25 independent UX review must include:
 

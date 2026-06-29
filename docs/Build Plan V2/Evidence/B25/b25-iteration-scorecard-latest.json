@@ -3,32 +3,32 @@
   "scorecardType": "b25-iteration",
   "reviewRunId": "b25-v4-pass-1",
   "reviewStandardVersion": "b25-production-ux-v4",
-  "generatedAt": "2026-06-28T23:17:35.928878Z",
+  "generatedAt": "2026-06-29T00:05:54.813784Z",
   "status": "fail",
   "finalDecision": "fail",
   "b25CanPass": false,
   "findingCounts": {
-    "total": 3,
+    "total": 4,
     "criticalBlocker": 0,
-    "major": 3,
+    "major": 4,
     "minor": 0,
     "polish": 0,
     "unresolvedCriticalBlocker": 0,
-    "unresolvedMajor": 3,
-    "unresolvedBlockingMajor": 3,
+    "unresolvedMajor": 4,
+    "unresolvedBlockingMajor": 4,
     "resolvedCriticalBlocker": 0,
     "resolvedMajor": 0,
     "resolvedBlockingMajor": 0
   },
   "convergence": {
-    "previousReviewRunId": "",
+    "previousReviewRunId": "b25-v4-pass-1",
     "resolvedCriticalBlockerThisPass": 0,
     "resolvedMajorThisPass": 0,
     "newCriticalBlockerThisPass": 0,
-    "newMajorThisPass": 3,
+    "newMajorThisPass": 0,
     "resolvedBlockingMajorThisPass": 0,
-    "newBlockingMajorThisPass": 3,
-    "remainingBlockingMajor": 3
+    "newBlockingMajorThisPass": 0,
+    "remainingBlockingMajor": 4
   },
   "judgeSummary": {
     "status": "fail",
@@ -41,50 +41,35 @@
   },
   "blockingFindings": [
     {
-      "findingId": "B25-V4-REVIEW-PENDING",
+      "findingId": "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
       "severity": "major",
       "status": "open",
-      "title": "B25 v4 independent UX review is pending",
-      "requiredFix": "Run Production UX Judge Agent against screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links."
+      "title": "Workflow/persona coverage is incomplete",
+      "requiredFix": "Capture full workflow/persona evidence before rerunning the independent UX judge."
     },
     {
-      "findingId": "B25-HOLISTIC-UNPROVEN",
+      "findingId": "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
       "severity": "major",
       "status": "open",
-      "title": "Holistic production UX is unproven",
-      "requiredFix": "Complete screenshot-grounded holistic direct-question answers and remediate any failed whole-product UI issues before rerunning the judge."
+      "title": "Screen-specific critique is not fully screenshot-backed",
+      "requiredFix": "Extract visible text from screenshots and write screen-specific critiques for affected rows."
     },
     {
-      "findingId": "B25-WORKFLOW-PERSONA-UNPROVEN",
+      "findingId": "B25-WORKFLOW-PERSONA-UX-FAILED",
       "severity": "major",
       "status": "open",
-      "title": "Workflow/persona UX cannot be judged",
-      "requiredFix": "Add per-workflow/persona scorecards with visible evidence, domain-native surface judgment, task-specific critique, pass/fail result, and finding/remediation links."
+      "title": "Workflow/persona UX scorecards failed",
+      "requiredFix": "Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence."
+    },
+    {
+      "findingId": "B25-HOLISTIC-UX-FAILED",
+      "severity": "major",
+      "status": "open",
+      "title": "Holistic production UX review failed",
+      "requiredFix": "Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review."
     }
   ],
   "resolvedBlockingFindingsThisPass": [],
-  "newBlockingFindingsThisPass": [
-    {
-      "findingId": "B25-V4-REVIEW-PENDING",
-      "severity": "major",
-      "status": "open",
-      "title": "B25 v4 independent UX review is pending",
-      "requiredFix": "Run Production UX Judge Agent against screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links."
-    },
-    {
-      "findingId": "B25-HOLISTIC-UNPROVEN",
-      "severity": "major",
-      "status": "open",
-      "title": "Holistic production UX is unproven",
-      "requiredFix": "Complete screenshot-grounded holistic direct-question answers and remediate any failed whole-product UI issues before rerunning the judge."
-    },
-    {
-      "findingId": "B25-WORKFLOW-PERSONA-UNPROVEN",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow/persona UX cannot be judged",
-      "requiredFix": "Add per-workflow/persona scorecards with visible evidence, domain-native surface judgment, task-specific critique, pass/fail result, and finding/remediation links."
-    }
-  ],
+  "newBlockingFindingsThisPass": [],
   "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
 }

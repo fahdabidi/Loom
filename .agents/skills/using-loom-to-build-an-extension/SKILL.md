@@ -168,12 +168,17 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     evidence, remediation log, screenshots, and tracker.
 53. Use separate judge tools for UX gates so worker agents do not grade their own implementation. B11
     must run the workflow-completeness judge; B21 the UX-contract judge; B22 the domain-surface
-    classifier; B23 the persona-UX judge; B24 the evidence-integrity auditor; and B25 the
-    production-UX judge.
-54. The Production UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
+    classifier; B23 the persona-UX judge; B24 the evidence-integrity auditor; and B25 must run the
+    evidence collector, workflow/persona coverage collector, independent UX judge, production UX judge,
+    remediation-ticket generator, iteration scorecard, and remediation planner in sequence.
+54. The Independent UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
     metadata, blueprint/contracts, and remediation logs. Do not give it worker implementation notes,
-    intended behavior explanations, or optimistic completion summaries.
-55. B25 cannot pass until `production_ux_judge.dart` emits
+    intended behavior explanations, or optimistic completion summaries. It must write holistic direct
+    answers, workflow/persona scorecards, screen-specific critiques, exact findings, and remediation
+    ticket inputs from visible evidence only.
+55. B25 cannot pass until `b25_independent_ux_judge.dart` has produced screenshot-backed holistic
+    answers, workflow/persona scorecards, screen-specific critiques, and findings, and
+    `production_ux_judge.dart` emits
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
     every B25 pass criterion, `b25-remediation-tickets-<run-id>.json` and `.md` for every failed
     blocking criterion, and no blocking criterion failures.
@@ -201,17 +206,25 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     and required next action. Do not start the next UX feedback/remediation loop without this committed
     scorecard.
 63. B25 screenshot evidence must be produced through the deterministic B25 evidence collector before
-    the judge runs. The collector owns screenshot paths, hashes, timestamps, visible text source,
-    emulator/device metadata, app commit SHA, and schema v4 screen-row scaffolding. The judge owns
-    product-quality decisions; do not let the collector mark production UX pass.
-64. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
+    the judges run. The collector owns screenshot paths, hashes, timestamps, visible text source,
+    emulator/device metadata, app commit SHA, and schema v4 screen-row scaffolding. Then
+    `b25_workflow_persona_coverage_collector.dart` must prove every workflow/persona combination has
+    explicit entry/action/result evidence before independent review. The collector tools cannot mark
+    production UX pass.
+64. The B25 Independent UX Judge is a distinct tool/agent step. It consumes only the evidence artifacts,
+    screenshots, blueprint, workflow/persona coverage matrix, and pass criteria, then fills the
+    review JSON with holistic direct-question answers, workflow/persona scorecards, screen-specific
+    critiques, exact findings tied to screen rows/screenshots/personas/workflows, and remediation
+    ticket inputs. It must fail when workflow/persona coverage is generic, missing, or not
+    screenshot-backed.
+65. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
     criterion, related finding IDs, concrete improvements, affected evidence, acceptance checks, and
     rerun commands. Each ticket must follow
     [../Tools/b25-remediation-ticket-template.md](../Tools/b25-remediation-ticket-template.md) and
     include user-facing problem statement, root-cause hypothesis, target experience, UX principles,
     implementation guidance, content guidance, visual guidance, evidence to collect, non-goals, and
     commit boundary. The next Worker Agent iteration must use those tickets as its fix backlog.
-65. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
+66. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,
     evidence updates, acceptance checks, rerun commands, and the commit boundary for that next
