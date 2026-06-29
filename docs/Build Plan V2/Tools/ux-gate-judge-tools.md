@@ -11,6 +11,7 @@ judge failures into fix batches for the next worker iteration.
 | --- | --- | --- | --- |
 | Worker Agent | Implements UX/code/test fixes. | Phase docs, code, failing judge reports, remediation plan. | Code, tests, screenshots, updated artifacts. |
 | Evidence Collector Tool | Captures screenshots, hashes, visible text, app commit SHA, device metadata, command output. | Running app, emulator, artifact paths. No implementation rationale. | Evidence JSON and screenshot bundle. |
+| Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
 | Independent UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Holistic answers, workflow/persona scorecards, screen critiques, findings. |
 | Production UX Judge CLI | Deterministically validates the independent judge output against B25 pass criteria. | Machine-readable review JSON, scorecard schema, ticket template, screenshot metadata. | Criteria scorecard, pass/fail, remediation tickets. |
 | Remediation Planner | Converts judge failures into right-sized fix batches. | Judge scorecard, findings, phase docs. | Remediation plan for Worker Agent. |
@@ -22,6 +23,7 @@ Run from `app/` with WSL Ubuntu:
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -43,10 +45,16 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `evidence_integrity_auditor.dart` | B24 | Check screenshot path/hash/timestamp/app commit/device/visible text and generic-copy evidence. |
 | `b25_evidence_collector.dart` | B25 | Convert workflow UI evidence manifests into B25 schema v4 screenshot evidence with hashes, timestamps, device metadata, visible text source, and app commit SHA. |
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
-| `b25_independent_ux_judge.dart` | B25 | Fill holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, and exact findings from evidence only. |
+| `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
+| `b25_independent_ux_judge.dart` | B25 | Fill holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, visual-inspection failures, and exact findings from evidence only. |
 | `production_ux_judge.dart` | B25 | Deterministically validate the independent judge output against every B25 production UX pass criterion and generate tickets for failed blocking criteria. |
 | `b25_iteration_scorecard.dart` | B25 | Summarize each B25 review/remediation pass with current blocker/major counts, resolved counts, new counts, judge failures, and convergence status. |
 | `b25_remediation_planner.dart` | B25 | Convert judge-generated remediation tickets into ordered worker-agent remediation batches. |
+
+If `b25_visual_inspection_auditor.dart` exits nonzero, keep its output and continue the same B25 pass
+through the independent UX judge and production UX judge so findings, tickets, and the iteration
+scorecard are still produced. The nonzero visual-audit result blocks B25 closeout; it should not
+truncate evidence generation.
 
 ## Required B25 Scorecard
 
@@ -139,10 +147,13 @@ B25 evidence must include:
 - `workflowPersonaScorecards`: direct-question scorecards for each workflow/persona pair, including
   task clarity, domain-native primary surface, natural actions, validation/error/result states,
   receiver/unauthorized states, and whether that workflow UI feels production-grade on its own.
+- `visualInspection`: one object on every screen row, produced from the screenshot pixels/layout, with
+  metrics, signals, status, summary, and finding IDs. A missing or failed `visualInspection` blocks B25.
 
 B25 cannot pass from an average score. One unresolved blocker/major criterion failure blocks the phase.
 The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted
-by screenshot evidence.
+by screenshot evidence. A row with only `manual-visible-text-review` is not enough for B25 pass; visible
+text must come from screenshot-derived OCR/extraction, not prior expected assertions.
 
 The iteration scorecard does not replace the judge. It records whether the loop is converging:
 
@@ -222,10 +233,15 @@ Use only the supplied artifacts:
 Do not use worker implementation notes or intended behavior. If the artifact does not prove it, mark it
 missing. If the screenshot does not show it, the UX did not pass.
 
+Inspect the actual screenshots as pixels and layout, not just JSON rows. Fail rows that visibly resemble
+checklist/review modals, repeated generic card shells, thin-content surfaces, weak visual identity,
+default-scaffold screens, or missing/undecodable screenshots. Treat `visualInspection.status=fail` as
+direct evidence that the row cannot pass until the UI is redesigned and recaptured.
+
 First answer the holistic direct questions for the entire app. Then answer the workflow/persona direct
 questions for each reviewed workflow/persona pair. Score each criterion independently. Return pass only
 when every blocking criterion passes, both direct-question passes are green, screenshots are fresh,
-critiques are screen-specific, and primary workflow surfaces are domain-native.
+critiques are screen-specific, visual inspection passes, and primary workflow surfaces are domain-native.
 ```
 
 ## Remediation Planner Contract

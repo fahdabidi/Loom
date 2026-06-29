@@ -7,3 +7,5 @@ resolution: workspace
 environment:
   sdk: ^3.11.5
 
+dependencies:
+  image: ^4.7.2

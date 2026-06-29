@@ -33,11 +33,14 @@ this tracker. Under the B25 v4 standard, the iteration cannot close without fres
 timestamps, app commit SHA, visible-text extraction, UI-pattern classification, non-boilerplate
 screen-specific critiques, a domain-native primary-surface audit, a green holistic product UX
 direct-question pass, and green workflow/persona direct-question passes for every reviewed
-workflow/persona pair. Each pass must also emit and commit a B25 iteration scorecard showing pass/fail,
+workflow/persona pair. Each screen row must also include passing `visualInspection` evidence generated
+from the screenshot pixels/layout, not only row metadata or expected assertions. Each pass must also
+emit and commit a B25 iteration scorecard showing pass/fail,
 current critical/blocker and major counts, blocker/major findings resolved in that pass, newly
 introduced blocker/major findings, judge failures, and the next action.
-The B25 tool sequence is evidence collector -> workflow/persona coverage collector -> independent UX
-judge -> deterministic production UX judge -> remediation tickets -> iteration scorecard -> commit.
+The B25 tool sequence is evidence collector -> workflow/persona coverage collector -> visual inspection
+auditor -> independent UX judge -> deterministic production UX judge -> remediation
+tickets -> iteration scorecard -> commit.
 The next remediation pass starts by feeding the committed tickets and scorecard to the remediation
 planner before any worker implements fixes.
 

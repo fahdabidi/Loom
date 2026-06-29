@@ -2,6 +2,9 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
+
+import 'package:image/image.dart' as img;
 
 typedef JsonMap = Map<String, Object?>;
 
@@ -606,6 +609,34 @@ void runB25WorkflowPersonaCoverageCollectorCli(List<String> args) {
   );
 }
 
+void runB25VisualInspectionAuditorCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_visualInspectionAuditorUsage());
+    return;
+  }
+  final inputPath = _argValue(args, '--input');
+  final outputPath = _argValue(args, '--output');
+  if (inputPath == null || outputPath == null) {
+    stderr.writeln('Missing required --input <json> or --output <json>');
+    stdout.writeln(_visualInspectionAuditorUsage());
+    exit(64);
+  }
+  final markdownPath = _argValue(args, '--markdown-output');
+  final audited = buildB25VisualInspectionAudit(_readJsonFile(inputPath));
+  final encoded = const JsonEncoder.withIndent('  ').convert(audited);
+  File(outputPath).writeAsStringSync('$encoded\n');
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25VisualInspectionMarkdown(audited));
+  }
+  final summary = audited['visualInspectionSummary'] as JsonMap;
+  stdout.writeln(
+    'b25_visual_inspection_auditor: status=${summary['status']} rows=${summary['screenRowCount']} failing=${summary['failingScreenRowCount']}',
+  );
+  if (summary['status'] == 'fail') {
+    exit(1);
+  }
+}
+
 void runB25IndependentUxJudgeCli(List<String> args) {
   if (args.contains('--help') || args.isEmpty) {
     stdout.writeln(_independentUxJudgeUsage());
@@ -751,15 +782,15 @@ JsonMap collectB25Evidence({
               'Manual visible-text summary carried forward from workflow UI evidence assertions for B25 review. OCR/live recapture can replace this source in a later pass.',
           'uiPatternClassification': _initialB25SurfaceClassification(
             workflowId: workflowId,
-            visibleText: _asStringList(workflow['expectedAssertions']).join(
-              ' | ',
-            ),
+            visibleText: _asStringList(
+              workflow['expectedAssertions'],
+            ).join(' | '),
           ),
           'primarySurfaceType': _initialB25PrimarySurfaceType(
             workflowId: workflowId,
-            visibleText: _asStringList(workflow['expectedAssertions']).join(
-              ' | ',
-            ),
+            visibleText: _asStringList(
+              workflow['expectedAssertions'],
+            ).join(' | '),
           ),
           'targetProductionSurface': _targetProductionSurfaceForWorkflow(
             workflowId,
@@ -1208,10 +1239,48 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
   return result;
 }
 
+JsonMap buildB25VisualInspectionAudit(JsonMap review) {
+  final screenRows = <JsonMap>[];
+  var failingRows = 0;
+  for (final row in _asMapList(review['screenRows'])) {
+    final inspection = _inspectScreenshotVisually(row);
+    if (inspection['status'] == 'fail') {
+      failingRows += 1;
+    }
+    final findingIds = <String>{
+      ..._asStringList(row['findingIds']),
+      ..._asStringList(inspection['findingIds']),
+    }.where((id) => id.isNotEmpty).toList();
+    screenRows.add(
+      JsonMap.of(row)
+        ..['visualInspection'] = inspection
+        ..['findingIds'] = findingIds,
+    );
+  }
+  return JsonMap.of(review)
+    ..['screenRows'] = screenRows
+    ..['visualInspectionSummary'] = <String, Object?>{
+      'status': failingRows == 0 ? 'pass' : 'fail',
+      'screenRowCount': screenRows.length,
+      'failingScreenRowCount': failingRows,
+      'passedScreenRowCount': screenRows.length - failingRows,
+      'generatedAt': DateTime.now().toUtc().toIso8601String(),
+      'findingIds': <String>{
+        for (final row in screenRows)
+          ..._asStringList(
+            (row['visualInspection'] as JsonMap?)?['findingIds'],
+          ),
+      }.where((id) => id.isNotEmpty).toList(),
+    };
+}
+
 JsonMap buildB25IndependentUxReview(JsonMap review) {
-  final withCoverage = review.containsKey('workflowPersonaCoverage')
+  final withVisualAudit = review.containsKey('visualInspectionSummary')
       ? JsonMap.of(review)
-      : buildB25WorkflowPersonaCoverage(review);
+      : buildB25VisualInspectionAudit(review);
+  final withCoverage = withVisualAudit.containsKey('workflowPersonaCoverage')
+      ? JsonMap.of(withVisualAudit)
+      : buildB25WorkflowPersonaCoverage(withVisualAudit);
   final coverageRows = _asMapList(withCoverage['workflowPersonaCoverage']);
   final coverageByKey = <String, JsonMap>{
     for (final row in coverageRows)
@@ -1235,7 +1304,11 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
   final workflowScorecards = coverageRows
       .map((coverage) => _workflowPersonaScorecard(coverage, screenRows))
       .toList();
-  final holisticAnswers = _holisticAnswers(withCoverage, workflowScorecards);
+  final holisticAnswers = _holisticAnswers(
+    withCoverage,
+    workflowScorecards,
+    screenRows,
+  );
   final findings = _independentUxFindings(
     withCoverage,
     screenRows,
@@ -1311,20 +1384,21 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final coverageMissing = _asStringList(coverage?['missingEvidence']);
   final classification = _asString(row['uiPatternClassification']);
   final primarySurface = _asString(row['primarySurfaceType']);
-  final baseFindingIds = _asStringList(row['findingIds'])
-      .where((id) => id != 'B25-V4-REVIEW-PENDING')
-      .toList();
+  final visualInspection = _inspectScreenshotVisually(row);
+  final visualFindingIds = _asStringList(visualInspection['findingIds']);
+  final baseFindingIds = _asStringList(
+    row['findingIds'],
+  ).where((id) => id != 'B25-V4-REVIEW-PENDING').toList();
   final findingIds = <String>{
     ...baseFindingIds,
     if (coverageMissing.isNotEmpty) 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
     if (!_isSpecificPersona(persona, personaId)) 'B25-PERSONA-SCOPE-MISSING',
     if (visibleText.isEmpty) 'B25-VISIBLE-TEXT-MISSING',
-    if (source != 'screenshot-visible-text' &&
-        source != 'ocr-visible-text' &&
-        source != 'manual-visible-text-review')
+    if (source != 'screenshot-visible-text' && source != 'ocr-visible-text')
       'B25-VISIBLE-TEXT-NOT-SCREEN-EXTRACTED',
     if (_surfaceClassificationIsUnverified(classification, primarySurface))
       'B25-DOMAIN-SURFACE-UNVERIFIED',
+    ...visualFindingIds,
   }.toList();
   final critique = StringBuffer()
     ..write('Screen `$rowId` for workflow `$workflowId` ');
@@ -1337,9 +1411,12 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   critique.write(visibleText.isEmpty ? '<missing>' : '"$visibleText"');
   if (source.isNotEmpty && source != 'screenshot-visible-text') {
     critique.write(
-      '. The visible text source is `$source`, so this row is not yet proven by screenshot OCR/manual extraction.',
+      '. The visible text source is `$source`, so this row is not proven by screenshot-derived OCR/manual extraction.',
     );
   }
+  critique.write(
+    ' Visual inspection: ${_asString(visualInspection['summary'])}',
+  );
   if (coverageMissing.isNotEmpty) {
     critique.write(' Coverage is incomplete: ${coverageMissing.join(', ')}.');
   }
@@ -1362,6 +1439,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
     ..['targetProductionSurface'] = _targetProductionSurfaceForWorkflow(
       workflowId,
     )
+    ..['visualInspection'] = visualInspection
     ..['referencePatternsToCopy'] = _b25ReferencePatternsForWorkflow(workflowId)
     ..['referenceResearchQueries'] = _referenceResearchQueriesForWorkflow(
       workflowId,
@@ -1373,6 +1451,369 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
         ? 'pass'
         : 'requires-remediation-and-recapture';
   return updated;
+}
+
+JsonMap _inspectScreenshotVisually(JsonMap row) {
+  final path = _asString(row['screenshotPath'] ?? row['screenshot']);
+  final file = _resolveScreenshotFile(path);
+  final findingIds = <String>[];
+  if (path.isEmpty || file == null || !file.existsSync()) {
+    return <String, Object?>{
+      'status': 'fail',
+      'summary':
+          'Screenshot pixels could not be inspected because the screenshot file was not found.',
+      'screenshotPath': path,
+      'findingIds': <String>['B25-VISUAL-INSPECTION-MISSING'],
+      'metrics': <String, Object?>{},
+      'signals': <String, Object?>{},
+    };
+  }
+
+  final decoded = img.decodeImage(file.readAsBytesSync());
+  if (decoded == null) {
+    return <String, Object?>{
+      'status': 'fail',
+      'summary':
+          'Screenshot pixels could not be inspected because the image decoder could not read the file.',
+      'screenshotPath': file.path,
+      'findingIds': <String>['B25-VISUAL-INSPECTION-MISSING'],
+      'metrics': <String, Object?>{},
+      'signals': <String, Object?>{},
+    };
+  }
+
+  final metrics = _visualMetrics(decoded);
+  final visibleText = _asString(row['visibleTextExtract']).toLowerCase();
+  final screenType = _asString(row['screenType']).toLowerCase();
+  final workflowId = _asString(row['workflowId']).toLowerCase();
+  final screenName = _asString(row['screenOrState']).toLowerCase();
+  final isPrimaryWorkflow = !_workflowIsSupportSurface(workflowId);
+  final actionLike =
+      screenType.contains('action') ||
+      screenType.contains('review') ||
+      screenName.contains('action') ||
+      screenName.contains('dialog') ||
+      screenName.contains('actor') ||
+      screenName.contains('review');
+
+  final modalOverlayLikely = metrics.modalOverlayLikely;
+  final repeatedCardShellLikely =
+      metrics.cardBandCount >= 4 || metrics.largeSurfaceBandCount >= 5;
+  final weakVisualIdentityLikely =
+      metrics.accentPixelRatio < 0.025 && metrics.saturatedPixelRatio < 0.075;
+  final thinContentLikely =
+      metrics.darkInkRatio < 0.055 && metrics.edgeDensity < 0.045;
+  final defaultScaffoldLikely =
+      weakVisualIdentityLikely &&
+      (repeatedCardShellLikely || thinContentLikely);
+  final checklistLanguageLikely =
+      visibleText.contains('ready') ||
+      visibleText.contains('will be checked') ||
+      visibleText.contains('recorded') ||
+      visibleText.contains('workflow') ||
+      visibleText.contains('evidence');
+  final checklistModalLikely =
+      modalOverlayLikely && (actionLike || checklistLanguageLikely);
+
+  if (checklistModalLikely) {
+    findingIds.add('B25-CHECKLIST-MODAL-LIKELY');
+  }
+  if (isPrimaryWorkflow && repeatedCardShellLikely) {
+    findingIds.add('B25-REPEATED-CARD-SHELL-LIKELY');
+  }
+  if (isPrimaryWorkflow && thinContentLikely) {
+    findingIds.add('B25-THIN-CONTENT-LIKELY');
+  }
+  if (isPrimaryWorkflow && weakVisualIdentityLikely) {
+    findingIds.add('B25-WEAK-VISUAL-IDENTITY');
+  }
+  if (isPrimaryWorkflow && defaultScaffoldLikely) {
+    findingIds.add('B25-DEFAULT-SCAFFOLD-LIKELY');
+  }
+
+  final signals = <String, Object?>{
+    'modalOverlayLikely': modalOverlayLikely,
+    'checklistModalLikely': checklistModalLikely,
+    'repeatedCardShellLikely': repeatedCardShellLikely,
+    'thinContentLikely': thinContentLikely,
+    'weakVisualIdentityLikely': weakVisualIdentityLikely,
+    'defaultScaffoldLikely': defaultScaffoldLikely,
+    'actionLike': actionLike,
+    'primaryWorkflow': isPrimaryWorkflow,
+  };
+  final summaryParts = <String>[
+    'decoded ${decoded.width}x${decoded.height}px',
+    'edgeDensity=${metrics.edgeDensity.toStringAsFixed(3)}',
+    'darkInk=${metrics.darkInkRatio.toStringAsFixed(3)}',
+    'accent=${metrics.accentPixelRatio.toStringAsFixed(3)}',
+    'cardBands=${metrics.cardBandCount}',
+    'modalOverlay=$modalOverlayLikely',
+  ];
+  if (findingIds.isNotEmpty) {
+    summaryParts.add('visual findings: ${findingIds.join(', ')}');
+  } else {
+    summaryParts.add(
+      'no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content',
+    );
+  }
+
+  return <String, Object?>{
+    'status': findingIds.isEmpty ? 'pass' : 'fail',
+    'summary': summaryParts.join('; '),
+    'screenshotPath': file.path,
+    'findingIds': findingIds,
+    'metrics': metrics.toJson(),
+    'signals': signals,
+  };
+}
+
+File? _resolveScreenshotFile(String path) {
+  if (path.trim().isEmpty) {
+    return null;
+  }
+  final candidates = <String>[
+    path,
+    _hostPath(path),
+    if (!RegExp(r'^[A-Za-z]:[\\/]|^/').hasMatch(path)) '../$path',
+    if (!RegExp(r'^[A-Za-z]:[\\/]|^/').hasMatch(path)) '../../$path',
+    if (!RegExp(r'^[A-Za-z]:[\\/]|^/').hasMatch(path)) '../../../$path',
+  ];
+  final seen = <String>{};
+  for (final candidate in candidates) {
+    final host = _hostPath(candidate);
+    if (!seen.add(host)) {
+      continue;
+    }
+    final file = File(host);
+    if (file.existsSync()) {
+      return file;
+    }
+  }
+  return null;
+}
+
+_VisualMetrics _visualMetrics(img.Image image) {
+  final width = image.width;
+  final height = image.height;
+  final sampleStepX = math.max(1, (width / 90).floor());
+  final sampleStepY = math.max(1, (height / 160).floor());
+  var samples = 0;
+  var nearWhite = 0;
+  var darkInk = 0;
+  var saturated = 0;
+  var accent = 0;
+  var centerLight = 0;
+  var centerSamples = 0;
+  var outerDim = 0;
+  var outerSamples = 0;
+  var edgeTransitions = 0;
+  final buckets = <int>{};
+
+  for (var y = 0; y < height; y += sampleStepY) {
+    double? previousLuma;
+    for (var x = 0; x < width; x += sampleStepX) {
+      final pixel = image.getPixel(x, y);
+      final r = pixel.r.toDouble();
+      final g = pixel.g.toDouble();
+      final b = pixel.b.toDouble();
+      final luma = _luma(r, g, b);
+      final saturation = _saturation(r, g, b);
+      samples += 1;
+      buckets.add(((r ~/ 48) << 8) | ((g ~/ 48) << 4) | (b ~/ 48));
+      if (luma > 232) {
+        nearWhite += 1;
+      }
+      if (luma < 112) {
+        darkInk += 1;
+      }
+      if (saturation > 0.20) {
+        saturated += 1;
+      }
+      if (saturation > 0.24 && luma > 55 && luma < 210) {
+        accent += 1;
+      }
+      final inCenter =
+          x > width * 0.18 &&
+          x < width * 0.82 &&
+          y > height * 0.22 &&
+          y < height * 0.80;
+      if (inCenter) {
+        centerSamples += 1;
+        if (luma > 218) {
+          centerLight += 1;
+        }
+      } else {
+        outerSamples += 1;
+        if (luma > 40 && luma < 170 && saturation < 0.18) {
+          outerDim += 1;
+        }
+      }
+      if (previousLuma != null && (luma - previousLuma).abs() > 42) {
+        edgeTransitions += 1;
+      }
+      previousLuma = luma;
+    }
+  }
+
+  final cardBands = _countCardBands(image);
+  final largeSurfaceBands = _countLargeSurfaceBands(image);
+  final centerLightRatio = _ratio(centerLight, centerSamples);
+  final outerDimRatio = _ratio(outerDim, outerSamples);
+  return _VisualMetrics(
+    width: width,
+    height: height,
+    colorBucketCount: buckets.length,
+    nearWhiteRatio: _ratio(nearWhite, samples),
+    darkInkRatio: _ratio(darkInk, samples),
+    saturatedPixelRatio: _ratio(saturated, samples),
+    accentPixelRatio: _ratio(accent, samples),
+    edgeDensity: _ratio(edgeTransitions, samples),
+    centerLightRatio: centerLightRatio,
+    outerDimRatio: outerDimRatio,
+    cardBandCount: cardBands,
+    largeSurfaceBandCount: largeSurfaceBands,
+    modalOverlayLikely: centerLightRatio > 0.58 && outerDimRatio > 0.28,
+  );
+}
+
+int _countCardBands(img.Image image) {
+  final width = image.width;
+  final height = image.height;
+  final stepY = math.max(1, (height / 180).floor());
+  final stepX = math.max(1, (width / 70).floor());
+  var bands = 0;
+  var inBand = false;
+  for (var y = 0; y < height; y += stepY) {
+    var lightInterior = 0;
+    var total = 0;
+    for (
+      var x = (width * 0.07).floor();
+      x < (width * 0.93).floor();
+      x += stepX
+    ) {
+      final pixel = image.getPixel(x, y);
+      final luma = _luma(
+        pixel.r.toDouble(),
+        pixel.g.toDouble(),
+        pixel.b.toDouble(),
+      );
+      total += 1;
+      if (luma > 214 && luma < 250) {
+        lightInterior += 1;
+      }
+    }
+    final band = total > 0 && lightInterior / total > 0.58;
+    if (band && !inBand) {
+      bands += 1;
+    }
+    inBand = band;
+  }
+  return bands;
+}
+
+int _countLargeSurfaceBands(img.Image image) {
+  final width = image.width;
+  final height = image.height;
+  final stepY = math.max(1, (height / 120).floor());
+  final stepX = math.max(1, (width / 60).floor());
+  var bands = 0;
+  var inBand = false;
+  for (var y = 0; y < height; y += stepY) {
+    var nonBackground = 0;
+    var total = 0;
+    for (
+      var x = (width * 0.05).floor();
+      x < (width * 0.95).floor();
+      x += stepX
+    ) {
+      final pixel = image.getPixel(x, y);
+      final luma = _luma(
+        pixel.r.toDouble(),
+        pixel.g.toDouble(),
+        pixel.b.toDouble(),
+      );
+      total += 1;
+      if (luma > 185 && luma < 248) {
+        nonBackground += 1;
+      }
+    }
+    final band = total > 0 && nonBackground / total > 0.66;
+    if (band && !inBand) {
+      bands += 1;
+    }
+    inBand = band;
+  }
+  return bands;
+}
+
+double _luma(double r, double g, double b) {
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+double _saturation(double r, double g, double b) {
+  final maxValue = math.max(r, math.max(g, b));
+  final minValue = math.min(r, math.min(g, b));
+  if (maxValue <= 0) {
+    return 0;
+  }
+  return (maxValue - minValue) / maxValue;
+}
+
+double _ratio(int numerator, int denominator) {
+  if (denominator <= 0) {
+    return 0;
+  }
+  return numerator / denominator;
+}
+
+class _VisualMetrics {
+  const _VisualMetrics({
+    required this.width,
+    required this.height,
+    required this.colorBucketCount,
+    required this.nearWhiteRatio,
+    required this.darkInkRatio,
+    required this.saturatedPixelRatio,
+    required this.accentPixelRatio,
+    required this.edgeDensity,
+    required this.centerLightRatio,
+    required this.outerDimRatio,
+    required this.cardBandCount,
+    required this.largeSurfaceBandCount,
+    required this.modalOverlayLikely,
+  });
+
+  final int width;
+  final int height;
+  final int colorBucketCount;
+  final double nearWhiteRatio;
+  final double darkInkRatio;
+  final double saturatedPixelRatio;
+  final double accentPixelRatio;
+  final double edgeDensity;
+  final double centerLightRatio;
+  final double outerDimRatio;
+  final int cardBandCount;
+  final int largeSurfaceBandCount;
+  final bool modalOverlayLikely;
+
+  JsonMap toJson() {
+    return <String, Object?>{
+      'width': width,
+      'height': height,
+      'colorBucketCount': colorBucketCount,
+      'nearWhiteRatio': nearWhiteRatio,
+      'darkInkRatio': darkInkRatio,
+      'saturatedPixelRatio': saturatedPixelRatio,
+      'accentPixelRatio': accentPixelRatio,
+      'edgeDensity': edgeDensity,
+      'centerLightRatio': centerLightRatio,
+      'outerDimRatio': outerDimRatio,
+      'cardBandCount': cardBandCount,
+      'largeSurfaceBandCount': largeSurfaceBandCount,
+      'modalOverlayLikely': modalOverlayLikely,
+    };
+  }
 }
 
 JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
@@ -1391,6 +1832,13 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
       .where((row) => _asString(row['verdict']) == 'fail')
       .map(_rowId)
       .toList();
+  final visualFailures = relatedRows
+      .where((row) {
+        final inspection = row['visualInspection'] as JsonMap?;
+        return inspection != null && inspection['status'] == 'fail';
+      })
+      .map(_rowId)
+      .toList();
   final textEvidence = relatedRows
       .map((row) => _asString(row['visibleTextExtract']))
       .where((text) => text.isNotEmpty)
@@ -1402,7 +1850,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
       .toList();
   final coveragePass = missing.isEmpty;
   final rowPass = rowFailures.isEmpty;
-  final domainPass = coveragePass && rowPass;
+  final domainPass = coveragePass && rowPass && visualFailures.isEmpty;
   final questions = <JsonMap>[
     _directAnswer(
       questionId: '$coverageRowId-coverage',
@@ -1430,11 +1878,28 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
           ? _asStringList(coverage['screenRowIds'])
           : rowFailures,
       why: domainPass
-          ? 'No row-level coverage or critique failures were found for this workflow/persona group.'
-          : 'Rows still have unresolved review/coverage failures: ${rowFailures.isEmpty ? missing.join(', ') : rowFailures.join(', ')}.',
+          ? 'Screenshot pixel/layout inspection and row critique did not find generic primary-surface failures for this workflow/persona group.'
+          : 'Rows still have unresolved visual/review/coverage failures: ${rowFailures.isEmpty ? missing.join(', ') : rowFailures.join(', ')}.',
       requiredFix: domainPass
           ? 'None.'
           : 'Replace or document the exact domain-native surface and recapture the affected workflow/persona rows.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-visual-quality',
+      scope: 'workflow-persona',
+      question:
+          'Does screenshot pixel/layout inspection show a modern, intentional, non-generic UI for workflow `$workflowId` and persona `$persona`?',
+      pass: visualFailures.isEmpty && rowPass,
+      score: visualFailures.isEmpty && rowPass ? 85 : 35,
+      evidenceUsed: visualFailures.isEmpty
+          ? _asStringList(coverage['screenRowIds'])
+          : visualFailures,
+      why: visualFailures.isEmpty && rowPass
+          ? 'The screenshot visual inspection did not detect checklist modal, repeated-card shell, thin-content, weak-identity, or default-scaffold blockers.'
+          : 'Screenshot visual inspection found production UX blockers in rows: ${visualFailures.isEmpty ? rowFailures.join(', ') : visualFailures.join(', ')}.',
+      requiredFix: visualFailures.isEmpty && rowPass
+          ? 'None.'
+          : 'Replace checklist/repeated-card/thin-content/default-scaffold surfaces with richer domain-native UI, then recapture screenshots and rerun the visual inspection.',
     ),
     _directAnswer(
       questionId: '$coverageRowId-visible-text',
@@ -1481,6 +1946,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
 List<JsonMap> _holisticAnswers(
   JsonMap review,
   List<JsonMap> workflowScorecards,
+  List<JsonMap> screenRows,
 ) {
   final coverageSummary =
       (review['workflowPersonaCoverageSummary'] as JsonMap?) ??
@@ -1489,13 +1955,16 @@ List<JsonMap> _holisticAnswers(
   final failingWorkflowScorecards = workflowScorecards
       .where((scorecard) => scorecard['blocksPass'] == true)
       .length;
-  final rowCount = _asMapList(review['screenRows']).length;
-  final visibleTextUnsupported = _asMapList(review['screenRows']).where((row) {
+  final rowCount = screenRows.length;
+  final visibleTextUnsupported = screenRows.where((row) {
     final source = _asString(row['visibleTextExtractionSource']);
     return source.isNotEmpty &&
         source != 'screenshot-visible-text' &&
-        source != 'ocr-visible-text' &&
-        source != 'manual-visible-text-review';
+        source != 'ocr-visible-text';
+  }).length;
+  final visualFailureRows = screenRows.where((row) {
+    final inspection = row['visualInspection'] as JsonMap?;
+    return inspection != null && inspection['status'] == 'fail';
   }).length;
   return <JsonMap>[
     _directAnswer(
@@ -1503,54 +1972,77 @@ List<JsonMap> _holisticAnswers(
       scope: 'holistic',
       question:
           'Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness?',
-      pass: failingCoverage == 0 && failingWorkflowScorecards == 0,
-      score: failingCoverage == 0 && failingWorkflowScorecards == 0 ? 85 : 35,
+      pass:
+          failingCoverage == 0 &&
+          failingWorkflowScorecards == 0 &&
+          visualFailureRows == 0,
+      score:
+          failingCoverage == 0 &&
+              failingWorkflowScorecards == 0 &&
+              visualFailureRows == 0
+          ? 85
+          : 35,
       evidenceUsed: <String>[
         'screenRows=$rowCount',
         'workflowPersonaCoverageFailures=$failingCoverage',
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'visualInspectionFailures=$visualFailureRows',
       ],
-      why: failingCoverage == 0 && failingWorkflowScorecards == 0
-          ? 'Coverage and workflow/persona scorecards provide enough evidence for a production-grade judgment.'
-          : 'The review cannot claim production-grade UX while workflow/persona evidence is incomplete or failing.',
-      requiredFix: failingCoverage == 0 && failingWorkflowScorecards == 0
+      why:
+          failingCoverage == 0 &&
+              failingWorkflowScorecards == 0 &&
+              visualFailureRows == 0
+          ? 'Coverage, workflow/persona scorecards, and screenshot pixel/layout inspection provide no production-grade blockers.'
+          : 'The review cannot claim production-grade UX while workflow/persona evidence or screenshot visual inspection is incomplete/failing.',
+      requiredFix:
+          failingCoverage == 0 &&
+              failingWorkflowScorecards == 0 &&
+              visualFailureRows == 0
           ? 'None.'
-          : 'Complete workflow/persona coverage and remediate failing scorecards before claiming production-grade UX.',
+          : 'Complete workflow/persona coverage and remediate visual/layout scorecard failures before claiming production-grade UX.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-modern-intentional',
       scope: 'holistic',
       question:
           'Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?',
-      pass: visibleTextUnsupported == 0 && failingWorkflowScorecards == 0,
-      score: visibleTextUnsupported == 0 && failingWorkflowScorecards == 0
+      pass:
+          visibleTextUnsupported == 0 &&
+          failingWorkflowScorecards == 0 &&
+          visualFailureRows == 0,
+      score:
+          visibleTextUnsupported == 0 &&
+              failingWorkflowScorecards == 0 &&
+              visualFailureRows == 0
           ? 85
           : 40,
       evidenceUsed: <String>[
         'screenRows=$rowCount',
         'unsupportedVisibleTextRows=$visibleTextUnsupported',
+        'visualInspectionFailures=$visualFailureRows',
       ],
-      why: visibleTextUnsupported == 0
-          ? 'Visible UI/text evidence is suitable for judging modern UI quality.'
-          : '$visibleTextUnsupported rows use non-screen visible text sources, so the judge cannot make a reliable modern-UI claim.',
-      requiredFix: visibleTextUnsupported == 0
+      why: visibleTextUnsupported == 0 && visualFailureRows == 0
+          ? 'Visible UI/text evidence and screenshot pixel/layout inspection support judging modern UI quality.'
+          : '$visibleTextUnsupported rows use non-screen visible text sources and $visualFailureRows rows have visual/layout blockers, so the judge cannot make a reliable modern-UI claim.',
+      requiredFix: visibleTextUnsupported == 0 && visualFailureRows == 0
           ? 'None.'
-          : 'Use screenshot OCR or manual visible-text extraction for every reviewed screen before rerunning the judge.',
+          : 'Use screenshot-derived visible text and fix detected checklist, repeated-card, thin-content, or weak-identity visual blockers before rerunning the judge.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-community-ia',
       scope: 'holistic',
       question:
           'Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?',
-      pass: failingWorkflowScorecards == 0,
-      score: failingWorkflowScorecards == 0 ? 85 : 45,
+      pass: failingWorkflowScorecards == 0 && visualFailureRows == 0,
+      score: failingWorkflowScorecards == 0 && visualFailureRows == 0 ? 85 : 45,
       evidenceUsed: <String>[
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'visualInspectionFailures=$visualFailureRows',
       ],
-      why: failingWorkflowScorecards == 0
-          ? 'Workflow/persona scorecards do not report generic workflow-list IA failures.'
-          : 'Failing workflow/persona scorecards prevent a holistic community IA pass.',
-      requiredFix: failingWorkflowScorecards == 0
+      why: failingWorkflowScorecards == 0 && visualFailureRows == 0
+          ? 'Workflow/persona scorecards and visual inspection do not report generic workflow-list IA failures.'
+          : 'Failing workflow/persona scorecards or visual blockers prevent a holistic community IA pass.',
+      requiredFix: failingWorkflowScorecards == 0 && visualFailureRows == 0
           ? 'None.'
           : 'Replace generic workflow-list or validation surfaces with domain-native community sections and rerun scorecards.',
     ),
@@ -1559,18 +2051,31 @@ List<JsonMap> _holisticAnswers(
       scope: 'holistic',
       question:
           'Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?',
-      pass: failingWorkflowScorecards == 0 && visibleTextUnsupported == 0,
-      score: failingWorkflowScorecards == 0 && visibleTextUnsupported == 0
+      pass:
+          failingWorkflowScorecards == 0 &&
+          visibleTextUnsupported == 0 &&
+          visualFailureRows == 0,
+      score:
+          failingWorkflowScorecards == 0 &&
+              visibleTextUnsupported == 0 &&
+              visualFailureRows == 0
           ? 85
           : 45,
       evidenceUsed: <String>[
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
         'unsupportedVisibleTextRows=$visibleTextUnsupported',
+        'visualInspectionFailures=$visualFailureRows',
       ],
-      why: failingWorkflowScorecards == 0 && visibleTextUnsupported == 0
-          ? 'No major layout/content defects were detected in the evidence fields available to this judge.'
-          : 'The judge cannot clear layout/content defects while row-level evidence remains incomplete or unsupported.',
-      requiredFix: failingWorkflowScorecards == 0 && visibleTextUnsupported == 0
+      why:
+          failingWorkflowScorecards == 0 &&
+              visibleTextUnsupported == 0 &&
+              visualFailureRows == 0
+          ? 'No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique.'
+          : 'The judge cannot clear layout/content defects while row-level evidence remains incomplete, unsupported, or visually failing.',
+      requiredFix:
+          failingWorkflowScorecards == 0 &&
+              visibleTextUnsupported == 0 &&
+              visualFailureRows == 0
           ? 'None.'
           : 'Complete screenshot-backed review rows and remediate any row-level layout/content defects.',
     ),
@@ -1657,6 +2162,37 @@ List<JsonMap> _independentUxFindings(
       'affectedScreenRowIds': unsupportedVisibleTextRows.take(50).toList(),
     });
   }
+  final visualFailureRows = screenRows
+      .where((row) {
+        final ids = _asStringList(row['findingIds']);
+        return ids.any(
+          (id) =>
+              id.startsWith('B25-CHECKLIST-MODAL') ||
+              id.startsWith('B25-REPEATED-CARD') ||
+              id.startsWith('B25-THIN-CONTENT') ||
+              id.startsWith('B25-WEAK-VISUAL') ||
+              id.startsWith('B25-DEFAULT-SCAFFOLD') ||
+              id.startsWith('B25-VISUAL-INSPECTION'),
+        );
+      })
+      .map(_rowId)
+      .toList();
+  if (visualFailureRows.isNotEmpty) {
+    findings.add(<String, Object?>{
+      'findingId': 'B25-VISUAL-UX-INSPECTION-FAILED',
+      'severity': 'major',
+      'status': 'open',
+      'title':
+          'Screenshot pixel/layout inspection found production UX blockers',
+      'summary':
+          '${visualFailureRows.length} screen rows visually resemble checklist modals, repeated-card shells, thin-content surfaces, weak identity, default scaffolds, or missing visual evidence.',
+      'requiredFix':
+          'Replace the affected screens with screenshot-proven domain-native surfaces and rerun the independent visual UX judge.',
+      'blocksPass': true,
+      'generatedBy': 'b25-independent-ux-judge',
+      'affectedScreenRowIds': visualFailureRows.take(80).toList(),
+    });
+  }
   final failingScorecards = workflowScorecards
       .where((scorecard) => scorecard['blocksPass'] == true)
       .map((scorecard) => _asString(scorecard['scorecardId']))
@@ -1708,6 +2244,7 @@ List<JsonMap> _replaceGeneratedFindings(
     'B25-WORKFLOW-PERSONA-UNPROVEN',
     'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
     'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE',
+    'B25-VISUAL-UX-INSPECTION-FAILED',
     'B25-WORKFLOW-PERSONA-UX-FAILED',
     'B25-HOLISTIC-UX-FAILED',
     'B25-PERSONA-SCOPE-MISSING',
@@ -2039,15 +2576,17 @@ _DerivedFailure? _derivedFailure(
     case 'b22-c01-primary-surfaces-domain-native':
     case 'b25-c06-domain-native-primary-surfaces':
       return _failOnGenericRows(screenRows) ??
+          _failOnVisualInspection(screenRows) ??
           _failOnWorkflowPersonaScorecards(evidence);
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
     case 'b25-c09-no-layout-production-defects':
-      return _failOnDirectQuestionAnswers(
-        _asMapList(evidence['holisticQuestionAnswers']),
-        requiredScope: 'holistic',
-      );
+      return _failOnVisualInspection(screenRows) ??
+          _failOnDirectQuestionAnswers(
+            _asMapList(evidence['holisticQuestionAnswers']),
+            requiredScope: 'holistic',
+          );
     case 'b23-c01-persona-state-coverage':
     case 'b23-c02-unauthorized-behavior':
       final rows = _asMapList(evidence['personaRows']);
@@ -2065,6 +2604,7 @@ _DerivedFailure? _derivedFailure(
     case 'b24-c02-visible-text-and-copy-audit':
     case 'b25-c08-visible-text-specific-critique':
       return _failOnVisibleTextOrBoilerplate(screenRows) ??
+          _failOnVisualInspection(screenRows) ??
           _failOnWorkflowPersonaScorecards(evidence);
     case 'b25-c01-no-blocker-major':
       final blockers = _count(evidence['unresolvedBlockerFindings']);
@@ -2292,7 +2832,8 @@ bool _surfaceClassificationIsUnverified(
   String classification,
   String primarySurface,
 ) {
-  final combined = '${classification.toLowerCase()} ${primarySurface.toLowerCase()}';
+  final combined =
+      '${classification.toLowerCase()} ${primarySurface.toLowerCase()}';
   if (combined.trim().isEmpty) {
     return true;
   }
@@ -2714,13 +3255,44 @@ String _b25ScreenMatrixMarkdown(JsonMap review) {
     ..writeln('# B25 Product UX Screen Review Matrix')
     ..writeln()
     ..writeln(
-      '| Row | Community | Persona | Workflow | Screen/state | Screenshot | Hash | Verdict | Critique |',
+      '| Row | Community | Persona | Workflow | Screen/state | Screenshot | Hash | Verdict | Visual inspection | Critique |',
     )
-    ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (final row in rows) {
+    final inspection = row['visualInspection'] as JsonMap?;
     buffer.writeln(
-      '| `${_escape(_asString(row['rowId']))}` | ${_escape(_asString(row['communityName']))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['screenOrState']))} | ${_escape(_asString(row['screenshotPath']))} | `${_escape(_asString(row['screenshotHash']))}` | ${_escape(_asString(row['verdict']))} | ${_escape(_asString(row['screenSpecificCritique']))} |',
+      '| `${_escape(_asString(row['rowId']))}` | ${_escape(_asString(row['communityName']))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['screenOrState']))} | ${_escape(_asString(row['screenshotPath']))} | `${_escape(_asString(row['screenshotHash']))}` | ${_escape(_asString(row['verdict']))} | ${_escape(_asString(inspection?['summary']))} | ${_escape(_asString(row['screenSpecificCritique']))} |',
     );
+  }
+  return buffer.toString();
+}
+
+String _b25VisualInspectionMarkdown(JsonMap review) {
+  final rows = _asMapList(review['screenRows']);
+  final summary = (review['visualInspectionSummary'] as JsonMap?) ?? {};
+  final buffer = StringBuffer()
+    ..writeln('# B25 Visual Inspection Audit')
+    ..writeln()
+    ..writeln('Status: `${_escape(_asString(summary['status']))}`')
+    ..writeln()
+    ..writeln(
+      'Rows: ${_asInt(summary['screenRowCount'])}; failing: ${_asInt(summary['failingScreenRowCount'])}; passing: ${_asInt(summary['passedScreenRowCount'])}',
+    )
+    ..writeln()
+    ..writeln(
+      '| Row | Community | Persona | Workflow | Screenshot | Status | Findings | Summary |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (final row in rows.take(160)) {
+    final inspection = row['visualInspection'] as JsonMap?;
+    buffer.writeln(
+      '| `${_escape(_rowId(row))}` | ${_escape(_asString(row['communityName'], fallback: _asString(row['communityId'])))} | ${_escape(_asString(row['persona']))} | `${_escape(_asString(row['workflowId']))}` | `${_escape(_asString(row['screenshotPath']))}` | `${_escape(_asString(inspection?['status']))}` | ${_escape(_asStringList(inspection?['findingIds']).join(', '))} | ${_escape(_asString(inspection?['summary']))} |',
+    );
+  }
+  if (rows.length > 160) {
+    buffer
+      ..writeln()
+      ..writeln('_Showing 160 of ${rows.length} screen rows._');
   }
   return buffer.toString();
 }
@@ -2765,10 +3337,20 @@ Usage:
 ''';
 }
 
+String _visualInspectionAuditorUsage() {
+  return '''
+b25_visual_inspection_auditor (B25)
+Inspects screenshot pixels/layout for checklist-modal, repeated-card shell, thin-content, weak-identity, and missing-image failures before independent UX review.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <b25-visual-inspection-audit.md>]
+''';
+}
+
 String _independentUxJudgeUsage() {
   return '''
 b25_independent_ux_judge (B25)
-Consumes B25 screenshot evidence and workflow/persona coverage, then writes holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, and exact findings for the deterministic Production UX Judge.
+Consumes B25 screenshot evidence and workflow/persona coverage, inspects screenshot pixels/layout, then writes holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, visual findings, and exact findings for the deterministic Production UX Judge.
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <independent-production-ux-review.md>] [--matrix-output <product-ux-screen-review-matrix.md>]
@@ -5156,7 +5738,10 @@ _DerivedFailure? _failOnVisibleTextOrBoilerplate(List<JsonMap> rows) {
     final critique = _asString(
       row['screenSpecificCritique'] ?? row['critique'],
     );
-    if (visibleText.trim().length < 8 || critique.trim().length < 24) {
+    final source = _asString(row['visibleTextExtractionSource']);
+    if (visibleText.trim().length < 8 ||
+        critique.trim().length < 24 ||
+        source == 'manual-visible-text-review') {
       failing.add(rowId);
     }
     final normalized = critique
@@ -5179,6 +5764,31 @@ _DerivedFailure? _failOnVisibleTextOrBoilerplate(List<JsonMap> rows) {
           ? 'No screen rows were supplied for visible-text/critique audit.'
           : 'Rows with missing visible text, weak critique, or duplicate critique: ${failing.join(', ')}.',
       evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnVisualInspection(List<JsonMap> rows) {
+  final failing = <String>[];
+  for (final row in rows) {
+    final inspection = row['visualInspection'] as JsonMap?;
+    if (inspection == null) {
+      failing.add('${_rowId(row)} missing-visual-inspection');
+      continue;
+    }
+    if (inspection['status'] == 'fail') {
+      final ids = _asStringList(inspection['findingIds']);
+      failing.add('${_rowId(row)}${ids.isEmpty ? '' : ' ${ids.join('+')}'}');
+    }
+  }
+  if (rows.isEmpty || failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: rows.isEmpty ? 0 : 45,
+      message: rows.isEmpty
+          ? 'No screen rows were supplied for visual inspection.'
+          : 'Rows with failed/missing screenshot visual inspection: ${failing.take(80).join(', ')}.',
+      evidenceUsed: failing.take(80).toList(),
     );
   }
   return null;
