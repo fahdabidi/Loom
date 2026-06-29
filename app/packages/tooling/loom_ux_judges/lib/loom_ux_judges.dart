@@ -285,6 +285,18 @@ final specs = <String, JudgeSpec>{
             'Resolve blockers/majors, rerun review, and record zero unresolved blocker/major findings.',
       ),
       CriterionDefinition(
+        id: 'b25-c02-community-product-docs-complete',
+        title: 'Every community has a review-ready product experience doc',
+        question:
+            'Does every reviewed community/test app have a current, community-specific Product Docs V2 experience spec that defines the rich product experience before UX remediation is judged?',
+        scope: 'product-spec',
+        requiredEvidenceFields: <String>['productDocCoverage'],
+        failureMessage:
+            'Community-specific Product Docs V2 experience specs are missing, thin, placeholder-filled, or not linked to the reviewed screens.',
+        requiredFix:
+            'Create or update Product Docs V2 community experience specs before remediation continues, then judge screens against those specs.',
+      ),
+      CriterionDefinition(
         id: 'b25-c02-blueprint-complete',
         title: 'Every community has a complete production UX blueprint',
         question:
@@ -822,6 +834,10 @@ JsonMap collectB25Evidence({
     ..._asStringList(priorReview?['supersededReviewRunIds']),
   ];
   final blueprintCoverage = _asMapList(priorReview?['blueprintCoverage']);
+  final productDocCoverage = _productDocCoverageForB25(
+    screenRows: screenRows,
+    repoRootPath: repoRootPath,
+  );
   return <String, Object?>{
     'schemaVersion': 4,
     'reviewStandardVersion': 'b25-production-ux-v4',
@@ -849,6 +865,7 @@ JsonMap collectB25Evidence({
     'remediationLoopPath':
         'docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md',
     'blueprintCoverage': blueprintCoverage,
+    'productDocCoverage': productDocCoverage,
     'screenRows': screenRows,
     'findings': <JsonMap>[
       <String, Object?>{
@@ -980,6 +997,23 @@ JsonMap buildB25RemediationPlan({
   );
   final batches = <JsonMap>[
     _remediationBatch(
+      batchId: 'B25-RB-000-product-experience-specs',
+      title: 'Complete community product experience specs',
+      purpose:
+          'Backfill or update Product Docs V2 community-specific experience specs before UI remediation continues.',
+      tickets: _ticketsForCriteria(tickets, <String>{
+        'b25-c02-community-product-docs-complete',
+      }),
+      actions: <String>[
+        'Create or update the affected community product experience docs.',
+        'Define the product promise, personas/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, persona/state matrix, seed content, visual standard, and B25 review/remediation log.',
+        'Do not assign UI implementation until productDocCoverage passes for the affected community.',
+        'Rerun the evidence collector so B25 tickets and judge output reference the updated specs.',
+      ],
+      includeEvidenceWorkItems: false,
+      includeUiWorkItems: false,
+    ),
+    _remediationBatch(
       batchId: 'B25-RB-001-independent-review-evidence',
       title: 'Complete independent review evidence and critique',
       purpose:
@@ -997,6 +1031,7 @@ JsonMap buildB25RemediationPlan({
         'Resolve every evidenceRepairWorkItem before assigning UI implementation work for that same community/workflow/persona.',
         'Keep reviewer context limited to screenshots, blueprint, evidence, and pass criteria.',
       ],
+      includeProductDocWorkItems: false,
       includeUiWorkItems: false,
     ),
     _remediationBatch(
@@ -1017,6 +1052,7 @@ JsonMap buildB25RemediationPlan({
         'Improve hierarchy, spacing, typography, component quality, navigation clarity, and mobile layout.',
         'Update copy/content so visible UI speaks to the target persona and task, not to validation mechanics.',
       ],
+      includeProductDocWorkItems: false,
       includeEvidenceWorkItems: false,
     ),
     _remediationBatch(
@@ -1066,6 +1102,7 @@ JsonMap buildB25RemediationPlan({
     'batches': batches,
     'plannerRules': <String>[
       'Worker agents implement from remediation batches, not from optimistic summaries.',
+      'Product-spec work items must be completed and rerun before evidence repair or UI remediation work items for the same community are assigned.',
       'Evidence repair work items must be completed and rerun before UI remediation work items for the same community/workflow/persona are assigned.',
       'UI remediation work must be scoped by community/workflow/persona and target production surface, not by a broad global ticket summary.',
       'The independent judge must rerun after each batch that changes UI, evidence, or critique.',
@@ -2679,6 +2716,29 @@ List<JsonMap> _independentUxFindings(
       (review['workflowPersonaCoverageSummary'] as JsonMap?) ??
       <String, Object?>{};
   final failingCoverage = _asInt(coverageSummary['failingCoverageRowCount']);
+  final productDocCoverage = _asMapList(review['productDocCoverage']);
+  final failingProductDocs = productDocCoverage
+      .where((row) => _asString(row['status']) != 'pass')
+      .toList();
+  if (productDocCoverage.isEmpty || failingProductDocs.isNotEmpty) {
+    findings.add(<String, Object?>{
+      'findingId': 'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE',
+      'severity': 'major',
+      'status': 'open',
+      'title': 'Community product experience docs are incomplete',
+      'summary': productDocCoverage.isEmpty
+          ? 'No community-specific Product Docs V2 experience specs were supplied for the reviewed screen rows.'
+          : '${failingProductDocs.length} community-specific Product Docs V2 experience specs are missing, thin, or not review-ready.',
+      'requiredFix':
+          'Create or update each affected community product experience doc before UI remediation continues, then rerun B25 so screenshots are judged against those specs.',
+      'blocksPass': true,
+      'generatedBy': 'b25-independent-ux-judge',
+      'affectedProductDocIds': failingProductDocs
+          .map((row) => _asString(row['productDocId']))
+          .where((id) => id.isNotEmpty)
+          .toList(),
+    });
+  }
   if (failingCoverage > 0) {
     findings.add(<String, Object?>{
       'findingId': 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
@@ -2806,6 +2866,7 @@ List<JsonMap> _replaceGeneratedFindings(
     'B25-WORKFLOW-PERSONA-UX-FAILED',
     'B25-HOLISTIC-UX-FAILED',
     'B25-PERSONA-SCOPE-MISSING',
+    'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE',
   };
   return findings
       .where((finding) {
@@ -2829,6 +2890,7 @@ JsonMap _remediationBatch({
   required String purpose,
   required List<JsonMap> tickets,
   required List<String> actions,
+  bool includeProductDocWorkItems = true,
   bool includeEvidenceWorkItems = true,
   bool includeUiWorkItems = true,
 }) {
@@ -2873,6 +2935,10 @@ JsonMap _remediationBatch({
       for (final item in _asMapList(ticket['uiRemediationWorkItems']))
         ..._asStringList(item['referenceResearchQueries']),
   ]);
+  final productDocIds = <String>{
+    for (final ticket in tickets)
+      ..._asStringList(ticket['affectedProductDocIds']),
+  }.toList();
   final screenRowIds = <String>{
     for (final ticket in tickets)
       ..._asStringList(ticket['affectedScreenRowIds']),
@@ -2891,6 +2957,11 @@ JsonMap _remediationBatch({
       for (final row in _asMapList(ticket['affectedCoverageRows']))
         _asString(row['coverageRowId']): JsonMap.of(row),
   }..remove('');
+  final productDocsById = <String, JsonMap>{
+    for (final ticket in tickets)
+      for (final row in _asMapList(ticket['affectedProductDocs']))
+        _asString(row['productDocId']): JsonMap.of(row),
+  }..remove('');
   final scorecardsById = <String, JsonMap>{
     for (final ticket in tickets)
       for (final row in _asMapList(ticket['failingWorkflowPersonaScorecards']))
@@ -2904,6 +2975,12 @@ JsonMap _remediationBatch({
       ? _dedupeWorkItems(<JsonMap>[
           for (final ticket in tickets)
             ..._asMapList(ticket['evidenceRepairWorkItems']).map(JsonMap.of),
+        ])
+      : <JsonMap>[];
+  final productDocRepairWorkItems = includeProductDocWorkItems
+      ? _dedupeWorkItems(<JsonMap>[
+          for (final ticket in tickets)
+            ..._asMapList(ticket['productDocRepairWorkItems']).map(JsonMap.of),
         ])
       : <JsonMap>[];
   final uiRemediationWorkItems = includeUiWorkItems
@@ -2939,10 +3016,13 @@ JsonMap _remediationBatch({
     'referenceResearchQueries': referenceResearchQueries,
     'affectedScreenRowIds': screenRowIds,
     'affectedCoverageRowIds': coverageRowIds,
+    'affectedProductDocIds': productDocIds,
     'affectedScreenRows': screenRowsById.values.toList(),
     'affectedCoverageRows': coverageRowsById.values.toList(),
+    'affectedProductDocs': productDocsById.values.toList(),
     'failingWorkflowPersonaScorecards': scorecardsById.values.toList(),
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
+    'productDocRepairWorkItems': productDocRepairWorkItems,
     'uiRemediationWorkItems': uiRemediationWorkItems,
     'evidenceToUpdate': evidence,
     'acceptanceChecks': acceptance,
@@ -2962,12 +3042,17 @@ List<JsonMap> _ticketsForCriteria(List<JsonMap> tickets, Set<String> criteria) {
 }
 
 JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
+  final productDocItems = <String>{};
   final evidenceItems = <String>{};
   final uiItems = <String>{};
   final communities = <String>{};
   final workflows = <String>{};
   final personas = <String>{};
   for (final batch in batches) {
+    for (final item in _asMapList(batch['productDocRepairWorkItems'])) {
+      productDocItems.add(_asString(item['workItemId']));
+      communities.add(_asString(item['communityName']));
+    }
     for (final item in _asMapList(batch['evidenceRepairWorkItems'])) {
       evidenceItems.add(_asString(item['workItemId']));
       communities.add(_asString(item['communityName']));
@@ -2981,19 +3066,21 @@ JsonMap _b25WorkItemSummary(List<JsonMap> batches) {
       personas.add(_asString(item['persona']));
     }
   }
+  productDocItems.remove('');
   evidenceItems.remove('');
   uiItems.remove('');
   communities.remove('');
   workflows.remove('');
   personas.remove('');
   return <String, Object?>{
+    'productDocRepairWorkItemCount': productDocItems.length,
     'evidenceRepairWorkItemCount': evidenceItems.length,
     'uiRemediationWorkItemCount': uiItems.length,
     'communityCount': communities.length,
     'workflowCount': workflows.length,
     'personaCount': personas.length,
     'sequencing':
-        'Evidence repair work items must be completed and rerun before matching UI remediation work items are assigned.',
+        'Product-spec work items must close first, then evidence repair work items, then matching UI remediation work items.',
   };
 }
 
@@ -3114,6 +3201,8 @@ _DerivedFailure? _derivedFailure(
 ) {
   final screenRows = _asMapList(evidence['screenRows']);
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return _failOnProductDocCoverage(evidence);
     case 'b11-c02-workflows-implemented':
       final workflowResults = _asMapList(evidence['workflowResults']);
       final failing = workflowResults.where((row) {
@@ -3486,6 +3575,152 @@ String _slug(String value) {
       .replaceAll(RegExp(r'^-+|-+$'), '');
 }
 
+List<JsonMap> _productDocCoverageForB25({
+  required List<JsonMap> screenRows,
+  required String repoRootPath,
+}) {
+  final byCommunity = <String, JsonMap>{};
+  for (final row in screenRows) {
+    final communityName = _asString(
+      row['communityName'],
+      fallback: _asString(row['communityId'], fallback: 'unknown-community'),
+    );
+    final key = _slug(communityName);
+    if (key.isEmpty) {
+      continue;
+    }
+    byCommunity.putIfAbsent(
+      key,
+      () => <String, Object?>{
+        'communityId': _asString(row['communityId']),
+        'communityName': communityName,
+        'screenRowIds': <String>[],
+        'workflowIds': <String>[],
+        'personas': <String>[],
+      },
+    );
+    (byCommunity[key]!['screenRowIds'] as List<String>).add(_rowId(row));
+    final workflowIds = byCommunity[key]!['workflowIds'] as List<String>;
+    final workflowId = _asString(row['workflowId']);
+    if (workflowId.isNotEmpty && !workflowIds.contains(workflowId)) {
+      workflowIds.add(workflowId);
+    }
+    final personas = byCommunity[key]!['personas'] as List<String>;
+    final persona = _asString(row['persona']);
+    if (persona.isNotEmpty && !personas.contains(persona)) {
+      personas.add(persona);
+    }
+  }
+
+  final docRoot = '$repoRootPath/docs/Product Docs V2/Community Examples'
+      .replaceAll(r'\', '/');
+  final rows = <JsonMap>[];
+  final requiredSections = _requiredB25ProductDocSections();
+  for (final community in byCommunity.values) {
+    final communityName = _asString(community['communityName']);
+    final docSlug = _communityProductDocSlug(communityName);
+    final fileName = '$docSlug-product-experience.md';
+    final file = File('$docRoot/$fileName');
+    final exists = file.existsSync();
+    final content = exists ? file.readAsStringSync() : '';
+    final missingSections = exists
+        ? requiredSections
+              .where((section) => !content.contains(section))
+              .toList()
+        : requiredSections;
+    final wordCount = content
+        .split(RegExp(r'\s+'))
+        .where((token) => token.trim().isNotEmpty)
+        .length;
+    final containsPlaceholders = RegExp(r'<[^>]+>').hasMatch(content);
+    final mentionsCommunity = communityName.isEmpty
+        ? true
+        : content.toLowerCase().contains(communityName.toLowerCase());
+    final hasWorkflowMapping =
+        content.contains('## 6. Workflow-To-Surface Mapping') &&
+        content.contains('| Workflow |');
+    final hasDomainSurfaceSpec =
+        content.contains('## 5. Domain-Native Product Surfaces') &&
+        content.contains('| Surface |');
+    final hasReviewLog =
+        content.contains('## 10. Review And Remediation Log') &&
+        content.toLowerCase().contains('b25');
+    final failures = <String>[
+      if (!exists) 'missing-doc',
+      if (missingSections.isNotEmpty)
+        'missing-sections: ${missingSections.join(', ')}',
+      if (containsPlaceholders) 'placeholder-text-present',
+      if (wordCount < 250) 'doc-too-thin: $wordCount words',
+      if (!mentionsCommunity) 'community-name-not-mentioned',
+      if (!hasWorkflowMapping) 'workflow-to-surface-map-missing',
+      if (!hasDomainSurfaceSpec) 'domain-native-surface-spec-missing',
+      if (!hasReviewLog) 'b25-review-remediation-log-missing',
+    ];
+    final status = failures.isEmpty ? 'pass' : 'fail';
+    rows.add(<String, Object?>{
+      'productDocId': 'product-doc-$docSlug',
+      'communityId': community['communityId'],
+      'communityName': communityName,
+      'docPath': _relativePath(file.path, repoRootPath),
+      'expectedDocPath': 'docs/Product Docs V2/Community Examples/$fileName',
+      'exists': exists,
+      'status': status,
+      'docHash': exists ? _fileSha256(file.path) : '',
+      'lastModifiedAt': exists
+          ? file.lastModifiedSync().toUtc().toIso8601String()
+          : '',
+      'screenRowIds': _asStringList(community['screenRowIds']).toSet().toList(),
+      'workflowIds': _asStringList(community['workflowIds']).toSet().toList(),
+      'personas': _asStringList(community['personas']).toSet().toList(),
+      'requiredSections': requiredSections,
+      'missingSections': missingSections,
+      'wordCount': wordCount,
+      'containsPlaceholders': containsPlaceholders,
+      'mentionsCommunityName': mentionsCommunity,
+      'hasWorkflowToSurfaceMap': hasWorkflowMapping,
+      'hasDomainNativeSurfaceSpec': hasDomainSurfaceSpec,
+      'hasB25ReviewLog': hasReviewLog,
+      'requiredFix': failures.isEmpty
+          ? 'Use this product experience doc as the source of truth for B25 screenshot review.'
+          : 'Create or update $fileName with the full community product experience template before UI remediation continues: ${failures.join('; ')}.',
+      'gapClassification': failures.isEmpty
+          ? 'none'
+          : 'community-product-spec-gap',
+    });
+  }
+  rows.sort(
+    (a, b) =>
+        _asString(a['communityName']).compareTo(_asString(b['communityName'])),
+  );
+  return rows;
+}
+
+String _communityProductDocSlug(String communityName) {
+  final slug = _slug(communityName);
+  return <String, String>{
+        'ad-free-community': 'ad-off',
+        'data-portability-community': 'export-and-migration',
+        'member-social-space': 'platform-social',
+        'persona-role-inventory': 'persona-role-inventory',
+      }[slug] ??
+      slug;
+}
+
+List<String> _requiredB25ProductDocSections() {
+  return <String>[
+    '## 1. Community Identity And Promise',
+    '## 2. Personas, Roles, And Jobs',
+    '## 3. Information Architecture',
+    '## 4. Home Screen Requirements',
+    '## 5. Domain-Native Product Surfaces',
+    '## 6. Workflow-To-Surface Mapping',
+    '## 7. Persona And State Matrix',
+    '## 8. Content And Seed Data Requirements',
+    '## 9. Visual And Interaction Standard',
+    '## 10. Review And Remediation Log',
+  ];
+}
+
 JsonMap _findingCounts(List<JsonMap> findings) {
   var total = 0;
   var criticalBlocker = 0;
@@ -3730,6 +3965,7 @@ String _b25IterationScorecardMarkdown(JsonMap scorecard) {
 String _b25ReviewMarkdown(JsonMap review) {
   final rows = _asMapList(review['screenRows']);
   final findings = _asMapList(review['findings']);
+  final productDocCoverage = _asMapList(review['productDocCoverage']);
   final holisticAnswers = _asMapList(review['holisticQuestionAnswers']);
   final workflowScorecards = _asMapList(review['workflowPersonaScorecards']);
   final failingWorkflowScorecards = workflowScorecards
@@ -3764,6 +4000,25 @@ String _b25ReviewMarkdown(JsonMap review) {
     buffer.writeln(
       '| `${_escape(_findingId(finding))}` | ${_escape(_asString(finding['severity']))} | ${_escape(_asString(finding['status']))} | ${_escape(_asString(finding['requiredFix']))} |',
     );
+  }
+  buffer
+    ..writeln()
+    ..writeln('## Community Product Experience Docs')
+    ..writeln()
+    ..writeln(
+      '| Product doc | Community | Status | Path | Missing sections | Required fix |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- |');
+  if (productDocCoverage.isEmpty) {
+    buffer.writeln(
+      '| Missing | all reviewed communities | fail | n/a | all | Run the evidence collector with Product Docs V2 community experience specs present. |',
+    );
+  } else {
+    for (final row in productDocCoverage) {
+      buffer.writeln(
+        '| `${_escape(_asString(row['productDocId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['status']))}` | `${_escape(_asString(row['docPath']))}` | ${_escape(_asStringList(row['missingSections']).join('; '))} | ${_escape(_asString(row['requiredFix']))} |',
+      );
+    }
   }
   buffer
     ..writeln()
@@ -3972,6 +4227,9 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
       '| Blocking criteria failures | ${scorecard['blockingCriterionFailures']} |',
     )
     ..writeln(
+      '| Product spec work items | ${workItemSummary['productDocRepairWorkItemCount'] ?? 0} |',
+    )
+    ..writeln(
       '| Evidence repair work items | ${workItemSummary['evidenceRepairWorkItemCount'] ?? 0} |',
     )
     ..writeln(
@@ -4045,6 +4303,11 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
     }
     _writeWorkItemsMarkdown(
       buffer,
+      'Product Spec Repair Work Items',
+      _asMapList(batch['productDocRepairWorkItems']),
+    );
+    _writeWorkItemsMarkdown(
+      buffer,
       'Evidence Repair Work Items',
       _asMapList(batch['evidenceRepairWorkItems']),
     );
@@ -4053,6 +4316,26 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
       'UI Remediation Work Items',
       _asMapList(batch['uiRemediationWorkItems']),
     );
+    final productDocs = _asMapList(batch['affectedProductDocs']);
+    if (productDocs.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Product Experience Docs')
+        ..writeln()
+        ..writeln(
+          'Showing ${productDocs.take(30).length} of ${productDocs.length} affected product docs.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Product doc | Community | Status | Path | Missing sections |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- |');
+      for (final row in productDocs.take(30)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['productDocId']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['status']))}` | `${_escape(_asString(row['docPath']))}` | ${_escape(_asStringList(row['missingSections']).join('; '))} |',
+        );
+      }
+    }
     final coverageRows = _asMapList(batch['affectedCoverageRows']);
     if (coverageRows.isNotEmpty) {
       buffer
@@ -4226,13 +4509,16 @@ List<JsonMap> _b25RemediationTickets(
       'implementationBlockedBy': remediationMode['implementationBlockedBy'],
       'affectedScope': ticketContext['affectedScope'],
       'affectedCoverageRowIds': ticketContext['affectedCoverageRowIds'],
+      'affectedProductDocIds': ticketContext['affectedProductDocIds'],
       'affectedScreenRowIds': ticketContext['affectedScreenRowIds'],
       'affectedCoverageRows': ticketContext['affectedCoverageRows'],
+      'affectedProductDocs': ticketContext['affectedProductDocs'],
       'affectedScreenRows': ticketContext['affectedScreenRows'],
       'failingWorkflowPersonaScorecards':
           ticketContext['failingWorkflowPersonaScorecards'],
       'failingDirectQuestions': ticketContext['failingDirectQuestions'],
       'evidenceRepairWorkItems': ticketContext['evidenceRepairWorkItems'],
+      'productDocRepairWorkItems': ticketContext['productDocRepairWorkItems'],
       'uiRemediationWorkItems': ticketContext['uiRemediationWorkItems'],
       'likelyFilesOrWidgets': ticketContext['likelyFilesOrWidgets'],
       'uxReferencePatterns': ticketContext['uxReferencePatterns'],
@@ -4270,6 +4556,7 @@ JsonMap _b25TicketContext(
 ) {
   final screenRows = _asMapList(evidence['screenRows']);
   final coverageRows = _asMapList(evidence['workflowPersonaCoverage']);
+  final productDocCoverage = _asMapList(evidence['productDocCoverage']);
   final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
   final holisticAnswers = _asMapList(evidence['holisticQuestionAnswers']);
   final findings = _asMapList(evidence['findings']);
@@ -4279,6 +4566,9 @@ JsonMap _b25TicketContext(
   final coverageById = <String, JsonMap>{
     for (final row in coverageRows) _asString(row['coverageRowId']): row,
   };
+  final productDocById = <String, JsonMap>{
+    for (final row in productDocCoverage) _asString(row['productDocId']): row,
+  };
   final scorecardById = <String, JsonMap>{
     for (final row in scorecards) _asString(row['scorecardId']): row,
   };
@@ -4286,6 +4576,7 @@ JsonMap _b25TicketContext(
     for (final row in holisticAnswers) _asString(row['questionId']): row,
   };
   final coverageIds = <String>{};
+  final productDocIds = <String>{};
   final scorecardIds = <String>{};
   final screenIds = <String>{};
   final questionIds = <String>{};
@@ -4295,6 +4586,7 @@ JsonMap _b25TicketContext(
       continue;
     }
     coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
+    productDocIds.addAll(_asStringList(finding['affectedProductDocIds']));
     scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
     screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
     questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
@@ -4307,6 +4599,10 @@ JsonMap _b25TicketContext(
     }
     if (coverageById.containsKey(token)) {
       coverageIds.add(token);
+      continue;
+    }
+    if (productDocById.containsKey(token)) {
+      productDocIds.add(token);
       continue;
     }
     if (scorecardById.containsKey(token)) {
@@ -4344,6 +4640,15 @@ JsonMap _b25TicketContext(
     }
   }
 
+  if (criterion.id == 'b25-c02-community-product-docs-complete' ||
+      criterion.scope == 'product-spec') {
+    productDocIds.addAll(
+      productDocCoverage
+          .where((row) => _asString(row['status']) != 'pass')
+          .map((row) => _asString(row['productDocId'])),
+    );
+  }
+
   if (criterion.scope == 'workflow-persona') {
     if (scorecardIds.isEmpty) {
       scorecardIds.addAll(
@@ -4367,6 +4672,7 @@ JsonMap _b25TicketContext(
   if (criterion.id == 'b25-c01-no-blocker-major') {
     for (final finding in findings.where((finding) => !_isResolved(finding))) {
       coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
+      productDocIds.addAll(_asStringList(finding['affectedProductDocIds']));
       scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
       screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
       questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
@@ -4397,6 +4703,10 @@ JsonMap _b25TicketContext(
       .where((row) => coverageIds.contains(_asString(row['coverageRowId'])))
       .map(_coverageTicketDetail)
       .toList();
+  final affectedProductDocs = productDocCoverage
+      .where((row) => productDocIds.contains(_asString(row['productDocId'])))
+      .map(_productDocTicketDetail)
+      .toList();
   final affectedScreenRows = screenRows
       .where((row) => screenIds.contains(_rowId(row)))
       .map((row) => _screenRowTicketDetail(row, criterion.id))
@@ -4411,6 +4721,7 @@ JsonMap _b25TicketContext(
       .toList();
   final likelyFiles = <String>{
     ..._likelyFilesForB25Criterion(criterion.id),
+    for (final row in affectedProductDocs) _asString(row['docPath']),
     for (final row in affectedScreenRows)
       ..._asStringList(row['likelyFilesOrWidgets']),
   }.where((value) => value.isNotEmpty).toList();
@@ -4431,6 +4742,8 @@ JsonMap _b25TicketContext(
   ]);
   final concreteAcceptance = <String>{
     ..._acceptanceChecksForB25Criterion(criterion.id),
+    for (final row in affectedProductDocs)
+      '`${_asString(row['docPath'])}` exists, has all ten B25 community product experience sections, contains no placeholders, and maps workflows to domain-native surfaces.',
     for (final row in affectedScreenRows.take(12))
       ..._asStringList(row['acceptanceCriteria']),
     for (final row in affectedCoverageRows.take(12))
@@ -4450,6 +4763,10 @@ JsonMap _b25TicketContext(
     coverageRows: affectedCoverageRows,
     scorecards: failingScorecards,
   );
+  final productDocRepairWorkItems = _b25ProductDocWorkItems(
+    criterionId: criterion.id,
+    productDocs: affectedProductDocs,
+  );
 
   return <String, Object?>{
     'affectedScope': _concreteAffectedScope(
@@ -4458,6 +4775,7 @@ JsonMap _b25TicketContext(
       affectedCoverageRows,
       failingScorecards,
       failingQuestions,
+      affectedProductDocs,
     ),
     'affectedCoverageRowIds': [
       for (final row in affectedCoverageRows) _asString(row['coverageRowId']),
@@ -4465,11 +4783,16 @@ JsonMap _b25TicketContext(
     'affectedScreenRowIds': [
       for (final row in affectedScreenRows) _asString(row['screenRowId']),
     ],
+    'affectedProductDocIds': [
+      for (final row in affectedProductDocs) _asString(row['productDocId']),
+    ],
     'affectedCoverageRows': affectedCoverageRows,
+    'affectedProductDocs': affectedProductDocs,
     'affectedScreenRows': affectedScreenRows,
     'failingWorkflowPersonaScorecards': failingScorecards,
     'failingDirectQuestions': failingQuestions,
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
+    'productDocRepairWorkItems': productDocRepairWorkItems,
     'uiRemediationWorkItems': uiRemediationWorkItems,
     'likelyFilesOrWidgets': likelyFiles,
     'uxReferencePatterns': uxReferencePatterns,
@@ -4492,6 +4815,9 @@ Set<String> _workflowPersonaEvidenceKeys(JsonMap row) {
 
 JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
   final evidenceItems = _asMapList(ticketContext['evidenceRepairWorkItems']);
+  final productDocItems = _asMapList(
+    ticketContext['productDocRepairWorkItems'],
+  );
   final uiItems = _asMapList(ticketContext['uiRemediationWorkItems']);
   if (criterion.id == 'b25-c01-no-blocker-major') {
     return <String, Object?>{
@@ -4503,6 +4829,21 @@ JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
       'implementationBlockedBy': <String>[
         'Open blocker/major B25 tickets remain.',
         'The scorecard cannot close until those tickets rerun clean.',
+      ],
+    };
+  }
+  if (productDocItems.isNotEmpty ||
+      criterion.id == 'b25-c02-community-product-docs-complete' ||
+      criterion.scope == 'product-spec') {
+    return <String, Object?>{
+      'mode': 'product-spec-update-before-ui-remediation',
+      'workerReadiness':
+          'ready for product documentation update; UI remediation is blocked until the community product experience spec is complete',
+      'firstRequiredStep':
+          'Complete productDocRepairWorkItems so each affected community has a review-ready Product Docs V2 experience spec with domain-native surfaces and workflow-to-surface mapping.',
+      'implementationBlockedBy': <String>[
+        'The judge cannot verify production-grade UX without a community-specific product experience spec.',
+        'UI workers need the spec to know the rich product surface they are supposed to build.',
       ],
     };
   }
@@ -4543,6 +4884,60 @@ JsonMap _b25RemediationMode(CriterionResult criterion, JsonMap ticketContext) {
       'The ticket lacks row-level implementation evidence.',
     ],
   };
+}
+
+List<JsonMap> _b25ProductDocWorkItems({
+  required String criterionId,
+  required List<JsonMap> productDocs,
+}) {
+  if (productDocs.isEmpty &&
+      criterionId != 'b25-c02-community-product-docs-complete') {
+    return <JsonMap>[];
+  }
+  return productDocs.map((doc) {
+    final communityName = _asString(doc['communityName']);
+    final docPath = _asString(
+      doc['docPath'],
+      fallback: _asString(doc['expectedDocPath']),
+    );
+    return <String, Object?>{
+      'workItemId':
+          'b25-wi-product-spec-${_slug(communityName.isNotEmpty ? communityName : docPath)}',
+      'stage': 'product-spec-update',
+      'criterionId': criterionId,
+      'communityId': _asString(doc['communityId']),
+      'communityName': communityName,
+      'productDocId': _asString(doc['productDocId']),
+      'docPath': docPath,
+      'expectedDocPath': _asString(doc['expectedDocPath']),
+      'workflowId': 'community-product-experience',
+      'persona': 'product-experience-steward',
+      'targetProductionSurface':
+          'review-ready community product experience spec',
+      'blockedUntil': 'productDocCoverage status is pass',
+      'affectedScreenRowIds': _asStringList(doc['screenRowIds']),
+      'affectedCoverageRowIds': <String>[],
+      'missingSections': _asStringList(doc['missingSections']),
+      'currentFailures': <String>[
+        if (doc['exists'] != true) 'doc is missing',
+        if (_asStringList(doc['missingSections']).isNotEmpty)
+          'required sections missing: ${_asStringList(doc['missingSections']).join(', ')}',
+        if (doc['containsPlaceholders'] == true) 'placeholder text remains',
+        if (_asInt(doc['wordCount']) < 250) 'doc is too thin',
+        if (doc['hasWorkflowToSurfaceMap'] != true)
+          'workflow-to-surface map missing',
+        if (doc['hasDomainNativeSurfaceSpec'] != true)
+          'domain-native product surface spec missing',
+        if (doc['hasB25ReviewLog'] != true)
+          'B25 review/remediation log missing',
+      ],
+      'requiredUpdate':
+          'Write the rich product experience for $communityName before UI work: product promise, personas/jobs, information architecture, home requirements, domain-native surfaces, workflow-to-surface mapping, persona/state matrix, seed content, visual standard, and B25 review log.',
+      'acceptanceCriteria': _asStringList(doc['acceptanceCriteria']),
+      'followOnStep':
+          'After this doc passes productDocCoverage, rerun B25 evidence collection and let UI remediation tickets reference the completed spec.',
+    };
+  }).toList();
 }
 
 List<JsonMap> _b25WorkItems({
@@ -4857,11 +5252,13 @@ JsonMap _concreteAffectedScope(
   List<JsonMap> coverageRows,
   List<JsonMap> scorecards,
   List<JsonMap> directQuestions,
+  List<JsonMap> productDocs,
 ) {
   final communities = _uniqueStrings(<String>[
     for (final row in screenRows) _asString(row['communityName']),
     for (final row in coverageRows) _asString(row['communityName']),
     for (final row in scorecards) _asString(row['communityName']),
+    for (final row in productDocs) _asString(row['communityName']),
   ]);
   final personas = _uniqueStrings(<String>[
     for (final row in screenRows) _asString(row['persona']),
@@ -4876,6 +5273,9 @@ JsonMap _concreteAffectedScope(
   final screenshots = _uniqueStrings(<String>[
     for (final row in screenRows) _asString(row['screenshotPath']),
     for (final row in coverageRows) ..._asStringList(row['screenshotPaths']),
+  ]);
+  final productDocPaths = _uniqueStrings(<String>[
+    for (final row in productDocs) _asString(row['docPath']),
   ]);
   return <String, Object?>{
     'scope': criterion.scope,
@@ -4901,6 +5301,7 @@ JsonMap _concreteAffectedScope(
         .map((row) => _asString(row['questionId']))
         .toList(),
     'screenshots': screenshots,
+    'productDocs': productDocPaths,
   };
 }
 
@@ -4983,6 +5384,37 @@ JsonMap _coverageTicketDetail(JsonMap row) {
       'Coverage row has entry, action/review, and result/receiver screenshots.',
       'Every listed screenshot path exists and has a fresh hash/timestamp/app commit SHA.',
       'The workflow/persona scorecard passes after rerun.',
+    ],
+  };
+}
+
+JsonMap _productDocTicketDetail(JsonMap row) {
+  return <String, Object?>{
+    'productDocId': _asString(row['productDocId']),
+    'status': _asString(row['status']),
+    'communityId': _asString(row['communityId']),
+    'communityName': _asString(row['communityName']),
+    'docPath': _asString(row['docPath']),
+    'expectedDocPath': _asString(row['expectedDocPath']),
+    'exists': row['exists'] == true,
+    'docHash': _asString(row['docHash']),
+    'lastModifiedAt': _asString(row['lastModifiedAt']),
+    'screenRowIds': _asStringList(row['screenRowIds']),
+    'workflowIds': _asStringList(row['workflowIds']),
+    'personas': _asStringList(row['personas']),
+    'missingSections': _asStringList(row['missingSections']),
+    'wordCount': _asInt(row['wordCount']),
+    'containsPlaceholders': row['containsPlaceholders'] == true,
+    'hasWorkflowToSurfaceMap': row['hasWorkflowToSurfaceMap'] == true,
+    'hasDomainNativeSurfaceSpec': row['hasDomainNativeSurfaceSpec'] == true,
+    'hasB25ReviewLog': row['hasB25ReviewLog'] == true,
+    'requiredFix': _asString(row['requiredFix']),
+    'acceptanceCriteria': <String>[
+      'Product doc exists at `${_asString(row['expectedDocPath'])}`.',
+      'All ten B25 community product experience sections are present.',
+      'The doc contains no angle-bracket placeholders and is not thin.',
+      'The doc maps workflows to domain-native product surfaces before UI remediation starts.',
+      'The B25 review/remediation log names how the current screenshots will be judged against this spec.',
     ],
   };
 }
@@ -5126,6 +5558,13 @@ List<String> _likelyFilesForB25Criterion(String criterionId) {
     'docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md',
   ];
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        ...common,
+        'docs/Product Docs V2/Community Examples/',
+        'docs/Build Plan V2/Skill/references/community-product-experience-template.md',
+        'app/packages/tooling/loom_ux_judges/lib/loom_ux_judges.dart',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         ...common,
@@ -5251,6 +5690,8 @@ String _targetProductionSurfaceForWorkflow(String workflowId) {
 
 List<JsonMap> _b25CriterionReferencePatterns(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return _referencePatternsForType('modern-mobile-product');
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -5267,6 +5708,12 @@ List<JsonMap> _b25CriterionReferencePatterns(String criterionId) {
 
 List<String> _b25CriterionReferenceQueries(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'community app product requirements personas jobs to be done template',
+        'mobile community app information architecture announcements events messages examples',
+        'product experience specification domain native surfaces workflow mapping examples',
+      ];
     case 'b25-c04-modern-intentional-ui':
       return <String>[
         'modern mobile app information architecture visual hierarchy examples',
@@ -5723,6 +6170,8 @@ String _problemStatementForB25Criterion(String criterionId) {
   switch (criterionId) {
     case 'b25-c01-no-blocker-major':
       return 'B25 still has unresolved major production UX findings, so the app cannot be considered production-grade.';
+    case 'b25-c02-community-product-docs-complete':
+      return 'B25 is trying to judge production UX without a complete community-specific product experience spec for every reviewed community/test app.';
     case 'b25-c03-production-grade-experience':
       return 'The evidence does not prove that target users experience the app as a real production community product rather than a workflow validation harness.';
     case 'b25-c04-modern-intentional-ui':
@@ -5744,6 +6193,8 @@ String _rootCauseForB25Criterion(String criterionId) {
   switch (criterionId) {
     case 'b25-c01-no-blocker-major':
       return 'The review loop has not yet converted all blocking judge failures into completed, evidence-backed fixes.';
+    case 'b25-c02-community-product-docs-complete':
+      return 'The desired product experience was described only through workflows/screenshots after implementation, so the UI worker lacked a rich community product target to build against.';
     case 'b25-c03-production-grade-experience':
       return 'The pass has evidence capture, but not a completed independent product-quality judgment grounded in screenshots.';
     case 'b25-c04-modern-intentional-ui':
@@ -5763,6 +6214,8 @@ String _rootCauseForB25Criterion(String criterionId) {
 
 String _targetExperienceForB25Criterion(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return 'Each reviewed community should have a Product Docs V2 experience spec that defines the product promise, personas/jobs, IA, home experience, domain-native surfaces, workflow mappings, persona states, seed content, visual standard, and B25 review log before UI remediation starts.';
     case 'b25-c03-production-grade-experience':
       return 'A target user should immediately understand the community, see relevant content, and complete meaningful tasks without recognizing the app as a test harness.';
     case 'b25-c04-modern-intentional-ui':
@@ -5783,6 +6236,12 @@ String _targetExperienceForB25Criterion(String criterionId) {
 
 List<String> _uxPrinciplesForB25Criterion(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'Define the target product before judging screenshots.',
+        'Make UI remediation traceable to community-specific personas, jobs-to-be-done, and domain-native surfaces.',
+        'Do not let workflow implementation evidence substitute for product experience requirements.',
+      ];
     case 'b25-c03-production-grade-experience':
       return <String>[
         'Judge what the visible product proves, not what the implementation intended.',
@@ -5829,6 +6288,13 @@ List<String> _relatedB25FindingIds(
   switch (criterion.id) {
     case 'b25-c01-no-blocker-major':
       return allBlockingFindingIds;
+    case 'b25-c02-community-product-docs-complete':
+      final productDocFindings = allBlockingFindingIds
+          .where((id) => id == 'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE')
+          .toList();
+      return productDocFindings.isEmpty
+          ? allBlockingFindingIds
+          : productDocFindings;
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -5869,6 +6335,12 @@ List<String> _improvementsForB25Criterion(String criterionId) {
         'Resolve every open blocker/major remediation ticket or downgrade only with owner acceptance and evidence.',
         'Update `findings`, unresolved finding arrays, remediation log, and iteration scorecard after fixes.',
         'Rerun the production UX judge and verify unresolved blocker/major counts are zero.',
+      ];
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'Create or update one community product experience doc per reviewed community/test app under `docs/Product Docs V2/Community Examples/`.',
+        'Use all ten B25 community product experience sections and remove placeholders or thin generic copy.',
+        'Map each workflow/persona to a domain-native product surface and B25 acceptance evidence before assigning UI remediation.',
       ];
     case 'b25-c03-production-grade-experience':
       return <String>[
@@ -5915,6 +6387,13 @@ List<String> _improvementsForB25Criterion(String criterionId) {
 
 List<String> _affectedEvidenceForB25Criterion(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'docs/Product Docs V2/Community Examples/<community>-product-experience.md',
+        'independent-production-ux-review.json productDocCoverage',
+        'independent-production-ux-review.md community product experience docs table',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -5950,6 +6429,12 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
 
 List<String> _implementationGuidanceForB25Criterion(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'Product doc coverage rows for every reviewed community/test app.',
+        'Updated Product Docs V2 community experience docs with hashes, paths, required sections, and no placeholders.',
+        'B25 review/remediation log entries showing the current screenshots will be judged against each product spec.',
+      ];
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -6033,6 +6518,12 @@ List<String> _visualGuidanceForB25Criterion(String criterionId) {
 
 List<String> _evidenceToCollectForB25Criterion(String criterionId) {
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'Product doc coverage rows for every reviewed community/test app.',
+        'Updated Product Docs V2 community experience docs with hashes, paths, required sections, and no placeholders.',
+        'B25 review/remediation log entries showing the current screenshots will be judged against each product spec.',
+      ];
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -6068,6 +6559,12 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
     'Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version.',
   ];
   switch (criterionId) {
+    case 'b25-c02-community-product-docs-complete':
+      return <String>[
+        'Do not use screenshots alone as the source of truth for desired product experience.',
+        'Do not proceed to UI remediation when a reviewed community has no product experience spec.',
+        'Do not satisfy this criterion with a generic template that could apply unchanged to another community.',
+      ];
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -6132,6 +6629,32 @@ List<String> _b25RerunCommands() {
 
 String _questionFor(CriterionDefinition definition) {
   return definition.question ?? definition.title;
+}
+
+_DerivedFailure? _failOnProductDocCoverage(JsonMap evidence) {
+  final coverage = _asMapList(evidence['productDocCoverage']);
+  if (coverage.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'No productDocCoverage rows were supplied; B25 cannot judge production UX without community-specific Product Docs V2 experience specs.',
+    );
+  }
+  final failing = coverage
+      .where((row) => _asString(row['status']) != 'pass')
+      .toList();
+  if (failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: 45,
+      message:
+          'Community product experience docs are missing or not review-ready: ${failing.map((row) => _asString(row['productDocId'], fallback: _asString(row['communityName']))).join(', ')}.',
+      evidenceUsed: failing
+          .map((row) => _asString(row['productDocId']))
+          .where((id) => id.isNotEmpty)
+          .toList(),
+    );
+  }
+  return null;
 }
 
 _DerivedFailure? _failOnDirectQuestionAnswers(
@@ -6380,6 +6903,10 @@ void _runCommonEvidenceChecks(
         'workflow/persona direct-question pass: ${workflowPersonaFailure.message}',
       );
     }
+    final productDocFailure = _failOnProductDocCoverage(evidence);
+    if (productDocFailure != null) {
+      errors.add('community product docs: ${productDocFailure.message}');
+    }
   }
   final findings = _asMapList(evidence['findings']);
   for (final finding in findings) {
@@ -6565,6 +7092,11 @@ String _remediationTicketsMarkdown({
     }
     _writeWorkItemsMarkdown(
       buffer,
+      'Product Spec Repair Work Items',
+      _asMapList(ticket['productDocRepairWorkItems']),
+    );
+    _writeWorkItemsMarkdown(
+      buffer,
       'Evidence Repair Work Items',
       _asMapList(ticket['evidenceRepairWorkItems']),
     );
@@ -6573,6 +7105,22 @@ String _remediationTicketsMarkdown({
       'UI Remediation Work Items',
       _asMapList(ticket['uiRemediationWorkItems']),
     );
+    final productDocs = _asMapList(ticket['affectedProductDocs']);
+    if (productDocs.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Affected Product Experience Docs')
+        ..writeln()
+        ..writeln(
+          '| Product doc | Status | Community | Path | Missing sections | Required fix |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- | --- |');
+      for (final row in productDocs.take(40)) {
+        buffer.writeln(
+          '| `${_escape(_asString(row['productDocId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['docPath']))}` | ${_escape(_asStringList(row['missingSections']).join('; '))} | ${_escape(_asString(row['requiredFix']))} |',
+        );
+      }
+    }
     final coverageRows = _asMapList(ticket['affectedCoverageRows']);
     if (coverageRows.isNotEmpty) {
       buffer

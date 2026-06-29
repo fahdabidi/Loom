@@ -1,39 +1,67 @@
 # B25 Production UX Blueprint
 
-Status: current for `b25-production-ux-v3`. This blueprint is the product bar used by the independent UX review before any pass decision.
+Purpose: define the production UX bar used by B25 before each screenshot review pass. This blueprint
+is the shared bar; the community-specific source of truth is the Product Docs V2 community experience
+doc for each reviewed community.
 
-## Review Standard
+## Required Inputs
 
-B25 reviews the actual Loom Communities Demo App as a mobile product, not as a workflow-test artifact. Every community must show a domain-native home, meaningful actions, realistic state, shell-owned navigation, messages/connections access, and no visible validation or implementation taxonomy.
+| Artifact | Requirement |
+| --- | --- |
+| Product Docs V2 community experience docs | Every reviewed community/test app must have a doc under `docs/Product Docs V2/Community Examples/` with product promise, personas/jobs, IA, home requirements, domain-native surfaces, workflow-to-surface mapping, persona/state matrix, seed content, visual standard, and B25 review log. |
+| Fresh screenshots | Every reviewed screen row must have screenshot path, hash, timestamp, device metadata, app commit SHA, visible text, and screenshot-specific critique. |
+| Workflow/persona coverage | Every workflow/persona combination must have entry, action/review, result/receiver, error/empty/disabled/hidden states where applicable. |
+| Independent UX review | The reviewer must answer direct holistic and workflow/persona questions from the screenshots and product docs, not from implementation intent. |
+| Production judge scorecard | The deterministic judge must verify Product Doc coverage, visual inspection, direct-question quality, workflow/persona scorecards, screen matrix completeness, and zero unresolved blocker/major findings. |
 
-## Cross-App Requirements
+## Production Experience Bar
 
-- Community list cards show domain identity, readable name/tagline, and a shell-owned add-community action that does not cover the final card.
-- Opened community screens preserve Loom App Shell structure: back, messages, connections, and required platform surfaces.
-- Workflow cards read as product tasks with semantic action labels and product confirmations.
-- Sensitive, payment, export, and moderation flows visibly communicate privacy, receipt, audit, or rollback state where applicable.
-- No production screen may expose raw extension IDs, workflow harness copy, workflow/category/surface taxonomy, debug banners, or single-letter placeholder identity when richer identity is available.
+The app passes B25 only when a fresh reviewer can say all of the following from the evidence:
 
-## Community Blueprints
+- The experience feels like a real production community product for the target user, not a workflow
+  harness or validation screen.
+- The UI looks modern, intentional, visually appealing, easy to use, and easy to navigate.
+- The main user-facing screens are organized around community content and jobs-to-be-done.
+- Primary workflows use domain-native product surfaces, not generic workflow cards or checklist modals.
+- Each screen is judged against the matching community product experience doc.
+- The visible UI has no blocking or major overlap, clipping, crowding, default scaffold,
+  repeated-card, checklist-modal, or thin-content findings.
 
-| Community | Target personas | Required production surfaces | Identity and IA bar | Status |
-| --- | --- | --- | --- | --- |
-| Loom Communities shell | Owner/member installing local communities | Empty state, add-community flow, installed card list, shell messages/connections/ad slots | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Garden Club | Member/coordinator | Events, plant exchange, member forms, export | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Neighborhood Book Club | Organizer/member | Reading schedule, discussion prompts, member notifications | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Riverside Youth Soccer | Coach/parent | Schedules, RSVP/availability, announcements, forms | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Cedar Commons HOA | Board member/homeowner | Requests, approvals, dues, documents, export | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Masjid Nur | Admin/member/volunteer | Announcements, donations, care requests, volunteers, prayer/community updates | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Chess Club | Organizer/player | Club home, matches/events, member actions | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Camera Club | Organizer/member | Photo walks, critique submissions, announcements, generated prompt workflows | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Platform Social | Member/moderator | Messages, connections, blocking, in-stream ads | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Ad-Off | Member/owner | Subscription/ad suppression, receipt, entitlement state | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
-| Export and Migration | Owner/admin | Export scope, redaction, verification, rollback | Visible community identity must use domain-relevant name, icon/branding, and tagline rather than raw extension IDs or single-letter placeholders. Mobile hierarchy, semantic actions, realistic task content, shell-owned navigation/messages/connections, and no exposed validation machinery. | pass |
+## Community Product Experience Docs
 
-## Screen Review Method
+Each reviewed community/test app must have a Product Docs V2 community-specific experience doc before
+remediation continues. For native Loom repo development, these docs live under:
 
-1. Walk every screenshot-backed workflow row from B12-B20.
-2. Add B25 live shell rows for the community list and representative opened homes.
-3. For each row, review the visible screenshot/state against the blueprint.
-4. File blocker or major findings for exposed harness copy, missing domain IA, placeholder identity, visible debug/test chrome, overlapping controls, or missing required state.
-5. Remediate, rebuild, recapture evidence, regenerate schema v3 JSON, and repeat until unresolved blocker and major counts are zero.
+```text
+docs/Product Docs V2/Community Examples/<community>-product-experience.md
+```
+
+For standalone Skill-created extensions, the same content lives inside the generated extension working
+repo:
+
+```text
+docs/Product Experience/<extension-id>-product-experience.md
+```
+
+B25 native repo runs validate the Product Docs V2 location. The Skill validates the extension-local
+location and may use the native docs only as reference examples.
+
+## Review Sequence
+
+1. Product Experience Steward updates missing or thin community product docs.
+2. Worker Agent implements or remediates UI against those docs.
+3. Evidence Collector captures fresh workflow/persona screenshots, visible text, hashes, timestamps,
+   device metadata, and app commit SHA.
+4. Independent UX Judge reviews only Product Docs, screenshots, visible text, scorecards, and pass
+   criteria.
+5. Production UX Judge validates schema v4 evidence and emits remediation tickets.
+6. Remediation Planner turns tickets into product-spec, evidence, and UI batches.
+7. Iteration scorecard records pass/fail counts, new issues, resolved blocker/major issues, and
+   convergence.
+8. Commit the iteration before the next UX feedback loop.
+
+## Community Coverage
+
+The B25 collector writes `productDocCoverage` into `independent-production-ux-review.json`. A row
+passes only when the doc exists, has all required sections, contains no placeholders, is not thin, maps
+workflows to domain-native product surfaces, and has a B25 review/remediation log.
