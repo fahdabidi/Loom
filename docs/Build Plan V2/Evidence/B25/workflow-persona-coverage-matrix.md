@@ -72,7 +72,7 @@
 | `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `pass` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | admin | 1 |  | None. |
 | `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `pass` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | member | 1 |  | None. |
 | `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `pass` | Masjid Nur | `wf_demo-app-persona-picker` | member | 2 |  | None. |
-| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `pass` | Masjid Nur | `wf_community-persona-aware-ux` | member | 2 |  | None. |
+| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `pass` | Masjid Nur | `wf_community-persona-aware-ux` | member | 1 |  | None. |
 | `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `pass` | Masjid Nur | `wf_community-persona-aware-ux` | admin | 1 |  | None. |
 | `b25-wp-067-wf-multi-persona-workflow-evidence-community-mosque-admin` | `pass` | Masjid Nur | `wf_multi-persona-workflow-evidence` | admin | 3 |  | None. |
 | `b25-wp-068-wf-multi-persona-workflow-evidence-community-mosque-member` | `pass` | Masjid Nur | `wf_multi-persona-workflow-evidence` | member | 3 |  | None. |

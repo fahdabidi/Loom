@@ -1,12 +1,12 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-6`
+Review run: `b25-v4-pass-7`
 
 Status: `independent-review-fail`
 
 Final decision: `fail`
 
-Screen rows collected: 196
+Screen rows collected: 195
 
 Holistic direct-question answers: 4
 
@@ -26,7 +26,7 @@ Workflow/persona scorecards: 68 (68 blocking)
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
 | Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | `fail` | 35 | The review cannot claim production-grade UX while workflow/persona evidence or screenshot visual inspection is incomplete/failing. | Complete workflow/persona coverage and remediate visual/layout scorecard failures before claiming production-grade UX. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 40 | 196 rows use non-screen visible text sources and 187 rows have visual/layout blockers, so the judge cannot make a reliable modern-UI claim. | Use screenshot-derived visible text and fix detected checklist, repeated-card, thin-content, or weak-identity visual blockers before rerunning the judge. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 40 | 195 rows use non-screen visible text sources and 185 rows have visual/layout blockers, so the judge cannot make a reliable modern-UI claim. | Use screenshot-derived visible text and fix detected checklist, repeated-card, thin-content, or weak-identity visual blockers before rerunning the judge. |
 | Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `fail` | 45 | Failing workflow/persona scorecards or visual blockers prevent a holistic community IA pass. | Replace generic workflow-list or validation surfaces with domain-native community sections and rerun scorecards. |
 | Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `fail` | 45 | The judge cannot clear layout/content defects while row-level evidence remains incomplete, unsupported, or visually failing. | Complete screenshot-backed review rows and remediate any row-level layout/content defects. |
 
@@ -98,7 +98,7 @@ Workflow/persona scorecards: 68 (68 blocking)
 | `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `fail` | 1 | Workflow/persona review failed for `wf_persona-role-inventory-capability-matrix` / `admin`. |
 | `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `fail` | 1 | Workflow/persona review failed for `wf_persona-role-inventory-capability-matrix` / `member`. |
 | `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `fail` | 2 | Workflow/persona review failed for `wf_demo-app-persona-picker` / `member`. |
-| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `fail` | 2 | Workflow/persona review failed for `wf_community-persona-aware-ux` / `member`. |
+| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `fail` | 1 | Workflow/persona review failed for `wf_community-persona-aware-ux` / `member`. |
 | `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `fail` | 1 | Workflow/persona review failed for `wf_community-persona-aware-ux` / `admin`. |
 | `b25-wp-067-wf-multi-persona-workflow-evidence-community-mosque-admin` | `fail` | 3 | Workflow/persona review failed for `wf_multi-persona-workflow-evidence` / `admin`. |
 | `b25-wp-068-wf-multi-persona-workflow-evidence-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `wf_multi-persona-workflow-evidence` / `member`. |

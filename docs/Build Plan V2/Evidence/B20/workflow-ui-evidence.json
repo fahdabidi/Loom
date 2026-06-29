@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "workflowCount": 1,
   "workflows": [
     {
@@ -29,14 +29,14 @@
       ],
       "status": "pass",
       "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_complete.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_ready.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_received.png"
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_ready.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_received.png"
       ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",

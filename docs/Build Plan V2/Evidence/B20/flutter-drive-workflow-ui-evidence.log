@@ -1,3 +1,14 @@
+b25_capture_workflow_screenshots
+workingDirectory=/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/apps/loom_communities_demo
+WORKFLOW_EVIDENCE_ROOT=/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence
+phases=B12,B13,B14,B15,B16,B17,B18,B19,B20
+device=emulator-5554
+
+--- B12 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B12
+exitCode=0
+
+--- stdout ---
 Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
 Downloading packages...
   _fe_analyzer_shared 93.0.0 (104.0.0 available)
@@ -8,6 +19,7 @@ Downloading packages...
   drift 2.33.0 (2.34.0 available)
   drift_dev 2.33.0 (2.34.1+1 available)
   hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
   matcher 0.12.19 (0.12.20 available)
   melos 7.8.0 (8.0.0 available)
   meta 1.17.0 (1.18.3 available)
@@ -29,343 +41,982 @@ Downloading packages...
   webview_flutter_wkwebview 3.25.1 (3.26.0 available)
   xml 6.6.1 (7.0.1 available)
 Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
-28 packages have newer versions incompatible with dependency constraints.
+29 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-Running Gradle task 'assembleDebug'...                             15.5s
+Running Gradle task 'assembleDebug'...                             26.4s
 ✓ Built build/app/outputs/flutter-apk/app-debug.apk
-Installing build/app/outputs/flutter-apk/app-debug.apk...        1,101ms
-D/WindowLayoutComponentImpl(17805): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:40007/Xa4ovfJdAQs=/
-VMServiceFlutterDriver: Isolate found with number: 4139492479299247
-VMServiceFlutterDriver: Isolate 4139492479299247 is runnable.
+Installing build/app/outputs/flutter-apk/app-debug.apk...          907ms
+D/FlutterJNI(23325): Sending viewport metrics to the engine.
+I/ommunities_demo(23325): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(23325): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@bfe7ae, of which baseContext=android.app.ContextImpl@80b96c8
+D/FlutterJNI(23325): Sending viewport metrics to the engine.
+I/flutter (23325): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/FlutterJNI(23325): Sending viewport metrics to the engine.
+D/InsetsController(23325): hide(ime(), fromIme=false)
+I/ImeTracker(23325): com.example.loom_communities_demo:c0020904: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ommunities_demo(23325): AssetManager2(0x775fd9971c38) locale list changing from [] to [en-US]
+W/WindowOnBackDispatcher(23325): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@de557a5
+I/flutter (23325): 00:03 +1: (tearDownAll)
+I/flutter (23325): 00:03 +2: All tests passed!
+D/ProfileInstaller(23325): Installing profile for com.example.loom_communities_demo
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:41533/ALkzkAhMYX0=/
+VMServiceFlutterDriver: Isolate found with number: 3865530183149783
+VMServiceFlutterDriver: Isolate 3865530183149783 is runnable.
 VMServiceFlutterDriver: Isolate is paused at start.
 VMServiceFlutterDriver: Attempting to resume isolate
-I/flutter (17805): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
 VMServiceFlutterDriver: Connected to Flutter application.
-D/InsetsController(17805): hide(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:d6b6fdc1: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-I/ommunities_demo(17805): AssetManager2(0x775fd9964df8) locale list changing from [] to [en-US]
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-D/ProfileInstaller(17805): Installing profile for com.example.loom_communities_demo
-I/ImeTracker(17805): com.example.loom_communities_demo:6da1514d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:2e11528d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:2e11528d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:38c72269: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:38c72269: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:e0199f8c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:e0199f8c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:ce037f10: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-D/CompatChangeReporter(17805): Compat change id reported: 395521150; UID 10230; state: ENABLED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-I/AssistStructure(17805): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-I/ImeTracker(17805): system_server:b2bb07a9: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-VMServiceFlutterDriver: request_data message is taking a long time to complete...
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd999c258) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:cb3e42fe: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:90b337fd: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:90b337fd: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:53141e55: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:53141e55: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:18ab6b76: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:18ab6b76: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-I/ImeTracker(17805): com.example.loom_communities_demo:fb2f1a8c: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/AssistStructure(17805): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-I/ImeTracker(17805): system_server:d383fb91: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd9987a38) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:f0bc2124: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:386e1a3b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:386e1a3b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:d13f02ed: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:d13f02ed: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:e9101896: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:e9101896: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-I/ImeTracker(17805): com.example.loom_communities_demo:c920ed23: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-I/AssistStructure(17805): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-I/ImeTracker(17805): system_server:77903d03: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd9985e18) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:f4091b85: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:7fe7d8b0: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:7fe7d8b0: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:42ad8cce: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:42ad8cce: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:330e510f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:330e510f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/AssistStructure(17805): Flattened final assist data: 524 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:e1117ddb: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-I/ImeTracker(17805): system_server:4956d5eb: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd9995b38) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:44ce6e76: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:a38a1893: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:a38a1893: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:2f00d74e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:2f00d74e: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:f7c50c22: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:f7c50c22: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:ca1a7533: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(17805): com.example.loom_communities_demo:44ce6e76: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ImeTracker(17805): system_server:939f3936: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd99822b8) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:5f167221: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:fcf89065: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:fcf89065: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/AssistStructure(17805): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
-I/ImeTracker(17805): com.example.loom_communities_demo:f24cad6b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:f24cad6b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:968503c9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:968503c9: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:9268b503: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ImeTracker(17805): com.example.loom_communities_demo:5f167221: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd997f3d8) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:4d0fefc1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:69890a71: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:69890a71: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/ImeTracker(17805): com.example.loom_communities_demo:2705c530: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:2705c530: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:b1346d3d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:b1346d3d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:9134852c: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(17805): com.example.loom_communities_demo:4d0fefc1: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ImeTracker(17805): system_server:e55ccb6e: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd99582d8) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:c2da9aa3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:32bce31d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:32bce31d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/ImeTracker(17805): com.example.loom_communities_demo:d977bb7b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:d977bb7b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:5ac4f6d0: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:5ac4f6d0: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-I/ImeTracker(17805): com.example.loom_communities_demo:d1603e5f: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-I/ImeTracker(17805): system_server:4720d25a: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd997ddf8) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:35c5acdd: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:1ba502cd: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:1ba502cd: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/ImeTracker(17805): com.example.loom_communities_demo:b39aba33: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:b39aba33: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:868ae3a2: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:868ae3a2: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:af1273d: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(17805): com.example.loom_communities_demo:35c5acdd: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-W/InteractionJankMonitor(17805): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.loom_communities_demo
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-I/ImeTracker(17805): system_server:393368e0: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039138, 12033479, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039189, 34033735, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed App frame:UNKNOWN: 3, 2039204, 54879020, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:UNKNOWN: 3, 2039204, 54879020, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039234, 30452780, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039270, 35154969, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039292, 37468416, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2039314, 41400373, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-V/PerfettoTrigger(17805): Triggering /system/bin/trigger_perfetto com.android.telemetry.interaction-jank-monitor-81
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): AssetManager2(0x775fd99aa678) locale list changing from [] to [en-US]
-I/ImeTracker(17805): com.example.loom_communities_demo:b9541445: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-D/InsetsController(17805): Setting requestedVisibleTypes to -1 (was -9)
-I/ImeTracker(17805): com.example.loom_communities_demo:b86e59da: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:b86e59da: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-D/InputConnectionAdaptor(17805): The input method toggled cursor monitoring on
-I/ImeTracker(17805): com.example.loom_communities_demo:817bdf39: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:817bdf39: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:6d6aec67: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
-D/InsetsController(17805): show(ime(), fromIme=false)
-I/ImeTracker(17805): com.example.loom_communities_demo:6d6aec67: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
-I/ImeTracker(17805): com.example.loom_communities_demo:fa4bf6d2: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
-D/InsetsController(17805): hide(ime(), fromIme=false)
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@afabb0b
-D/InsetsController(17805): Setting requestedVisibleTypes to -9 (was -1)
-I/ImeTracker(17805): com.example.loom_communities_demo:b9541445: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): requestCursorUpdates on inactive InputConnection
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): getSurroundingText on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-W/RemoteInputConnectionImpl(17805): getTextBeforeCursor on inactive InputConnection
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-D/FlutterJNI(17805): Sending viewport metrics to the engine.
-I/ImeTracker(17805): system_server:de937ebc: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2049007, 24499960, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2049096, 28012735, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2049140, 33121039, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2049185, 32793095, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-W/FrameTracker(17805): Missed SF frame:JANK_COMPOSER, 2049207, 38442940, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
-V/PerfettoTrigger(17805): Not triggering com.android.telemetry.interaction-jank-monitor-81 - not enough time since last trigger
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/ommunities_demo(17805): Background concurrent mark compact GC freed 348KB AllocSpace bytes, 16(2096KB) LOS objects, 49% free, 2576KB/5152KB, paused 83us,7.624ms total 21.151ms
-W/WindowOnBackDispatcher(17805): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@2bfd8c3
-I/flutter (17805): 07:31 +1: (tearDownAll)
-I/flutter (17805): 07:34 +2: All tests passed!
-I/Choreographer(17805): Skipped 140 frames!  The application may be doing too much work on its main thread.
-I/HWUI    (17805): Davey! duration=2356ms; Flags=0, FrameTimelineVsyncId=2076004, IntendedVsync=63692337954821, Vsync=63694671288061, InputEventId=0, HandleInputStart=63694675294559, AnimationStart=63694675297224, PerformTraversalsStart=63694675297625, DrawStart=63694676339922, FrameDeadline=63692354621487, FrameStartTime=63694673757754, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=63694676676722, SyncStart=63694680461433, IssueDrawCommandsStart=63694680974287, SwapBuffers=63694685571334, FrameCompleted=63694697945098, DequeueBufferDuration=9769, QueueBufferDuration=5108072, GpuCompleted=63694697839387, SwapBuffersCompleted=63694697945098, DisplayPresentTime=0, CommandSubmissionCompleted=63694685571334,
+
+--- B13 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B13
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             25.7s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          925ms
+D/FlutterJNI(23482): Sending viewport metrics to the engine.
+I/ommunities_demo(23482): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(23482): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(23482): Sending viewport metrics to the engine.
+I/flutter (23482): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/FlutterJNI(23482): Sending viewport metrics to the engine.
+D/InsetsController(23482): hide(ime(), fromIme=false)
+I/ImeTracker(23482): com.example.loom_communities_demo:5b9bc774: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ommunities_demo(23482): AssetManager2(0x775fd9977098) locale list changing from [] to [en-US]
+I/ImeTracker(23482): com.example.loom_communities_demo:5c9bdeef: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23482): show(ime(), fromIme=false)
+D/InsetsController(23482): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23482): com.example.loom_communities_demo:4edf5ae9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23482): show(ime(), fromIme=false)
+I/ImeTracker(23482): com.example.loom_communities_demo:4edf5ae9: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23482): The input method toggled cursor monitoring on
+I/AssistStructure(23482): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23482): com.example.loom_communities_demo:21f8d778: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23482): show(ime(), fromIme=false)
+I/ImeTracker(23482): com.example.loom_communities_demo:21f8d778: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23482): com.example.loom_communities_demo:9158f3fe: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23482): show(ime(), fromIme=false)
+I/ImeTracker(23482): com.example.loom_communities_demo:9158f3fe: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23482): com.example.loom_communities_demo:b74e02b1: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23482): hide(ime(), fromIme=false)
+D/InsetsController(23482): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(23482): Compat change id reported: 395521150; UID 10244; state: ENABLED
+W/RemoteInputConnectionImpl(23482): getSurroundingText on inactive InputConnection
+W/WindowOnBackDispatcher(23482): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/AssistStructure(23482): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(23482): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23482): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23482): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23482): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23482): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23482): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23482): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@4ffd31e
+I/ImeTracker(23482): system_server:5c7ff8df: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(23482): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(23482): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/flutter (23482): 00:14 +1: (tearDownAll)
+I/flutter (23482): 00:14 +2: All tests passed!
 All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:41631/IB9NGPb7a_Y=/
+VMServiceFlutterDriver: Isolate found with number: 2673602884220451
+VMServiceFlutterDriver: Isolate 2673602884220451 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B14 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B14
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             25.9s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          916ms
+I/ommunities_demo(23698): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(23698): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@97f20f3, of which baseContext=android.app.ContextImpl@cccbde5
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+I/flutter (23698): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(23698): hide(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:3a0228a9: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+I/ommunities_demo(23698): AssetManager2(0x775fd996f6b8) locale list changing from [] to [en-US]
+I/ImeTracker(23698): com.example.loom_communities_demo:84ad29d8: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23698): com.example.loom_communities_demo:307cea6a: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:307cea6a: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23698): The input method toggled cursor monitoring on
+I/AssistStructure(23698): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23698): com.example.loom_communities_demo:7cc257ea: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:7cc257ea: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23698): com.example.loom_communities_demo:481b1bb3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:481b1bb3: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+I/ImeTracker(23698): com.example.loom_communities_demo:be45148d: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23698): hide(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(23698): Compat change id reported: 395521150; UID 10245; state: ENABLED
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/AssistStructure(23698): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@79403a0
+I/ImeTracker(23698): system_server:3c2d8082: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(23698): Installing profile for com.example.loom_communities_demo
+I/ommunities_demo(23698): Background concurrent mark compact GC freed 348KB AllocSpace bytes, 16(2120KB) LOS objects, 49% free, 2532KB/5064KB, paused 97us,5.331ms total 16.216ms
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/ommunities_demo(23698): AssetManager2(0x775fd99b29b8) locale list changing from [] to [en-US]
+I/ImeTracker(23698): com.example.loom_communities_demo:390d7cde: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23698): com.example.loom_communities_demo:cbc5760: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:cbc5760: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23698): The input method toggled cursor monitoring on
+I/AssistStructure(23698): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23698): com.example.loom_communities_demo:47108ed6: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:47108ed6: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23698): com.example.loom_communities_demo:c1827aa0: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:c1827aa0: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+I/ImeTracker(23698): com.example.loom_communities_demo:11ffb9f8: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23698): hide(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -9 (was -1)
+I/AssistStructure(23698): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@79403a0
+I/ImeTracker(23698): system_server:e8179f2f: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/ommunities_demo(23698): AssetManager2(0x775fd99922f8) locale list changing from [] to [en-US]
+I/ImeTracker(23698): com.example.loom_communities_demo:1b3515ed: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23698): com.example.loom_communities_demo:8b58e74c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:8b58e74c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23698): The input method toggled cursor monitoring on
+I/AssistStructure(23698): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23698): com.example.loom_communities_demo:19a8226f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:19a8226f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23698): com.example.loom_communities_demo:e17a5db2: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:e17a5db2: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+I/ImeTracker(23698): com.example.loom_communities_demo:d7c5adf7: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23698): hide(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -9 (was -1)
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/AssistStructure(23698): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23698): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@79403a0
+I/ImeTracker(23698): system_server:483fa26a: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/ommunities_demo(23698): AssetManager2(0x775fd99b9d58) locale list changing from [] to [en-US]
+I/ImeTracker(23698): com.example.loom_communities_demo:961ef270: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+D/InsetsController(23698): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23698): com.example.loom_communities_demo:1c76e1c9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:1c76e1c9: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23698): The input method toggled cursor monitoring on
+I/AssistStructure(23698): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23698): com.example.loom_communities_demo:b3a3ec3f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:b3a3ec3f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23698): com.example.loom_communities_demo:3c5c5423: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23698): show(ime(), fromIme=false)
+I/ImeTracker(23698): com.example.loom_communities_demo:3c5c5423: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23698): com.example.loom_communities_demo:b880e394: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23698): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@79403a0
+D/InsetsController(23698): Setting requestedVisibleTypes to -9 (was -1)
+I/ImeTracker(23698): com.example.loom_communities_demo:961ef270: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+W/InteractionJankMonitor(23698): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.loom_communities_demo
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+W/RemoteInputConnectionImpl(23698): requestCursorUpdates on inactive InputConnection
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+W/RemoteInputConnectionImpl(23698): getSurroundingText on inactive InputConnection
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+D/FlutterJNI(23698): Sending viewport metrics to the engine.
+I/ImeTracker(23698): system_server:508fe08b: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/FrameTracker(23698): Missed App frame:UNKNOWN: 3, 3048827, 58586607, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:UNKNOWN: 3, 3048827, 58586607, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:JANK_COMPOSER, 3048877, 44444330, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:JANK_COMPOSER, 3048905, 58354472, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:JANK_COMPOSER, 3048935, 39382344, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed App frame:JANK_APPLICATION, 3048949, 60699406, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed App frame:JANK_APPLICATION, 3049008, 37210053, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:JANK_COMPOSER, 3049030, 30305430, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+W/FrameTracker(23698): Missed SF frame:JANK_COMPOSER, 3049044, 46038355, CUJ=J<IME_INSETS_HIDE_ANIMATION::1@1@com.example.loom_communities_demo>
+V/PerfettoTrigger(23698): Triggering /system/bin/trigger_perfetto com.android.telemetry.interaction-jank-monitor-81
+W/WindowOnBackDispatcher(23698): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@98ce540
+I/flutter (23698): 04:56 +1: (tearDownAll)
+I/flutter (23698): 04:57 +2: All tests passed!
+I/Choreographer(23698): Skipped 60 frames!  The application may be doing too much work on its main thread.
+I/HWUI    (23698): Davey! duration=1037ms; Flags=0, FrameTimelineVsyncId=3076570, IntendedVsync=99126903204105, Vsync=99127903204065, InputEventId=0, HandleInputStart=99127907335348, AnimationStart=99127907336490, PerformTraversalsStart=99127907336761, DrawStart=99127917286610, FrameDeadline=99126919870771, FrameStartTime=99127904538111, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=99127922827894, SyncStart=99127937495515, IssueDrawCommandsStart=99127937565007, SwapBuffers=99127943457698, FrameCompleted=99127955302087, DequeueBufferDuration=1005609, QueueBufferDuration=1840688, GpuCompleted=99127954202841, SwapBuffersCompleted=99127955302087, DisplayPresentTime=131232818229057, CommandSubmissionCompleted=99127943457698,
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:44571/HBHU-rQlXhs=/
+VMServiceFlutterDriver: Isolate found with number: 338532222265751
+VMServiceFlutterDriver: Isolate 338532222265751 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B15 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B15
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             22.5s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          729ms
+D/WindowLayoutComponentImpl(23983): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(23983): Sending viewport metrics to the engine.
+I/flutter (23983): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(23983): hide(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:69c10d86: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(23983): Sending viewport metrics to the engine.
+I/ommunities_demo(23983): AssetManager2(0x775fd99779f8) locale list changing from [] to [en-US]
+I/ImeTracker(23983): com.example.loom_communities_demo:e769468a: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+D/InsetsController(23983): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23983): com.example.loom_communities_demo:ccd4cb78: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:ccd4cb78: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23983): The input method toggled cursor monitoring on
+I/AssistStructure(23983): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23983): com.example.loom_communities_demo:91ed93ee: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:91ed93ee: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23983): com.example.loom_communities_demo:2643b5f9: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:2643b5f9: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23983): com.example.loom_communities_demo:3b654f10: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23983): hide(ime(), fromIme=false)
+D/InsetsController(23983): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(23983): Compat change id reported: 395521150; UID 10246; state: ENABLED
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/WindowOnBackDispatcher(23983): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/AssistStructure(23983): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23983): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(23983): system_server:d0708576: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(23983): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(23983): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/ommunities_demo(23983): AssetManager2(0x775fd9984b58) locale list changing from [] to [en-US]
+I/ImeTracker(23983): com.example.loom_communities_demo:d16f6d0f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+D/InsetsController(23983): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(23983): com.example.loom_communities_demo:d25af79a: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:d25af79a: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(23983): The input method toggled cursor monitoring on
+I/AssistStructure(23983): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(23983): com.example.loom_communities_demo:b49d9f39: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:b49d9f39: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(23983): com.example.loom_communities_demo:1eb4a13e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(23983): show(ime(), fromIme=false)
+I/ImeTracker(23983): com.example.loom_communities_demo:1eb4a13e: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+I/ImeTracker(23983): com.example.loom_communities_demo:dfddeac5: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(23983): hide(ime(), fromIme=false)
+D/InsetsController(23983): Setting requestedVisibleTypes to -9 (was -1)
+I/AssistStructure(23983): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(23983): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(23983): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(23983): system_server:b05bbc9e: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/WindowOnBackDispatcher(23983): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/flutter (23983): 00:25 +1: (tearDownAll)
+I/flutter (23983): 00:25 +2: All tests passed!
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:33833/FUlHTwTKoJI=/
+VMServiceFlutterDriver: Isolate found with number: 4100275593342639
+VMServiceFlutterDriver: Isolate 4100275593342639 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B16 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B16
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             22.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          737ms
+I/ommunities_demo(24144): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(24144): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(24144): Sending viewport metrics to the engine.
+I/flutter (24144): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/FlutterJNI(24144): Sending viewport metrics to the engine.
+D/InsetsController(24144): hide(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:feb75b68: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ommunities_demo(24144): AssetManager2(0x775fd997c1d8) locale list changing from [] to [en-US]
+I/ImeTracker(24144): com.example.loom_communities_demo:eea671ed: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+D/InsetsController(24144): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24144): com.example.loom_communities_demo:1ca2810c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:1ca2810c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure(24144): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor(24144): The input method toggled cursor monitoring on
+I/ImeTracker(24144): com.example.loom_communities_demo:c2b44844: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:c2b44844: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24144): com.example.loom_communities_demo:d27c7cf1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:d27c7cf1: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24144): com.example.loom_communities_demo:70dd2011: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24144): hide(ime(), fromIme=false)
+D/InsetsController(24144): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(24144): Compat change id reported: 395521150; UID 10247; state: ENABLED
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+I/AssistStructure(24144): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(24144): system_server:6c52d083: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(24144): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/ommunities_demo(24144): AssetManager2(0x775fd9987a38) locale list changing from [] to [en-US]
+I/ImeTracker(24144): com.example.loom_communities_demo:caab7a1d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+D/InsetsController(24144): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24144): com.example.loom_communities_demo:282bdf41: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:282bdf41: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24144): The input method toggled cursor monitoring on
+I/AssistStructure(24144): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24144): com.example.loom_communities_demo:6e43f72d: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:6e43f72d: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24144): com.example.loom_communities_demo:141594b2: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:141594b2: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24144): com.example.loom_communities_demo:f1f3024: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24144): hide(ime(), fromIme=false)
+D/InsetsController(24144): Setting requestedVisibleTypes to -9 (was -1)
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+I/AssistStructure(24144): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(24144): system_server:e518af4f: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/ommunities_demo(24144): AssetManager2(0x775fd99a99f8) locale list changing from [] to [en-US]
+I/ImeTracker(24144): com.example.loom_communities_demo:8160201b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+D/InsetsController(24144): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24144): com.example.loom_communities_demo:7e8a80ba: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:7e8a80ba: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24144): The input method toggled cursor monitoring on
+I/AssistStructure(24144): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24144): com.example.loom_communities_demo:494b7c5b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:494b7c5b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24144): com.example.loom_communities_demo:17ec7454: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24144): show(ime(), fromIme=false)
+I/ImeTracker(24144): com.example.loom_communities_demo:17ec7454: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/AssistStructure(24144): Flattened final assist data: 524 bytes, containing 1 windows, 3 views
+I/ImeTracker(24144): com.example.loom_communities_demo:51930b2f: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24144): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+D/InsetsController(24144): Setting requestedVisibleTypes to -9 (was -1)
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/ImeTracker(24144): com.example.loom_communities_demo:8160201b: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/RemoteInputConnectionImpl(24144): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+I/ImeTracker(24144): system_server:92634db8: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+W/RemoteInputConnectionImpl(24144): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24144): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24144): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/flutter (24144): 01:39 +1: (tearDownAll)
+I/flutter (24144): 01:40 +2: All tests passed!
+I/Choreographer(24144): Skipped 44 frames!  The application may be doing too much work on its main thread.
+I/HWUI    (24144): Davey! duration=775ms; Flags=0, FrameTimelineVsyncId=3137231, IntendedVsync=99319919863051, Vsync=99320653196355, InputEventId=0, HandleInputStart=99320668984995, AnimationStart=99320668986086, PerformTraversalsStart=99320668986468, DrawStart=99320680248552, FrameDeadline=99319936529717, FrameStartTime=99320662323284, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=99320684034795, SyncStart=99320684571820, IssueDrawCommandsStart=99320684628508, SwapBuffers=99320687530353, FrameCompleted=99320695559539, DequeueBufferDuration=212423, QueueBufferDuration=1379830, GpuCompleted=99320695253799, SwapBuffersCompleted=99320695559539, DisplayPresentTime=0, CommandSubmissionCompleted=99320687530353,
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:38167/8soiEWUPSD4=/
+VMServiceFlutterDriver: Isolate found with number: 2414843047252247
+VMServiceFlutterDriver: Isolate 2414843047252247 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B17 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B17
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             22.2s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          754ms
+I/ommunities_demo(24337): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(24337): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@97f20f3, of which baseContext=android.app.ContextImpl@cccbde5
+D/FlutterJNI(24337): Sending viewport metrics to the engine.
+I/flutter (24337): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(24337): hide(ime(), fromIme=false)
+I/ImeTracker(24337): com.example.loom_communities_demo:662c497c: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(24337): Sending viewport metrics to the engine.
+I/ommunities_demo(24337): AssetManager2(0x775fd9977d18) locale list changing from [] to [en-US]
+I/ImeTracker(24337): com.example.loom_communities_demo:99984d43: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24337): show(ime(), fromIme=false)
+D/InsetsController(24337): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24337): com.example.loom_communities_demo:f735202f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24337): show(ime(), fromIme=false)
+I/ImeTracker(24337): com.example.loom_communities_demo:f735202f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24337): The input method toggled cursor monitoring on
+I/AssistStructure(24337): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24337): com.example.loom_communities_demo:4a92448f: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24337): show(ime(), fromIme=false)
+I/ImeTracker(24337): com.example.loom_communities_demo:4a92448f: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24337): com.example.loom_communities_demo:4b32082c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24337): show(ime(), fromIme=false)
+I/ImeTracker(24337): com.example.loom_communities_demo:4b32082c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(24337): getSurroundingText on inactive InputConnection
+I/ImeTracker(24337): com.example.loom_communities_demo:d4d37edf: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24337): hide(ime(), fromIme=false)
+D/InsetsController(24337): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(24337): Compat change id reported: 395521150; UID 10248; state: ENABLED
+W/WindowOnBackDispatcher(24337): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@ad417ed
+I/AssistStructure(24337): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24337): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24337): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24337): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24337): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24337): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24337): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24337): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(24337): system_server:32e8ba87: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(24337): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(24337): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@ad417ed
+I/flutter (24337): 00:05 +1: (tearDownAll)
+I/flutter (24337): 00:05 +2: All tests passed!
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:38711/qJRQ9aX6yxY=/
+VMServiceFlutterDriver: Isolate found with number: 8834066529962023
+VMServiceFlutterDriver: Isolate 8834066529962023 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B18 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B18
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             22.3s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          743ms
+D/FlutterJNI(24497): Sending viewport metrics to the engine.
+I/ommunities_demo(24497): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(24497): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(24497): Sending viewport metrics to the engine.
+I/flutter (24497): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/FlutterJNI(24497): Sending viewport metrics to the engine.
+D/InsetsController(24497): hide(ime(), fromIme=false)
+I/ImeTracker(24497): com.example.loom_communities_demo:ef858480: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ommunities_demo(24497): AssetManager2(0x775fd99792f8) locale list changing from [] to [en-US]
+I/ImeTracker(24497): com.example.loom_communities_demo:7b407021: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24497): show(ime(), fromIme=false)
+D/InsetsController(24497): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24497): com.example.loom_communities_demo:584b30ea: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24497): show(ime(), fromIme=false)
+I/ImeTracker(24497): com.example.loom_communities_demo:584b30ea: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24497): The input method toggled cursor monitoring on
+I/AssistStructure(24497): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24497): com.example.loom_communities_demo:ba51868b: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24497): show(ime(), fromIme=false)
+I/ImeTracker(24497): com.example.loom_communities_demo:ba51868b: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24497): com.example.loom_communities_demo:9312a5d4: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24497): show(ime(), fromIme=false)
+I/ImeTracker(24497): com.example.loom_communities_demo:9312a5d4: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24497): com.example.loom_communities_demo:4b9caa80: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24497): hide(ime(), fromIme=false)
+D/InsetsController(24497): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(24497): Compat change id reported: 395521150; UID 10249; state: ENABLED
+W/RemoteInputConnectionImpl(24497): getSurroundingText on inactive InputConnection
+W/WindowOnBackDispatcher(24497): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/AssistStructure(24497): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24497): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24497): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24497): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24497): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24497): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24497): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24497): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@4ffd31e
+I/ImeTracker(24497): system_server:e293c8de: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(24497): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(24497): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/flutter (24497): 00:05 +1: (tearDownAll)
+I/flutter (24497): 00:05 +2: All tests passed!
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:33909/VlOjus_GP7E=/
+VMServiceFlutterDriver: Isolate found with number: 988497463501735
+VMServiceFlutterDriver: Isolate 988497463501735 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B19 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B19
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             22.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          737ms
+I/ommunities_demo(24659): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(24659): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(24659): Sending viewport metrics to the engine.
+I/flutter (24659): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(24659): hide(ime(), fromIme=false)
+I/ImeTracker(24659): com.example.loom_communities_demo:15ab80b4: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(24659): Sending viewport metrics to the engine.
+I/ommunities_demo(24659): AssetManager2(0x775fd9970c98) locale list changing from [] to [en-US]
+I/ImeTracker(24659): com.example.loom_communities_demo:ee6f52b6: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24659): show(ime(), fromIme=false)
+D/InsetsController(24659): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24659): com.example.loom_communities_demo:32223819: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24659): show(ime(), fromIme=false)
+I/ImeTracker(24659): com.example.loom_communities_demo:32223819: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24659): The input method toggled cursor monitoring on
+I/AssistStructure(24659): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24659): com.example.loom_communities_demo:11e51fb1: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24659): show(ime(), fromIme=false)
+I/ImeTracker(24659): com.example.loom_communities_demo:11e51fb1: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24659): com.example.loom_communities_demo:5a1c14ec: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24659): show(ime(), fromIme=false)
+I/ImeTracker(24659): com.example.loom_communities_demo:5a1c14ec: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(24659): getSurroundingText on inactive InputConnection
+I/ImeTracker(24659): com.example.loom_communities_demo:1ee75db6: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24659): hide(ime(), fromIme=false)
+D/InsetsController(24659): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(24659): Compat change id reported: 395521150; UID 10250; state: ENABLED
+W/WindowOnBackDispatcher(24659): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/AssistStructure(24659): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24659): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24659): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24659): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24659): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24659): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24659): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24659): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(24659): system_server:a6b0c4df: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(24659): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(24659): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@e574c79
+I/flutter (24659): 00:28 +1: (tearDownAll)
+I/flutter (24659): 00:28 +2: All tests passed!
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:41611/eHLmchaYGdM=/
+VMServiceFlutterDriver: Isolate found with number: 662650624716919
+VMServiceFlutterDriver: Isolate 662650624716919 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...
+
+--- B20 ---
+$ flutter drive --driver=test_driver/workflow_ui_evidence_test.dart --target=integration_test/workflow_ui_evidence_test.dart -d emulator-5554 --dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true --dart-define=LOOM_EVIDENCE_PHASE_FILTER=B20
+exitCode=0
+
+--- stdout ---
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+29 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleDebug'...                             21.6s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          718ms
+I/ommunities_demo(24808): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/WindowLayoutComponentImpl(24808): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@61d41b0, of which baseContext=android.app.ContextImpl@926d0ba
+D/FlutterJNI(24808): Sending viewport metrics to the engine.
+I/flutter (24808): 00:00 +0: wf_full-ui-screenshot-evidence-b12-b20
+D/InsetsController(24808): hide(ime(), fromIme=false)
+I/ImeTracker(24808): com.example.loom_communities_demo:b8c4fd5b: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+D/FlutterJNI(24808): Sending viewport metrics to the engine.
+I/ommunities_demo(24808): AssetManager2(0x775fd99792f8) locale list changing from [] to [en-US]
+I/ImeTracker(24808): com.example.loom_communities_demo:222375e8: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24808): show(ime(), fromIme=false)
+D/InsetsController(24808): Setting requestedVisibleTypes to -1 (was -9)
+I/ImeTracker(24808): com.example.loom_communities_demo:c1fe78c: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24808): show(ime(), fromIme=false)
+I/ImeTracker(24808): com.example.loom_communities_demo:c1fe78c: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+D/InputConnectionAdaptor(24808): The input method toggled cursor monitoring on
+I/AssistStructure(24808): Flattened final assist data: 528 bytes, containing 1 windows, 3 views
+I/ImeTracker(24808): com.example.loom_communities_demo:a829dd48: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24808): show(ime(), fromIme=false)
+I/ImeTracker(24808): com.example.loom_communities_demo:a829dd48: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(24808): com.example.loom_communities_demo:be8e4722: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(24808): show(ime(), fromIme=false)
+I/ImeTracker(24808): com.example.loom_communities_demo:be8e4722: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+W/RemoteInputConnectionImpl(24808): getSurroundingText on inactive InputConnection
+I/ImeTracker(24808): com.example.loom_communities_demo:3a7b45d9: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(24808): hide(ime(), fromIme=false)
+D/InsetsController(24808): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(24808): Compat change id reported: 395521150; UID 10251; state: ENABLED
+W/WindowOnBackDispatcher(24808): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/AssistStructure(24808): Flattened final assist data: 296 bytes, containing 1 windows, 2 views
+W/RemoteInputConnectionImpl(24808): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24808): getTextBeforeCursor on inactive InputConnection
+W/RemoteInputConnectionImpl(24808): requestCursorUpdates on inactive InputConnection
+W/RemoteInputConnectionImpl(24808): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24808): getSurroundingText on inactive InputConnection
+W/RemoteInputConnectionImpl(24808): getTextBeforeCursor on inactive InputConnection
+W/WindowOnBackDispatcher(24808): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e07b59
+I/ImeTracker(24808): system_server:c26f7b81: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+D/ProfileInstaller(24808): Installing profile for com.example.loom_communities_demo
+W/WindowOnBackDispatcher(24808): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@9e69622
+I/flutter (24808): 00:10 +1: (tearDownAll)
+I/flutter (24808): 00:10 +2: All tests passed!
+All tests passed.
+
+--- stderr ---
+VMServiceFlutterDriver: Connecting to Flutter application at http://127.0.0.1:36289/Jq-_hh8IvVk=/
+VMServiceFlutterDriver: Isolate found with number: 7263366666466659
+VMServiceFlutterDriver: Isolate 7263366666466659 is runnable.
+VMServiceFlutterDriver: Isolate is paused at start.
+VMServiceFlutterDriver: Attempting to resume isolate
+VMServiceFlutterDriver: Connected to Flutter application.
+VMServiceFlutterDriver: request_data message is taking a long time to complete...

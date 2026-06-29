@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "workflowCount": 1,
   "workflows": [
     {
@@ -20,17 +20,15 @@
         "admin persona can create the public announcement"
       ],
       "screenshotNames": [
-        "B18_persona_picker_member_selected",
         "B19_member_care_request_actor",
         "B19_admin_announcement_actor"
       ],
       "status": "pass",
       "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_member_selected.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B19/screenshots/B19_admin_announcement_actor.png"
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/screenshots/B19_admin_announcement_actor.png"
       ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",
