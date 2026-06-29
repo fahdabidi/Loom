@@ -27,6 +27,10 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_active_admin.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_picker.png"
       ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | Inbox + push | Publish announcement",
+        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | Inbox + push | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",

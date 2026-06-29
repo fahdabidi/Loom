@@ -20,6 +20,11 @@ void main() {
     binding.reportData ??= <String, dynamic>{};
     final entries = <Map<String, Object?>>[];
     final installedExtensionIds = <String>{};
+    final screenshotVisibleTextByName = <String, String>{};
+
+    Future<void> capture(String name) {
+      return _capture(binding, tester, screenshotVisibleTextByName, name);
+    }
 
     await tester.pumpWidget(const LoomCommunitiesDemoApp());
     await tester.pumpAndSettle();
@@ -33,7 +38,8 @@ void main() {
     }
 
     Future<void> ensureTargetOpen(LoomEvidenceTarget target) async {
-      if (find.byKey(ValueKey('local-extension-${target.extensionId}'))
+      if (find
+          .byKey(ValueKey('local-extension-${target.extensionId}'))
           .evaluate()
           .isNotEmpty) {
         return;
@@ -57,13 +63,13 @@ void main() {
           'screenshot callback completes',
         ],
       };
-      await _capture(binding, 'B12_harness_start');
+      await capture('B12_harness_start');
       await tester.tap(find.byKey(const ValueKey('add-community-button')));
       await tester.pumpAndSettle();
-      await _capture(binding, 'B12_harness_action');
+      await capture('B12_harness_action');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      await _capture(binding, 'B12_harness_complete');
+      await capture('B12_harness_complete');
       entries.add({
         ...harnessEntry,
         'screenshotNames': [
@@ -109,7 +115,7 @@ void main() {
         final complete = _screenshotName(target, workflow, 'complete');
 
         await scrollToWorkflowCard(tester, workflow);
-        await _capture(binding, start);
+        await capture(start);
 
         await tester.tap(
           find.byKey(ValueKey('workflow-button-${workflow.workflowId}')),
@@ -121,7 +127,7 @@ void main() {
           ),
           findsOneWidget,
         );
-        await _capture(binding, action);
+        await capture(action);
 
         await tester.tap(
           find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
@@ -136,7 +142,7 @@ void main() {
           find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
           findsOneWidget,
         );
-        await _capture(binding, complete);
+        await capture(complete);
 
         entries.add({
           ...entry,
@@ -166,10 +172,10 @@ void main() {
 
     if (_includePhase('B17')) {
       await ensureTargetOpen(mosqueTarget);
-      await _capture(binding, 'B17_persona_inventory_active_admin');
+      await capture('B17_persona_inventory_active_admin');
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
       await tester.pumpAndSettle();
-      await _capture(binding, 'B17_persona_inventory_picker');
+      await capture('B17_persona_inventory_picker');
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
       entries.add({
@@ -194,13 +200,13 @@ void main() {
       await ensureTargetOpen(mosqueTarget);
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
       await tester.pumpAndSettle();
-      await _capture(binding, 'B18_persona_picker_dialog');
+      await capture('B18_persona_picker_dialog');
       await tester.tap(
         find.byKey(const ValueKey('persona-option-mosque-member')),
       );
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B18_persona_picker_member_selected');
+      await capture('B18_persona_picker_member_selected');
       entries.add({
         'phase': 'B18',
         'appId': mosqueTarget.extensionId,
@@ -224,10 +230,10 @@ void main() {
       await ensureTargetOpen(mosqueTarget);
       await selectPersona(tester, 'mosque-member');
       await _scrollToWorkflow(tester, careRequest);
-      await _capture(binding, 'B19_member_care_request_actor');
+      await capture('B19_member_care_request_actor');
       await selectPersona(tester, 'mosque-admin');
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B19_admin_announcement_actor');
+      await capture('B19_admin_announcement_actor');
       entries.add({
         'phase': 'B19',
         'appId': mosqueTarget.extensionId,
@@ -251,7 +257,7 @@ void main() {
       await ensureTargetOpen(mosqueTarget);
       await selectPersona(tester, 'mosque-admin');
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B20_announcement_admin_start');
+      await capture('B20_announcement_admin_start');
       await tester.tap(
         find.byKey(ValueKey('workflow-button-${announcement.workflowId}')),
       );
@@ -262,7 +268,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await _capture(binding, 'B20_announcement_admin_action');
+      await capture('B20_announcement_admin_action');
       await tester.tap(
         find.byKey(
           ValueKey('workflow-action-submit-${announcement.workflowId}'),
@@ -270,10 +276,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B20_announcement_admin_complete');
+      await capture('B20_announcement_admin_complete');
       await selectPersona(tester, 'mosque-member');
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B20_announcement_member_ready');
+      await capture('B20_announcement_member_ready');
       await tester.tap(
         find.byKey(
           ValueKey('workflow-receive-button-${announcement.workflowId}'),
@@ -286,7 +292,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await _capture(binding, 'B20_announcement_member_action');
+      await capture('B20_announcement_member_action');
       await tester.tap(
         find.byKey(
           ValueKey('workflow-receive-submit-${announcement.workflowId}'),
@@ -294,7 +300,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
-      await _capture(binding, 'B20_announcement_member_received');
+      await capture('B20_announcement_member_received');
       entries.add({
         'phase': 'B20',
         'appId': mosqueTarget.extensionId,
@@ -318,7 +324,8 @@ void main() {
       });
     }
 
-    if (find.byKey(ValueKey('local-extension-${mosqueTarget.extensionId}'))
+    if (find
+        .byKey(ValueKey('local-extension-${mosqueTarget.extensionId}'))
         .evaluate()
         .isNotEmpty) {
       await tester.pageBack();
@@ -329,14 +336,38 @@ void main() {
     binding.reportData!['emulatorName'] = 'emulator-5554';
     binding.reportData!['deviceClass'] = 'Android emulator';
     binding.reportData!['workflowEvidence'] = entries;
+    binding.reportData!['screenshotVisibleTextByName'] =
+        screenshotVisibleTextByName;
   });
 }
 
 Future<void> _capture(
   IntegrationTestWidgetsFlutterBinding binding,
+  WidgetTester tester,
+  Map<String, String> screenshotVisibleTextByName,
   String name,
 ) async {
+  await tester.pump();
+  screenshotVisibleTextByName[name] = _visibleTextFor(tester);
   await binding.takeScreenshot(name);
+}
+
+String _visibleTextFor(WidgetTester tester) {
+  final seen = <String>{};
+  final chunks = <String>[];
+  for (final element in find.byType(Text).evaluate()) {
+    final widget = element.widget as Text;
+    final raw = widget.data ?? widget.textSpan?.toPlainText() ?? '';
+    final clean = raw.replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (clean.isEmpty || !seen.add(clean)) {
+      continue;
+    }
+    chunks.add(clean);
+    if (chunks.length >= 80) {
+      break;
+    }
+  }
+  return chunks.join(' | ');
 }
 
 String _screenshotName(

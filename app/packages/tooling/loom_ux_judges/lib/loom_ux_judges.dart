@@ -733,6 +733,9 @@ JsonMap collectB25Evidence({
       }
       final screenshotPaths = _asStringList(workflow['screenshotPaths']);
       final screenshotNames = _asStringList(workflow['screenshotNames']);
+      final screenshotVisibleTexts = _asStringList(
+        workflow['screenshotVisibleTexts'],
+      );
       for (var i = 0; i < screenshotPaths.length; i += 1) {
         final path = screenshotPaths[i];
         final file = File(_hostPath(path));
@@ -746,6 +749,16 @@ JsonMap collectB25Evidence({
           workflow['communityId'],
           fallback: _asString(workflow['appId']),
         );
+        final visibleText =
+            i < screenshotVisibleTexts.length &&
+                screenshotVisibleTexts[i].trim().isNotEmpty
+            ? screenshotVisibleTexts[i].trim()
+            : _asStringList(workflow['expectedAssertions']).join(' | ');
+        final visibleTextSource =
+            i < screenshotVisibleTexts.length &&
+                screenshotVisibleTexts[i].trim().isNotEmpty
+            ? 'screenshot-visible-text'
+            : 'manual-visible-text-review';
         final persona = _personaForEvidence(
           workflowId: workflowId,
           communityId: communityId,
@@ -774,23 +787,19 @@ JsonMap collectB25Evidence({
           'appCommitSha': appCommit,
           'deviceMetadata':
               '${_asString(workflow['emulatorName'])}; ${_asString(workflow['deviceClass'])}; ${_asString(workflow['apiLevel'])}',
-          'visibleTextExtract': _asStringList(
-            workflow['expectedAssertions'],
-          ).join(' | '),
-          'visibleTextExtractionSource': 'manual-visible-text-review',
+          'visibleTextExtract': visibleText,
+          'visibleTextExtractionSource': visibleTextSource,
           'visibleTextSourceNotes':
-              'Manual visible-text summary carried forward from workflow UI evidence assertions for B25 review. OCR/live recapture can replace this source in a later pass.',
+              visibleTextSource == 'screenshot-visible-text'
+              ? 'Visible text captured from Text widgets during the same integration-test step as the screenshot.'
+              : 'Manual visible-text summary carried forward from workflow UI evidence assertions because the screenshot did not include a live text capture.',
           'uiPatternClassification': _initialB25SurfaceClassification(
             workflowId: workflowId,
-            visibleText: _asStringList(
-              workflow['expectedAssertions'],
-            ).join(' | '),
+            visibleText: visibleText,
           ),
           'primarySurfaceType': _initialB25PrimarySurfaceType(
             workflowId: workflowId,
-            visibleText: _asStringList(
-              workflow['expectedAssertions'],
-            ).join(' | '),
+            visibleText: visibleText,
           ),
           'targetProductionSurface': _targetProductionSurfaceForWorkflow(
             workflowId,

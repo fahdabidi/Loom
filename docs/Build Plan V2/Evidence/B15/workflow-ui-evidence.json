@@ -30,6 +30,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Open community home | Chess Club home | Match result record | Waiting for the member form to be submitted. | Waiting | Chess Club",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Arbitrary install open details | Cancel | Open community home",
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Chess Club home | Open community home | Match result record | Waiting for the member form to be submitted. | Waiting | Chess Club"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -57,6 +62,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Chess Club home | Open community home | Match result record | Waiting for the member form to be submitted. | Waiting | Local package details | Chess Club",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Chess club home details | Cancel | Open community home",
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Chess Club home | Match result record | Waiting for the member form to be submitted. | Waiting | Local package details | Chess Club"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -86,6 +96,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Chess Club home | Match result record | Record match result | Local package details | Chess Club",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Match result record details | Cancel | Record match result",
+        "Arbitrary install and open | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Chess Club home | Match result record | Local package details | Chess Club"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -113,6 +128,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Photo-walk RSVP | Event details include date, location, capacity, and attendance. | This week | Community venue | Capacity tracked | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Submit entry | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Camera Club",
+        "Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | Details | Date, location, capacity, and attendee state are included. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Cancel | RSVP to event",
+        "Photo-walk RSVP | Event details include date, location, capacity, and attendance. | This week | Community venue | Capacity tracked | RSVP confirmed | Attendance, capacity, and confirmation details are up to date. | Going | Care and volunteers | Private requests, volunteer shifts, and member support. | Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Submit entry | Requests and approvals | Requests that need a decision or member follow-up. | Camera Club"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -142,6 +162,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Submit entry | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Local package details | Camera Club",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Critique submission details | Cancel | Submit entry",
+        "Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Local package details | Camera Club"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -169,6 +194,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Local package details | Camera Club",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Gear-loan request details | Cancel | Submit request",
+        "Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Local package details | Camera Club"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",

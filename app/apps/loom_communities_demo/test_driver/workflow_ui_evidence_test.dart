@@ -51,6 +51,11 @@ Future<void> _writeEvidence({
       .whereType<Map<String, dynamic>>()
       .map((entry) => Map<String, dynamic>.from(entry))
       .toList(growable: false);
+  final screenshotVisibleTextByName =
+      (data?['screenshotVisibleTextByName'] as Map?)?.map(
+        (key, value) => MapEntry(key.toString(), value.toString()),
+      ) ??
+      const <String, String>{};
   final grouped = <String, List<Map<String, dynamic>>>{};
   final missingScreenshots = <String>[];
 
@@ -61,6 +66,7 @@ Future<void> _writeEvidence({
             .whereType<String>()
             .toList(growable: false);
     final paths = <String>[];
+    final visibleTexts = <String>[];
     for (final name in screenshotNames) {
       final path = screenshotPaths[name];
       if (path == null || !File(path).existsSync()) {
@@ -68,10 +74,12 @@ Future<void> _writeEvidence({
       } else {
         paths.add(path);
       }
+      visibleTexts.add(screenshotVisibleTextByName[name] ?? '');
     }
     grouped.putIfAbsent(phase, () => <Map<String, dynamic>>[]).add({
       ...entry,
       'screenshotPaths': paths,
+      'screenshotVisibleTexts': visibleTexts,
       'commandOutputPath': commandOutputPath,
       'emulatorName': data?['emulatorName'] ?? 'emulator-5554',
       'deviceClass': data?['deviceClass'] ?? 'Android emulator',

@@ -28,6 +28,10 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/screenshots/B19_admin_announcement_actor.png"
       ],
+      "screenshotVisibleTexts": [
+        "Volunteer signup | Volunteer details include shift, availability, and protected contact. | Open shift | Contact protected | Coordinator notified | Submit signup | Protected care request | Care request keeps private details protected for the care team. | Private details | Care team | Consent checked | Submit request | Member tools | Useful actions for this community. | Anonymous donor visibility | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Save visibility | Local package details | Masjid Nur",
+        "Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | Inbox + push | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | Waiting | Announcement search and AI citation | Upcoming events | Dates, capacity, and attendance actions. | Masjid Nur"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",

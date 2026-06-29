@@ -19,7 +19,7 @@ class LoomCommunitiesDemoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff246b62)),
-        scaffoldBackgroundColor: const Color(0xfff4f8f5),
+        scaffoldBackgroundColor: const Color(0xfffbfffd),
         useMaterial3: true,
       ),
       home: const LoomCommunitiesHome(),
@@ -357,9 +357,13 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     );
     final activePersona = _activePersona(experience);
     final textTheme = Theme.of(context).textTheme;
+    final accent = Color(experience.accentColor);
     return Scaffold(
+      backgroundColor: const Color(0xfffbfffd),
       appBar: AppBar(
         title: Text(community.displayName),
+        backgroundColor: accent,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             key: const ValueKey('messages-button'),
@@ -377,12 +381,13 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       ),
       body: ListView(
         key: ValueKey('local-extension-${community.extensionId}'),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(8),
+              color: accent.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: accent.withValues(alpha: 0.28)),
             ),
             child: const Padding(
               padding: EdgeInsets.all(12),
@@ -398,46 +403,74 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           const SizedBox(height: 20),
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Color(experience.accentColor).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Color(experience.accentColor).withValues(alpha: 0.24),
-              ),
+              color: accent,
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.24),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    key: ValueKey(
-                      'opened-community-identity-${community.communityId}',
-                    ),
-                    radius: 34,
-                    backgroundColor: Color(
-                      experience.accentColor,
-                    ).withValues(alpha: 0.28),
-                    child: Icon(
-                      _communityIconFor(experience.extensionId),
-                      size: 36,
-                      color: Color(experience.accentColor),
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        key: ValueKey(
+                          'opened-community-identity-${community.communityId}',
+                        ),
+                        radius: 32,
+                        backgroundColor: Colors.white.withValues(alpha: 0.18),
+                        child: Icon(
+                          _communityIconFor(experience.extensionId),
+                          size: 34,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              community.displayName,
+                              key: ValueKey(
+                                'opened-community-${community.communityId}',
+                              ),
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              experience.tagline,
+                              key: ValueKey(
+                                'experience-tagline-${community.extensionId}',
+                              ),
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.92),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    community.displayName,
-                    key: ValueKey('opened-community-${community.communityId}'),
-                    style: textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 18),
+                  _PersonaStatusStrip(
+                    persona: activePersona,
+                    personaCount: personasForExtensionId(
+                      experience.extensionId,
+                    ).length,
+                    foreground: Colors.white,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    experience.tagline,
-                    key: ValueKey(
-                      'experience-tagline-${community.extensionId}',
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
                   Offstage(
                     child: Text(
                       _route,
@@ -448,17 +481,13 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          _PersonaStatusTile(
-            persona: activePersona,
-            personaCount: personasForExtensionId(experience.extensionId).length,
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
           for (final section in _communitySectionsFor(experience)) ...[
             _CommunitySectionHeader(
               title: section.title,
               subtitle: section.subtitle,
               icon: section.icon,
+              accent: accent,
             ),
             const SizedBox(height: 8),
             for (final workflow in section.workflows)
@@ -703,33 +732,52 @@ class _CommunitySectionHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.accent,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: textTheme.titleLarge),
-                const SizedBox(height: 2),
-                Text(subtitle, style: textTheme.bodyMedium),
-              ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 26, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.88),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -760,12 +808,19 @@ class _WorkflowTile extends StatelessWidget {
     final metadata = _domainMetadataFor(contract.category, workflow);
     final scheme = Theme.of(context).colorScheme;
     final accent = _categoryAccentColor(contract.category, scheme);
+    final foreground = _foregroundFor(accent);
     return DecoratedBox(
       key: ValueKey('workflow-${workflow.workflowId}'),
       decoration: BoxDecoration(
-        color: Color.alphaBlend(accent.withValues(alpha: 0.08), scheme.surface),
+        color: accent,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: accent.withValues(alpha: 0.24)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.18),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -785,7 +840,7 @@ class _WorkflowTile extends StatelessWidget {
                       : view.state == LoomPersonaWorkflowState.readOnly
                       ? Icons.visibility_outlined
                       : Icons.radio_button_unchecked,
-                  color: accent,
+                  color: foreground,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -794,11 +849,18 @@ class _WorkflowTile extends StatelessWidget {
                     children: [
                       Text(
                         _displayTitleFor(workflow),
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         _domainSummaryFor(contract.category, workflow, view),
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.90),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Wrap(
@@ -806,10 +868,10 @@ class _WorkflowTile extends StatelessWidget {
                         runSpacing: 6,
                         children: [
                           for (final detail in metadata)
-                            Chip(
-                              visualDensity: VisualDensity.compact,
-                              avatar: Icon(_metadataIconFor(detail), size: 18),
-                              label: Text(detail),
+                            _SurfaceFactPill(
+                              icon: _metadataIconFor(detail),
+                              label: detail,
+                              foreground: foreground,
                             ),
                         ],
                       ),
@@ -833,6 +895,7 @@ class _WorkflowTile extends StatelessWidget {
                 title: contract.successTitle,
                 body: contract.resultSummary,
                 icon: contract.icon,
+                accent: accent,
               )
             else if (view.received)
               _WorkflowResultPanel(
@@ -842,6 +905,7 @@ class _WorkflowTile extends StatelessWidget {
                 title: contract.receiverSurfaceTitle,
                 body: _receiverBodyFor(contract.category),
                 icon: Icons.inbox_outlined,
+                accent: accent,
               )
             else
               _WorkflowAction(
@@ -854,21 +918,110 @@ class _WorkflowTile extends StatelessWidget {
             if (view.completed)
               Align(
                 alignment: Alignment.centerRight,
-                child: Chip(
+                child: _StateBadge(
                   key: ValueKey('workflow-complete-${workflow.workflowId}'),
-                  avatar: const Icon(Icons.done, size: 18),
-                  label: Text(contract.successChipLabel),
+                  icon: Icons.done,
+                  label: contract.successChipLabel,
+                  foreground: foreground,
                 ),
               ),
             if (view.received)
               Align(
                 alignment: Alignment.centerRight,
-                child: Chip(
+                child: _StateBadge(
                   key: ValueKey('workflow-received-${workflow.workflowId}'),
-                  avatar: const Icon(Icons.mark_email_read_outlined, size: 18),
-                  label: const Text('Received'),
+                  icon: Icons.mark_email_read_outlined,
+                  label: 'Received',
+                  foreground: foreground,
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Color _foregroundFor(Color background) {
+  return ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+      ? Colors.white
+      : Colors.black;
+}
+
+class _SurfaceFactPill extends StatelessWidget {
+  const _SurfaceFactPill({
+    required this.icon,
+    required this.label,
+    required this.foreground,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17, color: foreground),
+            const SizedBox(width: 7),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StateBadge extends StatelessWidget {
+  const _StateBadge({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.foreground,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: foreground.withValues(alpha: 0.24)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: foreground),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
       ),
@@ -1175,13 +1328,22 @@ class _WorkflowAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = _categoryAccentColor(contract.category, scheme);
+    final foreground = _foregroundFor(accent);
+    final buttonStyle = FilledButton.styleFrom(
+      backgroundColor: foreground.withValues(alpha: 0.94),
+      foregroundColor: accent,
+      iconColor: accent,
+    );
     if (view.waitingForPrerequisite) {
       return Align(
         alignment: Alignment.centerRight,
-        child: Chip(
+        child: _StateBadge(
           key: ValueKey('workflow-waiting-${workflow.workflowId}'),
-          avatar: const Icon(Icons.schedule, size: 18),
-          label: Text(view.waitingText),
+          icon: Icons.schedule,
+          label: view.waitingText,
+          foreground: foreground,
         ),
       );
     }
@@ -1193,6 +1355,7 @@ class _WorkflowAction extends StatelessWidget {
           child: FilledButton.icon(
             key: ValueKey('workflow-button-${workflow.workflowId}'),
             onPressed: onPressed,
+            style: buttonStyle,
             icon: Icon(contract.icon, size: 18),
             label: Text(view.actionText, textAlign: TextAlign.center),
           ),
@@ -1207,6 +1370,7 @@ class _WorkflowAction extends StatelessWidget {
           child: FilledButton.tonalIcon(
             key: ValueKey('workflow-receive-button-${workflow.workflowId}'),
             onPressed: onReceivePressed,
+            style: buttonStyle,
             icon: const Icon(Icons.inbox_outlined, size: 18),
             label: Text(view.actionText, textAlign: TextAlign.center),
           ),
@@ -1216,19 +1380,21 @@ class _WorkflowAction extends StatelessWidget {
     if (view.state == LoomPersonaWorkflowState.readOnly) {
       return Align(
         alignment: Alignment.centerRight,
-        child: Chip(
+        child: _StateBadge(
           key: ValueKey('workflow-read-only-${workflow.workflowId}'),
-          avatar: const Icon(Icons.visibility_outlined, size: 18),
-          label: const Text('Read only'),
+          icon: Icons.visibility_outlined,
+          label: 'Read only',
+          foreground: foreground,
         ),
       );
     }
     return Align(
       alignment: Alignment.centerRight,
-      child: Chip(
+      child: _StateBadge(
         key: ValueKey('workflow-disabled-${workflow.workflowId}'),
-        avatar: const Icon(Icons.block, size: 18),
-        label: Text(view.actionText),
+        icon: Icons.block,
+        label: view.actionText,
+        foreground: foreground,
       ),
     );
   }
@@ -1341,27 +1507,27 @@ class _WorkflowActionSurface extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _ActionSurfacePanel(
-            icon: Icons.edit_note_outlined,
-            title: 'Details',
-            body: _surfaceInputFor(contract.category, workflow),
+          _ActionSurfaceDetailStack(
             accent: accent,
-          ),
-          const SizedBox(height: 12),
-          _ActionSurfacePanel(
-            icon: Icons.task_alt_outlined,
-            title: 'Member outcome',
-            body: isReceiverSurface
-                ? _receiverBodyFor(contract.category)
-                : _surfaceOutcomeFor(contract.category, workflow),
-            accent: accent,
-          ),
-          const SizedBox(height: 12),
-          _ActionSurfacePanel(
-            icon: Icons.verified_user_outlined,
-            title: 'Privacy boundary',
-            body: _reviewTrustFor(contract.category),
-            accent: accent,
+            rows: [
+              _ActionSurfaceDetail(
+                icon: Icons.edit_note_outlined,
+                title: 'Details',
+                body: _surfaceInputFor(contract.category, workflow),
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.task_alt_outlined,
+                title: 'Member outcome',
+                body: isReceiverSurface
+                    ? _receiverBodyFor(contract.category)
+                    : _surfaceOutcomeFor(contract.category, workflow),
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.verified_user_outlined,
+                title: 'Privacy boundary',
+                body: _reviewTrustFor(contract.category),
+              ),
+            ],
           ),
         ],
       ),
@@ -1389,49 +1555,80 @@ class _WorkflowActionSurface extends StatelessWidget {
   }
 }
 
-class _ActionSurfacePanel extends StatelessWidget {
-  const _ActionSurfacePanel({
+class _ActionSurfaceDetail {
+  const _ActionSurfaceDetail({
     required this.icon,
     required this.title,
     required this.body,
-    required this.accent,
   });
 
   final IconData icon;
   final String title;
   final String body;
+}
+
+class _ActionSurfaceDetailStack extends StatelessWidget {
+  const _ActionSurfaceDetailStack({required this.accent, required this.rows});
+
   final Color accent;
+  final List<_ActionSurfaceDetail> rows;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final surface = Color.alphaBlend(
+      accent.withValues(alpha: 0.86),
+      Colors.black,
+    );
+    final foreground = _foregroundFor(surface);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: scheme.surface,
+        color: surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: accent.withValues(alpha: 0.32)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(18),
+        child: Column(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: accent.withValues(alpha: 0.14),
-              child: Icon(icon, size: 20, color: accent),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
+            for (var index = 0; index < rows.length; index++) ...[
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 4),
-                  Text(body),
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: foreground.withValues(alpha: 0.12),
+                    child: Icon(rows[index].icon, size: 20, color: foreground),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rows[index].title,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          rows[index].body,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: foreground.withValues(alpha: 0.90),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
+              if (index != rows.length - 1)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Divider(color: foreground.withValues(alpha: 0.18)),
+                ),
+            ],
           ],
         ),
       ),
@@ -1445,34 +1642,51 @@ class _WorkflowResultPanel extends StatelessWidget {
     required this.title,
     required this.body,
     required this.icon,
+    required this.accent,
   });
 
   final String title;
   final String body;
   final IconData icon;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
+    final surface = Color.alphaBlend(
+      accent.withValues(alpha: 0.86),
+      Colors.black,
+    );
+    final foreground = _foregroundFor(surface);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon),
+            Icon(icon, color: foreground),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.titleSmall),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(body),
+                  Text(
+                    body,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground.withValues(alpha: 0.90),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1483,26 +1697,75 @@ class _WorkflowResultPanel extends StatelessWidget {
   }
 }
 
-class _PersonaStatusTile extends StatelessWidget {
-  const _PersonaStatusTile({required this.persona, required this.personaCount});
+class _PersonaStatusStrip extends StatelessWidget {
+  const _PersonaStatusStrip({
+    required this.persona,
+    required this.personaCount,
+    required this.foreground,
+  });
 
   final LoomPersonaDefinition persona;
   final int personaCount;
+  final Color foreground;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return DecoratedBox(
       key: const ValueKey('active-persona-card'),
-      child: ListTile(
-        leading: const Icon(Icons.people_outline),
-        title: Text(
-          persona.label,
-          key: ValueKey('active-persona-${persona.personaId}'),
-        ),
-        subtitle: Text('${persona.roleLabel} - ${persona.description}'),
-        trailing: Chip(
-          key: const ValueKey('active-persona-count'),
-          label: Text('$personaCount personas'),
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.13),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: foreground.withValues(alpha: 0.24)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Row(
+          children: [
+            Icon(Icons.people_outline, color: foreground),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    persona.label,
+                    key: ValueKey('active-persona-${persona.personaId}'),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    '${persona.roleLabel} - ${persona.description}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground.withValues(alpha: 0.86),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            DecoratedBox(
+              key: const ValueKey('active-persona-count'),
+              decoration: BoxDecoration(
+                color: foreground.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                child: Text(
+                  '$personaCount personas',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

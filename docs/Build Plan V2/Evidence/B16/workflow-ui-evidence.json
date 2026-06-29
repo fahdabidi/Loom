@@ -30,6 +30,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Messages | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Open Messages | Connections | Open Connections | Connection invite | Send invite | Message stream rendering | Post message | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | Private by default | Membership scoped | Ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Open Messages",
+        "Messages | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Connections | Open Connections | Connection invite | Send invite | Member Social Space"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -57,6 +62,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Connections | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Open Connections | Connection invite | Send invite | Message stream rendering | Post message | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | Private by default | Membership scoped | Ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Open Connections",
+        "Connections | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Connection invite | Send invite | Message stream rendering | Post message | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -86,6 +96,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Connection invite | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Send invite | Message stream rendering | Post message | Member tools | Useful actions for this community. | Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | Private by default | Membership scoped | Ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Send invite",
+        "Connection invite | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Message stream rendering | Post message | Member tools | Useful actions for this community. | Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Member Social Space"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -113,6 +128,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Blocked-target prevention | Member form captures labeled details, privacy choices, and reviewer handoff. | This week | Community venue | Capacity tracked | Check blocked state | Messages and connections | Member communication and relationship controls. | Messages | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Connections | Member Social Space",
+        "Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | Details | Date, location, capacity, and attendee state are included. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Cancel | Check blocked state",
+        "Blocked-target prevention | Member form captures labeled details, privacy choices, and reviewer handoff. | This week | Community venue | Capacity tracked | Event updated | Event details and attendance records are up to date. | Going | Messages and connections | Member communication and relationship controls. | Messages | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -142,6 +162,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Message stream rendering | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Post message | Member tools | Useful actions for this community. | Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | Private by default | Membership scoped | Ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Post message",
+        "Message stream rendering | Member communication stays scoped to the community relationship. | Private by default | Membership scoped | Ready | Setting saved | The member setting is up to date. | Verified | Member tools | Useful actions for this community. | Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Member Social Space"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -169,6 +194,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Start sensitive page ad status | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | No ad shown | Preference saved | Receipt ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Review ad state",
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Setting saved | The member setting is up to date. | Verified | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Review ad state | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Start sensitive page ad status | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -198,6 +228,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Setting saved | The member setting is up to date. | Verified | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Review ad state | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Start sensitive page ad status | Local package details | Member Social Space",
+        "Update member channel | Use this surface to change a member communication or relationship setting. | Private by default | Membership scoped | Ready | Details | Member channel, relationship, and preference details are included. | Member outcome | The communication or relationship setting changes for this community. | Privacy boundary | Private member relationships stay scoped to this community. | Member setting | Cancel | Review ad state",
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Setting saved | The member setting is up to date. | Verified | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Start sensitive page ad status | Local package details | Member Social Space"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -225,6 +260,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Setting saved | The member setting is up to date. | Verified | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Start sensitive page ad status | Local package details | Member Social Space",
+        "Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Details | Required fields, privacy choices, and reviewer handoff are included. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Sensitive page ad status details | Cancel | Start sensitive page ad status",
+        "Sponsored message | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Setting saved | The member setting is up to date. | Verified | Top banner status | Member form captures labeled details, privacy choices, and reviewer handoff. | Private by default | Membership scoped | Ready | Sensitive page ad status | Labeled fields | Privacy checked | Review handoff | Record saved | The community record is saved. | Saved | Local package details | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -254,6 +294,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Member ad-off checkout | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Buy ad-off | Community ad-off checkout | Waiting for the member payment or preference to be saved. | Waiting | Entitlement status | Review ad state | Receipt history | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Buy ad-off",
+        "Member ad-off checkout | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Community ad-off checkout | Waiting for the member payment or preference to be saved. | Waiting | Entitlement status | Review ad state | Ad-Free Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -281,6 +326,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Community ad-off checkout | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Buy ad-off | Entitlement status | Review ad state | Receipt history | Ad suppression | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Buy ad-off",
+        "Community ad-off checkout | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Entitlement status | Review ad state | Receipt history | Ad-Free Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -310,6 +360,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Entitlement status | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Receipt history | Ad suppression | Settlement and utility allocation | You can review the current details without changing them. | Read only | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Review ad state",
+        "Entitlement status | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Receipt history | Review ad state | Ad suppression | Ad-Free Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -337,6 +392,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Receipt history | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Review ad state | Ad suppression | Settlement and utility allocation | You can review the current details without changing them. | Read only | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Review ad state",
+        "Receipt history | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Ad suppression | Review ad state | Settlement and utility allocation | You can review the current details without changing them. | Read only | Ad-Free Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -366,6 +426,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Receipt history | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Ad suppression | Review ad state | Settlement and utility allocation | You can review the current details without changing them. | Read only | Local package details | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Review ad state",
+        "Receipt history | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Ad suppression | Settlement and utility allocation | You can review the current details without changing them. | Read only | Local package details | Ad-Free Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -393,6 +458,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Receipt history | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Ad suppression | Settlement and utility allocation | Review ad state | Local package details | Ad-Free Community",
+        "Record payment | Use this surface to capture the amount, receipt, and privacy setting. | No ad shown | Preference saved | Receipt ready | Details | Amount, payer, privacy choice, and receipt destination are included. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Cancel | Review ad state",
+        "Ad suppression | Ad preference and sponsored-message behavior are ready to review. | No ad shown | Preference saved | Receipt ready | Receipt saved | The receipt is saved and available to the member. | Receipt | Settlement and utility allocation | Local package details | Ad-Free Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -422,6 +492,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Import preview | Data package includes scope, protected fields, and handoff status. | Needs decision | Private notes | Member notified | Generate export | Documents and data | Documents, exports, imports, and transfer records. | Import replay and idempotency | Redacted copy | Checksum ready | Exportable | Protected field routing and redaction | Data Portability Community",
+        "Resolve member request | Use this surface to record the decision and member follow-up. | Needs decision | Private notes | Member notified | Details | Request details, decision, and follow-up note are included. | Member outcome | The decision is saved with the next step visible to the member. | Privacy boundary | Private member details stay protected. | Decision desk | Cancel | Generate export",
+        "Import preview | Data package includes scope, protected fields, and handoff status. | Needs decision | Private notes | Member notified | Decision saved | The decision is saved and ready for member follow-up. | Decided | Documents and data | Documents, exports, imports, and transfer records. | Import replay and idempotency | Redacted copy | Checksum ready | Exportable | Generate export | Protected field routing and redaction | Data Portability Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -449,6 +524,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Import replay and idempotency | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Protected field routing and redaction | Exportable custom-schema listing | Full export bundle | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Import replay and idempotency | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Protected field routing and redaction | Generate export | Exportable custom-schema listing | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -478,6 +558,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Protected field routing and redaction | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Exportable custom-schema listing | Full export bundle | Redacted export bundle | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Protected field routing and redaction | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Exportable custom-schema listing | Generate export | Full export bundle | Data Portability Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -505,6 +590,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Exportable custom-schema listing | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Full export bundle | Redacted export bundle | Checksum record | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Exportable custom-schema listing | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Full export bundle | Generate export | Redacted export bundle | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -534,6 +624,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Full export bundle | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Redacted export bundle | Checksum record | Provider transfer verification | Waiting for the export package to be prepared. | Waiting | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Full export bundle | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Redacted export bundle | Generate export | Checksum record | Data Portability Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -561,6 +656,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Redacted export bundle | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Checksum record | Provider transfer verification | A data package update is ready to inspect. | Receive verification | Provider transfer rollback | Waiting for the export package to be prepared. | Waiting | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Redacted export bundle | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Checksum record | Generate export | Provider transfer verification | A data package update is ready to inspect. | Receive verification | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -590,6 +690,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Checksum record | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Generate export | Provider transfer verification | A data package update is ready to inspect. | Receive verification | Provider transfer rollback | Waiting for the export package to be prepared. | Waiting | Local package details | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Checksum record | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Provider transfer verification | A data package update is ready to inspect. | Receive verification | Provider transfer rollback | Receive rollback | Data Portability Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -618,6 +723,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_complete.png"
       ],
+      "screenshotVisibleTexts": [
+        "Checksum record | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Read only | Provider transfer verification | Data package includes scope, protected fields, and handoff status. | Generate export | Provider transfer rollback | Local package details | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Checksum record | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Read only | Provider transfer verification | Data package includes scope, protected fields, and handoff status. | Data package ready | The data package is ready with protected fields handled. | Ready | Provider transfer rollback | Generate export | Local package details | Data Portability Community"
+      ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
@@ -645,6 +755,11 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_start.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_action.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Checksum record | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Read only | Provider transfer verification | Data package includes scope, protected fields, and handoff status. | Data package ready | The data package is ready with protected fields handled. | Ready | Provider transfer rollback | Generate export | Local package details | Data Portability Community",
+        "Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | Redacted copy | Checksum ready | Exportable | Details | Scope, redaction, checksum, and handoff destination are included. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Cancel | Generate export",
+        "Provider transfer verification | Data package includes scope, protected fields, and handoff status. | Redacted copy | Checksum ready | Exportable | Data package ready | The data package is ready with protected fields handled. | Ready | Provider transfer rollback | Local package details | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
