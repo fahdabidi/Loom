@@ -358,8 +358,9 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     final activePersona = _activePersona(experience);
     final textTheme = Theme.of(context).textTheme;
     final accent = Color(experience.accentColor);
+    final background = _screenBackgroundFor(accent);
     return Scaffold(
-      backgroundColor: const Color(0xfffbfffd),
+      backgroundColor: background,
       appBar: AppBar(
         title: Text(community.displayName),
         backgroundColor: accent,
@@ -385,17 +386,24 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.10),
+              color: Colors.white.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: accent.withValues(alpha: 0.28)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
             ),
-            child: const Padding(
-              padding: EdgeInsets.all(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Icon(Icons.campaign_outlined),
-                  SizedBox(width: 12),
-                  Expanded(child: Text('No sponsored message right now.')),
+                  const Icon(Icons.campaign_outlined, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'No sponsored message right now.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -523,6 +531,10 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           ExpansionTile(
             title: const Text('Local package details'),
             leading: const Icon(Icons.inventory_2_outlined),
+            collapsedTextColor: Colors.white,
+            collapsedIconColor: Colors.white,
+            textColor: Colors.white,
+            iconColor: Colors.white,
             children: [
               _ExtensionInfoTile(
                 icon: Icons.extension_outlined,
@@ -948,6 +960,10 @@ Color _foregroundFor(Color background) {
       : Colors.black;
 }
 
+Color _screenBackgroundFor(Color accent) {
+  return Color.alphaBlend(accent.withValues(alpha: 0.42), Colors.black);
+}
+
 class _SurfaceFactPill extends StatelessWidget {
   const _SurfaceFactPill({
     required this.icon,
@@ -1332,9 +1348,10 @@ class _WorkflowAction extends StatelessWidget {
     final accent = _categoryAccentColor(contract.category, scheme);
     final foreground = _foregroundFor(accent);
     final buttonStyle = FilledButton.styleFrom(
-      backgroundColor: foreground.withValues(alpha: 0.94),
-      foregroundColor: accent,
-      iconColor: accent,
+      backgroundColor: foreground.withValues(alpha: 0.14),
+      foregroundColor: foreground,
+      iconColor: foreground,
+      side: BorderSide(color: foreground.withValues(alpha: 0.28)),
     );
     if (view.waitingForPrerequisite) {
       return Align(
@@ -1421,22 +1438,18 @@ class _WorkflowActionSurface extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final accent = _categoryAccentColor(contract.category, scheme);
+    final foreground = _foregroundFor(accent);
     final metadata = _domainMetadataFor(contract.category, workflow);
     final title = isReceiverSurface
         ? contract.receiverSurfaceTitle
         : contract.screenTitle;
 
     return Scaffold(
-      backgroundColor: Color.alphaBlend(
-        accent.withValues(alpha: 0.06),
-        scheme.surface,
-      ),
+      backgroundColor: _screenBackgroundFor(accent),
       appBar: AppBar(
         title: Text(title),
-        backgroundColor: Color.alphaBlend(
-          accent.withValues(alpha: 0.16),
-          scheme.surface,
-        ),
+        backgroundColor: accent,
+        foregroundColor: foreground,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(false),
           icon: const Icon(Icons.close),
@@ -1489,16 +1502,10 @@ class _WorkflowActionSurface extends StatelessWidget {
                     runSpacing: 8,
                     children: [
                       for (final detail in metadata)
-                        Chip(
-                          backgroundColor: scheme.surface.withValues(
-                            alpha: 0.92,
-                          ),
-                          avatar: Icon(
-                            _metadataIconFor(detail),
-                            size: 18,
-                            color: accent,
-                          ),
-                          label: Text(detail),
+                        _SurfaceFactPill(
+                          icon: _metadataIconFor(detail),
+                          label: detail,
+                          foreground: scheme.onPrimary,
                         ),
                     ],
                   ),
