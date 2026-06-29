@@ -1853,13 +1853,23 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
       .where((text) => text.isNotEmpty)
       .take(3)
       .toList();
+  final semanticProof = _semanticSurfaceProofForWorkflow(
+    workflowId: workflowId,
+    visibleTextEvidence: relatedRows.map(
+      (row) => _asString(row['visibleTextExtract']),
+    ),
+  );
+  final semanticPass =
+      semanticProof['status'] == 'pass' ||
+      _workflowIsSupportSurface(workflowId);
   final screenshotRefs = relatedRows
       .map((row) => _asString(row['screenshotPath']))
       .where((path) => path.isNotEmpty)
       .toList();
   final coveragePass = missing.isEmpty;
   final rowPass = rowFailures.isEmpty;
-  final domainPass = coveragePass && rowPass && visualFailures.isEmpty;
+  final domainPass =
+      coveragePass && rowPass && visualFailures.isEmpty && semanticPass;
   final questions = <JsonMap>[
     _directAnswer(
       questionId: '$coverageRowId-coverage',
@@ -1887,11 +1897,26 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
           ? _asStringList(coverage['screenRowIds'])
           : rowFailures,
       why: domainPass
-          ? 'Screenshot pixel/layout inspection and row critique did not find generic primary-surface failures for this workflow/persona group.'
-          : 'Rows still have unresolved visual/review/coverage failures: ${rowFailures.isEmpty ? missing.join(', ') : rowFailures.join(', ')}.',
+          ? 'Screenshot pixel/layout inspection, row critique, and semantic surface proof all support this workflow/persona group.'
+          : 'Rows still have unresolved visual/review/coverage/semantic failures: ${_workflowPersonaFailureSummary(missing, rowFailures, semanticProof)}.',
       requiredFix: domainPass
           ? 'None.'
           : 'Replace or document the exact domain-native surface and recapture the affected workflow/persona rows.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-semantic-surface-proof',
+      scope: 'workflow-persona',
+      question:
+          'Does the after screenshot prove the requested target product surface for workflow `$workflowId` and persona `$persona` is actually present, with the required domain content and affordances?',
+      pass: semanticPass,
+      score: semanticPass ? 90 : 25,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why: semanticPass
+          ? _asString(semanticProof['summary'])
+          : '${_asString(semanticProof['summary'])} Missing groups: ${_asStringList(semanticProof['missingGroups']).join(', ')}.',
+      requiredFix: semanticPass
+          ? 'None.'
+          : 'Implement the requested target surface, recapture after screenshots, and show visible UI evidence for every missing group: ${_asStringList(semanticProof['missingGroups']).join(', ')}.',
     ),
     _directAnswer(
       questionId: '$coverageRowId-visual-quality',
@@ -1941,6 +1966,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     'screenRowIds': _asStringList(coverage['screenRowIds']),
     'screenshotPaths': screenshotRefs,
     'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'semanticSurfaceProof': semanticProof,
     'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
     'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
       workflowId,
@@ -1950,6 +1976,529 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
         ? 'Workflow/persona review failed for `$workflowId` / `$persona`.'
         : 'Workflow/persona review passed for `$workflowId` / `$persona`.',
   };
+}
+
+String _workflowPersonaFailureSummary(
+  List<String> missing,
+  List<String> rowFailures,
+  JsonMap semanticProof,
+) {
+  final parts = <String>[];
+  if (missing.isNotEmpty) {
+    parts.add('missing coverage: ${missing.join(', ')}');
+  }
+  if (rowFailures.isNotEmpty) {
+    parts.add('row failures: ${rowFailures.join(', ')}');
+  }
+  if (semanticProof['status'] == 'fail') {
+    final missingGroups = _asStringList(semanticProof['missingGroups']);
+    parts.add(
+      'semantic surface proof missing: ${missingGroups.isEmpty ? 'target-surface evidence' : missingGroups.join(', ')}',
+    );
+  }
+  return parts.isEmpty ? 'unknown failure' : parts.join('; ');
+}
+
+JsonMap _semanticSurfaceProofForWorkflow({
+  required String workflowId,
+  required Iterable<String> visibleTextEvidence,
+}) {
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  final text = visibleTextEvidence.join(' | ').toLowerCase();
+  final groups = _semanticRequirementGroupsForWorkflow(workflowId);
+  if (_workflowIsSupportSurface(workflowId)) {
+    return <String, Object?>{
+      'status': 'pass',
+      'targetProductionSurface': targetSurface,
+      'requiredGroups': <JsonMap>[],
+      'passedGroups': <String>['support-surface'],
+      'missingGroups': <String>[],
+      'visibleEvidenceExcerpt': _truncate(text, 700),
+      'summary':
+          'Support surface workflow; semantic production-surface proof is not required.',
+    };
+  }
+  if (groups.isEmpty) {
+    return <String, Object?>{
+      'status': 'fail',
+      'targetProductionSurface': targetSurface,
+      'requiredGroups': <JsonMap>[],
+      'passedGroups': <String>[],
+      'missingGroups': <String>['specific target product surface'],
+      'visibleEvidenceExcerpt': _truncate(text, 700),
+      'summary':
+          'The target production surface is not specific enough to prove from screenshots.',
+    };
+  }
+
+  final passed = <String>[];
+  final missing = <String>[];
+  for (final group in groups) {
+    final label = _asString(group['label']);
+    final terms = _asStringList(group['terms']);
+    if (_containsAnyTerm(text, terms)) {
+      passed.add(label);
+    } else {
+      missing.add(label);
+    }
+  }
+
+  return <String, Object?>{
+    'status': missing.isEmpty ? 'pass' : 'fail',
+    'targetProductionSurface': targetSurface,
+    'requiredGroups': groups,
+    'passedGroups': passed,
+    'missingGroups': missing,
+    'visibleEvidenceExcerpt': _truncate(text, 700),
+    'summary': missing.isEmpty
+        ? 'After-screenshot visible text proves the target surface: $targetSurface.'
+        : 'After-screenshot visible text does not yet prove the target surface: $targetSurface.',
+  };
+}
+
+bool _containsAnyTerm(String text, List<String> terms) {
+  return terms.any((term) => text.contains(term.toLowerCase()));
+}
+
+JsonMap _semanticGroup(String label, List<String> terms) {
+  return <String, Object?>{'label': label, 'terms': terms};
+}
+
+List<JsonMap> _semanticRequirementGroupsForWorkflow(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <JsonMap>[
+      _semanticGroup('audience or recipient group', <String>[
+        'audience',
+        'members',
+        'selected audience',
+        'recipient',
+      ]),
+      _semanticGroup('author or sender attribution', <String>[
+        'author',
+        'sender',
+        'from',
+        'posted by',
+        'sent by',
+      ]),
+      _semanticGroup('message body or announcement content', <String>[
+        'message',
+        'body',
+        'announcement',
+        'notice',
+        'update',
+      ]),
+      _semanticGroup('timestamp or delivery timing', <String>[
+        'timestamp',
+        'time',
+        'today',
+        'date',
+        'delivery',
+      ]),
+      _semanticGroup('receiver inbox/feed state', <String>[
+        'receiver',
+        'inbox',
+        'notification',
+        'read',
+        'posted',
+      ]),
+      _semanticGroup('natural publish or send action', <String>[
+        'publish',
+        'send',
+        'posted',
+        'sent',
+      ]),
+    ];
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return <JsonMap>[
+      _semanticGroup('event title or purpose', <String>[
+        'event',
+        'practice',
+        'photo walk',
+        'meeting',
+      ]),
+      _semanticGroup('schedule or date/time', <String>[
+        'schedule',
+        'date',
+        'time',
+        'today',
+        'tomorrow',
+      ]),
+      _semanticGroup('location or venue', <String>[
+        'location',
+        'venue',
+        'field',
+        'room',
+        'park',
+      ]),
+      _semanticGroup('capacity or attendance status', <String>[
+        'capacity',
+        'spots',
+        'attending',
+        'rsvp',
+        'confirmed',
+      ]),
+      _semanticGroup('RSVP action or result', <String>[
+        'rsvp',
+        'reserve',
+        'join',
+        'confirmed',
+        'ticket',
+      ]),
+    ];
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('receipt') ||
+      id.contains('ad-off')) {
+    return <JsonMap>[
+      _semanticGroup('amount or price', <String>[
+        'amount',
+        r'$',
+        'total',
+        'dues',
+        'donation',
+      ]),
+      _semanticGroup('payer or donor context', <String>[
+        'payer',
+        'donor',
+        'member',
+        'account',
+      ]),
+      _semanticGroup('payment or donate action', <String>[
+        'pay',
+        'donate',
+        'checkout',
+        'subscribe',
+      ]),
+      _semanticGroup('receipt or confirmation', <String>[
+        'receipt',
+        'confirmation',
+        'confirmed',
+        'paid',
+      ]),
+      _semanticGroup('status or audit trail', <String>[
+        'status',
+        'audit',
+        'settlement',
+        'history',
+      ]),
+    ];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite') ||
+      id.contains('blocked')) {
+    return <JsonMap>[
+      _semanticGroup('conversation or connection subject', <String>[
+        'message',
+        'thread',
+        'connection',
+        'invite',
+      ]),
+      _semanticGroup('sender or recipient context', <String>[
+        'from',
+        'to',
+        'sender',
+        'recipient',
+        'member',
+      ]),
+      _semanticGroup('message body or invitation content', <String>[
+        'body',
+        'message',
+        'note',
+        'invitation',
+      ]),
+      _semanticGroup('action or state', <String>[
+        'send',
+        'accept',
+        'block',
+        'sent',
+        'received',
+      ]),
+    ];
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('rollback') ||
+      id.contains('schema')) {
+    return <JsonMap>[
+      _semanticGroup('scope or selected data', <String>[
+        'scope',
+        'selected',
+        'data',
+        'schema',
+      ]),
+      _semanticGroup('preview or redaction', <String>[
+        'preview',
+        'redaction',
+        'redacted',
+        'protected',
+      ]),
+      _semanticGroup('checksum or verification', <String>[
+        'checksum',
+        'verify',
+        'verified',
+        'validation',
+      ]),
+      _semanticGroup('transfer/export action or status', <String>[
+        'export',
+        'transfer',
+        'download',
+        'status',
+      ]),
+    ];
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return <JsonMap>[
+      _semanticGroup('query or search input', <String>[
+        'query',
+        'search',
+        'question',
+        'ask',
+      ]),
+      _semanticGroup('answer or result', <String>[
+        'answer',
+        'result',
+        'found',
+        'digest',
+      ]),
+      _semanticGroup('citation or source', <String>[
+        'citation',
+        'source',
+        'reference',
+        'cited',
+      ]),
+    ];
+  }
+  if (id.contains('volunteer') || id.contains('signup')) {
+    return <JsonMap>[
+      _semanticGroup('volunteer role or task', <String>[
+        'volunteer',
+        'role',
+        'task',
+        'serve',
+      ]),
+      _semanticGroup('time or shift', <String>[
+        'time',
+        'shift',
+        'date',
+        'slot',
+      ]),
+      _semanticGroup('contact or protected fields', <String>[
+        'contact',
+        'phone',
+        'protected',
+        'private',
+      ]),
+      _semanticGroup('signup confirmation', <String>[
+        'sign up',
+        'signup',
+        'confirmed',
+        'submitted',
+      ]),
+    ];
+  }
+  if (id.contains('plant-exchange')) {
+    return <JsonMap>[
+      _semanticGroup('plant details', <String>['plant', 'variety', 'seedling']),
+      _semanticGroup('pickup timing', <String>['pickup', 'time', 'date']),
+      _semanticGroup('owner contact', <String>['contact', 'owner', 'member']),
+      _semanticGroup('offer/submitted state', <String>[
+        'offer',
+        'available',
+        'submitted',
+      ]),
+    ];
+  }
+  if (id.contains('care')) {
+    return <JsonMap>[
+      _semanticGroup('care request details', <String>[
+        'care',
+        'request',
+        'need',
+        'details',
+      ]),
+      _semanticGroup('privacy/protection indicator', <String>[
+        'private',
+        'protected',
+        'confidential',
+      ]),
+      _semanticGroup('response or status', <String>[
+        'response',
+        'status',
+        'review',
+        'submitted',
+      ]),
+    ];
+  }
+  if (id.contains('donor-visibility')) {
+    return <JsonMap>[
+      _semanticGroup('visibility choice', <String>[
+        'visibility',
+        'private',
+        'public',
+        'anonymous',
+      ]),
+      _semanticGroup('donation context', <String>['donation', 'donor', 'gift']),
+      _semanticGroup('receipt visibility state', <String>[
+        'receipt',
+        'visible',
+        'hidden',
+        'confirmation',
+      ]),
+    ];
+  }
+  if (id.contains('in-stream-ad') ||
+      id.contains('top-banner-no-fill') ||
+      id.contains('sensitive-no-fill')) {
+    return <JsonMap>[
+      _semanticGroup('ad or sponsor context', <String>[
+        'ad',
+        'sponsored',
+        'sponsor',
+        'no sponsored',
+      ]),
+      _semanticGroup('disclosure or no-fill state', <String>[
+        'disclosure',
+        'sponsored',
+        'no-fill',
+        'no sponsored',
+      ]),
+    ];
+  }
+  if (id.contains('architectural') ||
+      id.contains('committee') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return <JsonMap>[
+      _semanticGroup('request details', <String>['request', 'details', 'case']),
+      _semanticGroup('decision action', <String>[
+        'approve',
+        'reject',
+        'decision',
+      ]),
+      _semanticGroup('status or notification', <String>[
+        'status',
+        'notification',
+        'pending',
+      ]),
+    ];
+  }
+  if (id.contains('document')) {
+    return <JsonMap>[
+      _semanticGroup('document title', <String>['document', 'title', 'file']),
+      _semanticGroup('audience or access state', <String>[
+        'audience',
+        'access',
+        'members',
+      ]),
+      _semanticGroup('file metadata', <String>['file', 'pdf', 'updated']),
+    ];
+  }
+  if (id.contains('facility') || id.contains('reservation')) {
+    return <JsonMap>[
+      _semanticGroup('facility details', <String>['facility', 'room', 'space']),
+      _semanticGroup('availability', <String>[
+        'availability',
+        'available',
+        'reserved',
+      ]),
+      _semanticGroup('reservation confirmation', <String>[
+        'reservation',
+        'confirmation',
+        'confirmed',
+      ]),
+    ];
+  }
+  if (id.contains('roster') || id.contains('team')) {
+    return <JsonMap>[
+      _semanticGroup('team or roster context', <String>['team', 'roster']),
+      _semanticGroup('member details', <String>[
+        'member',
+        'player',
+        'guardian',
+      ]),
+      _semanticGroup('schedule or protected state', <String>[
+        'schedule',
+        'protected',
+        'privacy',
+      ]),
+    ];
+  }
+  if (id.contains('nomination') || id.contains('vote') || id.contains('book')) {
+    return <JsonMap>[
+      _semanticGroup('book or nomination', <String>[
+        'book',
+        'nomination',
+        'title',
+      ]),
+      _semanticGroup('vote or selected state', <String>[
+        'vote',
+        'selected',
+        'winning',
+      ]),
+      _semanticGroup('meeting or discussion context', <String>[
+        'meeting',
+        'discussion',
+        'club',
+      ]),
+    ];
+  }
+  if (id.contains('gear')) {
+    return <JsonMap>[
+      _semanticGroup('gear item', <String>['gear', 'item', 'lens', 'camera']),
+      _semanticGroup('availability or borrower', <String>[
+        'available',
+        'borrower',
+        'loan',
+      ]),
+      _semanticGroup('handoff or status', <String>['handoff', 'status', 'due']),
+    ];
+  }
+  if (id.contains('critique')) {
+    return <JsonMap>[
+      _semanticGroup('work or image title', <String>[
+        'image',
+        'photo',
+        'work',
+        'title',
+      ]),
+      _semanticGroup('comments or reviewer state', <String>[
+        'comment',
+        'reviewer',
+        'critique',
+      ]),
+      _semanticGroup('result', <String>['result', 'submitted', 'reviewed']),
+    ];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <JsonMap>[
+      _semanticGroup('match context', <String>['match', 'game', 'round']),
+      _semanticGroup('players', <String>[
+        'player',
+        'opponent',
+        'white',
+        'black',
+      ]),
+      _semanticGroup('outcome or next action', <String>[
+        'result',
+        'outcome',
+        'record',
+        'next',
+      ]),
+    ];
+  }
+  return <JsonMap>[];
 }
 
 List<JsonMap> _holisticAnswers(
@@ -4456,6 +5005,7 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
     'summary': _asString(scorecard['summary']),
     'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'semanticSurfaceProof': scorecard['semanticSurfaceProof'],
     'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
     'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
       workflowId,
@@ -4464,6 +5014,7 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'acceptanceCriteria': <String>[
       'All direct questions in this workflow/persona scorecard pass.',
       'The primary surface is domain-native for `${workflowId}` and the target persona.',
+      'The semantic surface proof passes: after-screenshot visible text demonstrates the required target-surface elements, not just absence of generic-card findings.',
       'Visible text and critique cite the actual screenshots for every screen row.',
       ..._screenRowAcceptanceCriteria(scorecard, criterionId),
     ],
@@ -4545,6 +5096,7 @@ List<String> _screenRowAcceptanceCriteria(JsonMap row, String criterionId) {
     'Visible text for `${_rowId(row)}` is extracted from the screenshot or manually transcribed from the screenshot.',
     'Critique for `${_rowId(row)}` names visible UI elements, visible text, persona `${persona}`, workflow `${workflowId}`, and the exact product UX issue.',
     'Primary surface for `${workflowId}` is documented as `${_targetProductionSurfaceForWorkflow(workflowId)}` or another explicit domain-native surface.',
+    'After-screenshot visible text proves every required semantic surface group for `${workflowId}`.',
     'Fresh screenshot path/hash/timestamp/app commit SHA are recorded after the fix.',
     if (criterionId == 'b25-c06-domain-native-primary-surfaces')
       'The workflow/persona direct-question scorecard passes the domain-native primary surface question.',

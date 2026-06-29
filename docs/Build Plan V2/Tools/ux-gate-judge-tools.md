@@ -10,6 +10,7 @@ judge failures into fix batches for the next worker iteration.
 | Role | Responsibility | Context allowed | Output |
 | --- | --- | --- | --- |
 | Worker Agent | Implements UX/code/test fixes. | Phase docs, code, failing judge reports, remediation plan. | Code, tests, screenshots, updated artifacts. |
+| Product Experience Doc Steward | Creates or updates the community product experience doc before capture/remediation. | Loom Product Docs V2, Skill references, prior judge tickets, owner prompt, community examples. | Canonical Product Docs V2 community docs for native Loom runs, or local `docs/product/community-product-experience.md` for standalone Skill runs. |
 | Evidence Collector Tool | Captures screenshots, hashes, visible text, app commit SHA, device metadata, command output. | Running app, emulator, artifact paths. No implementation rationale. | Evidence JSON and screenshot bundle. |
 | Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
 | Independent UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Holistic answers, workflow/persona scorecards, screen critiques, findings. |
@@ -19,6 +20,18 @@ judge failures into fix batches for the next worker iteration.
 ## Deterministic CLIs
 
 Run from `app/` with WSL Ubuntu:
+
+Before running the CLIs, complete the product-doc gate:
+
+- Native Loom repo B25: create or update
+  `docs/Product Docs V2/Community Examples/<community>-product-experience.md` for every reviewed
+  community/test app.
+- Standalone Skill B25-style validation: create or update
+  `<extension-workspace>/docs/product/community-product-experience.md` and companion local UX/workflow/
+  API-map docs. Do not mutate the fetched Loom repo's Product Docs V2.
+- Use `docs/Build Plan V2/Skill/references/community-product-experience-template.md` for both flows.
+- Record whether each remediation item is a `product-spec-gap`, `implementation-gap`, `evidence-gap`,
+  or `mixed-gap`.
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
@@ -149,8 +162,16 @@ B25 evidence must include:
 - `workflowPersonaScorecards`: direct-question scorecards for each workflow/persona pair, including
   task clarity, domain-native primary surface, natural actions, validation/error/result states,
   receiver/unauthorized states, and whether that workflow UI feels production-grade on its own.
+- `semanticSurfaceProof`: one object on every workflow/persona scorecard proving the after screenshots
+  visibly contain the requested target product surface elements. A scorecard cannot pass only because no
+  known defect was detected. For example, an announcement surface must show audience or recipient group,
+  author/sender attribution, message body, timestamp or delivery timing, receiver state, and natural
+  publish/send/read action.
 - `visualInspection`: one object on every screen row, produced from the screenshot pixels/layout, with
   metrics, signals, status, summary, and finding IDs. A missing or failed `visualInspection` blocks B25.
+- `productDocCoverage`: links each community/test app to the product experience doc used for review,
+  records the doc commit or local artifact hash, and states whether the ticket is a product-spec gap or
+  an implementation/evidence gap.
 
 B25 cannot pass from an average score. One unresolved blocker/major criterion failure blocks the phase.
 The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted
@@ -208,6 +229,8 @@ Workflow/persona pass, repeated for every workflow/persona pair:
 - If another persona receives or acts on the state, is that receiver UX clear?
 - Are unauthorized, read-only, hidden, or disabled states appropriate for this persona?
 - Does this workflow UI feel production-grade on its own?
+- Does the after screenshot prove the requested target product surface is actually present, with the
+  required domain content and affordances, instead of merely avoiding known bad patterns?
 
 Do not batch all workflow/persona questions into one giant answer. The UX Judge Agent may perform the
 holistic pass once, then process workflow/persona groups in batches small enough to preserve fresh,
@@ -222,6 +245,7 @@ Use this prompt shape for the UX Judge Agent:
 You are a UX Judge Agent. You did not implement the UI.
 
 Use only the supplied artifacts:
+- community product experience docs
 - production UX blueprint
 - workflow/persona contracts
 - screenshot inventory
@@ -239,6 +263,15 @@ Inspect the actual screenshots as pixels and layout, not just JSON rows. Fail ro
 checklist/review modals, repeated generic card shells, thin-content surfaces, weak visual identity,
 default-scaffold screens, or missing/undecodable screenshots. Treat `visualInspection.status=fail` as
 direct evidence that the row cannot pass until the UI is redesigned and recaptured.
+Before judging a screen, compare it to the relevant community product experience doc. If the product
+doc does not define the surface, persona, required content, or acceptance criteria clearly enough to
+judge the screenshot, mark a `product-spec-gap` and require the product doc to be updated before UI
+remediation. If the product doc is clear and the screenshot fails to implement it, mark an
+`implementation-gap`. If screenshots or visible text are missing/stale, mark an `evidence-gap`.
+For remediated tickets, compare the before finding, target product surface, and after screenshots. Do
+not close a ticket from implementation notes, code diffs, or absence of detected defects. Close it only
+when the after screenshots visibly prove the requested domain surface and the scorecard's
+`semanticSurfaceProof.status` is `pass`.
 
 First answer the holistic direct questions for the entire app. Then answer the workflow/persona direct
 questions for each reviewed workflow/persona pair. Score each criterion independently. Return pass only

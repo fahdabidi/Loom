@@ -21,6 +21,11 @@ a real user would expect.
 ## Deliverables
 
 - Independent UX review report covering every example and test community after B22-B24.
+- Community-specific product experience docs. Native Loom repo runs must create or update canonical
+  docs under `docs/Product Docs V2/Community Examples/<community>-product-experience.md`. Standalone
+  Skill runs must treat Loom Product Docs V2 as read-only references and create/update local extension
+  docs under `<extension-workspace>/docs/product/community-product-experience.md` plus related local
+  UX/workflow/API-map docs.
 - Complete product UX screen inventory and review matrix at
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`, with one row for every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
@@ -29,7 +34,8 @@ a real user would expect.
   `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`. Each community/test app must define
   target personas, community identity, home information architecture, expected primary surfaces,
   workflow-to-surface mapping, realistic content requirements, visual/interaction standard, and
-  concrete pass examples before the review can pass.
+  concrete pass examples before the review can pass. The blueprint is generated from the
+  community-specific product experience docs and cannot replace them.
 - Severity-ranked findings: blocker, major, minor, or polish.
 - Annotated screenshot references from the visible Android emulator and final evidence bundle.
 - Design-quality assessment across information architecture, visual hierarchy, interaction clarity,
@@ -99,9 +105,33 @@ a real user would expect.
   pair must have its own answers about task clarity, domain-native primary surface, natural actions,
   input/validation/result states, receiver or unauthorized states, and whether that specific workflow
   feels production-grade on its own.
+- Semantic surface proof in every primary workflow/persona scorecard. The proof must list the target
+  product surface, required domain-content groups, passed groups, missing groups, visible evidence
+  excerpt, and pass/fail status from after screenshots.
 - Owner-accepted minor issue list, if any minor issues remain.
 - Final pass/fail UX decision.
 - B25 API Review if any API or platform contract issue is discovered, and B25 UX Decisions.
+
+## Product Documentation Ownership
+
+B25 has two execution contexts, and the product-doc write target differs by context:
+
+| Context | Loom reference docs | Product-doc write target | Purpose |
+| --- | --- | --- | --- |
+| Native Loom repo development | Editable canonical docs under `docs/Product Docs V2/` | `docs/Product Docs V2/Community Examples/<community>-product-experience.md` | Keep Loom's example communities as canonical reference products for future implementation and Skill training. |
+| Standalone Skill execution | Read-only fetched/pinned Loom docs and Skill references | `<extension-workspace>/docs/product/community-product-experience.md` and companion local docs | Let the Skill build an arbitrary extension without mutating the upstream Loom repo. |
+
+Both contexts must use the same structure from
+`docs/Build Plan V2/Skill/references/community-product-experience-template.md`: community identity and
+promise, personas/jobs, information architecture, home requirements, domain-native product surfaces,
+workflow-to-surface mapping, persona/state matrix, content/seed requirements, visual/interaction
+standard, and review/remediation log.
+
+When the independent UX judge finds that a screen fails because the target product experience is
+missing or underspecified, the remediation ticket must be marked `product-spec-gap` and the next pass
+must update the relevant product doc before UI implementation. When the product doc is clear but the UI
+does not implement it, the ticket is an `implementation-gap` and the Worker Agent fixes the UI,
+content, seed data, tests, or evidence.
 
 ## Completed When
 
@@ -112,6 +142,12 @@ does or does not meet production-grade UX standards for the target personas.
 B25 cannot pass until the production UX blueprint exists, covers every community/test app and persona,
 and is used as the explicit target for the screen review. If the blueprint is missing, incomplete,
 generic, or disconnected from the implemented UI, the review must fail before any pass decision.
+
+B25 also cannot pass until every reviewed community/test app has a current community-specific product
+experience doc. In native Loom repo development, that doc lives in Product Docs V2 and is committed
+with the B25 iteration. In standalone Skill execution, that doc lives in the local extension workspace
+and is included in the delivered extension artifacts/evidence. A B25 pass that only updates the
+evidence blueprint, but not the underlying product doc, is incomplete.
 
 The phase must remain incomplete when the visible app still exposes workflow machinery as the main user
 experience, lacks domain-native information architecture, lacks realistic content for the task, or reads
@@ -154,7 +190,26 @@ the owner explicitly asks for review-only planning or pauses implementation.
 
 1. **Evidence integrity reset:** mark the prior B25 v3 pass as superseded, clear status placeholders,
    and create or refresh `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`.
-2. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
+2. **Community product-doc gate:** create or update the product experience doc for every reviewed
+   community/test app before screenshots are captured or judged.
+
+   - Native Loom repo B25 writes canonical docs under
+     `docs/Product Docs V2/Community Examples/<community>-product-experience.md`.
+   - Standalone Skill B25-style validation writes local docs under
+     `<extension-workspace>/docs/product/community-product-experience.md` and never mutates the fetched
+     Loom source repo's Product Docs V2.
+   - Each doc must use the Skill template
+     `docs/Build Plan V2/Skill/references/community-product-experience-template.md`.
+   - Each doc must define community identity, target personas, jobs-to-be-done, home IA,
+     domain-native product surfaces, workflow-to-surface mapping, persona/state matrix, required
+     visible content, Loom API/rules/events mapping, visual/interaction standard, and UX acceptance
+     criteria.
+   - If a prior judge pass found a `product-spec-gap`, update the product doc first and record the
+     change in its review/remediation log before any UI remediation begins.
+
+   The B25 `production-ux-blueprint.md` is then derived from these product docs as the review summary.
+   The blueprint is not sufficient by itself.
+3. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
    capture fresh screenshots for every screen/persona/state using the host-side `flutter drive`
    screenshot writer. Do not use `flutter test integration_test/workflow_ui_evidence_test.dart` for
    B25 capture; that path can pass without persisting PNGs into the Evidence folders.
@@ -167,7 +222,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    `docs/Build Plan V2/Evidence/B12` through `B20`, refresh each phase's
    `workflow-ui-evidence.json`, and write `B20/all-workflow-ui-evidence.json`. If the screenshot
    hashes or modified timestamps do not change after a UI remediation, the B25 pass is invalid.
-3. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
+4. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
    evidence into schema v4 B25 artifacts with screenshot hashes, timestamps, emulator/device metadata,
    visible text source, and app commit SHA:
 
@@ -178,7 +233,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    The collector is not the judge. It may mark B25 as failed/pending until the independent UX review
    fills screen-specific critiques, holistic direct-question answers, workflow/persona scorecards,
    findings, remediation links, and final decision.
-4. **Workflow/persona coverage collector:** run the deterministic coverage collector to prove the
+5. **Workflow/persona coverage collector:** run the deterministic coverage collector to prove the
    evidence has explicit entry/action/result screenshots for every workflow/persona combination before
    the independent judge sees it:
 
@@ -188,7 +243,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
 
    The coverage collector is still not a product-quality judge. It fails when screenshots are missing,
    personas are generic, or workflow/persona evidence cannot be tied to concrete screen rows.
-5. **Visual inspection auditor:** run the deterministic visual auditor to inspect the actual screenshot
+6. **Visual inspection auditor:** run the deterministic visual auditor to inspect the actual screenshot
    pixels/layout before the independent judge. It must attach `visualInspection` to every screen row
    and fail on missing screenshots, checklist-modal-like overlays, repeated-card shells, thin-content
    screens, weak visual identity, or other visual signals that a fresh reviewer would flag:
@@ -202,14 +257,15 @@ the owner explicitly asks for review-only planning or pauses implementation.
    repeated generic cards, or a checklist modal.
    If this tool exits nonzero, keep its JSON/markdown output and continue through the independent and
    production judges in the same pass so remediation tickets and the iteration scorecard are generated.
-6. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
+7. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
    form, confirmation, error, empty state, persona variant, and action result. Do not sample.
-7. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
+8. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
    screenshot hash/timestamp, app commit SHA, visible text, UI-pattern classification,
    primary/secondary surface type, row-specific critique, findings, remediation IDs, and unresolved
    severity counts.
-8. **Independent UX Judge:** run the distinct independent UX judge tool. It consumes only the evidence,
-   screenshots, blueprint, workflow/persona coverage matrix, and pass criteria. It must write
+9. **Independent UX Judge:** run the distinct independent UX judge tool. It consumes only the
+   community-specific product docs, evidence, screenshots, blueprint, workflow/persona coverage matrix,
+   and pass criteria. It must write
    holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, exact
    findings tied to screen rows/screenshots/personas/workflows, UX reference patterns to copy, and
    remediation-ticket inputs:
@@ -219,11 +275,21 @@ the owner explicitly asks for review-only planning or pauses implementation.
    ```
 
    The independent judge must not receive worker implementation notes. It must not pass a row that
-   cannot be justified from visible UI. For failed rows, it must search the internet or open-source
+   cannot be justified from the product doc and visible UI. It must classify each failure as
+   `product-spec-gap`, `implementation-gap`, `evidence-gap`, or `mixed-gap`. For failed rows, it must
+   search the internet or open-source
    projects for comparable production patterns when network access is available, record the selected
    references and URLs, and state what a worker should copy or adapt. If live research is unavailable,
    it must use the built-in B25 reference catalog and preserve refresh queries in the ticket.
-9. **Holistic direct-question pass:** answer the whole-product questions in
+   The independent judge must perform positive semantic closure for every remediated ticket: compare the
+   before finding, the requested target product surface, and the after screenshots, then explicitly state
+   whether the after UI now proves the requested surface. A ticket cannot close because the Worker Agent
+   says it implemented the fix, because the text labels changed, or because no deterministic visual
+   blocker was found. It closes only when the after screenshot shows the expected domain content and
+   affordances. For example, a Masjid announcement remediation closes only if the after evidence shows
+   audience or recipient group, author/sender attribution, message body, timestamp or delivery timing,
+   receiver inbox/feed state, and a natural publish/send/read action.
+10. **Holistic direct-question pass:** answer the whole-product questions in
    `holisticQuestionAnswers`:
 
    - Does the whole experience feel like a real production community app for the target users, not
@@ -234,7 +300,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
      repeated-card, checklist-modal, and thin-content defects?
 
-10. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
+11. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
    `workflowPersonaScorecards` row answering:
 
    - Can this persona immediately understand what they are supposed to do?
@@ -245,8 +311,10 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - If another persona receives or acts on the state, is that receiver UX clear?
    - Are unauthorized, read-only, hidden, or disabled states appropriate for this persona?
    - Does this workflow UI feel production-grade on its own?
+   - Does the after screenshot prove the requested target product surface is actually present, with the
+     required domain content and affordances, instead of merely avoiding known bad patterns?
 
-11. **Production UX judge scorecard:** run the deterministic production judge against the independent
+12. **Production UX judge scorecard:** run the deterministic production judge against the independent
    judge's v4 evidence:
 
    ```powershell
@@ -256,8 +324,10 @@ the owner explicitly asks for review-only planning or pauses implementation.
    The production judge validates the independent judge output, emits the scorecard, and generates
    remediation tickets. It must fail if either the holistic direct-question pass or any
    workflow/persona direct-question pass is missing, partial, unsupported by visible evidence, or below
-   the score threshold.
-12. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+   the score threshold. It must also fail if any workflow/persona row lacks passing
+   `semanticSurfaceProof`, or if any previously opened remediation ticket lacks before/after screenshot
+   evidence proving the requested target-surface elements are now visible.
+13. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -266,16 +336,20 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-13. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+14. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-14. **Remediation loop:** for blocker/major findings, implement the grouped fixes, rebuild, relaunch,
-   recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the full
-   iteration before the next UX feedback or remediation batch.
-15. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+15. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
+   update the community product doc and blueprint before UI work. Implementation gaps update UX/content/
+   code/seed data/tests. Evidence gaps recapture or repair evidence before judging. Then rebuild,
+   relaunch, recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the
+   full iteration before the next UX feedback or remediation batch.
+16. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
-   pass is green, the production UX judge scorecard has no blocking criterion failures, all required
+   pass is green, every semantic surface proof is green, all remediated tickets have before/after
+   screenshot closure evidence, all community-specific product docs are current and linked from the
+   B25 evidence, the production UX judge scorecard has no blocking criterion failures, all required
    tests/gates pass, every pass has a B25 iteration scorecard proving convergence, and the tracker
    records the final iteration commit.
 
@@ -505,6 +579,10 @@ Pass criteria:
 - Primary workflows use domain-specific product surfaces, not just generic cards with better labels.
 - The holistic product UX direct-question pass is green.
 - Every workflow/persona direct-question pass is green.
+- Every primary workflow/persona row has passing semantic surface proof. The judge must be able to cite
+  the after-screenshot evidence that the requested target product surface is actually present.
+- Every remediated ticket has before/after screenshot closure evidence and cannot close from worker
+  implementation notes, code diffs, label changes, or absence of known visual defects alone.
 - Every screen row uses fresh screenshots captured from the app version under review, with screenshot
   hash, timestamp, device metadata, and app commit SHA recorded.
 - Every screen row includes visible-text extraction and a screen-specific critique that cannot be reused
@@ -550,7 +628,7 @@ The next UX feedback/remediation loop may not start from uncommitted B25 iterati
 ## Evidence To Record
 
 Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 4
-machine-readable review JSON, production UX judge scorecard, B25 iteration scorecards, B25 remediation
-loop log, findings table, screenshot paths, remediation evidence, retest output, final pass/fail
-statement, manifest rows, phase gate, analyzer, boundary lint, diff check, per-iteration commit SHAs,
-and final closeout commit SHA.
+machine-readable review JSON, semantic surface proof, before/after ticket-closure evidence, production
+UX judge scorecard, B25 iteration scorecards, B25 remediation loop log, findings table, screenshot
+paths, remediation evidence, retest output, final pass/fail statement, manifest rows, phase gate,
+analyzer, boundary lint, diff check, per-iteration commit SHAs, and final closeout commit SHA.

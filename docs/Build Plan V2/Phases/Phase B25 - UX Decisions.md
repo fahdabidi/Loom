@@ -6,6 +6,13 @@
   implemented.
 - Split workflow compliance from product UX review. Passing B21-B24 proves execution and evidence, but
   B25 must independently decide whether the visible app feels like a production community product.
+- Require community-specific product experience docs before judging screenshots. Native Loom repo B25
+  updates canonical docs under `docs/Product Docs V2/Community Examples/`; standalone Skill execution
+  updates local docs under the extension workspace and treats fetched Loom Product Docs V2 as read-only
+  references.
+- Treat the production UX blueprint as a review summary derived from community product docs, not as a
+  substitute for those docs. If the target product experience is missing or vague, the remediation
+  starts by updating the product doc before changing UI code.
 - Require a complete screen-by-screen review matrix before B25 can pass. The matrix must inventory every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
   variant, and action result across every example/test community and persona.
@@ -39,6 +46,17 @@
   states, receiver states, and unauthorized/read-only behavior.
 - Require both direct-question passes to be green. A polished overall shell cannot hide a weak workflow,
   and many technically usable workflow screens cannot hide an incoherent or non-production overall UI.
+- Require positive semantic closure. The independent judge must compare the before finding, requested
+  target product surface, and after screenshots. A ticket or workflow/persona scorecard cannot close
+  because implementation notes say the fix was made, labels changed, or no known visual defect was
+  detected. It closes only when after-screenshot visible evidence proves the required domain content and
+  affordances. For a Masjid announcement, that means audience/recipient group, author or sender,
+  message body, timestamp or delivery timing, receiver inbox/feed state, and a natural publish/send/read
+  action.
+- Classify every UX failure before remediation as `product-spec-gap`, `implementation-gap`,
+  `evidence-gap`, or `mixed-gap`. Product-spec gaps update the community product doc first.
+  Implementation gaps update UI/content/code/seed data/tests. Evidence gaps repair screenshots,
+  metadata, visible text, or coverage before judging.
 - Batch workflow/persona review in small evidence groups when needed. Do not ask the judge to summarize
   all workflows in one answer; every workflow/persona answer must cite visible screenshot evidence and
   a screen-specific critique.
@@ -79,6 +97,10 @@
 - `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`
 - `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`
 - `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`
+- Native Loom repo runs: `docs/Product Docs V2/Community Examples/<community>-product-experience.md`
+  for every reviewed example/test community.
+- Standalone Skill runs: `<extension-workspace>/docs/product/community-product-experience.md` and
+  companion local UX/workflow/API-map docs.
 - Prior `wf_independent-production-ux-review` pass is superseded by the product-UX review v4 criteria
   and must be rerun through the remediation loop until it passes.
 - Every B25 remediation-loop row must include the git commit SHA for that iteration before a subsequent

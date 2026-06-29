@@ -55,7 +55,25 @@ ask the user for examples. Produce `community-research.md` with:
 
 Optionally stop for user confirmation before detailed product docs.
 
-## 3. Create Product Workflow Docs
+## 3. Create The Community Product Experience Doc
+
+Use
+[references/community-product-experience-template.md](./references/community-product-experience-template.md).
+This doc is the product contract for the extension experience. It defines the rich community product
+experience that the workflows, APIs, events, UI, evidence, and UX review must implement.
+
+In standalone Skill execution, write this doc in the extension workspace as
+`docs/product/community-product-experience.md` and treat fetched Loom Product Docs V2 as read-only
+reference material. In native Loom repo B25 execution, write or update the canonical example doc under
+`docs/Product Docs V2/Community Examples/<community>-product-experience.md`.
+
+The doc must define community identity, product promise, personas, jobs-to-be-done, home information
+architecture, domain-native product surfaces, workflow-to-surface mapping, persona/state matrix,
+required visible content, API/rules/events mapping, visual and interaction standard, and concrete UX
+acceptance criteria. If a later UX review finds that the target product experience is missing or vague,
+update this product doc before UI remediation begins.
+
+## 4. Create Product Workflow Docs
 
 Use [references/extension-creation-process.md](./references/extension-creation-process.md). Create
 multiple detailed product workflow docs organized by functionality area, such as onboarding,
@@ -64,7 +82,7 @@ membership, events, content, payments, messaging, admin/moderation, search, and 
 Each workflow doc must include actors, trigger, end state, happy path, edge cases, permissions,
 sensitive data, audit/export behavior, UX notes, and validation criteria.
 
-## 4. Map Workflows To Loom APIs, Rules, Events, And Tests
+## 5. Map Workflows To Loom APIs, Rules, Events, And Tests
 
 Use [references/workflow-api-mapping-template.md](./references/workflow-api-mapping-template.md).
 For each workflow step, map:
@@ -77,23 +95,24 @@ For each workflow step, map:
 - fake-backend initialization data
 - validation test
 
-## 5. Create UX Guidelines And UX Decisions
+## 6. Create UX Guidelines And UX Decisions
 
 Use [references/ux-methodology-template.md](./references/ux-methodology-template.md). Produce UX
 research and guidelines before implementation. For each phase with UX impact, create a `UX
 Decisions.md` file with reference sources reviewed, UX patterns extracted, key UX decisions, key
 implementation decisions, workflow walkthrough, and open questions/tradeoffs.
 
-## 6. Create Extension Build Tracker And Phase Docs
+## 7. Create Extension Build Tracker And Phase Docs
 
 Create an extension-scoped build tracker and right-sized implementation phases. Each phase doc must
 state workflows implemented, APIs/rules/events used, UI surfaces changed, generated files, tests,
 validation commands, commit requirement, and definition of done.
 
-Stop for owner approval after the research, product workflow docs, API/rules/events maps, UX docs,
-tracker, and phase docs are complete. Do not generate code or packages until the user approves.
+Stop for owner approval after the research, community product experience doc, product workflow docs,
+API/rules/events maps, UX docs, tracker, and phase docs are complete. Do not generate code or packages
+until the user approves.
 
-## 7. Understand the Trust Boundary
+## 8. Understand the Trust Boundary
 
 Loom owns:
 
@@ -112,7 +131,7 @@ The extension owns:
 - Rules, workflows, jobs, and optional sandboxed functions.
 - Fixtures, examples, tests, and owner/member documentation.
 
-## 8. Choose the Community Type and Surfaces
+## 9. Choose the Community Type and Surfaces
 
 Choose the delivery mode:
 
@@ -151,7 +170,7 @@ Collect personalization inputs:
 If the owner does not provide assets, generate safe placeholders and keep them editable before build.
 For local-demo, all images must be bundled locally; do not depend on remote image URLs.
 
-## 9. Declare Minimal Permissions
+## 10. Declare Minimal Permissions
 
 For every feature, state:
 
@@ -164,7 +183,7 @@ For every feature, state:
 - Retention/export behavior.
 - Whether consent is required.
 
-## 10. Compose Loom APIs
+## 11. Compose Loom APIs
 
 Use this escalation order:
 
@@ -173,7 +192,7 @@ Use this escalation order:
 3. Workflows and jobs.
 4. Sandboxed functions only when declarative logic is insufficient.
 
-## 11. Author Extension Artifacts
+## 12. Author Extension Artifacts
 
 Create:
 
@@ -236,7 +255,7 @@ images in this order:
 3. Extension `defaultCardImage`.
 4. Generated initials/category/accent-color fallback.
 
-## 12. Validate
+## 13. Validate
 
 Run:
 
@@ -251,7 +270,7 @@ Run:
 - permission-negative tests
 - export tests for custom records
 
-## 13. Local Download, Sideload, and Run
+## 14. Local Download, Sideload, and Run
 
 When there is no hosted backend, use local mode:
 
@@ -267,7 +286,7 @@ The Skill should output clear package paths, validator diagnostics, and any fake
 It should also include the validation environment lock hash so the owner can tell which local toolchain
 proved the package.
 
-## 14. Debug the Skill
+## 15. Debug the Skill
 
 Treat Skill runs as reproducible tests:
 
@@ -278,13 +297,13 @@ Treat Skill runs as reproducible tests:
 - On failure, add the failing prompt or validator diagnostic before changing the Skill instructions.
 - Re-run the Demo App sideload workflow after changing package shape or initialization behavior.
 
-## 15. Certify, Publish, Install, and Run Latest
+## 16. Certify, Publish, Install, and Run Latest
 
 Submit signed artifact through the Extension Registry. Certification must approve it before install.
 The Main Loom App resolves the latest certified version on open unless the owner pins or rolls back
 through an allowed path.
 
-## 16. Use Phase-Enriched Guides As References
+## 17. Use Phase-Enriched Guides As References
 
 Before using a component or workflow, read the matching guide:
 
@@ -381,6 +400,6 @@ workflow, and emit a completion report. Do not claim the extension is complete u
 `complete=true`.
 
 Phase B12 adds the Skill reference methodology files under `references/`. Use them before execution to
-research the target community, explain Loom reference implementations, write product workflow docs,
-map workflows to APIs/rules/events/tests, create UX docs, create the extension build tracker, and stop
-for owner approval before generating code or packages.
+research the target community, explain Loom reference implementations, write the community product
+experience doc, write product workflow docs, map workflows to APIs/rules/events/tests, create UX docs,
+create the extension build tracker, and stop for owner approval before generating code or packages.
