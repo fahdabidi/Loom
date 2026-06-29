@@ -93,11 +93,11 @@ Future<void> completeWorkflow(
   );
   await tester.pumpAndSettle();
   expect(
-    find.byKey(ValueKey('workflow-action-dialog-${workflow.workflowId}')),
+    find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
     findsOneWidget,
   );
   await tester.tap(
-    find.byKey(ValueKey('workflow-confirm-${workflow.workflowId}')),
+    find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
   );
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);
@@ -131,11 +131,11 @@ Future<void> receiveWorkflow(
   );
   await tester.pumpAndSettle();
   expect(
-    find.byKey(ValueKey('workflow-receive-dialog-${workflow.workflowId}')),
+    find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),
     findsOneWidget,
   );
   await tester.tap(
-    find.byKey(ValueKey('workflow-receive-confirm-${workflow.workflowId}')),
+    find.byKey(ValueKey('workflow-receive-submit-${workflow.workflowId}')),
   );
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);

@@ -18,11 +18,10 @@ Communities example and test app.
 Run from WSL Ubuntu:
 
 ```bash
-cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/apps/loom_communities_demo"
-flutter drive \
-  --driver=test_driver/workflow_ui_evidence_test.dart \
-  --target=integration_test/workflow_ui_evidence_test.dart \
-  -d emulator-5554
+cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app"
+dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart \
+  --device emulator-5554 \
+  --evidence-root ../docs/Build\ Plan\ V2/Evidence
 ```
 
 The phase is complete only when the driver writes the B12 evidence manifest, screenshots exist, and

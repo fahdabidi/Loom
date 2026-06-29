@@ -155,7 +155,18 @@ the owner explicitly asks for review-only planning or pauses implementation.
 1. **Evidence integrity reset:** mark the prior B25 v3 pass as superseded, clear status placeholders,
    and create or refresh `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`.
 2. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
-   capture fresh screenshots for every screen/persona/state.
+   capture fresh screenshots for every screen/persona/state using the host-side `flutter drive`
+   screenshot writer. Do not use `flutter test integration_test/workflow_ui_evidence_test.dart` for
+   B25 capture; that path can pass without persisting PNGs into the Evidence folders.
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+   ```
+
+   The capture step must overwrite the phase screenshot PNGs under
+   `docs/Build Plan V2/Evidence/B12` through `B20`, refresh each phase's
+   `workflow-ui-evidence.json`, and write `B20/all-workflow-ui-evidence.json`. If the screenshot
+   hashes or modified timestamps do not change after a UI remediation, the B25 pass is invalid.
 3. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
    evidence into schema v4 B25 artifacts with screenshot hashes, timestamps, emulator/device metadata,
    visible text source, and app commit SHA:

@@ -78,7 +78,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.byKey(ValueKey('workflow-action-dialog-${workflow.workflowId}')),
+      find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
       findsOneWidget,
     );
     expect(find.text('Publish announcement'), findsWidgets);
@@ -118,11 +118,11 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.byKey(ValueKey('workflow-receive-dialog-${workflow.workflowId}')),
+      find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),
       findsOneWidget,
     );
     await tester.tap(
-      find.byKey(ValueKey('workflow-receive-confirm-${workflow.workflowId}')),
+      find.byKey(ValueKey('workflow-receive-submit-${workflow.workflowId}')),
     );
     await tester.pumpAndSettle();
     expect(find.text('Update ready'), findsOneWidget);

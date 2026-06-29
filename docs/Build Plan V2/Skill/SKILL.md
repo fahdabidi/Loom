@@ -404,6 +404,7 @@ judge CLIs are:
 - B22: `dart run packages/tooling/loom_ux_judges/bin/domain_surface_classifier.dart`
 - B23: `dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart`
 - B24: `dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart`
+- B25 capture: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 independent judge: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
 - B25: `dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart`
@@ -421,10 +422,15 @@ affected evidence, acceptance checks, and rerun commands.
 Before the judge runs, collect evidence with:
 
 ```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 ```
+
+Use the B25 capture CLI, not a raw `flutter test integration_test/...` command. The CLI invokes the
+host-side `flutter drive` screenshot writer, persists PNGs into the Evidence folders, rewrites
+`workflow-ui-evidence.json`, and fails if screenshots were not written.
 
 Every B25 pass must also run the judge and iteration scorecard before that pass is committed:
 

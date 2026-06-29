@@ -230,12 +230,12 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           MaterialPageRoute<bool>(
             fullscreenDialog: true,
             builder: (context) => _WorkflowActionSurface(
-              key: ValueKey('workflow-action-dialog-${workflow.workflowId}'),
+              key: ValueKey('workflow-action-surface-${workflow.workflowId}'),
               workflow: workflow,
               contract: contract,
               actionLabel: contract.primaryActionLabel,
               confirmButtonKey: ValueKey(
-                'workflow-confirm-${workflow.workflowId}',
+                'workflow-action-submit-${workflow.workflowId}',
               ),
               isReceiverSurface: false,
             ),
@@ -264,7 +264,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           MaterialPageRoute<bool>(
             fullscreenDialog: true,
             builder: (context) => _WorkflowActionSurface(
-              key: ValueKey('workflow-receive-dialog-${workflow.workflowId}'),
+              key: ValueKey('workflow-receive-surface-${workflow.workflowId}'),
               workflow: workflow,
               contract: contract,
               actionLabel: _receiverActionLabel(
@@ -272,7 +272,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
                 policy: policy,
               ),
               confirmButtonKey: ValueKey(
-                'workflow-receive-confirm-${workflow.workflowId}',
+                'workflow-receive-submit-${workflow.workflowId}',
               ),
               isReceiverSurface: true,
             ),
