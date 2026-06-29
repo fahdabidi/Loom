@@ -2,9 +2,9 @@
 
 | Field | Value |
 | --- | --- |
-| Status | `fail` |
+| Status | `pass` |
 | Coverage rows | 68 |
-| Failing rows | 2 |
+| Failing rows | 0 |
 
 | Coverage row | Status | Community | Workflow | Persona | Screens | Missing evidence | Required fix |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -69,8 +69,8 @@
 | `b25-wp-059-export-checksum-evidence-community-export-migration-owner` | `pass` | Data Portability Community | `export-checksum-evidence` | owner | 3 |  | None. |
 | `b25-wp-060-export-transfer-verification-community-export-migration-owner` | `pass` | Data Portability Community | `export-transfer-verification` | owner | 3 |  | None. |
 | `b25-wp-061-export-transfer-rollback-community-export-migration-owner` | `pass` | Data Portability Community | `export-transfer-rollback` | owner | 3 |  | None. |
-| `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | admin | 1 | action/review screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | member | 1 | result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `pass` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | admin | 1 |  | None. |
+| `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `pass` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | member | 1 |  | None. |
 | `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `pass` | Masjid Nur | `wf_demo-app-persona-picker` | member | 2 |  | None. |
 | `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `pass` | Masjid Nur | `wf_community-persona-aware-ux` | member | 2 |  | None. |
 | `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `pass` | Masjid Nur | `wf_community-persona-aware-ux` | admin | 1 |  | None. |

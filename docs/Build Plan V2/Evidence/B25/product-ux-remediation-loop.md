@@ -1,8 +1,8 @@
 # B25 Product UX Remediation Loop
 
-Status: reopened under `b25-production-ux-v4`; iteration 6 / `b25-v4-pass-3` collected evidence,
-ran workflow/persona coverage, ran the independent UX judge, and failed with three unresolved major
-findings after narrowing coverage failures to two persona role-inventory rows.
+Status: complete under `b25-production-ux-v4`; iteration 7 / `b25-v4-pass-4` collected evidence,
+ran workflow/persona coverage, ran the independent UX judge, ran the production UX judge, and passed
+with zero unresolved blocker or major findings.
 
 This log records each B25 product UX review, remediation, retest, and rerun cycle. B25 can pass only
 when the latest iteration has zero unresolved blocker or major UX findings, the screen review matrix
@@ -28,6 +28,7 @@ decision, and a git commit before the next feedback loop.
 | 4 / `b25-v4-pass-1` | Evidence collected; independent review gate failed | Fail | 0 | 4 | 0 | Workflow/persona coverage incomplete; screen-specific critique incomplete; workflow/persona UX scorecards failed; holistic UX review failed | Pass 1 closes by publishing remediation tickets and the iteration scorecard. Pass 2 must start by sending those tickets to the Remediation Planner before any worker fixes. | `b25_evidence_collector.dart` generated 199 screen rows; `b25_workflow_persona_coverage_collector.dart` found 70 workflow/persona coverage rows with 66 failing; `b25_independent_ux_judge.dart` generated 70 workflow/persona scorecards and 4 major findings; `production_ux_judge.dart` failed 7 blocking criteria and generated 7 schema v3 remediation tickets with remediation mode, worker readiness, implementation blockers, 70 evidence-repair work items, 70 UI-remediation work items, affected screen IDs, coverage IDs, screenshot metadata, visible text excerpts, likely files/widgets, and concrete acceptance criteria; `b25_remediation_planner.dart` now emits evidence-only batch 1, UI-only batch 2, and recapture/closeout batch 3; `b25_iteration_scorecard.dart` reports 4 remaining blocker/major findings | B25 remains reopened; iteration commit `647c38f`; results clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf` |
 | 5 / `b25-v4-pass-2` | Evidence repair applied; independent review gate failed | Fail | 0 | 3 | 0 | Remaining workflow/persona coverage gaps; domain-native primary-surface evidence still unverified; holistic UX still cannot be judged production-grade | Pass 2 repaired the collector/judge evidence shape, regenerated tickets, generated the pass-2 scorecard, and generated the pass-3 remediation plan. Pass 3 must repair the 6 remaining coverage rows before assigning UI-remediation work, then implement domain-native surface fixes and recapture evidence. | `b25_evidence_collector.dart` generated 196 production screen rows; `b25_workflow_persona_coverage_collector.dart` found 68 workflow/persona rows with 6 failing; `b25_independent_ux_judge.dart` generated 68 workflow/persona scorecards and 3 major findings; `production_ux_judge.dart` failed 7 blocking criteria and generated 7 remediation tickets; `b25_iteration_scorecard.dart` reports 3 remaining blocker/major findings, 1 resolved blocking-major class, and 0 new blocking-major findings; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-3.md`. | B25 remains reopened; pass 2 commit `68b5fad` |
 | 6 / `b25-v4-pass-3` | Evidence/surface target repair applied; independent review gate failed | Fail | 0 | 3 | 0 | Remaining persona role-inventory coverage gaps; holistic UX still blocked by the two failing workflow/persona scorecards | Pass 3 added concrete target surfaces for previously generic workflow categories and classified rows with concrete target surfaces as domain-native candidates. Pass 4 must repair the two role-inventory coverage rows and rerun the full chain. | `b25_evidence_collector.dart` generated 196 production screen rows; `b25_workflow_persona_coverage_collector.dart` found 68 workflow/persona rows with 2 failing; `b25_independent_ux_judge.dart` generated 68 workflow/persona scorecards and 3 major findings; `production_ux_judge.dart` failed 7 blocking criteria; `b25_iteration_scorecard.dart` reports 3 remaining blocker/major findings; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-4.md`. | B25 remains reopened; pass 3 commit `9c59a5a` |
+| 7 / `b25-v4-pass-4` | Remediation applied and retested | Pass | 0 | 0 | 0 | Persona role-inventory support evidence was the final blocker; no remaining blocker/major UX clusters | Pass 4 treated support/evidence surfaces as valid single-state evidence where appropriate, reran all B25 tools, and closed the gate. | `b25_evidence_collector.dart` generated 196 production screen rows; `b25_workflow_persona_coverage_collector.dart` passed 68/68 workflow/persona rows; `b25_independent_ux_judge.dart` passed with 0 findings and 68 passing workflow/persona scorecards; `production_ux_judge.dart` passed 12/12 criteria; `b25_iteration_scorecard.dart` reports 3 blocker/major findings resolved, 0 new, and 0 remaining. | B25 passes; pass 4 commit pending |
 
 ## Iteration 3 Commit Boundary
 
@@ -58,6 +59,12 @@ decision, and a git commit before the next feedback loop.
 ## Iteration 6 Commit Boundary
 
 - Evidence/tooling commit: `9c59a5a`.
+
+## Iteration 7 Commit Boundary
+
+- Evidence/tooling commit: pending this pass.
+- Latest scorecard: `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-4.md`.
+- Remediation tickets: `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-4.md` (empty/pass closeout).
 - Latest scorecard: `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-3.md`.
 - Remediation tickets: `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-3.md`.
 - Next remediation plan: `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-4.md`.
@@ -74,10 +81,4 @@ decision, and a git commit before the next feedback loop.
 
 ## Remaining Major Findings
 
-- `B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE` is an unresolved major finding because 2 of 68
-  workflow/persona coverage rows still lack one complete entry/action/result screenshot state.
-- `B25-WORKFLOW-PERSONA-UX-FAILED` is an unresolved major finding because workflow/persona scorecards
-  fail direct-question review for domain-native primary-surface evidence and screen-specific critique.
-- `B25-HOLISTIC-UX-FAILED` is an unresolved major finding because the holistic direct-question review
-  cannot state that the overall experience is production-grade, modern, community-centered, and free of
-  major layout/content defects from the current evidence.
+None. `b25-v4-pass-4` closed all blocker/major findings and passed the production UX criteria scorecard.

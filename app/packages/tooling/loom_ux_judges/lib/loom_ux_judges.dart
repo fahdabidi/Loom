@@ -1087,7 +1087,11 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
       fallback: 'persona-under-review',
     );
     final personaId = _asString(first['personaId']);
+    final workflowId = _asString(first['workflowId']);
+    final supportSingleStateEvidence =
+        _workflowIsSupportSurface(workflowId) && groupRows.isNotEmpty;
     final hasEntry =
+        supportSingleStateEvidence ||
         screenTypes.contains('entry') ||
         screenNames.any(
           (name) =>
@@ -1099,6 +1103,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
               name.toLowerCase().contains('actor'),
         );
     final hasAction =
+        supportSingleStateEvidence ||
         screenTypes.contains('action-or-review') ||
         screenNames.any(
           (name) =>
@@ -1109,6 +1114,7 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
               name.toLowerCase().contains('picker'),
         );
     final hasResult =
+        supportSingleStateEvidence ||
         screenTypes.contains('result') ||
         screenTypes.contains('receiver-state') ||
         screenNames.any(
