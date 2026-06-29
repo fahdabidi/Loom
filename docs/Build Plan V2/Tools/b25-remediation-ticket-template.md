@@ -10,7 +10,7 @@ or a generic pass/fail summary.
 | Field | Required content |
 | --- | --- |
 | `ticketId` | Stable ID for the remediation ticket, such as `B25-RT-001-b25-c04-modern-intentional-ui`. |
-| `ticketSchemaVersion` | Current schema version. Use `3` for tickets with worker-readiness, evidence-repair work items, and UI-remediation work items. |
+| `ticketSchemaVersion` | Current schema version. Use `4` for tickets with worker-readiness, evidence-repair work items, UI-remediation work items, and UX reference patterns to copy. |
 | `phase` | `B25`. |
 | `reviewRunId` | The review pass that produced the ticket, such as `b25-v4-pass-1`. |
 | `status` | `open`, `in-progress`, `resolved`, `owner-accepted`, or `deferred-with-rationale`. |
@@ -34,6 +34,9 @@ or a generic pass/fail summary.
 | `evidenceRepairWorkItems` | Smaller community/workflow/persona work items for fixing evidence quality before UI implementation. Each item includes affected row IDs, screenshot paths/hashes, visible text excerpts, current failures, worker actions, and acceptance criteria. |
 | `uiRemediationWorkItems` | Smaller community/workflow/persona work items for actual UI/design implementation once evidence repair has passed. Each item names the target production surface, likely files/widgets, worker actions, and acceptance criteria. |
 | `likelyFilesOrWidgets` | Specific code, test, evidence, or documentation files likely needing updates. |
+| `uxReferencePatterns` | Internet or open-source reference patterns the judge selected for this ticket. Each entry must include source name/type, URL, what to copy, and why it applies. |
+| `referenceResearchQueries` | Search queries the Independent UX Judge used or should use to refresh the pattern references. |
+| `sourceResearchRequirement` | Statement requiring the Independent UX Judge to search the internet or open-source examples and attach copyable references before UI remediation. |
 | `concreteAcceptanceCriteria` | Screen/workflow/persona-specific checks the remediation must satisfy before rerun. |
 | `problemStatement` | Plain-language user-facing problem, not implementation jargon. |
 | `rootCauseHypothesis` | Likely UX/design root cause behind the failure. |
@@ -110,6 +113,19 @@ Evidence-grounded explanation.
 | --- | --- | --- | --- | --- | ---: | ---: | --- | --- |
 | `b25-wi-ui-remediation-example-workflow-member` | ui-remediation | Example Community | `workflow-id` | member | 3 | 1 | Event detail with RSVP action and result state | Evidence-repair work item for this community/workflow/persona has fresh screenshots, screenshot-derived visible text, a specific persona/personaId, and a non-boilerplate critique. |
 
+### UX Reference Patterns To Copy
+
+| Reference | Source | URL | What to copy |
+| --- | --- | --- | --- |
+| Event detail and RSVP flow | Material Design 3 / design-system | https://m3.material.io/components/cards/overview | Copy an event detail layout with date/time, location, capacity/status, RSVP action, and confirmation state. |
+| Review-and-confirm pattern | GOV.UK Design System / design-system | https://design-system.service.gov.uk/patterns/check-answers/ | Copy a review step for flows that need confirmation, receipt, transfer, export, or payment proof. |
+
+### Reference Research Queries
+
+- `open source Flutter event RSVP mobile UI example GitHub`
+- `event detail with RSVP action mobile UX pattern`
+- `Material Design event detail RSVP mobile pattern`
+
 ### Failing Direct Questions
 
 | Question | Scope | Score | Why | Required fix |
@@ -171,6 +187,12 @@ What the target user should experience after the fix.
 A remediation ticket is invalid if it only says "fix UX" or repeats the failed criterion. It must name
 the user-facing problem, describe the target experience, identify the artifacts to update, and define
 how the next pass will prove the fix.
+
+For schema v4, a remediation ticket is also invalid if it does not give implementers reference
+patterns to copy. The Independent UX Judge must search the internet or open-source projects when
+network access is available, attach the relevant references to the ticket, and explain what to copy
+from each source. If network access is unavailable, the ticket must use the built-in B25 reference
+catalog and include research queries so the references can be refreshed before UI remediation.
 
 The ticket is not an implementation plan by itself. The next pass sends committed tickets and the
 iteration scorecard to the Remediation Planner, which creates the ordered fix batches for the Worker

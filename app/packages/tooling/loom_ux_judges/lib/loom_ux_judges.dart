@@ -967,7 +967,7 @@ JsonMap buildB25RemediationPlan({
   ].where((batch) => _asMapList(batch['tickets']).isNotEmpty).toList();
 
   return <String, Object?>{
-    'schemaVersion': 2,
+    'schemaVersion': 3,
     'planType': 'b25-remediation-plan',
     'reviewRunId': runId,
     'status': tickets.isEmpty ? 'no-open-tickets' : 'open',
@@ -1300,6 +1300,13 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
         ? 'domain-native'
         : 'unverified-primary-surface'
     ..['primary'] = true
+    ..['targetProductionSurface'] = _targetProductionSurfaceForWorkflow(
+      workflowId,
+    )
+    ..['referencePatternsToCopy'] = _b25ReferencePatternsForWorkflow(workflowId)
+    ..['referenceResearchQueries'] = _referenceResearchQueriesForWorkflow(
+      workflowId,
+    )
     ..['verdict'] = verdict
     ..['severity'] = verdict == 'pass' ? 'none' : 'major'
     ..['findingIds'] = findingIds
@@ -1400,6 +1407,11 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     'blocksPass': blocks,
     'screenRowIds': _asStringList(coverage['screenRowIds']),
     'screenshotPaths': screenshotRefs,
+    'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
     'questions': questions,
     'summary': blocks
         ? 'Workflow/persona review failed for `$workflowId` / `$persona`.'
@@ -1688,6 +1700,25 @@ JsonMap _remediationBatch({
     for (final ticket in tickets)
       ..._asStringList(ticket['likelyFilesOrWidgets']),
   }.toList();
+  final referencePatterns = _dedupeReferencePatterns(<JsonMap>[
+    for (final ticket in tickets) ..._asMapList(ticket['uxReferencePatterns']),
+    for (final ticket in tickets)
+      for (final item in _asMapList(ticket['evidenceRepairWorkItems']))
+        ..._asMapList(item['referencePatternsToCopy']),
+    for (final ticket in tickets)
+      for (final item in _asMapList(ticket['uiRemediationWorkItems']))
+        ..._asMapList(item['referencePatternsToCopy']),
+  ]);
+  final referenceResearchQueries = _uniqueStrings(<String>[
+    for (final ticket in tickets)
+      ..._asStringList(ticket['referenceResearchQueries']),
+    for (final ticket in tickets)
+      for (final item in _asMapList(ticket['evidenceRepairWorkItems']))
+        ..._asStringList(item['referenceResearchQueries']),
+    for (final ticket in tickets)
+      for (final item in _asMapList(ticket['uiRemediationWorkItems']))
+        ..._asStringList(item['referenceResearchQueries']),
+  ]);
   final screenRowIds = <String>{
     for (final ticket in tickets)
       ..._asStringList(ticket['affectedScreenRowIds']),
@@ -1733,10 +1764,25 @@ JsonMap _remediationBatch({
     'title': title,
     'purpose': purpose,
     'ticketIds': ticketIds,
-    'tickets': tickets,
+    'tickets': tickets
+        .map(
+          (ticket) => <String, Object?>{
+            'ticketId': _asString(ticket['ticketId']),
+            'sourceCriterionId': _asString(ticket['sourceCriterionId']),
+            'severity': _asString(ticket['severity']),
+            'priority': _asString(ticket['priority']),
+            'status': _asString(ticket['status']),
+            'title': _asString(ticket['title']),
+            'remediationMode': _asString(ticket['remediationMode']),
+            'workerReadiness': _asString(ticket['workerReadiness']),
+          },
+        )
+        .toList(),
     'workerActions': actions,
     'implementationGuidance': implementation,
     'likelyFilesOrWidgets': likelyFiles,
+    'uxReferencePatterns': referencePatterns,
+    'referenceResearchQueries': referenceResearchQueries,
     'affectedScreenRowIds': screenRowIds,
     'affectedCoverageRowIds': coverageRowIds,
     'affectedScreenRows': screenRowsById.values.toList(),
@@ -2650,6 +2696,20 @@ String _b25RemediationPlanMarkdown(JsonMap plan) {
         buffer.writeln('- `${_escape(file)}`');
       }
     }
+    _writeReferencePatternsMarkdown(
+      buffer,
+      'UX Reference Patterns To Copy',
+      _asMapList(batch['uxReferencePatterns']),
+    );
+    final referenceQueries = _asStringList(batch['referenceResearchQueries']);
+    if (referenceQueries.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Reference Research Queries');
+      for (final query in referenceQueries.take(20)) {
+        buffer.writeln('- ${_escape(query)}');
+      }
+    }
     _writeWorkItemsMarkdown(
       buffer,
       'Evidence Repair Work Items',
@@ -2815,7 +2875,7 @@ List<JsonMap> _b25RemediationTickets(
         'B25-RT-${index.toString().padLeft(3, '0')}-${_slug(criterion.id)}';
     tickets.add(<String, Object?>{
       'ticketId': ticketId,
-      'ticketSchemaVersion': 3,
+      'ticketSchemaVersion': 4,
       'phase': 'B25',
       'reviewRunId': runId,
       'status': 'open',
@@ -2842,6 +2902,10 @@ List<JsonMap> _b25RemediationTickets(
       'evidenceRepairWorkItems': ticketContext['evidenceRepairWorkItems'],
       'uiRemediationWorkItems': ticketContext['uiRemediationWorkItems'],
       'likelyFilesOrWidgets': ticketContext['likelyFilesOrWidgets'],
+      'uxReferencePatterns': ticketContext['uxReferencePatterns'],
+      'referenceResearchQueries': ticketContext['referenceResearchQueries'],
+      'sourceResearchRequirement':
+          'The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.',
       'concreteAcceptanceCriteria': ticketContext['concreteAcceptanceCriteria'],
       'problemStatement': _problemStatementForB25Criterion(criterion.id),
       'rootCauseHypothesis': _rootCauseForB25Criterion(criterion.id),
@@ -3017,6 +3081,21 @@ JsonMap _b25TicketContext(
     for (final row in affectedScreenRows)
       ..._asStringList(row['likelyFilesOrWidgets']),
   }.where((value) => value.isNotEmpty).toList();
+  final workflowIds = <String>{
+    for (final row in affectedScreenRows) _asString(row['workflowId']),
+    for (final row in affectedCoverageRows) _asString(row['workflowId']),
+    for (final row in failingScorecards) _asString(row['workflowId']),
+  }..remove('');
+  final uxReferencePatterns = _dedupeReferencePatterns(<JsonMap>[
+    ..._b25CriterionReferencePatterns(criterion.id),
+    for (final workflowId in workflowIds)
+      ..._b25ReferencePatternsForWorkflow(workflowId),
+  ]);
+  final referenceResearchQueries = _uniqueStrings(<String>[
+    ..._b25CriterionReferenceQueries(criterion.id),
+    for (final workflowId in workflowIds)
+      ..._referenceResearchQueriesForWorkflow(workflowId),
+  ]);
   final concreteAcceptance = <String>{
     ..._acceptanceChecksForB25Criterion(criterion.id),
     for (final row in affectedScreenRows.take(12))
@@ -3060,6 +3139,8 @@ JsonMap _b25TicketContext(
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
     'uiRemediationWorkItems': uiRemediationWorkItems,
     'likelyFilesOrWidgets': likelyFiles,
+    'uxReferencePatterns': uxReferencePatterns,
+    'referenceResearchQueries': referenceResearchQueries,
     'concreteAcceptanceCriteria': concreteAcceptance,
   };
 }
@@ -3179,6 +3260,11 @@ List<JsonMap> _b25WorkItems({
         'persona': persona,
         'personaId': personaId,
         'targetProductionSurface': targetSurface,
+        'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+        'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+          workflowId,
+        ),
+        'uxReferenceChecklist': _uxReferenceChecklistForWorkflow(workflowId),
         'affectedScreenRowIds': <String>[],
         'affectedCoverageRowIds': <String>[],
         'affectedScorecardIds': <String>[],
@@ -3361,6 +3447,8 @@ List<JsonMap> _dedupeWorkItems(List<JsonMap> workItems) {
       'visibleTextExcerpts',
       'currentFailures',
       'likelyFilesOrWidgets',
+      'referenceResearchQueries',
+      'uxReferenceChecklist',
       'acceptanceCriteria',
     ]) {
       existing[field] = _uniqueStrings(<String>[
@@ -3368,6 +3456,10 @@ List<JsonMap> _dedupeWorkItems(List<JsonMap> workItems) {
         ..._asStringList(item[field]),
       ]);
     }
+    existing['referencePatternsToCopy'] = _dedupeReferencePatterns(<JsonMap>[
+      ..._asMapList(existing['referencePatternsToCopy']),
+      ..._asMapList(item['referencePatternsToCopy']),
+    ]);
   }
   return byId.values.toList();
 }
@@ -3505,6 +3597,11 @@ JsonMap _screenRowTicketDetail(JsonMap row, String criterionId) {
     'currentCritique': _truncate(_asString(row['screenSpecificCritique']), 360),
     'exactUxFailure': _exactUxFailureForScreenRow(row, criterionId),
     'targetProductionSurface': targetSurface,
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
+    'uxReferenceChecklist': _uxReferenceChecklistForWorkflow(workflowId),
     'evidenceRepairNeeded': _screenDetailNeedsEvidenceRepair(<String, Object?>{
       'persona': _asString(row['persona']),
       'personaId': _asString(row['personaId']),
@@ -3544,6 +3641,10 @@ JsonMap _coverageTicketDetail(JsonMap row) {
     'missingEvidence': _asStringList(row['missingEvidence']),
     'requiredFix': _asString(row['requiredFix']),
     'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
     'acceptanceCriteria': <String>[
       'Coverage row has a specific persona and personaId.',
       'Coverage row has entry, action/review, and result/receiver screenshots.',
@@ -3571,6 +3672,10 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
     'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
     'summary': _asString(scorecard['summary']),
     'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
     'failingQuestions': failingQuestions,
     'acceptanceCriteria': <String>[
       'All direct questions in this workflow/persona scorecard pass.',
@@ -3773,6 +3878,462 @@ String _targetProductionSurfaceForWorkflow(String workflowId) {
     return 'match schedule/result surface with players, round, outcome, and next action';
   }
   return 'explicit domain-native product surface selected from the B21 production UX contract';
+}
+
+List<JsonMap> _b25CriterionReferencePatterns(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c03-production-grade-experience':
+    case 'b25-c04-modern-intentional-ui':
+    case 'b25-c05-community-content-ia':
+    case 'b25-c09-no-layout-production-defects':
+      return _referencePatternsForType('modern-mobile-product');
+    case 'b25-c06-domain-native-primary-surfaces':
+      return _referencePatternsForType('domain-native-surface');
+    case 'b25-c08-visible-text-specific-critique':
+      return _referencePatternsForType('evidence-critique');
+    default:
+      return _referencePatternsForType('modern-mobile-product');
+  }
+}
+
+List<String> _b25CriterionReferenceQueries(String criterionId) {
+  switch (criterionId) {
+    case 'b25-c04-modern-intentional-ui':
+      return <String>[
+        'modern mobile app information architecture visual hierarchy examples',
+        'Material Design 3 mobile UI hierarchy navigation cards examples',
+        'open source Flutter production app dashboard detail screen examples',
+      ];
+    case 'b25-c05-community-content-ia':
+      return <String>[
+        'community app home screen announcements events messages design examples',
+        'open source Flutter community app home feed events messages UI',
+      ];
+    case 'b25-c06-domain-native-primary-surfaces':
+      return <String>[
+        'domain specific mobile workflow UI event RSVP donation message export examples',
+        'open source Flutter event RSVP donation messaging workflow UI examples',
+      ];
+    default:
+      return <String>[
+        'production mobile UX review screenshot critique examples',
+        'open source Flutter mobile app UX patterns GitHub',
+      ];
+  }
+}
+
+List<JsonMap> _b25ReferencePatternsForWorkflow(String workflowId) {
+  final type = _referenceTypeForWorkflow(workflowId);
+  return _dedupeReferencePatterns(<JsonMap>[
+    ..._referencePatternsForType(type),
+    ..._referencePatternsForType('modern-mobile-product').take(2),
+  ]);
+}
+
+List<String> _referenceResearchQueriesForWorkflow(String workflowId) {
+  final type = _referenceTypeForWorkflow(workflowId);
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  return _uniqueStrings(<String>[
+    'open source Flutter $type mobile UI example GitHub',
+    '$targetSurface mobile UX pattern',
+    'Material Design $targetSurface mobile pattern',
+    if (type.contains('payment') || type.contains('form'))
+      'government design system $targetSurface form review confirmation pattern',
+  ]);
+}
+
+List<String> _uxReferenceChecklistForWorkflow(String workflowId) {
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  return <String>[
+    'Before coding, inspect the listed reference patterns and choose the closest pattern for `${workflowId}`.',
+    'State which pattern is being copied or adapted and why it matches the target persona task.',
+    'Build the primary surface as ${targetSurface}.',
+    'Include realistic domain content, semantic action labels, validation/review state, and completion/result state from the chosen pattern.',
+    'In the next evidence pass, critique the screen against the chosen reference pattern and explain remaining deviations.',
+  ];
+}
+
+String _referenceTypeForWorkflow(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return 'event-rsvp';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('receipt') ||
+      id.contains('ad-off')) {
+    return 'payment-donation';
+  }
+  if (id.contains('announcement') || id.contains('publish')) {
+    return 'announcement-feed';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite') ||
+      id.contains('blocked')) {
+    return 'message-thread';
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('rollback') ||
+      id.contains('schema')) {
+    return 'export-wizard';
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return 'search-results';
+  }
+  if (id.contains('volunteer') ||
+      id.contains('signup') ||
+      id.contains('care') ||
+      id.contains('request') ||
+      id.contains('architectural') ||
+      id.contains('committee') ||
+      id.contains('approval') ||
+      id.contains('critique')) {
+    return 'form-review';
+  }
+  if (id.contains('document')) {
+    return 'document-library';
+  }
+  if (id.contains('facility') || id.contains('reservation')) {
+    return 'facility-reservation';
+  }
+  if (id.contains('roster') || id.contains('team')) {
+    return 'roster-list';
+  }
+  if (id.contains('nomination') || id.contains('vote') || id.contains('book')) {
+    return 'voting-selection';
+  }
+  if (id.contains('gear')) {
+    return 'marketplace-request';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'match-result';
+  }
+  return 'domain-native-surface';
+}
+
+List<JsonMap> _referencePatternsForType(String type) {
+  final common = <JsonMap>[
+    _referencePattern(
+      id: 'material-cards-lists',
+      label: 'Material Design cards and lists',
+      sourceType: 'design-system',
+      sourceName: 'Material Design 3',
+      url: 'https://m3.material.io/components/cards/overview',
+      alsoSee: <String>['https://m3.material.io/components/lists/overview'],
+      copy:
+          'Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow.',
+    ),
+    _referencePattern(
+      id: 'flutter-samples-reference',
+      label: 'Flutter sample app implementation patterns',
+      sourceType: 'open-source',
+      sourceName: 'flutter/samples',
+      url: 'https://github.com/flutter/samples',
+      copy:
+          'Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer.',
+    ),
+  ];
+  switch (type) {
+    case 'modern-mobile-product':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'material-navigation-ia',
+          label: 'Material navigation and information architecture',
+          sourceType: 'design-system',
+          sourceName: 'Material Design 3',
+          url: 'https://m3.material.io/components/navigation-drawer/overview',
+          alsoSee: <String>[
+            'https://m3.material.io/components/navigation-bar/overview',
+          ],
+          copy:
+              'Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy.',
+        ),
+        _referencePattern(
+          id: 'apple-hig-navigation-content',
+          label: 'Apple HIG navigation and content organization',
+          sourceType: 'design-system',
+          sourceName: 'Apple Human Interface Guidelines',
+          url:
+              'https://developer.apple.com/design/human-interface-guidelines/navigation',
+          copy:
+              'Make navigation predictable, content-centered, and appropriate for the user’s current task.',
+        ),
+        ...common,
+      ];
+    case 'domain-native-surface':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'material-detail-surfaces',
+          label: 'Material detail surface composition',
+          sourceType: 'design-system',
+          sourceName: 'Material Design 3',
+          url: 'https://m3.material.io/components/cards/overview',
+          copy:
+              'Build a domain detail page with primary content, metadata, status, and actions instead of a generic task card.',
+        ),
+        ...common,
+      ];
+    case 'event-rsvp':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'event-detail-rsvp',
+          label: 'Event detail and RSVP flow',
+          sourceType: 'pattern',
+          sourceName: 'Material cards/lists/buttons',
+          url: 'https://m3.material.io/components/cards/overview',
+          alsoSee: <String>[
+            'https://m3.material.io/components/buttons/overview',
+            'https://m3.material.io/components/chips/overview',
+          ],
+          copy:
+              'Copy an event detail layout: title, date/time, location, host, capacity/status chip, attendee context, RSVP action, and confirmation state.',
+        ),
+        ...common,
+      ];
+    case 'payment-donation':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'payment-review-confirm',
+          label: 'Review-and-confirm payment flow',
+          sourceType: 'design-system',
+          sourceName: 'GOV.UK Design System',
+          url: 'https://design-system.service.gov.uk/patterns/check-answers/',
+          copy:
+              'Use a review/confirmation step with amount, payer context, recipient, fees or entitlement, receipt, and audit trail.',
+        ),
+        _referencePattern(
+          id: 'uswds-step-indicator',
+          label: 'Multi-step payment/progress flow',
+          sourceType: 'design-system',
+          sourceName: 'U.S. Web Design System',
+          url: 'https://designsystem.digital.gov/components/step-indicator/',
+          copy:
+              'Use explicit progress states for checkout, review, confirmation, receipt, and entitlement/status.',
+        ),
+        ...common,
+      ];
+    case 'announcement-feed':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'feed-composer-post',
+          label: 'Feed item and composer pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material cards/lists/text fields',
+          url: 'https://m3.material.io/components/text-fields/overview',
+          alsoSee: <String>[
+            'https://m3.material.io/components/cards/overview',
+            'https://m3.material.io/components/lists/overview',
+          ],
+          copy:
+              'Copy a feed/composer structure: audience, author, timestamp, body, attachments/status, publish action, and receiver read state.',
+        ),
+        ...common,
+      ];
+    case 'message-thread':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'inbox-thread',
+          label: 'Inbox and message thread pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material lists/text fields',
+          url: 'https://m3.material.io/components/lists/overview',
+          alsoSee: <String>[
+            'https://m3.material.io/components/text-fields/overview',
+          ],
+          copy:
+              'Copy an inbox/thread structure: sender, timestamp, message preview/body, reply field, invite/block state, and read/received state.',
+        ),
+        ...common,
+      ];
+    case 'export-wizard':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'export-task-list',
+          label: 'Task list and export wizard',
+          sourceType: 'design-system',
+          sourceName: 'GOV.UK Design System',
+          url: 'https://design-system.service.gov.uk/components/task-list/',
+          alsoSee: <String>[
+            'https://design-system.service.gov.uk/patterns/check-answers/',
+          ],
+          copy:
+              'Copy a wizard with steps, preview, redaction choices, checksum evidence, transfer status, and rollback confirmation.',
+        ),
+        ...common,
+      ];
+    case 'search-results':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'search-results-citations',
+          label: 'Search and result list pattern',
+          sourceType: 'design-system',
+          sourceName: 'Material Design 3',
+          url: 'https://m3.material.io/components/search/overview',
+          alsoSee: <String>['https://m3.material.io/components/lists/overview'],
+          copy:
+              'Copy a search layout with query, filters, ranked results, citations/sources, empty/error states, and follow-up actions.',
+        ),
+        ...common,
+      ];
+    case 'form-review':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'form-error-review',
+          label: 'Form validation and review pattern',
+          sourceType: 'design-system',
+          sourceName: 'U.S. Web Design System',
+          url: 'https://designsystem.digital.gov/components/form/',
+          alsoSee: <String>[
+            'https://designsystem.digital.gov/components/alert/',
+            'https://design-system.service.gov.uk/components/error-summary/',
+          ],
+          copy:
+              'Copy a form flow with field labels, helper text, validation errors, review state, submit action, status, and protected-data treatment.',
+        ),
+        ...common,
+      ];
+    case 'document-library':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'document-library-detail',
+          label: 'Document list/detail pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material lists/cards',
+          url: 'https://m3.material.io/components/lists/overview',
+          copy:
+              'Copy a document library with title, category, audience, file metadata, access state, download/view action, and empty/error states.',
+        ),
+        ...common,
+      ];
+    case 'facility-reservation':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'reservation-availability',
+          label: 'Reservation detail and availability flow',
+          sourceType: 'pattern',
+          sourceName: 'Material cards/forms',
+          url: 'https://m3.material.io/components/date-pickers/overview',
+          alsoSee: <String>['https://m3.material.io/components/cards/overview'],
+          copy:
+              'Copy an availability/reservation flow with facility details, date/time, capacity/rules, payment/status when needed, and confirmation.',
+        ),
+        ...common,
+      ];
+    case 'roster-list':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'roster-table-list',
+          label: 'Roster/list with protected details',
+          sourceType: 'design-system',
+          sourceName: 'Material Design 3',
+          url: 'https://m3.material.io/components/data-tables/overview',
+          alsoSee: <String>['https://m3.material.io/components/lists/overview'],
+          copy:
+              'Copy a roster with member names, roles, status, role-filtered fields, and clear protected-data redaction.',
+        ),
+        ...common,
+      ];
+    case 'voting-selection':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'selection-voting',
+          label: 'Selection and voting pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material chips/cards/buttons',
+          url: 'https://m3.material.io/components/chips/overview',
+          alsoSee: <String>['https://m3.material.io/components/cards/overview'],
+          copy:
+              'Copy a nomination/voting surface with choices, current vote state, deadline, selected result, and meeting/discussion context.',
+        ),
+        ...common,
+      ];
+    case 'marketplace-request':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'request-marketplace-item',
+          label: 'Item request and handoff pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material cards/forms',
+          url: 'https://m3.material.io/components/cards/overview',
+          alsoSee: <String>[
+            'https://m3.material.io/components/text-fields/overview',
+          ],
+          copy:
+              'Copy an item detail/request flow with item status, borrower/requester context, terms, handoff details, and confirmation.',
+        ),
+        ...common,
+      ];
+    case 'match-result':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'match-schedule-result',
+          label: 'Match schedule and result pattern',
+          sourceType: 'pattern',
+          sourceName: 'Material lists/cards',
+          url: 'https://m3.material.io/components/lists/overview',
+          copy:
+              'Copy a match surface with players, schedule/round, result entry, result state, and next action.',
+        ),
+        ...common,
+      ];
+    case 'evidence-critique':
+      return <JsonMap>[
+        _referencePattern(
+          id: 'screenshot-first-critique',
+          label: 'Screenshot-first critique method',
+          sourceType: 'methodology',
+          sourceName: 'B25 production UX gate',
+          url: 'docs/Build Plan V2/Tools/b25-remediation-ticket-template.md',
+          copy:
+              'Critique must quote visible UI/text, name the persona and task, compare against the chosen reference pattern, and state the exact fix.',
+        ),
+        ...common,
+      ];
+    default:
+      return common;
+  }
+}
+
+JsonMap _referencePattern({
+  required String id,
+  required String label,
+  required String sourceType,
+  required String sourceName,
+  required String url,
+  required String copy,
+  List<String> alsoSee = const <String>[],
+}) {
+  return <String, Object?>{
+    'referenceId': id,
+    'label': label,
+    'sourceType': sourceType,
+    'sourceName': sourceName,
+    'url': url,
+    'alsoSee': alsoSee,
+    'whatToCopy': copy,
+  };
+}
+
+List<JsonMap> _dedupeReferencePatterns(Iterable<JsonMap> patterns) {
+  final byId = <String, JsonMap>{};
+  for (final pattern in patterns) {
+    final id = _asString(pattern['referenceId']);
+    if (id.isEmpty) {
+      continue;
+    }
+    byId[id] = JsonMap.of(pattern);
+  }
+  return byId.values.toList();
 }
 
 List<String> _uniqueStrings(Iterable<String> values) {
@@ -4572,6 +5133,30 @@ String _remediationTicketsMarkdown({
     for (final guidance in _asStringList(ticket['visualGuidance'])) {
       buffer.writeln('- ${_escape(guidance)}');
     }
+    final sourceResearchRequirement = _asString(
+      ticket['sourceResearchRequirement'],
+    );
+    if (sourceResearchRequirement.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Source Research Requirement')
+        ..writeln()
+        ..writeln(_escape(sourceResearchRequirement));
+    }
+    _writeReferencePatternsMarkdown(
+      buffer,
+      'UX Reference Patterns To Copy',
+      _asMapList(ticket['uxReferencePatterns']),
+    );
+    final referenceQueries = _asStringList(ticket['referenceResearchQueries']);
+    if (referenceQueries.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('### Reference Research Queries');
+      for (final query in referenceQueries.take(20)) {
+        buffer.writeln('- ${_escape(query)}');
+      }
+    }
     final blockedBy = _asStringList(ticket['implementationBlockedBy']);
     if (blockedBy.isNotEmpty) {
       buffer
@@ -4748,6 +5333,41 @@ void _writeWorkItemsMarkdown(
   for (final item in workItems.take(30)) {
     buffer.writeln(
       '| `${_escape(_asString(item['workItemId']))}` | `${_escape(_asString(item['stage']))}` | ${_escape(_asString(item['communityName']))} | `${_escape(_asString(item['workflowId']))}` | ${_escape(_asString(item['persona']))} | ${_asStringList(item['affectedScreenRowIds']).length} | ${_asStringList(item['affectedCoverageRowIds']).length} | ${_escape(_asString(item['targetProductionSurface']))} | ${_escape(_asString(item['blockedUntil']))} |',
+    );
+  }
+  final referencePatterns = _dedupeReferencePatterns(<JsonMap>[
+    for (final item in workItems.take(30))
+      ..._asMapList(item['referencePatternsToCopy']),
+  ]);
+  _writeReferencePatternsMarkdown(
+    buffer,
+    '$title Reference Patterns',
+    referencePatterns.take(12).toList(),
+  );
+}
+
+void _writeReferencePatternsMarkdown(
+  StringBuffer buffer,
+  String title,
+  List<JsonMap> patterns,
+) {
+  if (patterns.isEmpty) {
+    return;
+  }
+  buffer
+    ..writeln()
+    ..writeln('### ${_escape(title)}')
+    ..writeln()
+    ..writeln('| Reference | Source | URL | What to copy |')
+    ..writeln('| --- | --- | --- | --- |');
+  for (final pattern in patterns) {
+    final alsoSee = _asStringList(pattern['alsoSee']);
+    final url = _asString(pattern['url']);
+    final urlCell = alsoSee.isEmpty
+        ? url
+        : '$url<br>Also: ${alsoSee.take(2).join('<br>')}';
+    buffer.writeln(
+      '| ${_escape(_asString(pattern['label']))} | ${_escape(_asString(pattern['sourceName']))} / ${_escape(_asString(pattern['sourceType']))} | ${_escape(urlCell)} | ${_escape(_asString(pattern['whatToCopy']))} |',
     );
   }
 }

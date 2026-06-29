@@ -85,6 +85,8 @@ Each remediation ticket includes:
 - implementation guidance
 - content guidance
 - visual guidance
+- UX reference patterns to copy, including source name/type, URL, and what the implementer should copy
+- reference research queries used or required to refresh internet/open-source examples
 - affected evidence
 - evidence to collect
 - acceptance checks
@@ -160,6 +162,14 @@ incomplete evidence; a remediation pass that begins without a planner output is 
 The planner must preserve sequencing: evidence-repair work items come first, then UI-remediation work
 items for the same community/workflow/persona, then recapture/rerun/closeout. A Worker Agent should not
 start broad UI changes from a ticket whose `workerReadiness` says evidence repair is still required.
+
+For schema v4 tickets, the Independent UX Judge must also attach UX reference patterns. It should search
+the internet or open-source projects for comparable production patterns when network access is
+available, then record the selected references in `uxReferencePatterns` and the exact search terms in
+`referenceResearchQueries`. The deterministic production judge carries those references into the
+remediation tickets and remediation planner. If live research is unavailable, the generator falls back
+to its built-in reference catalog, but the ticket must still list queries for the next reviewer to
+refresh before UI remediation.
 
 ## B25 Direct Questions
 

@@ -224,8 +224,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     include user-facing problem statement, root-cause hypothesis, target experience, UX principles,
     implementation guidance, content guidance, visual guidance, evidence to collect, non-goals, commit
     boundary, remediation mode, worker readiness, implementation blockers, evidence-repair work items,
-    and UI-remediation work items. The next Worker Agent iteration must use those tickets as its fix
-    backlog.
+    UI-remediation work items, UX reference patterns to copy, and reference research queries. The
+    Independent UX Judge must search the internet or open-source projects for comparable patterns when
+    network access is available, or use the built-in B25 reference catalog with refresh queries when
+    it is not. The next Worker Agent iteration must use those tickets as its fix backlog.
 66. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,

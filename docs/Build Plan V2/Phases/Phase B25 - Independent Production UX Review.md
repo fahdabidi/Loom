@@ -186,14 +186,18 @@ the owner explicitly asks for review-only planning or pauses implementation.
 7. **Independent UX Judge:** run the distinct independent UX judge tool. It consumes only the evidence,
    screenshots, blueprint, workflow/persona coverage matrix, and pass criteria. It must write
    holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, exact
-   findings tied to screen rows/screenshots/personas/workflows, and remediation-ticket inputs:
+   findings tied to screen rows/screenshots/personas/workflows, UX reference patterns to copy, and
+   remediation-ticket inputs:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
    ```
 
    The independent judge must not receive worker implementation notes. It must not pass a row that
-   cannot be justified from visible UI.
+   cannot be justified from visible UI. For failed rows, it must search the internet or open-source
+   projects for comparable production patterns when network access is available, record the selected
+   references and URLs, and state what a worker should copy or adapt. If live research is unavailable,
+   it must use the built-in B25 reference catalog and preserve refresh queries in the ticket.
 8. **Holistic direct-question pass:** answer the whole-product questions in
    `holisticQuestionAnswers`:
 
@@ -325,6 +329,9 @@ a checklist. Answer:
 - What is the real user trying to do here?
 - What is missing, confusing, too dense, too technical, or visually weak?
 - What must change before this row can pass?
+- Which internet, design-system, or open-source reference pattern should the worker copy or adapt?
+- Which parts of that reference pattern apply to this workflow/persona, and which parts should not be
+  copied because Loom or the community context differs?
 
 After the row-level critique, run the UX Judge in two direct-question passes. First answer the holistic
 product questions once for the whole app/community experience. Then answer the workflow/persona
