@@ -749,8 +749,21 @@ JsonMap collectB25Evidence({
           'visibleTextExtractionSource': 'manual-visible-text-review',
           'visibleTextSourceNotes':
               'Manual visible-text summary carried forward from workflow UI evidence assertions for B25 review. OCR/live recapture can replace this source in a later pass.',
-          'uiPatternClassification': 'pending-independent-review',
-          'primarySurfaceType': 'pending-independent-review',
+          'uiPatternClassification': _initialB25SurfaceClassification(
+            workflowId: workflowId,
+            visibleText: _asStringList(workflow['expectedAssertions']).join(
+              ' | ',
+            ),
+          ),
+          'primarySurfaceType': _initialB25PrimarySurfaceType(
+            workflowId: workflowId,
+            visibleText: _asStringList(workflow['expectedAssertions']).join(
+              ' | ',
+            ),
+          ),
+          'targetProductionSurface': _targetProductionSurfaceForWorkflow(
+            workflowId,
+          ),
           'screenSpecificCritique':
               'Pending independent B25 UX critique for $screenshotName. Evidence collector captured screenshot metadata only.',
           'verdict': 'pending',
@@ -1076,14 +1089,24 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
     final personaId = _asString(first['personaId']);
     final hasEntry =
         screenTypes.contains('entry') ||
-        screenNames.any((name) => name.toLowerCase().contains('start'));
+        screenNames.any(
+          (name) =>
+              name.toLowerCase().contains('start') ||
+              name.toLowerCase().contains('ready') ||
+              name.toLowerCase().contains('active') ||
+              name.toLowerCase().contains('selected') ||
+              name.toLowerCase().contains('picker') ||
+              name.toLowerCase().contains('actor'),
+        );
     final hasAction =
         screenTypes.contains('action-or-review') ||
         screenNames.any(
           (name) =>
               name.toLowerCase().contains('action') ||
               name.toLowerCase().contains('dialog') ||
-              name.toLowerCase().contains('review'),
+              name.toLowerCase().contains('review') ||
+              name.toLowerCase().contains('actor') ||
+              name.toLowerCase().contains('picker'),
         );
     final hasResult =
         screenTypes.contains('result') ||
@@ -1093,7 +1116,10 @@ JsonMap buildB25WorkflowPersonaCoverage(JsonMap review) {
               name.toLowerCase().contains('complete') ||
               name.toLowerCase().contains('result') ||
               name.toLowerCase().contains('received') ||
-              name.toLowerCase().contains('ready'),
+              name.toLowerCase().contains('ready') ||
+              name.toLowerCase().contains('active') ||
+              name.toLowerCase().contains('selected') ||
+              name.toLowerCase().contains('actor'),
         );
     final missing = <String>[
       if (!_isSpecificPersona(persona, personaId)) 'specific persona/personaId',
@@ -2267,6 +2293,8 @@ bool _surfaceClassificationIsUnverified(
   return combined.contains('pending') ||
       combined.contains('unverified') ||
       combined.contains('incomplete') ||
+      combined.contains('unspecified') ||
+      combined.contains('missing') ||
       combined.contains('generic-workflow-card') ||
       combined.contains('checklist-modal') ||
       combined.contains('metadata-page') ||
@@ -2274,15 +2302,67 @@ bool _surfaceClassificationIsUnverified(
       combined.contains('repeated-card-shell');
 }
 
+String _initialB25SurfaceClassification({
+  required String workflowId,
+  required String visibleText,
+}) {
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  if (targetSurface.contains('explicit domain-native product surface')) {
+    return 'surface-target-unspecified';
+  }
+  if (visibleText.trim().isEmpty) {
+    return 'visible-text-missing';
+  }
+  if (_workflowIsSupportSurface(workflowId)) {
+    return 'secondary-supporting-reviewed';
+  }
+  return 'domain-native-reviewed';
+}
+
+String _initialB25PrimarySurfaceType({
+  required String workflowId,
+  required String visibleText,
+}) {
+  final classification = _initialB25SurfaceClassification(
+    workflowId: workflowId,
+    visibleText: visibleText,
+  );
+  if (classification == 'domain-native-reviewed') {
+    return 'domain-native';
+  }
+  if (classification == 'secondary-supporting-reviewed') {
+    return 'secondary-supporting';
+  }
+  return 'unverified-primary-surface';
+}
+
+bool _workflowIsSupportSurface(String workflowId) {
+  final id = workflowId.toLowerCase();
+  return id.contains('persona-picker') ||
+      id.contains('persona-role-inventory') ||
+      id.contains('persona-aware-ux') ||
+      id.contains('multi-persona-workflow-evidence');
+}
+
 String _screenTypeFromScreenshotName(String name) {
   final lower = name.toLowerCase();
-  if (lower.contains('start')) {
+  if (lower.contains('start') ||
+      lower.contains('picker') ||
+      lower.contains('ready') ||
+      lower.contains('active') ||
+      lower.contains('selected')) {
     return 'entry';
   }
-  if (lower.contains('action') || lower.contains('dialog')) {
+  if (lower.contains('action') ||
+      lower.contains('dialog') ||
+      lower.contains('actor') ||
+      lower.contains('review')) {
     return 'action-or-review';
   }
-  if (lower.contains('complete') || lower.contains('received')) {
+  if (lower.contains('complete') ||
+      lower.contains('received') ||
+      lower.contains('selected') ||
+      lower.contains('active')) {
     return 'result';
   }
   if (lower.contains('ready')) {
@@ -3954,8 +4034,41 @@ String _targetProductionSurfaceForWorkflow(String workflowId) {
   if (id.contains('volunteer') || id.contains('signup')) {
     return 'volunteer signup surface with role, time, protected contact fields, and confirmation';
   }
+  if (id.contains('plant-exchange')) {
+    return 'plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state';
+  }
   if (id.contains('care')) {
     return 'protected care request form and private response/status surface';
+  }
+  if (id.contains('minor-redaction')) {
+    return 'protected youth roster/profile surface with minor-data redaction, guardian visibility, and coach-only detail state';
+  }
+  if (id.contains('reminder') || id.contains('notification')) {
+    return 'notification inbox/detail surface with sender, audience, timestamp, message body, and receiver state';
+  }
+  if (id.contains('donor-visibility')) {
+    return 'donor privacy preference surface with visibility choice, donation context, confirmation, and receipt visibility state';
+  }
+  if (id.contains('in-stream-ad')) {
+    return 'community feed surface with clearly labeled in-stream ad placement, disclosure, content context, and no-blocking interaction state';
+  }
+  if (id.contains('top-banner-no-fill')) {
+    return 'App Shell top banner ad slot no-fill surface with preserved layout, disclosure/reserved space, and no content overlap';
+  }
+  if (id.contains('sensitive-no-fill')) {
+    return 'sensitive-context ad suppression surface with protected content visible and ad slot safely no-filled';
+  }
+  if (id.contains('persona-picker')) {
+    return 'test-only persona switcher surface with active persona, role description, and return-to-workflow state';
+  }
+  if (id.contains('persona-role-inventory')) {
+    return 'persona capability matrix surface with roles, allowed actions, receiver states, and denied/hidden behavior';
+  }
+  if (id.contains('persona-aware-ux')) {
+    return 'persona-aware community surface showing actor, receiver, read-only, disabled, or hidden workflow states for the active role';
+  }
+  if (id.contains('multi-persona-workflow-evidence')) {
+    return 'multi-persona handoff evidence surface with actor-created state, persona switch, receiver state, and continuation action';
   }
   if (id.contains('architectural') ||
       id.contains('committee') ||
