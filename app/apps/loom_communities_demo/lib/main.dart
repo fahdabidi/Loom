@@ -19,6 +19,7 @@ class LoomCommunitiesDemoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff246b62)),
+        scaffoldBackgroundColor: const Color(0xfff4f8f5),
         useMaterial3: true,
       ),
       home: const LoomCommunitiesHome(),
@@ -225,29 +226,20 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       workflow: workflow,
     );
     final confirmed =
-        await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
+        await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(
+            fullscreenDialog: true,
+            builder: (context) => _WorkflowActionSurface(
               key: ValueKey('workflow-action-dialog-${workflow.workflowId}'),
-              title: Text(contract.screenTitle),
-              content: _WorkflowReviewContent(
-                contract: contract,
-                personaAction: contract.primaryActionLabel,
+              workflow: workflow,
+              contract: contract,
+              actionLabel: contract.primaryActionLabel,
+              confirmButtonKey: ValueKey(
+                'workflow-confirm-${workflow.workflowId}',
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  key: ValueKey('workflow-confirm-${workflow.workflowId}'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(contract.primaryActionLabel),
-                ),
-              ],
-            );
-          },
+              isReceiverSurface: false,
+            ),
+          ),
         ) ??
         false;
     if (!confirmed) {
@@ -268,36 +260,23 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       workflow: workflow,
     );
     final confirmed =
-        await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
+        await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(
+            fullscreenDialog: true,
+            builder: (context) => _WorkflowActionSurface(
               key: ValueKey('workflow-receive-dialog-${workflow.workflowId}'),
-              title: Text(contract.receiverSurfaceTitle),
-              content: _WorkflowReviewContent(
-                contract: contract,
-                personaAction: _receiverActionLabel(
-                  workflow: workflow,
-                  policy: policy,
-                ),
+              workflow: workflow,
+              contract: contract,
+              actionLabel: _receiverActionLabel(
+                workflow: workflow,
+                policy: policy,
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                FilledButton(
-                  key: ValueKey(
-                    'workflow-receive-confirm-${workflow.workflowId}',
-                  ),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(
-                    _receiverActionLabel(workflow: workflow, policy: policy),
-                  ),
-                ),
-              ],
-            );
-          },
+              confirmButtonKey: ValueKey(
+                'workflow-receive-confirm-${workflow.workflowId}',
+              ),
+              isReceiverSurface: true,
+            ),
+          ),
         ) ??
         false;
     if (!confirmed) {
@@ -779,8 +758,15 @@ class _WorkflowTile extends StatelessWidget {
       workflow: workflow,
     );
     final metadata = _domainMetadataFor(contract.category, workflow);
-    return Card(
+    final scheme = Theme.of(context).colorScheme;
+    final accent = _categoryAccentColor(contract.category, scheme);
+    return DecoratedBox(
       key: ValueKey('workflow-${workflow.workflowId}'),
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(accent.withValues(alpha: 0.08), scheme.surface),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: accent.withValues(alpha: 0.24)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -799,6 +785,7 @@ class _WorkflowTile extends StatelessWidget {
                       : view.state == LoomPersonaWorkflowState.readOnly
                       ? Icons.visibility_outlined
                       : Icons.radio_button_unchecked,
+                  color: accent,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1247,65 +1234,207 @@ class _WorkflowAction extends StatelessWidget {
   }
 }
 
-class _WorkflowReviewContent extends StatelessWidget {
-  const _WorkflowReviewContent({
+class _WorkflowActionSurface extends StatelessWidget {
+  const _WorkflowActionSurface({
+    super.key,
+    required this.workflow,
     required this.contract,
-    required this.personaAction,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+    required this.isReceiverSurface,
   });
 
+  final LoomWorkflowDefinition workflow;
   final LoomProductionWorkflowContract contract;
-  final String personaAction;
+  final String actionLabel;
+  final Key confirmButtonKey;
+  final bool isReceiverSurface;
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final accent = _categoryAccentColor(contract.category, scheme);
+    final metadata = _domainMetadataFor(contract.category, workflow);
+    final title = isReceiverSurface
+        ? contract.receiverSurfaceTitle
+        : contract.screenTitle;
+
+    return Scaffold(
+      backgroundColor: Color.alphaBlend(
+        accent.withValues(alpha: 0.06),
+        scheme.surface,
+      ),
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Color.alphaBlend(
+          accent.withValues(alpha: 0.16),
+          scheme.surface,
+        ),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          icon: const Icon(Icons.close),
+          tooltip: 'Close',
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
-          _WorkflowDetailRow(icon: contract.icon, label: personaAction),
-          const SizedBox(height: 12),
-          _WorkflowDetailRow(
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.22),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(contract.icon, color: scheme.onPrimary, size: 34),
+                  const SizedBox(height: 14),
+                  Text(
+                    _domainSurfaceTitleFor(contract.category, workflow),
+                    style: textTheme.headlineSmall?.copyWith(
+                      color: scheme.onPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _domainSurfaceLeadFor(
+                      contract.category,
+                      workflow,
+                      isReceiverSurface: isReceiverSurface,
+                    ),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: scheme.onPrimary.withValues(alpha: 0.92),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final detail in metadata)
+                        Chip(
+                          backgroundColor: scheme.surface.withValues(
+                            alpha: 0.92,
+                          ),
+                          avatar: Icon(
+                            _metadataIconFor(detail),
+                            size: 18,
+                            color: accent,
+                          ),
+                          label: Text(detail),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          _ActionSurfacePanel(
             icon: Icons.edit_note_outlined,
-            label: _reviewDetailFor(contract.category),
-          ),
-          const SizedBox(height: 8),
-          _WorkflowDetailRow(
-            icon: Icons.fact_check_outlined,
-            label: _reviewCheckFor(contract.category),
-          ),
-          const SizedBox(height: 8),
-          _WorkflowDetailRow(
-            icon: Icons.check_circle_outline,
-            label: _reviewResultFor(contract.category),
+            title: 'Details',
+            body: _surfaceInputFor(contract.category, workflow),
+            accent: accent,
           ),
           const SizedBox(height: 12),
-          Text(
-            _reviewTrustFor(contract.category),
-            style: Theme.of(context).textTheme.bodySmall,
+          _ActionSurfacePanel(
+            icon: Icons.task_alt_outlined,
+            title: 'Member outcome',
+            body: isReceiverSurface
+                ? _receiverBodyFor(contract.category)
+                : _surfaceOutcomeFor(contract.category, workflow),
+            accent: accent,
+          ),
+          const SizedBox(height: 12),
+          _ActionSurfacePanel(
+            icon: Icons.verified_user_outlined,
+            title: 'Privacy boundary',
+            body: _reviewTrustFor(contract.category),
+            accent: accent,
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Row(
+          children: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                key: confirmButtonKey,
+                onPressed: () => Navigator.of(context).pop(true),
+                icon: Icon(contract.icon, size: 18),
+                label: Text(actionLabel, textAlign: TextAlign.center),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _WorkflowDetailRow extends StatelessWidget {
-  const _WorkflowDetailRow({required this.icon, required this.label});
+class _ActionSurfacePanel extends StatelessWidget {
+  const _ActionSurfacePanel({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.accent,
+  });
 
   final IconData icon;
-  final String label;
+  final String title;
+  final String body;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 8),
-        Expanded(child: Text(label)),
-      ],
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: accent.withValues(alpha: 0.32)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: accent.withValues(alpha: 0.14),
+              child: Icon(icon, size: 20, color: accent),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 4),
+                  Text(body),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -2351,19 +2480,158 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
 String _screenTitleFor(String category, LoomWorkflowDefinition workflow) {
   switch (category) {
     case 'Event':
-      return 'Review event details';
+      return 'Event details';
     case 'Payment':
-      return 'Review payment';
+      return 'Payment checkout';
     case 'Publishing':
-      return 'Review update';
+      return 'Announcement composer';
     case 'Approval':
-      return 'Review request';
+      return 'Decision desk';
     case 'Portability':
-      return 'Review data package';
+      return 'Data package';
     case 'Platform':
-      return 'Review setting';
+      return 'Member setting';
   }
-  return 'Review ${_objectLabelFor(workflow)}';
+  return '${_objectLabelFor(workflow).substring(0, 1).toUpperCase()}${_objectLabelFor(workflow).substring(1)} details';
+}
+
+Color _categoryAccentColor(String category, ColorScheme scheme) {
+  switch (category) {
+    case 'Event':
+      return const Color(0xff2f6f9f);
+    case 'Payment':
+      return const Color(0xff7b4f9d);
+    case 'Publishing':
+      return const Color(0xff00796b);
+    case 'Approval':
+      return const Color(0xff8a5a00);
+    case 'Portability':
+      return const Color(0xff4556a4);
+    case 'Platform':
+      return const Color(0xff7a5c00);
+    case 'Form':
+      return const Color(0xff3f7f4c);
+  }
+  return scheme.primary;
+}
+
+String _domainSurfaceTitleFor(
+  String category,
+  LoomWorkflowDefinition workflow,
+) {
+  switch (category) {
+    case 'Event':
+      return 'Coordinate attendance';
+    case 'Payment':
+      return 'Record payment';
+    case 'Publishing':
+      return 'Send community notice';
+    case 'Approval':
+      return 'Resolve member request';
+    case 'Portability':
+      return 'Prepare export handoff';
+    case 'Platform':
+      return 'Update member channel';
+    case 'Form':
+      return 'Submit member form';
+  }
+  return _displayTitleFor(workflow);
+}
+
+String _domainSurfaceLeadFor(
+  String category,
+  LoomWorkflowDefinition workflow, {
+  required bool isReceiverSurface,
+}) {
+  if (isReceiverSurface) {
+    switch (category) {
+      case 'Event':
+        return 'Member attendance and event changes are shown in one place.';
+      case 'Payment':
+        return 'The member can inspect the receipt, privacy choice, and amount.';
+      case 'Publishing':
+        return 'The member sees the message, audience, and delivery channel.';
+      case 'Approval':
+        return 'The member sees the decision and the next action.';
+      case 'Portability':
+        return 'The member can inspect scope, status, and protected-data handling.';
+      case 'Platform':
+        return 'The member sees the channel or relationship change.';
+      case 'Form':
+        return 'The reviewer can inspect the submitted details and follow-up path.';
+    }
+  }
+  switch (category) {
+    case 'Event':
+      return 'Use this surface to publish event details, capacity, and attendance state.';
+    case 'Payment':
+      return 'Use this surface to capture the amount, receipt, and privacy setting.';
+    case 'Publishing':
+      return 'Use this surface to send a scoped announcement to the selected audience.';
+    case 'Approval':
+      return 'Use this surface to record the decision and member follow-up.';
+    case 'Portability':
+      return 'Use this surface to package export scope, redaction, and handoff status.';
+    case 'Platform':
+      return 'Use this surface to change a member communication or relationship setting.';
+    case 'Form':
+      return 'Use this surface to submit structured member details.';
+  }
+  return workflow.entryText;
+}
+
+String _surfaceInputFor(String category, LoomWorkflowDefinition workflow) {
+  switch (category) {
+    case 'Event':
+      return 'Date, location, capacity, and attendee state are included.';
+    case 'Payment':
+      return 'Amount, payer, privacy choice, and receipt destination are included.';
+    case 'Publishing':
+      return 'Message, audience, preview, and delivery channel are included.';
+    case 'Approval':
+      return 'Request details, decision, and follow-up note are included.';
+    case 'Portability':
+      return 'Scope, redaction, checksum, and handoff destination are included.';
+    case 'Platform':
+      return 'Member channel, relationship, and preference details are included.';
+    case 'Form':
+      return 'Required fields, privacy choices, and reviewer handoff are included.';
+  }
+  return _domainSummaryFor(
+    category,
+    workflow,
+    LoomPersonaWorkflowView(
+      state: LoomPersonaWorkflowState.actor,
+      completed: false,
+      received: false,
+      waitingForPrerequisite: false,
+      entryText: workflow.entryText,
+      actionText: workflow.actionText,
+      resultText: workflow.resultText,
+      personaRationale: 'Actor may complete this action.',
+      waitingText: '',
+    ),
+  );
+}
+
+String _surfaceOutcomeFor(String category, LoomWorkflowDefinition workflow) {
+  switch (category) {
+    case 'Event':
+      return 'Attendance, capacity, and reminders update for the community.';
+    case 'Payment':
+      return 'The payment record and receipt become available to the right member.';
+    case 'Publishing':
+      return 'The announcement appears in the member inbox and notification channel.';
+    case 'Approval':
+      return 'The decision is saved with the next step visible to the member.';
+    case 'Portability':
+      return 'The export package can be inspected with redaction and checksum details.';
+    case 'Platform':
+      return 'The communication or relationship setting changes for this community.';
+    case 'Form':
+      return 'The submission is routed to the reviewer with protected details preserved.';
+  }
+  return _successBodyFor(category, workflow);
 }
 
 String _inputSummaryFor(String category, LoomWorkflowDefinition workflow) {

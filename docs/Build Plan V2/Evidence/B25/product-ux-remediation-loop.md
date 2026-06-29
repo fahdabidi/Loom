@@ -1,8 +1,9 @@
 # B25 Product UX Remediation Loop
 
-Status: reopened under `b25-production-ux-v4`; iteration 8 reran the stricter visual-inspection gate
-against the existing B25 screenshots and failed with 4 unresolved major findings. The latest
-remediation plan is `b25-remediation-plan-b25-v4-pass-5.md`.
+Status: reopened under `b25-production-ux-v4`; iteration 9 applied the first UI remediation pass and
+ran the full B25 judge chain. The checked-in evidence screenshots did not refresh, so the latest review
+still fails with 4 unresolved major findings. The latest remediation plan is
+`b25-remediation-plan-b25-v4-pass-6.md`.
 
 This log records each B25 product UX review, remediation, retest, and rerun cycle. B25 can pass only
 when the latest iteration has zero unresolved blocker or major UX findings, the screen review matrix
@@ -30,6 +31,7 @@ decision, and a git commit before the next feedback loop.
 | 6 / `b25-v4-pass-3` | Evidence/surface target repair applied; independent review gate failed | Fail | 0 | 3 | 0 | Remaining persona role-inventory coverage gaps; holistic UX still blocked by the two failing workflow/persona scorecards | Pass 3 added concrete target surfaces for previously generic workflow categories and classified rows with concrete target surfaces as domain-native candidates. Pass 4 must repair the two role-inventory coverage rows and rerun the full chain. | `b25_evidence_collector.dart` generated 196 production screen rows; `b25_workflow_persona_coverage_collector.dart` found 68 workflow/persona rows with 2 failing; `b25_independent_ux_judge.dart` generated 68 workflow/persona scorecards and 3 major findings; `production_ux_judge.dart` failed 7 blocking criteria; `b25_iteration_scorecard.dart` reports 3 remaining blocker/major findings; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-4.md`. | B25 remains reopened; pass 3 commit `9c59a5a` |
 | 7 / `b25-v4-pass-4` | Remediation applied and retested | Pass | 0 | 0 | 0 | Persona role-inventory support evidence was the final blocker; no remaining blocker/major UX clusters | Pass 4 treated support/evidence surfaces as valid single-state evidence where appropriate, reran all B25 tools, and closed the gate. | `b25_evidence_collector.dart` generated 196 production screen rows; `b25_workflow_persona_coverage_collector.dart` passed 68/68 workflow/persona rows; `b25_independent_ux_judge.dart` passed with 0 findings and 68 passing workflow/persona scorecards; `production_ux_judge.dart` passed 12/12 criteria; `b25_iteration_scorecard.dart` reports 3 blocker/major findings resolved, 0 new, and 0 remaining. | B25 passes; pass 4 commit `b672089` |
 | 8 / visual gate rerun on existing screenshots | Visual inspection gate failed | Fail | 0 | 4 | 0 | Screenshot pixel/layout inspection found repeated-card shells, checklist-modal-like overlays, weak visual identity, default-scaffold-like surfaces, thin content, and evidence rows still using non-screenshot-derived visible text | The stricter visual gate introduced after pass 4 was rerun against the existing B25 screenshots without recapturing. `b25_remediation_planner.dart` then generated `b25-remediation-plan-b25-v4-pass-5.md` from the visual-gate rerun tickets. | `b25_workflow_persona_coverage_collector.dart` passed 68/68 coverage rows; `b25_visual_inspection_auditor.dart` failed 187/196 screen rows; `b25_independent_ux_judge.dart` failed with 4 major findings; `production_ux_judge.dart` failed 7 blocking criteria and regenerated 7 remediation tickets; `b25_iteration_scorecard.dart` reports 4 remaining blocker/major findings; remediation planner produced 3 batches with 68 evidence-repair work items and 50 UI-remediation work items. | B25 reopened; visual gate rerun commit `39a1210`; remediation-plan commit `a893e53` |
+| 9 / `b25-v4-pass-6` | UI remediation attempted; evidence still stale | Fail | 0 | 4 | 0 | Action flow was changed in code from modal dialog to a full-screen domain action surface, but the integration screenshot run did not overwrite the checked-in Evidence PNGs. The judge therefore still reviewed old modal/repeated-card screenshots. | Pass 6 must close by committing the attempted UI remediation, regenerated pass-6 evidence, tickets, scorecard, and remediation plan. Pass 7 must first repair screenshot persistence so `takeScreenshot` output becomes the Evidence PNGs, then rerun the judge against fresh screenshots before further UI remediation is judged. | Focused app tests and analyzer passed; Android integration workflow capture command passed; `b25_evidence_collector.dart` generated 196 rows for run `b25-v4-pass-6`; `b25_workflow_persona_coverage_collector.dart` passed 68/68; `b25_visual_inspection_auditor.dart` still failed 187/196 because evidence screenshots remained stale; `b25_independent_ux_judge.dart` failed with 4 major findings; `production_ux_judge.dart` failed 7 blocking criteria and generated `b25-remediation-tickets-b25-v4-pass-6.md`; `b25_iteration_scorecard.dart` reports 4 remaining blocker/major findings; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-6.md`. | B25 remains reopened; commit pending for pass 6 |
 
 ## Iteration 3 Commit Boundary
 
@@ -90,5 +92,6 @@ The visual gate rerun reopened B25 with 4 unresolved major findings:
 - `B25-HOLISTIC-UX-FAILED`
 
 `b25-v4-pass-4` is now historical under the stricter visual inspection gate. B25 cannot close again
-until the affected UI is remediated, screenshots are refreshed, the visual auditor passes, the
-independent UX judge passes, and the production UX judge has zero blocking criteria.
+until screenshot persistence is repaired, the affected UI is remediated, screenshots are refreshed, the
+visual auditor passes, the independent UX judge passes, and the production UX judge has zero blocking
+criteria.
