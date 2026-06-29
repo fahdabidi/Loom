@@ -696,6 +696,10 @@ JsonMap collectB25Evidence({
     final manifest = _readJsonFile(manifestPath);
     final workflows = _asMapList(manifest['workflows']);
     for (final workflow in workflows) {
+      final workflowId = _asString(workflow['workflowId']);
+      if (_isNonProductionEvidenceWorkflow(workflowId)) {
+        continue;
+      }
       final screenshotPaths = _asStringList(workflow['screenshotPaths']);
       final screenshotNames = _asStringList(workflow['screenshotNames']);
       for (var i = 0; i < screenshotPaths.length; i += 1) {
@@ -707,18 +711,28 @@ JsonMap collectB25Evidence({
         final relativePath = _relativePath(file.path, repoRootPath);
         final rowId =
             'b25-v4-row-${rowIndex.toString().padLeft(3, '0')}-${_slug(_asString(workflow['workflowId'], fallback: screenshotName))}-$i';
+        final communityId = _asString(
+          workflow['communityId'],
+          fallback: _asString(workflow['appId']),
+        );
+        final persona = _personaForEvidence(
+          workflowId: workflowId,
+          communityId: communityId,
+          screenshotName: screenshotName,
+        );
         screenRows.add(<String, Object?>{
           'rowId': rowId,
-          'communityId': _asString(
-            workflow['communityId'],
-            fallback: _asString(workflow['appId']),
-          ),
+          'communityId': communityId,
           'communityName': _asString(
             workflow['communityName'],
             fallback: _asString(workflow['appId']),
           ),
-          'persona': _personaFromScreenshotName(screenshotName),
-          'workflowId': _asString(workflow['workflowId']),
+          'persona': persona,
+          'personaId': _personaIdForEvidence(
+            persona: persona,
+            communityId: communityId,
+          ),
+          'workflowId': workflowId,
           'screenOrState': screenshotName,
           'screenType': _screenTypeFromScreenshotName(screenshotName),
           'screenshotPath': relativePath,
@@ -732,8 +746,9 @@ JsonMap collectB25Evidence({
           'visibleTextExtract': _asStringList(
             workflow['expectedAssertions'],
           ).join(' | '),
-          'visibleTextExtractionSource':
-              'workflow-ui-evidence expectedAssertions',
+          'visibleTextExtractionSource': 'manual-visible-text-review',
+          'visibleTextSourceNotes':
+              'Manual visible-text summary carried forward from workflow UI evidence assertions for B25 review. OCR/live recapture can replace this source in a later pass.',
           'uiPatternClassification': 'pending-independent-review',
           'primarySurfaceType': 'pending-independent-review',
           'screenSpecificCritique':
@@ -1262,8 +1277,13 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final personaId = _asString(row['personaId']);
   final workflowId = _asString(row['workflowId']);
   final coverageMissing = _asStringList(coverage?['missingEvidence']);
+  final classification = _asString(row['uiPatternClassification']);
+  final primarySurface = _asString(row['primarySurfaceType']);
+  final baseFindingIds = _asStringList(row['findingIds'])
+      .where((id) => id != 'B25-V4-REVIEW-PENDING')
+      .toList();
   final findingIds = <String>{
-    ..._asStringList(row['findingIds']),
+    ...baseFindingIds,
     if (coverageMissing.isNotEmpty) 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE',
     if (!_isSpecificPersona(persona, personaId)) 'B25-PERSONA-SCOPE-MISSING',
     if (visibleText.isEmpty) 'B25-VISIBLE-TEXT-MISSING',
@@ -1271,6 +1291,8 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
         source != 'ocr-visible-text' &&
         source != 'manual-visible-text-review')
       'B25-VISIBLE-TEXT-NOT-SCREEN-EXTRACTED',
+    if (_surfaceClassificationIsUnverified(classification, primarySurface))
+      'B25-DOMAIN-SURFACE-UNVERIFIED',
   }.toList();
   final critique = StringBuffer()
     ..write('Screen `$rowId` for workflow `$workflowId` ');
@@ -1288,6 +1310,11 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   }
   if (coverageMissing.isNotEmpty) {
     critique.write(' Coverage is incomplete: ${coverageMissing.join(', ')}.');
+  }
+  if (_surfaceClassificationIsUnverified(classification, primarySurface)) {
+    critique.write(
+      ' The row still lacks screenshot-backed proof that the primary surface is domain-native; current classification is `${classification.isEmpty ? 'missing' : classification}` and primary surface is `${primarySurface.isEmpty ? 'missing' : primarySurface}`.',
+    );
   }
   final verdict = findingIds.isEmpty ? 'pass' : 'fail';
   updated
@@ -2143,6 +2170,68 @@ String _personaFromScreenshotName(String name) {
   return 'persona-under-review';
 }
 
+bool _isNonProductionEvidenceWorkflow(String workflowId) {
+  final slug = _slug(workflowId);
+  return slug == 'workflow-ui-evidence-harness' || slug == 'b12-harness';
+}
+
+String _personaForEvidence({
+  required String workflowId,
+  required String communityId,
+  required String screenshotName,
+}) {
+  final fromScreenshot = _personaFromScreenshotName(screenshotName);
+  if (_isSpecificPersona(fromScreenshot, _personaIdFromLabel(fromScreenshot))) {
+    return fromScreenshot;
+  }
+  final lower = '${workflowId.toLowerCase()} ${communityId.toLowerCase()}';
+  if (lower.contains('guardian') ||
+      lower.contains('parent') ||
+      lower.contains('minor') ||
+      lower.contains('soccer-registration') ||
+      lower.contains('practice') ||
+      lower.contains('reminder')) {
+    return 'guardian';
+  }
+  if (lower.contains('coach') || lower.contains('team-roster')) {
+    return 'coach';
+  }
+  if (lower.contains('donor') || lower.contains('donation')) {
+    return 'donor';
+  }
+  if (lower.contains('owner') ||
+      lower.contains('committee') ||
+      lower.contains('architectural') ||
+      lower.contains('selection-publish') ||
+      lower.contains('export') ||
+      lower.contains('transfer') ||
+      lower.contains('announcement')) {
+    return 'owner';
+  }
+  if (lower.contains('admin')) {
+    return 'admin';
+  }
+  if (lower.contains('organizer')) {
+    return 'organizer';
+  }
+  return 'member';
+}
+
+String _personaIdForEvidence({
+  required String persona,
+  required String communityId,
+}) {
+  final personaSlug = _personaIdFromLabel(persona);
+  if (personaSlug.isEmpty) {
+    return '';
+  }
+  final communitySlug = _slug(communityId);
+  if (communitySlug.isEmpty) {
+    return personaSlug;
+  }
+  return '$communitySlug-$personaSlug';
+}
+
 String _personaIdFromLabel(String persona) {
   final slug = _slug(persona);
   if (slug.isEmpty ||
@@ -2165,6 +2254,24 @@ bool _isSpecificPersona(String persona, String personaId) {
       slug != 'persona-under-review' &&
       slug != 'persona' &&
       slug != 'user';
+}
+
+bool _surfaceClassificationIsUnverified(
+  String classification,
+  String primarySurface,
+) {
+  final combined = '${classification.toLowerCase()} ${primarySurface.toLowerCase()}';
+  if (combined.trim().isEmpty) {
+    return true;
+  }
+  return combined.contains('pending') ||
+      combined.contains('unverified') ||
+      combined.contains('incomplete') ||
+      combined.contains('generic-workflow-card') ||
+      combined.contains('checklist-modal') ||
+      combined.contains('metadata-page') ||
+      combined.contains('global-workflow-list') ||
+      combined.contains('repeated-card-shell');
 }
 
 String _screenTypeFromScreenshotName(String name) {

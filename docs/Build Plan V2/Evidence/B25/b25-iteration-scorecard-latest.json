@@ -1,34 +1,34 @@
 {
   "schemaVersion": 1,
   "scorecardType": "b25-iteration",
-  "reviewRunId": "b25-v4-pass-1",
+  "reviewRunId": "b25-v4-pass-2",
   "reviewStandardVersion": "b25-production-ux-v4",
-  "generatedAt": "2026-06-29T01:23:55.783167Z",
+  "generatedAt": "2026-06-29T01:42:17.043926Z",
   "status": "fail",
   "finalDecision": "fail",
   "b25CanPass": false,
   "findingCounts": {
-    "total": 4,
+    "total": 3,
     "criticalBlocker": 0,
-    "major": 4,
+    "major": 3,
     "minor": 0,
     "polish": 0,
     "unresolvedCriticalBlocker": 0,
-    "unresolvedMajor": 4,
-    "unresolvedBlockingMajor": 4,
+    "unresolvedMajor": 3,
+    "unresolvedBlockingMajor": 3,
     "resolvedCriticalBlocker": 0,
     "resolvedMajor": 0,
     "resolvedBlockingMajor": 0
   },
   "convergence": {
-    "previousReviewRunId": "",
+    "previousReviewRunId": "b25-v4-pass-1",
     "resolvedCriticalBlockerThisPass": 0,
     "resolvedMajorThisPass": 0,
     "newCriticalBlockerThisPass": 0,
-    "newMajorThisPass": 4,
-    "resolvedBlockingMajorThisPass": 0,
-    "newBlockingMajorThisPass": 4,
-    "remainingBlockingMajor": 4
+    "newMajorThisPass": 0,
+    "resolvedBlockingMajorThisPass": 1,
+    "newBlockingMajorThisPass": 0,
+    "remainingBlockingMajor": 3
   },
   "judgeSummary": {
     "status": "fail",
@@ -48,13 +48,6 @@
       "requiredFix": "Capture full workflow/persona evidence before rerunning the independent UX judge."
     },
     {
-      "findingId": "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
-      "severity": "major",
-      "status": "open",
-      "title": "Screen-specific critique is not fully screenshot-backed",
-      "requiredFix": "Extract visible text from screenshots and write screen-specific critiques for affected rows."
-    },
-    {
       "findingId": "B25-WORKFLOW-PERSONA-UX-FAILED",
       "severity": "major",
       "status": "open",
@@ -70,35 +63,6 @@
     }
   ],
   "resolvedBlockingFindingsThisPass": [],
-  "newBlockingFindingsThisPass": [
-    {
-      "findingId": "B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow/persona coverage is incomplete",
-      "requiredFix": "Capture full workflow/persona evidence before rerunning the independent UX judge."
-    },
-    {
-      "findingId": "B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE",
-      "severity": "major",
-      "status": "open",
-      "title": "Screen-specific critique is not fully screenshot-backed",
-      "requiredFix": "Extract visible text from screenshots and write screen-specific critiques for affected rows."
-    },
-    {
-      "findingId": "B25-WORKFLOW-PERSONA-UX-FAILED",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow/persona UX scorecards failed",
-      "requiredFix": "Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence."
-    },
-    {
-      "findingId": "B25-HOLISTIC-UX-FAILED",
-      "severity": "major",
-      "status": "open",
-      "title": "Holistic production UX review failed",
-      "requiredFix": "Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review."
-    }
-  ],
+  "newBlockingFindingsThisPass": [],
   "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
 }

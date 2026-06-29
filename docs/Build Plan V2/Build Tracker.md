@@ -88,7 +88,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-1` failed with 0 blockers, 4 unresolved majors, 0 minor/polish findings, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. The coverage collector found 70 workflow/persona rows with 66 failing persona-specific coverage. Current pass closeout artifacts are evidence, workflow/persona coverage matrix, independent judge output, production judge scorecard, schema v4 remediation tickets with remediation mode, worker readiness, implementation blockers, affected screen/coverage IDs, screenshot metadata, visible text excerpts, UX reference patterns to copy, reference research queries, 70 evidence-repair work items, 70 UI-remediation work items, iteration scorecard, remediation log, tracker, and commit. Required next: start `b25-v4-pass-2` by sending the committed tickets to the Remediation Planner, complete evidence-repair work items first, rerun the judge, then implement matching UI-remediation work items using the ticket reference patterns, recapture evidence, rerun coverage + independent + production judges, regenerate scorecard, and commit that pass. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces. | `b25-v4-pass-2` ran the full B25 chain after consuming the pass-1 remediation plan. It fixed the broad evidence-persona problem by excluding the non-production B12 harness, inferring concrete personas/personaIds for every reviewed row, and recording manual visible-text review source for 196 screen rows. Pass 2 still failed: 0 blockers, 3 unresolved majors, 7 blocking criteria failures, failed holistic direct-question pass, and failed workflow/persona direct-question pass. The remaining coverage collector gap is now 6 workflow/persona rows missing complete entry/action/result screenshots, and all primary surfaces remain unverified as domain-native by the independent judge. Current pass closeout artifacts are pass-2 evidence, workflow/persona coverage matrix, independent judge output, production judge scorecard, schema v4 remediation tickets, pass-2 scorecard, and pass-3 remediation plan. Required next: start `b25-v4-pass-3` from `b25-remediation-plan-b25-v4-pass-3.md`, repair the 6 remaining coverage rows, then remediate the unverified/domain-native UI surfaces using the ticket reference patterns before recapturing and rerunning judges. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 pending commit |
 
 ## Phase Outcome Summary
 
@@ -1651,28 +1651,30 @@ Closeout rule for reopened phases:
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
   pending.
-- **Current v4 pass:** `b25-v4-pass-1` has collected schema v4 evidence through
-  `b25_evidence_collector.dart` and generated
-  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-1.md`. The pass failed with
-  0 blockers, 4 unresolved major findings, 0 minor/polish findings, and 7 blocking production UX
-  criteria failures. The unresolved major findings are `B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE`,
-  `B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE`, `B25-WORKFLOW-PERSONA-UX-FAILED`, and
-  `B25-HOLISTIC-UX-FAILED`. The holistic direct-question pass is false and the workflow/persona
-  direct-question pass is false because independent screen-specific critique, holistic answers, and
-  workflow/persona scorecards are not complete. Pass 1 closes with schema v4 tickets that include
-  remediation mode, worker readiness, implementation blockers, affected screen/coverage IDs, screenshot
-  paths and hashes, visible text excerpts, current surface classifications, exact UX failures, target
-  production surfaces, UX reference patterns to copy, reference research queries, 70 evidence-repair
-  work items, 70 UI-remediation work items, likely files/widgets, and concrete screen/workflow/persona
-  acceptance criteria. The next worker iteration must start from
-  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-2.md`, which consumes the
-  committed pass-1 tickets. It must complete evidence-repair work items first, rerun the judge, then
-  implement matching UI-remediation work items using the ticket reference patterns. B25 remains reopened. Iteration commit: `647c38f`;
-  pass-result clarification commit `c5799e6`; detailed ticket schema update `f617625`; work-item split
-  update `42e7cdf`; reference-pattern ticket update `6d01a22`.
+- **Current v4 pass:** `b25-v4-pass-2` has collected schema v4 evidence through
+  `b25_evidence_collector.dart`, regenerated workflow/persona coverage, rerun the independent UX judge,
+  rerun `production_ux_judge.dart`, generated
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-2.md`, and produced the next
+  remediation plan at
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-3.md`. The pass failed with
+  0 blockers, 3 unresolved major findings, 0 minor/polish findings, and 7 blocking production UX
+  criteria failures. It resolved one blocking-major class from pass 1: `B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE`
+  no longer appears as a standalone unresolved major. It did not introduce new blocker/major findings.
+  Pass 2 fixed the broad evidence-persona gap by excluding the non-production B12 evidence harness,
+  assigning concrete personas/personaIds to every reviewed screen and coverage row, and recording
+  manual visible-text review source for 196 screen rows. The remaining unresolved major findings are
+  `B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE`, `B25-WORKFLOW-PERSONA-UX-FAILED`, and
+  `B25-HOLISTIC-UX-FAILED`. The coverage gap is now specific: 6 workflow/persona rows are missing full
+  entry/action/result screenshot coverage. The workflow/persona direct-question pass is still false
+  because the independent judge still cannot verify domain-native primary surfaces. The holistic
+  direct-question pass is still false because production-grade, modern/intentional, community IA, and
+  layout/content quality remain unproven by the evidence. B25 remains reopened. Next worker iteration:
+  start from `b25-remediation-plan-b25-v4-pass-3.md`, repair the 6 coverage rows first, then implement
+  domain-native UI/surface fixes from the pass-2 tickets before recapturing evidence and rerunning the
+  full B25 chain.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 pass-1 ticket/planner closeout
   `5d4e313`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`;
-  reference-pattern ticket update `6d01a22`.
+  reference-pattern ticket update `6d01a22`; v4 pass-2 pending commit.
 
 ## Gate Evidence Template
 

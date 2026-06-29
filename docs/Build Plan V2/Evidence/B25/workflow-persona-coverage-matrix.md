@@ -3,78 +3,76 @@
 | Field | Value |
 | --- | --- |
 | Status | `fail` |
-| Coverage rows | 70 |
-| Failing rows | 66 |
+| Coverage rows | 68 |
+| Failing rows | 6 |
 
 | Coverage row | Status | Community | Workflow | Persona | Screens | Missing evidence | Required fix |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `b25-wp-001-workflow-ui-evidence-harness-persona-under-review` | `fail` | workflow-ui-evidence-harness | `workflow-ui-evidence-harness` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-002-garden-event-rsvp-persona-under-review` | `fail` | Garden Club | `garden-event-rsvp` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-003-plant-exchange-submission-persona-under-review` | `fail` | Garden Club | `plant-exchange-submission` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-004-garden-export-custom-schemas-persona-under-review` | `fail` | Garden Club | `garden-export-custom-schemas` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-005-book-nomination-persona-under-review` | `fail` | Neighborhood Book Club | `book-nomination` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-006-book-vote-persona-under-review` | `fail` | Neighborhood Book Club | `book-vote` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-007-book-meeting-rsvp-persona-under-review` | `fail` | Neighborhood Book Club | `book-meeting-rsvp` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-008-book-discussion-message-persona-under-review` | `fail` | Neighborhood Book Club | `book-discussion-message` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-009-book-selection-publish-persona-under-review` | `fail` | Neighborhood Book Club | `book-selection-publish` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-010-book-search-ai-digest-persona-under-review` | `fail` | Neighborhood Book Club | `book-search-ai-digest` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-011-book-export-metadata-persona-under-review` | `fail` | Neighborhood Book Club | `book-export-metadata` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-012-soccer-guardian-join-approval-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-guardian-join-approval` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-013-soccer-team-roster-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-team-roster` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-014-soccer-minor-redaction-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-minor-redaction` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-015-soccer-registration-payment-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-registration-payment` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-016-soccer-practice-schedule-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-practice-schedule` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-017-soccer-reminder-notification-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-reminder-notification` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-018-soccer-export-metadata-persona-under-review` | `fail` | Riverside Youth Soccer | `soccer-export-metadata` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-019-hoa-dues-payment-persona-under-review` | `fail` | Cedar Commons HOA | `hoa-dues-payment` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-020-hoa-member-document-member` | `pass` | Cedar Commons HOA | `hoa-member-document` | member | 3 |  | None. |
-| `b25-wp-021-hoa-facility-reservation-persona-under-review` | `fail` | Cedar Commons HOA | `hoa-facility-reservation` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-022-hoa-architectural-request-persona-under-review` | `fail` | Cedar Commons HOA | `hoa-architectural-request` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-023-hoa-committee-decision-persona-under-review` | `fail` | Cedar Commons HOA | `hoa-committee-decision` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-024-hoa-owner-notification-owner` | `pass` | Cedar Commons HOA | `hoa-owner-notification` | owner | 3 |  | None. |
-| `b25-wp-025-hoa-export-evidence-persona-under-review` | `fail` | Cedar Commons HOA | `hoa-export-evidence` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-026-mosque-announcement-persona-under-review` | `fail` | Masjid Nur | `mosque-announcement` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-027-mosque-event-rsvp-persona-under-review` | `fail` | Masjid Nur | `mosque-event-rsvp` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-028-mosque-volunteer-signup-persona-under-review` | `fail` | Masjid Nur | `mosque-volunteer-signup` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-029-mosque-donor-visibility-persona-under-review` | `fail` | Masjid Nur | `mosque-donor-visibility` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-030-mosque-donation-payment-persona-under-review` | `fail` | Masjid Nur | `mosque-donation-payment` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-031-mosque-care-request-persona-under-review` | `fail` | Masjid Nur | `mosque-care-request` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-032-mosque-neutral-notification-persona-under-review` | `fail` | Masjid Nur | `mosque-neutral-notification` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-033-mosque-search-ai-citation-persona-under-review` | `fail` | Masjid Nur | `mosque-search-ai-citation` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-034-chess-local-install-open-persona-under-review` | `fail` | Chess Club | `chess-local-install-open` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-035-chess-route-home-persona-under-review` | `fail` | Chess Club | `chess-route-home` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-036-chess-match-result-persona-under-review` | `fail` | Chess Club | `chess-match-result` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-037-photo-walk-rsvp-persona-under-review` | `fail` | Camera Club | `photo-walk-rsvp` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-038-critique-submission-persona-under-review` | `fail` | Camera Club | `critique-submission` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-039-gear-loan-request-persona-under-review` | `fail` | Camera Club | `gear-loan-request` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-040-platform-messages-entry-persona-under-review` | `fail` | Member Social Space | `platform-messages-entry` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-041-platform-connections-entry-persona-under-review` | `fail` | Member Social Space | `platform-connections-entry` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-042-platform-connection-invite-persona-under-review` | `fail` | Member Social Space | `platform-connection-invite` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-043-platform-blocked-target-persona-under-review` | `fail` | Member Social Space | `platform-blocked-target` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-044-platform-message-stream-persona-under-review` | `fail` | Member Social Space | `platform-message-stream` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-045-platform-in-stream-ad-persona-under-review` | `fail` | Member Social Space | `platform-in-stream-ad` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-046-platform-top-banner-no-fill-persona-under-review` | `fail` | Member Social Space | `platform-top-banner-no-fill` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-047-platform-sensitive-no-fill-persona-under-review` | `fail` | Member Social Space | `platform-sensitive-no-fill` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-048-ad-off-member-checkout-member` | `pass` | Ad-Free Community | `ad-off-member-checkout` | member | 3 |  | None. |
-| `b25-wp-049-ad-off-community-checkout-persona-under-review` | `fail` | Ad-Free Community | `ad-off-community-checkout` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-050-ad-off-entitlement-status-persona-under-review` | `fail` | Ad-Free Community | `ad-off-entitlement-status` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-051-ad-off-receipt-evidence-persona-under-review` | `fail` | Ad-Free Community | `ad-off-receipt-evidence` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-052-ad-off-ad-suppression-persona-under-review` | `fail` | Ad-Free Community | `ad-off-ad-suppression` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-053-ad-off-settlement-utility-persona-under-review` | `fail` | Ad-Free Community | `ad-off-settlement-utility` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-054-export-import-preview-persona-under-review` | `fail` | Data Portability Community | `export-import-preview` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-055-export-import-replay-persona-under-review` | `fail` | Data Portability Community | `export-import-replay` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-056-export-protected-redaction-persona-under-review` | `fail` | Data Portability Community | `export-protected-redaction` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-057-export-schema-listing-persona-under-review` | `fail` | Data Portability Community | `export-schema-listing` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-058-export-full-bundle-persona-under-review` | `fail` | Data Portability Community | `export-full-bundle` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-059-export-redacted-bundle-persona-under-review` | `fail` | Data Portability Community | `export-redacted-bundle` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-060-export-checksum-evidence-persona-under-review` | `fail` | Data Portability Community | `export-checksum-evidence` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-061-export-transfer-verification-persona-under-review` | `fail` | Data Portability Community | `export-transfer-verification` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-062-export-transfer-rollback-persona-under-review` | `fail` | Data Portability Community | `export-transfer-rollback` | persona-under-review | 3 | specific persona/personaId | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-063-wf-persona-role-inventory-capability-matrix-admin` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | admin | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-064-wf-persona-role-inventory-capability-matrix-persona-under-review` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | persona-under-review | 1 | specific persona/personaId; entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-065-wf-demo-app-persona-picker-persona-under-review` | `fail` | Masjid Nur | `wf_demo-app-persona-picker` | persona-under-review | 1 | specific persona/personaId; entry/start screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-066-wf-demo-app-persona-picker-member` | `fail` | Masjid Nur | `wf_demo-app-persona-picker` | member | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-067-wf-community-persona-aware-ux-member` | `fail` | Masjid Nur | `wf_community-persona-aware-ux` | member | 2 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-068-wf-community-persona-aware-ux-admin` | `fail` | Masjid Nur | `wf_community-persona-aware-ux` | admin | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
-| `b25-wp-069-wf-multi-persona-workflow-evidence-admin` | `pass` | Masjid Nur | `wf_multi-persona-workflow-evidence` | admin | 3 |  | None. |
-| `b25-wp-070-wf-multi-persona-workflow-evidence-member` | `fail` | Masjid Nur | `wf_multi-persona-workflow-evidence` | member | 3 | entry/start screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-001-garden-event-rsvp-community-garden-club-member` | `pass` | Garden Club | `garden-event-rsvp` | member | 3 |  | None. |
+| `b25-wp-002-plant-exchange-submission-community-garden-club-member` | `pass` | Garden Club | `plant-exchange-submission` | member | 3 |  | None. |
+| `b25-wp-003-garden-export-custom-schemas-community-garden-club-owner` | `pass` | Garden Club | `garden-export-custom-schemas` | owner | 3 |  | None. |
+| `b25-wp-004-book-nomination-community-book-club-member` | `pass` | Neighborhood Book Club | `book-nomination` | member | 3 |  | None. |
+| `b25-wp-005-book-vote-community-book-club-member` | `pass` | Neighborhood Book Club | `book-vote` | member | 3 |  | None. |
+| `b25-wp-006-book-meeting-rsvp-community-book-club-member` | `pass` | Neighborhood Book Club | `book-meeting-rsvp` | member | 3 |  | None. |
+| `b25-wp-007-book-discussion-message-community-book-club-member` | `pass` | Neighborhood Book Club | `book-discussion-message` | member | 3 |  | None. |
+| `b25-wp-008-book-selection-publish-community-book-club-owner` | `pass` | Neighborhood Book Club | `book-selection-publish` | owner | 3 |  | None. |
+| `b25-wp-009-book-search-ai-digest-community-book-club-member` | `pass` | Neighborhood Book Club | `book-search-ai-digest` | member | 3 |  | None. |
+| `b25-wp-010-book-export-metadata-community-book-club-owner` | `pass` | Neighborhood Book Club | `book-export-metadata` | owner | 3 |  | None. |
+| `b25-wp-011-soccer-guardian-join-approval-community-youth-soccer-guardian` | `pass` | Riverside Youth Soccer | `soccer-guardian-join-approval` | guardian | 3 |  | None. |
+| `b25-wp-012-soccer-team-roster-community-youth-soccer-coach` | `pass` | Riverside Youth Soccer | `soccer-team-roster` | coach | 3 |  | None. |
+| `b25-wp-013-soccer-minor-redaction-community-youth-soccer-guardian` | `pass` | Riverside Youth Soccer | `soccer-minor-redaction` | guardian | 3 |  | None. |
+| `b25-wp-014-soccer-registration-payment-community-youth-soccer-guardian` | `pass` | Riverside Youth Soccer | `soccer-registration-payment` | guardian | 3 |  | None. |
+| `b25-wp-015-soccer-practice-schedule-community-youth-soccer-guardian` | `pass` | Riverside Youth Soccer | `soccer-practice-schedule` | guardian | 3 |  | None. |
+| `b25-wp-016-soccer-reminder-notification-community-youth-soccer-guardian` | `pass` | Riverside Youth Soccer | `soccer-reminder-notification` | guardian | 3 |  | None. |
+| `b25-wp-017-soccer-export-metadata-community-youth-soccer-owner` | `pass` | Riverside Youth Soccer | `soccer-export-metadata` | owner | 3 |  | None. |
+| `b25-wp-018-hoa-dues-payment-community-hoa-member` | `pass` | Cedar Commons HOA | `hoa-dues-payment` | member | 3 |  | None. |
+| `b25-wp-019-hoa-member-document-community-hoa-member` | `pass` | Cedar Commons HOA | `hoa-member-document` | member | 3 |  | None. |
+| `b25-wp-020-hoa-facility-reservation-community-hoa-member` | `pass` | Cedar Commons HOA | `hoa-facility-reservation` | member | 3 |  | None. |
+| `b25-wp-021-hoa-architectural-request-community-hoa-owner` | `pass` | Cedar Commons HOA | `hoa-architectural-request` | owner | 3 |  | None. |
+| `b25-wp-022-hoa-committee-decision-community-hoa-owner` | `pass` | Cedar Commons HOA | `hoa-committee-decision` | owner | 3 |  | None. |
+| `b25-wp-023-hoa-owner-notification-community-hoa-owner` | `pass` | Cedar Commons HOA | `hoa-owner-notification` | owner | 3 |  | None. |
+| `b25-wp-024-hoa-export-evidence-community-hoa-owner` | `pass` | Cedar Commons HOA | `hoa-export-evidence` | owner | 3 |  | None. |
+| `b25-wp-025-mosque-announcement-community-mosque-owner` | `pass` | Masjid Nur | `mosque-announcement` | owner | 3 |  | None. |
+| `b25-wp-026-mosque-event-rsvp-community-mosque-member` | `pass` | Masjid Nur | `mosque-event-rsvp` | member | 3 |  | None. |
+| `b25-wp-027-mosque-volunteer-signup-community-mosque-member` | `pass` | Masjid Nur | `mosque-volunteer-signup` | member | 3 |  | None. |
+| `b25-wp-028-mosque-donor-visibility-community-mosque-donor` | `pass` | Masjid Nur | `mosque-donor-visibility` | donor | 3 |  | None. |
+| `b25-wp-029-mosque-donation-payment-community-mosque-donor` | `pass` | Masjid Nur | `mosque-donation-payment` | donor | 3 |  | None. |
+| `b25-wp-030-mosque-care-request-community-mosque-member` | `pass` | Masjid Nur | `mosque-care-request` | member | 3 |  | None. |
+| `b25-wp-031-mosque-neutral-notification-community-mosque-member` | `pass` | Masjid Nur | `mosque-neutral-notification` | member | 3 |  | None. |
+| `b25-wp-032-mosque-search-ai-citation-community-mosque-member` | `pass` | Masjid Nur | `mosque-search-ai-citation` | member | 3 |  | None. |
+| `b25-wp-033-chess-local-install-open-community-chess-club-member` | `pass` | Chess Club | `chess-local-install-open` | member | 3 |  | None. |
+| `b25-wp-034-chess-route-home-community-chess-club-member` | `pass` | Chess Club | `chess-route-home` | member | 3 |  | None. |
+| `b25-wp-035-chess-match-result-community-chess-club-member` | `pass` | Chess Club | `chess-match-result` | member | 3 |  | None. |
+| `b25-wp-036-photo-walk-rsvp-community-camera-club-member` | `pass` | Camera Club | `photo-walk-rsvp` | member | 3 |  | None. |
+| `b25-wp-037-critique-submission-community-camera-club-member` | `pass` | Camera Club | `critique-submission` | member | 3 |  | None. |
+| `b25-wp-038-gear-loan-request-community-camera-club-member` | `pass` | Camera Club | `gear-loan-request` | member | 3 |  | None. |
+| `b25-wp-039-platform-messages-entry-community-platform-social-member` | `pass` | Member Social Space | `platform-messages-entry` | member | 3 |  | None. |
+| `b25-wp-040-platform-connections-entry-community-platform-social-member` | `pass` | Member Social Space | `platform-connections-entry` | member | 3 |  | None. |
+| `b25-wp-041-platform-connection-invite-community-platform-social-member` | `pass` | Member Social Space | `platform-connection-invite` | member | 3 |  | None. |
+| `b25-wp-042-platform-blocked-target-community-platform-social-member` | `pass` | Member Social Space | `platform-blocked-target` | member | 3 |  | None. |
+| `b25-wp-043-platform-message-stream-community-platform-social-member` | `pass` | Member Social Space | `platform-message-stream` | member | 3 |  | None. |
+| `b25-wp-044-platform-in-stream-ad-community-platform-social-member` | `pass` | Member Social Space | `platform-in-stream-ad` | member | 3 |  | None. |
+| `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member` | `pass` | Member Social Space | `platform-top-banner-no-fill` | member | 3 |  | None. |
+| `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member` | `pass` | Member Social Space | `platform-sensitive-no-fill` | member | 3 |  | None. |
+| `b25-wp-047-ad-off-member-checkout-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-member-checkout` | member | 3 |  | None. |
+| `b25-wp-048-ad-off-community-checkout-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-community-checkout` | member | 3 |  | None. |
+| `b25-wp-049-ad-off-entitlement-status-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-entitlement-status` | member | 3 |  | None. |
+| `b25-wp-050-ad-off-receipt-evidence-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-receipt-evidence` | member | 3 |  | None. |
+| `b25-wp-051-ad-off-ad-suppression-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-ad-suppression` | member | 3 |  | None. |
+| `b25-wp-052-ad-off-settlement-utility-community-ad-off-member` | `pass` | Ad-Free Community | `ad-off-settlement-utility` | member | 3 |  | None. |
+| `b25-wp-053-export-import-preview-community-export-migration-owner` | `pass` | Data Portability Community | `export-import-preview` | owner | 3 |  | None. |
+| `b25-wp-054-export-import-replay-community-export-migration-owner` | `pass` | Data Portability Community | `export-import-replay` | owner | 3 |  | None. |
+| `b25-wp-055-export-protected-redaction-community-export-migration-owner` | `pass` | Data Portability Community | `export-protected-redaction` | owner | 3 |  | None. |
+| `b25-wp-056-export-schema-listing-community-export-migration-owner` | `pass` | Data Portability Community | `export-schema-listing` | owner | 3 |  | None. |
+| `b25-wp-057-export-full-bundle-community-export-migration-owner` | `pass` | Data Portability Community | `export-full-bundle` | owner | 3 |  | None. |
+| `b25-wp-058-export-redacted-bundle-community-export-migration-owner` | `pass` | Data Portability Community | `export-redacted-bundle` | owner | 3 |  | None. |
+| `b25-wp-059-export-checksum-evidence-community-export-migration-owner` | `pass` | Data Portability Community | `export-checksum-evidence` | owner | 3 |  | None. |
+| `b25-wp-060-export-transfer-verification-community-export-migration-owner` | `pass` | Data Portability Community | `export-transfer-verification` | owner | 3 |  | None. |
+| `b25-wp-061-export-transfer-rollback-community-export-migration-owner` | `pass` | Data Portability Community | `export-transfer-rollback` | owner | 3 |  | None. |
+| `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | admin | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `fail` | persona-role-inventory | `wf_persona-role-inventory-capability-matrix` | member | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `fail` | Masjid Nur | `wf_demo-app-persona-picker` | member | 2 | entry/start screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `fail` | Masjid Nur | `wf_community-persona-aware-ux` | member | 2 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `fail` | Masjid Nur | `wf_community-persona-aware-ux` | admin | 1 | entry/start screenshot; action/review screenshot; result/receiver screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
+| `b25-wp-067-wf-multi-persona-workflow-evidence-community-mosque-admin` | `pass` | Masjid Nur | `wf_multi-persona-workflow-evidence` | admin | 3 |  | None. |
+| `b25-wp-068-wf-multi-persona-workflow-evidence-community-mosque-member` | `fail` | Masjid Nur | `wf_multi-persona-workflow-evidence` | member | 3 | entry/start screenshot | Capture or map the missing workflow/persona evidence before independent UX judgment. |
