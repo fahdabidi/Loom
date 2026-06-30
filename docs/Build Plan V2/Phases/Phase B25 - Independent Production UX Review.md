@@ -274,34 +274,23 @@ the owner explicitly asks for review-only planning or pauses implementation.
    screenshot hash/timestamp, app commit SHA, visible text, UI-pattern classification,
    primary/secondary surface type, row-specific critique, findings, remediation IDs, and unresolved
    severity counts.
-9. **Independent UX Judge:** run the distinct independent UX judge tool. It consumes only the
-   community-specific product docs, evidence, screenshots, blueprint, workflow/persona coverage matrix,
-   and pass criteria. It must write
-   holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, exact
-   findings tied to screen rows/screenshots/personas/workflows, UX reference patterns to copy, and
-   remediation-ticket inputs:
+9. **Deterministic review scaffold:** run `b25_independent_ux_judge.dart` to normalize the schema v4
+   review, carry deterministic visual-inspection output into rows, and prepare holistic/workflow fields
+   for the semantic reviewer. This tool is not allowed to be the final semantic product-quality judge;
+   it cannot pass B25 by itself because it does not perform LLM visual/product reasoning:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
    ```
 
-   The independent judge must not receive worker implementation notes. It must not pass a row that
-   cannot be justified from the product doc and visible UI. It must classify each failure as
-   `product-spec-gap`, `implementation-gap`, `evidence-gap`, or `mixed-gap`. For failed rows, it must
-   search the internet or open-source
-   projects for comparable production patterns when network access is available, record the selected
-   references and URLs, and state what a worker should copy or adapt. If live research is unavailable,
-   it must use the built-in B25 reference catalog and preserve refresh queries in the ticket.
-   The independent judge must perform positive semantic closure for every remediated ticket: compare the
-   before finding, the requested target product surface, and the after screenshots, then explicitly state
-   whether the after UI now proves the requested surface. A ticket cannot close because the Worker Agent
-   says it implemented the fix, because the text labels changed, or because no deterministic visual
-   blocker was found. It closes only when the after screenshot shows the expected domain content and
-   affordances. For example, a Masjid announcement remediation closes only if the after evidence shows
-   audience or recipient group, author/sender attribution, message body, timestamp or delivery timing,
-   receiver inbox/feed state, and a natural publish/send/read action.
-10. **Holistic direct-question pass:** answer the whole-product questions in
-   `holisticQuestionAnswers`:
+10. **LLM Vision UX Judge Agent:** send the current product docs, production UX blueprint,
+    workflow/persona coverage, screen matrix, screenshot paths, and actual screenshots to a fresh LLM
+    vision/product-review agent. Do not give the agent worker implementation notes, intended behavior,
+    source-code diffs, or claims that fixes are complete. The agent must inspect the screenshot pixels
+    and layout and write a structured JSON review with `status`, `summary`,
+    `holisticQuestionAnswers`, `screenReviews`, and `findings`.
+
+    The LLM Vision UX Judge answers the whole-product questions:
 
    - Does the whole experience feel like a real production community app for the target users, not
      merely an implemented workflow harness?
@@ -311,7 +300,25 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
      repeated-card, checklist-modal, and thin-content defects?
 
-11. **Workflow/persona direct-question pass:** for every workflow/persona pair, write a
+    It also reviews screen rows and workflow/persona batches small enough that each answer cites
+    concrete visible UI details. The agent must classify each failure as a product-spec gap,
+    implementation gap, evidence gap, or mixed gap where possible, and must attach reference patterns
+    or research queries for remediation tickets.
+
+11. **Import LLM vision review:** import the LLM review into the B25 evidence with
+    `b25_llm_ux_review_importer.dart`. This is the semantic review artifact that the deterministic
+    Production UX Judge validates and converts into tickets:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+   ```
+
+   B25 fails if `llmVisionReview` is missing, incomplete, not screenshot-grounded, or contains any
+   unresolved blocker/major finding. The importer resolves judge row references back to B25 screen rows
+   so the production judge can generate tickets with screenshot paths, hashes, visible text, and target
+   surfaces.
+
+12. **Workflow/persona direct-question pass:** for every workflow/persona pair, write or preserve a
    `workflowPersonaScorecards` row answering:
 
    - Can this persona immediately understand what they are supposed to do?
@@ -325,7 +332,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the after screenshot prove the requested target product surface is actually present, with the
      required domain content and affordances, instead of merely avoiding known bad patterns?
 
-12. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
+13. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
     independent judge and before the production judge. It must write `workflowLifecycleScorecards`,
     `semanticInteractionModel` details, and `b25-workflow-lifecycle-scorecards.md`, then fail if any
     primary workflow/persona lacks the visible interaction proof a real product requires:
@@ -348,14 +355,14 @@ the owner explicitly asks for review-only planning or pauses implementation.
    If any interaction-model scorecard fails, the remediation ticket must name the missing lifecycle
    groups, missing/wrong actions, generic substitutes, and route either to product-doc update first, UI
    implementation, evidence repair, or a mixed sequence.
-13. **Production UX judge scorecard:** run the deterministic production judge against the independent
+14. **Production UX judge scorecard:** run the deterministic production judge against the independent
    judge's v4 evidence:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
    ```
 
-   The production judge validates the independent judge and interaction-model output, emits the scorecard, and generates
+   The production judge validates the deterministic scaffold, imported LLM vision review, and interaction-model output, emits the scorecard, and generates
    remediation tickets. It must fail if either the holistic direct-question pass or any
    workflow/persona direct-question pass is missing, partial, unsupported by visible evidence, or below
    the score threshold. It must also fail if any workflow/persona row lacks passing
@@ -363,7 +370,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    `workflowLifecycleProof`, or if any
    previously opened remediation ticket lacks before/after screenshot evidence proving the requested
    target-surface and interaction-model elements are now visible.
-14. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+15. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -372,15 +379,15 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-15. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+16. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-16. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
+17. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
    update the community product doc and blueprint before UI work. Implementation gaps update UX/content/
    code/seed data/tests. Evidence gaps recapture or repair evidence before judging. Then rebuild,
    relaunch, recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the
    full iteration before the next UX feedback or remediation batch.
-17. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+18. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
    pass is green, every semantic surface proof is green, every workflow interaction-model scorecard is green,
@@ -398,13 +405,15 @@ Use the split defined in [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judg
 | Worker Agent | Applies UX/content/code/test fixes from a remediation plan. |
 | Evidence Collector Tool | Captures screenshots, hashes, timestamps, visible text, app commit SHA, device metadata, and command output. |
 | Visual Inspection Auditor Tool | Decodes screenshots and records pixel/layout signals for checklist modals, repeated-card shells, thin content, weak identity, default-scaffold feel, and missing/undecodable images. |
-| Independent UX Judge Agent | Reviews only artifacts and screenshots, inspects the visual audit output, scores direct-question passes, and emits screen-specific critique/findings. |
+| Deterministic Review Scaffold | Normalizes schema v4 evidence and visual-audit data but cannot provide the final semantic product-quality pass. |
+| LLM Vision UX Judge Agent | Reviews only artifacts and screenshots with fresh context, inspects pixels/layout, answers direct UX questions, and emits screenshot-backed critiques/findings. |
+| LLM Review Importer Tool | Imports the LLM vision review into schema v4 evidence as `llmVisionReview` so the production judge can validate and ticket it. |
 | Workflow Interaction-Model Judge Tool | Scores every workflow/persona interaction model against expected decision, concrete object/context, decision information, semantically correct primary action, alternate/change/reject affordance, result state, and receiver/continuation state. |
 | Production UX Judge CLI | Deterministically validates the independent judge output and emits the scorecard/tickets. |
 | Remediation Planner | Converts judge failures into fix batches for the Worker Agent. |
 
-The Worker Agent may not mark B25 complete. Only the Independent UX Judge output, Production UX Judge
-scorecard, and deterministic phase gates can allow closeout.
+The Worker Agent may not mark B25 complete. Only a passing imported LLM vision review, Production UX
+Judge scorecard, and deterministic phase gates can allow closeout.
 
 ## Prompt To Use
 

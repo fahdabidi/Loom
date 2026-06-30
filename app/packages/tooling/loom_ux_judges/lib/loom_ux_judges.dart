@@ -323,6 +323,18 @@ final specs = <String, JudgeSpec>{
             'Run the independent screenshot-first review and record a production-grade verdict grounded in screen evidence.',
       ),
       CriterionDefinition(
+        id: 'b25-c14-llm-vision-ux-review',
+        title: 'LLM vision UX judge has inspected screenshots semantically',
+        question:
+            'Has a fresh LLM vision UX Judge inspected the actual screenshots as product UI, answered direct UX questions from visible evidence, and found no blocker or major product-quality issues?',
+        scope: 'llm-vision',
+        requiredEvidenceFields: <String>['llmVisionReview'],
+        failureMessage:
+            'The evidence does not include a passing LLM vision UX review artifact grounded in screenshots.',
+        requiredFix:
+            'Run the B25 LLM Vision UX Judge Agent on the screenshot evidence, import its structured review, fix all blocker/major findings, and rerun B25.',
+      ),
+      CriterionDefinition(
         id: 'b25-c04-modern-intentional-ui',
         title: 'UI looks modern and intentionally designed',
         question:
@@ -691,6 +703,46 @@ void runB25IndependentUxJudgeCli(List<String> args) {
     'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowPersonaScorecards=${_asMapList(judged['workflowPersonaScorecards']).length}',
   );
   if (judged['finalDecision'] != 'pass') {
+    exit(1);
+  }
+}
+
+void runB25LlmUxReviewImporterCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_llmUxReviewImporterUsage());
+    return;
+  }
+  final inputPath = _argValue(args, '--input');
+  final llmReviewPath = _argValue(args, '--llm-review');
+  final outputPath = _argValue(args, '--output');
+  if (inputPath == null || llmReviewPath == null || outputPath == null) {
+    stderr.writeln(
+      'Missing required --input <json>, --llm-review <json>, or --output <json>',
+    );
+    stdout.writeln(_llmUxReviewImporterUsage());
+    exit(64);
+  }
+  final markdownPath = _argValue(args, '--markdown-output');
+  final matrixPath = _argValue(args, '--matrix-output');
+  final imported = buildB25LlmUxReviewImport(
+    _readJsonFile(inputPath),
+    _readJsonFile(llmReviewPath),
+    llmReviewPath: llmReviewPath,
+    runId: _argValue(args, '--run-id'),
+  );
+  final encoded = const JsonEncoder.withIndent('  ').convert(imported);
+  File(outputPath).writeAsStringSync('$encoded\n');
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25ReviewMarkdown(imported));
+  }
+  if (matrixPath != null) {
+    File(matrixPath).writeAsStringSync(_b25ScreenMatrixMarkdown(imported));
+  }
+  final llmReview = imported['llmVisionReview'] as JsonMap;
+  stdout.writeln(
+    'b25_llm_ux_review_importer: status=${llmReview['status']} findings=${_asMapList(llmReview['findings']).length} screenReviews=${_asMapList(llmReview['screenReviews']).length}',
+  );
+  if (llmReview['status'] != 'pass') {
     exit(1);
   }
 }
@@ -1535,6 +1587,223 @@ JsonMap buildB25WorkflowLifecycleReview(JsonMap review) {
       lifecycleScorecards,
     )
     ..['findings'] = findings
+    ..['unresolvedBlockerFindings'] = unresolvedBlockers
+    ..['unresolvedMajorFindings'] = unresolvedMajors;
+}
+
+JsonMap buildB25LlmUxReviewImport(
+  JsonMap review,
+  JsonMap llmReview, {
+  required String llmReviewPath,
+  String? runId,
+}) {
+  final screenRows = _asMapList(review['screenRows']);
+  final rowIds = screenRows.map(_rowId).toList();
+  final normalizedHolisticAnswers =
+      _asMapList(llmReview['holisticQuestionAnswers']).map((answer) {
+        final affectedRows = _resolveB25ScreenRowIds(
+          _asStringList(answer['affectedScreenRowIds']),
+          rowIds,
+        );
+        final score = _asInt(answer['score']);
+        final answerValue = _asString(answer['answer'] ?? answer['verdict']);
+        return <String, Object?>{
+          ...answer,
+          'questionId': _asString(
+            answer['questionId'],
+            fallback: 'llm-${_slug(_asString(answer['question']))}',
+          ),
+          'scope': 'llm-vision-holistic',
+          'answer': answerValue.isEmpty
+              ? (score >= 80 ? 'yes' : 'no')
+              : answerValue,
+          'score': score,
+          'blocksPass':
+              answer['blocksPass'] == true ||
+              answerValue == 'no' ||
+              answerValue == 'partial' ||
+              answerValue == 'fail' ||
+              score < 80,
+          'visibleEvidence': _asStringList(answer['visibleEvidence']).isEmpty
+              ? <String>[
+                  _asString(answer['visibleEvidence']),
+                ].where((value) => value.trim().isNotEmpty).toList()
+              : _asStringList(answer['visibleEvidence']),
+          'affectedScreenRowIds': affectedRows,
+          'evidenceUsed': affectedRows,
+        };
+      }).toList();
+  final normalizedScreenReviews = _asMapList(llmReview['screenReviews']).map((
+    row,
+  ) {
+    final affectedRows = _resolveB25ScreenRowIds(<String>[
+      _asString(row['screenRowId']),
+      ..._asStringList(row['affectedScreenRowIds']),
+    ], rowIds);
+    return <String, Object?>{
+      ...row,
+      'screenRowId': affectedRows.isEmpty
+          ? _asString(row['screenRowId'])
+          : affectedRows.first,
+      'affectedScreenRowIds': affectedRows,
+      'blocksPass':
+          row['blocksPass'] == true ||
+          _asString(row['verdict']) == 'fail' ||
+          _isBlockingSeverity(row),
+    };
+  }).toList();
+  final normalizedFindings = _asMapList(llmReview['findings']).map((finding) {
+    final affectedRows = _resolveB25ScreenRowIds(
+      _asStringList(finding['affectedScreenRowIds']),
+      rowIds,
+    );
+    final severity = _asString(finding['severity'], fallback: 'major');
+    return <String, Object?>{
+      ...finding,
+      'findingId': _asString(
+        finding['findingId'],
+        fallback: 'LLM-UX-${_slug(_asString(finding['title']))}',
+      ),
+      'source': 'llm-vision-ux-judge',
+      'severity': severity,
+      'status': _asString(finding['status'], fallback: 'open'),
+      'resolved': finding['resolved'] == true,
+      'blocksPass':
+          finding['blocksPass'] == true ||
+          _isBlockingSeverity(<String, Object?>{'severity': severity}),
+      'affectedScreenRowIds': affectedRows,
+      'requiredFix': _asString(
+        finding['requiredFix'],
+        fallback:
+            'Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review.',
+      ),
+      'description': _asString(
+        finding['description'],
+        fallback: _asString(finding['title']),
+      ),
+    };
+  }).toList();
+  final llmScreenReviewByRowId = <String, JsonMap>{
+    for (final row in normalizedScreenReviews)
+      for (final rowId in _asStringList(row['affectedScreenRowIds']))
+        rowId: row,
+  };
+  final updatedScreenRows = screenRows.map((row) {
+    final rowId = _rowId(row);
+    final llmScreenReview = llmScreenReviewByRowId[rowId];
+    if (llmScreenReview == null) {
+      return row;
+    }
+    final llmBlocksPass = llmScreenReview['blocksPass'] == true;
+    final llmCritique = _asString(llmScreenReview['critique']);
+    final priorCritique = _asString(row['screenSpecificCritique']);
+    return JsonMap.of(row)
+      ..['llmVisionScreenReview'] = llmScreenReview
+      ..['screenSpecificCritique'] =
+          '$priorCritique LLM vision critique: $llmCritique'.trim()
+      ..['productUxCritique'] =
+          '${_asString(row['productUxCritique'])} LLM vision critique: $llmCritique'
+              .trim()
+      ..['verdict'] = llmBlocksPass ? 'fail' : _asString(row['verdict'])
+      ..['severity'] = llmBlocksPass
+          ? _asString(llmScreenReview['severity'], fallback: 'major')
+          : _asString(row['severity'])
+      ..['findingIds'] = _uniqueStrings(<String>[
+        ..._asStringList(row['findingIds']),
+        if (llmBlocksPass) 'B25-LLM-VISION-SCREEN-FAILED',
+      ])
+      ..['targetProductionSurface'] = _asString(
+        llmScreenReview['targetProductionSurface'],
+        fallback: _asString(row['targetProductionSurface']),
+      );
+  }).toList();
+  final llmStatus = _asString(llmReview['status'], fallback: 'fail');
+  final blockingLlmFindings = normalizedFindings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .toList();
+  final blockingLlmAnswers = normalizedHolisticAnswers
+      .where((answer) => answer['blocksPass'] == true)
+      .toList();
+  final blockingLlmScreens = normalizedScreenReviews
+      .where((screen) => screen['blocksPass'] == true)
+      .toList();
+  final llmCanPass =
+      llmStatus == 'pass' &&
+      blockingLlmFindings.isEmpty &&
+      blockingLlmAnswers.isEmpty &&
+      blockingLlmScreens.isEmpty;
+  final existingFindings = _asMapList(review['findings'])
+      .where(
+        (finding) =>
+            _asString(finding['source']) != 'llm-vision-ux-judge' &&
+            !_findingId(finding).startsWith('LLM-UX-'),
+      )
+      .toList();
+  final combinedFindings = <JsonMap>[
+    ...existingFindings,
+    ...normalizedFindings,
+  ];
+  final unresolvedBlockers = combinedFindings
+      .where(
+        (finding) =>
+            _normalizedSeverity(finding) == 'critical-blocker' &&
+            !_isResolved(finding),
+      )
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final unresolvedMajors = combinedFindings
+      .where(
+        (finding) =>
+            _normalizedSeverity(finding) == 'major' && !_isResolved(finding),
+      )
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final existingHolistic = _asMapList(review['holisticQuestionAnswers'])
+      .where((answer) => !_asString(answer['questionId']).startsWith('llm-'))
+      .toList();
+  return JsonMap.of(review)
+    ..['currentReviewRunId'] = runId ?? _asString(review['currentReviewRunId'])
+    ..['status'] = llmCanPass
+        ? 'llm-vision-review-pass'
+        : 'llm-vision-review-fail'
+    ..['finalDecision'] = llmCanPass ? 'pass' : 'fail'
+    ..['b25CanPass'] = llmCanPass
+    ..['requiresRemediation'] = !llmCanPass
+    ..['requiresRerun'] = !llmCanPass
+    ..['generatedAt'] = DateTime.now().toUtc().toIso8601String()
+    ..['llmVisionReview'] = <String, Object?>{
+      'schemaVersion': 1,
+      'status': llmCanPass ? 'pass' : 'fail',
+      'reviewerType': _asString(
+        llmReview['reviewerType'],
+        fallback: 'llm-vision-ux-judge',
+      ),
+      'sourcePath': llmReviewPath,
+      'importedAt': DateTime.now().toUtc().toIso8601String(),
+      'summary': _asString(llmReview['summary']),
+      'holisticQuestionAnswers': normalizedHolisticAnswers,
+      'screenReviews': normalizedScreenReviews,
+      'findings': normalizedFindings,
+      'blockingFindingIds': [
+        for (final finding in blockingLlmFindings) _findingId(finding),
+      ],
+      'blockingQuestionIds': [
+        for (final answer in blockingLlmAnswers)
+          _asString(answer['questionId']),
+      ],
+      'blockingScreenRowIds': _uniqueStrings([
+        for (final screen in blockingLlmScreens)
+          ..._asStringList(screen['affectedScreenRowIds']),
+      ]),
+    }
+    ..['holisticQuestionAnswers'] = <JsonMap>[
+      ...existingHolistic,
+      ...normalizedHolisticAnswers,
+    ]
+    ..['screenRows'] = updatedScreenRows
+    ..['findings'] = combinedFindings
     ..['unresolvedBlockerFindings'] = unresolvedBlockers
     ..['unresolvedMajorFindings'] = unresolvedMajors;
 }
@@ -4529,6 +4798,8 @@ _DerivedFailure? _derivedFailure(
           _failOnWorkflowPersonaScorecards(evidence);
     case 'b25-c13-workflow-lifecycle-complete':
       return _failOnWorkflowLifecycleScorecards(evidence);
+    case 'b25-c14-llm-vision-ux-review':
+      return _failOnLlmVisionReview(evidence);
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -5555,6 +5826,16 @@ Consumes B25 screenshot evidence and workflow/persona coverage, inspects screens
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <independent-production-ux-review.md>] [--matrix-output <product-ux-screen-review-matrix.md>]
+''';
+}
+
+String _llmUxReviewImporterUsage() {
+  return '''
+b25_llm_ux_review_importer (B25)
+Imports a fresh LLM vision UX Judge review into B25 schema v4 evidence. This is the semantic product-quality review artifact; deterministic judges only validate and ticket it.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input <independent-production-ux-review.json> --llm-review <llm-review.json> --output <independent-production-ux-review.json> [--run-id <b25-v4-pass-N>] [--markdown-output <independent-production-ux-review.md>] [--matrix-output <product-ux-screen-review-matrix.md>]
 ''';
 }
 
@@ -7108,6 +7389,17 @@ JsonMap _directQuestionTicketDetail(JsonMap question) {
 
 String _exactUxFailureForScreenRow(JsonMap row, String criterionId) {
   final failures = <String>[];
+  final llmScreenReview = row['llmVisionScreenReview'];
+  if (llmScreenReview is JsonMap) {
+    final critique = _asString(llmScreenReview['critique']);
+    final requiredFix = _asString(llmScreenReview['requiredFix']);
+    if (critique.isNotEmpty) {
+      failures.add('LLM vision critique: $critique');
+    }
+    if (requiredFix.isNotEmpty) {
+      failures.add('LLM required fix: $requiredFix');
+    }
+  }
   final persona = _asString(row['persona']);
   final personaId = _asString(row['personaId']);
   if (!_isSpecificPersona(persona, personaId)) {
@@ -7806,6 +8098,28 @@ List<String> _uniqueStrings(Iterable<String> values) {
   }.toList();
 }
 
+List<String> _resolveB25ScreenRowIds(
+  Iterable<String> references,
+  List<String> rowIds,
+) {
+  final resolved = <String>{};
+  for (final raw in references) {
+    final value = raw.trim();
+    if (value.isEmpty) {
+      continue;
+    }
+    if (rowIds.contains(value)) {
+      resolved.add(value);
+      continue;
+    }
+    final prefixMatches = rowIds.where(
+      (rowId) => rowId.startsWith('$value-') || rowId.startsWith(value),
+    );
+    resolved.addAll(prefixMatches);
+  }
+  return resolved.toList();
+}
+
 String _truncate(String value, int maxLength) {
   if (value.length <= maxLength) {
     return value;
@@ -7829,6 +8143,8 @@ String _problemStatementForB25Criterion(String criterionId) {
       return 'The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.';
     case 'b25-c13-workflow-lifecycle-complete':
       return 'The evidence does not prove that each workflow/persona UI implements the full production lifecycle. Cards may expose a single accept/cancel action without the decision context, alternate choices, result state, or receiver/continuation state real users need.';
+    case 'b25-c14-llm-vision-ux-review':
+      return 'The current B25 pass lacks a passing fresh-context LLM vision UX judgment, or that judgment found major product-quality issues in the screenshots.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.';
     case 'b25-c09-no-layout-production-defects':
@@ -7854,6 +8170,8 @@ String _rootCauseForB25Criterion(String criterionId) {
       return 'Primary workflow surfaces may still rely on generic repeated cards or validation-state UI instead of task-specific product screens.';
     case 'b25-c13-workflow-lifecycle-complete':
       return 'The product experience was modeled as completed workflows rather than lifecycle-complete user tasks, so the UI can appear polished while still missing required fields, negative/change actions, and durable post-action states.';
+    case 'b25-c14-llm-vision-ux-review':
+      return 'The previous B25 gate let deterministic absence-of-known-defects stand in for semantic visual/product review. The visible screenshots still need a fresh LLM judge to inspect pixels, layout, content, and product fit.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.';
     case 'b25-c09-no-layout-production-defects':
@@ -7877,6 +8195,8 @@ String _targetExperienceForB25Criterion(String criterionId) {
       return 'Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.';
     case 'b25-c13-workflow-lifecycle-complete':
       return 'Each workflow/persona surface should show the concrete object, decision information, natural primary and alternate actions, persistent result/receipt/status, and receiver/continuation state expected in a production app.';
+    case 'b25-c14-llm-vision-ux-review':
+      return 'A fresh LLM vision UX judge should be able to inspect the screenshots and state, from visible UI evidence, that the experience is modern, domain-native, and production-grade with no unresolved blocker or major findings.';
     case 'b25-c08-visible-text-specific-critique':
       return 'Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.';
     case 'b25-c09-no-layout-production-defects':
@@ -7924,6 +8244,12 @@ List<String> _uxPrinciplesForB25Criterion(String criterionId) {
         'Users need enough information to decide before acting',
         'Production affordances include alternate choices, change/revoke paths, and clear result states when the domain requires them',
         'Receiver and continuation states are first-class UX, not hidden backend assertions',
+      ];
+    case 'b25-c14-llm-vision-ux-review':
+      return <String>[
+        'Semantic product-quality judgment must come from screenshot inspection, not deterministic keyword absence',
+        'A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target persona',
+        'LLM reviewer findings are blocking inputs to the normal B25 ticket and remediation loop',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -7973,9 +8299,11 @@ List<String> _relatedB25FindingIds(
     case 'b25-c06-domain-native-primary-surfaces':
     case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c08-visible-text-specific-critique':
+    case 'b25-c14-llm-vision-ux-review':
       final workflowFindings = allBlockingFindingIds
           .where(
             (id) =>
+                id.startsWith('LLM-UX-') ||
                 id == 'B25-WORKFLOW-PERSONA-UX-FAILED' ||
                 id == 'B25-WORKFLOW-LIFECYCLE-INCOMPLETE' ||
                 id == 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE' ||
@@ -8035,6 +8363,12 @@ List<String> _improvementsForB25Criterion(String criterionId) {
         'Replace accept/cancel-only cards with product surfaces that include decision data, primary action, alternate/change/reject path, persistent result, and receiver/continuation state.',
         'Recapture entry/action/result/receiver screenshots and rerun the lifecycle judge.',
       ];
+    case 'b25-c14-llm-vision-ux-review':
+      return <String>[
+        'Use the LLM vision judge screen reviews as the source of truth for what visually failed.',
+        'Replace any screenshot-identified workflow/test-harness surfaces with domain-native product surfaces.',
+        'Fix all LLM-UX blocker/major findings, recapture screenshots, import a new LLM review artifact, and rerun the production judge.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Extract visible text for every reviewed screenshot row.',
@@ -8088,6 +8422,13 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
         'b25-workflow-lifecycle-scorecards.md',
         'production-ux-criteria-scorecard.json/.md',
       ];
+    case 'b25-c14-llm-vision-ux-review':
+      return <String>[
+        'independent-production-ux-review.json llmVisionReview',
+        'independent-production-ux-review.json findings from source=llm-vision-ux-judge',
+        'product-ux-screen-review-matrix.md affected screen rows',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
     case 'b25-c01-no-blocker-major':
       return <String>[
         'independent-production-ux-review.json findings',
@@ -8132,6 +8473,12 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
         'For each failed lifecycle scorecard, implement missing object/context, decision data, primary and alternate actions, result/receipt/status, and receiver/continuation state.',
         'Update product docs, seed data, widget tests, and B25 evidence expectations so the lifecycle is documented and screenshot-proven.',
       ];
+    case 'b25-c14-llm-vision-ux-review':
+      return <String>[
+        'Treat the imported LLM vision review as the independent semantic critique.',
+        'Prioritize screen rows and workflows named in `llmVisionReview.findings` and `llmVisionReview.screenReviews`.',
+        'Do not close the ticket until a fresh LLM vision review over after-screenshots passes.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Update the B25 judge/review artifact, not only app UI code.',
@@ -8157,6 +8504,7 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
       ];
     case 'b25-c06-domain-native-primary-surfaces':
     case 'b25-c13-workflow-lifecycle-complete':
+    case 'b25-c14-llm-vision-ux-review':
       return <String>[
         'Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.',
         'Each primary surface should include the domain data a user needs to decide and act.',
@@ -8179,6 +8527,7 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
 List<String> _visualGuidanceForB25Criterion(String criterionId) {
   switch (criterionId) {
     case 'b25-c04-modern-intentional-ui':
+    case 'b25-c14-llm-vision-ux-review':
       return <String>[
         'Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.',
         'Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.',
@@ -8213,9 +8562,11 @@ List<String> _evidenceToCollectForB25Criterion(String criterionId) {
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
     case 'b25-c09-no-layout-production-defects':
+    case 'b25-c14-llm-vision-ux-review':
       return <String>[
         'Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.',
         '`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.',
+        '`llmVisionReview` imported from a fresh LLM vision UX judge run against the after screenshots.',
         'Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.',
       ];
     case 'b25-c06-domain-native-primary-surfaces':
@@ -8392,6 +8743,66 @@ _DerivedFailure? _failOnDirectQuestionAnswers(
       message:
           '$requiredScope direct-question answers are missing, weak, partial, or blocking: ${failing.join(', ')}.',
       evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnLlmVisionReview(JsonMap evidence) {
+  final review = evidence['llmVisionReview'];
+  if (review is! JsonMap || review.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'No LLM vision UX review artifact was imported. B25 cannot rely on deterministic keyword/pixel heuristics for semantic product-quality judgment.',
+    );
+  }
+  final findings = _asMapList(review['findings']);
+  final holisticAnswers = _asMapList(review['holisticQuestionAnswers']);
+  final screenReviews = _asMapList(review['screenReviews']);
+  final blockingFindings = findings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final blockingQuestions = holisticAnswers
+      .where(
+        (answer) =>
+            answer['blocksPass'] == true || _asInt(answer['score']) < 80,
+      )
+      .map((answer) => _asString(answer['questionId']))
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final blockingScreens = screenReviews
+      .where(
+        (row) =>
+            row['blocksPass'] == true ||
+            _asString(row['verdict']) == 'fail' ||
+            _isBlockingSeverity(row),
+      )
+      .map((row) => _asString(row['screenRowId']))
+      .where((id) => id.isNotEmpty)
+      .toList();
+  if (_asString(review['status']) != 'pass' ||
+      blockingFindings.isNotEmpty ||
+      blockingQuestions.isNotEmpty ||
+      blockingScreens.isNotEmpty) {
+    return _DerivedFailure(
+      score: 35,
+      message:
+          'The LLM vision UX review failed from screenshot inspection. blockingFindings=${blockingFindings.join(', ')} blockingQuestions=${blockingQuestions.join(', ')} blockingScreens=${blockingScreens.join(', ')}.',
+      evidenceUsed: <String>[
+        ...blockingFindings,
+        ...blockingQuestions,
+        ...blockingScreens,
+      ],
+    );
+  }
+  if (holisticAnswers.isEmpty || screenReviews.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'The LLM vision UX review is missing holistic answers or screen reviews.',
     );
   }
   return null;

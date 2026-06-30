@@ -188,9 +188,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     answers, workflow/persona scorecards, screen-specific critiques, exact findings, and remediation
     ticket inputs from visible evidence only. It must inspect screenshot pixels and layout, not only row
     existence, metadata, or expected assertions.
-56. B25 cannot pass until `b25_independent_ux_judge.dart` has produced screenshot-backed holistic
-    answers, workflow/persona scorecards, screen-specific critiques, per-row `visualInspection`
-    results, and findings, `b25_workflow_interaction_model_judge.dart` has produced passing
+56. B25 cannot pass until `b25_independent_ux_judge.dart` has produced the deterministic schema v4
+    review scaffold, a fresh LLM Vision UX Judge Agent has inspected the actual screenshots and
+    produced `llm-vision-ux-review-<run-id>.json`, `b25_llm_ux_review_importer.dart` has imported that
+    artifact into `llmVisionReview`, `b25_workflow_interaction_model_judge.dart` has produced passing
     semantic interaction-model `workflowLifecycleScorecards`, and
     `production_ux_judge.dart` emits
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
@@ -211,7 +212,8 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     whether that workflow UI feels production-grade on its own.
 61. Do not batch all workflow/persona UX review into one broad answer. Use batches small enough that
     every answer cites visible text, screenshot evidence, the target persona, and the real user task.
-62. `production_ux_judge.dart` must fail B25 when `holisticQuestionAnswers`,
+62. `production_ux_judge.dart` must fail B25 when `llmVisionReview` is missing, failing, not
+    screenshot-grounded, or contains unresolved blocker/major findings; when `holisticQuestionAnswers`,
     `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
     contradicted by screenshots, missing passing `semanticSurfaceProof` for any primary
     workflow/persona row, or missing passing semantic interaction-model `workflowLifecycleScorecards`.
@@ -228,12 +230,14 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     `b25_workflow_persona_coverage_collector.dart` must prove every workflow/persona combination has
     explicit entry/action/result evidence before independent review. The collector tools cannot mark
     production UX pass.
-65. The B25 Independent UX Judge is a distinct tool/agent step. It consumes only the community product
-    experience doc, evidence artifacts, screenshots, blueprint, workflow/persona coverage matrix, and
-    pass criteria, then fills the
-    review JSON with holistic direct-question answers, workflow/persona scorecards, screen-specific
+65. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
+    only the community product experience doc, evidence artifacts, screenshots, blueprint,
+    workflow/persona coverage matrix, and pass criteria, then writes
+    `llm-vision-ux-review-<run-id>.json` with holistic direct-question answers, screen-specific
     critiques, exact findings tied to screen rows/screenshots/personas/workflows, and remediation
-    ticket inputs. It must fail when workflow/persona coverage is generic, missing, or not
+    ticket inputs. The deterministic `b25_independent_ux_judge.dart` may normalize evidence and carry
+    deterministic visual signals, but it is not allowed to be the final semantic reviewer. The LLM
+    vision judge must fail when workflow/persona coverage is generic, missing, or not
     screenshot-backed. It must also fail when `visualInspection` is missing or reports checklist-modal,
     repeated-card shell, thin-content, weak visual identity, default-scaffold, or missing-image signals.
     It must also perform positive semantic closure for every workflow/persona and every remediated
@@ -456,7 +460,8 @@ judge CLIs are:
 - B24: `dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart`
 - B25 capture: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
-- B25 independent judge: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 review scaffold: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 LLM review import: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart`
 - B25 workflow interaction-model judge: `dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart`
 - B25: `dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart`
 - B25 planner: `dart run packages/tooling/loom_ux_judges/bin/b25_remediation_planner.dart`
@@ -488,6 +493,7 @@ Every B25 pass must also run the judge and iteration scorecard before that pass 
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'

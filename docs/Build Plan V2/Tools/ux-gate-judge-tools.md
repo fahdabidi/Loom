@@ -13,7 +13,9 @@ judge failures into fix batches for the next worker iteration.
 | Product Experience Doc Steward | Creates or updates the community product experience doc before capture/remediation. | Loom Product Docs V2, Skill references, prior judge tickets, owner prompt, community examples. | Canonical Product Docs V2 community docs for native Loom runs, or local `docs/product/community-product-experience.md` for standalone Skill runs. |
 | Evidence Collector Tool | Captures screenshots, hashes, visible text, app commit SHA, device metadata, command output. | Running app, emulator, artifact paths. No implementation rationale. | Evidence JSON and screenshot bundle. |
 | Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
-| Independent UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Holistic answers, workflow/persona scorecards, screen critiques, findings. |
+| Deterministic Review Scaffold | Normalizes schema v4 review evidence and carries deterministic visual audit results into rows. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Review JSON scaffold, matrix, deterministic critiques. |
+| LLM Vision UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions from actual visible UI, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes or source-code claims. | `llm-vision-ux-review-<run-id>.json` with holistic answers, screen reviews, and findings. |
+| LLM Review Importer Tool | Imports the LLM judge output into schema v4 evidence and resolves affected screen row IDs. | LLM review JSON plus current B25 evidence. | `llmVisionReview` in `independent-production-ux-review.json`. |
 | Workflow Interaction-Model Judge Tool | Scores whether each workflow/persona UI proves the correct semantic interaction model. | Screenshot-backed evidence rows, product docs, coverage rows, independent judge output. No worker implementation notes. | `workflowLifecycleScorecards`, `semanticInteractionModel`, interaction-model findings, lifecycle markdown. |
 | Production UX Judge CLI | Deterministically validates the independent judge output against B25 pass criteria. | Machine-readable review JSON, scorecard schema, ticket template, screenshot metadata. | Criteria scorecard, pass/fail, remediation tickets. |
 | Remediation Planner | Converts judge failures into right-sized fix batches. | Judge scorecard, findings, phase docs. | Remediation plan for Worker Agent. |
@@ -40,6 +42,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -63,7 +66,8 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `b25_evidence_collector.dart` | B25 | Convert workflow UI evidence manifests into B25 schema v4 screenshot evidence with hashes, timestamps, device metadata, visible text source, and app commit SHA. |
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
 | `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
-| `b25_independent_ux_judge.dart` | B25 | Fill holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, visual-inspection failures, and exact findings from evidence only. |
+| `b25_independent_ux_judge.dart` | B25 | Build the deterministic review scaffold and carry visual-inspection outputs into schema v4. It is not the final semantic product-quality judge. |
+| `b25_llm_ux_review_importer.dart` | B25 | Import the fresh LLM Vision UX Judge artifact into `llmVisionReview` and fail/ticket when the LLM review finds blocker or major product UX issues. |
 | `b25_workflow_interaction_model_judge.dart` | B25 | Fail workflow/persona UI that does not prove the right semantic interaction model: concrete object/context, decision information, domain-correct primary action, domain-required alternate/change/reject action, persistent result state, and receiver/continuation state. |
 | `b25_workflow_lifecycle_judge.dart` | B25 | Compatibility alias for the interaction-model judge. Prefer `b25_workflow_interaction_model_judge.dart` in new B25 runs. |
 | `production_ux_judge.dart` | B25 | Deterministically validate the independent judge output against every B25 production UX pass criterion and generate tickets for failed blocking criteria. |
@@ -140,15 +144,18 @@ failed pass's tickets:
 - `b25-remediation-plan-<run-id>.json`
 - `b25-remediation-plan-<run-id>.md`
 
-B25 uses direct questions rather than only declarative pass criteria. The production judge must run:
+B25 uses direct questions rather than only declarative pass criteria. The production judge must validate:
 
 1. **One holistic product UX pass** over the entire app/community experience.
 2. **One workflow/persona pass for every reviewed workflow and persona pair.**
 3. **One semantic workflow interaction-model pass for every reviewed workflow and persona pair.**
+4. **One imported LLM vision UX review** that inspected screenshots as product UI and found no
+   unresolved blocker or major issue.
 
-All three passes must be green before B25 can close. A holistic pass cannot excuse a weak workflow, a
+All four passes must be green before B25 can close. A holistic pass cannot excuse a weak workflow, a
 workflow/persona pass cannot excuse an incomplete or wrong interaction model, and a set of workflow
-passes cannot excuse a visually incoherent or non-production overall experience.
+passes cannot excuse a visually incoherent or non-production overall experience. A deterministic pass
+cannot substitute for the imported LLM vision review.
 
 Each criterion row includes:
 
@@ -182,6 +189,9 @@ B25 evidence must include:
   publish/send/read action.
 - `visualInspection`: one object on every screen row, produced from the screenshot pixels/layout, with
   metrics, signals, status, summary, and finding IDs. A missing or failed `visualInspection` blocks B25.
+- `llmVisionReview`: the imported LLM Vision UX Judge artifact, including status, summary,
+  holistic answers, screen reviews, findings, screenshot-backed visible evidence, and affected row IDs.
+  A missing or failing `llmVisionReview` blocks B25.
 - `productDocCoverage`: links each community/test app to the product experience doc used for review,
   records the doc commit or local artifact hash, and states whether the ticket is a product-spec gap or
   an implementation/evidence gap.

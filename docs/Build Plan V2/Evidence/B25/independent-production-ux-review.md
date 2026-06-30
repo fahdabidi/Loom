@@ -1,14 +1,14 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-12`
+Review run: `b25-v4-pass-13`
 
-Status: `independent-review-pass`
+Status: `llm-vision-review-fail`
 
-Final decision: `pass`
+Final decision: `fail`
 
 Screen rows collected: 195
 
-Holistic direct-question answers: 4
+Holistic direct-question answers: 6
 
 Workflow/persona scorecards: 68 (0 blocking)
 
@@ -18,6 +18,10 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
+| `LLM-UX-001` | critical-blocker | open | Remove internal validation/checklist wording and replace with natural member-facing domain copy and controls. |
+| `LLM-UX-002` | major | open | Build a real plant exchange experience centered on plant offers/requests, member logistics, and clear offer/edit/submit actions. |
+| `LLM-UX-003` | major | open | Vary layouts by task type, reduce checklist chips, and create product-specific hierarchy for lists, details, actions, and confirmations. |
+| `LLM-UX-004` | minor | open | Add bottom inset/padding or reposition the floating action so it does not cover scrollable list content. |
 
 ## Community Product Experience Docs
 
@@ -43,6 +47,8 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 | Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `pass` | 85 | Visible UI/text evidence, lifecycle scorecards, and screenshot pixel/layout inspection support judging modern UI quality. | None. |
 | Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `pass` | 85 | Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures. | None. |
 | Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `pass` | 85 | No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique. | None. |
+| Does the whole experience feel like a real production community app, not merely an implemented workflow harness? | `` | 35 |  | Replace harness/checklist cards with domain-native product views: plant offer details, photos, variety, pickup/contact preferences, requester/member context, RSVP attendee state, event schedule/location/capacity, and production action flows. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `` | 48 |  | Introduce clearer information architecture, less repetitive card stacking, stronger domain-specific content, better action hierarchy, and ensure floating controls do not obscure list content. |
 
 ## Workflow/Persona Scorecards
 

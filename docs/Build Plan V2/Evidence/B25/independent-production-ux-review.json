@@ -1,7 +1,7 @@
 {
   "schemaVersion": 4,
   "reviewStandardVersion": "b25-production-ux-v4",
-  "currentReviewRunId": "b25-v4-pass-12",
+  "currentReviewRunId": "b25-v4-pass-13",
   "supersededReviewRunIds": [
     "b25-v4-pass-11",
     "b25-v4-pass-10",
@@ -17,12 +17,12 @@
     "b25-v1-initial",
     "b25-v2-after-remediation"
   ],
-  "status": "workflow-lifecycle-pass",
-  "finalDecision": "pass",
-  "b25CanPass": true,
-  "requiresRemediation": false,
-  "requiresRerun": false,
-  "generatedAt": "2026-06-30T04:15:05.110640Z",
+  "status": "llm-vision-review-fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "requiresRemediation": true,
+  "requiresRerun": true,
+  "generatedAt": "2026-06-30T06:13:19.449228Z",
   "reviewInputEvidence": {
     "evidenceRoot": "docs/Build Plan V2/Evidence",
     "workflowEvidenceManifestPaths": [
@@ -864,11 +864,13 @@
       "visibleTextSourceNotes": "Visible text captured from Text widgets during the same integration-test step as the screenshot.",
       "uiPatternClassification": "domain-native-reviewed",
       "primarySurfaceType": "domain-native",
-      "targetProductionSurface": "event detail with schedule, location, capacity/status, RSVP action, and result state",
-      "screenSpecificCritique": "Screen `b25-v4-row-001-garden-event-rsvp-0` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.074; darkInk=0.708; accent=0.869; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
-      "verdict": "pass",
-      "severity": "none",
-      "findingIds": [],
+      "targetProductionSurface": "Garden Club event detail and RSVP screen",
+      "screenSpecificCritique": "Screen `b25-v4-row-001-garden-event-rsvp-0` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.074; darkInk=0.708; accent=0.869; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The RSVP screen is framed as a validated workflow summary, not a real event page. It lacks event-specific richness such as event title, date/time prominence, venue details, attendee counts, host, and RSVP state.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
       "remediationIds": [],
       "retestResult": "pass",
       "screenRowId": "b25-v4-row-001-garden-event-rsvp-0",
@@ -904,7 +906,7 @@
           "primaryWorkflow": true
         }
       },
-      "productUxCritique": "Screen `b25-v4-row-001-garden-event-rsvp-0` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.074; darkInk=0.708; accent=0.869; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
+      "productUxCritique": "Screen `b25-v4-row-001-garden-event-rsvp-0` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.074; darkInk=0.708; accent=0.869; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The RSVP screen is framed as a validated workflow summary, not a real event page. It lacks event-specific richness such as event title, date/time prominence, venue details, attendee counts, host, and RSVP state.",
       "primary": true,
       "referencePatternsToCopy": [
         {
@@ -964,7 +966,24 @@
         "open source Flutter event-rsvp mobile UI example GitHub",
         "event detail with schedule, location, capacity/status, RSVP action, and result state mobile UX pattern",
         "Material Design event detail with schedule, location, capacity/status, RSVP action, and result state mobile pattern"
-      ]
+      ],
+      "llmVisionScreenReview": {
+        "screenRowId": "b25-v4-row-001-garden-event-rsvp-0",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Garden event RSVP appears as a large blue card with status chips.",
+          "Visible chips include 'This week', 'Community venue', 'Capacity tracked', and 'RSVP available'.",
+          "The next Plant exchange card repeats the same checklist pattern."
+        ],
+        "critique": "The RSVP screen is framed as a validated workflow summary, not a real event page. It lacks event-specific richness such as event title, date/time prominence, venue details, attendee counts, host, and RSVP state.",
+        "requiredFix": "Redesign as a domain-native event RSVP surface with event identity, schedule, location, capacity/attendee state, member response controls, and contextual community navigation.",
+        "targetProductionSurface": "Garden Club event detail and RSVP screen",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0"
+        ],
+        "blocksPass": true
+      }
     },
     {
       "rowId": "b25-v4-row-002-garden-event-rsvp-1",
@@ -985,11 +1004,13 @@
       "visibleTextSourceNotes": "Visible text captured from Text widgets during the same integration-test step as the screenshot.",
       "uiPatternClassification": "domain-native-reviewed",
       "primarySurfaceType": "domain-native",
-      "targetProductionSurface": "event detail with schedule, location, capacity/status, RSVP action, and result state",
-      "screenSpecificCritique": "Screen `b25-v4-row-002-garden-event-rsvp-1` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | RSVP available | Decision | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Details | Date, location, capacity, and attendee details are ready. Date, location, capacity, and attendee state are included. | Other option | Change response is available before this is saved. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Change response | RSVP to event\" Visual inspection: decoded 1080x2340px; edgeDensity=0.063; darkInk=0.904; accent=0.776; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
-      "verdict": "pass",
-      "severity": "none",
-      "findingIds": [],
+      "targetProductionSurface": "Plant exchange offer submission flow",
+      "screenSpecificCritique": "Screen `b25-v4-row-002-garden-event-rsvp-1` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | RSVP available | Decision | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Details | Date, location, capacity, and attendee details are ready. Date, location, capacity, and attendee state are included. | Other option | Change response is available before this is saved. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Change response | RSVP to event\" Visual inspection: decoded 1080x2340px; edgeDensity=0.063; darkInk=0.904; accent=0.776; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: This is visibly a workflow action harness. The language is internal and generic, and the user cannot understand the plant being offered or exchanged from the screen.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
       "remediationIds": [],
       "retestResult": "pass",
       "screenRowId": "b25-v4-row-002-garden-event-rsvp-1",
@@ -1025,7 +1046,7 @@
           "primaryWorkflow": true
         }
       },
-      "productUxCritique": "Screen `b25-v4-row-002-garden-event-rsvp-1` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | RSVP available | Decision | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Details | Date, location, capacity, and attendee details are ready. Date, location, capacity, and attendee state are included. | Other option | Change response is available before this is saved. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Change response | RSVP to event\" Visual inspection: decoded 1080x2340px; edgeDensity=0.063; darkInk=0.904; accent=0.776; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
+      "productUxCritique": "Screen `b25-v4-row-002-garden-event-rsvp-1` for workflow `garden-event-rsvp` and persona `member` shows visible text evidence: \"Coordinate attendance | Use this surface to publish event details, capacity, and attendance state. | This week | Community venue | Capacity tracked | RSVP available | Decision | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Details | Date, location, capacity, and attendee details are ready. Date, location, capacity, and attendee state are included. | Other option | Change response is available before this is saved. | Member outcome | Attendance, capacity, and reminders update for the community. | Privacy boundary | Private member details stay protected. | Event details | Change response | RSVP to event\" Visual inspection: decoded 1080x2340px; edgeDensity=0.063; darkInk=0.904; accent=0.776; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: This is visibly a workflow action harness. The language is internal and generic, and the user cannot understand the plant being offered or exchanged from the screen.",
       "primary": true,
       "referencePatternsToCopy": [
         {
@@ -1085,7 +1106,24 @@
         "open source Flutter event-rsvp mobile UI example GitHub",
         "event detail with schedule, location, capacity/status, RSVP action, and result state mobile UX pattern",
         "Material Design event detail with schedule, location, capacity/status, RSVP action, and result state mobile pattern"
-      ]
+      ],
+      "llmVisionScreenReview": {
+        "screenRowId": "b25-v4-row-002-garden-event-rsvp-1",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Action screen title is truncated: 'Plant exchange submission d...'",
+          "Hero card says 'Submit member form' and 'Use this surface to submit structured member details.'",
+          "Sections are named 'Decision', 'Details', and 'Other option' rather than plant exchange concepts."
+        ],
+        "critique": "This is visibly a workflow action harness. The language is internal and generic, and the user cannot understand the plant being offered or exchanged from the screen.",
+        "requiredFix": "Replace generic action summary with a plant offer submission/review surface including plant name, variety, condition, photo, pickup/contact preferences, privacy choices in natural language, and clear submit/edit/cancel actions.",
+        "targetProductionSurface": "Plant exchange offer submission flow",
+        "affectedScreenRowIds": [
+          "b25-v4-row-002-garden-event-rsvp-1"
+        ],
+        "blocksPass": true
+      }
     },
     {
       "rowId": "b25-v4-row-003-garden-event-rsvp-2",
@@ -1227,11 +1265,13 @@
       "visibleTextSourceNotes": "Visible text captured from Text widgets during the same integration-test step as the screenshot.",
       "uiPatternClassification": "domain-native-reviewed",
       "primarySurfaceType": "domain-native",
-      "targetProductionSurface": "plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state",
-      "screenSpecificCritique": "Screen `b25-v4-row-004-plant-exchange-submission-0` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.070; darkInk=0.781; accent=0.853; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
-      "verdict": "pass",
-      "severity": "none",
-      "findingIds": [],
+      "targetProductionSurface": "Garden Club plant exchange start/listing surface",
+      "screenSpecificCritique": "Screen `b25-v4-row-004-plant-exchange-submission-0` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.070; darkInk=0.781; accent=0.853; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The screen exposes system validation and admin/export concepts in a member-facing community flow. It does not present a rich plant exchange marketplace or member offer experience.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
       "remediationIds": [],
       "retestResult": "pass",
       "screenRowId": "b25-v4-row-004-plant-exchange-submission-0",
@@ -1267,7 +1307,7 @@
           "primaryWorkflow": true
         }
       },
-      "productUxCritique": "Screen `b25-v4-row-004-plant-exchange-submission-0` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.070; darkInk=0.781; accent=0.853; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
+      "productUxCritique": "Screen `b25-v4-row-004-plant-exchange-submission-0` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Plant exchange submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Edit offer | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club\" Visual inspection: decoded 1080x2340px; edgeDensity=0.070; darkInk=0.781; accent=0.853; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The screen exposes system validation and admin/export concepts in a member-facing community flow. It does not present a rich plant exchange marketplace or member offer experience.",
       "primary": true,
       "referencePatternsToCopy": [
         {
@@ -1324,7 +1364,24 @@
         "open source Flutter domain-native-surface mobile UI example GitHub",
         "plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state mobile UX pattern",
         "Material Design plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state mobile pattern"
-      ]
+      ],
+      "llmVisionScreenReview": {
+        "screenRowId": "b25-v4-row-004-plant-exchange-submission-0",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Plant exchange submission start screen relies on chips: 'Labeled fields', 'Privacy checked', 'Review handoff'.",
+          "Instructional copy says the form captures labeled details, privacy choices, and reviewer handoff.",
+          "Adjacent 'Documents and data' and export schema card appear below."
+        ],
+        "critique": "The screen exposes system validation and admin/export concepts in a member-facing community flow. It does not present a rich plant exchange marketplace or member offer experience.",
+        "requiredFix": "Create a plant exchange product surface showing available/requested plants, offer details, pickup logistics, member trust/privacy affordances, and natural next actions.",
+        "targetProductionSurface": "Garden Club plant exchange start/listing surface",
+        "affectedScreenRowIds": [
+          "b25-v4-row-004-plant-exchange-submission-0"
+        ],
+        "blocksPass": true
+      }
     },
     {
       "rowId": "b25-v4-row-005-plant-exchange-submission-1",
@@ -1345,11 +1402,13 @@
       "visibleTextSourceNotes": "Visible text captured from Text widgets during the same integration-test step as the screenshot.",
       "uiPatternClassification": "domain-native-reviewed",
       "primarySurfaceType": "domain-native",
-      "targetProductionSurface": "plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state",
-      "screenSpecificCritique": "Screen `b25-v4-row-005-plant-exchange-submission-1` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Decision | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Details | Required details are ready. Required fields, privacy choices, and reviewer handoff are included. | Other option | Edit offer is available before this is saved. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Plant exchange submission details | Edit offer | Offer plant\" Visual inspection: decoded 1080x2340px; edgeDensity=0.057; darkInk=0.912; accent=0.789; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
-      "verdict": "pass",
-      "severity": "none",
-      "findingIds": [],
+      "targetProductionSurface": "Plant offer creation and confirmation screen",
+      "screenSpecificCritique": "Screen `b25-v4-row-005-plant-exchange-submission-1` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Decision | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Details | Required details are ready. Required fields, privacy choices, and reviewer handoff are included. | Other option | Edit offer is available before this is saved. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Plant exchange submission details | Edit offer | Offer plant\" Visual inspection: decoded 1080x2340px; edgeDensity=0.057; darkInk=0.912; accent=0.789; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The primary action is plausible, but the rest of the screen is not production-grade. It reads like proof that requirements were satisfied rather than a member-facing submission UI.",
+      "verdict": "fail",
+      "severity": "major",
+      "findingIds": [
+        "B25-LLM-VISION-SCREEN-FAILED"
+      ],
       "remediationIds": [],
       "retestResult": "pass",
       "screenRowId": "b25-v4-row-005-plant-exchange-submission-1",
@@ -1385,7 +1444,7 @@
           "primaryWorkflow": true
         }
       },
-      "productUxCritique": "Screen `b25-v4-row-005-plant-exchange-submission-1` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Decision | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Details | Required details are ready. Required fields, privacy choices, and reviewer handoff are included. | Other option | Edit offer is available before this is saved. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Plant exchange submission details | Edit offer | Offer plant\" Visual inspection: decoded 1080x2340px; edgeDensity=0.057; darkInk=0.912; accent=0.789; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content",
+      "productUxCritique": "Screen `b25-v4-row-005-plant-exchange-submission-1` for workflow `plant-exchange-submission` and persona `member` shows visible text evidence: \"Submit member form | Use this surface to submit structured member details. | Labeled fields | Privacy checked | Review handoff | Decision | Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details. | Details | Required details are ready. Required fields, privacy choices, and reviewer handoff are included. | Other option | Edit offer is available before this is saved. | Member outcome | The submission is routed to the reviewer with protected details preserved. | Privacy boundary | Private member details stay protected. | Plant exchange submission details | Edit offer | Offer plant\" Visual inspection: decoded 1080x2340px; edgeDensity=0.057; darkInk=0.912; accent=0.789; cardBands=0; modalOverlay=false; no deterministic pixel/layout blocker was found; reviewer still must validate product fit from screenshot content LLM vision critique: The primary action is plausible, but the rest of the screen is not production-grade. It reads like proof that requirements were satisfied rather than a member-facing submission UI.",
       "primary": true,
       "referencePatternsToCopy": [
         {
@@ -1442,7 +1501,24 @@
         "open source Flutter domain-native-surface mobile UI example GitHub",
         "plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state mobile UX pattern",
         "Material Design plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state mobile pattern"
-      ]
+      ],
+      "llmVisionScreenReview": {
+        "screenRowId": "b25-v4-row-005-plant-exchange-submission-1",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Action screen repeats validation chips and generic form language.",
+          "Primary CTA says 'Offer plant', but surrounding content is about structured details and review handoff.",
+          "Large cards and dividers create a test-flow feel."
+        ],
+        "critique": "The primary action is plausible, but the rest of the screen is not production-grade. It reads like proof that requirements were satisfied rather than a member-facing submission UI.",
+        "requiredFix": "Convert the page into a real offer creation/review experience with form fields, preview, privacy/contact settings, reviewer status only if relevant, and human-readable confirmation copy.",
+        "targetProductionSurface": "Plant offer creation and confirmation screen",
+        "affectedScreenRowIds": [
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "blocksPass": true
+      }
     },
     {
       "rowId": "b25-v4-row-006-plant-exchange-submission-2",
@@ -24423,7 +24499,71 @@
       ]
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "findingId": "LLM-UX-001",
+      "severity": "critical-blocker",
+      "blocksPass": true,
+      "title": "User-facing harness language remains visible",
+      "description": "Phrases such as 'Use this surface', 'Labeled fields', 'Privacy checked', and 'Review handoff' expose implementation validation concepts rather than production community product language.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ],
+      "requiredFix": "Remove internal validation/checklist wording and replace with natural member-facing domain copy and controls.",
+      "source": "llm-vision-ux-judge",
+      "status": "open",
+      "resolved": false
+    },
+    {
+      "findingId": "LLM-UX-002",
+      "severity": "major",
+      "blocksPass": true,
+      "title": "Plant exchange lacks domain-native product content",
+      "description": "The plant exchange screens do not show plant identity, photos, availability, pickup details, member context, or exchange status prominently. They instead present generic workflow summaries.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ],
+      "requiredFix": "Build a real plant exchange experience centered on plant offers/requests, member logistics, and clear offer/edit/submit actions.",
+      "source": "llm-vision-ux-judge",
+      "status": "open",
+      "resolved": false
+    },
+    {
+      "findingId": "LLM-UX-003",
+      "severity": "major",
+      "blocksPass": true,
+      "title": "Repeated card system feels templated and non-production",
+      "description": "The same large rounded card/chip pattern repeats across event RSVP, plant exchange, documents, and export surfaces, making the app feel like a generated workflow test surface.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ],
+      "requiredFix": "Vary layouts by task type, reduce checklist chips, and create product-specific hierarchy for lists, details, actions, and confirmations.",
+      "source": "llm-vision-ux-judge",
+      "status": "open",
+      "resolved": false
+    },
+    {
+      "findingId": "LLM-UX-004",
+      "severity": "minor",
+      "blocksPass": false,
+      "title": "Floating action button obscures list content",
+      "description": "In the loaded examples screen, the 'Add Community' floating action button overlaps the community list, partially covering the Camera Club row area.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-004-plant-exchange-submission-0"
+      ],
+      "requiredFix": "Add bottom inset/padding or reposition the floating action so it does not cover scrollable list content.",
+      "source": "llm-vision-ux-judge",
+      "status": "open",
+      "resolved": false
+    }
+  ],
   "holisticQuestionAnswers": [
     {
       "questionId": "b25-holistic-production-grade",
@@ -24515,6 +24655,60 @@
         "workflowLifecycleScorecardFailures=0",
         "unsupportedVisibleTextRows=0",
         "visualInspectionFailures=0"
+      ]
+    },
+    {
+      "questionId": "llm-holistic-production-grade",
+      "question": "Does the whole experience feel like a real production community app, not merely an implemented workflow harness?",
+      "answer": "no",
+      "score": 35,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Generic copy such as 'Use this surface to submit structured member details.'",
+        "Validation/status chips: 'Labeled fields', 'Privacy checked', 'Review handoff'",
+        "Screens organize around workflow assertions instead of domain content like plants, pickup windows, members, event details, or RSVP state."
+      ],
+      "critique": "The UI exposes implementation checklist language and validation outcomes directly to users. It does not yet feel like a real community product surface for plant exchange or event RSVP.",
+      "requiredFix": "Replace harness/checklist cards with domain-native product views: plant offer details, photos, variety, pickup/contact preferences, requester/member context, RSVP attendee state, event schedule/location/capacity, and production action flows.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ],
+      "scope": "llm-vision-holistic",
+      "evidenceUsed": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ]
+    },
+    {
+      "questionId": "llm-holistic-modern-ui",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+      "answer": "partial",
+      "score": 48,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Large repeated rounded cards dominate the screens.",
+        "Heavy monochrome green/blue blocks make the interface feel flat and templated.",
+        "Floating action button overlaps the community list content in the current visible loaded examples screenshot."
+      ],
+      "critique": "The UI has readable typography and spacing, but the visual system is generic and repetitive. It lacks the content hierarchy, affordances, and contextual richness expected from a modern community app.",
+      "requiredFix": "Introduce clearer information architecture, less repetitive card stacking, stronger domain-specific content, better action hierarchy, and ensure floating controls do not obscure list content.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
+      ],
+      "scope": "llm-vision-holistic",
+      "evidenceUsed": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1"
       ]
     }
   ],
@@ -40363,8 +40557,13 @@
       "commitSha": "377d7d4"
     }
   ],
-  "unresolvedBlockerFindings": [],
-  "unresolvedMajorFindings": [],
+  "unresolvedBlockerFindings": [
+    "LLM-UX-001"
+  ],
+  "unresolvedMajorFindings": [
+    "LLM-UX-002",
+    "LLM-UX-003"
+  ],
   "ownerAcceptedMinorFindings": [],
   "trackedPolish": [],
   "iterationScorecardPath": "docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-latest.json",
@@ -72041,5 +72240,219 @@
     "failingScorecardCount": 0,
     "failingScorecardIds": [],
     "missingLifecycleGroups": []
+  },
+  "llmVisionReview": {
+    "schemaVersion": 1,
+    "status": "fail",
+    "reviewerType": "llm-vision-ux-judge",
+    "sourcePath": "../docs/Build Plan V2/Evidence/B25/llm-vision-ux-review-b25-v4-pass-13.json",
+    "importedAt": "2026-06-30T06:13:19.451187Z",
+    "summary": "The screenshots still read as workflow/demo surfaces rather than a production Garden Club community product. Repeated cards, validation chips, generic labels, and harness-like copy dominate the experience.",
+    "holisticQuestionAnswers": [
+      {
+        "questionId": "llm-holistic-production-grade",
+        "question": "Does the whole experience feel like a real production community app, not merely an implemented workflow harness?",
+        "answer": "no",
+        "score": 35,
+        "blocksPass": true,
+        "visibleEvidence": [
+          "Generic copy such as 'Use this surface to submit structured member details.'",
+          "Validation/status chips: 'Labeled fields', 'Privacy checked', 'Review handoff'",
+          "Screens organize around workflow assertions instead of domain content like plants, pickup windows, members, event details, or RSVP state."
+        ],
+        "critique": "The UI exposes implementation checklist language and validation outcomes directly to users. It does not yet feel like a real community product surface for plant exchange or event RSVP.",
+        "requiredFix": "Replace harness/checklist cards with domain-native product views: plant offer details, photos, variety, pickup/contact preferences, requester/member context, RSVP attendee state, event schedule/location/capacity, and production action flows.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "scope": "llm-vision-holistic",
+        "evidenceUsed": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ]
+      },
+      {
+        "questionId": "llm-holistic-modern-ui",
+        "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+        "answer": "partial",
+        "score": 48,
+        "blocksPass": true,
+        "visibleEvidence": [
+          "Large repeated rounded cards dominate the screens.",
+          "Heavy monochrome green/blue blocks make the interface feel flat and templated.",
+          "Floating action button overlaps the community list content in the current visible loaded examples screenshot."
+        ],
+        "critique": "The UI has readable typography and spacing, but the visual system is generic and repetitive. It lacks the content hierarchy, affordances, and contextual richness expected from a modern community app.",
+        "requiredFix": "Introduce clearer information architecture, less repetitive card stacking, stronger domain-specific content, better action hierarchy, and ensure floating controls do not obscure list content.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "scope": "llm-vision-holistic",
+        "evidenceUsed": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ]
+      }
+    ],
+    "screenReviews": [
+      {
+        "screenRowId": "b25-v4-row-001-garden-event-rsvp-0",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Garden event RSVP appears as a large blue card with status chips.",
+          "Visible chips include 'This week', 'Community venue', 'Capacity tracked', and 'RSVP available'.",
+          "The next Plant exchange card repeats the same checklist pattern."
+        ],
+        "critique": "The RSVP screen is framed as a validated workflow summary, not a real event page. It lacks event-specific richness such as event title, date/time prominence, venue details, attendee counts, host, and RSVP state.",
+        "requiredFix": "Redesign as a domain-native event RSVP surface with event identity, schedule, location, capacity/attendee state, member response controls, and contextual community navigation.",
+        "targetProductionSurface": "Garden Club event detail and RSVP screen",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0"
+        ],
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "b25-v4-row-002-garden-event-rsvp-1",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Action screen title is truncated: 'Plant exchange submission d...'",
+          "Hero card says 'Submit member form' and 'Use this surface to submit structured member details.'",
+          "Sections are named 'Decision', 'Details', and 'Other option' rather than plant exchange concepts."
+        ],
+        "critique": "This is visibly a workflow action harness. The language is internal and generic, and the user cannot understand the plant being offered or exchanged from the screen.",
+        "requiredFix": "Replace generic action summary with a plant offer submission/review surface including plant name, variety, condition, photo, pickup/contact preferences, privacy choices in natural language, and clear submit/edit/cancel actions.",
+        "targetProductionSurface": "Plant exchange offer submission flow",
+        "affectedScreenRowIds": [
+          "b25-v4-row-002-garden-event-rsvp-1"
+        ],
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "b25-v4-row-004-plant-exchange-submission-0",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Plant exchange submission start screen relies on chips: 'Labeled fields', 'Privacy checked', 'Review handoff'.",
+          "Instructional copy says the form captures labeled details, privacy choices, and reviewer handoff.",
+          "Adjacent 'Documents and data' and export schema card appear below."
+        ],
+        "critique": "The screen exposes system validation and admin/export concepts in a member-facing community flow. It does not present a rich plant exchange marketplace or member offer experience.",
+        "requiredFix": "Create a plant exchange product surface showing available/requested plants, offer details, pickup logistics, member trust/privacy affordances, and natural next actions.",
+        "targetProductionSurface": "Garden Club plant exchange start/listing surface",
+        "affectedScreenRowIds": [
+          "b25-v4-row-004-plant-exchange-submission-0"
+        ],
+        "blocksPass": true
+      },
+      {
+        "screenRowId": "b25-v4-row-005-plant-exchange-submission-1",
+        "verdict": "fail",
+        "severity": "major",
+        "visibleObservations": [
+          "Action screen repeats validation chips and generic form language.",
+          "Primary CTA says 'Offer plant', but surrounding content is about structured details and review handoff.",
+          "Large cards and dividers create a test-flow feel."
+        ],
+        "critique": "The primary action is plausible, but the rest of the screen is not production-grade. It reads like proof that requirements were satisfied rather than a member-facing submission UI.",
+        "requiredFix": "Convert the page into a real offer creation/review experience with form fields, preview, privacy/contact settings, reviewer status only if relevant, and human-readable confirmation copy.",
+        "targetProductionSurface": "Plant offer creation and confirmation screen",
+        "affectedScreenRowIds": [
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "blocksPass": true
+      }
+    ],
+    "findings": [
+      {
+        "findingId": "LLM-UX-001",
+        "severity": "critical-blocker",
+        "blocksPass": true,
+        "title": "User-facing harness language remains visible",
+        "description": "Phrases such as 'Use this surface', 'Labeled fields', 'Privacy checked', and 'Review handoff' expose implementation validation concepts rather than production community product language.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "requiredFix": "Remove internal validation/checklist wording and replace with natural member-facing domain copy and controls.",
+        "source": "llm-vision-ux-judge",
+        "status": "open",
+        "resolved": false
+      },
+      {
+        "findingId": "LLM-UX-002",
+        "severity": "major",
+        "blocksPass": true,
+        "title": "Plant exchange lacks domain-native product content",
+        "description": "The plant exchange screens do not show plant identity, photos, availability, pickup details, member context, or exchange status prominently. They instead present generic workflow summaries.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "requiredFix": "Build a real plant exchange experience centered on plant offers/requests, member logistics, and clear offer/edit/submit actions.",
+        "source": "llm-vision-ux-judge",
+        "status": "open",
+        "resolved": false
+      },
+      {
+        "findingId": "LLM-UX-003",
+        "severity": "major",
+        "blocksPass": true,
+        "title": "Repeated card system feels templated and non-production",
+        "description": "The same large rounded card/chip pattern repeats across event RSVP, plant exchange, documents, and export surfaces, making the app feel like a generated workflow test surface.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-002-garden-event-rsvp-1",
+          "b25-v4-row-004-plant-exchange-submission-0",
+          "b25-v4-row-005-plant-exchange-submission-1"
+        ],
+        "requiredFix": "Vary layouts by task type, reduce checklist chips, and create product-specific hierarchy for lists, details, actions, and confirmations.",
+        "source": "llm-vision-ux-judge",
+        "status": "open",
+        "resolved": false
+      },
+      {
+        "findingId": "LLM-UX-004",
+        "severity": "minor",
+        "blocksPass": false,
+        "title": "Floating action button obscures list content",
+        "description": "In the loaded examples screen, the 'Add Community' floating action button overlaps the community list, partially covering the Camera Club row area.",
+        "affectedScreenRowIds": [
+          "b25-v4-row-001-garden-event-rsvp-0",
+          "b25-v4-row-004-plant-exchange-submission-0"
+        ],
+        "requiredFix": "Add bottom inset/padding or reposition the floating action so it does not cover scrollable list content.",
+        "source": "llm-vision-ux-judge",
+        "status": "open",
+        "resolved": false
+      }
+    ],
+    "blockingFindingIds": [
+      "LLM-UX-001",
+      "LLM-UX-002",
+      "LLM-UX-003"
+    ],
+    "blockingQuestionIds": [
+      "llm-holistic-production-grade",
+      "llm-holistic-modern-ui"
+    ],
+    "blockingScreenRowIds": [
+      "b25-v4-row-001-garden-event-rsvp-0",
+      "b25-v4-row-002-garden-event-rsvp-1",
+      "b25-v4-row-004-plant-exchange-submission-0",
+      "b25-v4-row-005-plant-exchange-submission-1"
+    ]
   }
 }

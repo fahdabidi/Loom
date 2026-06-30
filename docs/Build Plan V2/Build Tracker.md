@@ -42,8 +42,9 @@ detected. Each pass must also emit and commit a B25 iteration scorecard showing 
 critical/blocker and major counts, blocker/major findings resolved in that pass, newly introduced
 blocker/major findings, judge failures, and the next action.
 The B25 tool sequence is product experience doc steward -> evidence collector -> workflow/persona
-coverage collector -> visual inspection auditor -> independent UX judge -> workflow interaction-model judge ->
-deterministic production UX judge -> remediation tickets -> iteration scorecard -> commit.
+coverage collector -> visual inspection auditor -> deterministic review scaffold -> LLM Vision UX
+Judge Agent -> LLM review importer -> workflow interaction-model judge -> deterministic production UX
+judge -> remediation tickets -> iteration scorecard -> commit.
 Native Loom repo runs write community product experience docs under
 `docs/Product Docs V2/Community Examples/<community>-product-experience.md`. Standalone Skill runs treat
 the fetched Loom Product Docs V2 as read-only and write the same product contract locally under
@@ -101,7 +102,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Complete | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface and interaction-model proof. | Pass 12 closes the stricter semantic-closure, product-doc, and semantic interaction-model bar. The full B25 chain passed from fresh Android screenshots: independent UX judge, interaction-model judge, production UX judge, iteration scorecard, manifest gate, B25 phase gate, boundary lint, and diff check. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface proof, interaction-model proof, and a passing fresh LLM vision UX review. | Pass 13 reopened B25 under the LLM vision judge gate. The LLM review found unresolved blocker/major product UX issues in the Garden Club event/plant-exchange screenshots, and `production_ux_judge.dart` generated six remediation tickets. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets pending |
 
 ## Phase Outcome Summary
 
@@ -245,16 +246,21 @@ Each B25 loop iteration must be committed before the next UX feedback or remedia
 iteration commit must include the current review/remediation evidence, screenshots or screenshot
 references, tests run, remaining findings, and tracker/remediation-loop updates.
 
-B25 must also run the Production UX Judge as three direct-question passes: one holistic product UX pass
-for the whole app/community experience, one workflow/persona pass for every reviewed workflow/persona
-pair, and one semantic workflow interaction-model pass for every reviewed workflow/persona pair. All three must be
-green. The holistic pass guards overall product coherence, navigation, modern visual quality, and
+B25 must also run a fresh LLM Vision UX Judge Agent before the deterministic Production UX Judge. The
+LLM judge inspects screenshots as pixels/layout and answers the semantic product-quality questions; the
+importer records that output as `llmVisionReview`. The Production UX Judge then validates four evidence
+blocks: one holistic product UX pass for the whole app/community experience, one workflow/persona pass
+for every reviewed workflow/persona pair, one semantic workflow interaction-model pass for every
+reviewed workflow/persona pair, and the imported LLM vision review. All four must be green. The
+holistic pass guards overall product coherence, navigation, modern visual quality, and
 community-centered information architecture. The workflow/persona passes guard task clarity,
 domain-native surfaces, natural actions, validation/result states, receiver states, and unauthorized/
 read-only behavior. The interaction-model pass guards against incomplete action cards by requiring the
 expected user decision, concrete object/context, decision information, semantically correct primary
 action, domain-required alternate/change/reject affordance, persistent result state, and receiver/
-continuation state from screenshots.
+continuation state from screenshots. The LLM vision review guards against the false-pass class where
+deterministic keyword/pixel heuristics find no known defect while a fresh reviewer can still see a
+workflow/test-harness or weak product experience.
 
 After every B25 review/remediation pass, generate a B25 iteration scorecard. It must record current
 critical/blocker and major counts, unresolved blocker/major counts, resolved blocker/major counts for
@@ -267,12 +273,12 @@ workflow UI evidence. The collector is the deterministic Evidence Collector Tool
 screenshot paths, hashes, captured-at timestamps, device metadata, visible text source, app commit SHA,
 and screen-row scaffolding, but it cannot make the production UX pass/fail decision. Then run
 `b25_workflow_persona_coverage_collector.dart` to prove that every reviewed workflow/persona
-combination has explicit evidence before `b25_independent_ux_judge.dart` writes holistic answers,
-workflow/persona scorecards, screen-specific critiques, and findings. Then run
+combination has explicit evidence before `b25_independent_ux_judge.dart` normalizes the deterministic
+review scaffold. Then run the LLM Vision UX Judge Agent on screenshots and import its structured output
+with `b25_llm_ux_review_importer.dart`; this is the semantic product-quality review. Then run
 `b25_workflow_interaction_model_judge.dart` to produce semantic interaction-model scorecards from the
-same screenshots.
-`production_ux_judge.dart` is the deterministic validator that scores those independent judge and
-lifecycle outputs and emits remediation tickets.
+same screenshots. `production_ux_judge.dart` is the deterministic validator that scores the scaffold,
+LLM vision review, lifecycle outputs, and emits remediation tickets.
 
 Every B25 independent UX review must include:
 
@@ -344,7 +350,7 @@ tools keep the implementation worker separate from the pass/fail judge.
 | B22 | `domain_surface_classifier.dart` | `domain-surface-scorecard.json/.md` | A primary workflow remains a generic workflow-card, checklist modal, metadata page, repeated card shell, or global workflow list. |
 | B23 | `persona_ux_judge.dart` | `persona-ux-scorecard.json/.md` | Actor, receiver, read-only, disabled, hidden, or unauthorized persona evidence is missing or contradictory. |
 | B24 | `evidence_integrity_auditor.dart` | `evidence-integrity-scorecard.json/.md` | Screenshots, hashes, timestamps, app commit SHA, device metadata, visible text, or generic-copy audit evidence is missing/stale. |
-| B25 | Product Experience Doc Steward; `b25_evidence_collector.dart`; `b25_workflow_interaction_model_judge.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart`; next-pass `b25_remediation_planner.dart` | Current pass: community product experience docs, derived `production-ux-blueprint.md`, `independent-production-ux-review.json/.md`, `product-ux-screen-review-matrix.md`, `b25-workflow-lifecycle-scorecards.md`, `production-ux-criteria-scorecard.json/.md`, `b25-remediation-tickets-<run-id>.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `productDocCoverage`, `holisticQuestionAnswers`, `workflowPersonaScorecards`, and `workflowLifecycleScorecards` with `semanticInteractionModel` in review JSON. Next pass kickoff: `b25-remediation-plan-<prior-run-id>.json/.md`. | Product docs are missing or stale, evidence was not collected by the deterministic collector, any B25 pass criterion has a blocking failure without a template-complete remediation ticket, any direct-question or interaction-model pass is missing/partial/unsupported, any primary workflow surface is not domain-native, any primary workflow interaction model lacks expected decision, concrete object/context, decision information, primary action, alternate/change/reject path, result state, receiver/continuation state, or fresh screenshot proof, or the iteration scorecard is missing for the pass. A remediation pass fails before implementation if the prior pass's tickets were not sent to the planner; a product-spec-gap fails if the product doc was not updated before UI remediation. |
+| B25 | Product Experience Doc Steward; `b25_evidence_collector.dart`; LLM Vision UX Judge Agent; `b25_llm_ux_review_importer.dart`; `b25_workflow_interaction_model_judge.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart`; next-pass `b25_remediation_planner.dart` | Current pass: community product experience docs, derived `production-ux-blueprint.md`, `llm-vision-ux-review-<run-id>.json`, `independent-production-ux-review.json/.md` with `llmVisionReview`, `product-ux-screen-review-matrix.md`, `b25-workflow-lifecycle-scorecards.md`, `production-ux-criteria-scorecard.json/.md`, `b25-remediation-tickets-<run-id>.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `productDocCoverage`, `holisticQuestionAnswers`, `workflowPersonaScorecards`, `workflowLifecycleScorecards`, and `llmVisionReview` in review JSON. Next pass kickoff: `b25-remediation-plan-<prior-run-id>.json/.md`. | Product docs are missing or stale, evidence was not collected by the deterministic collector, no fresh LLM vision review was imported, any LLM vision finding blocks pass, any B25 pass criterion has a blocking failure without a template-complete remediation ticket, any direct-question or interaction-model pass is missing/partial/unsupported, any primary workflow surface is not domain-native, any primary workflow interaction model lacks expected decision, concrete object/context, decision information, primary action, alternate/change/reject path, result state, receiver/continuation state, or fresh screenshot proof, or the iteration scorecard is missing for the pass. A remediation pass fails before implementation if the prior pass's tickets were not sent to the planner; a product-spec-gap fails if the product doc was not updated before UI remediation. |
 
 Judge agents may receive only artifacts, screenshots, blueprint/contracts, pass criteria, evidence
 metadata, and remediation logs. They must not receive worker implementation notes or intended behavior
@@ -384,7 +390,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Complete | Product-UX v4 pass 12 closes the stricter semantic-closure and product-doc bar. B25 has current community-specific product experience docs, a blueprint derived from those docs, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, domain-native primary workflow surfaces, holistic and workflow/persona direct-question passes, semantic surface proof for every primary workflow/persona row, before/after ticket closure evidence, production UX judge scorecard, and per-pass iteration scorecards. |
+| B25 | Open B25 pass-13 LLM vision findings | Reopened | Product-UX v4 pass 13 adds the LLM vision UX review bar. Current pass failed with `LLM-UX-001`, `LLM-UX-002`, and `LLM-UX-003`; six remediation tickets were generated under `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-13.*`. B25 remains open until those tickets are remediated from fresh screenshots and the imported LLM vision review passes. |
 
 Closeout rule for reopened phases:
 
@@ -1797,7 +1803,7 @@ Use the component hash generated by `manifest_gate`.
 | data-schema-store | A5 | 6a09d351f11f | B8 |
 | app-shell-runtime | A6 | c7c0a602fdad | A6 |
 | loom-communities-demo-app | A6 | dd8ff5d27a80 | B25 v4 pass 12 |
-| loom-ux-judges | B21-B25 | 77d38fcfaf7a | B25 v4 pass 12 |
+| loom-ux-judges | B21-B25 | 686cd9d8e3ec | B25 v4 pass 13 LLM vision gate |
 | local-in-app-backend | A6 | 5d1deb013df1 | B10 archive hardening |
 
 ## Artifact Completion Checklist
