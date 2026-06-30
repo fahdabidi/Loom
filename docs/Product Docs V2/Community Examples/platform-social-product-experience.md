@@ -77,7 +77,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | platform-sensitive-no-fill | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
-## 10. Card Surface Registry Mapping
+### B25 Card Surface Registry Mapping
 
 This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
 
@@ -87,7 +87,7 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `connections-invite-block` | [social](../../CardSurfaces/messaging-connections.md) | `CommunitySocialSurfaceApi` | invite/accept/decline/cancel, block/unblock, connection status, thread state | Demo renderer must select a domain-native surface for `social` and LocalInAppBackend must expose/import the state for these interactions. |
 | `in-stream-ad` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad decision, impression/click/no-fill, disclosure/ad-off, restore/receipt evidence | Demo renderer must select a domain-native surface for `ad` and LocalInAppBackend must expose/import the state for these interactions. |
 
-## 11. Review And Remediation Log
+## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

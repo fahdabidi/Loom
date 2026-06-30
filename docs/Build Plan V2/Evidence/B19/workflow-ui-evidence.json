@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
   "workflowCount": 1,
   "workflows": [
     {
@@ -32,7 +32,7 @@
         "Protected care request | Care request keeps private details protected for the care team. | Private details | Care team | Consent checked | Decide whether the request should be approved, rejected, revised, or sent back for changes. | Update privacy | Submit request | Member tools | Useful actions for this community. | Anonymous donor visibility | Member form captures labeled details, privacy choices, and reviewer handoff. | Labeled fields | Privacy checked | Review handoff | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Save visibility | Masjid Nur",
         "Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur"
       ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",

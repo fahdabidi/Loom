@@ -73,7 +73,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | gear-loan-request | member | Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths. | submit request, approve request, send request, review request | reject, request changes, revise, withdraw, edit request | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
-## 10. Card Surface Registry Mapping
+### B25 Card Surface Registry Mapping
 
 This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
 
@@ -83,7 +83,7 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `camera-photo-walk` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must select a domain-native surface for `event-rsvp` and LocalInAppBackend must expose/import the state for these interactions. |
 | `camera-critique-submission` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
 
-## 11. Review And Remediation Log
+## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

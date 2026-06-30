@@ -655,7 +655,7 @@
           "offer/submitted state"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | offer plant | documents and data | documents, exports, imports, and transfer records. | garden export custom schemas | you can review the current details without changing them. | redacted copy | checksum ready | exportable | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | read only | garden club | basil seedlings | swe...",
+        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | offer plant | documents and data | documents, exports, imports, and transfer records. | garden data export package | review event and plant-exchange data before download. | export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | redaction preview | checksum verified | download ready | ready to generate export | the packa...",
         "summary": "After-screenshot visible text proves the target surface: plant exchange offer form and member marketplace surface with plant details, pickup timing, owner contact, and submitted offer state."
       },
       "referencePatternsToCopy": [
@@ -807,7 +807,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Members will see the plant variety, pickup window, privacy note, and how to claim the offer. | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club | Basil seedlings | Sweet Genovese - 6 starter pots | Share healthy starts with nearby members and choose exactly what contact details are visible after a claim. | Ready for marketplace review | Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board. | Contact after claim | Phone/address private | Edit offer | Offer plant | Offer preview | Plant details | Sweet Genovese basil, six starter pots, rooted and ready for transplant this week. | Pickup | Saturday 1-3 PM at the community shed, with porch pickup available if weather changes. | Shared with claimants | First name and in-app contact only. Phone and address stay private until you confirm. | Offer a plant | Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Offer posted to the plant exchange board. | Offer posted | Basil seedlings are listed with pickup details and contact sharing limited until a member claims them. | Posted | Documents and data | Documents, exports, imports, and transfer records. | Garden export custom schemas | You can review the current details without changing them. | Redacted copy | Checksum ready | Exportable | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Read only | Garden Club.",
+          "why": "The scorecard cites visible text: Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Members will see the plant variety, pickup window, privacy note, and how to claim the offer. | Offer plant | Documents and data | Documents, exports, imports, and transfer records. | Garden data export package | Review event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | Change scope | Read only | Garden Club | Basil seedlings | Sweet Genovese - 6 starter pots | Share healthy starts with nearby members and choose exactly what contact details are visible after a claim. | Ready for marketplace review | Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board. | Contact after claim | Phone/address private | Offer plant | Edit offer | Offer preview | Plant details | Sweet Genovese basil, six starter pots, rooted and ready for transplant this week. | Pickup | Saturday 1-3 PM at the community shed, with porch pickup available if weather changes. | Shared with claimants | First name and in-app contact only. Phone and address stay private until you confirm. | Offer a plant | Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Offer posted to the plant exchange board. | Offer posted | Basil seedlings are listed with pickup details and contact sharing limited until a member claims them. | Posted | Documents and data | Documents, exports, imports, and transfer records. | Garden data export package | Review event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | Change scope | Read only | Garden Club.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-004-plant-exchange-submission-0",
@@ -891,7 +891,7 @@
           "transfer/export action or status"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | review plant exchange submission | documents and data | documents, exports, imports, and transfer records. | garden export custom schemas | data package includes scope, protected fields, and handoff status. | redacted copy | checksum ready | exportable | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export |...",
+        "visibleEvidenceExcerpt": "documents and data | documents, exports, imports, and transfer records. | garden data export package | review event and plant-exchange data before download. | export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | redaction preview | checksum verified | download ready | ready to generate export | the package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | change scope | generate export | local package details | garden club | garden data export package | garden_event + plant_exchange | confirm selected data, protected-field redaction, checksum, and destination before ...",
         "summary": "The imported LLM vision review visually confirmed `Garden Club export package review` for `garden-export-custom-schemas` / `owner` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -1143,7 +1143,7 @@
           "meeting or discussion context"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | submit nomination | book vote | record vote | neighborhood book club | submit member form | use this surface to submit structured member details. | labeled fields | privacy checked | review handoff | decision | decide what to save, what to change, and what status or next step should remain visible afterward. | details | required details are ready. required fields, privacy choices, and reviewer handoff are included. | other opti...",
+        "visibleEvidenceExcerpt": "nominate parable of the sower | octavia e. butler - february reading cycle. | share why this title belongs on the ballot and how it fits the upcoming discussion. | book title entered | author confirmed | discussion reason | ballot eligible | ready to submit nomination | the nomination will be visible to members for the february vote and tied to the discussion meeting. | edit nomination | submit nomination | february book ballot | vote between three member nominations. | parable of the sower is leading the ballot for the next monthly discussion. | 3 nominations | closes jan 20 | 1 member vote | leading title | ready to record vote | your vote will count once for parable of the sower and ca...",
         "summary": "The imported LLM vision review visually confirmed `Book Club nomination submission` for `book-nomination` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -1395,7 +1395,7 @@
           "meeting or discussion context"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | record saved | the community record is saved. history, receiver status, and next step remain visible. | saved | book vote | record vote | local package details | neighborhood book club | submit member form | use this surface to submit structured member details. | labeled fields | privacy checked | review handoff | decision | decide what to save, what to change, and what status or next step should remain visible afterward. | det...",
+        "visibleEvidenceExcerpt": "nominate parable of the sower | octavia e. butler - february reading cycle. | parable of the sower is on the february ballot with title, author, rationale, and meeting context. | book title entered | author confirmed | discussion reason | ballot eligible | current state | edit nomination | nomination submitted | submitted | february book ballot | vote between three member nominations. | parable of the sower is leading the ballot for the next monthly discussion. | 3 nominations | closes jan 20 | 1 member vote | leading title | ready to record vote | your vote will count once for parable of the sower and can be changed before the ballot closes. | change vote | record vote | local package de...",
         "summary": "The imported LLM vision review visually confirmed `Book Club voting surface` for `book-vote` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -1674,7 +1674,7 @@
           "RSVP action or result"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "meeting event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp to event | documents and data | documents, exports, imports, and transfer records. | book export metadata | you can review the current details without changing them. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | read only | neighborhood book club | coordinate attendance | us...",
+        "visibleEvidenceExcerpt": "parable discussion night | thu, feb 15 at 7:00 pm - maya's living room. | reserve a seat for the discussion and see host, location, capacity, and reminder status. | thu, feb 15 | 7:00 pm | maya's living room | 10 of 14 spots | choose attendance | going reserves a seat and sends a reminder. maybe keeps the meeting on your calendar without taking capacity. | change response | rsvp to event | documents and data | documents, exports, imports, and transfer records. | book export metadata | you can review the current details without changing them. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change sco...",
         "summary": "The imported LLM vision review visually confirmed `Book Club meeting RSVP` for `book-meeting-rsvp` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -1942,7 +1942,7 @@
           "action or state"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "discussion message | member communication stays scoped to the community relationship. | private by default | membership scoped | ready | decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | archive thread | send message | member tools | useful actions for this community. | book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | record saved | the community record is saved. history, receiver status, and next step remain visible. | saved...",
+        "visibleEvidenceExcerpt": "discussion thread | prompt: what does community care require? | reply to the parable discussion with a note scoped to club members. | from jordan | members only | 3 unread | club scoped | ready to send message | your reply will appear in the club thread and stay scoped to current members. | archive thread | send message | member tools | useful actions for this community. | nominate parable of the sower | octavia e. butler - february reading cycle. | parable of the sower is on the february ballot with title, author, rationale, and meeting context. | book title entered | author confirmed | discussion reason | ballot eligible | current state | edit nomination | nomination submitted | submitt...",
         "summary": "The imported LLM vision review visually confirmed `Book Club discussion thread` for `book-discussion-message` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -2231,7 +2231,7 @@
           "natural publish or send action"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "selected-book publishing | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | save draft | publish announcement | search, ai answer, and digest | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | neighborhood book club | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide whether this message is ready for...",
+        "visibleEvidenceExcerpt": "publish february selection | parable of the sower won the member vote. | send the selected-book announcement with audience, author, message body, and delivery timing. | audience: members | from organizer | today 5:00 pm | inbox + push | ready to publish | members will receive the selected book, meeting date, and discussion prompt in their inbox. | save draft | publish announcement | search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | neighborhood book club | pub...",
         "summary": "The imported LLM vision review visually confirmed `Book Club selected-book announcement composer` for `book-selection-publish` / `owner` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -2487,7 +2487,7 @@
           "citation or source"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | meeting event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp confirmed | attendance, capacity, and co...",
+        "visibleEvidenceExcerpt": "search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | parable discussion night | thu, feb 15 at 7:00 pm - maya's living room. | you are going to the parable discussion; seat count, reminder, and change response stay visible. | thu, feb 15 | 7:00 pm | maya's living room | 10 of 14 spots | current state | change response | rsvp confirmed | going | neighborhood book club | send community noti...",
         "summary": "After-screenshot visible text proves the target surface: search/AI answer surface with query, result, citation, source, and follow-up action."
       },
       "referencePatternsToCopy": [
@@ -2641,7 +2641,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Search, AI answer, and digest | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Generate cited answer | Upcoming events | Dates, capacity, and attendance actions. | Meeting event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP confirmed | Attendance, capacity, and confirmation details are up to date. The calendar, attendee roster, and member status remain visible after the response. | Going | Neighborhood Book Club | Send community notice | Use this surface to send a scoped announcement to the selected audience. | Members | Today | From admin | Inbox + push | Decision | Decide what to save, what to change, and what status or next step should remain visible afterward. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Edit response is available before this is saved. | Member outcome | The announcement appears in the member inbox and notification channel. | Privacy boundary | Only the selected audience receives this update. | Announcement composer | Search, AI answer, and digest | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Update sent | The update is available to the selected audience. History, receiver status, and next step remain visible. | Sent | Upcoming events | Dates, capacity, and attendance actions. | Meeting event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | RSVP confirmed | Attendance, capacity, and confirmation details are up to date. The calendar, attendee roster, and member status remain visible after the response. | Going | Neighborhood Book Club.",
+          "why": "The scorecard cites visible text: Search, AI answer, and digest | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Generate cited answer | Upcoming events | Dates, capacity, and attendance actions. | Parable discussion night | Thu, Feb 15 at 7:00 PM - Maya's living room. | You are going to the Parable discussion; seat count, reminder, and change response stay visible. | Thu, Feb 15 | 7:00 PM | Maya's living room | 10 of 14 spots | Current state | Change response | RSVP confirmed | Going | Neighborhood Book Club | Send community notice | Use this surface to send a scoped announcement to the selected audience. | Members | Today | From admin | Inbox + push | Decision | Decide what to save, what to change, and what status or next step should remain visible afterward. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Edit response is available before this is saved. | Member outcome | The announcement appears in the member inbox and notification channel. | Privacy boundary | Only the selected audience receives this update. | Announcement composer | Search, AI answer, and digest | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Update sent | The update is available to the selected audience. History, receiver status, and next step remain visible. | Sent | Upcoming events | Dates, capacity, and attendance actions. | Parable discussion night | Thu, Feb 15 at 7:00 PM - Maya's living room. | You are going to the Parable discussion; seat count, reminder, and change response stay visible. | Thu, Feb 15 | 7:00 PM | Maya's living room | 10 of 14 spots | Current state | Change response | RSVP confirmed | Going | Neighborhood Book Club.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-025-book-search-ai-digest-0",
@@ -2725,7 +2725,7 @@
           "transfer/export action or status"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "book export metadata | data package includes scope, protected fields, and handoff status. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export | messages and connections | member communication and relationship controls. | discussion message | a member communication or preference update is ready. | private by default | membership scoped | ready | decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | archive thread | review discussion message | neighborhood book club | prepare export handoff | use this surface to ...",
+        "visibleEvidenceExcerpt": "book export metadata | data package includes scope, protected fields, and handoff status. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export | messages and connections | member communication and relationship controls. | discussion thread | prompt: what does community care require? | reply to the parable discussion with a note scoped to club members. | from jordan | members only | 3 unread | club scoped | ready to send message | your reply will appear in the club thread and stay scoped to current members. | archive thread | review discussion message | neigh...",
         "summary": "After-screenshot visible text proves the target surface: export/import wizard with preview, redaction, checksum, transfer status, and rollback state."
       },
       "referencePatternsToCopy": [
@@ -2879,7 +2879,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Book export metadata | Data package includes scope, protected fields, and handoff status. | No ad shown | Preference saved | Receipt ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Generate export | Messages and connections | Member communication and relationship controls. | Discussion message | A member communication or preference update is ready. | Private by default | Membership scoped | Ready | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Review discussion message | Neighborhood Book Club | Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | No ad shown | Preference saved | Receipt ready | Decision | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Details | Data scope, redaction, checksum, and handoff details are ready. Scope, redaction, checksum, and handoff destination are included. | Other option | Change scope is available before this is saved. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Book export metadata | Data package includes scope, protected fields, and handoff status. | No ad shown | Preference saved | Receipt ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Data package ready | The data package is ready with protected fields handled. Provider, destination, rollback, audit, and transfer status remain visible. | Ready | Messages and connections | Member communication and relationship controls. | Discussion message | A member communication or preference update is ready. | Private by default | Membership scoped | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Review discussion message | Neighborhood Book Club.",
+          "why": "The scorecard cites visible text: Book export metadata | Data package includes scope, protected fields, and handoff status. | No ad shown | Preference saved | Receipt ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Generate export | Messages and connections | Member communication and relationship controls. | Discussion thread | Prompt: What does community care require? | Reply to the Parable discussion with a note scoped to club members. | From Jordan | Members only | 3 unread | Club scoped | Ready to send message | Your reply will appear in the club thread and stay scoped to current members. | Archive thread | Review discussion message | Neighborhood Book Club | Prepare export handoff | Use this surface to package export scope, redaction, and handoff status. | No ad shown | Preference saved | Receipt ready | Decision | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Details | Data scope, redaction, checksum, and handoff details are ready. Scope, redaction, checksum, and handoff destination are included. | Other option | Change scope is available before this is saved. | Member outcome | The export package can be inspected with redaction and checksum details. | Privacy boundary | Protected data stays redacted before sharing. | Data package | Book export metadata | Data package includes scope, protected fields, and handoff status. | No ad shown | Preference saved | Receipt ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Data package ready | The data package is ready with protected fields handled. Provider, destination, rollback, audit, and transfer status remain visible. | Ready | Messages and connections | Member communication and relationship controls. | Discussion thread | Prompt: What does community care require? | Reply to the Parable discussion with a note scoped to club members. | From Jordan | Members only | 3 unread | Club scoped | Ready to send message | Your reply will appear in the club thread and stay scoped to current members. | Archive thread | Review discussion message | Neighborhood Book Club.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-028-book-export-metadata-0",
@@ -6297,7 +6297,7 @@
           "natural publish or send action"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision ...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramada...",
         "summary": "The imported LLM vision review visually confirmed `Masjid announcement composer` for `mosque-announcement` / `owner` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -6577,7 +6577,7 @@
           "RSVP action or result"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "community event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp to event | giving | payments, donations, receipts, and member preferences. | donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | masjid nur | coordinate atten...",
+        "visibleEvidenceExcerpt": "community iftar rsvp | fri, mar 14 at 6:45 pm - fellowship hall. | reserve a seat and review event time, location, host, capacity, and reminder state. | fri, mar 14 | 6:45 pm | fellowship hall | 86 of 120 spots | choose rsvp response | going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | change response | rsvp to event | giving | payments, donations, receipts, and member preferences. | donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the paymen...",
         "summary": "The imported LLM vision review visually confirmed `Masjid community iftar RSVP` for `mosque-event-rsvp` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -6843,7 +6843,7 @@
           "signup confirmation"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "volunteer signup | volunteer details include shift, availability, and protected contact. | open shift | contact protected | coordinator notified | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | submit signup | protected care request | care request keeps private details protected for the care team. | private details | care team | consent checked | decide whether the request should be approved, rejected, revised, or sent back for changes. | update privacy | submit request | masjid nur | submit member form | use this surface to submit structured member details. | open shift | contact protected | coordinator notified | deci...",
+        "visibleEvidenceExcerpt": "iftar setup shift | friday 4:30 pm - tables, check-in, and meal handoff. | choose the role, review shift time, protect contact details, and confirm coordinator follow-up. | setup role | 4:30-6:30 pm shift | phone protected | 2 spots open | ready to sign up | your protected phone is shared only with the volunteer coordinator after confirmation. | edit availability | submit signup | protected care request | care request keeps private details protected for the care team. | private details | care team | consent checked | decide whether the request should be approved, rejected, revised, or sent back for changes. | update privacy | submit request | masjid nur | iftar setup shift | iftar setup t...",
         "summary": "The imported LLM vision review visually confirmed `Masjid volunteer signup` for `mosque-volunteer-signup` / `member` from fresh after-screenshots."
       },
       "referencePatternsToCopy": [
@@ -7346,7 +7346,7 @@
           "status or audit trail"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | care and volunteers | private requests, volunteer shifts, and member support. | volunteer signup | volunteer details include shift, availability, and protected contact. | open shift | contact protected | coordinator notified | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | signup saved | the coordinator can review the signup and prote...",
+        "visibleEvidenceExcerpt": "donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | care and volunteers | private requests, volunteer shifts, and member support. | iftar setup shift | friday 4:30 pm - tables, check-in, and meal handoff. | you are signed up for iftar setup with protected phone, shift time, role, and coordinator follow-up. | setup role | 4:30-6:30 pm shift | phone protected | 2 spots open | current state | edit availability | volunteer signup confirmed | signed up | masj...",
         "summary": "After-screenshot visible text proves the target surface: payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail."
       },
       "referencePatternsToCopy": [
@@ -7508,7 +7508,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Donation payment and receipt | Record a 50.00 USD donation with receipt and privacy choices. | 50.00 USD | Receipt saved | Private option | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Pay and save receipt | Care and volunteers | Private requests, volunteer shifts, and member support. | Volunteer signup | Volunteer details include shift, availability, and protected contact. | Open shift | Contact protected | Coordinator notified | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Signup saved | The coordinator can review the signup and protected contact details. History, receiver status, and next step remain visible. | Saved | Masjid Nur | Record payment | Use this surface to capture the amount, receipt, and privacy setting. | 50.00 USD | Receipt saved | Private option | Decision | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Details | Amount, payer, privacy choice, and receipt details are ready. Amount, payer, privacy choice, and receipt destination are included. | Other option | Change amount is available before this is saved. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Donation payment and receipt | Record a 50.00 USD donation with receipt and privacy choices. | 50.00 USD | Receipt saved | Private option | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Donation recorded | The donation and receipt are saved with the selected privacy choice. Receipt history, donor or member account status, and entitlement state remain available. | Receipt | Care and volunteers | Private requests, volunteer shifts, and member support. | Volunteer signup | Volunteer details include shift, availability, and protected contact. | Open shift | Contact protected | Coordinator notified | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Signup saved | The coordinator can review the signup and protected contact details. History, receiver status, and next step remain visible. | Saved | Masjid Nur.",
+          "why": "The scorecard cites visible text: Donation payment and receipt | Record a 50.00 USD donation with receipt and privacy choices. | 50.00 USD | Receipt saved | Private option | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Pay and save receipt | Care and volunteers | Private requests, volunteer shifts, and member support. | Iftar setup shift | Friday 4:30 PM - tables, check-in, and meal handoff. | You are signed up for iftar setup with protected phone, shift time, role, and coordinator follow-up. | Setup role | 4:30-6:30 PM shift | Phone protected | 2 spots open | Current state | Edit availability | Volunteer signup confirmed | Signed up | Masjid Nur | Record payment | Use this surface to capture the amount, receipt, and privacy setting. | 50.00 USD | Receipt saved | Private option | Decision | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Details | Amount, payer, privacy choice, and receipt details are ready. Amount, payer, privacy choice, and receipt destination are included. | Other option | Change amount is available before this is saved. | Member outcome | The payment record and receipt become available to the right member. | Privacy boundary | Payment records stay tied to the member account and receipt history. | Payment checkout | Donation payment and receipt | Record a 50.00 USD donation with receipt and privacy choices. | 50.00 USD | Receipt saved | Private option | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Donation recorded | The donation and receipt are saved with the selected privacy choice. Receipt history, donor or member account status, and entitlement state remain available. | Receipt | Care and volunteers | Private requests, volunteer shifts, and member support. | Iftar setup shift | Friday 4:30 PM - tables, check-in, and meal handoff. | You are signed up for iftar setup with protected phone, shift time, role, and coordinator follow-up. | Setup role | 4:30-6:30 PM shift | Phone protected | 2 spots open | Current state | Edit availability | Volunteer signup confirmed | Signed up | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-085-mosque-donation-payment-0",
@@ -8050,7 +8050,7 @@
           "citation or source"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | community event rsvp | an event update is ready with your attendance status. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | review community event rsvp | masjid nur | send community notice | ...",
+        "visibleEvidenceExcerpt": "announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | community iftar rsvp | fri, mar 14 at 6:45 pm - fellowship hall. | reserve a seat and review event time, location, host, capacity, and reminder state. | fri, mar 14 | 6:45 pm | fellowship hall | 86 of 120 spots | choose rsvp response | going reserves a spot; maybe keeps the event visible without taking capacity; not attending rele...",
         "summary": "After-screenshot visible text proves the target surface: search/AI answer surface with query, result, citation, source, and follow-up action."
       },
       "referencePatternsToCopy": [
@@ -8204,7 +8204,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Announcement search and AI citation | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Generate cited answer | Upcoming events | Dates, capacity, and attendance actions. | Community event RSVP | An event update is ready with your attendance status. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | Review community event rsvp | Masjid Nur | Send community notice | Use this surface to send a scoped announcement to the selected audience. | Members | Today | From admin | Inbox + push | Decision | Decide what to save, what to change, and what status or next step should remain visible afterward. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Edit response is available before this is saved. | Member outcome | The announcement appears in the member inbox and notification channel. | Privacy boundary | Only the selected audience receives this update. | Announcement composer | Announcement search and AI citation | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Update sent | The update is available to the selected audience. History, receiver status, and next step remain visible. | Sent | Upcoming events | Dates, capacity, and attendance actions. | Community event RSVP | An event update is ready with your attendance status. | This week | Community venue | Capacity tracked | RSVP available | Decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | Change response | Review community event rsvp | Masjid Nur.",
+          "why": "The scorecard cites visible text: Announcement search and AI citation | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Generate cited answer | Upcoming events | Dates, capacity, and attendance actions. | Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat and review event time, location, host, capacity, and reminder state. | Fri, Mar 14 | 6:45 PM | Fellowship hall | 86 of 120 spots | Choose RSVP response | Going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | Change response | Review community event rsvp | Masjid Nur | Send community notice | Use this surface to send a scoped announcement to the selected audience. | Members | Today | From admin | Inbox + push | Decision | Decide what to save, what to change, and what status or next step should remain visible afterward. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Edit response is available before this is saved. | Member outcome | The announcement appears in the member inbox and notification channel. | Privacy boundary | Only the selected audience receives this update. | Announcement composer | Announcement search and AI citation | Member form captures labeled details, privacy choices, and reviewer handoff. | Members | Today | From admin | Inbox + push | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Update sent | The update is available to the selected audience. History, receiver status, and next step remain visible. | Sent | Upcoming events | Dates, capacity, and attendance actions. | Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat and review event time, location, host, capacity, and reminder state. | Fri, Mar 14 | 6:45 PM | Fellowship hall | 86 of 120 spots | Choose RSVP response | Going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | Change response | Review community event rsvp | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-094-mosque-search-ai-citation-0",
@@ -15159,7 +15159,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announce...",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -15295,7 +15295,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement.",
+          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0"
@@ -15331,7 +15331,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcemen...",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announce...",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -15467,7 +15467,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel.",
+          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1"
@@ -15505,7 +15505,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcemen...",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announce...",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -15649,7 +15649,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel | Public announcement | Waiting for the announcement to be sent. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Waiting | Neutral care notification | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Announcement search and AI citation | Masjid Nur.",
+          "why": "The scorecard cites visible text: No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel | Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Waiting | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-186-wf-demo-app-persona-picker-0",
@@ -15859,7 +15859,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -15995,7 +15995,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Announcement search and AI citation | Masjid Nur.",
+          "why": "The scorecard cites visible text: Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-189-wf-community-persona-aware-ux-1"
@@ -16035,7 +16035,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision ...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramada...",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -16187,7 +16187,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Announcement search and AI citation | Masjid Nur | Send community notice | Use this surface to send a scoped announcement to the selected audience. | Members | Today | From admin | Inbox + push | Decision | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Preview announcement is available before this is saved. | Member outcome | The announcement appears in the member inbox and notification channel. | Privacy boundary | Only the selected audience receives this update. | Announcement composer | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Announcement posted | Members can now read the announcement in their community inbox. Members see it later in the inbox, notification list, and read state. | Sent | Neutral care notification | Waiting for the announcement to be sent. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur.",
+          "why": "The scorecard cites visible text: Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur | Ramadan community night | Ramadan community night - Friday after Maghrib | Send a respectful community update with event time, volunteer note, audience, and delivery channel. | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Preview announcement | Publish announcement | Announcement preview | Message body | Join Ramadan community night after Maghrib. Iftar setup volunteers arrive at 5:30 PM. | Sender | Masjid Admin, community announcements. | Audience | All active members; donors and care volunteers included. | Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Current state | Preview announcement | Announcement posted | Sent | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
@@ -16231,7 +16231,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | a community update is ready in your inbox. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | receive announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | generate cited answer | masjid nur | send community notice | the member sees the message, audience, and deli...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | receive announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramada...",
         "summary": "Support surface workflow; semantic production-surface proof is not required."
       },
       "referencePatternsToCopy": [
@@ -16383,7 +16383,7 @@
           "score": 85,
           "verdict": "pass",
           "blocksPass": false,
-          "why": "The scorecard cites visible text: Public announcement | A community update is ready in your inbox. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Receive announcement | Neutral care notification | Waiting for the announcement to be sent. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Announcement search and AI citation | Member form captures labeled details, privacy choices, and reviewer handoff. | Generate cited answer | Masjid Nur | Send community notice | The member sees the message, audience, and delivery channel. | Members | Today | From admin | Inbox + push | Decision | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Details | Message, audience, preview, and send timing are ready. Message, audience, preview, and delivery channel are included. | Other option | Preview announcement is available before this is saved. | Member outcome | The update is now available in the member inbox. | Privacy boundary | Only the selected audience receives this update. | Update ready | Public announcement | A community update is ready in your inbox. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Update ready | The update is now available in the member inbox. Members see it later in the inbox, notification list, and read state. | Received | Neutral care notification | Waiting for the announcement to be sent. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur.",
+          "why": "The scorecard cites visible text: Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Receive announcement | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur | Ramadan community night | Ramadan community night - Friday after Maghrib | The member inbox shows sender, message body, audience, delivery timing, and read state. | Update ready | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Preview announcement | Receive announcement | Announcement preview | Message body | Join Ramadan community night after Maghrib. Iftar setup volunteers arrive at 5:30 PM. | Sender | Masjid Admin, community announcements. | Audience | All active members; donors and care volunteers included. | Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Current state | Preview announcement | Update ready | The member inbox shows sender, message body, audience, delivery timing, and read state. | Received | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur.",
           "requiredFix": "None.",
           "visibleEvidence": [
             "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
@@ -17056,7 +17056,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Member evaluates a concrete plant exchange item with owner, pickup details, availability, and claim/cancel paths..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | offer plant | documents and data | documents, exports, imports, and transfer records. | garden export custom schemas | you can review the current details without changing them. | redacted copy | checksum ready | exportable | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | read only | garden club | basil seedlings | sweet genovese - 6 starter pots | share healthy starts with nearby members and choose exactly what contact details are visible after a claim. | ready for marketplace review | confirm the variety, pickup ...",
+        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | offer plant | documents and data | documents, exports, imports, and transfer records. | garden data export package | review event and plant-exchange data before download. | export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | redaction preview | checksum verified | download ready | ready to generate export | the package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | change scope | read only | garden club | basil seedlings | sweet genovese - 6 starter pots | sh...",
         "summary": "Screenshots prove the full production interaction model for `plant-exchange-submission`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -17510,17 +17510,18 @@
           ],
           "visibleAlternateActions": [
             "change scope",
-            "retry",
-            "rollback"
+            "redaction preview"
           ],
-          "visibleGenericSubstitutes": [],
+          "visibleGenericSubstitutes": [
+            "confirm"
+          ],
           "missingActions": [],
           "wrongGenericSubstitutes": [],
           "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
           "why": "Visible screenshots show the expected decision and domain-specific action set: Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "basil seedlings offer | offer six sweet genovese starter pots, choose pickup details, and control what contact info is shared. | sweet genovese basil | 6 starter pots | pickup sat 1-3 pm | contact after claim | members will see the plant variety, pickup window, privacy note, and how to claim the offer. | review plant exchange submission | documents and data | documents, exports, imports, and transfer records. | garden export custom schemas | data package includes scope, protected fields, and handoff status. | redacted copy | checksum ready | exportable | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export | local package details | garden club | prepare export handoff | use this surface to package export scope, redaction, and handoff status. | redacted copy | checksum ready | exportable | decision | deci...",
+        "visibleEvidenceExcerpt": "documents and data | documents, exports, imports, and transfer records. | garden data export package | review event and plant-exchange data before download. | export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | redaction preview | checksum verified | download ready | ready to generate export | the package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | change scope | generate export | local package details | garden club | garden data export package | garden_event + plant_exchange | confirm selected data, protected-field redaction, checksum, and destination before generating the export. | ready to generate export | the package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | 2 schemas selected | redaction pre...",
         "summary": "Screenshots prove the full production interaction model for `garden-export-custom-schemas`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -17555,10 +17556,11 @@
         ],
         "visibleAlternateActions": [
           "change scope",
-          "retry",
-          "rollback"
+          "redaction preview"
         ],
-        "visibleGenericSubstitutes": [],
+        "visibleGenericSubstitutes": [
+          "confirm"
+        ],
         "missingActions": [],
         "wrongGenericSubstitutes": [],
         "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
@@ -17969,7 +17971,6 @@
             "continue"
           ],
           "visiblePrimaryActions": [
-            "save",
             "submit"
           ],
           "visibleAlternateActions": [
@@ -17977,6 +17978,7 @@
             "edit"
           ],
           "visibleGenericSubstitutes": [
+            "confirm",
             "ok"
           ],
           "missingActions": [],
@@ -17985,7 +17987,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | submit nomination | book vote | record vote | neighborhood book club | submit member form | use this surface to submit structured member details. | labeled fields | privacy checked | review handoff | decision | decide what to save, what to change, and what status or next step should remain visible afterward. | details | required details are ready. required fields, privacy choices, and reviewer handoff are included. | other option | edit response is available before this is saved. | member outcome | the submission is routed to the reviewer with protected details preserved. | privacy boundary | private member details stay pro...",
+        "visibleEvidenceExcerpt": "nominate parable of the sower | octavia e. butler - february reading cycle. | share why this title belongs on the ballot and how it fits the upcoming discussion. | book title entered | author confirmed | discussion reason | ballot eligible | ready to submit nomination | the nomination will be visible to members for the february vote and tied to the discussion meeting. | edit nomination | submit nomination | february book ballot | vote between three member nominations. | parable of the sower is leading the ballot for the next monthly discussion. | 3 nominations | closes jan 20 | 1 member vote | leading title | ready to record vote | your vote will count once for parable of the sower and can be changed before the ballot closes. | change vote | record vote | neighborhood book club | nominate parable of the sower | parable of the sower by octavia e. butler | review the title, author, memb...",
         "summary": "Screenshots prove the full production interaction model for `book-nomination`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -18015,7 +18017,6 @@
           "continue"
         ],
         "visiblePrimaryActions": [
-          "save",
           "submit"
         ],
         "visibleAlternateActions": [
@@ -18023,6 +18024,7 @@
           "edit"
         ],
         "visibleGenericSubstitutes": [
+          "confirm",
           "ok"
         ],
         "missingActions": [],
@@ -18434,7 +18436,6 @@
             "continue"
           ],
           "visiblePrimaryActions": [
-            "save",
             "submit"
           ],
           "visibleAlternateActions": [
@@ -18442,6 +18443,7 @@
             "edit"
           ],
           "visibleGenericSubstitutes": [
+            "confirm",
             "ok"
           ],
           "missingActions": [],
@@ -18450,7 +18452,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | record saved | the community record is saved. history, receiver status, and next step remain visible. | saved | book vote | record vote | local package details | neighborhood book club | submit member form | use this surface to submit structured member details. | labeled fields | privacy checked | review handoff | decision | decide what to save, what to change, and what status or next step should remain visible afterward. | details | required details are ready. required fields, privacy choices, and reviewer handoff are included. | other option | edit response is available before this is saved. | member outcome | the submiss...",
+        "visibleEvidenceExcerpt": "nominate parable of the sower | octavia e. butler - february reading cycle. | parable of the sower is on the february ballot with title, author, rationale, and meeting context. | book title entered | author confirmed | discussion reason | ballot eligible | current state | edit nomination | nomination submitted | submitted | february book ballot | vote between three member nominations. | parable of the sower is leading the ballot for the next monthly discussion. | 3 nominations | closes jan 20 | 1 member vote | leading title | ready to record vote | your vote will count once for parable of the sower and can be changed before the ballot closes. | change vote | record vote | local package details | neighborhood book club | february book ballot | february selection ballot | compare nominated books, confirm your vote, and keep the chosen discussion book visible after voting. | ready to rec...",
         "summary": "Screenshots prove the full production interaction model for `book-vote`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -18480,7 +18482,6 @@
           "continue"
         ],
         "visiblePrimaryActions": [
-          "save",
           "submit"
         ],
         "visibleAlternateActions": [
@@ -18488,6 +18489,7 @@
           "edit"
         ],
         "visibleGenericSubstitutes": [
+          "confirm",
           "ok"
         ],
         "missingActions": [],
@@ -18919,8 +18921,7 @@
           ],
           "visibleAlternateActions": [
             "change response",
-            "maybe",
-            "not attending"
+            "maybe"
           ],
           "visibleGenericSubstitutes": [
             "confirm",
@@ -18932,7 +18933,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Member decides attendance for a named dated event with time, location, capacity/status, and a later change path..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "meeting event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp to event | documents and data | documents, exports, imports, and transfer records. | book export metadata | you can review the current details without changing them. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | read only | neighborhood book club | coordinate attendance | use this surface to publish event details, capacity, and attendance state. | this week | community venue | capacity tracked | rsvp available | decision | decide if you are going, maybe, or not attending...",
+        "visibleEvidenceExcerpt": "parable discussion night | thu, feb 15 at 7:00 pm - maya's living room. | reserve a seat for the discussion and see host, location, capacity, and reminder status. | thu, feb 15 | 7:00 pm | maya's living room | 10 of 14 spots | choose attendance | going reserves a seat and sends a reminder. maybe keeps the meeting on your calendar without taking capacity. | change response | rsvp to event | documents and data | documents, exports, imports, and transfer records. | book export metadata | you can review the current details without changing them. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | read only | neighborhood book club | parable discussion night | parable of the sower discussion | check the meeting title, date, venue, host, capacity, and current rsvp before sav...",
         "summary": "Screenshots prove the full production interaction model for `book-meeting-rsvp`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -18971,8 +18972,7 @@
         ],
         "visibleAlternateActions": [
           "change response",
-          "maybe",
-          "not attending"
+          "maybe"
         ],
         "visibleGenericSubstitutes": [
           "confirm",
@@ -19405,18 +19405,14 @@
             "continue"
           ],
           "visiblePrimaryActions": [
-            "connect",
             "reply",
             "send message"
           ],
           "visibleAlternateActions": [
-            "archive",
-            "block",
-            "decline",
-            "mute"
+            "archive"
           ],
           "visibleGenericSubstitutes": [
-            "accept",
+            "confirm",
             "ok"
           ],
           "missingActions": [],
@@ -19425,7 +19421,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "discussion message | member communication stays scoped to the community relationship. | private by default | membership scoped | ready | decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | archive thread | send message | member tools | useful actions for this community. | book nomination | member form captures labeled details, privacy choices, and reviewer handoff. | labeled fields | privacy checked | review handoff | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | record saved | the community record is saved. history, receiver status, and next step remain visible. | saved | neighborhood book club | update member channel | use this surface to change a member communication or relationship setting. | private by default | membership scoped | ready | decision | decide whet...",
+        "visibleEvidenceExcerpt": "discussion thread | prompt: what does community care require? | reply to the parable discussion with a note scoped to club members. | from jordan | members only | 3 unread | club scoped | ready to send message | your reply will appear in the club thread and stay scoped to current members. | archive thread | send message | member tools | useful actions for this community. | nominate parable of the sower | octavia e. butler - february reading cycle. | parable of the sower is on the february ballot with title, author, rationale, and meeting context. | book title entered | author confirmed | discussion reason | ballot eligible | current state | edit nomination | nomination submitted | submitted | neighborhood book club | discussion thread | parable discussion thread | read the prompt, sender, audience, and member replies before posting your discussion note. | ready to send message | your ...",
         "summary": "Screenshots prove the full production interaction model for `book-discussion-message`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -19457,18 +19453,14 @@
           "continue"
         ],
         "visiblePrimaryActions": [
-          "connect",
           "reply",
           "send message"
         ],
         "visibleAlternateActions": [
-          "archive",
-          "block",
-          "decline",
-          "mute"
+          "archive"
         ],
         "visibleGenericSubstitutes": [
-          "accept",
+          "confirm",
           "ok"
         ],
         "missingActions": [],
@@ -19906,7 +19898,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "selected-book publishing | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | save draft | publish announcement | search, ai answer, and digest | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | neighborhood book club | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | details | message, audience, preview, and send timing are ready. message, audience, preview, and delivery channel are include...",
+        "visibleEvidenceExcerpt": "publish february selection | parable of the sower won the member vote. | send the selected-book announcement with audience, author, message body, and delivery timing. | audience: members | from organizer | today 5:00 pm | inbox + push | ready to publish | members will receive the selected book, meeting date, and discussion prompt in their inbox. | save draft | publish announcement | search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | neighborhood book club | publish february selection | february book: parable of the sower | preview the announcement body, sender, audience, delivery time, and member receiver state before publishing. | ready to publish | member...",
         "summary": "Screenshots prove the full production interaction model for `book-selection-publish`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -20379,7 +20371,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | meeting event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp confirmed | attendance, capacity, and confirmation details are up to date. the calendar, attendee roster, and member status remain visible after the response. | going | neighborhood book club | send community notice | use this surface to se...",
+        "visibleEvidenceExcerpt": "search, ai answer, and digest | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | parable discussion night | thu, feb 15 at 7:00 pm - maya's living room. | you are going to the parable discussion; seat count, reminder, and change response stay visible. | thu, feb 15 | 7:00 pm | maya's living room | 10 of 14 spots | current state | change response | rsvp confirmed | going | neighborhood book club | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide what to save, what to change, and what status or next st...",
         "summary": "Screenshots prove the full production interaction model for `book-search-ai-digest`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -20839,7 +20831,6 @@
             "rollback"
           ],
           "visibleGenericSubstitutes": [
-            "accept",
             "ok"
           ],
           "missingActions": [],
@@ -20848,7 +20839,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "book export metadata | data package includes scope, protected fields, and handoff status. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export | messages and connections | member communication and relationship controls. | discussion message | a member communication or preference update is ready. | private by default | membership scoped | ready | decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | archive thread | review discussion message | neighborhood book club | prepare export handoff | use this surface to package export scope, redaction, and handoff status. | no ad shown | preference saved | receipt ready | decision | decide the scope, redaction, checksum, destination, and whether to retry, roll back, ...",
+        "visibleEvidenceExcerpt": "book export metadata | data package includes scope, protected fields, and handoff status. | no ad shown | preference saved | receipt ready | decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | change scope | generate export | messages and connections | member communication and relationship controls. | discussion thread | prompt: what does community care require? | reply to the parable discussion with a note scoped to club members. | from jordan | members only | 3 unread | club scoped | ready to send message | your reply will appear in the club thread and stay scoped to current members. | archive thread | review discussion message | neighborhood book club | prepare export handoff | use this surface to package export scope, redaction, and handoff status. | no ad shown | preference saved | receipt ready | decision | decide the scope, re...",
         "summary": "Screenshots prove the full production interaction model for `book-export-metadata`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -20887,7 +20878,6 @@
           "rollback"
         ],
         "visibleGenericSubstitutes": [
-          "accept",
           "ok"
         ],
         "missingActions": [],
@@ -27909,7 +27899,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | details | message, audience, preview, and send timing are ready. message, audience,...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramadan community night - friday after maghrib | send a respectful community update with event time, volunteer note, audience, and delivery channel. | ready for final review | members will receive the annou...",
         "summary": "Screenshots prove the full production interaction model for `mosque-announcement`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -28395,7 +28385,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: Member decides attendance for a named dated event with time, location, capacity/status, and a later change path..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "community event rsvp | event details include date, location, capacity, rsvp action, and attendance result. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | rsvp to event | giving | payments, donations, receipts, and member preferences. | donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | masjid nur | coordinate attendance | use this surface to publish event details, capacity, and attendance state. | this week | community venue | capacity tracked | rsvp available | decision | decide if you are going, maybe, or not...",
+        "visibleEvidenceExcerpt": "community iftar rsvp | fri, mar 14 at 6:45 pm - fellowship hall. | reserve a seat and review event time, location, host, capacity, and reminder state. | fri, mar 14 | 6:45 pm | fellowship hall | 86 of 120 spots | choose rsvp response | going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | change response | rsvp to event | giving | payments, donations, receipts, and member preferences. | donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | masjid nur | community iftar rsvp | ramadan community iftar | check the date, time, location, capacity, and family attendance before saving your response. |...",
         "summary": "Screenshots prove the full production interaction model for `mosque-event-rsvp`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -28861,7 +28851,6 @@
             "continue"
           ],
           "visiblePrimaryActions": [
-            "save",
             "submit"
           ],
           "visibleAlternateActions": [
@@ -28869,14 +28858,16 @@
             "edit",
             "reject"
           ],
-          "visibleGenericSubstitutes": [],
+          "visibleGenericSubstitutes": [
+            "confirm"
+          ],
           "missingActions": [],
           "wrongGenericSubstitutes": [],
           "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
           "why": "Visible screenshots show the expected decision and domain-specific action set: User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "volunteer signup | volunteer details include shift, availability, and protected contact. | open shift | contact protected | coordinator notified | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | submit signup | protected care request | care request keeps private details protected for the care team. | private details | care team | consent checked | decide whether the request should be approved, rejected, revised, or sent back for changes. | update privacy | submit request | masjid nur | submit member form | use this surface to submit structured member details. | open shift | contact protected | coordinator notified | decision | decide what to save, what to change, and what status or next step should remain visible afterward. | details | required details are ready. required fields, privacy choices, and reviewer handoff...",
+        "visibleEvidenceExcerpt": "iftar setup shift | friday 4:30 pm - tables, check-in, and meal handoff. | choose the role, review shift time, protect contact details, and confirm coordinator follow-up. | setup role | 4:30-6:30 pm shift | phone protected | 2 spots open | ready to sign up | your protected phone is shared only with the volunteer coordinator after confirmation. | edit availability | submit signup | protected care request | care request keeps private details protected for the care team. | private details | care team | consent checked | decide whether the request should be approved, rejected, revised, or sent back for changes. | update privacy | submit request | masjid nur | iftar setup shift | iftar setup team | confirm shift role, time, location, contact preference, and coordinator receiver state before signing up. | ready to sign up | your protected phone is shared only with the volunteer coordinator ...",
         "summary": "Screenshots prove the full production interaction model for `mosque-volunteer-signup`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -28906,7 +28897,6 @@
           "continue"
         ],
         "visiblePrimaryActions": [
-          "save",
           "submit"
         ],
         "visibleAlternateActions": [
@@ -28914,7 +28904,9 @@
           "edit",
           "reject"
         ],
-        "visibleGenericSubstitutes": [],
+        "visibleGenericSubstitutes": [
+          "confirm"
+        ],
         "missingActions": [],
         "wrongGenericSubstitutes": [],
         "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
@@ -29805,14 +29797,16 @@
             "change amount",
             "manage"
           ],
-          "visibleGenericSubstitutes": [],
+          "visibleGenericSubstitutes": [
+            "confirm"
+          ],
           "missingActions": [],
           "wrongGenericSubstitutes": [],
           "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
           "why": "Visible screenshots show the expected decision and domain-specific action set: Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | care and volunteers | private requests, volunteer shifts, and member support. | volunteer signup | volunteer details include shift, availability, and protected contact. | open shift | contact protected | coordinator notified | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | signup saved | the coordinator can review the signup and protected contact details. history, receiver status, and next step remain visible. | saved | masjid nur | record payment | use this surface to capture the amount, receipt, and privacy setting. | 50.00 usd ...",
+        "visibleEvidenceExcerpt": "donation payment and receipt | record a 50.00 usd donation with receipt and privacy choices. | 50.00 usd | receipt saved | private option | decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | change amount | pay and save receipt | care and volunteers | private requests, volunteer shifts, and member support. | iftar setup shift | friday 4:30 pm - tables, check-in, and meal handoff. | you are signed up for iftar setup with protected phone, shift time, role, and coordinator follow-up. | setup role | 4:30-6:30 pm shift | phone protected | 2 spots open | current state | edit availability | volunteer signup confirmed | signed up | masjid nur | record payment | use this surface to capture the amount, receipt, and privacy setting. | 50.00 usd | receipt saved | private option | decision | decide the amount, payer context, visibility, ...",
         "summary": "Screenshots prove the full production interaction model for `mosque-donation-payment`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -29852,7 +29846,9 @@
           "change amount",
           "manage"
         ],
-        "visibleGenericSubstitutes": [],
+        "visibleGenericSubstitutes": [
+          "confirm"
+        ],
         "missingActions": [],
         "wrongGenericSubstitutes": [],
         "productDocRequirement": "The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.",
@@ -31222,7 +31218,7 @@
           "why": "Visible screenshots show the expected decision and domain-specific action set: User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result..",
           "requiredFix": "None."
         },
-        "visibleEvidenceExcerpt": "announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | community event rsvp | an event update is ready with your attendance status. | this week | community venue | capacity tracked | rsvp available | decide if you are going, maybe, or not attending after checking date, time, location, and capacity. | change response | review community event rsvp | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide what to save, what to change, and what status or next step sh...",
+        "visibleEvidenceExcerpt": "announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | members | today | from admin | inbox + push | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | generate cited answer | upcoming events | dates, capacity, and attendance actions. | community iftar rsvp | fri, mar 14 at 6:45 pm - fellowship hall. | reserve a seat and review event time, location, host, capacity, and reminder state. | fri, mar 14 | 6:45 pm | fellowship hall | 86 of 120 spots | choose rsvp response | going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | change response | review community event rsvp | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from...",
         "summary": "Screenshots prove the full production interaction model for `mosque-search-ai-citation`: context, decision data, correct actions, result state, and receiver/continuation state."
       },
       "semanticInteractionModel": {
@@ -45205,7 +45201,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},
@@ -45323,7 +45319,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcements, rsvps, volunteers, gives, and requests care. | cancel",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcements, rsvps, volunteers, gives, and requests care. | cancel",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},
@@ -45443,7 +45439,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcements, rsvps, volunteers, gives, and requests care. | cancel | public announcement | waiting for the announcement to be sent. | members | today | from admin | inbox + push | decide whether this message i...",
+        "visibleEvidenceExcerpt": "no sponsored message right now. | masjid nur | coordinate announcements, events, volunteers, giving, and care. | masjid admin | admin - publishes announcements and sends neutral notifications. | 2 personas | announcements | updates, reminders, and member notices for masjid nur. | ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | choose persona | preview the community experience for each member role. | community member | member - receives announcements, rsvps, volunteers, gives, and requests care. | cancel | ramadan com...",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},
@@ -45681,7 +45677,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},
@@ -45803,7 +45799,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | draft message includes audience, timing, and delivery details. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | masjid nur | send community notice | use this surface to send a scoped announcement to the selected audience. | members | today | from admin | inbox + push | decision | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | details | message, audience, preview, and send timing are ready. message, audience,...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | publish announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramadan community night - friday after maghrib | send a respectful community update with event time, volunteer note, audience, and delivery channel. | ready for final review | members will receive the annou...",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},
@@ -45929,7 +45925,7 @@
           "support-surface"
         ],
         "missingGroups": [],
-        "visibleEvidenceExcerpt": "public announcement | a community update is ready in your inbox. | members | today | from admin | inbox + push | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | preview announcement | receive announcement | neutral care notification | waiting for the announcement to be sent. | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | announcement search and ai citation | member form captures labeled details, privacy choices, and reviewer handoff. | generate cited answer | masjid nur | send community notice | the member sees the message, audience, and delivery channel. | members | today | from admin | inbox + push | decision | decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | details | me...",
+        "visibleEvidenceExcerpt": "ramadan community night | announcement composer for masjid nur members. | review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | audience: members | from masjid admin | today 6:00 pm | inbox + push | ready for final review | members will receive the announcement in their inbox and notification list with read state. | preview announcement | receive announcement | neutral care notification | waiting for the announcement to be sent. | from admin | members | today | decide what to save, what to change, and what status or next step should remain visible afterward. | edit response | waiting | masjid nur | ramadan community night | ramadan community night - friday after maghrib | the member inbox shows sender, message body, audience, delivery timing, and read state. | update ready | audience: members | from masjid admin | today 6:00 p...",
         "summary": "Support surface workflow; production workflow lifecycle proof is not required."
       },
       "semanticInteractionModel": {},

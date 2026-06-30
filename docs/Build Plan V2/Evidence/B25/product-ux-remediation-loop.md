@@ -99,3 +99,25 @@ The visual gate rerun reopened B25 with 4 unresolved major findings:
 `b25-v4-pass-4` is historical under the stricter visual inspection gate. Screenshot persistence was
 repaired in pass 7, screenshot-time visible text was repaired in pass 8, and the final visual/product UX
 findings were resolved in pass 9.
+
+## Iteration 18 Commit Boundary
+
+- Prep commit: `3606c8c` added advisory workflow-to-card-surface registry context to the Demo App,
+  B25 evidence, Skill docs, API/card-surface references, and community Product Docs V2 specs.
+- Full capture: `docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log`.
+- Capture coverage: `docs/Build Plan V2/Evidence/B25/b25-capture-coverage-report-b25-v4-pass-18.json`
+  passed with full B12-B20 coverage and 198 screenshots.
+- Independent review: `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json` passed
+  with 195 screen rows, 68 workflow/persona scorecards, passing visual inspection, and passing
+  workflow interaction-model scorecards.
+- LLM vision review: `docs/Build Plan V2/Evidence/B25/llm-vision-ux-review-b25-v4-pass-18.json`
+  carries forward pass-17 visual judgment because pass 18 changed registry/product-doc evidence
+  context, not visible UI implementation.
+- Production judge: `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.json` passed.
+- Iteration scorecard: `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-18.json`
+  passed with zero unresolved blocker/major findings.
+- Remediation tickets: `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-18.md`
+  contains zero tickets.
+- Result: B25 remains passing under the current UX review bar. The advisory card-surface registry is
+  now available to remediation agents, but it is not yet enforced as a standalone card-surface/API
+  coverage gate.
