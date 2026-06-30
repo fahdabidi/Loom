@@ -59,6 +59,10 @@ void main(List<String> args) async {
       _argValue(args, '--log') ??
       '${evidenceRoot.path}/B20/flutter-drive-workflow-ui-evidence.log';
   await Directory(File(logPath).parent.path).create(recursive: true);
+  final progressReportPath =
+      _argValue(args, '--progress-report') ??
+      '${evidenceRoot.path}/B25/b25-capture-progress.json';
+  await Directory(File(progressReportPath).parent.path).create(recursive: true);
 
   final output = StringBuffer()
     ..writeln('b25_capture_workflow_screenshots')
@@ -67,9 +71,27 @@ void main(List<String> args) async {
     ..writeln('mode=$mode')
     ..writeln('phases=${phases.join(',')}')
     ..writeln('device=$device')
+    ..writeln('progressReport=$progressReportPath')
     ..writeln();
 
-  for (final phase in phases) {
+  _writeProgressReport(progressReportPath, {
+    'status': 'starting',
+    'mode': mode,
+    'phases': phases,
+    'phaseCount': phases.length,
+    'completedPhases': 0,
+    'currentPhase': null,
+    'currentPhaseIndex': 0,
+    'currentWorkflowId': null,
+    'completedWorkflowsInCurrentPhase': 0,
+    'totalWorkflowsInCurrentPhase': null,
+    'device': device,
+    'evidenceRoot': evidenceRoot.path,
+    'logPath': logPath,
+  });
+
+  for (var phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
+    final phase = phases[phaseIndex];
     final command = <String>[
       'drive',
       '--driver=test_driver/workflow_ui_evidence_test.dart',
@@ -83,14 +105,61 @@ void main(List<String> args) async {
     stdout.writeln(
       'b25_capture_workflow_screenshots: [$phase] running flutter ${command.join(' ')}',
     );
-    final result = await Process.run(
-      'flutter',
-      command,
+    _writeProgressReport(progressReportPath, {
+      'status': 'running',
+      'mode': mode,
+      'phases': phases,
+      'phaseCount': phases.length,
+      'completedPhases': phaseIndex,
+      'currentPhase': phase,
+      'currentPhaseIndex': phaseIndex + 1,
+      'currentWorkflowId': null,
+      'completedWorkflowsInCurrentPhase': 0,
+      'totalWorkflowsInCurrentPhase': null,
+      'device': device,
+      'evidenceRoot': evidenceRoot.path,
+      'logPath': logPath,
+      'command': 'flutter ${command.join(' ')}',
+    });
+    final result = await _runProcessStreaming(
+      executable: 'flutter',
+      arguments: command,
       workingDirectory: demoDir.path,
       environment: <String, String>{
         ...Platform.environment,
         'WORKFLOW_EVIDENCE_ROOT': evidenceRoot.path,
         'WORKFLOW_EVIDENCE_COMMAND_OUTPUT': logPath,
+      },
+      onProgress: (event) {
+        final completed = event['completedWorkflows'];
+        final total = event['totalWorkflows'];
+        _writeProgressReport(progressReportPath, {
+          'status': 'running',
+          'mode': mode,
+          'phases': phases,
+          'phaseCount': phases.length,
+          'completedPhases': phaseIndex,
+          'currentPhase': event['phase'] ?? phase,
+          'currentPhaseIndex': phaseIndex + 1,
+          'currentWorkflowId': event['workflowId'],
+          'currentCommunityName': event['communityName'],
+          'currentScreenshotName': event['screenshotName'],
+          'workflowStatus': event['status'],
+          'completedWorkflowsInCurrentPhase': completed,
+          'totalWorkflowsInCurrentPhase': total,
+          'device': device,
+          'evidenceRoot': evidenceRoot.path,
+          'logPath': logPath,
+          'command': 'flutter ${command.join(' ')}',
+          'lastProgressEvent': event,
+        });
+        if (completed is int && total is int && total > 0) {
+          stdout.writeln(
+            'b25_capture_workflow_screenshots: [$phase] progress $completed/$total '
+            'current=${event['workflowId'] ?? event['screenshotName'] ?? 'unknown'} '
+            'status=${event['status'] ?? 'running'}',
+          );
+        }
       },
     );
 
@@ -108,8 +177,19 @@ void main(List<String> args) async {
     await File(logPath).writeAsString(output.toString(), flush: true);
 
     if (result.exitCode != 0) {
-      stdout.write(result.stdout);
-      stderr.write(result.stderr);
+      _writeProgressReport(progressReportPath, {
+        'status': 'failed',
+        'mode': mode,
+        'phases': phases,
+        'phaseCount': phases.length,
+        'completedPhases': phaseIndex,
+        'currentPhase': phase,
+        'currentPhaseIndex': phaseIndex + 1,
+        'exitCode': result.exitCode,
+        'device': device,
+        'evidenceRoot': evidenceRoot.path,
+        'logPath': logPath,
+      });
       stderr.writeln(
         'b25_capture_workflow_screenshots: [$phase] flutter drive failed; log written to $logPath',
       );
@@ -123,8 +203,35 @@ void main(List<String> args) async {
       stderr.writeln(
         'b25_capture_workflow_screenshots: [$phase] missing ${phaseManifest.path}; screenshot driver did not write evidence.',
       );
+      _writeProgressReport(progressReportPath, {
+        'status': 'failed',
+        'mode': mode,
+        'phases': phases,
+        'phaseCount': phases.length,
+        'completedPhases': phaseIndex,
+        'currentPhase': phase,
+        'currentPhaseIndex': phaseIndex + 1,
+        'failure': 'missing phase manifest',
+        'missingManifest': phaseManifest.path,
+        'device': device,
+        'evidenceRoot': evidenceRoot.path,
+        'logPath': logPath,
+      });
       exit(65);
     }
+    _writeProgressReport(progressReportPath, {
+      'status': 'running',
+      'mode': mode,
+      'phases': phases,
+      'phaseCount': phases.length,
+      'completedPhases': phaseIndex + 1,
+      'currentPhase': phase,
+      'currentPhaseIndex': phaseIndex + 1,
+      'phaseStatus': 'complete',
+      'device': device,
+      'evidenceRoot': evidenceRoot.path,
+      'logPath': logPath,
+    });
   }
 
   final combinedSummary = await _writeCombinedManifest(
@@ -144,6 +251,19 @@ void main(List<String> args) async {
   }
 
   if (mode == 'targeted-precheck') {
+    _writeProgressReport(progressReportPath, {
+      'status': 'complete',
+      'mode': mode,
+      'phases': phases,
+      'phaseCount': phases.length,
+      'completedPhases': phases.length,
+      'screenshotCount': screenshotCount,
+      'aggregatePath': combinedSummary.aggregatePath,
+      'commitEligible': false,
+      'device': device,
+      'evidenceRoot': evidenceRoot.path,
+      'logPath': logPath,
+    });
     stdout.writeln(
       'b25_capture_workflow_screenshots: targeted precheck captured phases=${phases.join(',')} '
       'screenshots=$screenshotCount aggregate=${combinedSummary.aggregatePath}. '
@@ -152,6 +272,19 @@ void main(List<String> args) async {
     return;
   }
 
+  _writeProgressReport(progressReportPath, {
+    'status': 'complete',
+    'mode': mode,
+    'phases': phases,
+    'phaseCount': phases.length,
+    'completedPhases': phases.length,
+    'screenshotCount': screenshotCount,
+    'aggregatePath': combinedSummary.aggregatePath,
+    'commitEligible': true,
+    'device': device,
+    'evidenceRoot': evidenceRoot.path,
+    'logPath': logPath,
+  });
   stdout.writeln(
     'b25_capture_workflow_screenshots: ok fullB25Coverage=true screenshots=$screenshotCount log=$logPath',
   );
@@ -188,6 +321,83 @@ String _slug(String value) {
       .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
       .replaceAll(RegExp(r'^-+|-+$'), '');
   return slug.isEmpty ? 'targeted' : slug;
+}
+
+Future<_StreamingProcessResult> _runProcessStreaming({
+  required String executable,
+  required List<String> arguments,
+  required String workingDirectory,
+  required Map<String, String> environment,
+  required void Function(Map<String, Object?> event) onProgress,
+}) async {
+  final process = await Process.start(
+    executable,
+    arguments,
+    workingDirectory: workingDirectory,
+    environment: environment,
+  );
+  final stdoutBuffer = StringBuffer();
+  final stderrBuffer = StringBuffer();
+
+  final stdoutDone = process.stdout
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .listen((line) {
+        stdout.writeln(line);
+        stdoutBuffer.writeln(line);
+        final event = _parseProgressLine(line);
+        if (event != null) {
+          onProgress(event);
+        }
+      })
+      .asFuture<void>();
+  final stderrDone = process.stderr
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .listen((line) {
+        stderr.writeln(line);
+        stderrBuffer.writeln(line);
+      })
+      .asFuture<void>();
+
+  final exitCode = await process.exitCode;
+  await Future.wait([stdoutDone, stderrDone]);
+  return _StreamingProcessResult(
+    exitCode: exitCode,
+    stdout: stdoutBuffer.toString(),
+    stderr: stderrBuffer.toString(),
+  );
+}
+
+Map<String, Object?>? _parseProgressLine(String line) {
+  const prefix = 'B25_CAPTURE_PROGRESS ';
+  if (!line.startsWith(prefix)) {
+    return null;
+  }
+  try {
+    final decoded = jsonDecode(line.substring(prefix.length));
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+  } on FormatException {
+    return <String, Object?>{
+      'status': 'invalid-progress-line',
+      'rawLine': line,
+    };
+  }
+  return null;
+}
+
+void _writeProgressReport(String path, Map<String, Object?> fields) {
+  File(path).writeAsStringSync(
+    const JsonEncoder.withIndent('  ').convert({
+      'schemaVersion': 1,
+      'toolId': 'b25_capture_workflow_screenshots',
+      'updatedAt': DateTime.now().toUtc().toIso8601String(),
+      ...fields,
+    }),
+    flush: true,
+  );
 }
 
 Future<_CombinedManifestSummary> _writeCombinedManifest({
@@ -291,6 +501,18 @@ Future<_CombinedManifestSummary> _writeCombinedManifest({
     aggregatePath: aggregatePath,
     screenshotCount: screenshotCount,
   );
+}
+
+class _StreamingProcessResult {
+  const _StreamingProcessResult({
+    required this.exitCode,
+    required this.stdout,
+    required this.stderr,
+  });
+
+  final int exitCode;
+  final String stdout;
+  final String stderr;
 }
 
 class _CombinedManifestSummary {

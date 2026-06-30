@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -21,8 +23,38 @@ void main() {
     final entries = <Map<String, Object?>>[];
     final installedExtensionIds = <String>{};
     final screenshotVisibleTextByName = <String, String>{};
+    final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount();
+    var completedWorkflowEvidenceEntries = 0;
+
+    void emitProgress(
+      String status, {
+      required String phase,
+      required String workflowId,
+      String? communityName,
+      String? screenshotName,
+    }) {
+      if (status == 'workflow-complete') {
+        completedWorkflowEvidenceEntries += 1;
+      }
+      _emitCaptureProgress({
+        'status': status,
+        'phase': phase,
+        'workflowId': workflowId,
+        if (communityName != null) 'communityName': communityName,
+        if (screenshotName != null) 'screenshotName': screenshotName,
+        'completedWorkflows': completedWorkflowEvidenceEntries,
+        'totalWorkflows': totalWorkflowEvidenceEntries,
+      });
+    }
 
     Future<void> capture(String name) {
+      _emitCaptureProgress({
+        'status': 'screenshot-start',
+        'phase': _phaseForScreenshotName(name),
+        'screenshotName': name,
+        'completedWorkflows': completedWorkflowEvidenceEntries,
+        'totalWorkflows': totalWorkflowEvidenceEntries,
+      });
       return _capture(binding, tester, screenshotVisibleTextByName, name);
     }
 
@@ -53,6 +85,11 @@ void main() {
     }
 
     if (_includePhase('B12')) {
+      emitProgress(
+        'workflow-start',
+        phase: 'B12',
+        workflowId: 'workflow-ui-evidence-harness',
+      );
       final harnessEntry = <String, Object?>{
         'phase': 'B12',
         'appId': 'workflow-ui-evidence-harness',
@@ -79,6 +116,11 @@ void main() {
         ],
         'status': 'pass',
       });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B12',
+        workflowId: 'workflow-ui-evidence-harness',
+      );
     }
 
     for (final target in loomEvidenceTargets.where(
@@ -93,6 +135,12 @@ void main() {
       expect(find.text(experience.tagline), findsOneWidget);
 
       for (final workflow in experience.workflows) {
+        emitProgress(
+          'workflow-start',
+          phase: target.phase,
+          workflowId: workflow.workflowId,
+          communityName: target.communityName,
+        );
         final policy = personaPolicyForWorkflow(
           target.extensionId,
           workflow.workflowId,
@@ -157,6 +205,12 @@ void main() {
           'screenshotNames': [start, action, complete],
           'status': 'pass',
         });
+        emitProgress(
+          'workflow-complete',
+          phase: target.phase,
+          workflowId: workflow.workflowId,
+          communityName: target.communityName,
+        );
       }
 
       await tester.pageBack();
@@ -179,6 +233,12 @@ void main() {
     );
 
     if (_includePhase('B17')) {
+      emitProgress(
+        'workflow-start',
+        phase: 'B17',
+        workflowId: 'wf_persona-role-inventory-capability-matrix',
+        communityName: mosqueTarget.communityName,
+      );
       await ensureTargetOpen(mosqueTarget);
       await capture('B17_persona_inventory_active_admin');
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
@@ -202,9 +262,21 @@ void main() {
         ],
         'status': 'pass',
       });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B17',
+        workflowId: 'wf_persona-role-inventory-capability-matrix',
+        communityName: mosqueTarget.communityName,
+      );
     }
 
     if (_includePhase('B18')) {
+      emitProgress(
+        'workflow-start',
+        phase: 'B18',
+        workflowId: 'wf_demo-app-persona-picker',
+        communityName: mosqueTarget.communityName,
+      );
       await ensureTargetOpen(mosqueTarget);
       await tester.tap(find.byKey(const ValueKey('persona-picker-button')));
       await tester.pumpAndSettle();
@@ -232,9 +304,21 @@ void main() {
         ],
         'status': 'pass',
       });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B18',
+        workflowId: 'wf_demo-app-persona-picker',
+        communityName: mosqueTarget.communityName,
+      );
     }
 
     if (_includePhase('B19')) {
+      emitProgress(
+        'workflow-start',
+        phase: 'B19',
+        workflowId: 'wf_community-persona-aware-ux',
+        communityName: mosqueTarget.communityName,
+      );
       await ensureTargetOpen(mosqueTarget);
       await selectPersona(tester, 'mosque-member');
       await _scrollToWorkflow(tester, careRequest);
@@ -259,9 +343,21 @@ void main() {
         ],
         'status': 'pass',
       });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B19',
+        workflowId: 'wf_community-persona-aware-ux',
+        communityName: mosqueTarget.communityName,
+      );
     }
 
     if (_includePhase('B20')) {
+      emitProgress(
+        'workflow-start',
+        phase: 'B20',
+        workflowId: 'wf_multi-persona-workflow-evidence',
+        communityName: mosqueTarget.communityName,
+      );
       await ensureTargetOpen(mosqueTarget);
       await selectPersona(tester, 'mosque-admin');
       await _scrollToWorkflow(tester, announcement);
@@ -342,6 +438,12 @@ void main() {
         ],
         'status': 'pass',
       });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B20',
+        workflowId: 'wf_multi-persona-workflow-evidence',
+        communityName: mosqueTarget.communityName,
+      );
     }
 
     if (find
@@ -358,6 +460,11 @@ void main() {
     binding.reportData!['workflowEvidence'] = entries;
     binding.reportData!['screenshotVisibleTextByName'] =
         screenshotVisibleTextByName;
+    _emitCaptureProgress({
+      'status': 'run-complete',
+      'completedWorkflows': completedWorkflowEvidenceEntries,
+      'totalWorkflows': totalWorkflowEvidenceEntries,
+    });
   });
 }
 
@@ -388,6 +495,46 @@ String _visibleTextFor(WidgetTester tester) {
     }
   }
   return chunks.join(' | ');
+}
+
+void _emitCaptureProgress(Map<String, Object?> event) {
+  debugPrint(
+    'B25_CAPTURE_PROGRESS ${jsonEncode({'emittedAt': DateTime.now().toUtc().toIso8601String(), ...event})}',
+    wrapWidth: 2048,
+  );
+}
+
+String _phaseForScreenshotName(String name) {
+  final separator = name.indexOf('_');
+  return separator == -1 ? 'unknown' : name.substring(0, separator);
+}
+
+int _workflowEvidenceEntryCount() {
+  var total = 0;
+  if (_includePhase('B12')) {
+    total += 1;
+  }
+  for (final target in loomEvidenceTargets.where(
+    (target) => _includePhase(target.phase),
+  )) {
+    total += experienceForExtensionId(
+      target.extensionId,
+      displayName: target.communityName,
+    ).workflows.length;
+  }
+  if (_includePhase('B17')) {
+    total += 1;
+  }
+  if (_includePhase('B18')) {
+    total += 1;
+  }
+  if (_includePhase('B19')) {
+    total += 1;
+  }
+  if (_includePhase('B20')) {
+    total += 1;
+  }
+  return total;
 }
 
 String _screenshotName(

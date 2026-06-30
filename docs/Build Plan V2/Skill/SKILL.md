@@ -524,6 +524,11 @@ host-side `flutter drive` screenshot writer, persists PNGs into the Evidence fol
 is the only commit-eligible capture. A remediation pass may run `--mode targeted-precheck --phases
 <phase>` for quick diagnostics, but the iteration commit must rerun full capture plus
 `b25_capture_coverage_gate.dart` before the collector and judges.
+While capture is running, monitor `docs/Build Plan V2/Evidence/B25/b25-capture-progress.json`. The
+capture CLI updates it with `status`, `currentPhase`, `currentWorkflowId`,
+`completedWorkflowsInCurrentPhase`, `totalWorkflowsInCurrentPhase`, `completedPhases`, `phaseCount`,
+and the latest screenshot/progress event. The CLI also streams `B25_CAPTURE_PROGRESS` lines to stdout
+so a stalled run can be distinguished from a long-running workflow.
 
 Every B25 pass must also run the judge and iteration scorecard before that pass is committed:
 
