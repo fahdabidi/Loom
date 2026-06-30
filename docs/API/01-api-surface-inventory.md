@@ -1,4 +1,4 @@
-# Loom API Surface Inventory
+﻿# Loom API Surface Inventory
 
 Status: Draft for review
 
@@ -49,7 +49,7 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Campaign API | `OpenAPI/campaigns/campaign-api.openapi.yaml` | Campaign manifests, participation, rewards, compliance state, fan data grant offers. | Extension Runtime, Fan Passport, Creator Audience, Receipt Ledger, Trust and Safety |
 | Sponsor Campaign API | `OpenAPI/campaigns/sponsor-campaign-api.openapi.yaml` | Sponsor proposals, fan-interest field requests, data request narrowing, sponsor reporting. | Campaign, Creator Audience, Fan Passport, Receipt Ledger, Settlement |
 
-> **Wired into the demo for the customization showcase (Phases 15–20):** the existing **Extension Registry API** and **Extension Runtime API** (above) now back creator-customized fan experiences — five gaming creators composing different experiences from six certified extensions (one shared `ExtensionManifest` primitive). No new specs are required; a `CreatorExperienceConfig` (theme, banner, ordered surface modules, installed extensions) is owned by the Creator Metadata API. See [MVP User Stories Scope](../MVP%20Planning/MVP%20User%20Stories%20Scope.md) Part K (CE-S12/CE-S13/FE-S14/FE-S15).
+> **Wired into the demo for the customization showcase (Phases 15â€“20):** the existing **Extension Registry API** and **Extension Runtime API** (above) now back creator-customized fan experiences â€” five gaming creators composing different experiences from six certified extensions (one shared `ExtensionManifest` primitive). No new specs are required; a `CreatorExperienceConfig` (theme, banner, ordered surface modules, installed extensions) is owned by the Creator Metadata API. See [MVP User Stories Scope](../../data/MVP%20Planning/MVP%20User%20Stories%20Scope.md) Part K (CE-S12/CE-S13/FE-S14/FE-S15).
 
 ## 6. Ecosystem, Safety, Portability, And Governance
 
@@ -64,17 +64,47 @@ This inventory lists the independently owned OpenAPI surfaces created for the in
 | Governance API | `OpenAPI/governance/governance-api.openapi.yaml` | API versions, utility fee policy, governance disputes. | Audit, Provider Registry, Certification |
 | Audit API | `OpenAPI/governance/audit-api.openapi.yaml` | Audit probes, evidence bundles, remediation plans. | Receipt Ledger, Provider Registry |
 
+## 6.5 Community Card Surface APIs
+
+These contracts define the interaction support required by production Loom Communities card surfaces.
+They are documented in [CardSurfaces/README.md](./CardSurfaces/README.md) because they cut across
+multiple component APIs and are selected by generated extensions before routes, schemas, rules,
+workflows, jobs, or tests are authored.
+
+| API surface | Spec | Owns | Key downstream APIs |
+| --- | --- | --- | --- |
+| Community Home Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Installed community card/home summary, branding, pinned items, next action, unread counts, install/sync state. | Community Registry, App Shell, Extension Registry, Messaging, Events |
+| Community Announcement API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Draft, preview, schedule, publish, revise, unpublish, delivery status, read receipts, revision history. | Publishing, Notifications, Messaging, Audit |
+| Community Event RSVP API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Event detail, RSVP/change/cancel, waitlist, attendee roster, reminders, calendar state, cancellation/reschedule. | Events, Notifications, Audit |
+| Community Meetup API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Member-to-member meetup proposals, slots, counter-proposals, accept/decline, reschedule, reminders. | Events, Connections, Notifications |
+| Community Volunteer API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Shift slots, volunteer roster/count, signup/edit/cancel, protected contact, coordinator handoff, check-in/no-show. | Forms, Events, Protected Vault, Notifications |
+| Community Equipment Loan API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Member/community gear offers, requests, approval, pickup, checkout, return, damage, availability. | Forms, Connections, Protected Vault, Case/Task |
+| Community Exchange API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Item offers/claims, pickup coordination, handoff, privacy-safe contact. | Forms, Connections, Protected Vault |
+| Community Nomination API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Nominations, edits, withdrawals, duplicate checks, eligibility, ballot linkage, status. | Forms/Voting, Publishing, Events |
+| Community Vote API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Ballots, cast/change/clear vote, results, tie resolution, selected outcome, vote audit. | Forms/Voting, Audit, Publishing |
+| Community Thread API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Discussions, replies, edits/deletes, read state, moderation, archive/mute, attachments, mentions. | Messaging, Moderation, Notifications |
+| Community Payment Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Payment intents, confirmation, retry/failure, refunds, recurring plans, donor visibility, receipts, entitlements, settlement. | Wallet, Receipt Ledger, Settlement, Ad-Off |
+| Community Care Request API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Protected care request lifecycle, public/private split, care-team assignment, neutral notifications, redacted audit. | Protected Vault, Case/Task, Notifications, Audit |
+| Community Approval API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Request submission, review, approve/reject/request changes, comments, status history, reopen/appeal. | Case/Task, Notifications, Audit |
+| Community Operations Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Documents, facilities, roster, acknowledgements, reservation conflicts, version/history. | Documents, Facilities, Membership |
+| Community Knowledge Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Search, AI answer, citations, digest save/share, indexing freshness, visibility decisions. | Search, AI Gateway, Indexing, Audit |
+| Community Portability Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Export/import/transfer planning, redaction preview, checksum, retry/cancel, rollback, audit trail. | Export, Import, Provider Transfer, Audit |
+| Community Social Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Invites, accept/decline/cancel, block/unblock, mute/archive, connection status, message thread. | Connections, Messaging, Notifications |
+| Community Ad Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Ad decision, impression/click, no-fill, disclosure, ad-off entitlement, suppression, receipt evidence. | Ad Decision, Wallet, Receipt Ledger |
+| Community Form Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Draft, validate, submit, update/withdraw, protected-field routing, review, export. | Forms/Voting, Protected Vault, Export |
+| Community Inbox Surface API | `OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml` | Inbox item list, read/unread/archive, source open, preferences, retry delivery. | Notifications, Messaging, Publishing |
+
 ## 7. Launch & Growth
 
-Added from the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20—%20Launch%20Scope.md) §B to support launch scope (creator audience re-acquisition, one-tap onboarding, conversion analytics). Implemented across [Phase 10](../MVP%20Planning/Phases/Phase%2010%20-%20Launch%20Contracts%20Store%20and%20Fakes.md) through [Phase 14](../MVP%20Planning/Phases/Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md).
+Added from the [GTM Launch Gap Analysis](../Go-To-Market/MVP%20Gap%20Analysis%20%E2%80%94%20Launch%20Scope.md) Â§B to support launch scope (creator audience re-acquisition, one-tap onboarding, conversion analytics). Implemented across [Phase 10](../../data/MVP%20Planning/Phases/Phase%2010%20-%20Launch%20Contracts%20Store%20and%20Fakes.md) through [Phase 14](../../data/MVP%20Planning/Phases/Phase%2014%20-%20UX%20Hardening%20and%20Physical%20Phone%20Validation.md).
 
 | API surface | Spec | Owns | Key downstream APIs |
 | --- | --- | --- | --- |
 | Creator Announcement API | `OpenAPI/creator/creator-announcement-api.openapi.yaml` | Announcement templates, rendered launch announcements, link-in-bio page (re-acquisition messaging assets). | Fan Follow Capture, Creator Metadata |
 | Fan Follow Capture API | `OpenAPI/creator/fan-follow-capture-api.openapi.yaml` | Creator capture links, follow-capture landing, manual re-follow recording (audit-class; no follower import). | Fan Passport, Creator Audience, Audit |
 | Starter Pack API | `OpenAPI/discovery/starter-pack-api.openapi.yaml` | One-tap starter packs (source creator + recommended creators) and idempotent bulk follow for onboarding. | Recommendation And Referral, Fan Passport, Creator Metadata |
-| Audience Analytics API | `OpenAPI/creator/audience-analytics-api.openapi.yaml` | Aggregate-only conversion (re-acquisition) funnel: reached → re-followed → member → premium. | Fan Passport, Entitlement Ledger, Fan Follow Capture, Creator Audience |
-| External Account Link API | `OpenAPI/creator/external-account-link-api.openapi.yaml` | Link/verify/unlink a creator's external platform accounts (provenance for import, cross-post, verified links — not follower import). | Creator Metadata, Import Public Metadata |
+| Audience Analytics API | `OpenAPI/creator/audience-analytics-api.openapi.yaml` | Aggregate-only conversion (re-acquisition) funnel: reached â†’ re-followed â†’ member â†’ premium. | Fan Passport, Entitlement Ledger, Fan Follow Capture, Creator Audience |
+| External Account Link API | `OpenAPI/creator/external-account-link-api.openapi.yaml` | Link/verify/unlink a creator's external platform accounts (provenance for import, cross-post, verified links â€” not follower import). | Creator Metadata, Import Public Metadata |
 | Import Public Metadata API | `OpenAPI/creator/import-public-metadata-api.openapi.yaml` | Async import of public catalog metadata into external content references with rights provenance. | External Account Link, Creator Metadata |
 | Cross-Posting API | `OpenAPI/creator/cross-posting-api.openapi.yaml` | Publish announcements/links to linked external platforms with per-target delivery status. | External Account Link, Creator Announcement |
 | Premium No-Ad API | `OpenAPI/monetization/premium-no-ad-api.openapi.yaml` | Global no-ad entitlement status + recording qualifying no-ad consumption (economic receipt for settlement). | Entitlement Ledger, Receipt Ledger, Fan Wallet |

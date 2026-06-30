@@ -166,6 +166,32 @@ approve or narrow permissions, run fixtures/previews, update to latest version, 
 and uninstall safely. Members should see what the extension does and what data it can access. Builders
 should receive stable APIs, fakes, validators, and certification feedback.
 
+### 6.1 Card Surface Selection
+
+Extensions must select production card surfaces before generating routes or workflow UI. The catalog
+in [../CardSurfaces/README.md](../CardSurfaces/README.md) defines reusable surface families such as
+announcements, event RSVP, member meetups, volunteer signup, equipment loans, payments, care requests,
+approvals, documents/facilities/roster, search/AI, export/transfer, messaging/connections, ads,
+custom forms, notification inbox, and community home.
+
+For every selected surface, the extension must declare:
+
+- the surface family and route/card mount points;
+- personas, role grants, permissions, unauthorized behavior, and receiver states;
+- customized content fields, icons, imagery, action labels, and domain copy;
+- API/rules/events/workflows/jobs used for every primary and alternate interaction;
+- fake backend fixtures for entry, action, result, receiver, read-only, disabled, and unauthorized
+  states;
+- export/import behavior for surface-owned data.
+
+A generic workflow card is not a valid production surface when a richer catalog surface exists.
+The complete user-story/workflow coverage map for every supported card-surface interaction is
+[Card Surface Workflow and User Story Coverage](./Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md);
+the executable API contract is
+[Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml).
+An extension cannot claim a selected surface is implemented unless every selected interaction appears
+in its workflow docs, API/rules/events map, fake backend fixtures, tests, and B25 evidence.
+
 ## 7. User Stories
 
 1. **As a builder**, I create a youth soccer extension using rules and workflows.
@@ -218,6 +244,11 @@ should receive stable APIs, fakes, validators, and certification feedback.
 ## 9. Cross-Area Requirements
 
 - Extensions use Loom APIs only; no direct database, vault, payment, ad, or identity access.
+- Extensions choose card surfaces from the Card Surfaces catalog and satisfy the matching API support
+  in [../API/CardSurfaces/README.md](../API/CardSurfaces/README.md), the executable
+  [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml),
+  and the Product Docs V2
+  [workflow/user-story coverage map](./Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
 - Every package must declare export behavior for custom schemas.
 - Every package asset must be local, hashed, size-limited, format-limited, and declared in the package
   manifest before local-demo validation can pass.

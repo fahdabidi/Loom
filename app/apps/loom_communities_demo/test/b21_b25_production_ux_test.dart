@@ -22,6 +22,13 @@ void main() {
           workflow: workflow,
         );
         expect(contract.category, isNotEmpty);
+        expect(contract.cardSurfaceFamily, isNotEmpty);
+        expect(contract.apiContract, startsWith('Community'));
+        expect(contract.requiredInteractions, isNotEmpty);
+        expect(contract.primaryActions, isNotEmpty);
+        expect(contract.alternateActions, isNotEmpty);
+        expect(contract.rendererTarget, isNotEmpty);
+        expect(contract.fakeBackendSupport, contains('LocalInAppBackend'));
         expect(contract.primaryActionLabel, isNot('Complete'));
         expect(contract.primaryActionLabel, isNot('Complete workflow'));
         expect(contract.inputSummary, isNotEmpty);
@@ -39,6 +46,24 @@ void main() {
       }
     }
     expect(rowCount, greaterThan(100));
+  });
+
+  test('wf_card-surface-registry-context-is-available', () {
+    for (final target in loomEvidenceTargets) {
+      final workflows = experienceForExtensionId(target.extensionId).workflows;
+      final registry = cardSurfaceRegistryForExtensionId(target.extensionId);
+      expect(registry, hasLength(workflows.length));
+      for (final entry in registry) {
+        expect(entry.workflowId, isNotEmpty);
+        expect(entry.cardSurfaceFamily, isNotEmpty);
+        expect(entry.apiContract, startsWith('Community'));
+        expect(entry.requiredInteractions, isNotEmpty);
+        expect(entry.primaryActions, isNotEmpty);
+        expect(entry.alternateActions, isNotEmpty);
+        expect(entry.rendererTarget, isNotEmpty);
+        expect(entry.fakeBackendSupport, contains('LocalInAppBackend'));
+      }
+    }
   });
 
   testWidgets('wf_domain-specific-workflow-surfaces', (tester) async {

@@ -1203,6 +1203,46 @@ marketplace.listing   marketplace.checkout
 document.viewer   document.editor
 ```
 
+### 4.1 Production card-surface families
+
+The stable mount points above describe where an extension renders. The production card-surface catalog
+describes what kind of user-facing product interaction the extension is implementing. Builders and the
+Skill must choose from the catalog before inventing a new route or card shape.
+
+Canonical catalog: [CardSurfaces](../CardSurfaces/README.md)
+Backend API support: [API / CardSurfaces](../API/CardSurfaces/README.md)
+Executable OpenAPI: [Community Card Surfaces API](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
+Product workflow coverage: [Card Surface Workflow and User Story Coverage](./Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md)
+
+```text
+community-card-home
+announcement-publish
+event-rsvp
+member-meetup-scheduling
+volunteer-signup
+equipment-loan
+plant-exchange
+book-nomination
+vote-poll
+discussion-message
+payment-donation-dues-ad-off
+care-protected-request
+approval-request
+documents-facilities-roster
+search-ai-digest
+export-import-transfer
+messaging-connections
+ads-no-fill-ad-off
+custom-form-submission
+notification-inbox
+```
+
+Each card-surface family defines supported interactions, personas, permissions, customization points,
+fake-backend fixture expectations, and required backend API operations. A primary workflow should not
+fall back to a generic form or workflow card when one of these families fits the community job. Every
+selected interaction must map to a product workflow checkpoint and to an operation in the Community
+Card Surfaces OpenAPI before the extension can be considered complete.
+
 ---
 
 ## 5. Capability permission catalog

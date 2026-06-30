@@ -44,151 +44,158 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     V2 as read-only reference material and create/update local product docs under the extension
     workspace, starting with `docs/product/community-product-experience.md`; do not mutate the upstream
     Loom repo's canonical Product Docs V2.
-15. Do not claim any community extension is complete when a requested, declared, seeded, or route-linked
+15. Select production card surfaces from the Skill component catalog before designing screens. Use
+    [components/card-surfaces/README.md](./components/card-surfaces/README.md) to choose the surface
+    family, persona permissions, supported interactions, customization points, API contracts, and fake
+    backend evidence required for each workflow. Map every selected interaction to the executable
+    [Community Card Surfaces OpenAPI](../../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
+    and the Product Docs V2
+    [Card Surface Workflow and User Story Coverage](../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
+16. Do not claim any community extension is complete when a requested, declared, seeded, or route-linked
     workflow is missing, unreachable, unimplemented, only stubbed, only metadata-rendered, or only
     validated through direct service calls.
-16. Fully test every community workflow through the visible Demo App UI with the Local Backend before
+17. Fully test every community workflow through the visible Demo App UI with the Local Backend before
     local-demo delivery. Opening `local:<extension-id>@latest` or rendering a settings/metadata page is
     not sufficient workflow validation.
-17. Capture screenshot evidence for every workflow's start state, critical user action, and completion
+18. Capture screenshot evidence for every workflow's start state, critical user action, and completion
     state, and write a machine-readable evidence manifest that links workflow IDs to screenshots,
     command output, emulator/device details, assertions, and pass/fail status.
-18. If any workflow lacks passing backend assertions, visible UI test coverage, screenshot evidence, or
+19. If any workflow lacks passing backend assertions, visible UI test coverage, screenshot evidence, or
     evidence-manifest entries, report the extension as incomplete and list the exact missing evidence
     instead of delivering or certifying the package.
-19. Define every community persona/user role before building the UI. Map each workflow to the persona
+20. Define every community persona/user role before building the UI. Map each workflow to the persona
     that can initiate it, personas that can approve/receive/read/continue it, required permissions, and
     unauthorized persona behavior.
-20. Treat the Demo App people-icon persona picker as a local testing harness only. In production, persona
+21. Treat the Demo App people-icon persona picker as a local testing harness only. In production, persona
     and role come from the logged-in identity, memberships, grants, and policy engine.
-21. Do not expose a workflow as generally executable when it is role-specific. For unauthorized personas,
+22. Do not expose a workflow as generally executable when it is role-specific. For unauthorized personas,
     explicitly choose hidden, disabled-with-reason, read-only, or receiving-state UX and test that choice.
-22. Multi-persona workflows must be tested by switching persona in the visible Demo App UI. Evidence must
+23. Multi-persona workflows must be tested by switching persona in the visible Demo App UI. Evidence must
     prove the actor persona creates/approves/sends the state and the receiver persona receives, reads,
     pays, searches, reviews, or continues it as designed.
-23. Per-persona workflow completeness is required. Every declared persona must have positive tests for
+24. Per-persona workflow completeness is required. Every declared persona must have positive tests for
     workflows they can perform or receive, and negative/visibility tests for workflows they must not
     perform.
-24. If a workflow depends on another persona doing something first, test the full dependency chain in UI:
+25. If a workflow depends on another persona doing something first, test the full dependency chain in UI:
     prerequisite persona action, persisted backend state, persona switch, receiving persona state, and
     denial or hiding for unrelated personas.
-25. Define production workflow UX contracts before building. For every workflow/persona row, specify the
+26. Define production workflow UX contracts before building. For every workflow/persona row, specify the
     real user goal, workflow type, required inputs, validation, semantic actions, success/receipt state,
     receiver state, unauthorized behavior, and screenshot evidence IDs.
-26. Do not treat a generic workflow card, metadata/settings page, test checklist, or `Complete workflow`
+27. Do not treat a generic workflow card, metadata/settings page, test checklist, or `Complete workflow`
     dialog as a production community experience.
-27. Use semantic user action labels, not harness labels. Buttons should name the action, such as
+28. Use semantic user action labels, not harness labels. Buttons should name the action, such as
     `Publish announcement`, `RSVP to event`, `Submit care request`, `Approve request`, `Pay dues`,
     `Send invite`, `Export data`, or `Start transfer`.
-28. Production workflow surfaces must include the states a real user needs: entry, inputs, validation,
+29. Production workflow surfaces must include the states a real user needs: entry, inputs, validation,
     loading/empty/error, review or preview when appropriate, action, success/result, receipt or audit
     evidence when applicable, and receiver/read-only/disabled states per persona.
-29. Tests and audits must fail if user-facing production workflow screens contain implementation copy
+30. Tests and audits must fail if user-facing production workflow screens contain implementation copy
     such as `Can perform this workflow`, `workflow evidence`, `local route`, `Complete workflow`, or
     equivalent generic harness text.
-30. Do not claim a workflow is complete when the evidence proves only that a test harness can mark it
+31. Do not claim a workflow is complete when the evidence proves only that a test harness can mark it
     done. Completion requires production UX screenshots and backend assertions for the user-visible
     task and persona handoff.
-31. After implementation and evidence capture, run two separate gates: a workflow compliance gate and an
+32. After implementation and evidence capture, run two separate gates: a workflow compliance gate and an
     independent product UX review gate. The workflow compliance gate proves coverage, state, roles, and
     backend behavior; the product UX review gate judges whether the visible app feels like a modern
     production product for the target community and persona.
-32. The independent product UX review must start from the visible Android emulator and final screenshots,
+33. The independent product UX review must start from the visible Android emulator and final screenshots,
     not from the implementation plan. It must ask what a real member, admin, organizer, donor, guardian,
     or other target persona sees, understands, and can naturally do.
-33. Do not pass the product UX review when user-facing screens expose implementation taxonomy or test
+34. Do not pass the product UX review when user-facing screens expose implementation taxonomy or test
     harness language, including labels such as `Community workflows`, `[category] surface`, `workflow`,
     `evidence`, role-state rationale, or any equivalent copy that describes the framework instead of the
     community task.
-34. Production community UX must be organized around domain-native information architecture and content:
+35. Production community UX must be organized around domain-native information architecture and content:
     announcements, upcoming events, donations, volunteer needs, care requests, documents, messages,
     teams, facilities, or other sections that match the community. A global workflow list is not a
     production home screen.
-35. Production workflow surfaces must contain realistic domain content and expected affordances, such as
+36. Production workflow surfaces must contain realistic domain content and expected affordances, such as
     announcement body, author, audience, timestamp, event date/time/location/capacity, donation amount,
     receipt, privacy/protected-data indicators, and next steps. A card that only describes workflow
     mechanics is incomplete.
-36. Treat exposed workflow machinery, metadata-only screens, generic checklist cards, missing domain
+37. Treat exposed workflow machinery, metadata-only screens, generic checklist cards, missing domain
     content, unclear information architecture, or visibly test-harness layouts as major or blocker UX
     findings, even when automated workflow tests pass.
-37. Do not equate removal of forbidden workflow copy with production-ready UX. Treat generic demo
+38. Do not equate removal of forbidden workflow copy with production-ready UX. Treat generic demo
     scaffold styling, repeated workflow-card primary UX, checklist/review dialogs, weak visual
     hierarchy, thin placeholder content, missing community identity, clipped text, overlapping floating
     controls, and awkward technical labels as major or blocker UX findings when they materially lower
     the product below a modern shippable bar.
-38. Primary workflows must be represented by real domain product surfaces where appropriate: community
+39. Primary workflows must be represented by real domain product surfaces where appropriate: community
     feeds, inbox items, detail pages, compose screens, event detail/RSVP flows, donation/payment flows,
     volunteer signup forms, care request forms, admin review screens, receipts/history, and receiver
     states. A generic card with improved labels is not enough when a real product would use a richer
     domain surface.
-39. Before building or remediating production UX, create or update the community product experience doc
+40. Before building or remediating production UX, create or update the community product experience doc
     using [references/community-product-experience-template.md](./references/community-product-experience-template.md).
     The doc must define community identity, product promise, personas, jobs-to-be-done, home IA,
     domain-native product surfaces, workflow-to-surface mapping, persona/state matrix, required visible
     content, API/rules/events mapping, visual/interaction standard, and acceptance criteria.
-40. Before the independent product UX review can pass, create a per-community production UX blueprint
+41. Before the independent product UX review can pass, create a per-community production UX blueprint
     derived from the community product experience doc. It must define target personas, community
     identity, home information architecture, required product surfaces, workflow-to-surface mapping,
     realistic content requirements, visual/interaction standard, and concrete pass examples for every
     community/test app.
-41. The independent product UX review must produce schema version 4 machine-readable evidence with
+42. The independent product UX review must produce schema version 4 machine-readable evidence with
     review standard version, superseded prior run IDs, blueprint coverage, unique screen row IDs,
     screen-specific critiques, screenshot hashes/timestamps, app commit SHA, visible-text extracts,
     UI-pattern classification, stable finding/remediation IDs, before/after screenshot references,
     unresolved severity counts, rerun requirements, and final pass/fail decision.
-42. The independent product UX review must inventory every implemented user-facing screen, state,
+43. The independent product UX review must inventory every implemented user-facing screen, state,
     dialog, card, feed item, form, confirmation, error, empty state, persona variant, and action result.
     Every inventory row must have a screenshot reference, product-UX verdict, severity assessment,
     screen-specific findings, required fix or acceptance rationale, and retest result. Boilerplate
     matrix rows with the same generic pass rationale across unrelated screens are invalid evidence.
-43. Do not pass the independent product UX review with unresolved blocker or major UX issues. Minor
+44. Do not pass the independent product UX review with unresolved blocker or major UX issues. Minor
     issues must be fixed, explicitly owner-accepted, or tracked with rationale before delivery.
-44. B25 is an iterative remediation gate, not a terminal review. If the product UX review finds any
+45. B25 is an iterative remediation gate, not a terminal review. If the product UX review finds any
     blocker or major issue, group findings into remediation themes, implement fixes, rebuild and relaunch
     the visible Demo App, recapture screenshots, regenerate the screen review matrix, rerun the product
     UX review, and repeat until blocker and major counts are zero.
-45. Every B25 remediation loop iteration must record the review result, fixes applied, tests run,
+46. Every B25 remediation loop iteration must record the review result, fixes applied, tests run,
     screenshots refreshed, remaining findings, and pass/fail decision. Do not stop after producing a
     failed review unless the owner explicitly asks for review-only planning or pauses implementation.
-46. Commit every B25 loop iteration before starting the next UX feedback or remediation loop. Each
+47. Commit every B25 loop iteration before starting the next UX feedback or remediation loop. Each
     iteration commit must include the review/remediation evidence, refreshed screenshots or explicit
     screenshot references, tests run, remaining findings, and tracker update for that iteration.
-47. Treat all B25 v3 or older passes as historical when the v4 standard applies. B25 cannot be marked
+48. Treat all B25 v3 or older passes as historical when the v4 standard applies. B25 cannot be marked
     complete again until v4 evidence passes and explicitly supersedes the prior run IDs.
-48. Enforce screenshot freshness. Every B25 v4 screen row must include screenshot path, screenshot hash,
+49. Enforce screenshot freshness. Every B25 v4 screen row must include screenshot path, screenshot hash,
     captured-at timestamp, emulator/device metadata, and app commit SHA. The evidence is invalid if a
     screenshot predates the remediation it claims to prove or if a resolved finding points to a stale
     before-state screenshot.
-49. Enforce screen-specific critique integrity. Every review row must describe visible UI elements and
+50. Enforce screen-specific critique integrity. Every review row must describe visible UI elements and
     visible text from its screenshot. Boilerplate critique, duplicated rationale across unrelated rows,
     or a pass verdict without visible screen details is invalid evidence.
-50. Classify every user-facing primary surface as domain-native, secondary-supporting, or generic
+51. Classify every user-facing primary surface as domain-native, secondary-supporting, or generic
     workflow-card. A primary workflow may not pass when represented only by a generic workflow-card,
     checklist modal, metadata page, or improved copy over the same repeated card shell.
-51. Require domain-native replacement plans for primary generic surfaces. The plan must name the target
+52. Require domain-native replacement plans for primary generic surfaces. The plan must name the target
     product surface, such as event detail/RSVP, feed, inbox/thread, donation/payment, care request,
     volunteer signup, admin review queue, receipt/history, search result, export wizard, or transfer
     status screen.
-52. Separate implementer and reviewer roles during B25. The reviewer prompt must be screenshot-first
+53. Separate implementer and reviewer roles during B25. The reviewer prompt must be screenshot-first
     and adversarial: it must judge the visible product as a real user experience, not as the author of
     the implementation or the workflow checklist.
-53. Do not allow B25 to pass on schema shape alone. Tests must validate screenshot freshness, non-empty
+54. Do not allow B25 to pass on schema shape alone. Tests must validate screenshot freshness, non-empty
     visible-text extracts, unique row IDs, non-boilerplate critiques, domain-native primary surfaces,
     zero unresolved blocker/major findings, and internal consistency between markdown review, JSON
     evidence, remediation log, screenshots, and tracker.
-54. Use separate judge tools for UX gates so worker agents do not grade their own implementation. B11
+55. Use separate judge tools for UX gates so worker agents do not grade their own implementation. B11
     must run the workflow-completeness judge; B21 the UX-contract judge; B22 the domain-surface
     classifier; B23 the persona-UX judge; B24 the evidence-integrity auditor; and B25 must run the
     evidence collector, workflow/persona coverage collector, visual inspection auditor, independent UX
     judge, workflow interaction-model judge, production UX judge, remediation-ticket generator, iteration
     scorecard, and remediation planner in sequence.
-55. The Independent UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
+56. The Independent UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
     metadata, blueprint/contracts, and remediation logs. Do not give it worker implementation notes,
     intended behavior explanations, or optimistic completion summaries. It must write holistic direct
     answers, workflow/persona scorecards, screen-specific critiques, exact findings, and remediation
     ticket inputs from visible evidence only. It must inspect screenshot pixels and layout, not only row
     existence, metadata, or expected assertions.
-56. B25 cannot pass until `b25_independent_ux_judge.dart` has produced the deterministic schema v4
+57. B25 cannot pass until `b25_independent_ux_judge.dart` has produced the deterministic schema v4
     review scaffold, a fresh LLM Vision UX Judge Agent has inspected the actual screenshots and
     produced `llm-vision-ux-review-<run-id>.json`, `b25_llm_ux_review_importer.dart` has imported that
     artifact into `llmVisionReview`, `b25_workflow_interaction_model_judge.dart` has produced passing
@@ -197,34 +204,34 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
     every B25 pass criterion, `b25-remediation-tickets-<run-id>.json` and `.md` for every failed
     blocking criterion, and no blocking criterion failures.
-57. B25 production UX criteria must be asked as direct questions. Avoid vague prompts such as "looks
+58. B25 production UX criteria must be asked as direct questions. Avoid vague prompts such as "looks
     modern"; ask concrete questions such as "Is the UI modern, easy to use, easy to navigate, and
     visually appealing for the target persona?" and require screenshot-backed yes/no/partial answers.
-58. B25 requires three independent direct-question passes: one holistic product UX pass for the whole
+59. B25 requires three independent direct-question passes: one holistic product UX pass for the whole
     app or community experience, one workflow/persona pass for every reviewed workflow/persona pair,
     and one semantic workflow interaction-model pass for every reviewed workflow/persona pair. All three must be green
     before B25 can close.
-59. The holistic product UX pass judges coherence, navigation, visual identity, community-centered
+60. The holistic product UX pass judges coherence, navigation, visual identity, community-centered
     information architecture, production feel, and major layout/content defects across the whole
     experience.
-60. The workflow/persona pass judges task clarity, domain-native primary surface, natural actions,
+61. The workflow/persona pass judges task clarity, domain-native primary surface, natural actions,
     input/validation/result states, receiver states, unauthorized/read-only/disabled behavior, and
     whether that workflow UI feels production-grade on its own.
-61. Do not batch all workflow/persona UX review into one broad answer. Use batches small enough that
+62. Do not batch all workflow/persona UX review into one broad answer. Use batches small enough that
     every answer cites visible text, screenshot evidence, the target persona, and the real user task.
-62. `production_ux_judge.dart` must fail B25 when `llmVisionReview` is missing, failing, not
+63. `production_ux_judge.dart` must fail B25 when `llmVisionReview` is missing, failing, not
     screenshot-grounded, or contains unresolved blocker/major findings; when `holisticQuestionAnswers`,
     `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
     contradicted by screenshots, missing passing `semanticSurfaceProof` for any primary
     workflow/persona row, or missing passing semantic interaction-model `workflowLifecycleScorecards`.
     A pass cannot be based only on absence of known defects.
-63. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
+64. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
     Markdown scorecard with the pass evidence. The scorecard must show pass/fail, current
     critical/blocker and major counts, unresolved blocker/major counts, blocker/major findings resolved
     in that pass, newly introduced blocker/major findings, judge failures, direct-question pass status,
     and required next action. Do not start the next UX feedback/remediation loop without this committed
     scorecard.
-64. B25 screenshot evidence must be produced through the deterministic B25 evidence collector before
+65. B25 screenshot evidence must be produced through the deterministic B25 evidence collector before
     the judges run. The collector owns screenshot paths, hashes, timestamps, visible text source,
     emulator/device metadata, app commit SHA, and schema v4 screen-row scaffolding. Then
     `b25_workflow_persona_coverage_collector.dart` must prove every workflow/persona combination has
@@ -232,7 +239,13 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     pass `b25_capture_coverage_gate.dart` from a `--mode full-b25` B12-B20 capture. Targeted captures
     are allowed only as non-committable remediation diagnostics and cannot overwrite or substitute for
     `B20/all-workflow-ui-evidence.json`. The collector tools cannot mark production UX pass.
-65. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
+    B25 evidence must also carry advisory card-surface registry context: `workflow ->
+    cardSurfaceFamily -> API contract -> required interactions/actions -> renderer/fake-backend
+    support`. In native Loom repo runs, keep that mapping in the community Product Docs V2 file. In
+    standalone Skill runs, keep the same mapping in the local extension product doc. This registry is
+    required review context for remediation, but it is not yet a standalone card-surface/API coverage
+    gate.
+66. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
     only the community product experience doc, evidence artifacts, screenshots, blueprint,
     workflow/persona coverage matrix, and pass criteria, then writes
     `llm-vision-ux-review-<run-id>.json` with holistic direct-question answers, screen-specific
@@ -248,7 +261,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     announcement cannot close unless the after screenshots visibly prove audience/recipient group,
     author or sender attribution, message body, timestamp or delivery timing, receiver inbox/feed
     state, and a natural publish/send/read action.
-66. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
+67. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
     criterion, related finding IDs, concrete improvements, affected evidence, acceptance checks, and
     rerun commands. Each ticket must follow
     [../Tools/b25-remediation-ticket-template.md](../Tools/b25-remediation-ticket-template.md) and
@@ -268,7 +281,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     alone. Workflow interaction-model tickets additionally require fresh after screenshots proving the
     expected decision, required domain actions, non-happy-path affordance, result state, and receiver/
     continuation state.
-67. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
+68. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,
     evidence updates, acceptance checks, rerun commands, work-item summaries, evidence-repair work
@@ -541,6 +554,8 @@ Start with [using-loom-to-build-an-extension.md](./using-loom-to-build-an-extens
 ## Phase-Enriched Guides
 
 - Component guides live under [components](./components).
+- Card surface component guides live under
+  [components/card-surfaces](./components/card-surfaces).
 - Workflow guides live under [workflows](./workflows).
 - Worked examples live under [examples](./examples).
 - Setup guides live under [setup](./setup).

@@ -1,4 +1,4 @@
-﻿# Neighborhood Book Club Product Experience
+# Neighborhood Book Club Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -84,7 +84,21 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | book-export-metadata | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
-## 10. Review And Remediation Log
+## 10. Card Surface Registry Mapping
+
+This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
+
+| Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
+| --- | --- | --- | --- | --- |
+| `book-nomination` | [nomination](../../CardSurfaces/book-nomination.md) | `CommunityNominationApi` | create/edit/withdraw nomination, duplicate/eligibility checks, ballot linkage, status | Demo renderer must select a domain-native surface for `nomination` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-vote` | [vote](../../CardSurfaces/vote-poll.md) | `CommunityVoteApi` | open/close ballot, cast/change/clear vote, results/tie handling, selection publish | Demo renderer must select a domain-native surface for `vote` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-meeting-rsvp` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must select a domain-native surface for `event-rsvp` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-discussion-message` | [thread](../../CardSurfaces/discussion-message.md) | `CommunityThreadApi` | reply/edit/delete, read/unread, moderate/mute/archive, attachments/mentions | Demo renderer must select a domain-native surface for `thread` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-selection-publish` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must select a domain-native surface for `announcement` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-search-ai-digest` | [knowledge](../../CardSurfaces/search-ai-digest.md) | `CommunityKnowledgeSurfaceApi` | query/citations, save/share digest, source visibility, stale citation handling | Demo renderer must select a domain-native surface for `knowledge` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-export-metadata` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
+
+## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

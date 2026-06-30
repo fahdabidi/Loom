@@ -1,4 +1,4 @@
-﻿# Export And Migration Product Experience
+# Export And Migration Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -74,7 +74,15 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | export-full-bundle | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
-## 10. Review And Remediation Log
+## 10. Card Surface Registry Mapping
+
+This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
+
+| Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
+| --- | --- | --- | --- | --- |
+| `export-migration` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
+
+## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

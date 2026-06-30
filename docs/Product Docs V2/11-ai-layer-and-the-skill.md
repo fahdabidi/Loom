@@ -49,15 +49,23 @@ The Skill guides an LLM through this process:
 2. Prepare the supported local execution environment, currently Codex or Claude Code, using the Skill
    setup manifest and validation environment lock.
 3. Choose community type, surfaces, and required shell structure.
-4. Collect or generate owner-approved branding: logo, card image, hero image, accent color, and alt
+4. Select production card surfaces from the Skill component catalog and map every workflow to a
+   surface family, persona permissions, the executable
+   [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml),
+   Product Docs V2
+   [workflow/user-story coverage](./Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md),
+   and fake backend evidence.
+5. Collect or generate owner-approved branding: logo, card image, hero image, accent color, and alt
    text/decorative metadata.
-5. Declare minimal permissions.
-6. Compose fixed Loom APIs through config, rules, workflows, jobs, and optional functions.
-7. Author cards, routes, assets, schemas, fixtures, and tests.
-8. Run validators, local Demo App workflow tests, and certification checks.
-9. Publish, QR/install, run latest, and update safely.
+6. Declare minimal permissions.
+7. Compose fixed Loom APIs through config, rules, workflows, jobs, and optional functions.
+8. Author cards, routes, assets, schemas, fixtures, and tests.
+9. Run validators, local Demo App workflow tests, and certification checks.
+10. Publish, QR/install, run latest, and update safely.
 
-The Skill should reference API specs and Architecture V2 cards rather than duplicating them.
+The Skill should reference API specs, Architecture V2 cards, the executable Community Card Surfaces
+OpenAPI, the Product Docs V2 workflow/user-story coverage map, and the Skill-local card-surface
+component guides under `components/card-surfaces/` rather than improvising new backend interactions.
 
 ## 6. Product Experience Requirements
 
@@ -114,6 +122,9 @@ only after certification and should understand what data any AI feature uses.
 - Generated assets must be local, declared, hashed, size-limited, and accessible before local-demo
   validation can pass.
 - The Skill must preserve App Shell required structure and monetization invariants.
+- The Skill must select card surfaces from `components/card-surfaces/`, map each selected interaction
+  to the Community Card Surfaces OpenAPI and Product Docs V2 workflow/user-story coverage, and reject
+  generic workflow-card UX when a production surface family exists.
 - The Skill must run local validation only from a supported execution target with a current validation
   environment lock.
 - AI-generated code must be attributable to package versions and build attestations.

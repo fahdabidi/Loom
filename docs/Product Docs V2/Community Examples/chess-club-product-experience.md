@@ -1,4 +1,4 @@
-﻿# Chess Club Product Experience
+# Chess Club Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -67,7 +67,16 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | chess-match-result | member | Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths. | record match, submit score, save result | edit score, undo result, correct result, dispute result | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
-## 10. Review And Remediation Log
+## 10. Card Surface Registry Mapping
+
+This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
+
+| Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
+| --- | --- | --- | --- | --- |
+| `arbitrary-package-open` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+| `chess-club-home` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+
+## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

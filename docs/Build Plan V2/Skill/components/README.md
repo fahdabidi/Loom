@@ -98,3 +98,31 @@ Each guide must include:
 - [data-dashboard-consent.md](./data-dashboard-consent.md)
 - [local-in-app-backend.md](./local-in-app-backend.md)
 - [loom-communities-demo-app.md](./loom-communities-demo-app.md)
+
+## Card Surface Guides
+
+Use these when selecting production UX surfaces for a new extension. They define the user-facing
+interaction models, persona permissions, customization points, and API support needed for production
+card/surface families.
+
+- [card-surfaces/README.md](./card-surfaces/README.md)
+- [card-surfaces/community-card-home.md](./card-surfaces/community-card-home.md)
+- [card-surfaces/announcement-publish.md](./card-surfaces/announcement-publish.md)
+- [card-surfaces/event-rsvp.md](./card-surfaces/event-rsvp.md)
+- [card-surfaces/member-meetup-scheduling.md](./card-surfaces/member-meetup-scheduling.md)
+- [card-surfaces/volunteer-signup.md](./card-surfaces/volunteer-signup.md)
+- [card-surfaces/equipment-loan.md](./card-surfaces/equipment-loan.md)
+- [card-surfaces/plant-exchange.md](./card-surfaces/plant-exchange.md)
+- [card-surfaces/book-nomination.md](./card-surfaces/book-nomination.md)
+- [card-surfaces/vote-poll.md](./card-surfaces/vote-poll.md)
+- [card-surfaces/discussion-message.md](./card-surfaces/discussion-message.md)
+- [card-surfaces/payment-donation-dues-ad-off.md](./card-surfaces/payment-donation-dues-ad-off.md)
+- [card-surfaces/care-protected-request.md](./card-surfaces/care-protected-request.md)
+- [card-surfaces/approval-request.md](./card-surfaces/approval-request.md)
+- [card-surfaces/documents-facilities-roster.md](./card-surfaces/documents-facilities-roster.md)
+- [card-surfaces/search-ai-digest.md](./card-surfaces/search-ai-digest.md)
+- [card-surfaces/export-import-transfer.md](./card-surfaces/export-import-transfer.md)
+- [card-surfaces/messaging-connections.md](./card-surfaces/messaging-connections.md)
+- [card-surfaces/ads-no-fill-ad-off.md](./card-surfaces/ads-no-fill-ad-off.md)
+- [card-surfaces/custom-form-submission.md](./card-surfaces/custom-form-submission.md)
+- [card-surfaces/notification-inbox.md](./card-surfaces/notification-inbox.md)

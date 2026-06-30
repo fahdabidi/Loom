@@ -1073,6 +1073,8 @@ JsonMap collectB25Evidence({
           communityId: communityId,
           screenshotName: screenshotName,
         );
+        final cardSurfaceRegistryEntry =
+            _b25CardSurfaceRegistryEntryForWorkflowId(workflowId);
         screenRows.add(<String, Object?>{
           'rowId': rowId,
           'communityId': communityId,
@@ -1113,6 +1115,21 @@ JsonMap collectB25Evidence({
           'targetProductionSurface': _targetProductionSurfaceForWorkflow(
             workflowId,
           ),
+          'cardSurfaceRegistryStatus': 'advisory-non-gating',
+          'cardSurfaceFamily':
+              cardSurfaceRegistryEntry['cardSurfaceFamily'],
+          'cardSurfaceApiContract':
+              cardSurfaceRegistryEntry['apiContract'],
+          'cardSurfaceRequiredInteractions':
+              _asStringList(cardSurfaceRegistryEntry['requiredInteractions']),
+          'cardSurfacePrimaryActions':
+              _asStringList(cardSurfaceRegistryEntry['primaryActions']),
+          'cardSurfaceAlternateActions':
+              _asStringList(cardSurfaceRegistryEntry['alternateActions']),
+          'cardSurfaceRendererTarget':
+              cardSurfaceRegistryEntry['rendererTarget'],
+          'cardSurfaceFakeBackendSupport':
+              cardSurfaceRegistryEntry['fakeBackendSupport'],
           'screenSpecificCritique':
               'Pending independent B25 UX critique for $screenshotName. Evidence collector captured screenshot metadata only.',
           'verdict': 'pending',
@@ -1135,6 +1152,7 @@ JsonMap collectB25Evidence({
     screenRows: screenRows,
     repoRootPath: repoRootPath,
   );
+  final cardSurfaceRegistry = _b25CardSurfaceRegistryForRows(screenRows);
   return <String, Object?>{
     'schemaVersion': 4,
     'reviewStandardVersion': 'b25-production-ux-v4',
@@ -1170,6 +1188,13 @@ JsonMap collectB25Evidence({
         'docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md',
     'blueprintCoverage': blueprintCoverage,
     'productDocCoverage': productDocCoverage,
+    'cardSurfaceRegistrySummary': <String, Object?>{
+      'status': 'advisory-non-gating',
+      'rowCount': cardSurfaceRegistry.length,
+      'note':
+          'B25 records workflow-to-card-surface/API/renderer/fake-backend support for remediation context. This is not yet a pass/fail card-surface API coverage gate.',
+    },
+    'cardSurfaceRegistry': cardSurfaceRegistry,
     'screenRows': screenRows,
     'findings': <JsonMap>[
       <String, Object?>{
@@ -8071,6 +8096,457 @@ String _targetProductionSurfaceForWorkflow(String workflowId) {
     return 'match schedule/result surface with players, round, outcome, and next action';
   }
   return 'explicit domain-native product surface selected from the B21 production UX contract';
+}
+
+List<JsonMap> _b25CardSurfaceRegistryForRows(List<JsonMap> screenRows) {
+  final rowsByWorkflow = <String, JsonMap>{};
+  final rowIdsByWorkflow = <String, Set<String>>{};
+  final communitiesByWorkflow = <String, Set<String>>{};
+  for (final row in screenRows) {
+    final workflowId = _asString(row['workflowId']);
+    if (workflowId.isEmpty) {
+      continue;
+    }
+    rowsByWorkflow.putIfAbsent(
+      workflowId,
+      () => _b25CardSurfaceRegistryEntryForWorkflowId(workflowId),
+    );
+    rowIdsByWorkflow
+        .putIfAbsent(workflowId, () => <String>{})
+        .add(_asString(row['rowId']));
+    communitiesByWorkflow
+        .putIfAbsent(workflowId, () => <String>{})
+        .add(_asString(row['communityId']));
+  }
+  return [
+    for (final entry in rowsByWorkflow.entries)
+      <String, Object?>{
+        ...entry.value,
+        'screenRowIds': (rowIdsByWorkflow[entry.key] ?? <String>{}).toList()
+          ..sort(),
+        'communityIds': (communitiesByWorkflow[entry.key] ?? <String>{})
+            .toList()
+          ..sort(),
+      },
+  ]..sort(
+    (left, right) =>
+        _asString(left['workflowId']).compareTo(_asString(right['workflowId'])),
+  );
+}
+
+JsonMap _b25CardSurfaceRegistryEntryForWorkflowId(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('announcement') ||
+      id.contains('publish') ||
+      id.contains('notification')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'announcement',
+      apiContract: 'CommunityAnnouncementApi',
+      requiredInteractions: const [
+        'createDraft',
+        'updateDraft',
+        'previewAnnouncement',
+        'scheduleAnnouncement',
+        'publishAnnouncement',
+        'cancelScheduledAnnouncement',
+        'updatePublishedAnnouncement',
+        'unpublishAnnouncement',
+        'deliveryStatus',
+        'readReceipts',
+        'revisionHistory',
+      ],
+      primaryActions: const ['Save draft', 'Preview', 'Publish', 'Schedule'],
+      alternateActions: const ['Edit published update', 'Unpublish'],
+    );
+  }
+  if (id.contains('ad-off') ||
+      id.contains('payment') ||
+      id.contains('donation') ||
+      id.contains('dues') ||
+      id.contains('checkout')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'payment',
+      apiContract: 'CommunityPaymentSurfaceApi',
+      requiredInteractions: const [
+        'createPaymentIntent',
+        'confirmPayment',
+        'recordFailure',
+        'retryPayment',
+        'refund',
+        'createRecurringPlan',
+        'manageRecurringPlan',
+        'setDonorVisibility',
+        'getReceipt',
+        'getEntitlement',
+        'settlementStatus',
+      ],
+      primaryActions: const ['Pay', 'Confirm', 'Manage subscription'],
+      alternateActions: const ['Retry', 'Refund', 'Open receipt'],
+    );
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('schedule') ||
+      id.contains('photo-walk')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'event-rsvp',
+      apiContract: 'CommunityEventRsvpApi',
+      requiredInteractions: const [
+        'getEventDetail',
+        'respondGoingMaybeNo',
+        'changeRsvp',
+        'cancelRsvp',
+        'joinWaitlist',
+        'listAttendees',
+        'updateCapacity',
+        'sendReminder',
+        'calendarState',
+        'cancelOrReschedule',
+      ],
+      primaryActions: const ['Going', 'Maybe', 'Not going'],
+      alternateActions: const ['Change response', 'Cancel RSVP'],
+    );
+  }
+  if (id.contains('volunteer') || id.contains('shift')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'volunteer',
+      apiContract: 'CommunityVolunteerApi',
+      requiredInteractions: const [
+        'listShifts',
+        'signup',
+        'updateAvailability',
+        'cancelSignup',
+        'joinWaitlist',
+        'listVolunteers',
+        'volunteerSummary',
+        'assignCoordinator',
+        'checkInVolunteer',
+        'markNoShow',
+        'protectedContactReveal',
+      ],
+      primaryActions: const ['Sign up', 'Edit availability', 'Check in'],
+      alternateActions: const ['Cancel signup', 'View volunteers'],
+    );
+  }
+  if (id.contains('plant') || id.contains('exchange')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'exchange',
+      apiContract: 'CommunityExchangeApi',
+      requiredInteractions: const [
+        'createOffer',
+        'updateOffer',
+        'cancelOffer',
+        'claimOffer',
+        'cancelClaim',
+        'markUnavailable',
+        'schedulePickup',
+        'handoffComplete',
+        'listClaims',
+        'privacyScopedContact',
+      ],
+      primaryActions: const ['Offer item', 'Claim', 'Schedule pickup'],
+      alternateActions: const ['Edit offer', 'Cancel claim'],
+    );
+  }
+  if (id.contains('equipment') ||
+      id.contains('gear') ||
+      id.contains('loan') ||
+      id.contains('racquet')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'equipment-loan',
+      apiContract: 'CommunityEquipmentLoanApi',
+      requiredInteractions: const [
+        'offerEquipment',
+        'requestLoan',
+        'approveLoan',
+        'declineLoan',
+        'schedulePickup',
+        'checkOut',
+        'returnItem',
+        'cancelLoan',
+        'listAvailability',
+        'privacyScopedContact',
+      ],
+      primaryActions: const ['Offer equipment', 'Request loan', 'Check out'],
+      alternateActions: const ['Return item', 'Cancel loan'],
+    );
+  }
+  if (id.contains('nomination')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'nomination',
+      apiContract: 'CommunityNominationApi',
+      requiredInteractions: const [
+        'createNomination',
+        'updateNomination',
+        'withdrawNomination',
+        'listNominations',
+        'detectDuplicate',
+        'checkEligibility',
+        'linkToBallot',
+        'nominationStatus',
+      ],
+      primaryActions: const ['Nominate', 'Edit nomination'],
+      alternateActions: const ['Withdraw nomination'],
+    );
+  }
+  if (id.contains('vote') || id.contains('ballot') || id.contains('poll')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'vote',
+      apiContract: 'CommunityVoteApi',
+      requiredInteractions: const [
+        'openBallot',
+        'castVote',
+        'changeVote',
+        'clearVote',
+        'getVoteState',
+        'getResults',
+        'publishSelection',
+        'auditVote',
+      ],
+      primaryActions: const ['Vote', 'Change vote'],
+      alternateActions: const ['Clear vote', 'View results'],
+    );
+  }
+  if (id.contains('message') ||
+      id.contains('discussion') ||
+      id.contains('thread')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'thread',
+      apiContract: 'CommunityThreadApi',
+      requiredInteractions: const [
+        'createThread',
+        'reply',
+        'editMessage',
+        'deleteMessage',
+        'markRead',
+        'listUnread',
+        'muteThread',
+        'archiveThread',
+        'attachMedia',
+        'mentionMember',
+      ],
+      primaryActions: const ['Reply', 'Mark read'],
+      alternateActions: const ['Edit', 'Mute', 'Archive'],
+    );
+  }
+  if (id.contains('care')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'care-request',
+      apiContract: 'CommunityCareRequestApi',
+      requiredInteractions: const [
+        'createRequest',
+        'updateRequest',
+        'withdrawRequest',
+        'assignCareTeam',
+        'reviewRequest',
+        'requestChanges',
+        'resolveRequest',
+        'neutralNotification',
+        'readPublicSummary',
+        'readProtectedDetails',
+        'redactedAudit',
+      ],
+      primaryActions: const ['Request care', 'Assign care team', 'Resolve'],
+      alternateActions: const ['Update request', 'Withdraw'],
+    );
+  }
+  if (id.contains('approval') ||
+      id.contains('decision') ||
+      id.contains('architectural') ||
+      id.contains('request')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'approval',
+      apiContract: 'CommunityApprovalApi',
+      requiredInteractions: const [
+        'submitRequest',
+        'assignReviewer',
+        'approve',
+        'reject',
+        'requestChanges',
+        'comment',
+        'statusHistory',
+        'reopen',
+        'appeal',
+        'notifyRequester',
+      ],
+      primaryActions: const ['Approve', 'Reject', 'Request changes'],
+      alternateActions: const ['Comment', 'Reopen', 'Appeal'],
+    );
+  }
+  if (id.contains('document') ||
+      id.contains('facility') ||
+      id.contains('reservation') ||
+      id.contains('roster')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'operations',
+      apiContract: 'CommunityOperationsSurfaceApi',
+      requiredInteractions: const [
+        'listDocuments',
+        'openDocument',
+        'downloadDocument',
+        'acknowledgeDocument',
+        'requestAccess',
+        'documentVersions',
+        'reserveFacility',
+        'updateReservation',
+        'cancelReservation',
+        'resolveConflict',
+        'getRoster',
+        'updateRosterMember',
+        'rosterHistory',
+      ],
+      primaryActions: const ['Open', 'Reserve', 'Acknowledge'],
+      alternateActions: const ['Cancel reservation', 'Request access'],
+    );
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'knowledge',
+      apiContract: 'CommunityKnowledgeSurfaceApi',
+      requiredInteractions: const [
+        'search',
+        'answerQuestion',
+        'listCitations',
+        'openCitation',
+        'saveDigest',
+        'shareDigest',
+        'refreshIndex',
+        'staleCitationCheck',
+        'visibilityDecision',
+      ],
+      primaryActions: const ['Search', 'Open citation', 'Save digest'],
+      alternateActions: const ['Share', 'Refresh index'],
+    );
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('redaction') ||
+      id.contains('rollback') ||
+      id.contains('checksum')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'portability',
+      apiContract: 'CommunityPortabilitySurfaceApi',
+      requiredInteractions: const [
+        'createExportPlan',
+        'previewRedaction',
+        'generateExport',
+        'downloadExport',
+        'verifyChecksum',
+        'cancelExport',
+        'retryExport',
+        'startTransfer',
+        'verifyTransfer',
+        'rollbackTransfer',
+        'auditTrail',
+      ],
+      primaryActions: const ['Generate export', 'Download', 'Start transfer'],
+      alternateActions: const ['Preview redaction', 'Cancel', 'Retry'],
+    );
+  }
+  if (id.contains('invite') ||
+      id.contains('connection') ||
+      id.contains('social')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'social',
+      apiContract: 'CommunitySocialSurfaceApi',
+      requiredInteractions: const [
+        'sendInvite',
+        'acceptInvite',
+        'declineInvite',
+        'cancelInvite',
+        'block',
+        'unblock',
+        'mute',
+        'archive',
+        'connectionStatus',
+        'createThread',
+        'reply',
+        'markRead',
+      ],
+      primaryActions: const ['Invite', 'Accept', 'Reply'],
+      alternateActions: const ['Decline', 'Block', 'Mute'],
+    );
+  }
+  if (id.contains('ad') || id.contains('sponsor')) {
+    return _b25SurfaceSpec(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'ad',
+      apiContract: 'CommunityAdSurfaceApi',
+      requiredInteractions: const [
+        'requestAdDecision',
+        'recordImpression',
+        'recordClick',
+        'recordNoFill',
+        'getNoFillReason',
+        'getDisclosure',
+        'getAdOffEntitlement',
+        'suppressAds',
+        'restoreAds',
+        'receiptEvidence',
+      ],
+      primaryActions: const ['Open sponsor', 'Turn off ads'],
+      alternateActions: const ['Restore ads', 'View disclosure'],
+    );
+  }
+  return _b25SurfaceSpec(
+    workflowId: workflowId,
+    cardSurfaceFamily: 'form',
+    apiContract: 'CommunityFormSurfaceApi',
+    requiredInteractions: const [
+      'loadForm',
+      'validateDraft',
+      'saveDraft',
+      'submitForm',
+      'updateSubmission',
+      'withdrawSubmission',
+      'routeProtectedFields',
+      'reviewSubmission',
+      'exportSubmission',
+    ],
+    primaryActions: const ['Save draft', 'Submit', 'Update'],
+    alternateActions: const ['Withdraw', 'Review'],
+  );
+}
+
+JsonMap _b25SurfaceSpec({
+  required String workflowId,
+  required String cardSurfaceFamily,
+  required String apiContract,
+  required List<String> requiredInteractions,
+  required List<String> primaryActions,
+  required List<String> alternateActions,
+}) {
+  return <String, Object?>{
+    'workflowId': workflowId,
+    'registryStatus': 'advisory-non-gating',
+    'cardSurfaceFamily': cardSurfaceFamily,
+    'apiContract': apiContract,
+    'requiredInteractions': requiredInteractions,
+    'primaryActions': primaryActions,
+    'alternateActions': alternateActions,
+    'rendererTarget': 'Demo App renderer selected by workflow ID and surface family',
+    'fakeBackendSupport':
+        'LocalInAppBackend imports the initialization package, stores workflow state, records persona-specific receipts, and exposes surface state to the Demo App.',
+  };
 }
 
 List<JsonMap> _b25CriterionReferencePatterns(String criterionId) {

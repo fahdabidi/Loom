@@ -95,6 +95,26 @@ For each workflow step, map:
 - fake-backend initialization data
 - validation test
 
+Also choose the production card surface for each workflow from
+[components/card-surfaces/README.md](./components/card-surfaces/README.md). Do this before designing
+routes or UI. Verify every selected interaction against the executable
+[Community Card Surfaces OpenAPI](../../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
+and the Product Docs V2
+[workflow/user-story coverage map](../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
+For each selected surface, record:
+
+- supported interactions needed by the workflow;
+- actor, receiver, reviewer, read-only, disabled, hidden, and unauthorized personas;
+- required surface permissions;
+- customization points such as labels, fields, icons, assets, sections, and domain copy;
+- backend API operations, events, rules, workflows, jobs, and fake-backend fixtures;
+- B25 evidence needed to prove entry, input/review, action, result, and receiver states.
+
+Reject a generic workflow card when the workflow maps to a catalog surface such as announcement,
+event RSVP, member meetup, volunteer signup, equipment loan, payment, care request, approval,
+document/facility/roster, search/AI, export/transfer, messaging/connections, ads, custom form, or
+notification inbox.
+
 ## 6. Create UX Guidelines And UX Decisions
 
 Use [references/ux-methodology-template.md](./references/ux-methodology-template.md). Produce UX
@@ -155,6 +175,18 @@ Pick the community category, required roles, spaces, and surfaces:
 - `admin`
 
 Keep App Shell invariants intact.
+
+Then select card-surface families from
+[components/card-surfaces/README.md](./components/card-surfaces/README.md). The chosen family defines
+the production interaction model, required backend API support, and Product Docs V2 workflow coverage.
+For example:
+
+- tennis singles scheduling -> member meetup scheduling;
+- spare racquet lending -> equipment loan;
+- mosque iftar setup -> volunteer signup;
+- book selection ballot -> vote and poll;
+- HOA fence review -> approval and request;
+- data migration -> export, import, and transfer.
 
 Collect personalization inputs:
 

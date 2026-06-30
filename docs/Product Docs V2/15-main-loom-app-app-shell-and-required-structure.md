@@ -52,6 +52,30 @@ Card image resolution follows this order:
 3. Extension `defaultCardImage`.
 4. Generated initials/category/accent-color fallback.
 
+### 4.1 Production Card Surfaces
+
+The Main Loom App must host reusable production card surfaces selected by extensions and rendered
+inside App Shell constraints. The catalog in [../CardSurfaces/README.md](../CardSurfaces/README.md)
+defines the supported families and the backend API support they require.
+The product workflow requirements for every surface interaction are tracked in
+[Card Surface Workflow and User Story Coverage](./Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md),
+and the executable API contract is
+[Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml).
+
+The App Shell should distinguish:
+
+- shell-owned surfaces: community card/home, navigation, messages/connections entry, ads, payments,
+  consent/data dashboard, install/update state;
+- extension-selected production surfaces: announcement composer/feed, event RSVP, member meetups,
+  volunteer signup, equipment loans, exchanges, nominations/votes, discussions, care requests,
+  approvals, documents/facilities/roster, search/AI digest, export/transfer, forms, and inbox;
+- fallback surfaces: generic form only when no richer card-surface family fits.
+
+When a production surface family exists, the shell and validators should reject a primary workflow that
+is represented only as a generic workflow card with a single action. The shell, fake backend, and B25
+evidence must prove the entry state, editable/alternate actions, result state, receiver state,
+disabled/unauthorized state, and recovery path required by the selected surface interactions.
+
 ## 5. User Stories
 
 1. **As a member**, I open the Main Loom App and see all installed communities.
@@ -94,6 +118,10 @@ Card image resolution follows this order:
 ## 7. Cross-Area Requirements
 
 - App Shell owns required UI invariants; extensions mount inside it.
+- App Shell validates selected card surfaces against the Card Surfaces catalog and required API
+  contracts, including the executable
+  [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
+  and Product Docs V2 workflow/user-story coverage map.
 - App Shell owns community-card rendering; extension/init package branding is input data only.
 - Card assets must have local fallbacks and must pass size, format, hash, dimension, and accessibility
   metadata checks.

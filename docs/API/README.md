@@ -11,8 +11,10 @@ OpenAPI specifications are organized by independently owned API surface, not by 
 ```text
 docs/API/
   00-api-standards-and-versioning.md
+  CardSurfaces/
   OpenAPI/
     _shared/
+    community-surfaces/
     identity/
     creator/
     content/
@@ -47,3 +49,7 @@ The initial spec set mirrors the system components named by the architecture doc
 - Safety: Trust and Safety, Fraud.
 - Portability: Migration/Export, Provider Exit.
 - Governance: Governance, Audit.
+- Card Surfaces: Community production card/surface API contracts for announcements, events, meetups,
+  volunteer shifts, equipment loans, exchanges, payments, care, approvals, documents, search, export,
+  social, ads, forms, inbox, and community home. The executable OpenAPI spec is
+  [OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml](./OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml).

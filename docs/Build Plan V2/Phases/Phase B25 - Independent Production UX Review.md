@@ -26,6 +26,12 @@ a real user would expect.
   Skill runs must treat Loom Product Docs V2 as read-only references and create/update local extension
   docs under `<extension-workspace>/docs/product/community-product-experience.md` plus related local
   UX/workflow/API-map docs.
+- Advisory card-surface registry context for every documented community workflow. Each community
+  product experience doc must map `workflow -> cardSurfaceFamily -> API contract -> required
+  interactions/actions -> Demo App renderer/fake-backend support`, and the B25 evidence JSON must carry
+  the same registry metadata on each screen row plus a top-level `cardSurfaceRegistry`. This registry is
+  remediation context only in B25; it must not be treated as a standalone card-surface/API coverage
+  pass/fail gate until a later phase explicitly enables that gate.
 - Complete product UX screen inventory and review matrix at
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`, with one row for every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
@@ -132,6 +138,11 @@ Both contexts must use the same structure from
 promise, personas/jobs, information architecture, home requirements, domain-native product surfaces,
 workflow-to-surface mapping, persona/state matrix, content/seed requirements, visual/interaction
 standard, and review/remediation log.
+
+Every community product experience doc must also include a B25 advisory card-surface registry mapping.
+This mapping helps remediation agents select the right card surface and fake-backend state shape for a
+workflow. The independent UX judge may cite it when explaining what a surface should become, but B25
+does not yet fail solely because a card-surface/API coverage matrix is incomplete.
 
 When the independent UX judge finds that a screen fails because the target product experience is
 missing or underspecified, the remediation ticket must be marked `product-spec-gap` and the next pass

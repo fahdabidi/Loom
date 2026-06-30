@@ -58,7 +58,15 @@ Use distinct community names, logos/icons, taglines, local install status, and a
 The shell should feel calm and app-like: clear hierarchy, no overlapping FABs, card imagery or icons,
 mobile-safe spacing, and immediate access to Messages and Connections.
 
-## 10. Review And Remediation Log
+## 10. Card Surface Registry Mapping
+
+This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.
+
+| Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
+| --- | --- | --- | --- | --- |
+| `local-build-download-sideload-install` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad decision, impression/click/no-fill, disclosure/ad-off, restore/receipt evidence | Demo renderer must select a domain-native surface for `ad` and LocalInAppBackend must expose/import the state for these interactions. |
+
+## 11. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |

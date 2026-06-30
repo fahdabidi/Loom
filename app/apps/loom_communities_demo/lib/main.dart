@@ -4029,6 +4029,13 @@ class LoomWorkflowDefinition {
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
+    required this.cardSurfaceFamily,
+    required this.apiContract,
+    required this.requiredInteractions,
+    required this.primaryActions,
+    required this.alternateActions,
+    required this.rendererTarget,
+    required this.fakeBackendSupport,
     required this.category,
     required this.surfaceLabel,
     required this.objectLabel,
@@ -4048,6 +4055,13 @@ class LoomProductionWorkflowContract {
   });
 
   final String workflowId;
+  final String cardSurfaceFamily;
+  final String apiContract;
+  final List<String> requiredInteractions;
+  final List<String> primaryActions;
+  final List<String> alternateActions;
+  final String rendererTarget;
+  final String fakeBackendSupport;
   final String category;
   final String surfaceLabel;
   final String objectLabel;
@@ -4064,6 +4078,28 @@ class LoomProductionWorkflowContract {
   final String receiverSurfaceTitle;
   final String trustSummary;
   final IconData icon;
+}
+
+class LoomWorkflowCardSurfaceRegistryEntry {
+  const LoomWorkflowCardSurfaceRegistryEntry({
+    required this.workflowId,
+    required this.cardSurfaceFamily,
+    required this.apiContract,
+    required this.requiredInteractions,
+    required this.primaryActions,
+    required this.alternateActions,
+    required this.rendererTarget,
+    required this.fakeBackendSupport,
+  });
+
+  final String workflowId;
+  final String cardSurfaceFamily;
+  final String apiContract;
+  final List<String> requiredInteractions;
+  final List<String> primaryActions;
+  final List<String> alternateActions;
+  final String rendererTarget;
+  final String fakeBackendSupport;
 }
 
 class LoomExperienceDefinition {
@@ -4377,14 +4413,64 @@ String workflowPersonaReceiptKey({
   return '$workflowId::$personaId';
 }
 
+List<LoomWorkflowCardSurfaceRegistryEntry> cardSurfaceRegistryForExtensionId(
+  String extensionId,
+) {
+  final experience = experienceForExtensionId(extensionId);
+  return [
+    for (final workflow in experience.workflows)
+      cardSurfaceRegistryEntryFor(
+        extensionId: extensionId,
+        workflow: workflow,
+      ),
+  ];
+}
+
+LoomWorkflowCardSurfaceRegistryEntry cardSurfaceRegistryEntryFor({
+  required String extensionId,
+  required LoomWorkflowDefinition workflow,
+}) {
+  final base = _cardSurfaceRegistryEntryForWorkflowId(workflow.workflowId);
+  return LoomWorkflowCardSurfaceRegistryEntry(
+    workflowId: workflow.workflowId,
+    cardSurfaceFamily: base.cardSurfaceFamily,
+    apiContract: base.apiContract,
+    requiredInteractions: base.requiredInteractions,
+    primaryActions: base.primaryActions,
+    alternateActions: base.alternateActions,
+    rendererTarget: _rendererTargetForWorkflow(
+      extensionId: extensionId,
+      workflowId: workflow.workflowId,
+    ),
+    fakeBackendSupport: base.fakeBackendSupport,
+  );
+}
+
 LoomProductionWorkflowContract productionWorkflowContractFor({
   required String extensionId,
   required LoomWorkflowDefinition workflow,
 }) {
   final category = _workflowCategoryFor(workflow);
   final objectLabel = _objectLabelFor(workflow);
+  final cardSurface = cardSurfaceRegistryEntryFor(
+    extensionId: extensionId,
+    workflow: workflow,
+  );
   return LoomProductionWorkflowContract(
     workflowId: workflow.workflowId,
+    cardSurfaceFamily: cardSurface.cardSurfaceFamily,
+    apiContract: cardSurface.apiContract,
+    requiredInteractions: cardSurface.requiredInteractions,
+    primaryActions: <String>{
+      _primaryActionLabelFor(workflow),
+      ...cardSurface.primaryActions,
+    }.toList(),
+    alternateActions: <String>{
+      _alternateActionLabelFor(workflow),
+      ...cardSurface.alternateActions,
+    }.toList(),
+    rendererTarget: cardSurface.rendererTarget,
+    fakeBackendSupport: cardSurface.fakeBackendSupport,
     category: category,
     surfaceLabel: _surfaceLabelFor(category),
     objectLabel: objectLabel,
@@ -4402,6 +4488,444 @@ LoomProductionWorkflowContract productionWorkflowContractFor({
     trustSummary: _trustSummaryFor(category),
     icon: _iconFor(category),
   );
+}
+
+LoomWorkflowCardSurfaceRegistryEntry _cardSurfaceRegistryEntryForWorkflowId(
+  String workflowId,
+) {
+  final id = workflowId.toLowerCase();
+  if (id.contains('announcement') ||
+      id.contains('publish') ||
+      id.contains('notification')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'announcement',
+      apiContract: 'CommunityAnnouncementApi',
+      requiredInteractions: const [
+        'createDraft',
+        'updateDraft',
+        'previewAnnouncement',
+        'scheduleAnnouncement',
+        'publishAnnouncement',
+        'cancelScheduledAnnouncement',
+        'updatePublishedAnnouncement',
+        'unpublishAnnouncement',
+        'deliveryStatus',
+        'readReceipts',
+        'revisionHistory',
+      ],
+      primaryActions: const [
+        'Save draft',
+        'Preview',
+        'Publish',
+        'Schedule',
+      ],
+      alternateActions: const ['Edit published update', 'Unpublish'],
+    );
+  }
+  if (id.contains('ad-off') ||
+      id.contains('payment') ||
+      id.contains('donation') ||
+      id.contains('dues') ||
+      id.contains('checkout')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'payment',
+      apiContract: 'CommunityPaymentSurfaceApi',
+      requiredInteractions: const [
+        'createPaymentIntent',
+        'confirmPayment',
+        'recordFailure',
+        'retryPayment',
+        'refund',
+        'createRecurringPlan',
+        'manageRecurringPlan',
+        'setDonorVisibility',
+        'getReceipt',
+        'getEntitlement',
+        'settlementStatus',
+      ],
+      primaryActions: const ['Pay', 'Confirm', 'Manage subscription'],
+      alternateActions: const ['Retry', 'Refund', 'Open receipt'],
+    );
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('schedule') ||
+      id.contains('photo-walk')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'event-rsvp',
+      apiContract: 'CommunityEventRsvpApi',
+      requiredInteractions: const [
+        'getEventDetail',
+        'respondGoingMaybeNo',
+        'changeRsvp',
+        'cancelRsvp',
+        'joinWaitlist',
+        'listAttendees',
+        'updateCapacity',
+        'sendReminder',
+        'calendarState',
+        'cancelOrReschedule',
+      ],
+      primaryActions: const ['Going', 'Maybe', 'Not going'],
+      alternateActions: const ['Change response', 'Cancel RSVP'],
+    );
+  }
+  if (id.contains('volunteer') || id.contains('shift')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'volunteer',
+      apiContract: 'CommunityVolunteerApi',
+      requiredInteractions: const [
+        'listShifts',
+        'signup',
+        'updateAvailability',
+        'cancelSignup',
+        'joinWaitlist',
+        'listVolunteers',
+        'volunteerSummary',
+        'assignCoordinator',
+        'checkInVolunteer',
+        'markNoShow',
+        'protectedContactReveal',
+      ],
+      primaryActions: const ['Sign up', 'Edit availability', 'Check in'],
+      alternateActions: const ['Cancel signup', 'View volunteers'],
+    );
+  }
+  if (id.contains('plant') || id.contains('exchange')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'exchange',
+      apiContract: 'CommunityExchangeApi',
+      requiredInteractions: const [
+        'createOffer',
+        'updateOffer',
+        'cancelOffer',
+        'claimOffer',
+        'cancelClaim',
+        'markUnavailable',
+        'schedulePickup',
+        'handoffComplete',
+        'listClaims',
+        'privacyScopedContact',
+      ],
+      primaryActions: const ['Offer item', 'Claim', 'Schedule pickup'],
+      alternateActions: const ['Edit offer', 'Cancel claim'],
+    );
+  }
+  if (id.contains('equipment') ||
+      id.contains('gear') ||
+      id.contains('loan') ||
+      id.contains('racquet')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'equipment-loan',
+      apiContract: 'CommunityEquipmentLoanApi',
+      requiredInteractions: const [
+        'offerEquipment',
+        'requestLoan',
+        'approveLoan',
+        'declineLoan',
+        'schedulePickup',
+        'checkOut',
+        'returnItem',
+        'cancelLoan',
+        'listAvailability',
+        'privacyScopedContact',
+      ],
+      primaryActions: const ['Offer equipment', 'Request loan', 'Check out'],
+      alternateActions: const ['Return item', 'Cancel loan'],
+    );
+  }
+  if (id.contains('nomination')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'nomination',
+      apiContract: 'CommunityNominationApi',
+      requiredInteractions: const [
+        'createNomination',
+        'updateNomination',
+        'withdrawNomination',
+        'listNominations',
+        'detectDuplicate',
+        'checkEligibility',
+        'linkToBallot',
+        'nominationStatus',
+      ],
+      primaryActions: const ['Nominate', 'Edit nomination'],
+      alternateActions: const ['Withdraw nomination'],
+    );
+  }
+  if (id.contains('vote') || id.contains('ballot') || id.contains('poll')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'vote',
+      apiContract: 'CommunityVoteApi',
+      requiredInteractions: const [
+        'openBallot',
+        'castVote',
+        'changeVote',
+        'clearVote',
+        'getVoteState',
+        'getResults',
+        'publishSelection',
+        'auditVote',
+      ],
+      primaryActions: const ['Vote', 'Change vote'],
+      alternateActions: const ['Clear vote', 'View results'],
+    );
+  }
+  if (id.contains('message') ||
+      id.contains('discussion') ||
+      id.contains('thread')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'thread',
+      apiContract: 'CommunityThreadApi',
+      requiredInteractions: const [
+        'createThread',
+        'reply',
+        'editMessage',
+        'deleteMessage',
+        'markRead',
+        'listUnread',
+        'muteThread',
+        'archiveThread',
+        'attachMedia',
+        'mentionMember',
+      ],
+      primaryActions: const ['Reply', 'Mark read'],
+      alternateActions: const ['Edit', 'Mute', 'Archive'],
+    );
+  }
+  if (id.contains('care')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'care-request',
+      apiContract: 'CommunityCareRequestApi',
+      requiredInteractions: const [
+        'createRequest',
+        'updateRequest',
+        'withdrawRequest',
+        'assignCareTeam',
+        'reviewRequest',
+        'requestChanges',
+        'resolveRequest',
+        'neutralNotification',
+        'readPublicSummary',
+        'readProtectedDetails',
+        'redactedAudit',
+      ],
+      primaryActions: const ['Request care', 'Assign care team', 'Resolve'],
+      alternateActions: const ['Update request', 'Withdraw'],
+    );
+  }
+  if (id.contains('approval') ||
+      id.contains('decision') ||
+      id.contains('architectural') ||
+      id.contains('request')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'approval',
+      apiContract: 'CommunityApprovalApi',
+      requiredInteractions: const [
+        'submitRequest',
+        'assignReviewer',
+        'approve',
+        'reject',
+        'requestChanges',
+        'comment',
+        'statusHistory',
+        'reopen',
+        'appeal',
+        'notifyRequester',
+      ],
+      primaryActions: const ['Approve', 'Reject', 'Request changes'],
+      alternateActions: const ['Comment', 'Reopen', 'Appeal'],
+    );
+  }
+  if (id.contains('document') ||
+      id.contains('facility') ||
+      id.contains('reservation') ||
+      id.contains('roster')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'operations',
+      apiContract: 'CommunityOperationsSurfaceApi',
+      requiredInteractions: const [
+        'listDocuments',
+        'openDocument',
+        'downloadDocument',
+        'acknowledgeDocument',
+        'requestAccess',
+        'documentVersions',
+        'reserveFacility',
+        'updateReservation',
+        'cancelReservation',
+        'resolveConflict',
+        'getRoster',
+        'updateRosterMember',
+        'rosterHistory',
+      ],
+      primaryActions: const ['Open', 'Reserve', 'Acknowledge'],
+      alternateActions: const ['Cancel reservation', 'Request access'],
+    );
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'knowledge',
+      apiContract: 'CommunityKnowledgeSurfaceApi',
+      requiredInteractions: const [
+        'search',
+        'answerQuestion',
+        'listCitations',
+        'openCitation',
+        'saveDigest',
+        'shareDigest',
+        'refreshIndex',
+        'staleCitationCheck',
+        'visibilityDecision',
+      ],
+      primaryActions: const ['Search', 'Open citation', 'Save digest'],
+      alternateActions: const ['Share', 'Refresh index'],
+    );
+  }
+  if (id.contains('export') ||
+      id.contains('import') ||
+      id.contains('transfer') ||
+      id.contains('redaction') ||
+      id.contains('rollback') ||
+      id.contains('checksum')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'portability',
+      apiContract: 'CommunityPortabilitySurfaceApi',
+      requiredInteractions: const [
+        'createExportPlan',
+        'previewRedaction',
+        'generateExport',
+        'downloadExport',
+        'verifyChecksum',
+        'cancelExport',
+        'retryExport',
+        'startTransfer',
+        'verifyTransfer',
+        'rollbackTransfer',
+        'auditTrail',
+      ],
+      primaryActions: const ['Generate export', 'Download', 'Start transfer'],
+      alternateActions: const ['Preview redaction', 'Cancel', 'Retry'],
+    );
+  }
+  if (id.contains('invite') ||
+      id.contains('connection') ||
+      id.contains('social')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'social',
+      apiContract: 'CommunitySocialSurfaceApi',
+      requiredInteractions: const [
+        'sendInvite',
+        'acceptInvite',
+        'declineInvite',
+        'cancelInvite',
+        'block',
+        'unblock',
+        'mute',
+        'archive',
+        'connectionStatus',
+        'createThread',
+        'reply',
+        'markRead',
+      ],
+      primaryActions: const ['Invite', 'Accept', 'Reply'],
+      alternateActions: const ['Decline', 'Block', 'Mute'],
+    );
+  }
+  if (id.contains('ad') || id.contains('sponsor')) {
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'ad',
+      apiContract: 'CommunityAdSurfaceApi',
+      requiredInteractions: const [
+        'requestAdDecision',
+        'recordImpression',
+        'recordClick',
+        'recordNoFill',
+        'getNoFillReason',
+        'getDisclosure',
+        'getAdOffEntitlement',
+        'suppressAds',
+        'restoreAds',
+        'receiptEvidence',
+      ],
+      primaryActions: const ['Open sponsor', 'Turn off ads'],
+      alternateActions: const ['Restore ads', 'View disclosure'],
+    );
+  }
+  return _registryEntry(
+    workflowId: workflowId,
+    cardSurfaceFamily: 'form',
+    apiContract: 'CommunityFormSurfaceApi',
+    requiredInteractions: const [
+      'loadForm',
+      'validateDraft',
+      'saveDraft',
+      'submitForm',
+      'updateSubmission',
+      'withdrawSubmission',
+      'routeProtectedFields',
+      'reviewSubmission',
+      'exportSubmission',
+    ],
+    primaryActions: const ['Save draft', 'Submit', 'Update'],
+    alternateActions: const ['Withdraw', 'Review'],
+  );
+}
+
+LoomWorkflowCardSurfaceRegistryEntry _registryEntry({
+  required String workflowId,
+  required String cardSurfaceFamily,
+  required String apiContract,
+  required List<String> requiredInteractions,
+  required List<String> primaryActions,
+  required List<String> alternateActions,
+}) {
+  return LoomWorkflowCardSurfaceRegistryEntry(
+    workflowId: workflowId,
+    cardSurfaceFamily: cardSurfaceFamily,
+    apiContract: apiContract,
+    requiredInteractions: requiredInteractions,
+    primaryActions: primaryActions,
+    alternateActions: alternateActions,
+    rendererTarget: '',
+    fakeBackendSupport:
+        'LocalInAppBackend imports the initialization package, stores workflow state, records persona-specific receipts, and exposes the state used by this surface in the Demo App.',
+  );
+}
+
+String _rendererTargetForWorkflow({
+  required String extensionId,
+  required String workflowId,
+}) {
+  if (extensionId == 'ext_garden' && workflowId == 'garden-event-rsvp') {
+    return '_GardenEventRsvpTile + _GardenEventRsvpActionSurface';
+  }
+  if (extensionId == 'ext_garden' &&
+      workflowId == 'plant-exchange-submission') {
+    return '_GardenPlantExchangeTile + _GardenPlantExchangeActionSurface';
+  }
+  if (_richWorkflowSpecFor(workflowId) != null) {
+    return '_RichWorkflowTile + _RichWorkflowActionSurface';
+  }
+  return '_WorkflowTile + _WorkflowActionSurface';
 }
 
 List<String> productionUxGenericCopyViolations() {
