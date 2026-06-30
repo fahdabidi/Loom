@@ -2732,6 +2732,12 @@ String _objectLabelFor(LoomWorkflowDefinition workflow) {
 
 String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
+  if (id.contains('plant-exchange')) {
+    return 'Offer plant';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'Record match result';
+  }
   if (id.contains('rsvp')) {
     return 'RSVP to event';
   }
@@ -2748,7 +2754,7 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Publish announcement';
   }
   if (id.contains('publish') || id.contains('selection')) {
-    return 'Publish selection';
+    return 'Publish announcement';
   }
   if (id.contains('schedule')) {
     return 'Publish schedule';
@@ -2781,10 +2787,10 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Send invite';
   }
   if (id.contains('messages')) {
-    return 'Open Messages';
+    return 'Reply';
   }
   if (id.contains('connections')) {
-    return 'Open Connections';
+    return 'Connect';
   }
   if (id.contains('blocked')) {
     return 'Check blocked state';
@@ -2799,7 +2805,7 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Submit nomination';
   }
   if (id.contains('message')) {
-    return 'Post message';
+    return 'Send message';
   }
   if (id.contains('request')) {
     return 'Submit request';
@@ -2808,7 +2814,7 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Submit signup';
   }
   if (id.contains('submission')) {
-    return 'Submit entry';
+    return 'Submit';
   }
   if (id.contains('reservation')) {
     return 'Reserve and pay';
@@ -2827,9 +2833,6 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
   }
   if (id.contains('route') || id.contains('open')) {
     return 'Open community home';
-  }
-  if (id.contains('match-result')) {
-    return 'Record match result';
   }
   final action = workflow.actionText.replaceAll(RegExp(r'\.$'), '');
   return action.length <= 36 ? action : 'Start ${_objectLabelFor(workflow)}';
@@ -3196,6 +3199,12 @@ String _validationSummaryFor(String category) {
 
 String _successTitleFor(String category, LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
+  if (id.contains('message')) {
+    return 'Message sent';
+  }
+  if (id.contains('connection') || id.contains('invite')) {
+    return 'Connection accepted';
+  }
   if (id.contains('announcement')) {
     return 'Announcement posted';
   }
@@ -3230,6 +3239,12 @@ String _successTitleFor(String category, LoomWorkflowDefinition workflow) {
 
 String _successBodyFor(String category, LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
+  if (id.contains('message')) {
+    return 'The message is sent and received in the community thread.';
+  }
+  if (id.contains('connection') || id.contains('invite')) {
+    return 'The member connection is accepted and visible in the community network.';
+  }
   if (id.contains('announcement')) {
     return 'Members can now read the announcement in their community inbox.';
   }

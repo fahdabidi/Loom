@@ -2158,12 +2158,69 @@ JsonMap _workflowLifecycleScorecard(
     persona: persona,
     visibleTextEvidence: visibleTextEvidence,
   );
+  final supportSurface = _asStringList(
+    proof['passedGroups'],
+  ).contains('support-surface');
   final interactionModel = proof['semanticInteractionModel'] is JsonMap
       ? proof['semanticInteractionModel'] as JsonMap
       : <String, Object?>{};
   final coverageMissing = _asStringList(coverage['missingEvidence']);
   final proofPass = proof['status'] == 'pass';
   final coveragePass = coverageMissing.isEmpty;
+  if (supportSurface) {
+    final questions = <JsonMap>[
+      _directAnswer(
+        questionId: '$coverageRowId-lifecycle-support-surface',
+        scope: 'workflow-lifecycle',
+        question:
+            'Is `$workflowId` a support/evidence surface where production workflow lifecycle proof is not required, and is its screenshot evidence still present?',
+        pass: coveragePass,
+        score: coveragePass ? 90 : 30,
+        evidenceUsed: _asStringList(coverage['screenRowIds']),
+        why: coveragePass
+            ? 'This row is a support/evidence surface; lifecycle proof is not required and screenshot evidence is present.'
+            : 'This row is a support/evidence surface, but required screenshot evidence is missing: ${coverageMissing.join(', ')}.',
+        requiredFix: coveragePass
+            ? 'None.'
+            : 'Capture the missing support/evidence screenshots before closing B25.',
+      ),
+    ];
+    return <String, Object?>{
+      'scorecardId': '$coverageRowId-lifecycle',
+      'coverageRowId': coverageRowId,
+      'communityId': _asString(coverage['communityId']),
+      'communityName': _asString(coverage['communityName']),
+      'workflowId': workflowId,
+      'persona': persona,
+      'personaId': personaId,
+      'status': coveragePass ? 'pass' : 'fail',
+      'blocksPass': !coveragePass,
+      'screenRowIds': _asStringList(coverage['screenRowIds']),
+      'screenshotPaths': relatedRows
+          .map((row) => _asString(row['screenshotPath']))
+          .where((path) => path.isNotEmpty)
+          .toList(),
+      'targetProductionSurface': _targetProductionSurfaceForWorkflow(
+        workflowId,
+      ),
+      'workflowLifecycleProof': proof,
+      'semanticInteractionModel': interactionModel,
+      'requiredLifecycleGroups': _asMapList(proof['requiredGroups']),
+      'missingLifecycleGroups': _asStringList(proof['missingGroups']),
+      'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+      'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+        workflowId,
+      ),
+      'questions': questions,
+      'acceptanceCriteria': _workflowLifecycleAcceptanceCriteria(
+        workflowId,
+        persona,
+      ),
+      'summary': coveragePass
+          ? 'Support surface lifecycle review passed for `$workflowId` / `$persona`.'
+          : 'Support surface lifecycle review failed for `$workflowId` / `$persona`: ${coverageMissing.join(', ')}.',
+    };
+  }
   final questions = <JsonMap>[
     _directAnswer(
       questionId: '$coverageRowId-lifecycle-object-context',
