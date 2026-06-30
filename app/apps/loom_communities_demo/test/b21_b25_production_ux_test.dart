@@ -81,6 +81,13 @@ void main() {
       find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
       findsOneWidget,
     );
+    await tester.scrollUntilVisible(
+      find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
+      180,
+      scrollable: find.byType(Scrollable).last,
+      maxScrolls: 30,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Publish announcement'), findsWidgets);
     expect(find.text('Complete workflow'), findsNothing);
   });
@@ -121,9 +128,17 @@ void main() {
       find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),
       findsOneWidget,
     );
-    await tester.tap(
-      find.byKey(ValueKey('workflow-receive-submit-${workflow.workflowId}')),
+    final receiveSubmitButton = find.byKey(
+      ValueKey('workflow-receive-submit-${workflow.workflowId}'),
     );
+    await tester.scrollUntilVisible(
+      receiveSubmitButton,
+      180,
+      scrollable: find.byType(Scrollable).last,
+      maxScrolls: 30,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(receiveSubmitButton);
     await tester.pumpAndSettle();
     expect(find.text('Update ready'), findsOneWidget);
   });

@@ -102,7 +102,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface proof, interaction-model proof, and a passing fresh LLM vision UX review. | Pass 13 reopened B25 under the LLM vision judge gate. The LLM review found unresolved blocker/major product UX issues in the Garden Club event/plant-exchange screenshots, and `production_ux_judge.dart` generated six remediation tickets. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets `80146f7` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface proof, interaction-model proof, and a passing fresh LLM vision UX review. | Pass 16 completed one remediation loop with fresh 208-screenshot capture, 195-row evidence, LLM vision review, production judge, tickets, and iteration scorecard. Garden Club RSVP and plant exchange now pass as credible product surfaces, but B25 still fails with one blocker and two major findings because non-Garden primary workflow screens still expose generic action-template UX. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets `80146f7`; pass 16 iteration `TBD` |
 
 ## Phase Outcome Summary
 
@@ -390,7 +390,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | Open B25 pass-13 LLM vision findings | Reopened | Product-UX v4 pass 13 adds the LLM vision UX review bar. Current pass failed with `LLM-UX-001`, `LLM-UX-002`, and `LLM-UX-003`; six remediation tickets were generated under `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-13.*`. B25 remains open until those tickets are remediated from fresh screenshots and the imported LLM vision review passes. |
+| B25 | Open B25 pass-16 LLM vision findings | Reopened | Product-UX v4 pass 16 completed a fresh full capture/review iteration. Garden Club event RSVP and plant exchange action surfaces are now accepted by the LLM judge, but the phase still fails with `LLM-B25-P16-001`, `LLM-B25-P16-002`, and `LLM-B25-P16-003`; six remediation tickets were generated under `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-16.*`. B25 remains open until the remaining generic action-template surfaces are replaced and the imported LLM vision review passes. |
 
 Closeout rule for reopened phases:
 
@@ -1692,7 +1692,7 @@ Closeout rule for reopened phases:
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
   pending.
-- **Current v4 pass:** `b25-v4-pass-12` closes the semantic-closure, product-doc, and semantic
+- **Prior v4 pass:** `b25-v4-pass-12` closed the semantic-closure, product-doc, and semantic
   interaction-model bar added after review of the Masjid Nur screens. It added visible sender/author,
   notification content, RSVP result, document file metadata, no-fill disclosure, and protected
   minor-redaction proof, then reran the B25 evidence and judge chain against fresh screenshots.
@@ -1704,9 +1704,29 @@ Closeout rule for reopened phases:
   iteration scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-12.md`
   records `B25 can pass=true`, 0 blockers, 0 unresolved major findings, and 0 newly introduced
   blocker/major findings. Manifest gate, B25 phase gate, boundary lint, and `git diff --check` passed.
+- **Current v4 pass:** `b25-v4-pass-16` completed the next B25 remediation loop under the fresh LLM
+  vision review gate. It replaced the Garden Club event RSVP and plant exchange action flows with
+  domain-specific product surfaces: the Garden event now shows Spring Planting Workshop, date/time,
+  location, capacity, RSVP status, Going/Maybe/Not going/Maybe later controls, and a semantic RSVP
+  action; the plant exchange now shows Basil seedlings, variety, quantity, pickup window, contact
+  privacy, edit action, and offer submission. The generic sticky action footer was removed from
+  production action surfaces and the test/evidence automation now scrolls to inline production actions.
+  `b25_capture_workflow_screenshots.dart` recaptured B12-B20 and wrote 208 screenshot files. The B25
+  collector generated 195 schema v4 screen rows, workflow/persona coverage passed 68 of 68 rows,
+  `b25_visual_inspection_auditor.dart` passed 195 rows, `b25_independent_ux_judge.dart` passed the
+  deterministic scaffold, and `b25_workflow_interaction_model_judge.dart` passed 68 lifecycle rows.
+  The fresh LLM vision review failed the pass with one blocker and two major findings: remaining
+  non-Garden primary workflow screens still use generic action-template language and repeated
+  card/chip layouts. `production_ux_judge.dart` failed 6 criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-16.md`; the iteration scorecard
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-16.md` records
+  `B25 can pass=false`, 1 unresolved blocker, 2 unresolved major findings, 3 blocker/major findings
+  resolved this pass, and 3 newly introduced/active blocker-major findings for the next remediation
+  plan.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 pass-1 ticket/planner closeout
   `5d4e313`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`;
-  reference-pattern ticket update `6d01a22`; v4 pass-2 `68b5fad`; v4 pass-3 `9c59a5a`; v4 pass-4 `b672089`.
+  reference-pattern ticket update `6d01a22`; v4 pass-2 `68b5fad`; v4 pass-3 `9c59a5a`; v4 pass-4 `b672089`;
+  v4 pass-16 `TBD`.
 
 ## Gate Evidence Template
 

@@ -129,9 +129,17 @@ void main() {
         );
         await capture(action);
 
-        await tester.tap(
-          find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
+        final submitButton = find.byKey(
+          ValueKey('workflow-action-submit-${workflow.workflowId}'),
         );
+        await tester.scrollUntilVisible(
+          submitButton,
+          180,
+          scrollable: find.byType(Scrollable).last,
+          maxScrolls: 30,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(submitButton);
         await tester.pumpAndSettle();
         await scrollToWorkflowCard(tester, workflow);
         expect(
@@ -269,11 +277,17 @@ void main() {
         findsOneWidget,
       );
       await capture('B20_announcement_admin_action');
-      await tester.tap(
-        find.byKey(
-          ValueKey('workflow-action-submit-${announcement.workflowId}'),
-        ),
+      final announcementSubmitButton = find.byKey(
+        ValueKey('workflow-action-submit-${announcement.workflowId}'),
       );
+      await tester.scrollUntilVisible(
+        announcementSubmitButton,
+        180,
+        scrollable: find.byType(Scrollable).last,
+        maxScrolls: 30,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(announcementSubmitButton);
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_admin_complete');
@@ -293,11 +307,17 @@ void main() {
         findsOneWidget,
       );
       await capture('B20_announcement_member_action');
-      await tester.tap(
-        find.byKey(
-          ValueKey('workflow-receive-submit-${announcement.workflowId}'),
-        ),
+      final announcementReceiveSubmitButton = find.byKey(
+        ValueKey('workflow-receive-submit-${announcement.workflowId}'),
       );
+      await tester.scrollUntilVisible(
+        announcementReceiveSubmitButton,
+        180,
+        scrollable: find.byType(Scrollable).last,
+        maxScrolls: 30,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(announcementReceiveSubmitButton);
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_member_received');

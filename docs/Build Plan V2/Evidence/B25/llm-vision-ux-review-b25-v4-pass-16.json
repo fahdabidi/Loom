@@ -1,0 +1,252 @@
+{
+  "status": "fail",
+  "reviewerType": "llm-vision-ux-judge",
+  "summary": "Garden Club event RSVP and plant exchange screens are materially improved and now look closer to real product surfaces, with concrete event details, RSVP choices, plant variety, pickup window, and privacy controls. The full B25 experience still does not pass: many other primary workflow/persona screens remain generic action templates with visible harness language such as \"Use this surface\", \"Decision\", \"Other option\", \"Member outcome\", and \"Privacy boundary\". The overall app still feels partly like a validation/workflow harness rather than a consistently production-grade community product.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "llm-holistic-production-grade",
+      "question": "Does the whole experience feel like a real production community app, not merely an implemented workflow harness?",
+      "answer": "no",
+      "score": 58,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Garden RSVP and plant exchange screenshots show domain content and natural actions.",
+        "Book nomination, book meeting RSVP, mosque announcement, volunteer signup, and export action screens still expose generic template copy.",
+        "Repeated sections named \"Decision\", \"Details\", \"Other option\", \"Member outcome\", and \"Privacy boundary\" read as implementation proof rather than user-facing product UI."
+      ],
+      "critique": "The best Garden Club screens are plausible production surfaces, but the broader evidence still contains many primary workflow screens that are generic review templates. A real user would see internal interaction-model language instead of community-native task flows.",
+      "requiredFix": "Replace all remaining generic action templates with domain-native product screens for each community workflow, with real object details, task-specific controls, natural alternate actions, and contextual result states.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-014-book-vote-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-020-book-discussion-message-1",
+        "b25-v4-row-023-book-selection-publish-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-077-mosque-event-rsvp-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ]
+    },
+    {
+      "questionId": "llm-holistic-modern-easy-navigation",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas?",
+      "answer": "partial",
+      "score": 66,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Typography is readable and controls are large enough for mobile use.",
+        "Garden event and plant offer detail screens have clear primary actions.",
+        "Across the full matrix, many screens reuse large monochrome card stacks and status chips, reducing perceived product polish."
+      ],
+      "critique": "The visual system is improved, especially in Garden Club, but it remains too templated across the evidence set. Navigation and hierarchy are understandable, yet many surfaces feel generated rather than tailored to the specific community task.",
+      "requiredFix": "Vary layouts by workflow type: event detail pages, book nomination forms, announcement composers, donation receipts, volunteer shift signup, export package review, and inbox/detail screens should each have task-specific IA and content hierarchy.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ]
+    },
+    {
+      "questionId": "llm-holistic-community-centered",
+      "question": "Is the experience community/product-centered rather than framework-centered?",
+      "answer": "partial",
+      "score": 62,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Garden Club screens include concrete community content: Spring Planting Workshop, Riverside Greenhouse, 18 going, 6 spots left, Sweet Genovese basil, pickup Saturday 1-3 PM.",
+        "Several non-Garden screens still describe abstract member forms, announcements, privacy boundaries, reviewer handoff, or export handoff instead of the actual community object.",
+        "The persona picker explicitly says \"Preview the community experience\", which is acceptable as local testing evidence but not a production member-facing pattern."
+      ],
+      "critique": "Some community-native content is present, but the whole pass is not consistently community-centered. Many rows still prioritize workflow mechanics and capability proof over the member's real task.",
+      "requiredFix": "Audit every screen row for framework-centered language and replace it with community-specific nouns, details, relationships, and outcomes.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-014-book-vote-1",
+        "b25-v4-row-020-book-discussion-message-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1",
+        "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+        "b25-v4-row-186-wf-demo-app-persona-picker-0"
+      ]
+    },
+    {
+      "questionId": "llm-primary-workflow-surfaces",
+      "question": "Do primary workflow/persona screens show domain-native product surfaces and complete interaction models?",
+      "answer": "no",
+      "score": 55,
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Garden event RSVP action screen shows a workable interaction model with Going, Maybe, Not going, Maybe later, and RSVP to event.",
+        "Garden plant offer action screen shows a workable offer preview with plant details, pickup, contact sharing, edit, and submit actions.",
+        "Many other action screens are the same generic confirmation template and do not show task-specific inputs, previews, or receiver states."
+      ],
+      "critique": "The pass cannot be approved because primary workflow quality is uneven. A few Garden workflows are now production-like, but repeated generic action screens still fail the domain-native product-surface requirement.",
+      "requiredFix": "For every primary workflow/persona pair, build the actual task surface rather than a generic decision template, then recapture screenshots and rerun B25.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-023-book-selection-publish-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-077-mosque-event-rsvp-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ]
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "b25-v4-row-002-garden-event-rsvp-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled \"Spring Workshop\" and centers the \"Spring Planting Workshop\" event.",
+        "It shows date, time, location, a short event description, attendee count, remaining spots, and RSVP status.",
+        "The RSVP control offers Going, Maybe, Not going, Maybe later, and a clear \"RSVP to event\" action."
+      ],
+      "critique": "This screen is now a credible domain-native event RSVP surface. It gives the member enough context to decide and exposes a complete RSVP interaction model.",
+      "requiredFix": "",
+      "targetProductionSurface": "Garden Club event detail and RSVP screen"
+    },
+    {
+      "screenRowId": "b25-v4-row-005-plant-exchange-submission-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled \"Offer a plant\" and describes \"Basil seedlings\" with \"Sweet Genovese - 6 starter pots\".",
+        "It shows marketplace review state, contact privacy, edit and submit actions, and offer preview sections.",
+        "The visible preview includes plant details, pickup details, and shared claimant information."
+      ],
+      "critique": "This is a plausible product-grade plant exchange review screen. It is specific enough for a member to understand what will be posted and what privacy settings apply.",
+      "requiredFix": "",
+      "targetProductionSurface": "Garden Club plant offer creation/review screen"
+    },
+    {
+      "screenRowId": "b25-v4-row-008-garden-export-custom-schemas-1",
+      "verdict": "fail",
+      "severity": "major",
+      "visibleObservations": [
+        "The screen says \"Prepare export handoff\" and \"Use this surface to package export scope, redaction, and handoff status.\"",
+        "It uses generic sections: \"Decision\", \"Details\", \"Other option\", \"Member outcome\", and \"Privacy boundary\".",
+        "The content describes an export package abstractly rather than showing a real export review product surface."
+      ],
+      "critique": "This remains a generic workflow/action template. Even if export is a supporting/admin flow, the surface is not production-grade because it exposes implementation taxonomy.",
+      "requiredFix": "Redesign as an export package review screen with file/package identity, included data types, redaction summary, checksum, destination, audit trail, rollback/change-scope controls, and final generate/download action.",
+      "targetProductionSurface": "Garden Club export package review"
+    },
+    {
+      "screenRowId": "b25-v4-row-011-book-nomination-1",
+      "verdict": "fail",
+      "severity": "blocker",
+      "visibleObservations": [
+        "The hero card says \"Submit member form\" and \"Use this surface to submit structured member details.\"",
+        "Visible chips read \"Labeled fields\", \"Privacy checked\", and \"Review handoff\".",
+        "The rest of the screen is organized around \"Decision\", \"Details\", \"Other option\", \"Member outcome\", and \"Privacy boundary\"."
+      ],
+      "critique": "This is not a book nomination product surface. It does not show a title, author, member rationale, genre, meeting context, voting/nomination state, or a natural review/submit form.",
+      "requiredFix": "Replace with a real book nomination form/review screen including book title, author, reason for nomination, meeting cycle, visibility/privacy settings if needed, edit/cancel, and submit nomination result.",
+      "targetProductionSurface": "Book Club nomination submission"
+    },
+    {
+      "screenRowId": "b25-v4-row-017-book-meeting-rsvp-1",
+      "verdict": "fail",
+      "severity": "major",
+      "visibleObservations": [
+        "The screen title is \"Event details\", but the main card says \"Coordinate attendance\".",
+        "The copy says \"Use this surface to publish event details, capacity, and attendance state.\"",
+        "The screen uses generic chips like \"This week\", \"Community venue\", \"Capacity tracked\", and \"RSVP available\" instead of actual meeting content."
+      ],
+      "critique": "Unlike the improved Garden RSVP, this event screen remains a template. It does not feel like a book club meeting page because it lacks the book, venue, time, discussion host, attendee state, and concrete RSVP controls.",
+      "requiredFix": "Create a book meeting RSVP detail screen with meeting title, selected book, date/time, venue, host, capacity, current RSVP, attendee/reminder state, and natural RSVP/change-response controls.",
+      "targetProductionSurface": "Book Club meeting RSVP"
+    },
+    {
+      "screenRowId": "b25-v4-row-074-mosque-announcement-1",
+      "verdict": "fail",
+      "severity": "major",
+      "visibleObservations": [
+        "The screen says \"Send community notice\" and \"Use this surface to send a scoped announcement to the selected audience.\"",
+        "It shows generic decision and outcome sections rather than an announcement composer.",
+        "The visible content mentions audience and channel, but no concrete announcement subject/body preview is visible."
+      ],
+      "critique": "This is not yet a production announcement authoring or preview experience. It documents that an announcement can be sent, but does not look like a real admin composing and publishing a message to members.",
+      "requiredFix": "Replace with a true announcement composer/review screen including subject, body, audience, schedule/channel, preview, save draft, publish, and sent/receiver state.",
+      "targetProductionSurface": "Masjid announcement composer"
+    },
+    {
+      "screenRowId": "b25-v4-row-080-mosque-volunteer-signup-1",
+      "verdict": "fail",
+      "severity": "major",
+      "visibleObservations": [
+        "The screen says \"Submit member form\" and \"Use this surface to submit structured member details.\"",
+        "The chips include \"Open shift\", \"Contact protected\", and \"Coordinator notified\".",
+        "The action model is still the generic decision/details/outcome/privacy-boundary template."
+      ],
+      "critique": "This does not feel like a volunteer signup flow. A member should see a specific shift, time, role, requirements, contact preference, confirmation, and coordinator follow-up.",
+      "requiredFix": "Build a volunteer shift signup surface with shift details, time/location, role requirements, contact/privacy controls, cancel/change option, signup confirmation, and coordinator receiver state.",
+      "targetProductionSurface": "Masjid volunteer signup"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "LLM-B25-P16-001",
+      "severity": "blocker",
+      "blocksPass": true,
+      "title": "Generic workflow/action template remains across primary screens",
+      "description": "Multiple primary workflow/persona screenshots still expose generic template language such as \"Use this surface\", \"Decision\", \"Details\", \"Other option\", \"Member outcome\", and \"Privacy boundary\". This makes the product feel like a workflow harness rather than a production community app.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-014-book-vote-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-020-book-discussion-message-1",
+        "b25-v4-row-023-book-selection-publish-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-077-mosque-event-rsvp-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ],
+      "requiredFix": "Remove the generic action-template copy and replace each affected screen with a domain-native product surface tailored to the community workflow."
+    },
+    {
+      "findingId": "LLM-B25-P16-002",
+      "severity": "major",
+      "blocksPass": true,
+      "title": "Primary workflows are uneven: Garden improved, many other communities still lack domain-native surfaces",
+      "description": "Garden RSVP and plant exchange screens now show credible domain content and interaction controls, but other primary workflows such as book nomination, book RSVP, mosque announcement, mosque RSVP, volunteer signup, and export still use abstract summaries instead of real task-specific screens.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-077-mosque-event-rsvp-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ],
+      "requiredFix": "Bring the non-Garden primary workflows up to the same standard as the improved Garden RSVP and plant offer screens: concrete object details, task-specific inputs/actions, alternate paths, result state, and receiver/member context."
+    },
+    {
+      "findingId": "LLM-B25-P16-003",
+      "severity": "major",
+      "blocksPass": true,
+      "title": "Repeated card-and-chip layout still reads as generated scaffold",
+      "description": "Across the matrix, many screenshots share the same large rounded card, checklist chip, and generic section structure regardless of whether the task is RSVP, donation, announcement, export, nomination, or volunteer signup. The repetition weakens visual polish and makes the app feel templated.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ],
+      "requiredFix": "Use workflow-specific layouts and components: event pages, form pages, composer pages, receipt/history pages, inbox/detail pages, export review pages, and signup sheets should not all share the same decision-card scaffold."
+    },
+    {
+      "findingId": "LLM-B25-P16-004",
+      "severity": "minor",
+      "blocksPass": false,
+      "title": "Local persona picker remains visibly test-oriented",
+      "description": "The persona picker says \"Preview the community experience for each member role.\" This is understandable for emulator evidence, but it is not production member-facing language and should stay clearly outside shipped community UX.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+        "b25-v4-row-186-wf-demo-app-persona-picker-0"
+      ],
+      "requiredFix": "Keep the persona picker only in local/demo tooling or restyle/copy it as an explicit non-production test harness surface outside the community product review scope."
+    }
+  ]
+}

@@ -96,9 +96,17 @@ Future<void> completeWorkflow(
     find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
     findsOneWidget,
   );
-  await tester.tap(
-    find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
+  final submitButton = find.byKey(
+    ValueKey('workflow-action-submit-${workflow.workflowId}'),
   );
+  await tester.scrollUntilVisible(
+    submitButton,
+    180,
+    scrollable: find.byType(Scrollable).last,
+    maxScrolls: 30,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(submitButton);
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);
   expect(
@@ -134,9 +142,17 @@ Future<void> receiveWorkflow(
     find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),
     findsOneWidget,
   );
-  await tester.tap(
-    find.byKey(ValueKey('workflow-receive-submit-${workflow.workflowId}')),
+  final receiveSubmitButton = find.byKey(
+    ValueKey('workflow-receive-submit-${workflow.workflowId}'),
   );
+  await tester.scrollUntilVisible(
+    receiveSubmitButton,
+    180,
+    scrollable: find.byType(Scrollable).last,
+    maxScrolls: 30,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(receiveSubmitButton);
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);
   expect(

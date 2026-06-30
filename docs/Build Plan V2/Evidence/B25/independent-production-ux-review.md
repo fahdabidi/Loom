@@ -1,6 +1,6 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-13`
+Review run: `b25-v4-pass-16`
 
 Status: `llm-vision-review-fail`
 
@@ -8,7 +8,7 @@ Final decision: `fail`
 
 Screen rows collected: 195
 
-Holistic direct-question answers: 6
+Holistic direct-question answers: 8
 
 Workflow/persona scorecards: 68 (0 blocking)
 
@@ -18,10 +18,10 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
-| `LLM-UX-001` | critical-blocker | open | Remove internal validation/checklist wording and replace with natural member-facing domain copy and controls. |
-| `LLM-UX-002` | major | open | Build a real plant exchange experience centered on plant offers/requests, member logistics, and clear offer/edit/submit actions. |
-| `LLM-UX-003` | major | open | Vary layouts by task type, reduce checklist chips, and create product-specific hierarchy for lists, details, actions, and confirmations. |
-| `LLM-UX-004` | minor | open | Add bottom inset/padding or reposition the floating action so it does not cover scrollable list content. |
+| `LLM-B25-P16-001` | blocker | open | Remove the generic action-template copy and replace each affected screen with a domain-native product surface tailored to the community workflow. |
+| `LLM-B25-P16-002` | major | open | Bring the non-Garden primary workflows up to the same standard as the improved Garden RSVP and plant offer screens: concrete object details, task-specific inputs/actions, alternate paths, result state, and receiver/member context. |
+| `LLM-B25-P16-003` | major | open | Use workflow-specific layouts and components: event pages, form pages, composer pages, receipt/history pages, inbox/detail pages, export review pages, and signup sheets should not all share the same decision-card scaffold. |
+| `LLM-B25-P16-004` | minor | open | Keep the persona picker only in local/demo tooling or restyle/copy it as an explicit non-production test harness surface outside the community product review scope. |
 
 ## Community Product Experience Docs
 
@@ -47,8 +47,10 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 | Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `pass` | 85 | Visible UI/text evidence, lifecycle scorecards, and screenshot pixel/layout inspection support judging modern UI quality. | None. |
 | Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `pass` | 85 | Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures. | None. |
 | Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `pass` | 85 | No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique. | None. |
-| Does the whole experience feel like a real production community app, not merely an implemented workflow harness? | `` | 35 |  | Replace harness/checklist cards with domain-native product views: plant offer details, photos, variety, pickup/contact preferences, requester/member context, RSVP attendee state, event schedule/location/capacity, and production action flows. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `` | 48 |  | Introduce clearer information architecture, less repetitive card stacking, stronger domain-specific content, better action hierarchy, and ensure floating controls do not obscure list content. |
+| Does the whole experience feel like a real production community app, not merely an implemented workflow harness? | `` | 58 |  | Replace all remaining generic action templates with domain-native product screens for each community workflow, with real object details, task-specific controls, natural alternate actions, and contextual result states. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas? | `` | 66 |  | Vary layouts by workflow type: event detail pages, book nomination forms, announcement composers, donation receipts, volunteer shift signup, export package review, and inbox/detail screens should each have task-specific IA and content hierarchy. |
+| Is the experience community/product-centered rather than framework-centered? | `` | 62 |  | Audit every screen row for framework-centered language and replace it with community-specific nouns, details, relationships, and outcomes. |
+| Do primary workflow/persona screens show domain-native product surfaces and complete interaction models? | `` | 55 |  | For every primary workflow/persona pair, build the actual task surface rather than a generic decision template, then recapture screenshots and rerun B25. |
 
 ## Workflow/Persona Scorecards
 

@@ -812,6 +812,24 @@ class _WorkflowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (extensionId == 'ext_garden_club' &&
+        workflow.workflowId == 'garden-event-rsvp') {
+      return _GardenEventRsvpTile(
+        workflow: workflow,
+        view: view,
+        onPressed: onPressed,
+        onReceivePressed: onReceivePressed,
+      );
+    }
+    if (extensionId == 'ext_garden_club' &&
+        workflow.workflowId == 'plant-exchange-submission') {
+      return _GardenPlantExchangeTile(
+        workflow: workflow,
+        view: view,
+        onPressed: onPressed,
+        onReceivePressed: onReceivePressed,
+      );
+    }
     final complete = view.completed || view.received;
     final contract = productionWorkflowContractFor(
       extensionId: extensionId,
@@ -958,6 +976,359 @@ class _WorkflowTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _GardenEventRsvpTile extends StatelessWidget {
+  const _GardenEventRsvpTile({
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = const Color(0xff2f6f9f);
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    final complete = view.completed || view.received;
+    return DecoratedBox(
+      key: ValueKey('workflow-${workflow.workflowId}'),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: foreground.withValues(alpha: 0.13),
+                  child: Icon(
+                    Icons.event_available_outlined,
+                    color: foreground,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Spring Planting Workshop',
+                        style: textTheme.titleLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members.',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.90),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _GardenFactPill(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Sat, Apr 18',
+                ),
+                _GardenFactPill(
+                  icon: Icons.schedule_outlined,
+                  label: '10:00 AM',
+                ),
+                _GardenFactPill(
+                  icon: Icons.place_outlined,
+                  label: 'Riverside Greenhouse',
+                ),
+                _GardenFactPill(
+                  icon: Icons.group_outlined,
+                  label: '18 of 24 spots',
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: foreground.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: foreground.withValues(alpha: 0.20)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      complete ? 'Your RSVP: Going' : 'Your RSVP',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      complete
+                          ? 'A reminder is set for Saturday morning. You can still change your response before capacity closes.'
+                          : 'Choose Going, Maybe, or Not going after checking the schedule, location, host, and capacity.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: foreground.withValues(alpha: 0.90),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (view.completed)
+              _WorkflowResultPanel(
+                key: ValueKey('workflow-result-${workflow.workflowId}'),
+                title: 'RSVP confirmed',
+                body:
+                    'You are going to Spring Planting Workshop. Calendar, attendee count, and reminder status stay visible.',
+                icon: Icons.event_available_outlined,
+                accent: accent,
+              )
+            else if (view.received)
+              _WorkflowResultPanel(
+                key: ValueKey(
+                  'workflow-received-result-${workflow.workflowId}',
+                ),
+                title: 'Event update ready',
+                body:
+                    'The event page shows your attendance status, capacity, and any schedule changes.',
+                icon: Icons.inbox_outlined,
+                accent: accent,
+              )
+            else
+              _WorkflowAction(
+                contract: productionWorkflowContractFor(
+                  extensionId: 'ext_garden_club',
+                  workflow: workflow,
+                ),
+                workflow: workflow,
+                view: view,
+                onPressed: onPressed,
+                onReceivePressed: onReceivePressed,
+              ),
+            if (complete)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _StateBadge(
+                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
+                  icon: Icons.done,
+                  label: 'Going',
+                  foreground: foreground,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GardenPlantExchangeTile extends StatelessWidget {
+  const _GardenPlantExchangeTile({
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = const Color(0xff3f7f4c);
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    final complete = view.completed || view.received;
+    return DecoratedBox(
+      key: ValueKey('workflow-${workflow.workflowId}'),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.20),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: foreground.withValues(alpha: 0.13),
+                  child: Icon(Icons.local_florist_outlined, color: foreground),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Basil seedlings offer',
+                        style: textTheme.titleLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared.',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.90),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: foreground.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: foreground.withValues(alpha: 0.20)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _GardenFactPill(
+                          icon: Icons.grass_outlined,
+                          label: 'Sweet Genovese basil',
+                        ),
+                        _GardenFactPill(
+                          icon: Icons.inventory_2_outlined,
+                          label: '6 starter pots',
+                        ),
+                        _GardenFactPill(
+                          icon: Icons.schedule_outlined,
+                          label: 'Pickup Sat 1-3 PM',
+                        ),
+                        _GardenFactPill(
+                          icon: Icons.verified_user_outlined,
+                          label: 'Contact after claim',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      complete
+                          ? 'Offer posted to the plant exchange board.'
+                          : 'Members will see the plant variety, pickup window, privacy note, and how to claim the offer.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: foreground.withValues(alpha: 0.90),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (view.completed)
+              _WorkflowResultPanel(
+                key: ValueKey('workflow-result-${workflow.workflowId}'),
+                title: 'Offer posted',
+                body:
+                    'Basil seedlings are listed with pickup details and contact sharing limited until a member claims them.',
+                icon: Icons.local_florist_outlined,
+                accent: accent,
+              )
+            else if (view.received)
+              _WorkflowResultPanel(
+                key: ValueKey(
+                  'workflow-received-result-${workflow.workflowId}',
+                ),
+                title: 'Plant offer ready',
+                body:
+                    'Members can review the variety, pickup details, and contact privacy before claiming.',
+                icon: Icons.inbox_outlined,
+                accent: accent,
+              )
+            else
+              _WorkflowAction(
+                contract: productionWorkflowContractFor(
+                  extensionId: 'ext_garden_club',
+                  workflow: workflow,
+                ),
+                workflow: workflow,
+                view: view,
+                onPressed: onPressed,
+                onReceivePressed: onReceivePressed,
+              ),
+            if (complete)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _StateBadge(
+                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
+                  icon: Icons.done,
+                  label: 'Posted',
+                  foreground: foreground,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GardenFactPill extends StatelessWidget {
+  const _GardenFactPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SurfaceFactPill(icon: icon, label: label, foreground: Colors.white);
   }
 }
 
@@ -1524,6 +1895,22 @@ class _WorkflowActionSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (workflow.workflowId == 'garden-event-rsvp') {
+      return _GardenEventRsvpActionSurface(
+        workflow: workflow,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+        isReceiverSurface: isReceiverSurface,
+      );
+    }
+    if (workflow.workflowId == 'plant-exchange-submission') {
+      return _GardenPlantExchangeActionSurface(
+        workflow: workflow,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+        isReceiverSurface: isReceiverSurface,
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final accent = _categoryAccentColor(contract.category, scheme);
@@ -1637,25 +2024,582 @@ class _WorkflowActionSurface extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          _InlineActionBar(
+            accent: accent,
+            alternateLabel: contract.alternateActionLabel,
+            actionLabel: actionLabel,
+            actionIcon: contract.icon,
+            confirmButtonKey: confirmButtonKey,
+          ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+    );
+  }
+}
+
+class _GardenEventRsvpActionSurface extends StatelessWidget {
+  const _GardenEventRsvpActionSurface({
+    required this.workflow,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+    required this.isReceiverSurface,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final String actionLabel;
+  final Key confirmButtonKey;
+  final bool isReceiverSurface;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = const Color(0xff2f6f9f);
+    final foreground = _foregroundFor(accent);
+    return Scaffold(
+      backgroundColor: _screenBackgroundFor(accent),
+      appBar: AppBar(
+        title: Text(isReceiverSurface ? 'Event update' : 'Spring Workshop'),
+        backgroundColor: accent,
+        foregroundColor: foreground,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          icon: const Icon(Icons.close),
+          tooltip: 'Close',
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        children: [
+          _GardenHeroPanel(
+            accent: accent,
+            icon: Icons.event_available_outlined,
+            title: 'Spring Planting Workshop',
+            subtitle: 'Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse',
+            body:
+                'Join the club for bed prep, seedling setup, and a shared planning session before the spring exchange opens.',
+          ),
+          const SizedBox(height: 14),
+          _GardenRsvpChoicePanel(
+            accent: accent,
+            actionLabel: actionLabel,
+            confirmButtonKey: confirmButtonKey,
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: accent,
+            title: 'Event details',
+            rows: const [
+              _ActionSurfaceDetail(
+                icon: Icons.person_outline,
+                title: 'Host',
+                body: 'Maya Chen, Garden Club coordinator',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.group_outlined,
+                title: 'Capacity',
+                body: '18 members going, 6 spots left, waitlist opens at 24.',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.place_outlined,
+                title: 'Location',
+                body:
+                    'Riverside Greenhouse, north entrance. Bring gloves and a labeled seed tray.',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: accent,
+            title: 'Your response',
+            rows: [
+              const _ActionSurfaceDetail(
+                icon: Icons.check_circle_outline,
+                title: 'Going',
+                body:
+                    'Reserve your spot and receive the morning reminder in your community inbox.',
+              ),
+              const _ActionSurfaceDetail(
+                icon: Icons.help_outline,
+                title: 'Maybe',
+                body:
+                    'Keep the event on your calendar without taking a capacity spot yet.',
+              ),
+              const _ActionSurfaceDetail(
+                icon: Icons.swap_horiz_outlined,
+                title: 'Change later',
+                body:
+                    'You can change response before Saturday; the attendee count updates for everyone.',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GardenPlantExchangeActionSurface extends StatelessWidget {
+  const _GardenPlantExchangeActionSurface({
+    required this.workflow,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+    required this.isReceiverSurface,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final String actionLabel;
+  final Key confirmButtonKey;
+  final bool isReceiverSurface;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = const Color(0xff3f7f4c);
+    final foreground = _foregroundFor(accent);
+    return Scaffold(
+      backgroundColor: _screenBackgroundFor(accent),
+      appBar: AppBar(
+        title: Text(isReceiverSurface ? 'Plant offer' : 'Offer a plant'),
+        backgroundColor: accent,
+        foregroundColor: foreground,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          icon: const Icon(Icons.close),
+          tooltip: 'Close',
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        children: [
+          _GardenHeroPanel(
+            accent: accent,
+            icon: Icons.local_florist_outlined,
+            title: 'Basil seedlings',
+            subtitle: 'Sweet Genovese - 6 starter pots',
+            body:
+                'Share healthy starts with nearby members and choose exactly what contact details are visible after a claim.',
+          ),
+          const SizedBox(height: 14),
+          _GardenInlineActionPanel(
+            accent: accent,
+            title: 'Ready for marketplace review',
+            body:
+                'Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board.',
+            alternateLabel: 'Edit offer',
+            actionLabel: actionLabel,
+            actionIcon: Icons.local_florist_outlined,
+            confirmButtonKey: confirmButtonKey,
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: accent,
+            title: 'Offer preview',
+            rows: const [
+              _ActionSurfaceDetail(
+                icon: Icons.grass_outlined,
+                title: 'Plant details',
+                body:
+                    'Sweet Genovese basil, six starter pots, rooted and ready for transplant this week.',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.schedule_outlined,
+                title: 'Pickup',
+                body:
+                    'Saturday 1-3 PM at the community shed, with porch pickup available if weather changes.',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.person_outline,
+                title: 'Shared with claimants',
+                body:
+                    'First name and in-app contact only. Phone and address stay private until you confirm.',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: accent,
+            title: 'Member marketplace state',
+            rows: const [
+              _ActionSurfaceDetail(
+                icon: Icons.storefront_outlined,
+                title: 'Board placement',
+                body:
+                    'Appears under Available plants with variety, quantity, pickup window, and claim status.',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.edit_note_outlined,
+                title: 'Edit or cancel',
+                body:
+                    'You can edit quantity, pickup time, or cancel if all seedlings are claimed elsewhere.',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.verified_user_outlined,
+                title: 'Privacy',
+                body:
+                    'Claim requests are routed through Loom so contact details remain protected.',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GardenRsvpChoicePanel extends StatelessWidget {
+  const _GardenRsvpChoicePanel({
+    required this.accent,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final Color accent;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    final buttonStyle = OutlinedButton.styleFrom(
+      foregroundColor: foreground,
+      side: BorderSide(color: foreground.withValues(alpha: 0.30)),
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choose your response',
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Your RSVP updates the attendee count and leaves a reminder in your community inbox.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.90),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _GardenFactPill(icon: Icons.group_outlined, label: '18 going'),
+                _GardenFactPill(
+                  icon: Icons.event_seat_outlined,
+                  label: '6 spots left',
+                ),
+                _GardenFactPill(
+                  icon: Icons.lock_open_outlined,
+                  label: 'RSVP open',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.check_circle_outline, size: 18),
+                  label: const Text('Going'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {},
+                  style: buttonStyle,
+                  icon: const Icon(Icons.help_outline, size: 18),
+                  label: const Text('Maybe'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {},
+                  style: buttonStyle,
+                  icon: const Icon(Icons.cancel_outlined, size: 18),
+                  label: const Text('Not going'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Maybe later'),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    key: confirmButtonKey,
+                    onPressed: () => Navigator.of(context).pop(true),
+                    icon: const Icon(Icons.event_available_outlined, size: 18),
+                    label: Text(actionLabel, textAlign: TextAlign.center),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GardenInlineActionPanel extends StatelessWidget {
+  const _GardenInlineActionPanel({
+    required this.accent,
+    required this.title,
+    required this.body,
+    required this.alternateLabel,
+    required this.actionLabel,
+    required this.actionIcon,
+    required this.confirmButtonKey,
+  });
+
+  final Color accent;
+  final String title;
+  final String body;
+  final String alternateLabel;
+  final String actionLabel;
+  final IconData actionIcon;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              body,
+              style: textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.90),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _GardenFactPill(
+                  icon: Icons.verified_user_outlined,
+                  label: 'Contact after claim',
+                ),
+                _GardenFactPill(
+                  icon: Icons.lock_outline,
+                  label: 'Phone/address private',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(alternateLabel),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    key: confirmButtonKey,
+                    onPressed: () => Navigator.of(context).pop(true),
+                    icon: Icon(actionIcon, size: 18),
+                    label: Text(actionLabel, textAlign: TextAlign.center),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineActionBar extends StatelessWidget {
+  const _InlineActionBar({
+    required this.accent,
+    required this.alternateLabel,
+    required this.actionLabel,
+    required this.actionIcon,
+    required this.confirmButtonKey,
+  });
+
+  final Color accent;
+  final String alternateLabel;
+  final String actionLabel;
+  final IconData actionIcon;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
         child: Row(
           children: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(contract.alternateActionLabel),
+              child: Text(alternateLabel),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.icon(
                 key: confirmButtonKey,
                 onPressed: () => Navigator.of(context).pop(true),
-                icon: Icon(contract.icon, size: 18),
+                icon: Icon(actionIcon, size: 18),
                 label: Text(actionLabel, textAlign: TextAlign.center),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GardenHeroPanel extends StatelessWidget {
+  const _GardenHeroPanel({
+    required this.accent,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.body,
+  });
+
+  final Color accent;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: foreground.withValues(alpha: 0.14),
+              child: Icon(icon, color: foreground, size: 30),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: textTheme.headlineSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.92),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              body,
+              style: textTheme.bodyLarge?.copyWith(
+                color: foreground.withValues(alpha: 0.90),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GardenDetailCard extends StatelessWidget {
+  const _GardenDetailCard({
+    required this.accent,
+    required this.title,
+    required this.rows,
+  });
+
+  final Color accent;
+  final String title;
+  final List<_ActionSurfaceDetail> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Color.alphaBlend(
+      accent.withValues(alpha: 0.84),
+      Colors.black,
+    );
+    final foreground = _foregroundFor(surface);
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _ActionSurfaceDetailStack(accent: accent, rows: rows),
           ],
         ),
       ),
