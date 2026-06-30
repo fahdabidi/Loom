@@ -774,6 +774,43 @@ void runB25LlmUxReviewImporterCli(List<String> args) {
   }
 }
 
+void runB25LlmReviewFreshnessGateCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_llmReviewFreshnessGateUsage());
+    return;
+  }
+  final inputPath = _argValue(args, '--input');
+  final llmReviewPath = _argValue(args, '--llm-review');
+  if (inputPath == null || llmReviewPath == null) {
+    stderr.writeln('Missing required --input <json> or --llm-review <json>');
+    stdout.writeln(_llmReviewFreshnessGateUsage());
+    exit(64);
+  }
+  final report = buildB25LlmReviewFreshnessGate(
+    review: _readJsonFile(inputPath),
+    llmReview: _readJsonFile(llmReviewPath),
+    runId: _argValue(args, '--run-id'),
+    llmReviewPath: llmReviewPath,
+  );
+  final outputPath = _argValue(args, '--output');
+  if (outputPath != null) {
+    final encoded = const JsonEncoder.withIndent('  ').convert(report);
+    File(outputPath).writeAsStringSync('$encoded\n');
+  }
+  final markdownPath = _argValue(args, '--markdown-output');
+  if (markdownPath != null) {
+    File(
+      markdownPath,
+    ).writeAsStringSync(_b25LlmReviewFreshnessGateMarkdown(report));
+  }
+  stdout.writeln(
+    'b25_llm_review_freshness_gate: status=${report['status']} problems=${_asStringList(report['problems']).length}',
+  );
+  if (report['status'] != 'pass') {
+    exit(1);
+  }
+}
+
 void runB25WorkflowLifecycleJudgeCli(List<String> args) {
   _runB25WorkflowInteractionModelJudgeCli(
     args,
@@ -897,7 +934,9 @@ void runB25EvidenceCollectorCli(List<String> args) {
 
 JsonMap buildB25CaptureCoverageReport(String evidenceRootPath) {
   final evidenceRoot = Directory(evidenceRootPath);
-  final aggregate = File('${evidenceRoot.path}/B20/all-workflow-ui-evidence.json');
+  final aggregate = File(
+    '${evidenceRoot.path}/B20/all-workflow-ui-evidence.json',
+  );
   if (!aggregate.existsSync()) {
     return <String, Object?>{
       'status': 'fail',
@@ -928,9 +967,7 @@ JsonMap _b25CaptureCoverageReportFromAggregate({
   required JsonMap manifest,
 }) {
   final phases = _asStringList(manifest['phases']);
-  final expectedPhases = _asStringList(
-    manifest['expectedPhases'],
-  ).isEmpty
+  final expectedPhases = _asStringList(manifest['expectedPhases']).isEmpty
       ? fullB25EvidencePhases
       : _asStringList(manifest['expectedPhases']);
   final missingPhases = fullB25EvidencePhases
@@ -939,7 +976,9 @@ JsonMap _b25CaptureCoverageReportFromAggregate({
   final extraPhases = phases
       .where((phase) => !fullB25EvidencePhases.contains(phase))
       .toList(growable: false);
-  final manifestPaths = _asStringList(manifest['workflowEvidenceManifestPaths']);
+  final manifestPaths = _asStringList(
+    manifest['workflowEvidenceManifestPaths'],
+  );
   final missingManifestPaths = manifestPaths
       .where((path) => !File(_hostPath(path)).existsSync())
       .toList(growable: false);
@@ -972,10 +1011,14 @@ JsonMap _b25CaptureCoverageReportFromAggregate({
     );
   }
   if (missingPhases.isNotEmpty) {
-    issues.add('Canonical B25 aggregate is missing phases: ${missingPhases.join(',')}.');
+    issues.add(
+      'Canonical B25 aggregate is missing phases: ${missingPhases.join(',')}.',
+    );
   }
   if (extraPhases.isNotEmpty) {
-    issues.add('Canonical B25 aggregate contains unexpected phases: ${extraPhases.join(',')}.');
+    issues.add(
+      'Canonical B25 aggregate contains unexpected phases: ${extraPhases.join(',')}.',
+    );
   }
   if (manifestPaths.length < fullB25MinimumWorkflowManifests) {
     issues.add(
@@ -1116,16 +1159,17 @@ JsonMap collectB25Evidence({
             workflowId,
           ),
           'cardSurfaceRegistryStatus': 'advisory-non-gating',
-          'cardSurfaceFamily':
-              cardSurfaceRegistryEntry['cardSurfaceFamily'],
-          'cardSurfaceApiContract':
-              cardSurfaceRegistryEntry['apiContract'],
-          'cardSurfaceRequiredInteractions':
-              _asStringList(cardSurfaceRegistryEntry['requiredInteractions']),
-          'cardSurfacePrimaryActions':
-              _asStringList(cardSurfaceRegistryEntry['primaryActions']),
-          'cardSurfaceAlternateActions':
-              _asStringList(cardSurfaceRegistryEntry['alternateActions']),
+          'cardSurfaceFamily': cardSurfaceRegistryEntry['cardSurfaceFamily'],
+          'cardSurfaceApiContract': cardSurfaceRegistryEntry['apiContract'],
+          'cardSurfaceRequiredInteractions': _asStringList(
+            cardSurfaceRegistryEntry['requiredInteractions'],
+          ),
+          'cardSurfacePrimaryActions': _asStringList(
+            cardSurfaceRegistryEntry['primaryActions'],
+          ),
+          'cardSurfaceAlternateActions': _asStringList(
+            cardSurfaceRegistryEntry['alternateActions'],
+          ),
           'cardSurfaceRendererTarget':
               cardSurfaceRegistryEntry['rendererTarget'],
           'cardSurfaceFakeBackendSupport':
@@ -1822,6 +1866,197 @@ JsonMap buildB25WorkflowLifecycleReview(JsonMap review) {
     ..['unresolvedMajorFindings'] = unresolvedMajors;
 }
 
+List<String> _b25LlmReviewFreshnessProblems({
+  required JsonMap review,
+  required JsonMap llmReview,
+  required String? runId,
+  required List<String> currentScreenRowIds,
+}) {
+  final problems = <String>[];
+  final expectedRunId = runId ?? _asString(review['currentReviewRunId']);
+  final declaredRunId = _asString(
+    llmReview['currentReviewRunId'] ??
+        llmReview['reviewRunId'] ??
+        llmReview['runId'],
+  );
+  if (expectedRunId.isNotEmpty && declaredRunId != expectedRunId) {
+    problems.add(
+      'currentReviewRunId must match the current B25 run ($expectedRunId), found `${declaredRunId.isEmpty ? 'missing' : declaredRunId}`.',
+    );
+  }
+
+  final sourceReviewRunId = _asString(llmReview['sourceReviewRunId']);
+  if (sourceReviewRunId.isNotEmpty) {
+    problems.add(
+      'sourceReviewRunId is present (`$sourceReviewRunId`); carried-forward LLM reviews cannot close B25.',
+    );
+  }
+  if (llmReview['carriedForward'] == true ||
+      llmReview['reusedPriorReview'] == true ||
+      llmReview['usesPriorReview'] == true ||
+      llmReview['carriedFromPriorReview'] == true) {
+    problems.add(
+      'LLM review declares prior-review reuse; B25 requires a fresh screenshot-specific review.',
+    );
+  }
+  if (llmReview['freshReview'] != true &&
+      llmReview['freshScreenshotReview'] != true) {
+    problems.add(
+      'freshReview=true is required to prove the LLM judge inspected the current screenshots.',
+    );
+  }
+
+  final reviewInputEvidence = review['reviewInputEvidence'];
+  final expectedCommit = reviewInputEvidence is JsonMap
+      ? _asString(reviewInputEvidence['appCommitSha'])
+      : '';
+  final declaredCommit = _asString(
+    llmReview['appCommitSha'] ?? llmReview['reviewedAppCommitSha'],
+  );
+  if (expectedCommit.isNotEmpty && declaredCommit != expectedCommit) {
+    problems.add(
+      'appCommitSha must match the reviewed app commit ($expectedCommit), found `${declaredCommit.isEmpty ? 'missing' : declaredCommit}`.',
+    );
+  }
+
+  final currentRowSet = currentScreenRowIds
+      .where((id) => id.trim().isNotEmpty)
+      .toSet();
+  final reviewedRowIds = _uniqueStrings(<String>[
+    ..._asStringList(llmReview['reviewedScreenRowIds']),
+    for (final screen in _asMapList(llmReview['screenReviews'])) ...[
+      _asString(screen['screenRowId']),
+      ..._asStringList(screen['affectedScreenRowIds']),
+    ],
+  ]).where((id) => id.trim().isNotEmpty).toList();
+  if (reviewedRowIds.isEmpty) {
+    problems.add(
+      'reviewedScreenRowIds or screenReviews[].affectedScreenRowIds must identify the current screenshots reviewed by the LLM judge.',
+    );
+  } else {
+    final invalidRows = reviewedRowIds
+        .where((id) => !currentRowSet.contains(id))
+        .toList();
+    if (invalidRows.isNotEmpty) {
+      problems.add(
+        'LLM review references screen rows that are not in the current evidence: ${invalidRows.take(12).join(', ')}.',
+      );
+    }
+  }
+
+  final currentHashes = _asMapList(review['screenRows'])
+      .map((row) => _asString(row['screenshotHash']))
+      .where((hash) => hash.isNotEmpty)
+      .toSet();
+  final reviewedHashes = _uniqueStrings(<String>[
+    ..._asStringList(llmReview['reviewedScreenshotHashes']),
+    ..._asStringList(llmReview['screenshotHashes']),
+    for (final screen in _asMapList(llmReview['screenReviews']))
+      ..._asStringList(screen['screenshotHashes']),
+    for (final screen in _asMapList(llmReview['screenReviews']))
+      if (_asString(screen['screenshotHash']).isNotEmpty)
+        _asString(screen['screenshotHash']),
+  ]).where((hash) => hash.trim().isNotEmpty).toList();
+  if (reviewedHashes.isEmpty) {
+    problems.add(
+      'reviewedScreenshotHashes are required so the LLM review is tied to the exact screenshots under review.',
+    );
+  } else if (currentHashes.isNotEmpty) {
+    final invalidHashes = reviewedHashes
+        .where((hash) => !currentHashes.contains(hash))
+        .toList();
+    if (invalidHashes.isNotEmpty) {
+      problems.add(
+        'LLM review references screenshot hashes that are not in the current evidence: ${invalidHashes.take(8).join(', ')}.',
+      );
+    }
+  }
+
+  return problems;
+}
+
+JsonMap buildB25LlmReviewFreshnessGate({
+  required JsonMap review,
+  required JsonMap llmReview,
+  String? runId,
+  String? llmReviewPath,
+}) {
+  final screenRows = _asMapList(review['screenRows']);
+  final currentScreenRowIds = screenRows.map(_rowId).toList();
+  final problems = _b25LlmReviewFreshnessProblems(
+    review: review,
+    llmReview: llmReview,
+    runId: runId,
+    currentScreenRowIds: currentScreenRowIds,
+  );
+  final expectedRunId = runId ?? _asString(review['currentReviewRunId']);
+  final declaredRunId = _asString(
+    llmReview['currentReviewRunId'] ??
+        llmReview['reviewRunId'] ??
+        llmReview['runId'],
+  );
+  final reviewInputEvidence = review['reviewInputEvidence'];
+  final expectedCommit = reviewInputEvidence is JsonMap
+      ? _asString(reviewInputEvidence['appCommitSha'])
+      : '';
+  final declaredCommit = _asString(
+    llmReview['appCommitSha'] ?? llmReview['reviewedAppCommitSha'],
+  );
+  final reviewedRows = _uniqueStrings(<String>[
+    ..._asStringList(llmReview['reviewedScreenRowIds']),
+    for (final screen in _asMapList(llmReview['screenReviews'])) ...[
+      _asString(screen['screenRowId']),
+      ..._asStringList(screen['affectedScreenRowIds']),
+    ],
+  ]).where((id) => id.trim().isNotEmpty).toList();
+  final reviewedHashes = _uniqueStrings(<String>[
+    ..._asStringList(llmReview['reviewedScreenshotHashes']),
+    ..._asStringList(llmReview['screenshotHashes']),
+    for (final screen in _asMapList(llmReview['screenReviews']))
+      ..._asStringList(screen['screenshotHashes']),
+    for (final screen in _asMapList(llmReview['screenReviews']))
+      if (_asString(screen['screenshotHash']).isNotEmpty)
+        _asString(screen['screenshotHash']),
+  ]).where((hash) => hash.trim().isNotEmpty).toList();
+
+  return <String, Object?>{
+    'schemaVersion': 1,
+    'tool': 'b25_llm_review_freshness_gate',
+    'status': problems.isEmpty ? 'pass' : 'fail',
+    'llmReviewPath': llmReviewPath ?? '',
+    'expectedReviewRunId': expectedRunId,
+    'declaredReviewRunId': declaredRunId,
+    'expectedAppCommitSha': expectedCommit,
+    'declaredAppCommitSha': declaredCommit,
+    'freshReview':
+        llmReview['freshReview'] == true ||
+        llmReview['freshScreenshotReview'] == true,
+    'sourceReviewRunId': _asString(llmReview['sourceReviewRunId']),
+    'carriedForward': llmReview['carriedForward'] == true,
+    'reusedPriorReview': llmReview['reusedPriorReview'] == true,
+    'currentScreenRowCount': currentScreenRowIds.length,
+    'reviewedScreenRowCount': reviewedRows.length,
+    'reviewedScreenshotHashCount': reviewedHashes.length,
+    'reviewedScreenRowIds': reviewedRows,
+    'reviewedScreenshotHashes': reviewedHashes,
+    'requiredFields': <String>[
+      'freshReview=true',
+      'currentReviewRunId',
+      'appCommitSha',
+      'reviewedScreenRowIds',
+      'reviewedScreenshotHashes',
+    ],
+    'disallowedFields': <String>[
+      'sourceReviewRunId',
+      'carriedForward=true',
+      'reusedPriorReview=true',
+      'usesPriorReview=true',
+      'carriedFromPriorReview=true',
+    ],
+    'problems': problems,
+  };
+}
+
 JsonMap buildB25LlmUxReviewImport(
   JsonMap review,
   JsonMap llmReview, {
@@ -1830,6 +2065,12 @@ JsonMap buildB25LlmUxReviewImport(
 }) {
   final screenRows = _asMapList(review['screenRows']);
   final rowIds = screenRows.map(_rowId).toList();
+  final freshnessProblems = _b25LlmReviewFreshnessProblems(
+    review: review,
+    llmReview: llmReview,
+    runId: runId,
+    currentScreenRowIds: rowIds,
+  );
   final normalizedHolisticAnswers =
       _asMapList(llmReview['holisticQuestionAnswers']).map((answer) {
         final affectedRows = _resolveB25ScreenRowIds(
@@ -1848,7 +2089,8 @@ JsonMap buildB25LlmUxReviewImport(
           'answer': answerValue.isEmpty
               ? (score >= 80 ? 'yes' : 'no')
               : answerValue,
-          'verdict': answerValue == 'no' ||
+          'verdict':
+              answerValue == 'no' ||
                   answerValue == 'partial' ||
                   answerValue == 'fail' ||
                   score < 80
@@ -1966,6 +2208,7 @@ JsonMap buildB25LlmUxReviewImport(
       .toList();
   final llmCanPass =
       llmStatus == 'pass' &&
+      freshnessProblems.isEmpty &&
       blockingLlmFindings.isEmpty &&
       blockingLlmAnswers.isEmpty &&
       blockingLlmScreens.isEmpty;
@@ -1976,8 +2219,25 @@ JsonMap buildB25LlmUxReviewImport(
             !_findingId(finding).startsWith('LLM-UX-'),
       )
       .toList();
+  final freshnessFinding = freshnessProblems.isEmpty
+      ? null
+      : <String, Object?>{
+          'findingId': 'B25-LLM-VISION-REVIEW-NOT-FRESH',
+          'source': 'llm-vision-ux-judge',
+          'severity': 'major',
+          'status': 'open',
+          'resolved': false,
+          'blocksPass': true,
+          'title': 'LLM vision review is not fresh for this B25 pass',
+          'description':
+              'The imported LLM vision UX review does not prove that a fresh reviewer inspected the current screenshots for this run.',
+          'requiredFix':
+              'Run a new LLM Vision UX Judge pass against the current screenshot inventory. The artifact must declare freshReview=true, currentReviewRunId, appCommitSha, reviewedScreenRowIds, and reviewedScreenshotHashes, and must not carry sourceReviewRunId or reuse markers.',
+          'freshnessProblems': freshnessProblems,
+        };
   final combinedFindings = <JsonMap>[
     ...existingFindings,
+    if (freshnessFinding != null) freshnessFinding,
     ...normalizedFindings,
   ];
   final unresolvedBlockers = combinedFindings
@@ -2024,6 +2284,34 @@ JsonMap buildB25LlmUxReviewImport(
     ..['llmVisionReview'] = <String, Object?>{
       'schemaVersion': 1,
       'status': llmCanPass ? 'pass' : 'fail',
+      'freshReview': freshnessProblems.isEmpty,
+      'freshnessProblems': freshnessProblems,
+      'currentReviewRunId': _asString(
+        llmReview['currentReviewRunId'] ??
+            llmReview['reviewRunId'] ??
+            llmReview['runId'],
+      ),
+      'expectedReviewRunId': runId ?? _asString(review['currentReviewRunId']),
+      'sourceReviewRunId': _asString(llmReview['sourceReviewRunId']),
+      'carriedForward': llmReview['carriedForward'] == true,
+      'reusedPriorReview': llmReview['reusedPriorReview'] == true,
+      'appCommitSha': _asString(
+        llmReview['appCommitSha'] ?? llmReview['reviewedAppCommitSha'],
+      ),
+      'reviewedScreenRowIds': _uniqueStrings(<String>[
+        ..._asStringList(llmReview['reviewedScreenRowIds']),
+        for (final screen in normalizedScreenReviews)
+          ..._asStringList(screen['affectedScreenRowIds']),
+      ]),
+      'reviewedScreenshotHashes': _uniqueStrings(<String>[
+        ..._asStringList(llmReview['reviewedScreenshotHashes']),
+        ..._asStringList(llmReview['screenshotHashes']),
+        for (final screen in normalizedScreenReviews)
+          ..._asStringList(screen['screenshotHashes']),
+        for (final screen in normalizedScreenReviews)
+          if (_asString(screen['screenshotHash']).isNotEmpty)
+            _asString(screen['screenshotHash']),
+      ]),
       'reviewerType': _asString(
         llmReview['reviewerType'],
         fallback: 'llm-vision-ux-judge',
@@ -2137,19 +2425,23 @@ List<JsonMap> _workflowPersonaScorecardsWithLlmReview(
         'screenReviews': relatedReviews,
       },
       'semanticSurfaceProof': <String, Object?>{
-        ...((scorecard['semanticSurfaceProof'] as JsonMap?) ?? <String, Object?>{}),
+        ...((scorecard['semanticSurfaceProof'] as JsonMap?) ??
+            <String, Object?>{}),
         'status': blocksPass ? 'fail' : 'pass',
         'targetProductionSurface': targetSurface,
         'missingGroups': blocksPass
             ? _asStringList(
-                (scorecard['semanticSurfaceProof'] as JsonMap?)?['missingGroups'],
+                (scorecard['semanticSurfaceProof']
+                    as JsonMap?)?['missingGroups'],
               )
             : <String>[],
         'summary': blocksPass
             ? 'The imported LLM vision review still found this target surface incomplete for `$workflowId` / `$persona`.'
             : 'The imported LLM vision review visually confirmed `$targetSurface` for `$workflowId` / `$persona` from fresh after-screenshots.',
       },
-      'questions': _asMapList(scorecard['questions']).map(updateQuestion).toList(),
+      'questions': _asMapList(
+        scorecard['questions'],
+      ).map(updateQuestion).toList(),
       'summary': blocksPass
           ? 'Workflow/persona review failed for `$workflowId` / `$persona` after LLM vision import.'
           : 'Workflow/persona review passed for `$workflowId` / `$persona` after LLM vision import.',
@@ -6132,6 +6424,71 @@ String _b25ReviewMarkdown(JsonMap review) {
   return buffer.toString();
 }
 
+String _b25LlmReviewFreshnessGateMarkdown(JsonMap report) {
+  final problems = _asStringList(report['problems']);
+  final buffer = StringBuffer()
+    ..writeln('# B25 LLM Review Freshness Gate')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Status | `${_escape(_asString(report['status']))}` |')
+    ..writeln(
+      '| LLM review path | `${_escape(_asString(report['llmReviewPath']))}` |',
+    )
+    ..writeln(
+      '| Expected run | `${_escape(_asString(report['expectedReviewRunId']))}` |',
+    )
+    ..writeln(
+      '| Declared run | `${_escape(_asString(report['declaredReviewRunId']))}` |',
+    )
+    ..writeln(
+      '| Expected app commit | `${_escape(_asString(report['expectedAppCommitSha']))}` |',
+    )
+    ..writeln(
+      '| Declared app commit | `${_escape(_asString(report['declaredAppCommitSha']))}` |',
+    )
+    ..writeln('| Fresh review flag | `${report['freshReview'] == true}` |')
+    ..writeln(
+      '| Source review run | `${_escape(_asString(report['sourceReviewRunId']))}` |',
+    )
+    ..writeln('| Carried forward | `${report['carriedForward'] == true}` |')
+    ..writeln(
+      '| Reused prior review | `${report['reusedPriorReview'] == true}` |',
+    )
+    ..writeln('| Current screen rows | `${report['currentScreenRowCount']}` |')
+    ..writeln(
+      '| Reviewed screen rows | `${report['reviewedScreenRowCount']}` |',
+    )
+    ..writeln(
+      '| Reviewed screenshot hashes | `${report['reviewedScreenshotHashCount']}` |',
+    )
+    ..writeln()
+    ..writeln('## Problems');
+  if (problems.isEmpty) {
+    buffer.writeln();
+    buffer.writeln('- None.');
+  } else {
+    buffer.writeln();
+    for (final problem in problems) {
+      buffer.writeln('- ${_escape(problem)}');
+    }
+  }
+  buffer
+    ..writeln()
+    ..writeln('## Required Freshness Fields')
+    ..writeln()
+    ..writeln(
+      '- ${_asStringList(report['requiredFields']).map(_escape).join('\n- ')}',
+    )
+    ..writeln()
+    ..writeln('## Disallowed Prior-Review Fields')
+    ..writeln()
+    ..writeln(
+      '- ${_asStringList(report['disallowedFields']).map(_escape).join('\n- ')}',
+    );
+  return buffer.toString();
+}
+
 String _b25ScreenMatrixMarkdown(JsonMap review) {
   final rows = _asMapList(review['screenRows']);
   final buffer = StringBuffer()
@@ -6304,6 +6661,16 @@ Imports a fresh LLM vision UX Judge review into B25 schema v4 evidence. This is 
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input <independent-production-ux-review.json> --llm-review <llm-review.json> --output <independent-production-ux-review.json> [--run-id <b25-v4-pass-N>] [--markdown-output <independent-production-ux-review.md>] [--matrix-output <product-ux-screen-review-matrix.md>]
+''';
+}
+
+String _llmReviewFreshnessGateUsage() {
+  return '''
+b25_llm_review_freshness_gate (B25)
+Fails when an LLM Vision UX Judge review is missing current-run freshness proof, reuses a prior review, references old screenshot rows/hashes, or does not match the current app commit. Run this before importing the LLM review.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input <independent-production-ux-review.json> --llm-review <llm-review.json> [--run-id <b25-v4-pass-N>] [--output <b25-llm-review-freshness-gate.json>] [--markdown-output <b25-llm-review-freshness-gate.md>]
 ''';
 }
 
@@ -8124,9 +8491,8 @@ List<JsonMap> _b25CardSurfaceRegistryForRows(List<JsonMap> screenRows) {
         ...entry.value,
         'screenRowIds': (rowIdsByWorkflow[entry.key] ?? <String>{}).toList()
           ..sort(),
-        'communityIds': (communitiesByWorkflow[entry.key] ?? <String>{})
-            .toList()
-          ..sort(),
+        'communityIds':
+            (communitiesByWorkflow[entry.key] ?? <String>{}).toList()..sort(),
       },
   ]..sort(
     (left, right) =>
@@ -8543,7 +8909,8 @@ JsonMap _b25SurfaceSpec({
     'requiredInteractions': requiredInteractions,
     'primaryActions': primaryActions,
     'alternateActions': alternateActions,
-    'rendererTarget': 'Demo App renderer selected by workflow ID and surface family',
+    'rendererTarget':
+        'Demo App renderer selected by workflow ID and surface family',
     'fakeBackendSupport':
         'LocalInAppBackend imports the initialization package, stores workflow state, records persona-specific receipts, and exposes surface state to the Demo App.',
   };
@@ -9755,6 +10122,22 @@ _DerivedFailure? _failOnLlmVisionReview(JsonMap evidence) {
   final findings = _asMapList(review['findings']);
   final holisticAnswers = _asMapList(review['holisticQuestionAnswers']);
   final screenReviews = _asMapList(review['screenReviews']);
+  final freshnessProblems = _b25LlmReviewFreshnessProblems(
+    review: evidence,
+    llmReview: review,
+    runId: _asString(evidence['currentReviewRunId']),
+    currentScreenRowIds: [
+      for (final row in _asMapList(evidence['screenRows'])) _rowId(row),
+    ],
+  );
+  if (freshnessProblems.isNotEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'The LLM vision UX review is not fresh for this B25 pass: ${freshnessProblems.join(' ')}',
+      evidenceUsed: freshnessProblems,
+    );
+  }
   final blockingFindings = findings
       .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
       .map(_findingId)

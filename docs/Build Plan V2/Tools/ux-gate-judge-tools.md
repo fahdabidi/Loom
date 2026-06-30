@@ -15,7 +15,8 @@ judge failures into fix batches for the next worker iteration.
 | Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
 | Deterministic Review Scaffold | Normalizes schema v4 review evidence and carries deterministic visual audit results into rows. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Review JSON scaffold, matrix, deterministic critiques. |
 | LLM Vision UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions from actual visible UI, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes or source-code claims. | `llm-vision-ux-review-<run-id>.json` with holistic answers, screen reviews, and findings. |
-| LLM Review Importer Tool | Imports the LLM judge output into schema v4 evidence and resolves affected screen row IDs. | LLM review JSON plus current B25 evidence. | `llmVisionReview` in `independent-production-ux-review.json`. |
+| LLM Freshness Gate Tool | Deterministically rejects carried-forward, copied, stale, or mismatched LLM review artifacts before import. | Raw LLM review JSON plus current B25 evidence. | `b25-llm-review-freshness-gate-<run-id>.json/.md`; fails if the review is not fresh for the current run, app commit, screen rows, and screenshot hashes. |
+| LLM Review Importer Tool | Imports the LLM judge output into schema v4 evidence and resolves affected screen row IDs. | LLM review JSON plus current B25 evidence after the freshness gate passes. | `llmVisionReview` in `independent-production-ux-review.json`. |
 | Workflow Interaction-Model Judge Tool | Scores whether each workflow/persona UI proves the correct semantic interaction model. | Screenshot-backed evidence rows, product docs, coverage rows, independent judge output. No worker implementation notes. | `workflowLifecycleScorecards`, `semanticInteractionModel`, interaction-model findings, lifecycle markdown. |
 | Production UX Judge CLI | Deterministically validates the independent judge output against B25 pass criteria. | Machine-readable review JSON, scorecard schema, ticket template, screenshot metadata. | Criteria scorecard, pass/fail, remediation tickets. |
 | Remediation Planner | Converts judge failures into right-sized fix batches. | Judge scorecard, findings, phase docs. | Remediation plan for Worker Agent. |
@@ -43,6 +44,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
@@ -69,6 +71,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
 | `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
 | `b25_independent_ux_judge.dart` | B25 | Build the deterministic review scaffold and carry visual-inspection outputs into schema v4. It is not the final semantic product-quality judge. |
+| `b25_llm_review_freshness_gate.dart` | B25 | Fails when the LLM Vision UX Judge artifact does not declare `freshReview=true`, does not match the current run/app commit/screenshot hashes, or declares prior-review reuse. |
 | `b25_llm_ux_review_importer.dart` | B25 | Import the fresh LLM Vision UX Judge artifact into `llmVisionReview` and fail/ticket when the LLM review finds blocker or major product UX issues. |
 | `b25_workflow_interaction_model_judge.dart` | B25 | Fail workflow/persona UI that does not prove the right semantic interaction model: concrete object/context, decision information, domain-correct primary action, domain-required alternate/change/reject action, persistent result state, and receiver/continuation state. |
 | `b25_workflow_lifecycle_judge.dart` | B25 | Compatibility alias for the interaction-model judge. Prefer `b25_workflow_interaction_model_judge.dart` in new B25 runs. |
@@ -193,7 +196,11 @@ B25 evidence must include:
   metrics, signals, status, summary, and finding IDs. A missing or failed `visualInspection` blocks B25.
 - `llmVisionReview`: the imported LLM Vision UX Judge artifact, including status, summary,
   holistic answers, screen reviews, findings, screenshot-backed visible evidence, and affected row IDs.
-  A missing or failing `llmVisionReview` blocks B25.
+  A missing or failing `llmVisionReview` blocks B25. The raw artifact must first pass
+  `b25_llm_review_freshness_gate.dart`: it must declare `freshReview=true`, `currentReviewRunId`,
+  `appCommitSha`, `reviewedScreenRowIds`, and `reviewedScreenshotHashes`, and it must not include
+  `sourceReviewRunId`, `carriedForward=true`, `reusedPriorReview=true`, `usesPriorReview=true`, or
+  `carriedFromPriorReview=true`.
 - `productDocCoverage`: links each community/test app to the product experience doc used for review,
   records the doc commit or local artifact hash, and states whether the ticket is a product-spec gap or
   an implementation/evidence gap.
@@ -311,6 +318,10 @@ Inspect the actual screenshots as pixels and layout, not just JSON rows. Fail ro
 checklist/review modals, repeated generic card shells, thin-content surfaces, weak visual identity,
 default-scaffold screens, or missing/undecodable screenshots. Treat `visualInspection.status=fail` as
 direct evidence that the row cannot pass until the UI is redesigned and recaptured.
+Do not reuse a prior LLM review. The JSON you produce for this pass must be a fresh screenshot-specific
+review for the current run and must include `freshReview=true`, `currentReviewRunId`, `appCommitSha`,
+`reviewedScreenRowIds`, and `reviewedScreenshotHashes`. Do not include `sourceReviewRunId`,
+`carriedForward=true`, or `reusedPriorReview=true`.
 Before judging a screen, compare it to the relevant community product experience doc. If the product
 doc does not define the surface, persona, required content, or acceptance criteria clearly enough to
 judge the screenshot, mark a `product-spec-gap` and require the product doc to be updated before UI
@@ -322,9 +333,16 @@ when the after screenshots visibly prove the requested domain surface and the sc
 `semanticSurfaceProof.status` is `pass`.
 
 First answer the holistic direct questions for the entire app. Then answer the workflow/persona direct
-questions for each reviewed workflow/persona pair. Score each criterion independently. Return pass only
-when every blocking criterion passes, both direct-question passes are green, screenshots are fresh,
-critiques are screen-specific, visual inspection passes, and primary workflow surfaces are domain-native.
+questions for each reviewed workflow/persona pair. The questions must be generic enough to apply to any
+community: does the screen feel like a modern production app for this community/persona; is information
+architecture centered on real user jobs and community content; does copy sound like product language
+rather than workflow/spec/test language; are hierarchy, spacing, typography, color, and component
+variety shippable; are truncation, clipping, crowding, repeated-card fatigue, over-prominent platform
+banners, one-note palettes, and default-scaffold cues absent; does the screen provide concrete content
+and lifecycle actions; and what exact visible changes are required before pass. Score each criterion
+independently. Return pass only when every blocking criterion passes, both direct-question passes are
+green, screenshots are fresh, critiques are screen-specific, visual inspection passes, and primary
+workflow surfaces are domain-native.
 ```
 
 ## Remediation Planner Contract

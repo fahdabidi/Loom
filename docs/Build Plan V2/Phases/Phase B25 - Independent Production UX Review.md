@@ -107,6 +107,14 @@ a real user would expect.
   whether the whole experience feels production-grade, whether the UI is modern/easy/appealing,
   whether navigation and information architecture center community jobs-to-be-done, and whether the
   overall visible UI avoids blocking or major layout/content defects.
+- Fresh LLM Vision UX Judge artifact for the current screenshot run. B25 cannot close with a reused,
+  copied, summarized, or carried-forward LLM review from a prior pass. The artifact must declare
+  `freshReview=true`, `currentReviewRunId`, `appCommitSha`, `reviewedScreenRowIds`, and
+  `reviewedScreenshotHashes`; it must not declare `sourceReviewRunId`, `carriedForward=true`, or
+  `reusedPriorReview=true`. Run `b25_llm_review_freshness_gate.dart` against the raw LLM artifact
+  before import, archive the JSON/Markdown freshness report, and fail the pass if the gate fails. A
+  pass that changes only docs, metadata, registry context, or evidence still needs a fresh
+  screenshot-specific LLM judgment before B25 can remain complete.
 - Workflow/persona direct-question scorecards in the machine-readable evidence. Every workflow/persona
   pair must have its own answers about task clarity, domain-native primary surface, natural actions,
   input/validation/result states, receiver or unauthorized states, and whether that specific workflow
@@ -189,6 +197,16 @@ The phase must also remain incomplete when either direct-question pass is absent
 pass must judge the whole product experience. The workflow/persona pass must judge each workflow for
 each persona separately. A broad statement that the app looks good cannot substitute for per-workflow
 evidence, and many local workflow passes cannot substitute for a coherent production-grade overall UI.
+
+The LLM Vision UX Judge must ask generic screen-quality questions that apply to any community type, not
+community-specific hardcoded questions. For every reviewed screen or workflow/persona group, the judge
+must answer from the current screenshots: does this feel like a modern production app for this
+community and persona; is the screen organized around real community content and user jobs; does the
+copy read like product language rather than workflow/spec/test language; are hierarchy, spacing,
+typography, color, and component variety shippable; are truncation, clipping, crowding, repeated-card
+fatigue, over-prominent platform banners, one-note palettes, or default-scaffold cues absent; does the
+screen include the concrete content and lifecycle actions a real user needs; and what exact visible
+changes are required before it can pass.
 
 The phase must also remain incomplete when any primary workflow surface is still represented only by a
 generic workflow card, checklist/review modal, metadata/settings page, or repeated card shell. These may
@@ -321,24 +339,34 @@ the owner explicitly asks for review-only planning or pauses implementation.
     and layout and write a structured JSON review with `status`, `summary`,
     `holisticQuestionAnswers`, `screenReviews`, and `findings`.
 
-    The LLM Vision UX Judge answers the whole-product questions:
+    The LLM Vision UX Judge answers generic whole-product and screen-quality questions that apply to
+    any community:
 
-   - Does the whole experience feel like a real production community app for the target users, not
-     merely an implemented workflow harness?
-   - Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?
-   - Is the overall information architecture organized around community content and real
-     jobs-to-be-done instead of workflow lists or validation surfaces?
-   - Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold,
-     repeated-card, checklist-modal, and thin-content defects?
+   - Does this screen feel like a modern production app for this community and persona?
+   - Is the information architecture centered on real user jobs and community content?
+   - Does the copy sound like product language rather than workflow/spec/test language?
+   - Are the visual hierarchy, spacing, typography, color, and component variety shippable?
+   - Are title truncation, clipping, crowding, repeated-card fatigue, over-prominent platform banners,
+     one-note palettes, and default-scaffold cues absent?
+   - Does the screen provide the concrete content and lifecycle actions a real user needs?
+   - What exact visible changes are required before this screen can pass?
 
     It also reviews screen rows and workflow/persona batches small enough that each answer cites
     concrete visible UI details. The agent must classify each failure as a product-spec gap,
     implementation gap, evidence gap, or mixed gap where possible, and must attach reference patterns
     or research queries for remediation tickets.
 
-12. **Import LLM vision review:** import the LLM review into the B25 evidence with
-    `b25_llm_ux_review_importer.dart`. This is the semantic review artifact that the deterministic
-    Production UX Judge validates and converts into tickets:
+12. **Validate and import LLM vision review:** first run `b25_llm_review_freshness_gate.dart` against
+    the raw LLM artifact. The gate must pass before import and proves the LLM review belongs to the
+    current run, current app commit, current screen row IDs, and current screenshot hashes:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.md'
+   ```
+
+    Then import the LLM review into the B25 evidence with `b25_llm_ux_review_importer.dart`. This is
+    the semantic review artifact that the deterministic Production UX Judge validates and converts into
+    tickets:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'

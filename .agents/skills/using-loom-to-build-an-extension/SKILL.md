@@ -197,16 +197,31 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     existence, metadata, or expected assertions.
 57. B25 cannot pass until `b25_independent_ux_judge.dart` has produced the deterministic schema v4
     review scaffold, a fresh LLM Vision UX Judge Agent has inspected the actual screenshots and
-    produced `llm-vision-ux-review-<run-id>.json`, `b25_llm_ux_review_importer.dart` has imported that
-    artifact into `llmVisionReview`, `b25_workflow_interaction_model_judge.dart` has produced passing
-    semantic interaction-model `workflowLifecycleScorecards`, and
+    produced `llm-vision-ux-review-<run-id>.json`, `b25_llm_review_freshness_gate.dart` has verified
+    that artifact is fresh for the current run/app commit/screenshot hashes,
+    `b25_llm_ux_review_importer.dart` has imported that artifact into `llmVisionReview`,
+    `b25_workflow_interaction_model_judge.dart` has produced passing semantic interaction-model
+    `workflowLifecycleScorecards`, and
     `production_ux_judge.dart` emits
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
     every B25 pass criterion, `b25-remediation-tickets-<run-id>.json` and `.md` for every failed
     blocking criterion, and no blocking criterion failures.
+    A carried-forward, copied, or prior-run LLM vision review can never close B25, even when app code
+    did not intentionally change. The imported LLM artifact must declare `freshReview=true`,
+    `currentReviewRunId=<run-id>`, `appCommitSha`, `reviewedScreenRowIds`, and
+    `reviewedScreenshotHashes`, and must not include `sourceReviewRunId`, `carriedForward=true`, or
+    `reusedPriorReview=true`.
 58. B25 production UX criteria must be asked as direct questions. Avoid vague prompts such as "looks
     modern"; ask concrete questions such as "Is the UI modern, easy to use, easy to navigate, and
     visually appealing for the target persona?" and require screenshot-backed yes/no/partial answers.
+    Keep the questions community-agnostic so they catch the same class of issue in any community:
+    "Does this screen feel like a modern production app for this community and persona?", "Is the
+    information architecture centered on real user jobs and community content?", "Does the copy sound
+    like product language rather than workflow/spec/test language?", "Are the visual hierarchy,
+    spacing, typography, color, and component variety shippable?", "Are title truncation, clipping,
+    crowding, repeated-card fatigue, over-prominent platform banners, and one-note palettes absent?",
+    "Does the screen provide the concrete content and lifecycle actions a real user needs?", and "What
+    exact visible changes are required before this screen can pass?"
 59. B25 requires three independent direct-question passes: one holistic product UX pass for the whole
     app or community experience, one workflow/persona pass for every reviewed workflow/persona pair,
     and one semantic workflow interaction-model pass for every reviewed workflow/persona pair. All three must be green
@@ -477,6 +492,7 @@ judge CLIs are:
 - B25 capture coverage gate: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 review scaffold: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 LLM freshness gate: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart`
 - B25 LLM review import: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart`
 - B25 workflow interaction-model judge: `dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart`
 - B25: `dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart`
@@ -513,6 +529,7 @@ Every B25 pass must also run the judge and iteration scorecard before that pass 
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
