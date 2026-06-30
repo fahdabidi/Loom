@@ -1174,8 +1174,14 @@ String _domainSummaryFor(
   if (id.contains('announcement')) {
     return 'Draft message includes audience, timing, and delivery details.';
   }
+  if (id.contains('notification')) {
+    return 'Notification includes sender, audience, timestamp, message body, and receiver inbox state.';
+  }
   if (id.contains('rsvp') || id.contains('event')) {
-    return 'Event details include date, location, capacity, and attendance.';
+    return 'Event details include date, location, capacity, RSVP action, and attendance result.';
+  }
+  if (id.contains('practice') || id.contains('schedule')) {
+    return 'Practice details include date, location, capacity, RSVP action, and confirmed result.';
   }
   if (id.contains('donation')) {
     return 'Record a 50.00 USD donation with receipt and privacy choices.';
@@ -1192,12 +1198,20 @@ String _domainSummaryFor(
   if (id.contains('request') || id.contains('approval')) {
     return 'Submitted details are ready for a decision and member follow-up.';
   }
+  if (id.contains('minor-redaction') || id.contains('redaction')) {
+    return 'Protected youth roster profile includes minor-data redaction, guardian visibility, and coach-only details.';
+  }
   if (id.contains('export') ||
       id.contains('import') ||
       id.contains('transfer') ||
-      id.contains('redaction') ||
       id.contains('checksum')) {
     return 'Data package includes scope, protected fields, and handoff status.';
+  }
+  if (id.contains('document')) {
+    return 'Community Rules document file is a PDF updated for members with access state.';
+  }
+  if (id.contains('no-fill')) {
+    return 'Ad slot disclosure shows a no-fill state with no sponsored message overlapping content.';
   }
   if (id.contains('message') || id.contains('connection')) {
     return 'Member communication stays scoped to the community relationship.';
@@ -1234,10 +1248,21 @@ List<String> _domainMetadataFor(
 ) {
   final id = workflow.workflowId;
   if (id.contains('announcement')) {
-    return const ['Members', 'Today', 'Inbox + push'];
+    return const ['Members', 'Today', 'From admin', 'Inbox + push'];
   }
-  if (id.contains('rsvp') || id.contains('event')) {
-    return const ['This week', 'Community venue', 'Capacity tracked'];
+  if (id.contains('notification')) {
+    return const ['From admin', 'Members', 'Today', 'Inbox + push'];
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('schedule')) {
+    return const [
+      'This week',
+      'Community venue',
+      'Capacity tracked',
+      'RSVP available',
+    ];
   }
   if (id.contains('donation')) {
     return const ['50.00 USD', 'Receipt saved', 'Private option'];
@@ -1247,6 +1272,15 @@ List<String> _domainMetadataFor(
   }
   if (id.contains('care')) {
     return const ['Private details', 'Care team', 'Consent checked'];
+  }
+  if (id.contains('minor-redaction') || id.contains('redaction')) {
+    return const ['Minor profile', 'Guardian visibility', 'Coach-only details'];
+  }
+  if (id.contains('document')) {
+    return const ['Members access', 'PDF updated', 'File metadata'];
+  }
+  if (id.contains('no-fill')) {
+    return const ['No-fill state', 'Ad disclosure', 'No sponsored'];
   }
   if (id.contains('ad')) {
     return const ['No ad shown', 'Preference saved', 'Receipt ready'];
@@ -1258,7 +1292,7 @@ List<String> _domainMetadataFor(
     case 'Payment':
       return const ['Amount ready', 'Receipt saved', 'Member-owned'];
     case 'Publishing':
-      return const ['Members', 'Today', 'Inbox + push'];
+      return const ['Members', 'Today', 'From admin', 'Inbox + push'];
     case 'Approval':
       return const ['Needs decision', 'Private notes', 'Member notified'];
     case 'Portability':

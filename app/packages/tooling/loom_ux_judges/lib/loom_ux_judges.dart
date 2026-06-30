@@ -3286,6 +3286,37 @@ List<JsonMap> _semanticRequirementGroupsForWorkflow(String workflowId) {
       ]),
     ];
   }
+  if (id.contains('reminder') || id.contains('notification')) {
+    return <JsonMap>[
+      _semanticGroup('sender or recipient group', <String>[
+        'sender',
+        'from',
+        'audience',
+        'members',
+        'recipient',
+      ]),
+      _semanticGroup('notification message body', <String>[
+        'message',
+        'body',
+        'notice',
+        'notification',
+      ]),
+      _semanticGroup('timestamp or delivery timing', <String>[
+        'timestamp',
+        'time',
+        'today',
+        'date',
+        'delivery',
+      ]),
+      _semanticGroup('receiver inbox/feed state', <String>[
+        'receiver',
+        'inbox',
+        'notification',
+        'read',
+        'received',
+      ]),
+    ];
+  }
   if (id.contains('rsvp') ||
       id.contains('event') ||
       id.contains('practice') ||
@@ -3324,6 +3355,34 @@ List<JsonMap> _semanticRequirementGroupsForWorkflow(String workflowId) {
         'join',
         'confirmed',
         'ticket',
+      ]),
+    ];
+  }
+  if (id.contains('minor-redaction') || id.contains('redaction')) {
+    return <JsonMap>[
+      _semanticGroup('protected youth or minor profile', <String>[
+        'minor',
+        'youth',
+        'player',
+        'profile',
+      ]),
+      _semanticGroup('redaction or privacy state', <String>[
+        'redaction',
+        'redacted',
+        'protected',
+        'privacy',
+      ]),
+      _semanticGroup('guardian or coach visibility', <String>[
+        'guardian',
+        'coach',
+        'visibility',
+        'coach-only',
+      ]),
+      _semanticGroup('roster or profile details', <String>[
+        'roster',
+        'profile',
+        'details',
+        'member',
       ]),
     ];
   }

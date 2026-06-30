@@ -101,7 +101,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface and interaction-model proof. | Pass 11 is the current failed run under the stricter semantic-closure, product-doc, and semantic interaction-model bar. It closed the workflow lifecycle gate completely, but six direct-question criteria still fail because 10 workflow/persona semantic-surface rows need more visible domain proof. Pass 12 must consume `b25-remediation-plan-b25-v4-pass-12.md`, add the missing screenshot-visible sender/author, file metadata, RSVP result, ad no-fill disclosure, and specific target-surface proof, then rerun the full B25 chain from fresh screenshots. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998` |
+| B25 | Complete | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface and interaction-model proof. | Pass 12 closes the stricter semantic-closure, product-doc, and semantic interaction-model bar. The full B25 chain passed from fresh Android screenshots: independent UX judge, interaction-model judge, production UX judge, iteration scorecard, manifest gate, B25 phase gate, boundary lint, and diff check. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `TBD` |
 
 ## Phase Outcome Summary
 
@@ -384,7 +384,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Reopened | Product-UX v4 pass 9 is historical under the stricter semantic-closure and product-doc bar. B25 must rerun with current community-specific product experience docs, a blueprint derived from those docs, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, domain-native primary workflow surfaces, holistic and workflow/persona direct-question passes, semantic surface proof for every primary workflow/persona row, before/after ticket closure evidence, production UX judge scorecard, and per-pass iteration scorecards. |
+| B25 | None | Complete | Product-UX v4 pass 12 closes the stricter semantic-closure and product-doc bar. B25 has current community-specific product experience docs, a blueprint derived from those docs, schema v4 evidence, screenshot freshness, visible-text extraction, non-boilerplate critique, domain-native primary workflow surfaces, holistic and workflow/persona direct-question passes, semantic surface proof for every primary workflow/persona row, before/after ticket closure evidence, production UX judge scorecard, and per-pass iteration scorecards. |
 
 Closeout rule for reopened phases:
 
@@ -1686,22 +1686,18 @@ Closeout rule for reopened phases:
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
   pending.
-- **Current v4 pass:** `b25-v4-pass-11` is the current failed run under the semantic-closure,
-  product-doc, and semantic interaction-model bar added after review of the Masjid Nur screens. It
-  fixed support-surface lifecycle scoring, made visible primary actions match the expected semantic
-  interaction models, added durable social result states, and reran the B25 evidence and judge chain
-  against fresh screenshots. `b25_capture_workflow_screenshots.dart` recaptured B12-B20 as phase-split
-  `flutter drive` evidence and wrote 208 screenshot files. The B25 collector generated 195 schema v4
-  screen rows, workflow/persona coverage passed 68 of 68 rows, `b25_visual_inspection_auditor.dart`
-  passed 195 of 195 rows, and `b25_workflow_interaction_model_judge.dart` passed 68 of 68 lifecycle
-  rows. `b25_independent_ux_judge.dart` still failed with 2 findings and `production_ux_judge.dart`
-  failed 6 criteria because 10 workflow/persona rows still need visible semantic-surface proof. The
-  iteration scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-11.md`
-  records 0 blockers, 0 unresolved major findings, 1 resolved blocker/major finding class, and 0 newly
-  introduced blocker/major findings, but B25 cannot pass while blocking criteria remain. B25 remains
-  reopened; pass 12 must consume
-  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-12.md` and close the 10 remaining
-  workflow/persona semantic-surface rows from fresh after-screenshot evidence.
+- **Current v4 pass:** `b25-v4-pass-12` closes the semantic-closure, product-doc, and semantic
+  interaction-model bar added after review of the Masjid Nur screens. It added visible sender/author,
+  notification content, RSVP result, document file metadata, no-fill disclosure, and protected
+  minor-redaction proof, then reran the B25 evidence and judge chain against fresh screenshots.
+  `b25_capture_workflow_screenshots.dart` recaptured B12-B20 as phase-split `flutter drive` evidence
+  and wrote 208 screenshot files. The B25 collector generated 195 schema v4 screen rows,
+  workflow/persona coverage passed 68 of 68 rows, `b25_visual_inspection_auditor.dart` passed 195 of
+  195 rows, `b25_independent_ux_judge.dart` passed with 0 findings, `b25_workflow_interaction_model_judge.dart`
+  passed 68 of 68 lifecycle rows, and `production_ux_judge.dart` passed 14 of 14 criteria. The
+  iteration scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-12.md`
+  records `B25 can pass=true`, 0 blockers, 0 unresolved major findings, and 0 newly introduced
+  blocker/major findings. Manifest gate, B25 phase gate, boundary lint, and `git diff --check` passed.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 pass-1 ticket/planner closeout
   `5d4e313`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`;
   reference-pattern ticket update `6d01a22`; v4 pass-2 `68b5fad`; v4 pass-3 `9c59a5a`; v4 pass-4 `b672089`.
@@ -1800,7 +1796,8 @@ Use the component hash generated by `manifest_gate`.
 | initialization-package-schema | A5 | 1dd4a2b2ca52 | A5 |
 | data-schema-store | A5 | 6a09d351f11f | B8 |
 | app-shell-runtime | A6 | c7c0a602fdad | A6 |
-| loom-communities-demo-app | A6 | 9bf668d35b13 | B25 v4 pass 9 |
+| loom-communities-demo-app | A6 | dd8ff5d27a80 | B25 v4 pass 12 |
+| loom-ux-judges | B21-B25 | 77d38fcfaf7a | B25 v4 pass 12 |
 | local-in-app-backend | A6 | 5d1deb013df1 | B10 archive hardening |
 
 ## Artifact Completion Checklist

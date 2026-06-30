@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 3,
+  "planType": "b25-remediation-plan",
+  "reviewRunId": "b25-v4-pass-12",
+  "status": "no-open-tickets",
+  "generatedAt": "2026-06-30T04:15:12.106846Z",
+  "sourceTicketsPath": "../docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-12.json",
+  "sourceTicketCount": 0,
+  "sourceTickets": [],
+  "scorecardSummary": {
+    "status": "pass",
+    "remainingBlockingMajor": 0,
+    "blockingCriterionFailures": 0
+  },
+  "workItemSummary": {
+    "productDocRepairWorkItemCount": 0,
+    "evidenceRepairWorkItemCount": 0,
+    "uiRemediationWorkItemCount": 0,
+    "communityCount": 0,
+    "workflowCount": 0,
+    "personaCount": 0,
+    "sequencing": "Product-spec work items must close first, then evidence repair work items, then matching UI remediation work items."
+  },
+  "batches": [],
+  "plannerRules": [
+    "Worker agents implement from remediation batches, not from optimistic summaries.",
+    "Product-spec work items must be completed and rerun before evidence repair or UI remediation work items for the same community are assigned.",
+    "Evidence repair work items must be completed and rerun before UI remediation work items for the same community/workflow/persona are assigned.",
+    "UI remediation work must be scoped by community/workflow/persona and target production surface, not by a broad global ticket summary.",
+    "The independent judge must rerun after each batch that changes UI, evidence, or critique.",
+    "No next UX feedback loop starts until the current remediation iteration is committed."
+  ]
+}
