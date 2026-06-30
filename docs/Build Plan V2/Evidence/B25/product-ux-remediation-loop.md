@@ -104,6 +104,7 @@ findings were resolved in pass 9.
 
 - Prep commit: `3606c8c` added advisory workflow-to-card-surface registry context to the Demo App,
   B25 evidence, Skill docs, API/card-surface references, and community Product Docs V2 specs.
+- Iteration evidence commit: `574cff3`.
 - Full capture: `docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log`.
 - Capture coverage: `docs/Build Plan V2/Evidence/B25/b25-capture-coverage-report-b25-v4-pass-18.json`
   passed with full B12-B20 coverage and 198 screenshots.
