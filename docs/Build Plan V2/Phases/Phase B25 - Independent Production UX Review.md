@@ -226,14 +226,34 @@ the owner explicitly asks for review-only planning or pauses implementation.
    B25 capture; that path can pass without persisting PNGs into the Evidence folders.
 
    ```powershell
-   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
    ```
 
    The capture step must overwrite the phase screenshot PNGs under
    `docs/Build Plan V2/Evidence/B12` through `B20`, refresh each phase's
-   `workflow-ui-evidence.json`, and write `B20/all-workflow-ui-evidence.json`. If the screenshot
-   hashes or modified timestamps do not change after a UI remediation, the B25 pass is invalid.
-4. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
+   `workflow-ui-evidence.json`, and write `B20/all-workflow-ui-evidence.json` with
+   `captureMode=full-b25`, `fullB25Coverage=true`, and `commitEligible=true`. If the screenshot hashes
+   or modified timestamps do not change after a UI remediation, the B25 pass is invalid.
+
+   Targeted recaptures are allowed only for remediation diagnostics:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode targeted-precheck --phases B13 --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+   ```
+
+   A targeted precheck writes a non-committable B25 diagnostic aggregate and must never overwrite the
+   canonical `B20/all-workflow-ui-evidence.json` used for phase closeout.
+4. **Full-coverage capture gate:** run the deterministic coverage gate before the B25 evidence
+   collector. This gate fails if the canonical aggregate is missing, targeted-only, stale, lacks any
+   B12-B20 phase, has too few workflow manifests, or has too few screenshots.
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-capture-coverage-report.json'
+   ```
+
+   No B25 pass may be committed or judged as production-ready unless this gate passes for the same app
+   commit and screenshot bundle under review.
+5. **Evidence collector:** run the deterministic B25 evidence collector to convert live workflow UI
    evidence into schema v4 B25 artifacts with screenshot hashes, timestamps, emulator/device metadata,
    visible text source, and app commit SHA:
 
@@ -244,7 +264,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    The collector is not the judge. It may mark B25 as failed/pending until the independent UX review
    fills screen-specific critiques, holistic direct-question answers, workflow/persona scorecards,
    findings, remediation links, and final decision.
-5. **Workflow/persona coverage collector:** run the deterministic coverage collector to prove the
+6. **Workflow/persona coverage collector:** run the deterministic coverage collector to prove the
    evidence has explicit entry/action/result screenshots for every workflow/persona combination before
    the independent judge sees it:
 
@@ -254,7 +274,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
 
    The coverage collector is still not a product-quality judge. It fails when screenshots are missing,
    personas are generic, or workflow/persona evidence cannot be tied to concrete screen rows.
-6. **Visual inspection auditor:** run the deterministic visual auditor to inspect the actual screenshot
+7. **Visual inspection auditor:** run the deterministic visual auditor to inspect the actual screenshot
    pixels/layout before the independent judge. It must attach `visualInspection` to every screen row
    and fail on missing screenshots, checklist-modal-like overlays, repeated-card shells, thin-content
    screens, weak visual identity, or other visual signals that a fresh reviewer would flag:
@@ -268,13 +288,13 @@ the owner explicitly asks for review-only planning or pauses implementation.
    repeated generic cards, or a checklist modal.
    If this tool exits nonzero, keep its JSON/markdown output and continue through the independent and
    production judges in the same pass so remediation tickets and the iteration scorecard are generated.
-7. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
+8. **Complete screen inventory:** inventory every user-facing screen, state, dialog, card, feed item,
    form, confirmation, error, empty state, persona variant, and action result. Do not sample.
-8. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
+9. **Schema v4 evidence generation:** write `independent-production-ux-review.json` with v4 fields:
    screenshot hash/timestamp, app commit SHA, visible text, UI-pattern classification,
    primary/secondary surface type, row-specific critique, findings, remediation IDs, and unresolved
    severity counts.
-9. **Deterministic review scaffold:** run `b25_independent_ux_judge.dart` to normalize the schema v4
+10. **Deterministic review scaffold:** run `b25_independent_ux_judge.dart` to normalize the schema v4
    review, carry deterministic visual-inspection output into rows, and prepare holistic/workflow fields
    for the semantic reviewer. This tool is not allowed to be the final semantic product-quality judge;
    it cannot pass B25 by itself because it does not perform LLM visual/product reasoning:
@@ -283,7 +303,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
    ```
 
-10. **LLM Vision UX Judge Agent:** send the current product docs, production UX blueprint,
+11. **LLM Vision UX Judge Agent:** send the current product docs, production UX blueprint,
     workflow/persona coverage, screen matrix, screenshot paths, and actual screenshots to a fresh LLM
     vision/product-review agent. Do not give the agent worker implementation notes, intended behavior,
     source-code diffs, or claims that fixes are complete. The agent must inspect the screenshot pixels
@@ -305,7 +325,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
     implementation gap, evidence gap, or mixed gap where possible, and must attach reference patterns
     or research queries for remediation tickets.
 
-11. **Import LLM vision review:** import the LLM review into the B25 evidence with
+12. **Import LLM vision review:** import the LLM review into the B25 evidence with
     `b25_llm_ux_review_importer.dart`. This is the semantic review artifact that the deterministic
     Production UX Judge validates and converts into tickets:
 
@@ -318,7 +338,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    so the production judge can generate tickets with screenshot paths, hashes, visible text, and target
    surfaces.
 
-12. **Workflow/persona direct-question pass:** for every workflow/persona pair, write or preserve a
+13. **Workflow/persona direct-question pass:** for every workflow/persona pair, write or preserve a
    `workflowPersonaScorecards` row answering:
 
    - Can this persona immediately understand what they are supposed to do?
@@ -332,7 +352,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the after screenshot prove the requested target product surface is actually present, with the
      required domain content and affordances, instead of merely avoiding known bad patterns?
 
-13. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
+14. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
     independent judge and before the production judge. It must write `workflowLifecycleScorecards`,
     `semanticInteractionModel` details, and `b25-workflow-lifecycle-scorecards.md`, then fail if any
     primary workflow/persona lacks the visible interaction proof a real product requires:
@@ -355,7 +375,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    If any interaction-model scorecard fails, the remediation ticket must name the missing lifecycle
    groups, missing/wrong actions, generic substitutes, and route either to product-doc update first, UI
    implementation, evidence repair, or a mixed sequence.
-14. **Production UX judge scorecard:** run the deterministic production judge against the independent
+15. **Production UX judge scorecard:** run the deterministic production judge against the independent
    judge's v4 evidence:
 
    ```powershell
@@ -369,8 +389,10 @@ the owner explicitly asks for review-only planning or pauses implementation.
    `semanticSurfaceProof`, any workflow/persona row lacks passing `semanticInteractionModel` /
    `workflowLifecycleProof`, or if any
    previously opened remediation ticket lacks before/after screenshot evidence proving the requested
-   target-surface and interaction-model elements are now visible.
-15. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+   target-surface and interaction-model elements are now visible. It must also fail criterion
+   `b25-c15-full-b25-capture-coverage` when `reviewInputEvidence` was generated from targeted,
+   incomplete, stale, or non-commit-eligible screenshot evidence.
+16. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -379,15 +401,16 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-16. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+17. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-17. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
+18. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
    update the community product doc and blueprint before UI work. Implementation gaps update UX/content/
    code/seed data/tests. Evidence gaps recapture or repair evidence before judging. Then rebuild,
-   relaunch, recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the
-   full iteration before the next UX feedback or remediation batch.
-18. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+   relaunch, optionally run targeted precheck captures for local verification, then rerun the full
+   B12-B20 capture and coverage gate before regenerating v4 evidence, rerunning tests/review, and
+   committing the full iteration.
+19. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
    pass is green, every semantic surface proof is green, every workflow interaction-model scorecard is green,

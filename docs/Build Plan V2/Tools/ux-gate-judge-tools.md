@@ -37,7 +37,8 @@ Before running the CLIs, complete the product-doc gate:
   or `mixed-gap`.
 
 ```powershell
-wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-capture-coverage-report.json'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
@@ -62,7 +63,8 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `domain_surface_classifier.dart` | B22 | Fail primary generic workflow cards/checklist/metadata surfaces. |
 | `persona_ux_judge.dart` | B23 | Verify actor, receiver, read-only, disabled, hidden, and unauthorized persona evidence. |
 | `evidence_integrity_auditor.dart` | B24 | Check screenshot path/hash/timestamp/app commit/device/visible text and generic-copy evidence. |
-| `b25_capture_workflow_screenshots.dart` | B25 | Run the host-side `flutter drive` screenshot writer so fresh Android screenshots and workflow evidence manifests are persisted into `docs/Build Plan V2/Evidence`. |
+| `b25_capture_workflow_screenshots.dart` | B25 | Run the host-side `flutter drive` screenshot writer so fresh Android screenshots and workflow evidence manifests are persisted into `docs/Build Plan V2/Evidence`. Default `--mode full-b25` is the only commit-eligible canonical capture; `--mode targeted-precheck --phases <phase>` is diagnostic only. |
+| `b25_capture_coverage_gate.dart` | B25 | Fail when canonical B25 evidence is not full B12-B20 coverage, not commit-eligible, missing workflow manifests, or below the screenshot threshold. |
 | `b25_evidence_collector.dart` | B25 | Convert workflow UI evidence manifests into B25 schema v4 screenshot evidence with hashes, timestamps, device metadata, visible text source, and app commit SHA. |
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
 | `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
@@ -195,6 +197,9 @@ B25 evidence must include:
 - `productDocCoverage`: links each community/test app to the product experience doc used for review,
   records the doc commit or local artifact hash, and states whether the ticket is a product-spec gap or
   an implementation/evidence gap.
+- `reviewInputEvidence.captureCoverage`: records `captureMode`, `fullB25Coverage`, `commitEligible`,
+  expected/captured/missing phases, workflow manifest count, and screenshot count. Criterion
+  `b25-c15-full-b25-capture-coverage` fails if this proves anything other than a full B12-B20 capture.
 
 B25 cannot pass from an average score. One unresolved blocker/major criterion failure blocks the phase.
 The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted

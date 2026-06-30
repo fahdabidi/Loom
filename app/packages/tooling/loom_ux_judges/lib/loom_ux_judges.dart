@@ -8,6 +8,21 @@ import 'package:image/image.dart' as img;
 
 typedef JsonMap = Map<String, Object?>;
 
+const fullB25EvidencePhases = <String>[
+  'B12',
+  'B13',
+  'B14',
+  'B15',
+  'B16',
+  'B17',
+  'B18',
+  'B19',
+  'B20',
+];
+
+const fullB25MinimumScreenshotRows = 180;
+const fullB25MinimumWorkflowManifests = 9;
+
 class CriterionResult {
   CriterionResult({
     required this.id,
@@ -408,6 +423,18 @@ final specs = <String, JudgeSpec>{
             'Relaunch the current app, recapture screenshots, and regenerate evidence.',
       ),
       CriterionDefinition(
+        id: 'b25-c15-full-b25-capture-coverage',
+        title: 'Canonical evidence uses full B12-B20 screenshot coverage',
+        question:
+            'Was this B25 review generated from commit-eligible full B12-B20 screenshot evidence, not from a targeted remediation precheck or stale partial aggregate?',
+        scope: 'evidence',
+        requiredEvidenceFields: <String>['reviewInputEvidence'],
+        failureMessage:
+            'The B25 review input does not prove full B12-B20 screenshot coverage.',
+        requiredFix:
+            'Run b25_capture_workflow_screenshots.dart in --mode full-b25, run b25_capture_coverage_gate.dart, then regenerate B25 evidence and judges from that full capture.',
+      ),
+      CriterionDefinition(
         id: 'b25-c08-visible-text-specific-critique',
         title: 'Every row has visible text and screen-specific critique',
         question:
@@ -795,6 +822,38 @@ void _runB25WorkflowInteractionModelJudgeCli(
   }
 }
 
+void runB25CaptureCoverageGateCli(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(_captureCoverageGateUsage());
+    return;
+  }
+  final evidenceRootPath = _argValue(args, '--evidence-root');
+  if (evidenceRootPath == null) {
+    stderr.writeln('Missing required --evidence-root <dir>');
+    stdout.writeln(_captureCoverageGateUsage());
+    exit(64);
+  }
+  final report = buildB25CaptureCoverageReport(evidenceRootPath);
+  final outputPath = _argValue(args, '--output');
+  if (outputPath != null) {
+    File(outputPath).writeAsStringSync(
+      '${const JsonEncoder.withIndent('  ').convert(report)}\n',
+    );
+  }
+  final status = _asString(report['status']);
+  stdout.writeln(
+    'b25_capture_coverage_gate: status=$status mode=${report['captureMode']} '
+    'commitEligible=${report['commitEligible']} phases=${_asStringList(report['capturedPhases']).join(',')} '
+    'screenshots=${report['screenshotCount']} workflows=${report['workflowCount']}',
+  );
+  if (status != 'pass') {
+    for (final issue in _asStringList(report['issues'])) {
+      stderr.writeln('b25_capture_coverage_gate: $issue');
+    }
+    exit(1);
+  }
+}
+
 void runB25EvidenceCollectorCli(List<String> args) {
   if (args.contains('--help') || args.isEmpty) {
     stdout.writeln(_evidenceCollectorUsage());
@@ -836,6 +895,128 @@ void runB25EvidenceCollectorCli(List<String> args) {
   );
 }
 
+JsonMap buildB25CaptureCoverageReport(String evidenceRootPath) {
+  final evidenceRoot = Directory(evidenceRootPath);
+  final aggregate = File('${evidenceRoot.path}/B20/all-workflow-ui-evidence.json');
+  if (!aggregate.existsSync()) {
+    return <String, Object?>{
+      'status': 'fail',
+      'aggregatePath': aggregate.path,
+      'captureMode': 'missing',
+      'commitEligible': false,
+      'fullB25Coverage': false,
+      'expectedPhases': fullB25EvidencePhases,
+      'capturedPhases': <String>[],
+      'missingPhases': fullB25EvidencePhases,
+      'workflowManifestCount': 0,
+      'workflowCount': 0,
+      'screenshotCount': 0,
+      'issues': <String>[
+        'Missing canonical B25 aggregate B20/all-workflow-ui-evidence.json. Run b25_capture_workflow_screenshots.dart in --mode full-b25.',
+      ],
+    };
+  }
+  final manifest = _readJsonFile(aggregate.path);
+  return _b25CaptureCoverageReportFromAggregate(
+    aggregatePath: aggregate.path,
+    manifest: manifest,
+  );
+}
+
+JsonMap _b25CaptureCoverageReportFromAggregate({
+  required String aggregatePath,
+  required JsonMap manifest,
+}) {
+  final phases = _asStringList(manifest['phases']);
+  final expectedPhases = _asStringList(
+    manifest['expectedPhases'],
+  ).isEmpty
+      ? fullB25EvidencePhases
+      : _asStringList(manifest['expectedPhases']);
+  final missingPhases = fullB25EvidencePhases
+      .where((phase) => !phases.contains(phase))
+      .toList(growable: false);
+  final extraPhases = phases
+      .where((phase) => !fullB25EvidencePhases.contains(phase))
+      .toList(growable: false);
+  final manifestPaths = _asStringList(manifest['workflowEvidenceManifestPaths']);
+  final missingManifestPaths = manifestPaths
+      .where((path) => !File(_hostPath(path)).existsSync())
+      .toList(growable: false);
+  final workflowCount = _asInt(manifest['workflowCount']);
+  final screenshotCount = _asInt(manifest['screenshotCount']);
+  final issues = <String>[];
+  final captureMode = _asString(manifest['captureMode']);
+  final commitEligible = manifest['commitEligible'] == true;
+  final fullCoverage = manifest['fullB25Coverage'] == true;
+
+  if (captureMode != 'full-b25') {
+    issues.add(
+      'Canonical B25 aggregate captureMode must be full-b25; found "$captureMode". Targeted precheck artifacts cannot close B25.',
+    );
+  }
+  if (!commitEligible) {
+    issues.add('Canonical B25 aggregate is not marked commitEligible=true.');
+  }
+  if (!fullCoverage) {
+    issues.add('Canonical B25 aggregate is not marked fullB25Coverage=true.');
+  }
+  if (!_sameStringList(phases, fullB25EvidencePhases)) {
+    issues.add(
+      'Canonical B25 aggregate phases must be exactly ${fullB25EvidencePhases.join(',')}; found ${phases.join(',')}.',
+    );
+  }
+  if (!_sameStringList(expectedPhases, fullB25EvidencePhases)) {
+    issues.add(
+      'Canonical B25 aggregate expectedPhases must be ${fullB25EvidencePhases.join(',')}; found ${expectedPhases.join(',')}.',
+    );
+  }
+  if (missingPhases.isNotEmpty) {
+    issues.add('Canonical B25 aggregate is missing phases: ${missingPhases.join(',')}.');
+  }
+  if (extraPhases.isNotEmpty) {
+    issues.add('Canonical B25 aggregate contains unexpected phases: ${extraPhases.join(',')}.');
+  }
+  if (manifestPaths.length < fullB25MinimumWorkflowManifests) {
+    issues.add(
+      'Canonical B25 aggregate has ${manifestPaths.length} workflow manifests; expected at least $fullB25MinimumWorkflowManifests.',
+    );
+  }
+  if (missingManifestPaths.isNotEmpty) {
+    issues.add(
+      'Canonical B25 aggregate references missing workflow manifests: ${missingManifestPaths.take(5).join(', ')}.',
+    );
+  }
+  if (screenshotCount < fullB25MinimumScreenshotRows) {
+    issues.add(
+      'Canonical B25 aggregate has $screenshotCount screenshots; expected at least $fullB25MinimumScreenshotRows.',
+    );
+  }
+  if (workflowCount <= 0) {
+    issues.add('Canonical B25 aggregate has no workflows.');
+  }
+
+  return <String, Object?>{
+    'schemaVersion': 1,
+    'status': issues.isEmpty ? 'pass' : 'fail',
+    'aggregatePath': aggregatePath,
+    'captureMode': captureMode,
+    'commitEligible': commitEligible,
+    'fullB25Coverage': fullCoverage,
+    'expectedPhases': fullB25EvidencePhases,
+    'capturedPhases': phases,
+    'missingPhases': missingPhases,
+    'unexpectedPhases': extraPhases,
+    'workflowManifestCount': manifestPaths.length,
+    'workflowCount': workflowCount,
+    'screenshotCount': screenshotCount,
+    'workflowEvidenceManifestPaths': manifestPaths,
+    'missingWorkflowEvidenceManifestPaths': missingManifestPaths,
+    'commandOutputPath': _asString(manifest['commandOutputPath']),
+    'issues': issues,
+  };
+}
+
 JsonMap collectB25Evidence({
   required String evidenceRootPath,
   required String repoRootPath,
@@ -848,6 +1029,7 @@ JsonMap collectB25Evidence({
   }
   final appCommit = _gitShortSha(repoRootPath);
   final manifests = _workflowManifestPaths(evidenceRoot, priorReview);
+  final captureCoverage = buildB25CaptureCoverageReport(evidenceRoot.path);
   final screenRows = <JsonMap>[];
   var rowIndex = 1;
   for (final manifestPath in manifests) {
@@ -972,6 +1154,13 @@ JsonMap collectB25Evidence({
       'workflowManifestCount': manifests.length,
       'screenshotCount': screenRows.length,
       'appCommitSha': appCommit,
+      'captureCoverage': captureCoverage,
+      'captureMode': _asString(captureCoverage['captureMode']),
+      'commitEligible': captureCoverage['commitEligible'] == true,
+      'fullB25Coverage': captureCoverage['fullB25Coverage'] == true,
+      'expectedPhases': _asStringList(captureCoverage['expectedPhases']),
+      'capturedPhases': _asStringList(captureCoverage['capturedPhases']),
+      'missingPhases': _asStringList(captureCoverage['missingPhases']),
     },
     'blueprintPath':
         'docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md',
@@ -994,6 +1183,20 @@ JsonMap collectB25Evidence({
             'Run the Production UX Judge Agent against the collected screenshots and fill holisticQuestionAnswers, workflowPersonaScorecards, screen-specific critiques, findings, and remediation links.',
         'blocksPass': true,
       },
+      if (_asString(captureCoverage['status']) != 'pass')
+        <String, Object?>{
+          'findingId': 'B25-FULL-COVERAGE-INCOMPLETE',
+          'severity': 'critical-blocker',
+          'status': 'open',
+          'title': 'B25 full screenshot coverage is incomplete',
+          'summary':
+              'The current B25 review input is not based on a commit-eligible full B12-B20 capture. Targeted diagnostic captures cannot close B25.',
+          'requiredFix':
+              'Run b25_capture_workflow_screenshots.dart in --mode full-b25 for B12-B20, then run b25_capture_coverage_gate.dart before the evidence collector and judges.',
+          'blocksPass': true,
+          'generatedBy': 'b25-capture-coverage-gate',
+          'issues': _asStringList(captureCoverage['issues']),
+        },
     ],
     'holisticQuestionAnswers': <JsonMap>[],
     'workflowPersonaScorecards': <JsonMap>[],
@@ -1008,7 +1211,10 @@ JsonMap collectB25Evidence({
         'commitSha': appCommit,
       },
     ],
-    'unresolvedBlockerFindings': <String>[],
+    'unresolvedBlockerFindings': <String>[
+      if (_asString(captureCoverage['status']) != 'pass')
+        'B25-FULL-COVERAGE-INCOMPLETE',
+    ],
     'unresolvedMajorFindings': <String>['B25-V4-REVIEW-PENDING'],
     'ownerAcceptedMinorFindings': <String>[],
     'trackedPolish': <String>[],
@@ -4429,6 +4635,7 @@ List<JsonMap> _replaceGeneratedFindings(
     'B25-HOLISTIC-UX-FAILED',
     'B25-PERSONA-SCOPE-MISSING',
     'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE',
+    'B25-FULL-COVERAGE-INCOMPLETE',
   };
   return findings
       .where((finding) {
@@ -4823,6 +5030,8 @@ _DerivedFailure? _derivedFailure(
     case 'b24-c01-screenshot-integrity':
     case 'b25-c07-screenshot-freshness':
       return _failOnScreenshotIntegrity(screenRows, basePath);
+    case 'b25-c15-full-b25-capture-coverage':
+      return _failOnFullB25CaptureCoverage(evidence);
     case 'b24-c02-visible-text-and-copy-audit':
     case 'b25-c08-visible-text-specific-critique':
       return _failOnVisibleTextOrBoilerplate(screenRows) ??
@@ -4849,6 +5058,76 @@ _DerivedFailure? _derivedFailure(
         );
       }
       break;
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnFullB25CaptureCoverage(JsonMap evidence) {
+  final reviewInput = evidence['reviewInputEvidence'] as JsonMap?;
+  if (reviewInput == null) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'reviewInputEvidence is missing; B25 cannot prove full B12-B20 screenshot coverage.',
+    );
+  }
+  final coverage = reviewInput['captureCoverage'] as JsonMap?;
+  final capturedPhases = _asStringList(reviewInput['capturedPhases']);
+  final missingPhases = _asStringList(reviewInput['missingPhases']);
+  final workflowManifestCount = _asInt(reviewInput['workflowManifestCount']);
+  final screenshotCount = _asInt(reviewInput['screenshotCount']);
+  final issues = <String>[
+    if (coverage != null) ..._asStringList(coverage['issues']),
+  ];
+  if (coverage == null) {
+    issues.add(
+      'reviewInputEvidence.captureCoverage is missing. Run b25_capture_coverage_gate.dart and regenerate B25 evidence.',
+    );
+  }
+  if (_asString(reviewInput['captureMode']) != 'full-b25') {
+    issues.add(
+      'reviewInputEvidence.captureMode must be full-b25; found "${_asString(reviewInput['captureMode'])}".',
+    );
+  }
+  if (reviewInput['commitEligible'] != true) {
+    issues.add('reviewInputEvidence.commitEligible must be true.');
+  }
+  if (reviewInput['fullB25Coverage'] != true) {
+    issues.add('reviewInputEvidence.fullB25Coverage must be true.');
+  }
+  if (!_sameStringList(capturedPhases, fullB25EvidencePhases)) {
+    issues.add(
+      'Captured phases must be exactly ${fullB25EvidencePhases.join(',')}; found ${capturedPhases.join(',')}.',
+    );
+  }
+  if (missingPhases.isNotEmpty) {
+    issues.add('Missing phases: ${missingPhases.join(',')}.');
+  }
+  if (workflowManifestCount < fullB25MinimumWorkflowManifests) {
+    issues.add(
+      'workflowManifestCount=$workflowManifestCount; expected at least $fullB25MinimumWorkflowManifests.',
+    );
+  }
+  if (screenshotCount < fullB25MinimumScreenshotRows) {
+    issues.add(
+      'screenshotCount=$screenshotCount; expected at least $fullB25MinimumScreenshotRows.',
+    );
+  }
+  if (issues.isNotEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'B25 evidence is not based on commit-eligible full B12-B20 capture: ${issues.join(' ')}',
+      evidenceUsed: <String>[
+        'captureMode=${_asString(reviewInput['captureMode'])}',
+        'commitEligible=${reviewInput['commitEligible']}',
+        'fullB25Coverage=${reviewInput['fullB25Coverage']}',
+        'capturedPhases=${capturedPhases.join(',')}',
+        'missingPhases=${missingPhases.join(',')}',
+        'workflowManifestCount=$workflowManifestCount',
+        'screenshotCount=$screenshotCount',
+      ],
+    );
   }
   return null;
 }
@@ -5846,6 +6125,16 @@ Builds schema v4 B25 screenshot evidence from workflow UI evidence manifests.
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root <docs/Build Plan V2/Evidence> --repo-root <repo-root> --run-id <id> --prior-review <old-review.json> --output <independent-production-ux-review.json> [--markdown-output <review.md>] [--matrix-output <matrix.md>]
+''';
+}
+
+String _captureCoverageGateUsage() {
+  return '''
+b25_capture_coverage_gate (B25)
+Validates that canonical B25 evidence was produced from a commit-eligible full B12-B20 screenshot capture. Targeted remediation prechecks cannot pass this gate.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root <docs/Build Plan V2/Evidence> [--output <coverage-report.json>]
 ''';
 }
 
@@ -8098,6 +8387,18 @@ List<String> _uniqueStrings(Iterable<String> values) {
   }.toList();
 }
 
+bool _sameStringList(List<String> actual, List<String> expected) {
+  if (actual.length != expected.length) {
+    return false;
+  }
+  for (var index = 0; index < expected.length; index += 1) {
+    if (actual[index] != expected[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 List<String> _resolveB25ScreenRowIds(
   Iterable<String> references,
   List<String> rowIds,
@@ -8145,6 +8446,8 @@ String _problemStatementForB25Criterion(String criterionId) {
       return 'The evidence does not prove that each workflow/persona UI implements the full production lifecycle. Cards may expose a single accept/cancel action without the decision context, alternate choices, result state, or receiver/continuation state real users need.';
     case 'b25-c14-llm-vision-ux-review':
       return 'The current B25 pass lacks a passing fresh-context LLM vision UX judgment, or that judgment found major product-quality issues in the screenshots.';
+    case 'b25-c15-full-b25-capture-coverage':
+      return 'The current B25 evidence was not generated from a commit-eligible full B12-B20 screenshot capture, so the pass may be judging only a targeted remediation subset.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.';
     case 'b25-c09-no-layout-production-defects':
@@ -8172,6 +8475,8 @@ String _rootCauseForB25Criterion(String criterionId) {
       return 'The product experience was modeled as completed workflows rather than lifecycle-complete user tasks, so the UI can appear polished while still missing required fields, negative/change actions, and durable post-action states.';
     case 'b25-c14-llm-vision-ux-review':
       return 'The previous B25 gate let deterministic absence-of-known-defects stand in for semantic visual/product review. The visible screenshots still need a fresh LLM judge to inspect pixels, layout, content, and product fit.';
+    case 'b25-c15-full-b25-capture-coverage':
+      return 'The screenshot capture pipeline allowed a targeted phase recapture to become the aggregate artifact consumed by B25, so downstream collectors could narrow the review without an explicit full-coverage failure.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.';
     case 'b25-c09-no-layout-production-defects':
@@ -8197,6 +8502,8 @@ String _targetExperienceForB25Criterion(String criterionId) {
       return 'Each workflow/persona surface should show the concrete object, decision information, natural primary and alternate actions, persistent result/receipt/status, and receiver/continuation state expected in a production app.';
     case 'b25-c14-llm-vision-ux-review':
       return 'A fresh LLM vision UX judge should be able to inspect the screenshots and state, from visible UI evidence, that the experience is modern, domain-native, and production-grade with no unresolved blocker or major findings.';
+    case 'b25-c15-full-b25-capture-coverage':
+      return 'Every committed B25 pass must start from a canonical full B12-B20 capture, validated by `b25_capture_coverage_gate.dart`, with targeted captures kept as non-committable precheck diagnostics only.';
     case 'b25-c08-visible-text-specific-critique':
       return 'Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.';
     case 'b25-c09-no-layout-production-defects':
@@ -8251,6 +8558,12 @@ List<String> _uxPrinciplesForB25Criterion(String criterionId) {
         'A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target persona',
         'LLM reviewer findings are blocking inputs to the normal B25 ticket and remediation loop',
       ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        'Canonical review evidence must be complete before subjective judgment starts',
+        'Targeted recaptures are useful diagnostics but cannot close a production UX phase',
+        'Every new or improved screen must be reflected in a full capture before an iteration commit',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Evidence must cite visible UI and text',
@@ -8281,6 +8594,13 @@ List<String> _relatedB25FindingIds(
       return productDocFindings.isEmpty
           ? allBlockingFindingIds
           : productDocFindings;
+    case 'b25-c15-full-b25-capture-coverage':
+      final fullCoverageFindings = allBlockingFindingIds
+          .where((id) => id == 'B25-FULL-COVERAGE-INCOMPLETE')
+          .toList();
+      return fullCoverageFindings.isEmpty
+          ? allBlockingFindingIds
+          : fullCoverageFindings;
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -8369,6 +8689,12 @@ List<String> _improvementsForB25Criterion(String criterionId) {
         'Replace any screenshot-identified workflow/test-harness surfaces with domain-native product surfaces.',
         'Fix all LLM-UX blocker/major findings, recapture screenshots, import a new LLM review artifact, and rerun the production judge.',
       ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        'Run `b25_capture_workflow_screenshots.dart --mode full-b25` so B12-B20 are all refreshed in the canonical aggregate.',
+        'Run `b25_capture_coverage_gate.dart` and keep its report with the pass evidence.',
+        'Do not commit a B25 pass based on `--mode targeted-precheck` output; rerun the collector and judges from the full aggregate.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Extract visible text for every reviewed screenshot row.',
@@ -8429,6 +8755,13 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
         'product-ux-screen-review-matrix.md affected screen rows',
         'production-ux-criteria-scorecard.json/.md',
       ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        'B20/all-workflow-ui-evidence.json',
+        'b25-capture-coverage-report.json',
+        'independent-production-ux-review.json reviewInputEvidence.captureCoverage',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
     case 'b25-c01-no-blocker-major':
       return <String>[
         'independent-production-ux-review.json findings',
@@ -8478,6 +8811,12 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
         'Treat the imported LLM vision review as the independent semantic critique.',
         'Prioritize screen rows and workflows named in `llmVisionReview.findings` and `llmVisionReview.screenReviews`.',
         'Do not close the ticket until a fresh LLM vision review over after-screenshots passes.',
+      ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        'Treat this as evidence-pipeline repair, not UI remediation.',
+        'Use `--mode targeted-precheck` only for local diagnostics during a pass; it must not rewrite `B20/all-workflow-ui-evidence.json`.',
+        'Before the iteration commit, rerun the full capture and ensure `reviewInputEvidence.fullB25Coverage=true` and `commitEligible=true`.',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -8569,6 +8908,12 @@ List<String> _evidenceToCollectForB25Criterion(String criterionId) {
         '`llmVisionReview` imported from a fresh LLM vision UX judge run against the after screenshots.',
         'Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes.',
       ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        '`B20/all-workflow-ui-evidence.json` with `captureMode=full-b25`, `fullB25Coverage=true`, and `commitEligible=true`.',
+        '`b25-capture-coverage-report.json` with `status=pass`.',
+        '`independent-production-ux-review.json reviewInputEvidence` showing all B12-B20 phases, at least nine workflow manifests, and fresh screenshot count above the threshold.',
+      ];
     case 'b25-c06-domain-native-primary-surfaces':
       return <String>[
         'Fresh screenshots for every primary workflow/persona surface that was replaced or reviewed.',
@@ -8629,6 +8974,14 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
         'Unresolved blocker and major finding counts are both zero.',
         ...shared,
       ];
+    case 'b25-c15-full-b25-capture-coverage':
+      return <String>[
+        '`b25_capture_coverage_gate.dart` exits 0.',
+        '`reviewInputEvidence.captureMode` is `full-b25`.',
+        '`reviewInputEvidence.commitEligible` and `reviewInputEvidence.fullB25Coverage` are both true.',
+        '`reviewInputEvidence.capturedPhases` is exactly B12,B13,B14,B15,B16,B17,B18,B19,B20.',
+        '`reviewInputEvidence.screenshotCount` is at least $fullB25MinimumScreenshotRows and generated from the current app commit.',
+      ];
     default:
       return shared;
   }
@@ -8664,6 +9017,8 @@ List<String> _nonGoalsForB25Criterion(String criterionId) {
 
 List<String> _b25RerunCommands() {
   return <String>[
+    'dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence',
+    'dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json',
     'dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',

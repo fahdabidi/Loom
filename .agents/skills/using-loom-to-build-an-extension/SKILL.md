@@ -228,8 +228,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     the judges run. The collector owns screenshot paths, hashes, timestamps, visible text source,
     emulator/device metadata, app commit SHA, and schema v4 screen-row scaffolding. Then
     `b25_workflow_persona_coverage_collector.dart` must prove every workflow/persona combination has
-    explicit entry/action/result evidence before independent review. The collector tools cannot mark
-    production UX pass.
+    explicit entry/action/result evidence before independent review. Canonical B25 evidence must first
+    pass `b25_capture_coverage_gate.dart` from a `--mode full-b25` B12-B20 capture. Targeted captures
+    are allowed only as non-committable remediation diagnostics and cannot overwrite or substitute for
+    `B20/all-workflow-ui-evidence.json`. The collector tools cannot mark production UX pass.
 65. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
     only the community product experience doc, evidence artifacts, screenshots, blueprint,
     workflow/persona coverage matrix, and pass criteria, then writes
@@ -459,6 +461,7 @@ judge CLIs are:
 - B23: `dart run packages/tooling/loom_ux_judges/bin/persona_ux_judge.dart`
 - B24: `dart run packages/tooling/loom_ux_judges/bin/evidence_integrity_auditor.dart`
 - B25 capture: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`
+- B25 capture coverage gate: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 review scaffold: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
 - B25 LLM review import: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart`
@@ -479,7 +482,8 @@ affected evidence, acceptance checks, and rerun commands.
 Before the judge runs, collect evidence with:
 
 ```powershell
-wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-capture-coverage-report.json'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --repo-root .. --run-id b25-v4-pass-1 --prior-review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
@@ -487,7 +491,10 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 
 Use the B25 capture CLI, not a raw `flutter test integration_test/...` command. The CLI invokes the
 host-side `flutter drive` screenshot writer, persists PNGs into the Evidence folders, rewrites
-`workflow-ui-evidence.json`, and fails if screenshots were not written.
+`workflow-ui-evidence.json`, and fails if screenshots were not written. The default `--mode full-b25`
+is the only commit-eligible capture. A remediation pass may run `--mode targeted-precheck --phases
+<phase>` for quick diagnostics, but the iteration commit must rerun full capture plus
+`b25_capture_coverage_gate.dart` before the collector and judges.
 
 Every B25 pass must also run the judge and iteration scorecard before that pass is committed:
 

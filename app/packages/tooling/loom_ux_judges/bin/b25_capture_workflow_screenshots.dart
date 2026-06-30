@@ -1,14 +1,41 @@
 import 'dart:convert';
 import 'dart:io';
 
+const _fullB25Phases = <String>[
+  'B12',
+  'B13',
+  'B14',
+  'B15',
+  'B16',
+  'B17',
+  'B18',
+  'B19',
+  'B20',
+];
+
 void main(List<String> args) async {
   final device = _argValue(args, '--device') ?? 'emulator-5554';
-  final phases =
-      (_argValue(args, '--phases') ?? 'B12,B13,B14,B15,B16,B17,B18,B19,B20')
-          .split(',')
-          .map((phase) => phase.trim())
-          .where((phase) => phase.isNotEmpty)
-          .toList(growable: false);
+  final mode = _argValue(args, '--mode') ?? 'full-b25';
+  if (mode != 'full-b25' && mode != 'targeted-precheck') {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: --mode must be full-b25 or targeted-precheck.',
+    );
+    exit(64);
+  }
+  final phases = (_argValue(args, '--phases') ?? _fullB25Phases.join(','))
+      .split(',')
+      .map((phase) => phase.trim())
+      .where((phase) => phase.isNotEmpty)
+      .toList(growable: false);
+  final fullCoverage = _samePhases(phases, _fullB25Phases);
+  if (mode == 'full-b25' && !fullCoverage) {
+    stderr.writeln(
+      'b25_capture_workflow_screenshots: canonical B25 evidence requires full B12-B20 coverage. '
+      'Requested phases=${phases.join(',')}; expected=${_fullB25Phases.join(',')}. '
+      'Use --mode targeted-precheck for remediation diagnostics that must not be committed as canonical B25 evidence.',
+    );
+    exit(64);
+  }
   final appRoot = Directory.current;
   final repoRoot = appRoot.parent;
   final demoDir = Directory('${appRoot.path}/apps/loom_communities_demo');
@@ -37,6 +64,7 @@ void main(List<String> args) async {
     ..writeln('b25_capture_workflow_screenshots')
     ..writeln('workingDirectory=${demoDir.path}')
     ..writeln('WORKFLOW_EVIDENCE_ROOT=${evidenceRoot.path}')
+    ..writeln('mode=$mode')
     ..writeln('phases=${phases.join(',')}')
     ..writeln('device=$device')
     ..writeln();
@@ -99,23 +127,33 @@ void main(List<String> args) async {
     }
   }
 
-  await _writeCombinedManifest(
+  final combinedSummary = await _writeCombinedManifest(
     evidenceRoot: evidenceRoot,
     phases: phases,
     commandOutputPath: logPath,
     captureStartedAt: captureStartedAt,
+    mode: mode,
   );
 
-  final screenshotCount = _countScreenshots(evidenceRoot);
-  if (screenshotCount < 180) {
+  final screenshotCount = combinedSummary.screenshotCount;
+  if (mode == 'full-b25' && screenshotCount < 180) {
     stderr.writeln(
       'b25_capture_workflow_screenshots: expected at least 180 screenshots, found $screenshotCount.',
     );
     exit(65);
   }
 
+  if (mode == 'targeted-precheck') {
+    stdout.writeln(
+      'b25_capture_workflow_screenshots: targeted precheck captured phases=${phases.join(',')} '
+      'screenshots=$screenshotCount aggregate=${combinedSummary.aggregatePath}. '
+      'This artifact is not commit-eligible for B25 closeout.',
+    );
+    return;
+  }
+
   stdout.writeln(
-    'b25_capture_workflow_screenshots: ok screenshots=$screenshotCount log=$logPath',
+    'b25_capture_workflow_screenshots: ok fullB25Coverage=true screenshots=$screenshotCount log=$logPath',
   );
 }
 
@@ -132,22 +170,32 @@ String? _argValue(List<String> args, String name) {
   return null;
 }
 
-int _countScreenshots(Directory evidenceRoot) {
-  if (!evidenceRoot.existsSync()) {
-    return 0;
+bool _samePhases(List<String> actual, List<String> expected) {
+  if (actual.length != expected.length) {
+    return false;
   }
-  return evidenceRoot
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.png'))
-      .length;
+  for (var index = 0; index < expected.length; index += 1) {
+    if (actual[index] != expected[index]) {
+      return false;
+    }
+  }
+  return true;
 }
 
-Future<void> _writeCombinedManifest({
+String _slug(String value) {
+  final slug = value
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
+  return slug.isEmpty ? 'targeted' : slug;
+}
+
+Future<_CombinedManifestSummary> _writeCombinedManifest({
   required Directory evidenceRoot,
   required List<String> phases,
   required String commandOutputPath,
   required DateTime captureStartedAt,
+  required String mode,
 }) async {
   var workflowCount = 0;
   var screenshotCount = 0;
@@ -212,21 +260,45 @@ Future<void> _writeCombinedManifest({
     manifestPaths.add(manifestPath);
   }
 
-  final finalDirectory = Directory('${evidenceRoot.path}/B20');
+  final fullCoverage = _samePhases(phases, _fullB25Phases);
+  final finalDirectory = mode == 'full-b25'
+      ? Directory('${evidenceRoot.path}/B20')
+      : Directory('${evidenceRoot.path}/B25');
   await finalDirectory.create(recursive: true);
-  await File(
-    '${finalDirectory.path}/all-workflow-ui-evidence.json',
-  ).writeAsString(
+  final aggregatePath = mode == 'full-b25'
+      ? '${finalDirectory.path}/all-workflow-ui-evidence.json'
+      : '${finalDirectory.path}/targeted-workflow-ui-evidence-${_slug(phases.join('-'))}.json';
+  await File(aggregatePath).writeAsString(
     const JsonEncoder.withIndent('  ').convert({
       'schemaVersion': 1,
       'status': 'pass',
       'phases': phases,
+      'expectedPhases': _fullB25Phases,
+      'missingPhases': _fullB25Phases
+          .where((phase) => !phases.contains(phase))
+          .toList(growable: false),
       'workflowCount': workflowCount,
       'screenshotCount': screenshotCount,
       'workflowEvidenceManifestPaths': manifestPaths,
       'commandOutputPath': commandOutputPath,
-      'captureMode': 'phase-split-flutter-drive',
+      'captureMode': mode,
+      'fullB25Coverage': fullCoverage,
+      'commitEligible': mode == 'full-b25' && fullCoverage,
     }),
     flush: true,
   );
+  return _CombinedManifestSummary(
+    aggregatePath: aggregatePath,
+    screenshotCount: screenshotCount,
+  );
+}
+
+class _CombinedManifestSummary {
+  const _CombinedManifestSummary({
+    required this.aggregatePath,
+    required this.screenshotCount,
+  });
+
+  final String aggregatePath;
+  final int screenshotCount;
 }
