@@ -180,8 +180,8 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     must run the workflow-completeness judge; B21 the UX-contract judge; B22 the domain-surface
     classifier; B23 the persona-UX judge; B24 the evidence-integrity auditor; and B25 must run the
     evidence collector, workflow/persona coverage collector, visual inspection auditor, independent UX
-    judge, production UX judge, remediation-ticket generator, iteration scorecard, and remediation
-    planner in sequence.
+    judge, workflow interaction-model judge, production UX judge, remediation-ticket generator, iteration
+    scorecard, and remediation planner in sequence.
 55. The Independent UX Judge Agent receives only artifacts, screenshots, pass criteria, evidence
     metadata, blueprint/contracts, and remediation logs. Do not give it worker implementation notes,
     intended behavior explanations, or optimistic completion summaries. It must write holistic direct
@@ -190,7 +190,8 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     existence, metadata, or expected assertions.
 56. B25 cannot pass until `b25_independent_ux_judge.dart` has produced screenshot-backed holistic
     answers, workflow/persona scorecards, screen-specific critiques, per-row `visualInspection`
-    results, and findings, and
+    results, and findings, `b25_workflow_interaction_model_judge.dart` has produced passing
+    semantic interaction-model `workflowLifecycleScorecards`, and
     `production_ux_judge.dart` emits
     `production-ux-criteria-scorecard.json` and `.md` with score/verdict/blocksPass/why/requiredFix for
     every B25 pass criterion, `b25-remediation-tickets-<run-id>.json` and `.md` for every failed
@@ -198,9 +199,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
 57. B25 production UX criteria must be asked as direct questions. Avoid vague prompts such as "looks
     modern"; ask concrete questions such as "Is the UI modern, easy to use, easy to navigate, and
     visually appealing for the target persona?" and require screenshot-backed yes/no/partial answers.
-58. B25 requires two independent direct-question passes: one holistic product UX pass for the whole app
-    or community experience, and one workflow/persona pass for every reviewed workflow/persona pair.
-    Both must be green before B25 can close.
+58. B25 requires three independent direct-question passes: one holistic product UX pass for the whole
+    app or community experience, one workflow/persona pass for every reviewed workflow/persona pair,
+    and one semantic workflow interaction-model pass for every reviewed workflow/persona pair. All three must be green
+    before B25 can close.
 59. The holistic product UX pass judges coherence, navigation, visual identity, community-centered
     information architecture, production feel, and major layout/content defects across the whole
     experience.
@@ -209,10 +211,11 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     whether that workflow UI feels production-grade on its own.
 61. Do not batch all workflow/persona UX review into one broad answer. Use batches small enough that
     every answer cites visible text, screenshot evidence, the target persona, and the real user task.
-62. `production_ux_judge.dart` must fail B25 when `holisticQuestionAnswers` or
+62. `production_ux_judge.dart` must fail B25 when `holisticQuestionAnswers`,
     `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
-    contradicted by screenshots, or missing passing `semanticSurfaceProof` for any primary
-    workflow/persona row. A pass cannot be based only on absence of known defects.
+    contradicted by screenshots, missing passing `semanticSurfaceProof` for any primary
+    workflow/persona row, or missing passing semantic interaction-model `workflowLifecycleScorecards`.
+    A pass cannot be based only on absence of known defects.
 63. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
     Markdown scorecard with the pass evidence. The scorecard must show pass/fail, current
     critical/blocker and major counts, unresolved blocker/major counts, blocker/major findings resolved
@@ -256,7 +259,9 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     coverage; mixed gaps sequence those fixes in that order.
     Ticket closure requires before/after screenshot evidence and a passing semantic-surface proof; the
     Remediation Planner and Worker Agent may not close tickets from implementation notes or code diffs
-    alone.
+    alone. Workflow interaction-model tickets additionally require fresh after screenshots proving the
+    expected decision, required domain actions, non-happy-path affordance, result state, and receiver/
+    continuation state.
 67. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,
@@ -390,25 +395,31 @@ Before reporting completion:
 27. Run the B25 direct-question judge in two passes: one holistic product UX pass for the whole app, and
     workflow/persona passes for every reviewed workflow/persona pair. Record `holisticQuestionAnswers`
     and `workflowPersonaScorecards` in the evidence and require both to be green.
-28. Generate the B25 iteration scorecard for the pass and record whether blocker/major findings are
+28. Run `b25_workflow_interaction_model_judge.dart` so every workflow/persona pair proves the correct
+    semantic interaction model from screenshots: concrete object/context, decision information, primary
+    semantic action, required alternate/change/reject affordance, persistent result state, and receiver/
+    continuation state. Record `workflowLifecycleScorecards` in the evidence and require every primary
+    workflow/persona scorecard to be green. If a prior ticket claimed a correction, the judge must
+    inspect the new after screenshots and cannot accept source changes or worker statements as proof.
+29. Generate the B25 iteration scorecard for the pass and record whether blocker/major findings are
     increasing, decreasing, or resolved. Use it as the convergence record for the remediation loop.
-29. Generate B25 remediation tickets for every failed blocking criterion and attach them to the pass
+30. Generate B25 remediation tickets for every failed blocking criterion and attach them to the pass
     evidence.
-30. Commit the current B25 pass after the evidence, judge scorecard, remediation tickets, iteration
+31. Commit the current B25 pass after the evidence, judge scorecard, remediation tickets, iteration
     scorecard, remediation log, and tracker all reflect the judge findings. This finishes pass N.
-31. If pass N failed, start pass N+1 by sending the committed tickets and scorecard to the Remediation
+32. If pass N failed, start pass N+1 by sending the committed tickets and scorecard to the Remediation
     Planner. Use the remediation plan, not a general scorecard summary, as the next iteration's fix
     backlog.
-32. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
+33. Reject any product UX review that relies on stale screenshots, rows with repeated generic rationale,
     primary workflow rows classified as generic workflow-card/checklist/modal/metadata-only, missing
     visible-text extracts, missing/failed visual inspection, or pass verdicts that do not describe the
     actual visible UI.
-33. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
+34. Repeat the B25 remediation loop until the product UX review reports zero unresolved blocker or major
     findings and every screen matrix row passes, has an owner-accepted minor issue, or has tracked polish
     only.
-34. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
+35. Run affected widget/integration tests, workflow tests, manifest gate, phase gate, analysis, boundary
     lint, and diff check.
-35. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
+36. Run the required judge tools for the applicable phase. Treat a judge failure as a phase-blocking
     finding, not as optional review feedback.
 
 Do not mark `complete=true`, close a phase, certify, publish, or deliver local packages when any
@@ -422,6 +433,10 @@ issues ranked major or blocker, lacks a current local community product experien
 complete per-community production UX blueprint derived from that product doc, lacks schema version 4
 machine-readable B25 review evidence, has stale screenshot evidence, has boilerplate screen critiques,
 classifies any primary workflow surface as a generic workflow-card/checklist/modal/metadata page, has
+any primary workflow/persona lifecycle scorecard missing or failing, has action cards that lack the
+concrete object, decision data, alternate/change/reject path, result state, or receiver/continuation
+state a real product interaction model requires, or lacks fresh after screenshots proving the corrected
+interaction model,
 not completed the B25 remediation loop after a failed product UX review, lacks a final independent
 product UX pass decision, or is only represented by metadata. Return a gap report and keep the package
 incomplete until all workflow, persona, local community product doc, production UX blueprint,
@@ -442,6 +457,7 @@ judge CLIs are:
 - B25 capture: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 independent judge: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 workflow interaction-model judge: `dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart`
 - B25: `dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart`
 - B25 planner: `dart run packages/tooling/loom_ux_judges/bin/b25_remediation_planner.dart`
 
@@ -449,9 +465,10 @@ The agent split is mandatory: Worker Agent implements, Evidence Collector captur
 artifacts only, and Remediation Planner converts failures into fix batches. If the artifact does not
 prove the criterion, the criterion fails.
 
-For B25, the judge must also produce a holistic product UX direct-question pass and per-workflow/persona
-direct-question passes. The deterministic scorecard must include criterion `scope` and `question`, and
-the machine-readable evidence must include `holisticQuestionAnswers` and `workflowPersonaScorecards`.
+For B25, the judge must also produce a holistic product UX direct-question pass, per-workflow/persona
+direct-question passes, and semantic workflow interaction-model scorecards. The deterministic scorecard must include
+criterion `scope` and `question`, and the machine-readable evidence must include
+`holisticQuestionAnswers`, `workflowPersonaScorecards`, and `workflowLifecycleScorecards`.
 Every failed blocking criterion must also produce a remediation ticket with concrete improvements,
 affected evidence, acceptance checks, and rerun commands.
 Before the judge runs, collect evidence with:
@@ -471,6 +488,7 @@ Every B25 pass must also run the judge and iteration scorecard before that pass 
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
 ```

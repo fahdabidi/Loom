@@ -369,6 +369,21 @@ final specs = <String, JudgeSpec>{
             'Replace primary generic surfaces with domain-native product surfaces.',
       ),
       CriterionDefinition(
+        id: 'b25-c13-workflow-lifecycle-complete',
+        title: 'Every primary workflow has complete lifecycle UX',
+        question:
+            'For every workflow and persona, does the UI prove the full production interaction model: concrete object/context, decision information, semantically correct primary and alternate actions, persistent result state, and receiver/continuation state?',
+        scope: 'workflow-persona',
+        requiredEvidenceFields: <String>[
+          'screenRows',
+          'workflowLifecycleScorecards',
+        ],
+        failureMessage:
+            'One or more primary workflows are represented by incomplete action cards instead of full production interaction-model UX.',
+        requiredFix:
+            'Update product docs and UI so each affected workflow/persona has a semantic interaction contract, visible decision context, correct primary and alternate actions, result state, receiver/continuation state, fresh screenshots, and passing interaction-model scorecards.',
+      ),
+      CriterionDefinition(
         id: 'b25-c07-screenshot-freshness',
         title: 'Every screen row has fresh screenshot evidence',
         question:
@@ -676,6 +691,54 @@ void runB25IndependentUxJudgeCli(List<String> args) {
     'b25_independent_ux_judge: ${judged['finalDecision']} findings=${_asMapList(judged['findings']).length} workflowPersonaScorecards=${_asMapList(judged['workflowPersonaScorecards']).length}',
   );
   if (judged['finalDecision'] != 'pass') {
+    exit(1);
+  }
+}
+
+void runB25WorkflowLifecycleJudgeCli(List<String> args) {
+  _runB25WorkflowInteractionModelJudgeCli(
+    args,
+    toolName: 'b25_workflow_lifecycle_judge',
+    usage: _workflowLifecycleJudgeUsage(),
+  );
+}
+
+void runB25WorkflowInteractionModelJudgeCli(List<String> args) {
+  _runB25WorkflowInteractionModelJudgeCli(
+    args,
+    toolName: 'b25_workflow_interaction_model_judge',
+    usage: _workflowInteractionModelJudgeUsage(),
+  );
+}
+
+void _runB25WorkflowInteractionModelJudgeCli(
+  List<String> args, {
+  required String toolName,
+  required String usage,
+}) {
+  if (args.contains('--help') || args.isEmpty) {
+    stdout.writeln(usage);
+    return;
+  }
+  final inputPath = _argValue(args, '--input');
+  final outputPath = _argValue(args, '--output');
+  if (inputPath == null || outputPath == null) {
+    stderr.writeln('Missing required --input <json> or --output <json>');
+    stdout.writeln(usage);
+    exit(64);
+  }
+  final markdownPath = _argValue(args, '--markdown-output');
+  final judged = buildB25WorkflowLifecycleReview(_readJsonFile(inputPath));
+  final encoded = const JsonEncoder.withIndent('  ').convert(judged);
+  File(outputPath).writeAsStringSync('$encoded\n');
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_b25WorkflowLifecycleMarkdown(judged));
+  }
+  final summary = judged['workflowLifecycleSummary'] as JsonMap;
+  stdout.writeln(
+    '$toolName: status=${summary['status']} scorecards=${summary['scorecardCount']} failing=${summary['failingScorecardCount']}',
+  );
+  if (summary['status'] == 'fail') {
     exit(1);
   }
 }
@@ -1350,15 +1413,20 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
   final workflowScorecards = coverageRows
       .map((coverage) => _workflowPersonaScorecard(coverage, screenRows))
       .toList();
+  final lifecycleScorecards = coverageRows
+      .map((coverage) => _workflowLifecycleScorecard(coverage, screenRows))
+      .toList();
   final holisticAnswers = _holisticAnswers(
     withCoverage,
     workflowScorecards,
+    lifecycleScorecards,
     screenRows,
   );
   final findings = _independentUxFindings(
     withCoverage,
     screenRows,
     workflowScorecards,
+    lifecycleScorecards,
     holisticAnswers,
   );
   final unresolvedBlockers = findings
@@ -1380,7 +1448,10 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
       unresolvedBlockers.isEmpty &&
       unresolvedMajors.isEmpty &&
       holisticAnswers.every((answer) => answer['blocksPass'] != true) &&
-      workflowScorecards.every((scorecard) => scorecard['blocksPass'] != true);
+      workflowScorecards.every(
+        (scorecard) => scorecard['blocksPass'] != true,
+      ) &&
+      lifecycleScorecards.every((scorecard) => scorecard['blocksPass'] != true);
 
   return JsonMap.of(withCoverage)
     ..['status'] = canPass
@@ -1395,6 +1466,10 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
     ..['findings'] = findings
     ..['holisticQuestionAnswers'] = holisticAnswers
     ..['workflowPersonaScorecards'] = workflowScorecards
+    ..['workflowLifecycleScorecards'] = lifecycleScorecards
+    ..['workflowLifecycleSummary'] = _workflowLifecycleSummary(
+      lifecycleScorecards,
+    )
     ..['unresolvedBlockerFindings'] = unresolvedBlockers
     ..['unresolvedMajorFindings'] = unresolvedMajors
     ..['remediationIterations'] = <JsonMap>[
@@ -1417,6 +1492,51 @@ JsonMap buildB25IndependentUxReview(JsonMap review) {
         ),
       },
     ];
+}
+
+JsonMap buildB25WorkflowLifecycleReview(JsonMap review) {
+  final screenRows = _asMapList(review['screenRows']);
+  final coverageRows = _asMapList(review['workflowPersonaCoverage']);
+  final lifecycleScorecards = coverageRows
+      .map((coverage) => _workflowLifecycleScorecard(coverage, screenRows))
+      .toList();
+  final findings = _workflowLifecycleFindings(review, lifecycleScorecards);
+  final unresolvedBlockers = findings
+      .where(
+        (finding) =>
+            _normalizedSeverity(finding) == 'critical-blocker' &&
+            !_isResolved(finding),
+      )
+      .map(_findingId)
+      .toList();
+  final unresolvedMajors = findings
+      .where(
+        (finding) =>
+            _normalizedSeverity(finding) == 'major' && !_isResolved(finding),
+      )
+      .map(_findingId)
+      .toList();
+  final lifecyclePass =
+      lifecycleScorecards.isNotEmpty &&
+      lifecycleScorecards.every((scorecard) => scorecard['blocksPass'] != true);
+  final canPass =
+      lifecyclePass && unresolvedBlockers.isEmpty && unresolvedMajors.isEmpty;
+  return JsonMap.of(review)
+    ..['status'] = canPass
+        ? 'workflow-lifecycle-pass'
+        : 'workflow-lifecycle-fail'
+    ..['finalDecision'] = canPass ? 'pass' : 'fail'
+    ..['b25CanPass'] = canPass
+    ..['requiresRemediation'] = !canPass
+    ..['requiresRerun'] = !canPass
+    ..['generatedAt'] = DateTime.now().toUtc().toIso8601String()
+    ..['workflowLifecycleScorecards'] = lifecycleScorecards
+    ..['workflowLifecycleSummary'] = _workflowLifecycleSummary(
+      lifecycleScorecards,
+    )
+    ..['findings'] = findings
+    ..['unresolvedBlockerFindings'] = unresolvedBlockers
+    ..['unresolvedMajorFindings'] = unresolvedMajors;
 }
 
 JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
@@ -2015,6 +2135,209 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   };
 }
 
+JsonMap _workflowLifecycleScorecard(
+  JsonMap coverage,
+  List<JsonMap> screenRows,
+) {
+  final coverageRowId = _asString(coverage['coverageRowId']);
+  final workflowId = _asString(coverage['workflowId']);
+  final persona = _asString(coverage['persona']);
+  final personaId = _asString(coverage['personaId']);
+  final relatedRows = screenRows.where((row) {
+    return _asString(row['workflowId']) == workflowId &&
+        _asString(row['communityId']) == _asString(coverage['communityId']) &&
+        (_asString(row['personaId']) == personaId ||
+            _asString(row['persona']) == persona);
+  }).toList();
+  final visibleTextEvidence = relatedRows
+      .map((row) => _asString(row['visibleTextExtract']))
+      .where((text) => text.isNotEmpty)
+      .toList();
+  final proof = _workflowLifecycleProofForWorkflow(
+    workflowId: workflowId,
+    persona: persona,
+    visibleTextEvidence: visibleTextEvidence,
+  );
+  final interactionModel = proof['semanticInteractionModel'] is JsonMap
+      ? proof['semanticInteractionModel'] as JsonMap
+      : <String, Object?>{};
+  final coverageMissing = _asStringList(coverage['missingEvidence']);
+  final proofPass = proof['status'] == 'pass';
+  final coveragePass = coverageMissing.isEmpty;
+  final questions = <JsonMap>[
+    _directAnswer(
+      questionId: '$coverageRowId-lifecycle-object-context',
+      scope: 'workflow-lifecycle',
+      question:
+          'Does workflow `$workflowId` for persona `$persona` show the concrete domain object and the information needed before the user decides?',
+      pass: _lifecycleGroupsPassed(proof, <String>[
+        'concrete object/context',
+        'decision information',
+      ]),
+      score:
+          _lifecycleGroupsPassed(proof, <String>[
+            'concrete object/context',
+            'decision information',
+          ])
+          ? 90
+          : 30,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why:
+          _lifecycleGroupsPassed(proof, <String>[
+            'concrete object/context',
+            'decision information',
+          ])
+          ? 'Visible screenshots prove the user can identify what they are acting on and see enough domain data to decide.'
+          : 'Visible screenshots do not prove the domain object/context and required decision information. Missing: ${_lifecycleMissingLabels(proof, <String>['concrete object/context', 'decision information']).join(', ')}.',
+      requiredFix:
+          _lifecycleGroupsPassed(proof, <String>[
+            'concrete object/context',
+            'decision information',
+          ])
+          ? 'None.'
+          : 'Add visible domain data before the action: title/name, relevant dates/timing/amounts/audience/status/content, and the actor/receiver context needed for this workflow.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-lifecycle-actions',
+      scope: 'workflow-lifecycle',
+      question:
+          'Does workflow `$workflowId` for persona `$persona` provide production-grade action affordances, including primary action plus reject/decline/change/edit/undo/defer where the domain requires it?',
+      pass: _lifecycleGroupsPassed(proof, <String>[
+        'primary semantic action',
+        'alternate/change/reject affordance',
+      ]),
+      score:
+          _lifecycleGroupsPassed(proof, <String>[
+            'primary semantic action',
+            'alternate/change/reject affordance',
+          ])
+          ? 90
+          : 25,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why:
+          _lifecycleGroupsPassed(proof, <String>[
+            'primary semantic action',
+            'alternate/change/reject affordance',
+          ])
+          ? 'Visible screenshots prove natural primary and alternate/change/reject affordances.'
+          : 'Visible screenshots do not prove full action affordances. Missing: ${_lifecycleMissingLabels(proof, <String>['primary semantic action', 'alternate/change/reject affordance']).join(', ')}.',
+      requiredFix:
+          _lifecycleGroupsPassed(proof, <String>[
+            'primary semantic action',
+            'alternate/change/reject affordance',
+          ])
+          ? 'None.'
+          : 'Replace accept/cancel-only workflow cards with domain actions. Add reject/decline/not attending/change response/edit/undo/defer/withdraw or an explicit domain-specific alternative when the user needs a real choice.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-lifecycle-interaction-model',
+      scope: 'workflow-lifecycle',
+      question:
+          'Does workflow `$workflowId` for persona `$persona` implement the right semantic interaction model for the user decision, rather than a generic accept/cancel or submit/cancel action?',
+      pass: _lifecycleGroupsPassed(proof, <String>[
+        'semantic interaction model',
+      ]),
+      score:
+          _lifecycleGroupsPassed(proof, <String>['semantic interaction model'])
+          ? 90
+          : 20,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why: _lifecycleGroupsPassed(proof, <String>['semantic interaction model'])
+          ? 'Visible screenshots prove the domain-specific decision and correct action set for this workflow/persona.'
+          : _asString(interactionModel['why']).isNotEmpty
+          ? _asString(interactionModel['why'])
+          : 'Visible screenshots do not prove that the correct semantic actions for this workflow/persona are implemented.',
+      requiredFix: _asString(interactionModel['requiredFix']).isNotEmpty
+          ? _asString(interactionModel['requiredFix'])
+          : 'Update the product doc workflow lifecycle and UI so the visible screen provides the correct domain decision, primary action, alternate/change/reject path, result state, and receiver/continuation path.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-lifecycle-result-state',
+      scope: 'workflow-lifecycle',
+      question:
+          'After the action in `$workflowId`, does the UI show a persistent result state and receiver/continuation state that a real user can understand later?',
+      pass: _lifecycleGroupsPassed(proof, <String>[
+        'persistent result state',
+        'receiver/continuation state',
+      ]),
+      score:
+          _lifecycleGroupsPassed(proof, <String>[
+            'persistent result state',
+            'receiver/continuation state',
+          ])
+          ? 90
+          : 30,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why:
+          _lifecycleGroupsPassed(proof, <String>[
+            'persistent result state',
+            'receiver/continuation state',
+          ])
+          ? 'Visible screenshots prove the workflow has a durable result and receiver/continuation state.'
+          : 'Visible screenshots do not prove the durable result and receiver/continuation state. Missing: ${_lifecycleMissingLabels(proof, <String>['persistent result state', 'receiver/continuation state']).join(', ')}.',
+      requiredFix:
+          _lifecycleGroupsPassed(proof, <String>[
+            'persistent result state',
+            'receiver/continuation state',
+          ])
+          ? 'None.'
+          : 'Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.',
+    ),
+    _directAnswer(
+      questionId: '$coverageRowId-lifecycle-coverage',
+      scope: 'workflow-lifecycle',
+      question:
+          'Does lifecycle evidence for `$workflowId` include entry, action/review, and result/receiver screenshots for persona `$persona`?',
+      pass: coveragePass,
+      score: coveragePass ? 90 : 30,
+      evidenceUsed: _asStringList(coverage['screenRowIds']),
+      why: coveragePass
+          ? 'Entry/action/result lifecycle screenshot coverage exists for this workflow/persona.'
+          : 'Missing lifecycle coverage: ${coverageMissing.join(', ')}.',
+      requiredFix: coveragePass
+          ? 'None.'
+          : 'Capture the missing lifecycle screenshots after the UI is updated.',
+    ),
+  ];
+  final blocks =
+      !proofPass ||
+      !coveragePass ||
+      questions.any((question) => question['blocksPass'] == true);
+  return <String, Object?>{
+    'scorecardId': '$coverageRowId-lifecycle',
+    'coverageRowId': coverageRowId,
+    'communityId': _asString(coverage['communityId']),
+    'communityName': _asString(coverage['communityName']),
+    'workflowId': workflowId,
+    'persona': persona,
+    'personaId': personaId,
+    'status': blocks ? 'fail' : 'pass',
+    'blocksPass': blocks,
+    'screenRowIds': _asStringList(coverage['screenRowIds']),
+    'screenshotPaths': relatedRows
+        .map((row) => _asString(row['screenshotPath']))
+        .where((path) => path.isNotEmpty)
+        .toList(),
+    'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'workflowLifecycleProof': proof,
+    'semanticInteractionModel': interactionModel,
+    'requiredLifecycleGroups': _asMapList(proof['requiredGroups']),
+    'missingLifecycleGroups': _asStringList(proof['missingGroups']),
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
+    'questions': questions,
+    'acceptanceCriteria': _workflowLifecycleAcceptanceCriteria(
+      workflowId,
+      persona,
+    ),
+    'summary': blocks
+        ? 'Workflow lifecycle review failed for `$workflowId` / `$persona`: ${_asStringList(proof['missingGroups']).join(', ')}.'
+        : 'Workflow lifecycle review passed for `$workflowId` / `$persona`.',
+  };
+}
+
 String _workflowPersonaFailureSummary(
   List<String> missing,
   List<String> rowFailures,
@@ -2091,6 +2414,765 @@ JsonMap _semanticSurfaceProofForWorkflow({
         ? 'After-screenshot visible text proves the target surface: $targetSurface.'
         : 'After-screenshot visible text does not yet prove the target surface: $targetSurface.',
   };
+}
+
+JsonMap _workflowLifecycleProofForWorkflow({
+  required String workflowId,
+  required String persona,
+  required Iterable<String> visibleTextEvidence,
+}) {
+  final targetSurface = _targetProductionSurfaceForWorkflow(workflowId);
+  final text = visibleTextEvidence.join(' | ').toLowerCase();
+  final requiredGroups = _workflowLifecycleRequirementGroupsForWorkflow(
+    workflowId,
+  );
+  final interactionModel = _semanticInteractionModelForWorkflow(
+    workflowId: workflowId,
+    persona: persona,
+    visibleText: text,
+  );
+  final fullRequiredGroups = <JsonMap>[
+    ...requiredGroups,
+    _semanticInteractionModelRequirementGroup(interactionModel),
+  ];
+  if (_workflowIsSupportSurface(workflowId)) {
+    return <String, Object?>{
+      'status': 'pass',
+      'targetProductionSurface': targetSurface,
+      'persona': persona,
+      'requiredGroups': <JsonMap>[],
+      'passedGroups': <String>['support-surface'],
+      'missingGroups': <String>[],
+      'visibleEvidenceExcerpt': _truncate(text, 900),
+      'summary':
+          'Support surface workflow; production workflow lifecycle proof is not required.',
+    };
+  }
+  final passed = <String>[];
+  final missing = <String>[];
+  for (final group in requiredGroups) {
+    final label = _asString(group['label']);
+    final terms = _asStringList(group['terms']);
+    if (_containsAnyTerm(text, terms)) {
+      passed.add(label);
+    } else {
+      missing.add(label);
+    }
+  }
+  if (_asString(interactionModel['status']) == 'pass') {
+    passed.add('semantic interaction model');
+  } else {
+    missing.add('semantic interaction model');
+  }
+  return <String, Object?>{
+    'status': missing.isEmpty ? 'pass' : 'fail',
+    'targetProductionSurface': targetSurface,
+    'persona': persona,
+    'requiredGroups': fullRequiredGroups,
+    'passedGroups': passed,
+    'missingGroups': missing,
+    'semanticInteractionModel': interactionModel,
+    'visibleEvidenceExcerpt': _truncate(text, 900),
+    'summary': missing.isEmpty
+        ? 'Screenshots prove the full production interaction model for `$workflowId`: context, decision data, correct actions, result state, and receiver/continuation state.'
+        : 'Screenshots do not prove the full production interaction model for `$workflowId`. Missing lifecycle groups: ${missing.join(', ')}.',
+  };
+}
+
+bool _lifecycleGroupsPassed(JsonMap proof, List<String> groupLabels) {
+  final passed = _asStringList(proof['passedGroups']).toSet();
+  return groupLabels.every(passed.contains);
+}
+
+List<String> _lifecycleMissingLabels(JsonMap proof, List<String> groupLabels) {
+  final missing = _asStringList(proof['missingGroups']).toSet();
+  return groupLabels.where(missing.contains).toList();
+}
+
+List<String> _workflowLifecycleAcceptanceCriteria(
+  String workflowId,
+  String persona,
+) {
+  return <String>[
+    'The `${workflowId}` screenshots show the concrete domain object/context for `${persona}`.',
+    'The user can see enough domain-specific decision information before acting.',
+    'The UI provides semantic primary action and the needed alternate/change/reject/defer path; `Cancel` alone cannot stand in for a real decline/reject/change response.',
+    'The semantic interaction model names the correct user decision and the right domain actions for `${workflowId}`; generic accept/cancel or submit/cancel actions do not satisfy this criterion.',
+    'The post-action screen shows a persistent result/receipt/status state that can be understood later.',
+    'The receiver/read-only/continuation state is visible where another persona or later state is part of the workflow.',
+    'The workflow lifecycle scorecard passes with no missing lifecycle groups.',
+  ];
+}
+
+JsonMap _workflowLifecycleSummary(List<JsonMap> scorecards) {
+  final failing = scorecards
+      .where((scorecard) => scorecard['blocksPass'] == true)
+      .toList();
+  final missingGroups = <String>{};
+  for (final scorecard in failing) {
+    missingGroups.addAll(_asStringList(scorecard['missingLifecycleGroups']));
+  }
+  return <String, Object?>{
+    'status': scorecards.isNotEmpty && failing.isEmpty ? 'pass' : 'fail',
+    'scorecardCount': scorecards.length,
+    'failingScorecardCount': failing.length,
+    'failingScorecardIds': failing
+        .map((scorecard) => _asString(scorecard['scorecardId']))
+        .where((id) => id.isNotEmpty)
+        .toList(),
+    'missingLifecycleGroups': missingGroups.toList()..sort(),
+  };
+}
+
+JsonMap _semanticInteractionModelRequirementGroup(JsonMap interactionModel) {
+  return <String, Object?>{
+    'label': 'semantic interaction model',
+    'decision': _asString(interactionModel['expectedDecision']),
+    'requiredPrimaryActions': _asStringList(
+      interactionModel['requiredPrimaryActions'],
+    ),
+    'requiredAlternateActions': _asStringList(
+      interactionModel['requiredAlternateActions'],
+    ),
+    'disallowedGenericSubstitutes': _asStringList(
+      interactionModel['disallowedGenericSubstitutes'],
+    ),
+  };
+}
+
+JsonMap _semanticInteractionModelForWorkflow({
+  required String workflowId,
+  required String persona,
+  required String visibleText,
+}) {
+  final id = workflowId.toLowerCase();
+  final model = _expectedSemanticInteractionModel(id, persona);
+  final primaryActions = _asStringList(model['requiredPrimaryActions']);
+  final alternateActions = _asStringList(model['requiredAlternateActions']);
+  final genericSubstitutes = _asStringList(
+    model['disallowedGenericSubstitutes'],
+  );
+  final visiblePrimary = _matchingTerms(visibleText, primaryActions);
+  final visibleAlternate = _matchingTerms(visibleText, alternateActions);
+  final visibleGenericSubstitutes = _matchingTerms(
+    visibleText,
+    genericSubstitutes,
+  );
+  final missing = <String>[];
+  if (visiblePrimary.isEmpty) {
+    missing.add('domain-specific primary action');
+  }
+  if (visibleAlternate.isEmpty) {
+    missing.add('domain-specific alternate/change/reject action');
+  }
+  final wrongSubstitutes = <String>[];
+  if (visibleGenericSubstitutes.isNotEmpty &&
+      (visiblePrimary.isEmpty || visibleAlternate.isEmpty)) {
+    wrongSubstitutes.addAll(visibleGenericSubstitutes);
+  }
+  final status = missing.isEmpty && wrongSubstitutes.isEmpty ? 'pass' : 'fail';
+  return <String, Object?>{
+    'status': status,
+    'workflowId': workflowId,
+    'persona': persona,
+    'expectedDecision': _asString(model['expectedDecision']),
+    'requiredPrimaryActions': primaryActions,
+    'requiredAlternateActions': alternateActions,
+    'disallowedGenericSubstitutes': genericSubstitutes,
+    'visiblePrimaryActions': visiblePrimary,
+    'visibleAlternateActions': visibleAlternate,
+    'visibleGenericSubstitutes': visibleGenericSubstitutes,
+    'missingActions': missing,
+    'wrongGenericSubstitutes': wrongSubstitutes.toSet().toList()..sort(),
+    'productDocRequirement':
+        'The community product experience doc must define this workflow as an interaction model: decision, information needed, primary action, alternate/change/reject path, result state, and receiver/continuation state.',
+    'why': status == 'pass'
+        ? 'Visible screenshots show the expected decision and domain-specific action set: ${_asString(model['expectedDecision'])}.'
+        : 'The screenshots do not prove the right semantic interaction model for `${workflowId}` / `${persona}`. Missing actions: ${missing.isEmpty ? 'none' : missing.join(', ')}. Generic substitutes present: ${wrongSubstitutes.isEmpty ? 'none' : wrongSubstitutes.toSet().join(', ')}.',
+    'requiredFix': status == 'pass'
+        ? 'None.'
+        : 'Update the community product experience doc workflow section first if the correct interaction is ambiguous. Then implement the visible domain-specific primary action and alternate/change/reject path listed by this model, recapture screenshots, and rerun the interaction-model judge.',
+  };
+}
+
+JsonMap _expectedSemanticInteractionModel(String id, String persona) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return _interactionModel(
+      decision:
+          'Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update.',
+      primary: <String>[
+        'publish announcement',
+        'send announcement',
+        'post announcement',
+        'schedule announcement',
+      ],
+      alternate: <String>[
+        'edit announcement',
+        'preview announcement',
+        'save draft',
+        'schedule later',
+        'change audience',
+      ],
+    );
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return _interactionModel(
+      decision:
+          'Member decides attendance for a named dated event with time, location, capacity/status, and a later change path.',
+      primary: <String>[
+        'rsvp',
+        'attend',
+        'going',
+        'reserve spot',
+        'confirm attendance',
+      ],
+      alternate: <String>[
+        'decline',
+        'not attending',
+        'maybe',
+        'change response',
+        'edit response',
+        'cancel rsvp',
+      ],
+    );
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off')) {
+    return _interactionModel(
+      decision:
+          'Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment.',
+      primary: <String>['pay', 'donate', 'give', 'checkout', 'subscribe'],
+      alternate: <String>[
+        'change amount',
+        'edit payment',
+        'manage',
+        'cancel subscription',
+        'refund',
+        'retry payment',
+      ],
+    );
+  }
+  if (id.contains('document')) {
+    return _interactionModel(
+      decision:
+          'Member decides whether to open, acknowledge, save, or share a concrete document with title, date, owner, and status.',
+      primary: <String>[
+        'open document',
+        'download document',
+        'read document',
+        'acknowledge',
+      ],
+      alternate: <String>[
+        'save',
+        'share',
+        'close document',
+        'mark unread',
+        'request access',
+      ],
+    );
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return _interactionModel(
+      decision:
+          'Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths.',
+      primary: <String>[
+        'submit request',
+        'approve request',
+        'send request',
+        'review request',
+      ],
+      alternate: <String>[
+        'reject',
+        'request changes',
+        'revise',
+        'withdraw',
+        'edit request',
+      ],
+    );
+  }
+  if (id.contains('care')) {
+    return _interactionModel(
+      decision:
+          'Member submits or tracks a care request with privacy indicators, recipient, details, and update/withdraw paths.',
+      primary: <String>['submit care request', 'request care', 'send request'],
+      alternate: <String>[
+        'edit request',
+        'withdraw request',
+        'update privacy',
+        'close request',
+      ],
+    );
+  }
+  if (id.contains('gear')) {
+    return _interactionModel(
+      decision:
+          'Member evaluates a concrete gear item with owner, condition, pickup/return terms, and claim/decline/change paths.',
+      primary: <String>['request gear', 'claim gear', 'reserve gear'],
+      alternate: <String>[
+        'decline',
+        'cancel request',
+        'change request',
+        'return gear',
+        'extend',
+      ],
+    );
+  }
+  if (id.contains('plant-exchange')) {
+    return _interactionModel(
+      decision:
+          'Member evaluates a concrete plant exchange item with owner, pickup details, availability, and claim/cancel paths.',
+      primary: <String>[
+        'claim plant',
+        'request plant',
+        'offer plant',
+        'reserve plant',
+      ],
+      alternate: <String>[
+        'cancel claim',
+        'edit offer',
+        'mark claimed',
+        'mark unavailable',
+      ],
+    );
+  }
+  if (id.contains('critique')) {
+    return _interactionModel(
+      decision:
+          'Participant reviews or submits a concrete critique item with content, author, feedback, and edit/withdraw paths.',
+      primary: <String>['submit critique', 'review critique', 'comment'],
+      alternate: <String>[
+        'edit critique',
+        'withdraw critique',
+        'request changes',
+        'resubmit',
+      ],
+    );
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return _interactionModel(
+      decision:
+          'Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths.',
+      primary: <String>['record match', 'submit score', 'save result'],
+      alternate: <String>[
+        'edit score',
+        'undo result',
+        'correct result',
+        'dispute result',
+      ],
+    );
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return _interactionModel(
+      decision:
+          'Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.',
+      primary: <String>[
+        'send message',
+        'reply',
+        'send invite',
+        'accept invite',
+        'connect',
+      ],
+      alternate: <String>[
+        'decline',
+        'block',
+        'mute',
+        'archive',
+        'cancel invite',
+      ],
+    );
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return _interactionModel(
+      decision:
+          'Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back.',
+      primary: <String>[
+        'export',
+        'download export',
+        'start transfer',
+        'import data',
+      ],
+      alternate: <String>[
+        'change scope',
+        'cancel transfer',
+        'rollback',
+        'retry',
+        'redaction preview',
+      ],
+    );
+  }
+  return _interactionModel(
+    decision:
+        'User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result.',
+    primary: <String>['submit', 'save', 'send'],
+    alternate: <String>['edit', 'change', 'undo', 'reject', 'withdraw'],
+  );
+}
+
+JsonMap _interactionModel({
+  required String decision,
+  required List<String> primary,
+  required List<String> alternate,
+}) {
+  return <String, Object?>{
+    'expectedDecision': decision,
+    'requiredPrimaryActions': primary,
+    'requiredAlternateActions': alternate,
+    'disallowedGenericSubstitutes': <String>[
+      'accept',
+      'cancel',
+      'ok',
+      'complete workflow',
+      'complete',
+      'confirm',
+      'continue',
+    ],
+  };
+}
+
+List<String> _matchingTerms(String text, Iterable<String> terms) {
+  final lower = text.toLowerCase();
+  return terms
+      .where((term) => lower.contains(term.toLowerCase()))
+      .toSet()
+      .toList()
+    ..sort();
+}
+
+List<JsonMap> _workflowLifecycleRequirementGroupsForWorkflow(
+  String workflowId,
+) {
+  final id = workflowId.toLowerCase();
+  final groups = <JsonMap>[
+    _semanticGroup('concrete object/context', _lifecycleContextTerms(id)),
+    _semanticGroup('decision information', _lifecycleDecisionTerms(id)),
+    _semanticGroup('primary semantic action', _lifecyclePrimaryActionTerms(id)),
+    _semanticGroup(
+      'alternate/change/reject affordance',
+      _lifecycleAlternateActionTerms(id),
+    ),
+    _semanticGroup('persistent result state', _lifecycleResultTerms(id)),
+    _semanticGroup(
+      'receiver/continuation state',
+      _lifecycleReceiverStateTerms(id),
+    ),
+  ];
+  return groups;
+}
+
+List<String> _lifecycleContextTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>['announcement', 'notice', 'update', 'message'];
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return <String>['event', 'practice', 'photo walk', 'meeting', 'game'];
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('receipt') ||
+      id.contains('ad-off')) {
+    return <String>['donation', 'dues', 'payment', 'checkout', 'subscription'];
+  }
+  if (id.contains('document')) {
+    return <String>['document', 'file', 'pdf', 'packet'];
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request') ||
+      id.contains('care')) {
+    return <String>['request', 'case', 'application', 'care'];
+  }
+  if (id.contains('gear')) {
+    return <String>['gear', 'camera', 'lens', 'loan', 'item'];
+  }
+  if (id.contains('plant-exchange')) {
+    return <String>['plant', 'seedling', 'exchange', 'offer'];
+  }
+  if (id.contains('critique')) {
+    return <String>['photo', 'image', 'critique', 'work'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['match', 'game', 'round', 'chess'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['message', 'thread', 'connection', 'invite'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['export', 'transfer', 'data', 'migration'];
+  }
+  return <String>['details', 'item', 'record', 'community'];
+}
+
+List<String> _lifecycleDecisionTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>[
+      'audience',
+      'members',
+      'body',
+      'sender',
+      'from',
+      'delivery',
+      'today',
+      'preview',
+    ];
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return <String>[
+      'date',
+      'time',
+      'location',
+      'venue',
+      'field',
+      'capacity',
+      'spots',
+      'attending',
+    ];
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('receipt') ||
+      id.contains('ad-off')) {
+    return <String>['amount', r'$', 'fund', 'total', 'receipt', 'visibility'];
+  }
+  if (id.contains('document')) {
+    return <String>['title', 'file', 'updated', 'access', 'members', 'pdf'];
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return <String>['details', 'status', 'review', 'decision', 'pending'];
+  }
+  if (id.contains('care')) {
+    return <String>['need', 'private', 'protected', 'details', 'status'];
+  }
+  if (id.contains('gear')) {
+    return <String>['available', 'borrower', 'due', 'pickup', 'return'];
+  }
+  if (id.contains('plant-exchange')) {
+    return <String>['variety', 'pickup', 'time', 'contact', 'available'];
+  }
+  if (id.contains('critique')) {
+    return <String>['title', 'reviewer', 'comment', 'submitted', 'image'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['player', 'opponent', 'white', 'black', 'result'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['from', 'to', 'recipient', 'message', 'note'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['scope', 'selected', 'preview', 'redaction', 'checksum'];
+  }
+  return <String>['status', 'details', 'review', 'selected'];
+}
+
+List<String> _lifecyclePrimaryActionTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>['publish', 'send', 'post', 'schedule'];
+  }
+  if (id.contains('rsvp') || id.contains('event') || id.contains('practice')) {
+    return <String>['rsvp', 'join', 'attend', 'reserve', 'confirm'];
+  }
+  if (id.contains('donation') ||
+      id.contains('dues') ||
+      id.contains('payment')) {
+    return <String>['pay', 'donate', 'checkout', 'give'];
+  }
+  if (id.contains('document')) {
+    return <String>['open', 'download', 'read', 'acknowledge'];
+  }
+  if (id.contains('request') || id.contains('approval')) {
+    return <String>['submit', 'approve', 'review', 'send'];
+  }
+  if (id.contains('gear') || id.contains('plant-exchange')) {
+    return <String>['request', 'claim', 'offer', 'reserve', 'submit'];
+  }
+  if (id.contains('critique')) {
+    return <String>['submit', 'review', 'comment'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['record', 'submit', 'save'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['send', 'reply', 'accept', 'invite'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['export', 'download', 'transfer', 'start'];
+  }
+  return <String>['submit', 'save', 'send', 'confirm'];
+}
+
+List<String> _lifecycleAlternateActionTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>['edit', 'preview', 'schedule', 'draft', 'cancel'];
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return <String>[
+      'decline',
+      'not attending',
+      'maybe',
+      'change response',
+      'edit response',
+      'cancel rsvp',
+    ];
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off')) {
+    return <String>['change', 'edit', 'cancel', 'refund', 'manage'];
+  }
+  if (id.contains('document')) {
+    return <String>['share', 'save', 'download', 'close', 'back'];
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return <String>['reject', 'revise', 'request changes', 'withdraw', 'edit'];
+  }
+  if (id.contains('care')) {
+    return <String>['edit', 'withdraw', 'privacy', 'close', 'update'];
+  }
+  if (id.contains('gear')) {
+    return <String>['deny', 'cancel', 'change', 'return', 'extend'];
+  }
+  if (id.contains('plant-exchange')) {
+    return <String>['edit', 'cancel', 'mark claimed', 'unavailable'];
+  }
+  if (id.contains('critique')) {
+    return <String>['edit', 'withdraw', 'resubmit', 'request changes'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['edit', 'undo', 'correct', 'dispute'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['decline', 'block', 'mute', 'archive', 'cancel'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['cancel', 'rollback', 'retry', 'change scope'];
+  }
+  return <String>['cancel', 'edit', 'change', 'undo', 'reject'];
+}
+
+List<String> _lifecycleResultTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>['sent', 'posted', 'published', 'delivered', 'received'];
+  }
+  if (id.contains('rsvp') || id.contains('event') || id.contains('practice')) {
+    return <String>['confirmed', 'attending', 'reserved', 'not attending'];
+  }
+  if (id.contains('payment') ||
+      id.contains('donation') ||
+      id.contains('dues')) {
+    return <String>['paid', 'receipt', 'confirmed', 'history', 'successful'];
+  }
+  if (id.contains('document')) {
+    return <String>['read', 'downloaded', 'acknowledged', 'viewed'];
+  }
+  if (id.contains('request') || id.contains('approval')) {
+    return <String>['approved', 'rejected', 'submitted', 'pending', 'status'];
+  }
+  if (id.contains('gear') || id.contains('plant-exchange')) {
+    return <String>['requested', 'claimed', 'reserved', 'available', 'due'];
+  }
+  if (id.contains('critique')) {
+    return <String>['submitted', 'reviewed', 'result', 'comment'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['recorded', 'result', 'outcome', 'saved'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['sent', 'received', 'accepted', 'blocked', 'connected'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['downloaded', 'complete', 'verified', 'status'];
+  }
+  return <String>['complete', 'confirmed', 'submitted', 'status'];
+}
+
+List<String> _lifecycleReceiverStateTerms(String id) {
+  if (id.contains('announcement') || id.contains('publish')) {
+    return <String>['inbox', 'notification', 'member', 'read', 'received'];
+  }
+  if (id.contains('rsvp') || id.contains('event') || id.contains('practice')) {
+    return <String>['calendar', 'roster', 'attendee', 'member', 'waitlist'];
+  }
+  if (id.contains('payment') ||
+      id.contains('donation') ||
+      id.contains('dues')) {
+    return <String>['receipt', 'history', 'donor', 'member', 'account'];
+  }
+  if (id.contains('document')) {
+    return <String>['members', 'access', 'read-only', 'viewer', 'download'];
+  }
+  if (id.contains('request') || id.contains('approval')) {
+    return <String>['notification', 'owner', 'reviewer', 'committee', 'status'];
+  }
+  if (id.contains('gear') || id.contains('plant-exchange')) {
+    return <String>['owner', 'borrower', 'contact', 'pickup', 'handoff'];
+  }
+  if (id.contains('critique')) {
+    return <String>['reviewer', 'comment', 'member', 'feedback'];
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return <String>['opponent', 'standings', 'next', 'pairing'];
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return <String>['recipient', 'thread', 'inbox', 'connection'];
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return <String>['provider', 'destination', 'rollback', 'audit'];
+  }
+  return <String>['receiver', 'history', 'next', 'status'];
 }
 
 bool _containsAnyTerm(String text, List<String> terms) {
@@ -2541,6 +3623,7 @@ List<JsonMap> _semanticRequirementGroupsForWorkflow(String workflowId) {
 List<JsonMap> _holisticAnswers(
   JsonMap review,
   List<JsonMap> workflowScorecards,
+  List<JsonMap> lifecycleScorecards,
   List<JsonMap> screenRows,
 ) {
   final coverageSummary =
@@ -2548,6 +3631,9 @@ List<JsonMap> _holisticAnswers(
       <String, Object?>{};
   final failingCoverage = _asInt(coverageSummary['failingCoverageRowCount']);
   final failingWorkflowScorecards = workflowScorecards
+      .where((scorecard) => scorecard['blocksPass'] == true)
+      .length;
+  final failingLifecycleScorecards = lifecycleScorecards
       .where((scorecard) => scorecard['blocksPass'] == true)
       .length;
   final rowCount = screenRows.length;
@@ -2570,10 +3656,12 @@ List<JsonMap> _holisticAnswers(
       pass:
           failingCoverage == 0 &&
           failingWorkflowScorecards == 0 &&
+          failingLifecycleScorecards == 0 &&
           visualFailureRows == 0,
       score:
           failingCoverage == 0 &&
               failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
           ? 85
           : 35,
@@ -2581,20 +3669,23 @@ List<JsonMap> _holisticAnswers(
         'screenRows=$rowCount',
         'workflowPersonaCoverageFailures=$failingCoverage',
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'visualInspectionFailures=$visualFailureRows',
       ],
       why:
           failingCoverage == 0 &&
               failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
-          ? 'Coverage, workflow/persona scorecards, and screenshot pixel/layout inspection provide no production-grade blockers.'
-          : 'The review cannot claim production-grade UX while workflow/persona evidence or screenshot visual inspection is incomplete/failing.',
+          ? 'Coverage, workflow/persona scorecards, lifecycle scorecards, and screenshot pixel/layout inspection provide no production-grade blockers.'
+          : 'The review cannot claim production-grade UX while workflow/persona lifecycle evidence, direct-question evidence, or screenshot visual inspection is incomplete/failing.',
       requiredFix:
           failingCoverage == 0 &&
               failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
           ? 'None.'
-          : 'Complete workflow/persona coverage and remediate visual/layout scorecard failures before claiming production-grade UX.',
+          : 'Complete workflow/persona coverage, lifecycle scorecards, and remediate visual/layout failures before claiming production-grade UX.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-modern-intentional',
@@ -2604,42 +3695,66 @@ List<JsonMap> _holisticAnswers(
       pass:
           visibleTextUnsupported == 0 &&
           failingWorkflowScorecards == 0 &&
+          failingLifecycleScorecards == 0 &&
           visualFailureRows == 0,
       score:
           visibleTextUnsupported == 0 &&
               failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visualFailureRows == 0
           ? 85
           : 40,
       evidenceUsed: <String>[
         'screenRows=$rowCount',
         'unsupportedVisibleTextRows=$visibleTextUnsupported',
+        'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'visualInspectionFailures=$visualFailureRows',
       ],
-      why: visibleTextUnsupported == 0 && visualFailureRows == 0
-          ? 'Visible UI/text evidence and screenshot pixel/layout inspection support judging modern UI quality.'
-          : '$visibleTextUnsupported rows use non-screen visible text sources and $visualFailureRows rows have visual/layout blockers, so the judge cannot make a reliable modern-UI claim.',
-      requiredFix: visibleTextUnsupported == 0 && visualFailureRows == 0
+      why:
+          visibleTextUnsupported == 0 &&
+              failingLifecycleScorecards == 0 &&
+              visualFailureRows == 0
+          ? 'Visible UI/text evidence, lifecycle scorecards, and screenshot pixel/layout inspection support judging modern UI quality.'
+          : '$visibleTextUnsupported rows use non-screen visible text sources, $failingLifecycleScorecards lifecycle scorecards fail, and $visualFailureRows rows have visual/layout blockers, so the judge cannot make a reliable modern-UI claim.',
+      requiredFix:
+          visibleTextUnsupported == 0 &&
+              failingLifecycleScorecards == 0 &&
+              visualFailureRows == 0
           ? 'None.'
-          : 'Use screenshot-derived visible text and fix detected checklist, repeated-card, thin-content, or weak-identity visual blockers before rerunning the judge.',
+          : 'Use screenshot-derived visible text, fix incomplete workflow lifecycles, and fix detected checklist, repeated-card, thin-content, or weak-identity visual blockers before rerunning the judge.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-community-ia',
       scope: 'holistic',
       question:
           'Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces?',
-      pass: failingWorkflowScorecards == 0 && visualFailureRows == 0,
-      score: failingWorkflowScorecards == 0 && visualFailureRows == 0 ? 85 : 45,
+      pass:
+          failingWorkflowScorecards == 0 &&
+          failingLifecycleScorecards == 0 &&
+          visualFailureRows == 0,
+      score:
+          failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
+              visualFailureRows == 0
+          ? 85
+          : 45,
       evidenceUsed: <String>[
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'visualInspectionFailures=$visualFailureRows',
       ],
-      why: failingWorkflowScorecards == 0 && visualFailureRows == 0
-          ? 'Workflow/persona scorecards and visual inspection do not report generic workflow-list IA failures.'
-          : 'Failing workflow/persona scorecards or visual blockers prevent a holistic community IA pass.',
-      requiredFix: failingWorkflowScorecards == 0 && visualFailureRows == 0
+      why:
+          failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
+              visualFailureRows == 0
+          ? 'Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures.'
+          : 'Failing workflow/persona lifecycle scorecards or visual blockers prevent a holistic community IA pass.',
+      requiredFix:
+          failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
+              visualFailureRows == 0
           ? 'None.'
-          : 'Replace generic workflow-list or validation surfaces with domain-native community sections and rerun scorecards.',
+          : 'Replace incomplete workflow-card UX with lifecycle-complete domain-native community sections and rerun scorecards.',
     ),
     _directAnswer(
       questionId: 'b25-holistic-layout-defects',
@@ -2648,31 +3763,36 @@ List<JsonMap> _holisticAnswers(
           'Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects?',
       pass:
           failingWorkflowScorecards == 0 &&
+          failingLifecycleScorecards == 0 &&
           visibleTextUnsupported == 0 &&
           visualFailureRows == 0,
       score:
           failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visibleTextUnsupported == 0 &&
               visualFailureRows == 0
           ? 85
           : 45,
       evidenceUsed: <String>[
         'workflowPersonaScorecardFailures=$failingWorkflowScorecards',
+        'workflowLifecycleScorecardFailures=$failingLifecycleScorecards',
         'unsupportedVisibleTextRows=$visibleTextUnsupported',
         'visualInspectionFailures=$visualFailureRows',
       ],
       why:
           failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visibleTextUnsupported == 0 &&
               visualFailureRows == 0
           ? 'No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique.'
           : 'The judge cannot clear layout/content defects while row-level evidence remains incomplete, unsupported, or visually failing.',
       requiredFix:
           failingWorkflowScorecards == 0 &&
+              failingLifecycleScorecards == 0 &&
               visibleTextUnsupported == 0 &&
               visualFailureRows == 0
           ? 'None.'
-          : 'Complete screenshot-backed review rows and remediate any row-level layout/content defects.',
+          : 'Complete screenshot-backed review rows, fix incomplete workflow lifecycles, and remediate any row-level layout/content defects.',
     ),
   ];
 }
@@ -2706,6 +3826,7 @@ List<JsonMap> _independentUxFindings(
   JsonMap review,
   List<JsonMap> screenRows,
   List<JsonMap> workflowScorecards,
+  List<JsonMap> lifecycleScorecards,
   List<JsonMap> holisticAnswers,
 ) {
   final findings = _replaceGeneratedFindings(
@@ -2830,6 +3951,27 @@ List<JsonMap> _independentUxFindings(
       'affectedScorecardIds': failingScorecards.take(50).toList(),
     });
   }
+  final failingLifecycleScorecards = lifecycleScorecards
+      .where((scorecard) => scorecard['blocksPass'] == true)
+      .map((scorecard) => _asString(scorecard['scorecardId']))
+      .toList();
+  if (failingLifecycleScorecards.isNotEmpty) {
+    findings.add(<String, Object?>{
+      'findingId': 'B25-WORKFLOW-LIFECYCLE-INCOMPLETE',
+      'severity': 'major',
+      'status': 'open',
+      'title': 'Workflow lifecycle UX is incomplete',
+      'summary':
+          '${failingLifecycleScorecards.length} workflow/persona lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
+      'requiredFix':
+          'Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence.',
+      'blocksPass': true,
+      'generatedBy': 'b25-independent-ux-judge',
+      'affectedLifecycleScorecardIds': failingLifecycleScorecards
+          .take(80)
+          .toList(),
+    });
+  }
   final failingHolistic = holisticAnswers
       .where((answer) => answer['blocksPass'] == true)
       .map((answer) => _asString(answer['questionId']))
@@ -2852,6 +3994,40 @@ List<JsonMap> _independentUxFindings(
   return findings;
 }
 
+List<JsonMap> _workflowLifecycleFindings(
+  JsonMap review,
+  List<JsonMap> lifecycleScorecards,
+) {
+  final findings = _replaceGeneratedFindings(
+    _asMapList(review['findings']),
+    generatedBy: 'b25-workflow-lifecycle-judge',
+  );
+  final failingLifecycleScorecards = lifecycleScorecards
+      .where((scorecard) => scorecard['blocksPass'] == true)
+      .map((scorecard) => _asString(scorecard['scorecardId']))
+      .where((id) => id.isNotEmpty)
+      .toList();
+  if (lifecycleScorecards.isEmpty || failingLifecycleScorecards.isNotEmpty) {
+    findings.add(<String, Object?>{
+      'findingId': 'B25-WORKFLOW-LIFECYCLE-INCOMPLETE',
+      'severity': 'major',
+      'status': 'open',
+      'title': 'Workflow lifecycle UX is incomplete',
+      'summary': lifecycleScorecards.isEmpty
+          ? 'No workflow lifecycle scorecards were generated; B25 cannot prove production workflow UX.'
+          : '${failingLifecycleScorecards.length} workflow/persona lifecycle scorecards failed. The UI is still proving action-card completion rather than full production workflow lifecycles.',
+      'requiredFix':
+          'Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence.',
+      'blocksPass': true,
+      'generatedBy': 'b25-workflow-lifecycle-judge',
+      'affectedLifecycleScorecardIds': failingLifecycleScorecards
+          .take(80)
+          .toList(),
+    });
+  }
+  return findings;
+}
+
 List<JsonMap> _replaceGeneratedFindings(
   List<JsonMap> findings, {
   required String generatedBy,
@@ -2864,6 +4040,7 @@ List<JsonMap> _replaceGeneratedFindings(
     'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE',
     'B25-VISUAL-UX-INSPECTION-FAILED',
     'B25-WORKFLOW-PERSONA-UX-FAILED',
+    'B25-WORKFLOW-LIFECYCLE-INCOMPLETE',
     'B25-HOLISTIC-UX-FAILED',
     'B25-PERSONA-SCOPE-MISSING',
     'B25-COMMUNITY-PRODUCT-DOCS-INCOMPLETE',
@@ -2967,6 +4144,13 @@ JsonMap _remediationBatch({
       for (final row in _asMapList(ticket['failingWorkflowPersonaScorecards']))
         _asString(row['scorecardId']): JsonMap.of(row),
   }..remove('');
+  final lifecycleScorecardsById = <String, JsonMap>{
+    for (final ticket in tickets)
+      for (final row in _asMapList(
+        ticket['failingWorkflowLifecycleScorecards'],
+      ))
+        _asString(row['scorecardId']): JsonMap.of(row),
+  }..remove('');
   final concreteAcceptance = <String>{
     for (final ticket in tickets)
       ..._asStringList(ticket['concreteAcceptanceCriteria']),
@@ -3021,6 +4205,8 @@ JsonMap _remediationBatch({
     'affectedCoverageRows': coverageRowsById.values.toList(),
     'affectedProductDocs': productDocsById.values.toList(),
     'failingWorkflowPersonaScorecards': scorecardsById.values.toList(),
+    'failingWorkflowLifecycleScorecards': lifecycleScorecardsById.values
+        .toList(),
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
     'productDocRepairWorkItems': productDocRepairWorkItems,
     'uiRemediationWorkItems': uiRemediationWorkItems,
@@ -3225,6 +4411,8 @@ _DerivedFailure? _derivedFailure(
       return _failOnGenericRows(screenRows) ??
           _failOnVisualInspection(screenRows) ??
           _failOnWorkflowPersonaScorecards(evidence);
+    case 'b25-c13-workflow-lifecycle-complete':
+      return _failOnWorkflowLifecycleScorecards(evidence);
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -3968,7 +5156,11 @@ String _b25ReviewMarkdown(JsonMap review) {
   final productDocCoverage = _asMapList(review['productDocCoverage']);
   final holisticAnswers = _asMapList(review['holisticQuestionAnswers']);
   final workflowScorecards = _asMapList(review['workflowPersonaScorecards']);
+  final lifecycleScorecards = _asMapList(review['workflowLifecycleScorecards']);
   final failingWorkflowScorecards = workflowScorecards
+      .where((scorecard) => scorecard['blocksPass'] == true)
+      .length;
+  final failingLifecycleScorecards = lifecycleScorecards
       .where((scorecard) => scorecard['blocksPass'] == true)
       .length;
   final buffer = StringBuffer()
@@ -3990,6 +5182,10 @@ String _b25ReviewMarkdown(JsonMap review) {
     ..writeln()
     ..writeln(
       'Workflow/persona scorecards: ${workflowScorecards.length} (${failingWorkflowScorecards} blocking)',
+    )
+    ..writeln()
+    ..writeln(
+      'Workflow lifecycle scorecards: ${lifecycleScorecards.length} (${failingLifecycleScorecards} blocking)',
     )
     ..writeln()
     ..writeln('## Current Findings')
@@ -4049,6 +5245,25 @@ String _b25ReviewMarkdown(JsonMap review) {
     for (final scorecard in workflowScorecards.take(80)) {
       buffer.writeln(
         '| `${_escape(_asString(scorecard['scorecardId']))}` | `${_escape(_asString(scorecard['status']))}` | ${_asStringList(scorecard['screenRowIds']).length} | ${_escape(_asString(scorecard['summary']))} |',
+      );
+    }
+  }
+  buffer
+    ..writeln()
+    ..writeln('## Workflow Lifecycle Scorecards')
+    ..writeln()
+    ..writeln(
+      '| Lifecycle scorecard | Status | Missing lifecycle groups | Summary |',
+    )
+    ..writeln('| --- | --- | --- | --- |');
+  if (lifecycleScorecards.isEmpty) {
+    buffer.writeln(
+      '| Missing | fail | all | Run the workflow lifecycle judge. |',
+    );
+  } else {
+    for (final scorecard in lifecycleScorecards.take(80)) {
+      buffer.writeln(
+        '| `${_escape(_asString(scorecard['scorecardId']))}` | `${_escape(_asString(scorecard['status']))}` | ${_escape(_asStringList(scorecard['missingLifecycleGroups']).join('; '))} | ${_escape(_asString(scorecard['summary']))} |',
       );
     }
   }
@@ -4140,6 +5355,43 @@ String _b25WorkflowPersonaCoverageMarkdown(JsonMap review) {
   return buffer.toString();
 }
 
+String _b25WorkflowLifecycleMarkdown(JsonMap review) {
+  final summary = review['workflowLifecycleSummary'] is JsonMap
+      ? review['workflowLifecycleSummary'] as JsonMap
+      : <String, Object?>{};
+  final rows = _asMapList(review['workflowLifecycleScorecards']);
+  final buffer = StringBuffer()
+    ..writeln('# B25 Workflow Lifecycle Scorecards')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln('| Status | `${_escape(_asString(summary['status']))}` |')
+    ..writeln('| Scorecards | ${summary['scorecardCount'] ?? rows.length} |')
+    ..writeln(
+      '| Failing scorecards | ${summary['failingScorecardCount'] ?? rows.where((row) => row['status'] != 'pass').length} |',
+    )
+    ..writeln(
+      '| Missing lifecycle groups | ${_escape(_asStringList(summary['missingLifecycleGroups']).join('; '))} |',
+    )
+    ..writeln()
+    ..writeln(
+      '| Scorecard | Status | Community | Workflow | Persona | Missing lifecycle groups | Target surface |',
+    )
+    ..writeln('| --- | --- | --- | --- | --- | --- | --- |');
+  if (rows.isEmpty) {
+    buffer.writeln(
+      '| Missing | `fail` | all | all | all | all | Run `b25_workflow_interaction_model_judge.dart`. |',
+    );
+  } else {
+    for (final row in rows) {
+      buffer.writeln(
+        '| `${_escape(_asString(row['scorecardId']))}` | `${_escape(_asString(row['status']))}` | ${_escape(_asString(row['communityName']))} | `${_escape(_asString(row['workflowId']))}` | ${_escape(_asString(row['persona']))} | ${_escape(_asStringList(row['missingLifecycleGroups']).join('; '))} | ${_escape(_asString(row['targetProductionSurface']))} |',
+      );
+    }
+  }
+  return buffer.toString();
+}
+
 String _coverageCollectorUsage() {
   return '''
 b25_workflow_persona_coverage_collector (B25)
@@ -4147,6 +5399,26 @@ Checks whether B25 evidence has explicit screenshot coverage for every workflow/
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <workflow-persona-coverage-matrix.md>]
+''';
+}
+
+String _workflowLifecycleJudgeUsage() {
+  return '''
+b25_workflow_lifecycle_judge (B25)
+Compatibility alias for b25_workflow_interaction_model_judge. Scores every workflow/persona row against the production semantic interaction model: expected decision, concrete object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_workflow_lifecycle_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <b25-workflow-lifecycle-scorecards.md>]
+''';
+}
+
+String _workflowInteractionModelJudgeUsage() {
+  return '''
+b25_workflow_interaction_model_judge (B25)
+Scores every workflow/persona row against the production semantic interaction model: expected decision, required primary actions, required alternate/change/reject actions, disallowed generic substitutes, persistent result state, and receiver/continuation state. Uses screenshot-derived evidence; source files or worker responses cannot close this gate.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input <independent-production-ux-review.json> --output <independent-production-ux-review.json> [--markdown-output <b25-workflow-lifecycle-scorecards.md>]
 ''';
 }
 
@@ -4444,6 +5716,9 @@ JsonMap _extraScorecards(
     'workflowPersonaScorecards': _asMapList(
       evidence['workflowPersonaScorecards'],
     ),
+    'workflowLifecycleScorecards': _asMapList(
+      evidence['workflowLifecycleScorecards'],
+    ),
     'workflowPersonaCriteria': criteria
         .where((criterion) => criterion.scope == 'workflow-persona')
         .map((criterion) => criterion.toJson())
@@ -4511,11 +5786,15 @@ List<JsonMap> _b25RemediationTickets(
       'affectedCoverageRowIds': ticketContext['affectedCoverageRowIds'],
       'affectedProductDocIds': ticketContext['affectedProductDocIds'],
       'affectedScreenRowIds': ticketContext['affectedScreenRowIds'],
+      'affectedLifecycleScorecardIds':
+          ticketContext['affectedLifecycleScorecardIds'],
       'affectedCoverageRows': ticketContext['affectedCoverageRows'],
       'affectedProductDocs': ticketContext['affectedProductDocs'],
       'affectedScreenRows': ticketContext['affectedScreenRows'],
       'failingWorkflowPersonaScorecards':
           ticketContext['failingWorkflowPersonaScorecards'],
+      'failingWorkflowLifecycleScorecards':
+          ticketContext['failingWorkflowLifecycleScorecards'],
       'failingDirectQuestions': ticketContext['failingDirectQuestions'],
       'evidenceRepairWorkItems': ticketContext['evidenceRepairWorkItems'],
       'productDocRepairWorkItems': ticketContext['productDocRepairWorkItems'],
@@ -4558,6 +5837,9 @@ JsonMap _b25TicketContext(
   final coverageRows = _asMapList(evidence['workflowPersonaCoverage']);
   final productDocCoverage = _asMapList(evidence['productDocCoverage']);
   final scorecards = _asMapList(evidence['workflowPersonaScorecards']);
+  final lifecycleScorecards = _asMapList(
+    evidence['workflowLifecycleScorecards'],
+  );
   final holisticAnswers = _asMapList(evidence['holisticQuestionAnswers']);
   final findings = _asMapList(evidence['findings']);
   final screenById = <String, JsonMap>{
@@ -4572,6 +5854,9 @@ JsonMap _b25TicketContext(
   final scorecardById = <String, JsonMap>{
     for (final row in scorecards) _asString(row['scorecardId']): row,
   };
+  final lifecycleScorecardById = <String, JsonMap>{
+    for (final row in lifecycleScorecards) _asString(row['scorecardId']): row,
+  };
   final questionById = <String, JsonMap>{
     for (final row in holisticAnswers) _asString(row['questionId']): row,
   };
@@ -4580,6 +5865,7 @@ JsonMap _b25TicketContext(
   final scorecardIds = <String>{};
   final screenIds = <String>{};
   final questionIds = <String>{};
+  final lifecycleScorecardIds = <String>{};
 
   for (final finding in findings) {
     if (!relatedFindingIds.contains(_findingId(finding))) {
@@ -4588,6 +5874,9 @@ JsonMap _b25TicketContext(
     coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
     productDocIds.addAll(_asStringList(finding['affectedProductDocIds']));
     scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
+    lifecycleScorecardIds.addAll(
+      _asStringList(finding['affectedLifecycleScorecardIds']),
+    );
     screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
     questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
   }
@@ -4609,6 +5898,10 @@ JsonMap _b25TicketContext(
       scorecardIds.add(token);
       continue;
     }
+    if (lifecycleScorecardById.containsKey(token)) {
+      lifecycleScorecardIds.add(token);
+      continue;
+    }
     if (questionById.containsKey(token)) {
       questionIds.add(token);
       continue;
@@ -4618,11 +5911,20 @@ JsonMap _b25TicketContext(
         scorecardIds.add(_asString(scorecard['scorecardId']));
       }
     }
+    for (final scorecard in lifecycleScorecards) {
+      if (_workflowPersonaEvidenceKeys(scorecard).contains(token)) {
+        lifecycleScorecardIds.add(_asString(scorecard['scorecardId']));
+      }
+    }
     for (final coverage in coverageRows) {
       if (_workflowPersonaEvidenceKeys(coverage).contains(token)) {
         coverageIds.add(_asString(coverage['coverageRowId']));
       }
     }
+  }
+
+  if (criterion.id != 'b25-c13-workflow-lifecycle-complete') {
+    lifecycleScorecardIds.clear();
   }
 
   if (criterion.scope == 'holistic') {
@@ -4657,6 +5959,14 @@ JsonMap _b25TicketContext(
             .map((scorecard) => _asString(scorecard['scorecardId'])),
       );
     }
+    if (criterion.id == 'b25-c13-workflow-lifecycle-complete' &&
+        lifecycleScorecardIds.isEmpty) {
+      lifecycleScorecardIds.addAll(
+        lifecycleScorecards
+            .where((scorecard) => scorecard['blocksPass'] == true)
+            .map((scorecard) => _asString(scorecard['scorecardId'])),
+      );
+    }
     for (final scorecardId in scorecardIds.toList()) {
       final scorecard = scorecardById[scorecardId];
       if (scorecard == null) {
@@ -4667,6 +5977,17 @@ JsonMap _b25TicketContext(
         coverageIds.add(scorecardId);
       }
     }
+    for (final scorecardId in lifecycleScorecardIds.toList()) {
+      final scorecard = lifecycleScorecardById[scorecardId];
+      if (scorecard == null) {
+        continue;
+      }
+      screenIds.addAll(_asStringList(scorecard['screenRowIds']));
+      final coverageRowId = _asString(scorecard['coverageRowId']);
+      if (coverageById.containsKey(coverageRowId)) {
+        coverageIds.add(coverageRowId);
+      }
+    }
   }
 
   if (criterion.id == 'b25-c01-no-blocker-major') {
@@ -4674,6 +5995,9 @@ JsonMap _b25TicketContext(
       coverageIds.addAll(_asStringList(finding['affectedCoverageRowIds']));
       productDocIds.addAll(_asStringList(finding['affectedProductDocIds']));
       scorecardIds.addAll(_asStringList(finding['affectedScorecardIds']));
+      lifecycleScorecardIds.addAll(
+        _asStringList(finding['affectedLifecycleScorecardIds']),
+      );
       screenIds.addAll(_asStringList(finding['affectedScreenRowIds']));
       questionIds.addAll(_asStringList(finding['affectedQuestionIds']));
     }
@@ -4698,6 +6022,12 @@ JsonMap _b25TicketContext(
       screenIds.addAll(_asStringList(scorecard['screenRowIds']));
     }
   }
+  for (final scorecardId in lifecycleScorecardIds.toList()) {
+    final scorecard = lifecycleScorecardById[scorecardId];
+    if (scorecard != null) {
+      screenIds.addAll(_asStringList(scorecard['screenRowIds']));
+    }
+  }
 
   final affectedCoverageRows = coverageRows
       .where((row) => coverageIds.contains(_asString(row['coverageRowId'])))
@@ -4715,6 +6045,16 @@ JsonMap _b25TicketContext(
       .where((row) => scorecardIds.contains(_asString(row['scorecardId'])))
       .map((row) => _scorecardTicketDetail(row, criterion.id))
       .toList();
+  final failingLifecycleScorecards =
+      criterion.id == 'b25-c13-workflow-lifecycle-complete'
+      ? lifecycleScorecards
+            .where(
+              (row) =>
+                  lifecycleScorecardIds.contains(_asString(row['scorecardId'])),
+            )
+            .map((row) => _lifecycleScorecardTicketDetail(row, criterion.id))
+            .toList()
+      : <JsonMap>[];
   final failingQuestions = holisticAnswers
       .where((row) => questionIds.contains(_asString(row['questionId'])))
       .map(_directQuestionTicketDetail)
@@ -4729,6 +6069,7 @@ JsonMap _b25TicketContext(
     for (final row in affectedScreenRows) _asString(row['workflowId']),
     for (final row in affectedCoverageRows) _asString(row['workflowId']),
     for (final row in failingScorecards) _asString(row['workflowId']),
+    for (final row in failingLifecycleScorecards) _asString(row['workflowId']),
   }..remove('');
   final uxReferencePatterns = _dedupeReferencePatterns(<JsonMap>[
     ..._b25CriterionReferencePatterns(criterion.id),
@@ -4748,25 +6089,38 @@ JsonMap _b25TicketContext(
       ..._asStringList(row['acceptanceCriteria']),
     for (final row in affectedCoverageRows.take(12))
       ..._asStringList(row['acceptanceCriteria']),
+    for (final row in failingLifecycleScorecards.take(12))
+      ..._asStringList(row['acceptanceCriteria']),
   }.where((value) => value.isNotEmpty).toList();
+  final lifecycleAndPersonaScorecards = <JsonMap>[
+    ...failingScorecards,
+    ...failingLifecycleScorecards,
+  ];
   final evidenceRepairWorkItems = _b25WorkItems(
     stage: 'evidence-repair',
     criterionId: criterion.id,
     screenRows: affectedScreenRows,
     coverageRows: affectedCoverageRows,
-    scorecards: failingScorecards,
+    scorecards: lifecycleAndPersonaScorecards,
   );
   final uiRemediationWorkItems = _b25WorkItems(
     stage: 'ui-remediation',
     criterionId: criterion.id,
     screenRows: affectedScreenRows,
     coverageRows: affectedCoverageRows,
-    scorecards: failingScorecards,
+    scorecards: lifecycleAndPersonaScorecards,
   );
-  final productDocRepairWorkItems = _b25ProductDocWorkItems(
-    criterionId: criterion.id,
-    productDocs: affectedProductDocs,
-  );
+  final productDocRepairWorkItems = <JsonMap>[
+    ..._b25ProductDocWorkItems(
+      criterionId: criterion.id,
+      productDocs: affectedProductDocs,
+    ),
+    if (criterion.id == 'b25-c13-workflow-lifecycle-complete')
+      ..._b25InteractionModelProductDocWorkItems(
+        criterionId: criterion.id,
+        lifecycleScorecards: failingLifecycleScorecards,
+      ),
+  ];
 
   return <String, Object?>{
     'affectedScope': _concreteAffectedScope(
@@ -4786,10 +6140,15 @@ JsonMap _b25TicketContext(
     'affectedProductDocIds': [
       for (final row in affectedProductDocs) _asString(row['productDocId']),
     ],
+    'affectedLifecycleScorecardIds': [
+      for (final row in failingLifecycleScorecards)
+        _asString(row['scorecardId']),
+    ],
     'affectedCoverageRows': affectedCoverageRows,
     'affectedProductDocs': affectedProductDocs,
     'affectedScreenRows': affectedScreenRows,
     'failingWorkflowPersonaScorecards': failingScorecards,
+    'failingWorkflowLifecycleScorecards': failingLifecycleScorecards,
     'failingDirectQuestions': failingQuestions,
     'evidenceRepairWorkItems': evidenceRepairWorkItems,
     'productDocRepairWorkItems': productDocRepairWorkItems,
@@ -4938,6 +6297,95 @@ List<JsonMap> _b25ProductDocWorkItems({
           'After this doc passes productDocCoverage, rerun B25 evidence collection and let UI remediation tickets reference the completed spec.',
     };
   }).toList();
+}
+
+List<JsonMap> _b25InteractionModelProductDocWorkItems({
+  required String criterionId,
+  required List<JsonMap> lifecycleScorecards,
+}) {
+  if (lifecycleScorecards.isEmpty) {
+    return <JsonMap>[];
+  }
+  final byCommunity = <String, List<JsonMap>>{};
+  for (final scorecard in lifecycleScorecards) {
+    final key = _asString(scorecard['communityName']).isNotEmpty
+        ? _asString(scorecard['communityName'])
+        : _asString(scorecard['communityId'], fallback: 'unknown-community');
+    byCommunity.putIfAbsent(key, () => <JsonMap>[]).add(scorecard);
+  }
+  final items = <JsonMap>[];
+  for (final entry in byCommunity.entries) {
+    final communityName = entry.key;
+    final scorecards = entry.value;
+    final workflows = _uniqueStrings([
+      for (final row in scorecards) _asString(row['workflowId']),
+    ]).where((id) => id.isNotEmpty).toList();
+    final screenRows = _uniqueStrings([
+      for (final row in scorecards) ..._asStringList(row['screenRowIds']),
+    ]);
+    final coverageRows = _uniqueStrings([
+      for (final row in scorecards) _asString(row['coverageRowId']),
+    ]).where((id) => id.isNotEmpty).toList();
+    final missingActions = _uniqueStrings([
+      for (final row in scorecards) ..._asStringList(row['missingActions']),
+    ]);
+    final wrongSubstitutes = _uniqueStrings([
+      for (final row in scorecards)
+        ..._asStringList(row['wrongGenericSubstitutes']),
+    ]);
+    final docSlug = _communityProductDocSlug(communityName);
+    final docPath =
+        'docs/Product Docs V2/Community Examples/$docSlug-product-experience.md';
+    items.add(<String, Object?>{
+      'workItemId': 'b25-wi-product-spec-interaction-model-$docSlug',
+      'stage': 'product-spec-update',
+      'criterionId': criterionId,
+      'communityId': _asString(scorecards.first['communityId']),
+      'communityName': communityName,
+      'productDocId': 'product-doc-$docSlug-interaction-model',
+      'docPath': docPath,
+      'expectedDocPath': docPath,
+      'workflowId': workflows.take(8).join(', '),
+      'workflowIds': workflows,
+      'persona': 'product-experience-steward',
+      'targetProductionSurface':
+          'community product experience spec with semantic interaction models',
+      'blockedUntil':
+          'the product doc defines expected decision, required actions, result state, and receiver/continuation state for each failing workflow',
+      'affectedScreenRowIds': screenRows,
+      'affectedCoverageRowIds': coverageRows,
+      'affectedLifecycleScorecardIds': [
+        for (final row in scorecards) _asString(row['scorecardId']),
+      ],
+      'missingActions': missingActions,
+      'wrongGenericSubstitutes': wrongSubstitutes,
+      'currentFailures': <String>[
+        '${workflows.length} workflows have incomplete semantic interaction models.',
+        if (missingActions.isNotEmpty)
+          'missing actions: ${missingActions.join(', ')}',
+        if (wrongSubstitutes.isNotEmpty)
+          'generic substitutes present: ${wrongSubstitutes.join(', ')}',
+      ],
+      'requiredUpdate':
+          'Update $docPath so each failing workflow documents the real user decision, required context fields, primary domain action, alternate/change/reject path, persistent result state, receiver/continuation state, and screenshot evidence plan before UI remediation starts.',
+      'workerActions': <String>[
+        'Open or create `$docPath` using the community product experience template.',
+        'For each failing workflow ID, add a semantic interaction-model row with expected decision, required decision data, primary action, alternate/change/reject action, result state, receiver/continuation state, and evidence IDs.',
+        'Replace generic accept/cancel or submit/cancel workflow language with domain-specific actions from the failing scorecards.',
+        'Mark the doc update in the B25 review/remediation log before assigning UI implementation work.',
+      ],
+      'acceptanceCriteria': <String>[
+        '`$docPath` exists or is updated for `$communityName`.',
+        'Every failing workflow ID is represented in the workflow-to-surface and interaction-model sections.',
+        'Each workflow row states required primary and alternate/change/reject actions.',
+        'The doc no longer leaves the interaction model for these workflows ambiguous.',
+        'After UI remediation, fresh screenshots prove the documented actions and states.',
+      ],
+      'followOnStep':
+          'After the product doc is updated, use the UI remediation work items to implement the documented interaction models, then recapture screenshots and rerun B25.',
+    });
+  }
+  return items;
 }
 
 List<JsonMap> _b25WorkItems({
@@ -5129,6 +6577,7 @@ bool _isB25UiRemediationCriterion(String criterionId) {
     'b25-c04-modern-intentional-ui',
     'b25-c05-community-content-ia',
     'b25-c06-domain-native-primary-surfaces',
+    'b25-c13-workflow-lifecycle-complete',
     'b25-c09-no-layout-production-defects',
   }.contains(criterionId);
 }
@@ -5453,6 +6902,79 @@ JsonMap _scorecardTicketDetail(JsonMap scorecard, String criterionId) {
   };
 }
 
+JsonMap _lifecycleScorecardTicketDetail(JsonMap scorecard, String criterionId) {
+  final workflowId = _asString(scorecard['workflowId']);
+  final proof = scorecard['workflowLifecycleProof'] as JsonMap?;
+  final interactionFromScorecard = scorecard['semanticInteractionModel'];
+  final interactionFromProof = proof == null
+      ? null
+      : proof['semanticInteractionModel'];
+  final interactionModel = interactionFromScorecard is JsonMap
+      ? interactionFromScorecard
+      : interactionFromProof is JsonMap
+      ? interactionFromProof
+      : <String, Object?>{};
+  final missingGroups = _asStringList(
+    scorecard['missingLifecycleGroups'] ?? proof?['missingGroups'],
+  );
+  final failingQuestions = _asMapList(scorecard['questions'])
+      .where((question) => question['blocksPass'] == true)
+      .map(_directQuestionTicketDetail)
+      .toList();
+  return <String, Object?>{
+    'scorecardId': _asString(scorecard['scorecardId']),
+    'coverageRowId': _asString(scorecard['coverageRowId']),
+    'status': _asString(scorecard['status']),
+    'communityId': _asString(scorecard['communityId']),
+    'communityName': _asString(scorecard['communityName']),
+    'workflowId': workflowId,
+    'persona': _asString(scorecard['persona']),
+    'personaId': _asString(scorecard['personaId']),
+    'screenRowIds': _asStringList(scorecard['screenRowIds']),
+    'screenshotPaths': _asStringList(scorecard['screenshotPaths']),
+    'summary': _asString(scorecard['summary']),
+    'targetProductionSurface': _targetProductionSurfaceForWorkflow(workflowId),
+    'workflowLifecycleProof': proof,
+    'semanticInteractionModel': interactionModel,
+    'expectedDecision': _asString(interactionModel['expectedDecision']),
+    'requiredPrimaryActions': _asStringList(
+      interactionModel['requiredPrimaryActions'],
+    ),
+    'requiredAlternateActions': _asStringList(
+      interactionModel['requiredAlternateActions'],
+    ),
+    'visiblePrimaryActions': _asStringList(
+      interactionModel['visiblePrimaryActions'],
+    ),
+    'visibleAlternateActions': _asStringList(
+      interactionModel['visibleAlternateActions'],
+    ),
+    'missingActions': _asStringList(interactionModel['missingActions']),
+    'wrongGenericSubstitutes': _asStringList(
+      interactionModel['wrongGenericSubstitutes'],
+    ),
+    'missingLifecycleGroups': missingGroups,
+    'requiredLifecycleGroups': _asMapList(scorecard['requiredLifecycleGroups']),
+    'referencePatternsToCopy': _b25ReferencePatternsForWorkflow(workflowId),
+    'referenceResearchQueries': _referenceResearchQueriesForWorkflow(
+      workflowId,
+    ),
+    'failingQuestions': failingQuestions,
+    'acceptanceCriteria': <String>[
+      'All lifecycle direct questions in this workflow/persona scorecard pass.',
+      'The UI visibly proves the concrete object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.',
+      'The semantic interaction model passes: expected decision, required primary actions, and required alternate/change/reject actions are visible in fresh after screenshots.',
+      'Missing lifecycle groups are resolved: ${missingGroups.isEmpty ? 'none' : missingGroups.join(', ')}.',
+      'Fresh after screenshots prove the lifecycle and interaction model; implementation notes, code diffs, or ticket responses alone cannot close this ticket.',
+      ..._workflowLifecycleAcceptanceCriteria(
+        workflowId,
+        _asString(scorecard['persona']),
+      ),
+      ..._screenRowAcceptanceCriteria(scorecard, criterionId),
+    ],
+  };
+}
+
 JsonMap _directQuestionTicketDetail(JsonMap question) {
   return <String, Object?>{
     'questionId': _asString(question['questionId']),
@@ -5532,6 +7054,8 @@ List<String> _screenRowAcceptanceCriteria(JsonMap row, String criterionId) {
     'Fresh screenshot path/hash/timestamp/app commit SHA are recorded after the fix.',
     if (criterionId == 'b25-c06-domain-native-primary-surfaces')
       'The workflow/persona direct-question scorecard passes the domain-native primary surface question.',
+    if (criterionId == 'b25-c13-workflow-lifecycle-complete')
+      'The workflow lifecycle scorecard passes with no missing object/context, decision information, action affordance, result state, or receiver/continuation groups.',
     if (criterionId == 'b25-c08-visible-text-specific-critique')
       'The workflow/persona direct-question scorecard passes the visible-text and task-specific critique question.',
   ];
@@ -5698,6 +7222,7 @@ List<JsonMap> _b25CriterionReferencePatterns(String criterionId) {
     case 'b25-c09-no-layout-production-defects':
       return _referencePatternsForType('modern-mobile-product');
     case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c13-workflow-lifecycle-complete':
       return _referencePatternsForType('domain-native-surface');
     case 'b25-c08-visible-text-specific-critique':
       return _referencePatternsForType('evidence-critique');
@@ -5729,6 +7254,12 @@ List<String> _b25CriterionReferenceQueries(String criterionId) {
       return <String>[
         'domain specific mobile workflow UI event RSVP donation message export examples',
         'open source Flutter event RSVP donation messaging workflow UI examples',
+      ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'mobile app workflow lifecycle UI states primary secondary actions examples',
+        'event RSVP decline change response mobile UI pattern',
+        'mobile form review confirmation receipt receiver state UX examples',
       ];
     default:
       return <String>[
@@ -6180,6 +7711,8 @@ String _problemStatementForB25Criterion(String criterionId) {
       return 'The evidence does not prove that primary screens are organized around community content and jobs-to-be-done instead of workflow lists or validation surfaces.';
     case 'b25-c06-domain-native-primary-surfaces':
       return 'The evidence does not prove that each primary workflow/persona UI is a domain-native product surface rather than a generic card, checklist modal, or metadata page.';
+    case 'b25-c13-workflow-lifecycle-complete':
+      return 'The evidence does not prove that each workflow/persona UI implements the full production lifecycle. Cards may expose a single accept/cancel action without the decision context, alternate choices, result state, or receiver/continuation state real users need.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The review rows and direct-question answers do not include enough visible text and screen-specific critique to guide implementation.';
     case 'b25-c09-no-layout-production-defects':
@@ -6203,6 +7736,8 @@ String _rootCauseForB25Criterion(String criterionId) {
       return 'The app may still be organized around implementation/workflow concepts instead of the mental model and daily jobs of community users.';
     case 'b25-c06-domain-native-primary-surfaces':
       return 'Primary workflow surfaces may still rely on generic repeated cards or validation-state UI instead of task-specific product screens.';
+    case 'b25-c13-workflow-lifecycle-complete':
+      return 'The product experience was modeled as completed workflows rather than lifecycle-complete user tasks, so the UI can appear polished while still missing required fields, negative/change actions, and durable post-action states.';
     case 'b25-c08-visible-text-specific-critique':
       return 'The judge output is not detailed enough; rows may be boilerplate or missing actual visible UI/text references.';
     case 'b25-c09-no-layout-production-defects':
@@ -6224,6 +7759,8 @@ String _targetExperienceForB25Criterion(String criterionId) {
       return 'The home and primary flows should lead with community-specific sections, content, and jobs-to-be-done rather than implementation categories.';
     case 'b25-c06-domain-native-primary-surfaces':
       return 'Each primary workflow should use the product surface a real app would use for that job, such as an event detail, feed item, donation flow, care form, review queue, thread, receipt, search result, export wizard, or transfer status screen.';
+    case 'b25-c13-workflow-lifecycle-complete':
+      return 'Each workflow/persona surface should show the concrete object, decision information, natural primary and alternate actions, persistent result/receipt/status, and receiver/continuation state expected in a production app.';
     case 'b25-c08-visible-text-specific-critique':
       return 'Every row should tell a worker exactly what was visible, why it did or did not work for the persona/task, and what must change.';
     case 'b25-c09-no-layout-production-defects':
@@ -6264,6 +7801,13 @@ List<String> _uxPrinciplesForB25Criterion(String criterionId) {
       return <String>[
         'Primary surfaces must match the domain task',
         'Generic cards are acceptable only as secondary support, not primary workflow UI',
+      ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'Workflows are product lifecycles, not one-shot checklist actions',
+        'Users need enough information to decide before acting',
+        'Production affordances include alternate choices, change/revoke paths, and clear result states when the domain requires them',
+        'Receiver and continuation states are first-class UX, not hidden backend assertions',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -6311,11 +7855,13 @@ List<String> _relatedB25FindingIds(
           ? allBlockingFindingIds
           : holisticFindings;
     case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c08-visible-text-specific-critique':
       final workflowFindings = allBlockingFindingIds
           .where(
             (id) =>
                 id == 'B25-WORKFLOW-PERSONA-UX-FAILED' ||
+                id == 'B25-WORKFLOW-LIFECYCLE-INCOMPLETE' ||
                 id == 'B25-WORKFLOW-PERSONA-COVERAGE-INCOMPLETE' ||
                 id == 'B25-SCREEN-SPECIFIC-CRITIQUE-INCOMPLETE',
           )
@@ -6366,6 +7912,13 @@ List<String> _improvementsForB25Criterion(String criterionId) {
         'Replace primary generic cards, checklist modals, metadata pages, or repeated card shells with domain-specific product surfaces.',
         'Create workflow/persona scorecards proving each primary workflow surface is domain-native for its target persona.',
       ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'For every failed lifecycle scorecard, add the missing lifecycle groups named in the ticket.',
+        'Update the community product doc workflow section first when the correct lifecycle is ambiguous.',
+        'Replace accept/cancel-only cards with product surfaces that include decision data, primary action, alternate/change/reject path, persistent result, and receiver/continuation state.',
+        'Recapture entry/action/result/receiver screenshots and rerun the lifecycle judge.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Extract visible text for every reviewed screenshot row.',
@@ -6412,6 +7965,13 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
         'product-ux-screen-review-matrix.md every workflow/persona row',
         'production-ux-criteria-scorecard.json/.md',
       ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'independent-production-ux-review.json workflowLifecycleScorecards',
+        'independent-production-ux-review.json screenRows',
+        'b25-workflow-lifecycle-scorecards.md',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
     case 'b25-c01-no-blocker-major':
       return <String>[
         'independent-production-ux-review.json findings',
@@ -6450,6 +8010,12 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
         'Use B21 production UX contracts to choose the target surface type for each workflow/persona pair.',
         'Update screenshot evidence manifests so each replaced surface is captured at entry, action, and result states.',
       ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'Inspect workflow surface builders and identify where current UI collapses lifecycle into a single action card.',
+        'For each failed lifecycle scorecard, implement missing object/context, decision data, primary and alternate actions, result/receipt/status, and receiver/continuation state.',
+        'Update product docs, seed data, widget tests, and B25 evidence expectations so the lifecycle is documented and screenshot-proven.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Update the B25 judge/review artifact, not only app UI code.',
@@ -6474,9 +8040,12 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
         'Use realistic names, dates, amounts, authors, locations, status, receipts, and next steps where the workflow requires them.',
       ];
     case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c13-workflow-lifecycle-complete':
       return <String>[
         'Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.',
         'Each primary surface should include the domain data a user needs to decide and act.',
+        'Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.',
+        'Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state.',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -6539,6 +8108,12 @@ List<String> _evidenceToCollectForB25Criterion(String criterionId) {
         '`workflowPersonaScorecards` with task-specific domain-native surface judgments.',
         'Screen matrix rows showing `primarySurfaceType` or classification is not generic for primary workflows.',
       ];
+    case 'b25-c13-workflow-lifecycle-complete':
+      return <String>[
+        'Fresh entry/action/result/receiver screenshots for every remediated workflow/persona lifecycle.',
+        '`workflowLifecycleScorecards` showing every required lifecycle group passes.',
+        'Visible text excerpts proving object/context, decision information, primary action, alternate/change/reject affordance, persistent result state, and receiver/continuation state.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Visible text extracts for every reviewed row.',
@@ -6574,9 +8149,12 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
         ...shared,
       ];
     case 'b25-c06-domain-native-primary-surfaces':
+    case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Every workflow/persona scorecard is present, screenshot-backed, non-boilerplate, and pass.',
+        if (criterionId == 'b25-c13-workflow-lifecycle-complete')
+          'Every workflow lifecycle scorecard is present, screenshot-backed, and pass with no missing lifecycle groups.',
         ...shared,
       ];
     case 'b25-c01-no-blocker-major':
@@ -6733,6 +8311,42 @@ _DerivedFailure? _failOnWorkflowPersonaScorecards(JsonMap evidence) {
       score: 55,
       message:
           'Workflow/persona direct-question scorecards have missing or blocking answers: ${failing.join(', ')}.',
+      evidenceUsed: failing,
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnWorkflowLifecycleScorecards(JsonMap evidence) {
+  final scorecards = _asMapList(evidence['workflowLifecycleScorecards']);
+  if (scorecards.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'No semantic workflow interaction-model scorecards were supplied. Run b25_workflow_interaction_model_judge.dart before production_ux_judge.dart.',
+    );
+  }
+  final failing = <String>[];
+  final missingGroups = <String>{};
+  for (final scorecard in scorecards) {
+    final scorecardId = _asString(scorecard['scorecardId']);
+    final proof = scorecard['workflowLifecycleProof'] as JsonMap?;
+    final missing = _asStringList(
+      scorecard['missingLifecycleGroups'] ?? proof?['missingGroups'],
+    );
+    if (scorecard['blocksPass'] == true ||
+        _asString(scorecard['status']) != 'pass' ||
+        _asString(proof?['status']) == 'fail' ||
+        missing.isNotEmpty) {
+      failing.add(scorecardId.isEmpty ? _rowId(scorecard) : scorecardId);
+      missingGroups.addAll(missing);
+    }
+  }
+  if (failing.isNotEmpty) {
+    return _DerivedFailure(
+      score: 45,
+      message:
+          'Workflow lifecycle scorecards are incomplete for ${failing.join(', ')}. Missing lifecycle groups: ${missingGroups.join(', ')}.',
       evidenceUsed: failing,
     );
   }
@@ -6901,6 +8515,14 @@ void _runCommonEvidenceChecks(
     if (workflowPersonaFailure != null) {
       errors.add(
         'workflow/persona direct-question pass: ${workflowPersonaFailure.message}',
+      );
+    }
+    final workflowLifecycleFailure = _failOnWorkflowLifecycleScorecards(
+      evidence,
+    );
+    if (workflowLifecycleFailure != null) {
+      errors.add(
+        'workflow lifecycle pass: ${workflowLifecycleFailure.message}',
       );
     }
     final productDocFailure = _failOnProductDocCoverage(evidence);
@@ -7180,6 +8802,30 @@ String _remediationTicketsMarkdown({
       for (final scorecard in scorecards.take(40)) {
         buffer.writeln(
           '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['persona']))} | ${_asMapList(scorecard['failingQuestions']).length} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
+        );
+      }
+    }
+    final lifecycleScorecards = _asMapList(
+      ticket['failingWorkflowLifecycleScorecards'],
+    );
+    if (lifecycleScorecards.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln(
+          '### Failing Workflow Lifecycle / Interaction Model Scorecards',
+        )
+        ..writeln()
+        ..writeln(
+          'Showing ${lifecycleScorecards.take(40).length} of ${lifecycleScorecards.length} failing lifecycle scorecards. Full semantic interaction-model detail is in the JSON ticket.',
+        )
+        ..writeln()
+        ..writeln(
+          '| Scorecard | Community | Workflow | Persona | Expected decision | Missing lifecycle groups | Missing actions | Wrong generic substitutes | Target surface |',
+        )
+        ..writeln('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+      for (final scorecard in lifecycleScorecards.take(40)) {
+        buffer.writeln(
+          '| `${_escape(_asString(scorecard['scorecardId']))}` | ${_escape(_asString(scorecard['communityName']))} | `${_escape(_asString(scorecard['workflowId']))}` | ${_escape(_asString(scorecard['persona']))} | ${_escape(_asString(scorecard['expectedDecision']))} | ${_escape(_asStringList(scorecard['missingLifecycleGroups']).join('; '))} | ${_escape(_asStringList(scorecard['missingActions']).join('; '))} | ${_escape(_asStringList(scorecard['wrongGenericSubstitutes']).join('; '))} | ${_escape(_asString(scorecard['targetProductionSurface']))} |',
         );
       }
     }

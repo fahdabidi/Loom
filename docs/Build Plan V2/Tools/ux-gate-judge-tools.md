@@ -14,6 +14,7 @@ judge failures into fix batches for the next worker iteration.
 | Evidence Collector Tool | Captures screenshots, hashes, visible text, app commit SHA, device metadata, command output. | Running app, emulator, artifact paths. No implementation rationale. | Evidence JSON and screenshot bundle. |
 | Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
 | Independent UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Holistic answers, workflow/persona scorecards, screen critiques, findings. |
+| Workflow Interaction-Model Judge Tool | Scores whether each workflow/persona UI proves the correct semantic interaction model. | Screenshot-backed evidence rows, product docs, coverage rows, independent judge output. No worker implementation notes. | `workflowLifecycleScorecards`, `semanticInteractionModel`, interaction-model findings, lifecycle markdown. |
 | Production UX Judge CLI | Deterministically validates the independent judge output against B25 pass criteria. | Machine-readable review JSON, scorecard schema, ticket template, screenshot metadata. | Criteria scorecard, pass/fail, remediation tickets. |
 | Remediation Planner | Converts judge failures into right-sized fix batches. | Judge scorecard, findings, phase docs. | Remediation plan for Worker Agent. |
 
@@ -39,6 +40,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.json --tickets-markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-1.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
 ```
@@ -62,6 +64,8 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
 | `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
 | `b25_independent_ux_judge.dart` | B25 | Fill holistic direct-question answers, workflow/persona scorecards, screen-specific critiques, visual-inspection failures, and exact findings from evidence only. |
+| `b25_workflow_interaction_model_judge.dart` | B25 | Fail workflow/persona UI that does not prove the right semantic interaction model: concrete object/context, decision information, domain-correct primary action, domain-required alternate/change/reject action, persistent result state, and receiver/continuation state. |
+| `b25_workflow_lifecycle_judge.dart` | B25 | Compatibility alias for the interaction-model judge. Prefer `b25_workflow_interaction_model_judge.dart` in new B25 runs. |
 | `production_ux_judge.dart` | B25 | Deterministically validate the independent judge output against every B25 production UX pass criterion and generate tickets for failed blocking criteria. |
 | `b25_iteration_scorecard.dart` | B25 | Summarize each B25 review/remediation pass with current blocker/major counts, resolved counts, new counts, judge failures, and convergence status. |
 | `b25_remediation_planner.dart` | B25 | Convert judge-generated remediation tickets into ordered worker-agent remediation batches. |
@@ -100,6 +104,7 @@ Each remediation ticket includes:
 - affected scope: communities, personas, workflows, screen rows, and screenshots
 - evidence-repair work items scoped by community/workflow/persona
 - UI-remediation work items scoped by community/workflow/persona
+- failing workflow interaction-model scorecards with expected decision, missing actions, wrong generic substitutes, missing lifecycle groups, and required screenshot proof
 - user-facing problem statement
 - root-cause hypothesis
 - target experience
@@ -139,9 +144,11 @@ B25 uses direct questions rather than only declarative pass criteria. The produc
 
 1. **One holistic product UX pass** over the entire app/community experience.
 2. **One workflow/persona pass for every reviewed workflow and persona pair.**
+3. **One semantic workflow interaction-model pass for every reviewed workflow and persona pair.**
 
-Both passes must be green before B25 can close. A holistic pass cannot excuse a weak workflow, and a set
-of workflow passes cannot excuse a visually incoherent or non-production overall experience.
+All three passes must be green before B25 can close. A holistic pass cannot excuse a weak workflow, a
+workflow/persona pass cannot excuse an incomplete or wrong interaction model, and a set of workflow
+passes cannot excuse a visually incoherent or non-production overall experience.
 
 Each criterion row includes:
 
@@ -162,6 +169,12 @@ B25 evidence must include:
 - `workflowPersonaScorecards`: direct-question scorecards for each workflow/persona pair, including
   task clarity, domain-native primary surface, natural actions, validation/error/result states,
   receiver/unauthorized states, and whether that workflow UI feels production-grade on its own.
+- `workflowLifecycleScorecards`: semantic interaction-model scorecards for each workflow/persona pair,
+  including expected user decision, required primary actions, required alternate/change/reject actions,
+  disallowed generic substitutes, visible primary/alternate actions, concrete object/context, decision
+  information, persistent result state, receiver/continuation state, missing lifecycle groups, and
+  screenshot evidence. These scorecards prevent accept/cancel action cards from passing as complete
+  workflows.
 - `semanticSurfaceProof`: one object on every workflow/persona scorecard proving the after screenshots
   visibly contain the requested target product surface elements. A scorecard cannot pass only because no
   known defect was detected. For example, an announcement surface must show audience or recipient group,
@@ -187,6 +200,7 @@ The iteration scorecard does not replace the judge. It records whether the loop 
 - production judge status and blocking criterion failures
 - holistic direct-question pass status
 - workflow/persona direct-question pass status
+- semantic workflow interaction-model scorecard pass status
 - required next action before the next UX feedback/remediation loop
 
 The remediation tickets do not replace the judge or scorecard either. They are committed with the failed
@@ -196,6 +210,9 @@ incomplete evidence; a remediation pass that begins without a planner output is 
 The planner must preserve sequencing: evidence-repair work items come first, then UI-remediation work
 items for the same community/workflow/persona, then recapture/rerun/closeout. A Worker Agent should not
 start broad UI changes from a ticket whose `workerReadiness` says evidence repair is still required.
+The planner and worker cannot close tickets. Closure happens only after fresh after screenshots are
+captured and the independent judge, interaction-model judge, production judge, and iteration scorecard
+all show the ticket's target surface and semantic actions now pass.
 
 For schema v4 tickets, the Independent UX Judge must also attach UX reference patterns. It should search
 the internet or open-source projects for comparable production patterns when network access is
@@ -231,6 +248,22 @@ Workflow/persona pass, repeated for every workflow/persona pair:
 - Does this workflow UI feel production-grade on its own?
 - Does the after screenshot prove the requested target product surface is actually present, with the
   required domain content and affordances, instead of merely avoiding known bad patterns?
+
+Workflow interaction-model pass, repeated for every workflow/persona pair:
+
+- Does the screen show the concrete object or record the user is acting on?
+- Does the screen show enough domain information for the user to make a real decision?
+- Is the primary action semantically correct and specific to the domain task?
+- Does the workflow provide the domain-required alternate/change/reject/defer/undo path instead of only
+  accept/cancel or submit/cancel?
+- Does the expected interaction model name the decision being made and the actions that should exist?
+- Are generic substitutes like `Accept`, `Cancel`, `Confirm`, `Continue`, or `Complete` rejected when
+  they stand in for missing domain actions?
+- After action, does the UI show a persistent result, receipt, status, history, or confirmation state?
+- If another persona receives or continues the workflow, is the receiver/read-only/continuation state
+  visible in the screenshots?
+- Does the interaction-model proof pass from fresh after-screenshot visual evidence, not from
+  implementation notes, source diffs, or ticket responses?
 
 Do not batch all workflow/persona questions into one giant answer. The UX Judge Agent may perform the
 holistic pass once, then process workflow/persona groups in batches small enough to preserve fresh,

@@ -108,6 +108,12 @@ a real user would expect.
 - Semantic surface proof in every primary workflow/persona scorecard. The proof must list the target
   product surface, required domain-content groups, passed groups, missing groups, visible evidence
   excerpt, and pass/fail status from after screenshots.
+- Semantic workflow interaction-model scorecards in the machine-readable evidence and
+  `docs/Build Plan V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md`. Every workflow/persona pair
+  must prove the full production interaction model: concrete object/context, decision information,
+  semantically correct primary action, domain-required alternate/change/reject affordance, persistent
+  result state, and receiver or continuation state. A workflow cannot pass because it has an attractive
+  action card or an accept/cancel pair.
 - Owner-accepted minor issue list, if any minor issues remain.
 - Final pass/fail UX decision.
 - B25 API Review if any API or platform contract issue is discovered, and B25 UX Decisions.
@@ -178,6 +184,11 @@ generic workflow card, checklist/review modal, metadata/settings page, or repeat
 remain only as secondary-supporting surfaces with explicit owner acceptance; they cannot be the primary
 production UX for events, donations, forms, messaging, care, volunteer, admin review, search, export, or
 other user-facing community jobs.
+
+The phase must also remain incomplete when any primary workflow/persona interaction model is incomplete. B25
+must fail when the UI does not show the concrete object the user is acting on, enough domain information
+to decide, a natural primary action, required alternate/change/reject/defer affordances, a persistent
+post-action state, and receiver/continuation states where the workflow crosses personas or time.
 
 If any blocker or major finding exists, B25 must enter the remediation loop: cluster findings by root
 cause, apply UX/content/code fixes, rebuild and relaunch the visible Demo App, recapture screenshots,
@@ -314,20 +325,45 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the after screenshot prove the requested target product surface is actually present, with the
      required domain content and affordances, instead of merely avoiding known bad patterns?
 
-12. **Production UX judge scorecard:** run the deterministic production judge against the independent
+12. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
+    independent judge and before the production judge. It must write `workflowLifecycleScorecards`,
+    `semanticInteractionModel` details, and `b25-workflow-lifecycle-scorecards.md`, then fail if any
+    primary workflow/persona lacks the visible interaction proof a real product requires:
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
+   ```
+
+   For every workflow/persona pair, the interaction-model judge asks whether screenshots prove:
+
+   - concrete object/context
+   - decision information
+   - semantically correct primary action
+   - alternate/change/reject/defer affordance where the workflow requires it
+   - persistent result, receipt, status, or history state
+   - receiver/read/continuation state where another persona or later session is involved
+   - expected interaction model: decision being made, required primary actions, required alternate/
+     change/reject actions, and generic substitutes that are not sufficient
+
+   If any interaction-model scorecard fails, the remediation ticket must name the missing lifecycle
+   groups, missing/wrong actions, generic substitutes, and route either to product-doc update first, UI
+   implementation, evidence repair, or a mixed sequence.
+13. **Production UX judge scorecard:** run the deterministic production judge against the independent
    judge's v4 evidence:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
    ```
 
-   The production judge validates the independent judge output, emits the scorecard, and generates
+   The production judge validates the independent judge and interaction-model output, emits the scorecard, and generates
    remediation tickets. It must fail if either the holistic direct-question pass or any
    workflow/persona direct-question pass is missing, partial, unsupported by visible evidence, or below
    the score threshold. It must also fail if any workflow/persona row lacks passing
-   `semanticSurfaceProof`, or if any previously opened remediation ticket lacks before/after screenshot
-   evidence proving the requested target-surface elements are now visible.
-13. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+   `semanticSurfaceProof`, any workflow/persona row lacks passing `semanticInteractionModel` /
+   `workflowLifecycleProof`, or if any
+   previously opened remediation ticket lacks before/after screenshot evidence proving the requested
+   target-surface and interaction-model elements are now visible.
+14. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -336,19 +372,19 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-14. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+15. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-15. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
+16. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
    update the community product doc and blueprint before UI work. Implementation gaps update UX/content/
    code/seed data/tests. Evidence gaps recapture or repair evidence before judging. Then rebuild,
    relaunch, recapture affected screenshots, regenerate v4 evidence, rerun tests/review, and commit the
    full iteration before the next UX feedback or remediation batch.
-16. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+17. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
-   pass is green, every semantic surface proof is green, all remediated tickets have before/after
-   screenshot closure evidence, all community-specific product docs are current and linked from the
+   pass is green, every semantic surface proof is green, every workflow interaction-model scorecard is green,
+   all remediated tickets have before/after screenshot closure evidence, all community-specific product docs are current and linked from the
    B25 evidence, the production UX judge scorecard has no blocking criterion failures, all required
    tests/gates pass, every pass has a B25 iteration scorecard proving convergence, and the tracker
    records the final iteration commit.
@@ -363,6 +399,7 @@ Use the split defined in [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judg
 | Evidence Collector Tool | Captures screenshots, hashes, timestamps, visible text, app commit SHA, device metadata, and command output. |
 | Visual Inspection Auditor Tool | Decodes screenshots and records pixel/layout signals for checklist modals, repeated-card shells, thin content, weak identity, default-scaffold feel, and missing/undecodable images. |
 | Independent UX Judge Agent | Reviews only artifacts and screenshots, inspects the visual audit output, scores direct-question passes, and emits screen-specific critique/findings. |
+| Workflow Interaction-Model Judge Tool | Scores every workflow/persona interaction model against expected decision, concrete object/context, decision information, semantically correct primary action, alternate/change/reject affordance, result state, and receiver/continuation state. |
 | Production UX Judge CLI | Deterministically validates the independent judge output and emits the scorecard/tickets. |
 | Remediation Planner | Converts judge failures into fix batches for the Worker Agent. |
 
@@ -494,6 +531,26 @@ expects:
 - community home/list: recognizable identity, useful summary, current activity, primary next action,
   and no overlapping shell controls
 
+Then verify the semantic workflow interaction model, not only the visible card label. Every primary workflow/persona
+must prove:
+
+- concrete object/context: the user can tell exactly what announcement, event, payment, request,
+  document, message, exchange item, form, transfer, or record they are acting on
+- decision information: the screen shows the fields needed to decide, such as who/what/when/where/why,
+  amount, audience, privacy, status, owner, sender, recipient, or due date
+- semantically correct primary action: the primary button names the real domain action
+- alternate/change/reject affordance: the user can decline, reject, edit, change, undo, defer, withdraw,
+  cancel RSVP, request changes, retry, roll back, mute, archive, or otherwise make the non-happy-path
+  choice when the domain requires it
+- persistent result state: after action, the screen shows status, receipt, history, confirmation,
+  waiting state, approval/rejection, submitted state, paid state, read state, or equivalent durable result
+- receiver/continuation state: when another persona receives or continues the workflow, that state is
+  visible in the evidence
+
+Do not close a workflow interaction-model ticket by accepting "implemented" as an answer, reading source
+files, or relying on a ticket response. The after screenshots must be freshly captured and must visibly
+prove the expected decision, required domain actions, lifecycle groups, and receiver/result states above.
+
 When a required domain concept is unavailable in seed data, the remediation is to improve seed content
 or product copy, not to pass an abstract placeholder.
 
@@ -581,6 +638,11 @@ Pass criteria:
 - Every workflow/persona direct-question pass is green.
 - Every primary workflow/persona row has passing semantic surface proof. The judge must be able to cite
   the after-screenshot evidence that the requested target product surface is actually present.
+- Every primary workflow/persona row has a passing semantic workflow interaction-model scorecard. The after screenshots
+  must prove concrete object/context, decision information, semantic primary action, required
+  alternate/change/reject affordance, persistent result state, receiver/continuation state, and the
+  correct domain interaction model. Source files, implementation notes, or ticket responses cannot close
+  this check.
 - Every remediated ticket has before/after screenshot closure evidence and cannot close from worker
   implementation notes, code diffs, label changes, or absence of known visual defects alone.
 - Every screen row uses fresh screenshots captured from the app version under review, with screenshot

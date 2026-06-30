@@ -24,9 +24,9 @@ void main(List<String> args) async {
         '${repoRoot.path}/docs/Build Plan V2/Evidence',
   ).absolute;
   await evidenceRoot.create(recursive: true);
-  final captureStartedAt = DateTime.now()
-      .toUtc()
-      .subtract(const Duration(minutes: 1));
+  final captureStartedAt = DateTime.now().toUtc().subtract(
+    const Duration(minutes: 1),
+  );
 
   final logPath =
       _argValue(args, '--log') ??
@@ -154,7 +154,8 @@ Future<void> _writeCombinedManifest({
   final manifestPaths = <String>[];
 
   for (final phase in phases) {
-    final manifestPath = '${evidenceRoot.path}/$phase/workflow-ui-evidence.json';
+    final manifestPath =
+        '${evidenceRoot.path}/$phase/workflow-ui-evidence.json';
     final manifestFile = File(manifestPath);
     if (!manifestFile.existsSync()) {
       stderr.writeln(
@@ -213,18 +214,19 @@ Future<void> _writeCombinedManifest({
 
   final finalDirectory = Directory('${evidenceRoot.path}/B20');
   await finalDirectory.create(recursive: true);
-  await File('${finalDirectory.path}/all-workflow-ui-evidence.json')
-      .writeAsString(
-        const JsonEncoder.withIndent('  ').convert({
-          'schemaVersion': 1,
-          'status': 'pass',
-          'phases': phases,
-          'workflowCount': workflowCount,
-          'screenshotCount': screenshotCount,
-          'workflowEvidenceManifestPaths': manifestPaths,
-          'commandOutputPath': commandOutputPath,
-          'captureMode': 'phase-split-flutter-drive',
-        }),
-        flush: true,
-      );
+  await File(
+    '${finalDirectory.path}/all-workflow-ui-evidence.json',
+  ).writeAsString(
+    const JsonEncoder.withIndent('  ').convert({
+      'schemaVersion': 1,
+      'status': 'pass',
+      'phases': phases,
+      'workflowCount': workflowCount,
+      'screenshotCount': screenshotCount,
+      'workflowEvidenceManifestPaths': manifestPaths,
+      'commandOutputPath': commandOutputPath,
+      'captureMode': 'phase-split-flutter-drive',
+    }),
+    flush: true,
+  );
 }

@@ -27,9 +27,11 @@ or a generic pass/fail summary.
 | `affectedScope` | Communities, personas, workflows, screen rows, and screenshots affected. |
 | `affectedCoverageRowIds` | Machine-readable workflow/persona coverage row IDs affected by this ticket. |
 | `affectedScreenRowIds` | Machine-readable screen row IDs affected by this ticket. |
+| `affectedLifecycleScorecardIds` | Machine-readable workflow interaction-model scorecard IDs affected by this ticket. |
 | `affectedCoverageRows` | Concrete workflow/persona coverage rows, including coverage row ID, community, workflow, persona/personaId, missing evidence, screen row IDs, screenshot paths, and target production surface. |
 | `affectedScreenRows` | Concrete screen rows, including screen row ID, community, workflow, persona, screen/state, screenshot path/hash/timestamp, app commit SHA, visible text excerpt, current classification, exact UX failure, target production surface, likely files/widgets, and row-level acceptance criteria. |
 | `failingWorkflowPersonaScorecards` | Failing workflow/persona scorecards, including failed direct questions, screen row IDs, screenshot paths, and required fixes. |
+| `failingWorkflowLifecycleScorecards` | Failing semantic workflow interaction-model scorecards, including expected decision, required primary actions, required alternate/change/reject actions, visible actions, missing actions, wrong generic substitutes, missing lifecycle groups, screenshot paths, and required fixes. |
 | `failingDirectQuestions` | Holistic or workflow/persona direct questions that failed, including score, why, required fix, and evidence used. |
 | `evidenceRepairWorkItems` | Smaller community/workflow/persona work items for fixing evidence quality before UI implementation. Each item includes affected row IDs, screenshot paths/hashes, visible text excerpts, current failures, worker actions, and acceptance criteria. |
 | `uiRemediationWorkItems` | Smaller community/workflow/persona work items for actual UI/design implementation once evidence repair has passed. Each item names the target production surface, likely files/widgets, worker actions, and acceptance criteria. |
@@ -38,6 +40,8 @@ or a generic pass/fail summary.
 | `referenceResearchQueries` | Search queries the Independent UX Judge used or should use to refresh the pattern references. |
 | `sourceResearchRequirement` | Statement requiring the Independent UX Judge to search the internet or open-source examples and attach copyable references before UI remediation. |
 | `concreteAcceptanceCriteria` | Screen/workflow/persona-specific checks the remediation must satisfy before rerun. |
+| `semanticInteractionModel` | Expected user decision, required primary actions, required alternate/change/reject actions, disallowed generic substitutes, visible actions, missing actions, and wrong substitutes for the affected workflow/persona. |
+| `visualClosureRequirement` | Statement that the ticket can only close from fresh after screenshots and screenshot-derived visible text proving the target surface and interaction model, not from source diffs, implementation notes, or ticket responses. |
 | `problemStatement` | Plain-language user-facing problem, not implementation jargon. |
 | `rootCauseHypothesis` | Likely UX/design root cause behind the failure. |
 | `targetExperience` | What the user should see, understand, and be able to do after the fix. |
@@ -132,6 +136,12 @@ Evidence-grounded explanation.
 | --- | --- | ---: | --- | --- |
 | Is the primary surface domain-native? | workflow-persona | 35 | Evidence shows generic surface. | Replace with target domain surface and recapture. |
 
+### Failing Workflow Interaction Models
+
+| Scorecard | Community | Workflow | Persona | Expected decision | Missing actions | Wrong generic substitutes | Missing lifecycle groups | Target surface |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `b25-wp-...-lifecycle` | Example Community | `workflow-id` | member | Member decides whether to attend a named dated event with time/location/capacity. | domain-specific alternate/change/reject action | accept; cancel | decision information; semantic interaction model | Event detail with RSVP action and result state |
+
 ### Likely Files / Widgets
 
 - `app/apps/loom_communities_demo/lib/main.dart`
@@ -163,6 +173,8 @@ What the target user should experience after the fix.
 - Judge criterion no longer blocks pass.
 - Screenshots and hashes are fresh.
 - Iteration scorecard shows the ticket resolved or non-blocking.
+- The interaction-model scorecard passes from fresh after-screenshot evidence.
+- The ticket is not closed from source files, code diffs, implementation notes, or a worker statement that the change was implemented.
 
 ### Concrete Acceptance Criteria
 
@@ -171,6 +183,8 @@ What the target user should experience after the fix.
 - Screen-specific critique names visible UI, visible text, persona, workflow, and exact issue.
 - Primary surface is the target domain-native surface, not a generic card/checklist/metadata page.
 - Workflow/persona scorecard passes after rerun.
+- The expected decision, required primary actions, and required alternate/change/reject actions are visible in the after screenshots.
+- Generic substitutes such as `Accept`, `Cancel`, `Confirm`, `Continue`, or `Complete` do not replace missing domain actions.
 
 ### Rerun Commands
 
@@ -187,6 +201,12 @@ What the target user should experience after the fix.
 A remediation ticket is invalid if it only says "fix UX" or repeats the failed criterion. It must name
 the user-facing problem, describe the target experience, identify the artifacts to update, and define
 how the next pass will prove the fix.
+
+For workflow interaction-model failures, a remediation ticket is invalid unless it states the expected
+user decision, the primary action that should exist, the alternate/change/reject path that should exist,
+the generic substitutes that are currently wrong or insufficient, and the fresh after screenshots needed
+to prove the correction. The Remediation Planner may use the ticket to plan code/content/product-doc
+changes, but ticket closure belongs to the next judge pass after visual evidence is captured.
 
 For schema v4, a remediation ticket is also invalid if it does not give implementers reference
 patterns to copy. The Independent UX Judge must search the internet or open-source projects when
