@@ -887,6 +887,11 @@ class _WorkflowTile extends StatelessWidget {
                             ),
                         ],
                       ),
+                      const SizedBox(height: 10),
+                      _InteractionModelSummary(
+                        contract: contract,
+                        foreground: foreground,
+                      ),
                       Offstage(
                         child: Text(
                           view.personaRationale,
@@ -905,7 +910,8 @@ class _WorkflowTile extends StatelessWidget {
               _WorkflowResultPanel(
                 key: ValueKey('workflow-result-${workflow.workflowId}'),
                 title: contract.successTitle,
-                body: contract.resultSummary,
+                body:
+                    '${contract.resultSummary} ${contract.receiverStateSummary}',
                 icon: contract.icon,
                 accent: accent,
               )
@@ -915,7 +921,8 @@ class _WorkflowTile extends StatelessWidget {
                   'workflow-received-result-${workflow.workflowId}',
                 ),
                 title: contract.receiverSurfaceTitle,
-                body: _receiverBodyFor(contract.category),
+                body:
+                    '${_receiverBodyFor(contract.category)} ${contract.receiverStateSummary}',
                 icon: Icons.inbox_outlined,
                 accent: accent,
               )
@@ -962,6 +969,54 @@ Color _foregroundFor(Color background) {
 
 Color _screenBackgroundFor(Color accent) {
   return Color.alphaBlend(accent.withValues(alpha: 0.42), Colors.black);
+}
+
+class _InteractionModelSummary extends StatelessWidget {
+  const _InteractionModelSummary({
+    required this.contract,
+    required this.foreground,
+  });
+
+  final LoomProductionWorkflowContract contract;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: foreground.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              contract.decisionSummary,
+              style: textTheme.bodySmall?.copyWith(
+                color: foreground.withValues(alpha: 0.92),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.compare_arrows_outlined,
+                  label: contract.alternateActionLabel,
+                  foreground: foreground,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _SurfaceFactPill extends StatelessWidget {
@@ -1518,9 +1573,21 @@ class _WorkflowActionSurface extends StatelessWidget {
             accent: accent,
             rows: [
               _ActionSurfaceDetail(
+                icon: Icons.rule_folder_outlined,
+                title: 'Decision',
+                body: contract.decisionSummary,
+              ),
+              _ActionSurfaceDetail(
                 icon: Icons.edit_note_outlined,
                 title: 'Details',
-                body: _surfaceInputFor(contract.category, workflow),
+                body:
+                    '${contract.inputSummary} ${_surfaceInputFor(contract.category, workflow)}',
+              ),
+              _ActionSurfaceDetail(
+                icon: Icons.compare_arrows_outlined,
+                title: 'Other option',
+                body:
+                    '${contract.alternateActionLabel} is available before this is saved.',
               ),
               _ActionSurfaceDetail(
                 icon: Icons.task_alt_outlined,
@@ -1544,7 +1611,7 @@ class _WorkflowActionSurface extends StatelessWidget {
           children: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(contract.alternateActionLabel),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1971,9 +2038,12 @@ class LoomProductionWorkflowContract {
     required this.objectLabel,
     required this.screenTitle,
     required this.primaryActionLabel,
+    required this.alternateActionLabel,
+    required this.decisionSummary,
     required this.inputSummary,
     required this.validationSummary,
     required this.resultSummary,
+    required this.receiverStateSummary,
     required this.successTitle,
     required this.successChipLabel,
     required this.receiverSurfaceTitle,
@@ -1987,9 +2057,12 @@ class LoomProductionWorkflowContract {
   final String objectLabel;
   final String screenTitle;
   final String primaryActionLabel;
+  final String alternateActionLabel;
+  final String decisionSummary;
   final String inputSummary;
   final String validationSummary;
   final String resultSummary;
+  final String receiverStateSummary;
   final String successTitle;
   final String successChipLabel;
   final String receiverSurfaceTitle;
@@ -2321,9 +2394,12 @@ LoomProductionWorkflowContract productionWorkflowContractFor({
     objectLabel: objectLabel,
     screenTitle: _screenTitleFor(category, workflow),
     primaryActionLabel: _primaryActionLabelFor(workflow),
+    alternateActionLabel: _alternateActionLabelFor(workflow),
+    decisionSummary: _decisionSummaryFor(category, workflow),
     inputSummary: _inputSummaryFor(category, workflow),
     validationSummary: _validationSummaryFor(category),
     resultSummary: _successBodyFor(category, workflow),
+    receiverStateSummary: _receiverStateSummaryFor(category, workflow),
     successTitle: _successTitleFor(category, workflow),
     successChipLabel: _successChipLabelFor(category),
     receiverSurfaceTitle: _receiverTitleFor(category, objectLabel),
@@ -2422,6 +2498,14 @@ List<String> productionUxGenericCopyViolations() {
           productionWorkflowContractFor(
             extensionId: target.extensionId,
             workflow: workflow,
+          ).alternateActionLabel,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).decisionSummary,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
           ).inputSummary,
           productionWorkflowContractFor(
             extensionId: target.extensionId,
@@ -2431,6 +2515,10 @@ List<String> productionUxGenericCopyViolations() {
             extensionId: target.extensionId,
             workflow: workflow,
           ).resultSummary,
+          productionWorkflowContractFor(
+            extensionId: target.extensionId,
+            workflow: workflow,
+          ).receiverStateSummary,
           productionWorkflowContractFor(
             extensionId: target.extensionId,
             workflow: workflow,
@@ -2745,6 +2833,173 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
   }
   final action = workflow.actionText.replaceAll(RegExp(r'\.$'), '');
   return action.length <= 36 ? action : 'Start ${_objectLabelFor(workflow)}';
+}
+
+String _alternateActionLabelFor(LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement')) {
+    return 'Preview announcement';
+  }
+  if (id.contains('publish') || id.contains('selection')) {
+    return 'Save draft';
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return 'Change response';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off')) {
+    return 'Change amount';
+  }
+  if (id.contains('document')) {
+    return 'Save document';
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('decision')) {
+    return 'Request changes';
+  }
+  if (id.contains('care')) {
+    return 'Update privacy';
+  }
+  if (id.contains('gear')) {
+    return 'Change request';
+  }
+  if (id.contains('plant-exchange')) {
+    return 'Edit offer';
+  }
+  if (id.contains('critique')) {
+    return 'Edit critique';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'Edit score';
+  }
+  if (id.contains('invite')) {
+    return 'Decline invite';
+  }
+  if (id.contains('message') || id.contains('connection')) {
+    return 'Archive thread';
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return 'Change scope';
+  }
+  if (id.contains('request')) {
+    return 'Edit request';
+  }
+  return 'Edit response';
+}
+
+String _decisionSummaryFor(String category, LoomWorkflowDefinition workflow) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement') || id.contains('publish')) {
+    return 'Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first.';
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return 'Decide if you are going, maybe, or not attending after checking date, time, location, and capacity.';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off')) {
+    return 'Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment.';
+  }
+  if (id.contains('document')) {
+    return 'Decide whether to open, download, save, share, or request access to this document.';
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request')) {
+    return 'Decide whether the request should be approved, rejected, revised, or sent back for changes.';
+  }
+  if (id.contains('care')) {
+    return 'Decide what care details to share, who receives them, and whether privacy should be updated before sending.';
+  }
+  if (id.contains('gear')) {
+    return 'Decide whether to claim, decline, change, or return the gear after checking owner, pickup, and due details.';
+  }
+  if (id.contains('plant-exchange')) {
+    return 'Decide whether to claim, offer, edit, or cancel the plant exchange after checking variety, pickup, and contact details.';
+  }
+  if (id.contains('critique')) {
+    return 'Decide whether to submit, edit, withdraw, or resubmit the critique after reviewing the image and comments.';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'Decide whether to save, edit, correct, or dispute the match result after checking opponent, round, and score.';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return 'Decide whether to reply, send, accept, decline, mute, archive, or block this member communication.';
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return 'Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope.';
+  }
+  return 'Decide what to save, what to change, and what status or next step should remain visible afterward.';
+}
+
+String _receiverStateSummaryFor(
+  String category,
+  LoomWorkflowDefinition workflow,
+) {
+  final id = workflow.workflowId;
+  if (id.contains('announcement') || id.contains('publish')) {
+    return 'Members see it later in the inbox, notification list, and read state.';
+  }
+  if (id.contains('rsvp') ||
+      id.contains('event') ||
+      id.contains('practice') ||
+      id.contains('photo-walk')) {
+    return 'The calendar, attendee roster, and member status remain visible after the response.';
+  }
+  if (id.contains('payment') ||
+      id.contains('dues') ||
+      id.contains('donation') ||
+      id.contains('checkout') ||
+      id.contains('ad-off')) {
+    return 'Receipt history, donor or member account status, and entitlement state remain available.';
+  }
+  if (id.contains('document')) {
+    return 'Members keep access, read-only viewer state, and download history where allowed.';
+  }
+  if (id.contains('architectural') ||
+      id.contains('approval') ||
+      id.contains('request') ||
+      id.contains('care')) {
+    return 'Reviewer, owner, committee, notification, and request status are visible after submission.';
+  }
+  if (id.contains('gear') || id.contains('plant-exchange')) {
+    return 'Owner, borrower, contact, pickup, and handoff status stay visible.';
+  }
+  if (id.contains('critique')) {
+    return 'Reviewer feedback, comments, and member follow-up stay visible.';
+  }
+  if (id.contains('match') || id.contains('chess')) {
+    return 'Opponent, standings, next pairing, and recorded result remain visible.';
+  }
+  if (id.contains('message') ||
+      id.contains('connection') ||
+      id.contains('invite')) {
+    return 'Recipient inbox, thread, and connection state remain visible.';
+  }
+  if (id.contains('export') ||
+      id.contains('transfer') ||
+      id.contains('import')) {
+    return 'Provider, destination, rollback, audit, and transfer status remain visible.';
+  }
+  return 'History, receiver status, and next step remain visible.';
 }
 
 String _screenTitleFor(String category, LoomWorkflowDefinition workflow) {

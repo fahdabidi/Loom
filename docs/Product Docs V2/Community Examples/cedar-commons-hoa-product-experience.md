@@ -1,4 +1,4 @@
-# Cedar Commons HOA Product Experience
+﻿# Cedar Commons HOA Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -68,8 +68,23 @@ board comments, receipts, audit labels, and export checksums.
 Use civic dashboard hierarchy, clear payment/document/request sections, and distinct board review
 surfaces. Avoid uniform cards across unrelated homeowner jobs.
 
+### B25 Semantic Interaction Models
+
+This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
+
+| Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| hoa-dues-payment | member | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-member-document | member | Member decides whether to open, acknowledge, save, or share a concrete document with title, date, owner, and status. | open document, download document, read document, acknowledge | save, share, close document, mark unread, request access | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-facility-reservation | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-architectural-request | owner | Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths. | submit request, approve request, send request, review request | reject, request changes, revise, withdraw, edit request | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-committee-decision | owner | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-owner-notification | owner | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| hoa-export-evidence | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+
+
 ## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
-| B25 next pass | no | pending review | Created canonical HOA product experience. | Judge current screenshots against homeowner/board surfaces. | open |
+| B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |

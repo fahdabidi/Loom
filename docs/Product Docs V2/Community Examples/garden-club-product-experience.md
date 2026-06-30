@@ -1,4 +1,4 @@
-# Garden Club Product Experience
+﻿# Garden Club Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -64,8 +64,19 @@ values, and before/after RSVP/submission states.
 Use garden-specific hierarchy, seasonal accents, readable event/detail surfaces, and form sections with
 clear labels. Avoid repeated same-shape cards as the whole experience.
 
+### B25 Semantic Interaction Models
+
+This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
+
+| Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| garden-event-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| plant-exchange-submission | member | Member evaluates a concrete plant exchange item with owner, pickup details, availability, and claim/cancel paths. | claim plant, request plant, offer plant, reserve plant | cancel claim, edit offer, mark claimed, mark unavailable | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| garden-export-custom-schemas | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+
+
 ## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
-| B25 next pass | no | pending review | Created canonical Garden Club product experience. | Judge current screenshots against event/form/export surfaces. | open |
+| B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |

@@ -1,4 +1,4 @@
-# Persona Role Inventory Product Experience
+﻿# Persona Role Inventory Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -60,8 +60,18 @@ status language. Avoid exposing private fields or replacing role meaning with te
 Use a dense but readable review dashboard with role/state hierarchy, filters, and evidence links. Avoid
 thin checklist pages, raw JSON labels, or repeated generic cards.
 
+### B25 Semantic Interaction Models
+
+This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
+
+| Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| wf_persona-role-inventory-capability-matrix | admin |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_persona-role-inventory-capability-matrix | member |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+
+
 ## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
-| B25 next pass | no | pending review | Created canonical persona-role-inventory product experience. | Judge role matrix and evidence detail against this doc. | open |
+| B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |

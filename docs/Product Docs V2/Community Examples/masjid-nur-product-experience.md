@@ -1,4 +1,4 @@
-# Masjid Nur Product Experience
+﻿# Masjid Nur Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -68,8 +68,29 @@ receipt, volunteer shift/capacity, care privacy indicators, and receiver state.
 Use a respectful community hub with strong content hierarchy, clear privacy/giving treatment, and
 domain surfaces for announcements/donations/care. Avoid checklist modals and repeated task cards.
 
+### B25 Semantic Interaction Models
+
+This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
+
+| Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| mosque-announcement | owner | Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update. | publish announcement, send announcement, post announcement, schedule announcement | edit announcement, preview announcement, save draft, schedule later, change audience | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-event-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-volunteer-signup | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-donor-visibility | donor | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-donation-payment | donor | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-care-request | member | Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths. | submit request, approve request, send request, review request | reject, request changes, revise, withdraw, edit request | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-neutral-notification | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-search-ai-citation | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_demo-app-persona-picker | member |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_community-persona-aware-ux | member |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_community-persona-aware-ux | admin |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_multi-persona-workflow-evidence | admin |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| wf_multi-persona-workflow-evidence | member |  |  |  | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+
+
 ## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
-| B25 next pass | no | pending review | Created canonical Masjid Nur product experience. | Judge current screenshots against announcement/giving/care surfaces. | open |
+| B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |

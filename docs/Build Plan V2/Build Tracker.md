@@ -101,7 +101,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface and interaction-model proof. | Pass 9 is historical under the stricter semantic-closure, product-doc, and semantic interaction-model bar. The next pass must create/update the community product experience docs, derive the blueprint from those docs, rerun the full B25 chain including `b25_workflow_interaction_model_judge.dart`, and prove every primary workflow/persona target surface, expected decision, required actions, and lifecycle group from after-screenshot visible evidence, with before/after closure proof for remediated tickets. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface and interaction-model proof. | Pass 10 is the current failed run under the stricter semantic-closure, product-doc, and semantic interaction-model bar. It improved the gate from product-doc/visual failures to 16 remaining lifecycle rows and 10 remaining workflow/persona product-surface rows. Pass 11 must consume `b25-remediation-plan-b25-v4-pass-11.md`, fix those remaining rows from visible after-screenshot evidence, rerun the full B25 chain including `b25_workflow_interaction_model_judge.dart`, and prove every primary workflow/persona target surface, expected decision, required actions, result state, and lifecycle group from fresh screenshots. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `TBD` |
 
 ## Phase Outcome Summary
 
@@ -1686,20 +1686,21 @@ Closeout rule for reopened phases:
   `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
   diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
   pending.
-- **Current v4 pass:** `b25-v4-pass-9` is now historical under the semantic-closure and product-doc bar
-  added after review of the Masjid Nur screens. It consumed the pass-8 remediation plan, replaced the remaining
-  light-band workflow/page treatments with continuous dark/accent product surfaces, and reran the full
-  B25 evidence and judge chain against fresh screenshots. `b25_capture_workflow_screenshots.dart`
+- **Current v4 pass:** `b25-v4-pass-10` is the current failed run under the semantic-closure,
+  product-doc, and semantic interaction-model bar added after review of the Masjid Nur screens. It
+  added B25 semantic interaction-model addenda to 11 community product docs, added shared
+  alternate-action, decision, and receiver-state UI to workflow cards and full-screen action surfaces,
+  and reran the B25 evidence and judge chain against fresh screenshots. `b25_capture_workflow_screenshots.dart`
   recaptured B12-B20 as phase-split `flutter drive` evidence and wrote 208 screenshot files. The B25
-  collector generated 195 schema v4 screen rows, workflow/persona coverage passed 68 of 68 rows,
-  `b25_visual_inspection_auditor.dart` passed 195 of 195 rows, `b25_independent_ux_judge.dart` passed
-  with 0 findings and 68 workflow/persona scorecards, and `production_ux_judge.dart` passed 12 of 12
-  criteria. The iteration scorecard
-  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-9.md` records 0 blockers,
-  0 unresolved major findings, 3 resolved blocker/major finding classes, and 0 newly introduced
-  blocker/major findings. B25 must be rerun before it can be considered complete under the stricter
-  bar because pass 9 did not require current community product experience docs,
-  `semanticSurfaceProof`, or before/after ticket closure proof.
+  collector generated 195 schema v4 screen rows, workflow/persona coverage passed 68 of 68 rows, and
+  `b25_visual_inspection_auditor.dart` passed 195 of 195 rows. `b25_independent_ux_judge.dart` still
+  failed with 3 findings, `b25_workflow_interaction_model_judge.dart` failed 16 of 68 lifecycle rows,
+  and `production_ux_judge.dart` failed 8 criteria. The iteration scorecard
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-10.md` records 0 blockers,
+  1 unresolved major finding, 0 resolved blocker/major finding classes, and 0 newly introduced
+  blocker/major findings. B25 remains reopened; pass 11 must consume
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-11.md` and close the 16 remaining
+  lifecycle rows plus the 10 workflow/persona product-surface rows from fresh after-screenshot evidence.
 - **Commit:** Historical iteration 3 implementation `ccc3f40`; v4 pass-1 ticket/planner closeout
   `5d4e313`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`;
   reference-pattern ticket update `6d01a22`; v4 pass-2 `68b5fad`; v4 pass-3 `9c59a5a`; v4 pass-4 `b672089`.

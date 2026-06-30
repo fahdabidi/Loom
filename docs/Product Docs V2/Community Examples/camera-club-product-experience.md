@@ -1,4 +1,4 @@
-# Camera Club Product Experience
+﻿# Camera Club Product Experience
 
 ## 1. Community Identity And Promise
 
@@ -62,8 +62,19 @@ and validation statuses for every requested prompt workflow.
 Use image/photography cues and clear event/submission surfaces. Avoid generated text that describes the
 Skill instead of the photo club task.
 
+### B25 Semantic Interaction Models
+
+This B25 addendum defines the production interaction model the UI must prove from fresh after-screenshot evidence. A workflow cannot pass with only a happy-path action; it must show the expected decision, required primary action, alternate/change/reject path, durable result state, and receiver or continuation state.
+
+| Workflow | Persona | Expected decision | Required primary actions | Required alternate/change/reject actions | Result and receiver state |
+| --- | --- | --- | --- | --- | --- |
+| photo-walk-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| critique-submission | member | Participant reviews or submits a concrete critique item with content, author, feedback, and edit/withdraw paths. | submit critique, review critique, comment | edit critique, withdraw critique, request changes, resubmit | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| gear-loan-request | member | Reviewer or requester evaluates a concrete request with requester, details, status, and approve/reject/change paths. | submit request, approve request, send request, review request | reject, request changes, revise, withdraw, edit request | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+
+
 ## 10. Review And Remediation Log
 
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
-| B25 next pass | no | pending review | Created canonical Camera Club product experience. | Judge current generated-extension screenshots against photo-club surfaces. | open |
+| B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
