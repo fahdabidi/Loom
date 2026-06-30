@@ -32,6 +32,13 @@ a real user would expect.
   the same registry metadata on each screen row plus a top-level `cardSurfaceRegistry`. This registry is
   remediation context only in B25; it must not be treated as a standalone card-surface/API coverage
   pass/fail gate until a later phase explicitly enables that gate.
+- LLM Product Docs to Evidence Workflow Reconciliation report at
+  `docs/Build Plan V2/Evidence/B25/llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`.
+  The reviewer must inspect every relevant Product Docs V2 community example doc, especially
+  `## 6. Workflow-To-Surface Mapping`, compare it to current screenshot/review evidence, and decide
+  whether the product docs list every implemented workflow, every documented workflow is implemented
+  and screenshot-backed, and any visible flow or UI interaction missing from the docs must be added to
+  the product doc before UI remediation continues.
 - Complete product UX screen inventory and review matrix at
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`, with one row for every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
@@ -158,6 +165,23 @@ must update the relevant product doc before UI implementation. When the product 
 does not implement it, the ticket is an `implementation-gap` and the Worker Agent fixes the UI,
 content, seed data, tests, or evidence.
 
+Before B25 can close, a fresh LLM Product Docs to Evidence Workflow Reconciliation must compare each
+community product doc's `## 6. Workflow-To-Surface Mapping` against the current screenshot-backed
+review evidence. The reviewer must identify three classes of drift:
+
+- product-doc gaps: workflows, states, persona variants, lifecycle actions, receiver states, or UI
+  interactions visible in screenshots but missing or underspecified in the product doc;
+- implementation/evidence gaps: workflows declared in the product doc but missing from screenshots,
+  review rows, or visible UI;
+- mapping gaps: documented workflows mapped to generic workflow surfaces or incorrect card-surface
+  families when the evidence shows a different or richer production surface is required.
+
+Any blocker or major reconciliation finding blocks B25 and must become a remediation ticket. If the
+finding says the product doc is missing the actual intended experience, the product doc must be updated
+before UI remediation starts. If the finding says the app fails to implement a clear product-doc row,
+the next pass remediates the UI/content/seed data/evidence and then reruns the reconciliation against
+fresh screenshots.
+
 ## Completed When
 
 The independent review finds no unresolved blocker or major UX issues. Minor findings are either fixed,
@@ -218,6 +242,12 @@ The phase must also remain incomplete when any primary workflow/persona interact
 must fail when the UI does not show the concrete object the user is acting on, enough domain information
 to decide, a natural primary action, required alternate/change/reject/defer affordances, a persistent
 post-action state, and receiver/continuation states where the workflow crosses personas or time.
+
+The phase must also remain incomplete when Product Docs V2 and the evidence disagree. If
+`## 6. Workflow-To-Surface Mapping` omits workflows visible in screenshots, declares workflows that are
+not implemented in screenshot evidence, misses lifecycle actions implied by the UI, or maps a primary
+job to a generic workflow surface while the review requires a domain-native product surface, B25 must
+open product-doc or implementation remediation tickets and rerun after the docs/evidence are aligned.
 
 If any blocker or major finding exists, B25 must enter the remediation loop: cluster findings by root
 cause, apply UX/content/code fixes, rebuild and relaunch the visible Demo App, recapture screenshots,
@@ -332,7 +362,36 @@ the owner explicitly asks for review-only planning or pauses implementation.
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
    ```
 
-11. **LLM Vision UX Judge Agent:** send the current product docs, production UX blueprint,
+11. **LLM Product Docs to Evidence Workflow Reconciliation:** before the vision/product-quality judge,
+    send a fresh LLM reviewer the current community product docs, the `## 6. Workflow-To-Surface
+    Mapping` sections, the production UX blueprint, workflow/persona coverage, screen matrix,
+    screenshots, visible-text extracts, screenshot hashes, app commit SHA, and review JSON. Do not give
+    the reviewer worker implementation notes or intended behavior claims.
+    Use the reviewer contract in
+    [../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md](../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md).
+
+    The reviewer writes
+    `docs/Build Plan V2/Evidence/B25/llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`
+    with:
+
+   - every reviewed product doc path and evidence path;
+   - declared workflow IDs and implemented/screenshot-backed workflow IDs per community;
+   - workflows/screens/interactions visible in screenshots but missing from the product doc;
+   - workflows declared in Product Docs V2 but missing from screenshots, review rows, or visible UI;
+   - lifecycle/action gaps where screenshots prove the UI needs richer product-doc requirements;
+   - surface mapping gaps where the doc or UI still points at a generic workflow/card surface;
+   - findings classified as `product-doc-missing-workflow`, `implementation-missing-workflow`,
+     `product-doc-interaction-gap`, `surface-mismatch`, or `evidence-extra-undocumented-flow`;
+   - required remediation mode: `product-doc-update`, `implementation-remediation`,
+     `evidence-recapture`, or `mixed`;
+   - affected product doc paths, section anchors, screen row IDs, screenshot paths, screenshot hashes,
+     visible text excerpts, community, persona, workflow, and required fix.
+
+    This is an LLM gate for now, not a CLI. The reviewer must reason over the docs and screenshots. If
+    blocker or major reconciliation findings exist, B25 cannot close and the findings must be included
+    in the remediation tickets before the iteration commit.
+
+12. **LLM Vision UX Judge Agent:** send the current product docs, production UX blueprint,
     workflow/persona coverage, screen matrix, screenshot paths, and actual screenshots to a fresh LLM
     vision/product-review agent. Do not give the agent worker implementation notes, intended behavior,
     source-code diffs, or claims that fixes are complete. The agent must inspect the screenshot pixels
@@ -356,7 +415,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
     implementation gap, evidence gap, or mixed gap where possible, and must attach reference patterns
     or research queries for remediation tickets.
 
-12. **Validate and import LLM vision review:** first run `b25_llm_review_freshness_gate.dart` against
+13. **Validate and import LLM vision review:** first run `b25_llm_review_freshness_gate.dart` against
     the raw LLM artifact. The gate must pass before import and proves the LLM review belongs to the
     current run, current app commit, current screen row IDs, and current screenshot hashes:
 
@@ -377,7 +436,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    so the production judge can generate tickets with screenshot paths, hashes, visible text, and target
    surfaces.
 
-13. **Workflow/persona direct-question pass:** for every workflow/persona pair, write or preserve a
+14. **Workflow/persona direct-question pass:** for every workflow/persona pair, write or preserve a
    `workflowPersonaScorecards` row answering:
 
    - Can this persona immediately understand what they are supposed to do?
@@ -391,7 +450,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    - Does the after screenshot prove the requested target product surface is actually present, with the
      required domain content and affordances, instead of merely avoiding known bad patterns?
 
-14. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
+15. **Semantic workflow interaction-model judge:** run the distinct interaction-model judge after the
     independent judge and before the production judge. It must write `workflowLifecycleScorecards`,
     `semanticInteractionModel` details, and `b25-workflow-lifecycle-scorecards.md`, then fail if any
     primary workflow/persona lacks the visible interaction proof a real product requires:
@@ -414,14 +473,15 @@ the owner explicitly asks for review-only planning or pauses implementation.
    If any interaction-model scorecard fails, the remediation ticket must name the missing lifecycle
    groups, missing/wrong actions, generic substitutes, and route either to product-doc update first, UI
    implementation, evidence repair, or a mixed sequence.
-15. **Production UX judge scorecard:** run the deterministic production judge against the independent
+16. **Production UX judge scorecard:** run the deterministic production judge against the independent
    judge's v4 evidence:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.md'
    ```
 
-   The production judge validates the deterministic scaffold, imported LLM vision review, and interaction-model output, emits the scorecard, and generates
+   The production judge validates the deterministic scaffold, LLM product-doc reconciliation output,
+   imported LLM vision review, and interaction-model output, emits the scorecard, and generates
    remediation tickets. It must fail if either the holistic direct-question pass or any
    workflow/persona direct-question pass is missing, partial, unsupported by visible evidence, or below
    the score threshold. It must also fail if any workflow/persona row lacks passing
@@ -431,7 +491,7 @@ the owner explicitly asks for review-only planning or pauses implementation.
    target-surface and interaction-model elements are now visible. It must also fail criterion
    `b25-c15-full-b25-capture-coverage` when `reviewInputEvidence` was generated from targeted,
    incomplete, stale, or non-commit-eligible screenshot evidence.
-16. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
+17. **Iteration scorecard:** generate a B25 iteration scorecard from the review JSON and judge scorecard:
 
    ```powershell
    wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\ Plan\ V2/Evidence/B25/production-ux-criteria-scorecard.json --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-iteration-scorecard-latest.md'
@@ -440,16 +500,16 @@ the owner explicitly asks for review-only planning or pauses implementation.
    Copy or write the same scorecard under a run-specific filename before the iteration commit. If this
    is not the first pass, pass the previous run-specific scorecard with `--previous` so the tool can
    count blocker/major findings resolved and introduced in the current pass.
-17. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
+18. **Domain-native surface gate:** fail every primary workflow still implemented as a generic repeated
    card, checklist/review dialog, metadata page, or improved-copy workflow shell. For each failure,
    create a target product-surface replacement plan.
-18. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
+19. **Remediation loop:** for blocker/major findings, classify the remediation first. Product-spec gaps
    update the community product doc and blueprint before UI work. Implementation gaps update UX/content/
    code/seed data/tests. Evidence gaps recapture or repair evidence before judging. Then rebuild,
    relaunch, optionally run targeted precheck captures for local verification, then rerun the full
    B12-B20 capture and coverage gate before regenerating v4 evidence, rerunning tests/review, and
    committing the full iteration.
-19. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
+20. **Final production certification:** pass only when there are zero unresolved blocker/major findings,
    every screen row has fresh screenshot evidence and screen-specific critique, every primary workflow
    is domain-native, the holistic direct-question pass is green, every workflow/persona direct-question
    pass is green, every semantic surface proof is green, every workflow interaction-model scorecard is green,
@@ -468,6 +528,7 @@ Use the split defined in [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judg
 | Evidence Collector Tool | Captures screenshots, hashes, timestamps, visible text, app commit SHA, device metadata, and command output. |
 | Visual Inspection Auditor Tool | Decodes screenshots and records pixel/layout signals for checklist modals, repeated-card shells, thin content, weak identity, default-scaffold feel, and missing/undecodable images. |
 | Deterministic Review Scaffold | Normalizes schema v4 evidence and visual-audit data but cannot provide the final semantic product-quality pass. |
+| LLM Product Docs to Evidence Reconciliation Agent | Compares Product Docs V2 `## 6. Workflow-To-Surface Mapping` sections to current screenshot/review evidence and creates product-doc or implementation gap findings. |
 | LLM Vision UX Judge Agent | Reviews only artifacts and screenshots with fresh context, inspects pixels/layout, answers direct UX questions, and emits screenshot-backed critiques/findings. |
 | LLM Review Importer Tool | Imports the LLM vision review into schema v4 evidence as `llmVisionReview` so the production judge can validate and ticket it. |
 | Workflow Interaction-Model Judge Tool | Scores every workflow/persona interaction model against expected decision, concrete object/context, decision information, semantically correct primary action, alternate/change/reject affordance, result state, and receiver/continuation state. |
@@ -518,6 +579,17 @@ community/test app, define:
 
 If a community's blueprint is missing or only restates workflow metadata, mark that community as failed
 and add a remediation item before evaluating screens.
+
+Before the visual/product-quality review, run the LLM Product Docs to Evidence Workflow Reconciliation
+gate. Inspect every community product doc's `## 6. Workflow-To-Surface Mapping`, plus its persona/state
+matrix, content/seed requirements, visual standard, B25 semantic interaction model, and card-surface
+registry. Compare those rows to the current screen matrix, workflow/persona coverage, visible text, and
+screenshots. Fail when a documented workflow lacks screenshot-backed implementation, when screenshots
+show a workflow or UI interaction missing from the product doc, when required visible proof is not
+visible, or when the doc/screenshot pair maps a primary user job to a generic workflow card instead of
+a domain-native surface. Write
+`llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`, then carry blocker/major findings
+into remediation tickets.
 
 For every screen inventory row, perform a critique at the same level of depth as a product review, not
 a checklist. Answer:
@@ -706,6 +778,8 @@ Pass criteria:
   workflow list or validation surface.
 - Primary workflows use domain-specific product surfaces, not just generic cards with better labels.
 - The holistic product UX direct-question pass is green.
+- The LLM Product Docs to Evidence Workflow Reconciliation pass is green, with no unresolved blocker
+  or major product-doc, implementation, evidence, or mapping gaps.
 - Every workflow/persona direct-question pass is green.
 - Every primary workflow/persona row has passing semantic surface proof. The judge must be able to cite
   the after-screenshot evidence that the requested target product surface is actually present.
@@ -761,7 +835,8 @@ The next UX feedback/remediation loop may not start from uncommitted B25 iterati
 ## Evidence To Record
 
 Production UX blueprint, independent UX review report, product UX screen review matrix, schema version 4
-machine-readable review JSON, semantic surface proof, before/after ticket-closure evidence, production
+machine-readable review JSON, LLM Product Docs to Evidence Workflow Reconciliation JSON/Markdown,
+semantic surface proof, before/after ticket-closure evidence, production
 UX judge scorecard, B25 iteration scorecards, B25 remediation loop log, findings table, screenshot
 paths, remediation evidence, retest output, final pass/fail statement, manifest rows, phase gate,
 analyzer, boundary lint, diff check, per-iteration commit SHAs, and final closeout commit SHA.

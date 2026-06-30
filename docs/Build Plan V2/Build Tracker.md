@@ -43,9 +43,10 @@ critical/blocker and major counts, blocker/major findings resolved in that pass,
 blocker/major findings, judge failures, and the next action.
 The B25 tool sequence is product experience doc steward -> advisory card-surface registry refresh ->
 full B12-B20 screenshot capture -> `b25_capture_coverage_gate.dart` -> evidence collector -> workflow/persona coverage collector ->
-visual inspection auditor -> deterministic review scaffold -> LLM Vision UX Judge Agent -> LLM review
-freshness gate -> LLM review importer -> workflow interaction-model judge -> deterministic production UX judge -> remediation
-tickets -> iteration scorecard -> commit. Targeted recaptures may be used only as
+visual inspection auditor -> deterministic review scaffold -> LLM Product Docs to Evidence Workflow
+Reconciliation Agent -> LLM Vision UX Judge Agent -> LLM review freshness gate -> LLM review importer
+-> workflow interaction-model judge -> deterministic production UX judge -> remediation tickets ->
+iteration scorecard -> commit. Targeted recaptures may be used only as
 non-committable remediation diagnostics; the iteration commit must always use a full B12-B20 capture
 and passing coverage gate.
 A carried-forward, copied, or prior-run LLM Vision UX review is stale by definition. The imported LLM
@@ -65,6 +66,12 @@ the fetched Loom Product Docs V2 as read-only and write the same product contrac
 summary derived from those product docs, not a substitute for them. Tickets must classify failures as
 `product-spec-gap`, `implementation-gap`, `evidence-gap`, or `mixed-gap`; product-spec gaps update the
 product doc before UI remediation begins.
+The LLM Product Docs to Evidence Workflow Reconciliation Agent must inspect each community product
+doc's `## 6. Workflow-To-Surface Mapping`, Sections 7-9, B25 semantic interaction model, and
+card-surface registry against the current screenshots/review evidence. It opens tickets when product
+docs omit screenshot-visible workflows/interactions, when documented workflows lack screenshot-backed
+implementation, when required visible proof is absent, or when product docs/evidence map a primary job
+to a generic surface.
 The next remediation pass starts by feeding the committed tickets and scorecard to the remediation
 planner before any worker implements fixes.
 
@@ -154,7 +161,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Replaces generic workflow harness UI with domain-specific production surfaces. | RSVP/event surfaces, payment/receipt surfaces, forms/protected-data surfaces, announcement/composer surfaces, approval surfaces, search/AI surfaces, export/migration surfaces, social/ad surfaces. | Users interact with real domain workflows instead of generic cards and "Complete workflow" dialogs. |
 | B23 | Makes the production surfaces persona-aware and stateful across roles. | Actor views, receiver views, read-only views, disabled/hidden rules, dependency-chain state, persona-specific screenshot tests. | A role that creates a record and a role that receives it each see a coherent production experience for their part of the workflow. |
 | B24 | Certifies the full suite against production UX evidence requirements. | Generic-copy failure tests, screenshot evidence audit, final B12-B24 evidence manifest, Skill completion-rule audit, regression sweep. | No example community can be marked complete while using generic workflow harness copy, missing inputs, missing success states, or untested persona handoffs. |
-| B25 | Reviews and certifies the finished UX independently against explicit product experience specs. | Community-specific product experience docs, advisory workflow-to-card-surface registry context, full B12-B20 screenshot capture, `b25_capture_coverage_gate.dart` report, outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, holistic direct-question scorecard, workflow/persona direct-question scorecards, `b25_llm_review_freshness_gate.dart` report, semantic surface proof, production UX judge scorecard, detailed remediation tickets with gap classification, before/after closure evidence, iteration scorecards, remediation evidence, final pass/fail decision; failed-pass tickets feed the next pass's remediation planner. | The UX passes only when every reviewed community/test app has a current product experience doc, the B25 blueprint is derived from those docs, the canonical screenshot evidence is a commit-eligible full B12-B20 capture, an independent screenshot-first review and the production UX judge find no unresolved blocker or major design issues, the LLM Vision UX Judge artifact is fresh for the current run/app commit/screenshots and is not carried forward from a prior pass, every screenshot is fresh and traceable, every primary workflow is domain-native, the holistic and workflow/persona direct-question passes are green, every primary workflow/persona row proves the requested target surface from after-screenshot visible evidence, every failed pass has template-complete remediation tickets and a convergence scorecard, every remediated ticket closes from before/after screenshot proof rather than implementation claims, and any minor issues are accepted or tracked. The card-surface registry is required context but not yet a standalone card-surface/API coverage gate. A remediation pass may not begin implementation until the prior pass's tickets have been converted into a remediation plan, and any product-spec-gap must update the product experience doc before UI remediation. |
+| B25 | Reviews and certifies the finished UX independently against explicit product experience specs. | Community-specific product experience docs, advisory workflow-to-card-surface registry context, LLM Product Docs to Evidence Workflow Reconciliation JSON/Markdown, full B12-B20 screenshot capture, `b25_capture_coverage_gate.dart` report, outside-in product UX review, schema v4 evidence, screenshot freshness audit, non-boilerplate screen critique, domain-native primary-surface gate, holistic direct-question scorecard, workflow/persona direct-question scorecards, `b25_llm_review_freshness_gate.dart` report, semantic surface proof, production UX judge scorecard, detailed remediation tickets with gap classification, before/after closure evidence, iteration scorecards, remediation evidence, final pass/fail decision; failed-pass tickets feed the next pass's remediation planner. | The UX passes only when every reviewed community/test app has a current product experience doc, the B25 blueprint is derived from those docs, the LLM Product Docs to Evidence Workflow Reconciliation pass has no unresolved blocker/major product-doc, implementation, evidence, or mapping gaps, the canonical screenshot evidence is a commit-eligible full B12-B20 capture, an independent screenshot-first review and the production UX judge find no unresolved blocker or major design issues, the LLM Vision UX Judge artifact is fresh for the current run/app commit/screenshots and is not carried forward from a prior pass, every screenshot is fresh and traceable, every primary workflow is domain-native, the holistic and workflow/persona direct-question passes are green, every primary workflow/persona row proves the requested target surface from after-screenshot visible evidence, every failed pass has template-complete remediation tickets and a convergence scorecard, every remediated ticket closes from before/after screenshot proof rather than implementation claims, and any minor issues are accepted or tracked. The card-surface registry is required context but not yet a standalone card-surface/API coverage gate. A remediation pass may not begin implementation until the prior pass's tickets have been converted into a remediation plan, and any product-spec-gap must update the product experience doc before UI remediation. |
 
 ## Planned Full UX Workflow Evidence Matrix
 
@@ -259,12 +266,24 @@ Each B25 loop iteration must be committed before the next UX feedback or remedia
 iteration commit must include the current review/remediation evidence, screenshots or screenshot
 references, tests run, remaining findings, and tracker/remediation-loop updates.
 
+B25 must also run a fresh LLM Product Docs to Evidence Workflow Reconciliation Agent before the final
+visual/product-quality judgment. This agent compares the Product Docs V2 community example docs, or the
+standalone Skill's local community product doc, to the current screenshot-backed review evidence. It
+must inspect `## 6. Workflow-To-Surface Mapping`, the persona/state matrix, content/seed requirements,
+visual standard, B25 semantic interaction model, and card-surface registry. It fails when a doc row has
+no screenshot-backed implementation, a screenshot-visible flow or UI interaction is missing from the
+doc, required visible proof is absent, persona/lifecycle state is undocumented, or a primary user job is
+mapped to a generic surface. Findings are routed as product-doc updates, implementation remediation,
+evidence recapture, or mixed tickets.
+
 B25 must also run a fresh LLM Vision UX Judge Agent before the deterministic Production UX Judge. The
 LLM judge inspects screenshots as pixels/layout and answers the semantic product-quality questions; the
-importer records that output as `llmVisionReview`. The Production UX Judge then validates four evidence
-blocks: one holistic product UX pass for the whole app/community experience, one workflow/persona pass
-for every reviewed workflow/persona pair, one semantic workflow interaction-model pass for every
-reviewed workflow/persona pair, and the imported LLM vision review. All four must be green. The
+importer records that output as `llmVisionReview`. The Production UX Judge then validates five evidence
+blocks: one LLM Product Docs to Evidence Workflow Reconciliation pass, one holistic product UX pass for
+the whole app/community experience, one workflow/persona pass for every reviewed workflow/persona pair,
+one semantic workflow interaction-model pass for every reviewed workflow/persona pair, and the imported
+LLM vision review. All five must be green. The product-doc reconciliation pass guards against drift
+between Product Docs V2 `## 6. Workflow-To-Surface Mapping` rows and screenshot evidence. The
 holistic pass guards overall product coherence, navigation, modern visual quality, and
 community-centered information architecture. The workflow/persona passes guard task clarity,
 domain-native surfaces, natural actions, validation/result states, receiver states, and unauthorized/
@@ -296,8 +315,8 @@ only after `b25_llm_review_freshness_gate.dart` proves it is fresh for the curre
 screen rows, and screenshot hashes. Then import with `b25_llm_ux_review_importer.dart`; this is the
 semantic product-quality review. Then run `b25_workflow_interaction_model_judge.dart` to produce
 semantic interaction-model scorecards from the same screenshots. `production_ux_judge.dart` is the
-deterministic validator that scores the scaffold, LLM vision review, lifecycle outputs, and emits
-remediation tickets.
+deterministic validator that scores the scaffold, product-doc reconciliation artifact, LLM vision
+review, lifecycle outputs, and emits remediation tickets.
 
 Every B25 independent UX review must include:
 
@@ -369,7 +388,7 @@ tools keep the implementation worker separate from the pass/fail judge.
 | B22 | `domain_surface_classifier.dart` | `domain-surface-scorecard.json/.md` | A primary workflow remains a generic workflow-card, checklist modal, metadata page, repeated card shell, or global workflow list. |
 | B23 | `persona_ux_judge.dart` | `persona-ux-scorecard.json/.md` | Actor, receiver, read-only, disabled, hidden, or unauthorized persona evidence is missing or contradictory. |
 | B24 | `evidence_integrity_auditor.dart` | `evidence-integrity-scorecard.json/.md` | Screenshots, hashes, timestamps, app commit SHA, device metadata, visible text, or generic-copy audit evidence is missing/stale. |
-| B25 | Product Experience Doc Steward; advisory Card-Surface Registry Refresh; `b25_evidence_collector.dart`; LLM Vision UX Judge Agent; `b25_llm_review_freshness_gate.dart`; `b25_llm_ux_review_importer.dart`; `b25_workflow_interaction_model_judge.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart`; next-pass `b25_remediation_planner.dart` | Current pass: community product experience docs with advisory card-surface registry sections, derived `production-ux-blueprint.md`, `llm-vision-ux-review-<run-id>.json`, `b25-llm-review-freshness-gate-<run-id>.json/.md`, `independent-production-ux-review.json/.md` with `llmVisionReview`, `product-ux-screen-review-matrix.md`, `b25-workflow-lifecycle-scorecards.md`, `production-ux-criteria-scorecard.json/.md`, `b25-remediation-tickets-<run-id>.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `productDocCoverage`, `cardSurfaceRegistry`, `holisticQuestionAnswers`, `workflowPersonaScorecards`, `workflowLifecycleScorecards`, and `llmVisionReview` in review JSON. Next pass kickoff: `b25-remediation-plan-<prior-run-id>.json/.md`. | Product docs are missing or stale, advisory registry context is absent from B25 evidence, evidence was not collected by the deterministic collector, no fresh LLM vision review passed the freshness gate and importer, any LLM vision finding blocks pass, any B25 pass criterion has a blocking failure without a template-complete remediation ticket, any direct-question or interaction-model pass is missing/partial/unsupported, any primary workflow surface is not domain-native, any primary workflow interaction model lacks expected decision, concrete object/context, decision information, primary action, alternate/change/reject path, result state, receiver/continuation state, or fresh screenshot proof, or the iteration scorecard is missing for the pass. A remediation pass fails before implementation if the prior pass's tickets were not sent to the planner; a product-spec-gap fails if the product doc was not updated before UI remediation. Advisory registry gaps should be recorded for remediation context, but they are not yet a standalone card-surface/API coverage gate. |
+| B25 | Product Experience Doc Steward; advisory Card-Surface Registry Refresh; `b25_evidence_collector.dart`; LLM Product Docs to Evidence Workflow Reconciliation Agent; LLM Vision UX Judge Agent; `b25_llm_review_freshness_gate.dart`; `b25_llm_ux_review_importer.dart`; `b25_workflow_interaction_model_judge.dart`; `production_ux_judge.dart`; `b25_iteration_scorecard.dart`; next-pass `b25_remediation_planner.dart` | Current pass: community product experience docs with advisory card-surface registry sections, derived `production-ux-blueprint.md`, `llm-product-doc-workflow-reconciliation-<run-id>.json/.md`, `llm-vision-ux-review-<run-id>.json`, `b25-llm-review-freshness-gate-<run-id>.json/.md`, `independent-production-ux-review.json/.md` with `llmVisionReview`, `product-ux-screen-review-matrix.md`, `b25-workflow-lifecycle-scorecards.md`, `production-ux-criteria-scorecard.json/.md`, `b25-remediation-tickets-<run-id>.json/.md`, `b25-iteration-scorecard-*.json/.md`, plus `productDocCoverage`, `cardSurfaceRegistry`, `productDocWorkflowReconciliation`, `holisticQuestionAnswers`, `workflowPersonaScorecards`, `workflowLifecycleScorecards`, and `llmVisionReview` in review JSON. Next pass kickoff: `b25-remediation-plan-<prior-run-id>.json/.md`. | Product docs are missing or stale, advisory registry context is absent from B25 evidence, no fresh LLM product-doc reconciliation exists, the reconciliation has unresolved blocker/major product-doc/implementation/evidence/mapping gaps, evidence was not collected by the deterministic collector, no fresh LLM vision review passed the freshness gate and importer, any LLM vision finding blocks pass, any B25 pass criterion has a blocking failure without a template-complete remediation ticket, any direct-question or interaction-model pass is missing/partial/unsupported, any primary workflow surface is not domain-native, any primary workflow interaction model lacks expected decision, concrete object/context, decision information, primary action, alternate/change/reject path, result state, receiver/continuation state, or fresh screenshot proof, or the iteration scorecard is missing for the pass. A remediation pass fails before implementation if the prior pass's tickets were not sent to the planner; a product-spec-gap fails if the product doc was not updated before UI remediation. Advisory registry gaps should be recorded for remediation context, but they are not yet a standalone card-surface/API coverage gate. |
 
 Judge agents may receive only artifacts, screenshots, blueprint/contracts, pass criteria, evidence
 metadata, and remediation logs. They must not receive worker implementation notes or intended behavior
@@ -1632,7 +1651,8 @@ Closeout rule for reopened phases:
   `b25_capture_coverage_gate.dart` report, independent UX review report, complete product UX screen
   review matrix, schema version 4 machine-readable review evidence, screenshot freshness audit,
   visible-text extraction, UI-pattern classification, domain-native primary-surface audit,
-  boilerplate critique audit, holistic product UX direct-question scorecard,
+  boilerplate critique audit, LLM Product Docs to Evidence Workflow Reconciliation JSON/Markdown,
+  holistic product UX direct-question scorecard,
   workflow/persona direct-question scorecards, semantic workflow interaction-model scorecards, production UX judge scorecard, B25 iteration scorecards,
   B25 remediation tickets with product-spec/implementation/evidence gap classification, remediation
   loop log, severity-ranked findings, annotated screenshot references, resolved-finding evidence,
@@ -1649,7 +1669,8 @@ Closeout rule for reopened phases:
   the fetched Loom Product Docs V2 as read-only. A per-community production UX blueprint must then be
   derived from those product docs before any pass verdict and must define the target production
   experience for every community/test app and persona. Schema version 4 machine-readable evidence must
-  prove product-doc coverage, blueprint coverage, full B12-B20 capture coverage, unique
+  prove product-doc coverage, LLM Product Docs to Evidence Workflow Reconciliation coverage, blueprint
+  coverage, full B12-B20 capture coverage, unique
   screenshot-backed screen rows, screenshot hashes, captured-at timestamps, app commit SHA,
   emulator/device metadata, visible-text extracts,
   UI-pattern classification, primary-surface type, screen-specific critiques, stable
@@ -1657,6 +1678,11 @@ Closeout rule for reopened phases:
   The review must fail if the primary user-facing experience still exposes workflow machinery, global
   workflow lists, surface/category labels, role-state rationale, metadata-only cards, or weak placeholder
   content instead of domain-native community IA and realistic task content.
+  The review must also fail if the LLM Product Docs to Evidence Workflow Reconciliation finds
+  unresolved blocker or major drift: Product Docs V2 Section 6 missing screenshot-visible workflows or
+  interactions, documented workflows missing from evidence, missing required visible proof,
+  undocumented actor/receiver/lifecycle states, or product-doc/evidence surface mappings that keep a
+  primary job on a generic workflow card.
   The review must also fail if screens still look like a generic demo scaffold, rely on repeated
   workflow-card layouts as the primary experience, use checklist-style action dialogs, show clipped or
   overlapping controls, lack modern mobile hierarchy, or use placeholder content below a shippable

@@ -196,7 +196,11 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     ticket inputs from visible evidence only. It must inspect screenshot pixels and layout, not only row
     existence, metadata, or expected assertions.
 57. B25 cannot pass until `b25_independent_ux_judge.dart` has produced the deterministic schema v4
-    review scaffold, a fresh LLM Vision UX Judge Agent has inspected the actual screenshots and
+    review scaffold, a fresh LLM Product Docs to Evidence Workflow Reconciliation Agent has compared
+    each community product doc's `## 6. Workflow-To-Surface Mapping` and companion state/content/
+    semantic/card-surface sections to the current screenshot/review evidence and produced
+    `llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md` with no unresolved blocker or
+    major findings, a fresh LLM Vision UX Judge Agent has inspected the actual screenshots and
     produced `llm-vision-ux-review-<run-id>.json`, `b25_llm_review_freshness_gate.dart` has verified
     that artifact is fresh for the current run/app commit/screenshot hashes,
     `b25_llm_ux_review_importer.dart` has imported that artifact into `llmVisionReview`,
@@ -260,7 +264,18 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     standalone Skill runs, keep the same mapping in the local extension product doc. This registry is
     required review context for remediation, but it is not yet a standalone card-surface/API coverage
     gate.
-66. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
+66. B25 must run a distinct LLM Product Docs to Evidence Workflow Reconciliation gate before the final
+    product-quality judgment. Use
+    [../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md](../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md).
+    The reviewer compares Product Docs V2 community examples, or the standalone Skill's local
+    `docs/product/community-product-experience.md`, to current screenshot evidence. It must inspect
+    `## 6. Workflow-To-Surface Mapping`, `## 7. Persona And State Matrix`, `## 8. Content And Seed
+    Data Requirements`, `## 9. Visual And Interaction Standard`, `### B25 Semantic Interaction
+    Models`, and `### B25 Card Surface Registry Mapping`. It must find documented workflows missing
+    from screenshots, screenshot-visible workflows/interactions missing from product docs, missing
+    required visible proof, persona/state drift, incomplete lifecycle actions, and generic or wrong
+    surface mappings. Unresolved blocker/major findings become remediation tickets and block B25.
+67. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
     only the community product experience doc, evidence artifacts, screenshots, blueprint,
     workflow/persona coverage matrix, and pass criteria, then writes
     `llm-vision-ux-review-<run-id>.json` with holistic direct-question answers, screen-specific
@@ -276,7 +291,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     announcement cannot close unless the after screenshots visibly prove audience/recipient group,
     author or sender attribution, message body, timestamp or delivery timing, receiver inbox/feed
     state, and a natural publish/send/read action.
-67. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
+68. Every failed B25 judge pass must produce remediation tickets. Each ticket must name the failed
     criterion, related finding IDs, concrete improvements, affected evidence, acceptance checks, and
     rerun commands. Each ticket must follow
     [../Tools/b25-remediation-ticket-template.md](../Tools/b25-remediation-ticket-template.md) and
@@ -296,7 +311,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     alone. Workflow interaction-model tickets additionally require fresh after screenshots proving the
     expected decision, required domain actions, non-happy-path affordance, result state, and receiver/
     continuation state.
-68. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
+69. The Remediation Planner does not implement fixes. It starts the next B25 remediation pass by
     consuming the prior pass's tickets and scorecard, then emits `b25-remediation-plan-<run-id>.json`
     and `.md` with ordered remediation batches, ticket IDs, worker actions, implementation guidance,
     evidence updates, acceptance checks, rerun commands, work-item summaries, evidence-repair work
@@ -465,7 +480,9 @@ major independent product UX review findings, still looks like a generic demo sc
 modern production product, has unresolved overlap/clipping/repetitive-card/checklist-modal/thin-content
 issues ranked major or blocker, lacks a current local community product experience doc, lacks a
 complete per-community production UX blueprint derived from that product doc, lacks schema version 4
-machine-readable B25 review evidence, has stale screenshot evidence, has boilerplate screen critiques,
+machine-readable B25 review evidence, lacks a fresh LLM Product Docs to Evidence Workflow
+Reconciliation artifact proving Product Docs V2 or local Skill product docs match the current
+screenshots/review evidence, has stale screenshot evidence, has boilerplate screen critiques,
 classifies any primary workflow surface as a generic workflow-card/checklist/modal/metadata page, has
 any primary workflow/persona lifecycle scorecard missing or failing, has action cards that lack the
 concrete object, decision data, alternate/change/reject path, result state, or receiver/continuation
@@ -481,7 +498,7 @@ evidence, B25 iteration scorecard evidence, and independent product UX review ev
 ## UX Judge Tools
 
 For UX gates, use [../Tools/ux-gate-judge-tools.md](../Tools/ux-gate-judge-tools.md). The required
-judge CLIs are:
+judge tools and artifacts are:
 
 - B11: `dart run packages/tooling/loom_ux_judges/bin/workflow_completeness_judge.dart`
 - B21: `dart run packages/tooling/loom_ux_judges/bin/ux_contract_judge.dart`
@@ -492,6 +509,7 @@ judge CLIs are:
 - B25 capture coverage gate: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 review scaffold: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 Product Docs to Evidence Workflow Reconciliation: LLM artifact using `docs/Build Plan V2/Tools/b25-product-doc-workflow-reconciliation-llm-gate.md`
 - B25 LLM freshness gate: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart`
 - B25 LLM review import: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart`
 - B25 workflow interaction-model judge: `dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart`
@@ -508,6 +526,12 @@ criterion `scope` and `question`, and the machine-readable evidence must include
 `holisticQuestionAnswers`, `workflowPersonaScorecards`, and `workflowLifecycleScorecards`.
 Every failed blocking criterion must also produce a remediation ticket with concrete improvements,
 affected evidence, acceptance checks, and rerun commands.
+Before the LLM Vision UX Judge runs, produce
+`llm-product-doc-workflow-reconciliation-<run-id>.json/.md`. The LLM reviewer must compare every
+community product doc's `## 6. Workflow-To-Surface Mapping` and companion Sections 7-9, B25 semantic
+interaction rows, and card-surface registry rows to the current screenshots, visible text, screen
+matrix, workflow/persona coverage, and review JSON. Its blocker/major product-doc, implementation,
+evidence, or mapping findings must be converted into remediation tickets.
 Before the judge runs, collect evidence with:
 
 ```powershell
@@ -530,7 +554,12 @@ capture CLI updates it with `status`, `currentPhase`, `currentWorkflowId`,
 and the latest screenshot/progress event. The CLI also streams `B25_CAPTURE_PROGRESS` lines to stdout
 so a stalled run can be distinguished from a long-running workflow.
 
-Every B25 pass must also run the judge and iteration scorecard before that pass is committed:
+Every B25 pass must also run the LLM Product Docs to Evidence Workflow Reconciliation gate, the judge,
+and the iteration scorecard before that pass is committed. After the deterministic scaffold command
+below, produce `llm-product-doc-workflow-reconciliation-<run-id>.json/.md` from
+[../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md](../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md);
+then continue with the fresh LLM Vision UX review, importer, interaction-model judge, production
+judge, tickets, and scorecard:
 
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
