@@ -1,0 +1,205 @@
+{
+  "status": "pass",
+  "reviewerType": "llm-vision-ux-judge",
+  "summary": "Pass 17 materially improves the previously failing B25 surfaces. The refreshed screenshots show Garden export, Book Club nomination/vote/meeting/discussion/publish, and Masjid announcement/event/volunteer workflows as community-specific product surfaces with concrete object details, semantic primary actions, alternate/change paths, and result or receiver state. The full experience still relies on a centralized card/action language, which should be addressed in a follow-on architecture pass, but the current B25 evidence no longer contains unresolved blocker or major product UX findings.",
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "llm-holistic-production-grade",
+      "question": "Does the whole experience feel like a real production community app, not merely an implemented workflow harness?",
+      "answer": "yes",
+      "score": 84,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Garden export now shows a package review with selected data, redaction preview, checksum verified, download ready, change scope, and Generate export.",
+        "Book Club surfaces now show Parable of the Sower nomination details, ballot state, meeting RSVP details, discussion thread copy, and selected-book announcement delivery.",
+        "Masjid surfaces now show Ramadan community night message body/audience/sender/delivery and iftar volunteer shift role/time/protected contact/coordinator follow-up."
+      ],
+      "critique": "The app now presents the target community tasks as product screens instead of generic workflow proof. It remains stylistically centralized and card-heavy, but the visible user tasks are meaningful and domain-native enough for the current B25 gate.",
+      "requiredFix": "",
+      "affectedScreenRowIds": []
+    },
+    {
+      "questionId": "llm-holistic-modern-easy-navigation",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas?",
+      "answer": "yes",
+      "score": 82,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Screens use large touch targets, clear page titles, scannable detail sections, high-contrast type, and full-width primary actions where labels were previously squeezed.",
+        "The Masjid announcement button no longer splits inside a narrow pill; primary and alternate actions are stacked for readability.",
+        "Per-community color and icon treatments are consistent and task details are now visible above the fold."
+      ],
+      "critique": "Navigation and task comprehension are clear on the Android emulator. The visual system is modern enough for a validated production UX pass, though a later refactor should diversify layouts beyond rich cards.",
+      "requiredFix": "",
+      "affectedScreenRowIds": []
+    },
+    {
+      "questionId": "llm-holistic-community-centered",
+      "question": "Is the experience community/product-centered rather than framework-centered?",
+      "answer": "yes",
+      "score": 86,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Book Club copy names titles, authors, meeting cycle, vote deadline, discussion prompt, sender, and audience.",
+        "Masjid copy names Ramadan community night, Maghrib, members, Masjid Admin, iftar setup shift, protected phone, and coordinator follow-up.",
+        "Garden export copy names garden_event, plant_exchange, redaction preview, checksum, destination, and export/download state."
+      ],
+      "critique": "The reviewed primary surfaces now center real community objects and jobs-to-be-done. Remaining local testing surfaces such as persona picker are acceptable as harness evidence and not blockers for the user-facing product rows.",
+      "requiredFix": "",
+      "affectedScreenRowIds": []
+    },
+    {
+      "questionId": "llm-primary-workflow-surfaces",
+      "question": "Do primary workflow/persona screens show domain-native product surfaces and complete interaction models?",
+      "answer": "yes",
+      "score": 85,
+      "blocksPass": false,
+      "visibleEvidence": [
+        "Garden export has scope, redaction, checksum, transfer/download status, change scope, and Generate export.",
+        "Book nomination has title, author, rationale, ballot eligibility, edit nomination, and Submit nomination.",
+        "Book meeting RSVP has meeting title, date, time, venue, capacity, Change response, and RSVP to event.",
+        "Masjid announcement has audience, sender, delivery time, inbox + push, Preview announcement, and Publish announcement.",
+        "Masjid volunteer signup has setup role, shift time, protected phone, open spots, Edit availability, and Submit signup."
+      ],
+      "critique": "The previously failing workflows now show complete semantic interaction models from screenshots, not from implementation notes. They no longer look like accept/cancel workflow harness cards.",
+      "requiredFix": "",
+      "affectedScreenRowIds": []
+    }
+  ],
+  "screenReviews": [
+    {
+      "screenRowId": "b25-v4-row-008-garden-export-custom-schemas-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen title is Garden export review and the hero says Garden data export package.",
+        "Visible content names garden_event + plant_exchange, redaction preview, checksum verified, download ready, and selected schemas.",
+        "Actions include Change scope and Generate export, with package contents shown below."
+      ],
+      "critique": "This is now a credible export package review surface. It gives the owner enough information to understand scope, redaction, checksum, and export/download state before acting.",
+      "requiredFix": "",
+      "targetProductionSurface": "Garden Club export package review"
+    },
+    {
+      "screenRowId": "b25-v4-row-011-book-nomination-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled Book nomination and names Nominate Parable of the Sower.",
+        "Visible facts include Book title entered, Author confirmed, Discussion reason, and Ballot eligible.",
+        "Actions include Edit nomination and Submit nomination, and the detail section starts with Title and author."
+      ],
+      "critique": "This no longer looks like a generic member form. It is a book nomination review surface with visible title, author, ballot state, rationale context, and semantic actions.",
+      "requiredFix": "",
+      "targetProductionSurface": "Book Club nomination submission"
+    },
+    {
+      "screenRowId": "b25-v4-row-014-book-vote-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen presents a February book ballot and named candidates.",
+        "Visible state includes nominations, vote deadline, one member vote, and leading title.",
+        "Actions include Change vote and Record vote."
+      ],
+      "critique": "The vote workflow now reads as a ballot surface rather than a form placeholder. It has selected-state context and a change path.",
+      "requiredFix": "",
+      "targetProductionSurface": "Book Club voting surface"
+    },
+    {
+      "screenRowId": "b25-v4-row-017-book-meeting-rsvp-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled Book meeting RSVP and centers Parable discussion night.",
+        "Visible details include Thu, Feb 15, 7:00 PM, Maya's living room, and 10 of 14 spots.",
+        "Actions include Change response and RSVP to event, with Meeting details below."
+      ],
+      "critique": "This is now a domain-native meeting RSVP detail page. It includes the selected book, meeting time/place, capacity, host context, and natural response controls.",
+      "requiredFix": "",
+      "targetProductionSurface": "Book Club meeting RSVP"
+    },
+    {
+      "screenRowId": "b25-v4-row-020-book-discussion-message-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen presents a discussion thread and a Parable discussion prompt.",
+        "Visible content includes sender/context, members-only scope, unread state, and message body.",
+        "Actions include Archive thread and Send message or reply."
+      ],
+      "critique": "The discussion workflow is now a message/thread surface with subject, sender, body, privacy, and reply state.",
+      "requiredFix": "",
+      "targetProductionSurface": "Book Club discussion thread"
+    },
+    {
+      "screenRowId": "b25-v4-row-023-book-selection-publish-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen shows Publish February selection and Parable of the Sower won the member vote.",
+        "Visible facts include audience members, from organizer, Today 5:00 PM, and Inbox + push.",
+        "Actions include Save draft and Publish announcement, and the preview includes message body and sender."
+      ],
+      "critique": "This now behaves like an announcement composer/review screen for the selected book rather than a generic publish workflow.",
+      "requiredFix": "",
+      "targetProductionSurface": "Book Club selected-book announcement composer"
+    },
+    {
+      "screenRowId": "b25-v4-row-074-mosque-announcement-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled Publish announcement and centers Ramadan community night.",
+        "Visible facts include Audience: members, From Masjid Admin, Today 6:00 PM, and Inbox + push.",
+        "Actions include Preview announcement and Publish announcement, with Announcement preview below."
+      ],
+      "critique": "This is now a production announcement review/composer surface. It shows sender, audience, delivery timing, message body context, receiver state, and natural publish/preview actions.",
+      "requiredFix": "",
+      "targetProductionSurface": "Masjid announcement composer"
+    },
+    {
+      "screenRowId": "b25-v4-row-077-mosque-event-rsvp-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen presents Community iftar RSVP with Friday date, 6:45 PM time, fellowship hall, and 86 of 120 spots.",
+        "Visible copy explains the RSVP response and capacity state.",
+        "Actions include Change response and RSVP to event."
+      ],
+      "critique": "This is now a credible event RSVP surface for the Masjid community, not a generic event workflow.",
+      "requiredFix": "",
+      "targetProductionSurface": "Masjid community iftar RSVP"
+    },
+    {
+      "screenRowId": "b25-v4-row-080-mosque-volunteer-signup-1",
+      "verdict": "pass",
+      "severity": "none",
+      "visibleObservations": [
+        "The screen is titled Volunteer signup and centers Iftar setup shift.",
+        "Visible facts include Setup role, 4:30-6:30 PM shift, Phone protected, and 2 spots open.",
+        "Actions include Edit availability and Submit signup, with Shift details below."
+      ],
+      "critique": "This is now a volunteer shift signup surface. It shows role, time, protected contact, capacity, coordinator state, and a clear edit path.",
+      "requiredFix": "",
+      "targetProductionSurface": "Masjid volunteer signup"
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "LLM-B25-P17-001",
+      "severity": "minor",
+      "blocksPass": false,
+      "title": "Centralized renderer is still card-heavy and should evolve into typed domain surfaces",
+      "description": "Pass 17 removes the blocker/major workflow-harness issues, but the implementation still relies on a centralized rich card/action-surface pattern. The next architecture pass should preserve centralized rendering while introducing typed surface families so Book Club, Masjid, Garden, HOA, Soccer, payments, exports, and messaging can diverge in layout and interaction where needed.",
+      "affectedScreenRowIds": [
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-011-book-nomination-1",
+        "b25-v4-row-017-book-meeting-rsvp-1",
+        "b25-v4-row-074-mosque-announcement-1",
+        "b25-v4-row-080-mosque-volunteer-signup-1"
+      ],
+      "requiredFix": "Track as follow-on architecture/planning work: split the central renderer into typed surface contracts and per-community presentation specs without losing shared App Shell, persona, evidence, and validation hooks."
+    }
+  ]
+}

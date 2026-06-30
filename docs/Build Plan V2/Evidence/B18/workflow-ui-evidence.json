@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-16.log",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "workflowCount": 1,
   "workflows": [
     {
@@ -29,10 +29,10 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_member_selected.png"
       ],
       "screenshotVisibleTexts": [
-        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Public announcement | Draft message includes audience, timing, and delivery details. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel",
-        "Public announcement | Waiting for the announcement to be sent. | Members | Today | From admin | Inbox + push | Decide whether this message is ready for members, who receives it, and whether to preview or save a draft first. | Preview announcement | Waiting | Neutral care notification | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Announcement search and AI citation | Masjid Nur"
+        "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member notices for Masjid Nur. | Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Publish announcement | Choose persona | Preview the community experience for each member role. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | Cancel",
+        "Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Ready for final review | Members will receive the announcement in their inbox and notification list with read state. | Preview announcement | Waiting | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Masjid Nur"
       ],
-      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-16.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",

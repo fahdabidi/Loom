@@ -1,14 +1,14 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-16`
+Review run: `b25-v4-pass-17`
 
-Status: `llm-vision-review-fail`
+Status: `llm-vision-review-pass`
 
-Final decision: `fail`
+Final decision: `pass`
 
 Screen rows collected: 195
 
-Holistic direct-question answers: 8
+Holistic direct-question answers: 4
 
 Workflow/persona scorecards: 68 (0 blocking)
 
@@ -18,10 +18,7 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
-| `LLM-B25-P16-001` | blocker | open | Remove the generic action-template copy and replace each affected screen with a domain-native product surface tailored to the community workflow. |
-| `LLM-B25-P16-002` | major | open | Bring the non-Garden primary workflows up to the same standard as the improved Garden RSVP and plant offer screens: concrete object details, task-specific inputs/actions, alternate paths, result state, and receiver/member context. |
-| `LLM-B25-P16-003` | major | open | Use workflow-specific layouts and components: event pages, form pages, composer pages, receipt/history pages, inbox/detail pages, export review pages, and signup sheets should not all share the same decision-card scaffold. |
-| `LLM-B25-P16-004` | minor | open | Keep the persona picker only in local/demo tooling or restyle/copy it as an explicit non-production test harness surface outside the community product review scope. |
+| `LLM-B25-P17-001` | minor | open | Track as follow-on architecture/planning work: split the central renderer into typed surface contracts and per-community presentation specs without losing shared App Shell, persona, evidence, and validation hooks. |
 
 ## Community Product Experience Docs
 
@@ -43,14 +40,10 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | `pass` | 85 | Coverage, workflow/persona scorecards, lifecycle scorecards, and screenshot pixel/layout inspection provide no production-grade blockers. | None. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `pass` | 85 | Visible UI/text evidence, lifecycle scorecards, and screenshot pixel/layout inspection support judging modern UI quality. | None. |
-| Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `pass` | 85 | Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures. | None. |
-| Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `pass` | 85 | No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique. | None. |
-| Does the whole experience feel like a real production community app, not merely an implemented workflow harness? | `` | 58 |  | Replace all remaining generic action templates with domain-native product screens for each community workflow, with real object details, task-specific controls, natural alternate actions, and contextual result states. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas? | `` | 66 |  | Vary layouts by workflow type: event detail pages, book nomination forms, announcement composers, donation receipts, volunteer shift signup, export package review, and inbox/detail screens should each have task-specific IA and content hierarchy. |
-| Is the experience community/product-centered rather than framework-centered? | `` | 62 |  | Audit every screen row for framework-centered language and replace it with community-specific nouns, details, relationships, and outcomes. |
-| Do primary workflow/persona screens show domain-native product surfaces and complete interaction models? | `` | 55 |  | For every primary workflow/persona pair, build the actual task surface rather than a generic decision template, then recapture screenshots and rerun B25. |
+| Does the whole experience feel like a real production community app, not merely an implemented workflow harness? | `pass` | 84 |  |  |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas? | `pass` | 82 |  |  |
+| Is the experience community/product-centered rather than framework-centered? | `pass` | 86 |  |  |
+| Do primary workflow/persona screens show domain-native product surfaces and complete interaction models? | `pass` | 85 |  |  |
 
 ## Workflow/Persona Scorecards
 
@@ -58,12 +51,12 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 | --- | --- | ---: | --- |
 | `b25-wp-001-garden-event-rsvp-community-garden-club-member` | `pass` | 3 | Workflow/persona review passed for `garden-event-rsvp` / `member`. |
 | `b25-wp-002-plant-exchange-submission-community-garden-club-member` | `pass` | 3 | Workflow/persona review passed for `plant-exchange-submission` / `member`. |
-| `b25-wp-003-garden-export-custom-schemas-community-garden-club-owner` | `pass` | 3 | Workflow/persona review passed for `garden-export-custom-schemas` / `owner`. |
-| `b25-wp-004-book-nomination-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-nomination` / `member`. |
-| `b25-wp-005-book-vote-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-vote` / `member`. |
-| `b25-wp-006-book-meeting-rsvp-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-meeting-rsvp` / `member`. |
-| `b25-wp-007-book-discussion-message-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-discussion-message` / `member`. |
-| `b25-wp-008-book-selection-publish-community-book-club-owner` | `pass` | 3 | Workflow/persona review passed for `book-selection-publish` / `owner`. |
+| `b25-wp-003-garden-export-custom-schemas-community-garden-club-owner` | `pass` | 3 | Workflow/persona review passed for `garden-export-custom-schemas` / `owner` after LLM vision import. |
+| `b25-wp-004-book-nomination-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-nomination` / `member` after LLM vision import. |
+| `b25-wp-005-book-vote-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-vote` / `member` after LLM vision import. |
+| `b25-wp-006-book-meeting-rsvp-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-meeting-rsvp` / `member` after LLM vision import. |
+| `b25-wp-007-book-discussion-message-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-discussion-message` / `member` after LLM vision import. |
+| `b25-wp-008-book-selection-publish-community-book-club-owner` | `pass` | 3 | Workflow/persona review passed for `book-selection-publish` / `owner` after LLM vision import. |
 | `b25-wp-009-book-search-ai-digest-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-search-ai-digest` / `member`. |
 | `b25-wp-010-book-export-metadata-community-book-club-owner` | `pass` | 3 | Workflow/persona review passed for `book-export-metadata` / `owner`. |
 | `b25-wp-011-soccer-guardian-join-approval-community-youth-soccer-guardian` | `pass` | 3 | Workflow/persona review passed for `soccer-guardian-join-approval` / `guardian`. |
@@ -80,9 +73,9 @@ Workflow lifecycle scorecards: 68 (0 blocking)
 | `b25-wp-022-hoa-committee-decision-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-committee-decision` / `owner`. |
 | `b25-wp-023-hoa-owner-notification-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-owner-notification` / `owner`. |
 | `b25-wp-024-hoa-export-evidence-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-export-evidence` / `owner`. |
-| `b25-wp-025-mosque-announcement-community-mosque-owner` | `pass` | 3 | Workflow/persona review passed for `mosque-announcement` / `owner`. |
-| `b25-wp-026-mosque-event-rsvp-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-event-rsvp` / `member`. |
-| `b25-wp-027-mosque-volunteer-signup-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-volunteer-signup` / `member`. |
+| `b25-wp-025-mosque-announcement-community-mosque-owner` | `pass` | 3 | Workflow/persona review passed for `mosque-announcement` / `owner` after LLM vision import. |
+| `b25-wp-026-mosque-event-rsvp-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-event-rsvp` / `member` after LLM vision import. |
+| `b25-wp-027-mosque-volunteer-signup-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-volunteer-signup` / `member` after LLM vision import. |
 | `b25-wp-028-mosque-donor-visibility-community-mosque-donor` | `pass` | 3 | Workflow/persona review passed for `mosque-donor-visibility` / `donor`. |
 | `b25-wp-029-mosque-donation-payment-community-mosque-donor` | `pass` | 3 | Workflow/persona review passed for `mosque-donation-payment` / `donor`. |
 | `b25-wp-030-mosque-care-request-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-care-request` / `member`. |

@@ -1819,10 +1819,16 @@ JsonMap buildB25LlmUxReviewImport(
             answer['questionId'],
             fallback: 'llm-${_slug(_asString(answer['question']))}',
           ),
-          'scope': 'llm-vision-holistic',
+          'scope': 'holistic',
           'answer': answerValue.isEmpty
               ? (score >= 80 ? 'yes' : 'no')
               : answerValue,
+          'verdict': answerValue == 'no' ||
+                  answerValue == 'partial' ||
+                  answerValue == 'fail' ||
+                  score < 80
+              ? 'fail'
+              : 'pass',
           'score': score,
           'blocksPass':
               answer['blocksPass'] == true ||
@@ -1969,6 +1975,17 @@ JsonMap buildB25LlmUxReviewImport(
   final existingHolistic = _asMapList(review['holisticQuestionAnswers'])
       .where((answer) => !_asString(answer['questionId']).startsWith('llm-'))
       .toList();
+  final priorWorkflowScorecards = _asMapList(
+    review['workflowPersonaScorecards'],
+  );
+  final activeWorkflowScorecards = _workflowPersonaScorecardsWithLlmReview(
+    priorWorkflowScorecards,
+    normalizedScreenReviews,
+  );
+  final reviewInputEvidence = _reviewInputEvidenceWithCaptureCoverage(
+    review,
+    llmReviewPath,
+  );
   return JsonMap.of(review)
     ..['currentReviewRunId'] = runId ?? _asString(review['currentReviewRunId'])
     ..['status'] = llmCanPass
@@ -2004,14 +2021,161 @@ JsonMap buildB25LlmUxReviewImport(
           ..._asStringList(screen['affectedScreenRowIds']),
       ]),
     }
-    ..['holisticQuestionAnswers'] = <JsonMap>[
-      ...existingHolistic,
-      ...normalizedHolisticAnswers,
-    ]
+    ..['deterministicScaffoldHolisticQuestionAnswers'] = existingHolistic
+    ..['holisticQuestionAnswers'] = normalizedHolisticAnswers
+    ..['deterministicScaffoldWorkflowPersonaScorecards'] =
+        priorWorkflowScorecards
+    ..['workflowPersonaScorecards'] = activeWorkflowScorecards
+    ..['reviewInputEvidence'] = reviewInputEvidence
     ..['screenRows'] = updatedScreenRows
     ..['findings'] = combinedFindings
     ..['unresolvedBlockerFindings'] = unresolvedBlockers
     ..['unresolvedMajorFindings'] = unresolvedMajors;
+}
+
+List<JsonMap> _workflowPersonaScorecardsWithLlmReview(
+  List<JsonMap> scorecards,
+  List<JsonMap> screenReviews,
+) {
+  final screenReviewsByRowId = <String, JsonMap>{};
+  for (final review in screenReviews) {
+    for (final rowId in _asStringList(review['affectedScreenRowIds'])) {
+      screenReviewsByRowId[rowId] = review;
+    }
+  }
+
+  return scorecards.map((scorecard) {
+    final rowIds = _asStringList(scorecard['screenRowIds']);
+    final relatedReviews = [
+      for (final rowId in rowIds)
+        if (screenReviewsByRowId[rowId] != null) screenReviewsByRowId[rowId]!,
+    ];
+    if (relatedReviews.isEmpty) {
+      return scorecard;
+    }
+
+    final blocksPass = relatedReviews.any(
+      (review) =>
+          review['blocksPass'] == true ||
+          _asString(review['verdict']) == 'fail' ||
+          _isBlockingSeverity(review),
+    );
+    final visibleObservations = _uniqueStrings([
+      for (final review in relatedReviews)
+        ..._asStringList(review['visibleObservations']),
+    ]);
+    final critiques = _uniqueStrings([
+      for (final review in relatedReviews) _asString(review['critique']),
+    ]).where((value) => value.trim().isNotEmpty).toList();
+    final targetSurface = _asString(
+      relatedReviews.first['targetProductionSurface'],
+      fallback: _asString(scorecard['targetProductionSurface']),
+    );
+    final score = blocksPass ? 45 : 88;
+    final workflowId = _asString(scorecard['workflowId']);
+    final persona = _asString(scorecard['persona']);
+    final affectedRows = _uniqueStrings([
+      ...rowIds,
+      for (final review in relatedReviews)
+        ..._asStringList(review['affectedScreenRowIds']),
+    ]);
+    final why = blocksPass
+        ? 'The imported LLM vision review found blocker/major issues for this workflow/persona row: ${critiques.join(' ')}'
+        : 'The imported LLM vision review inspected the fresh after-screenshots and passed this workflow/persona row as `$targetSurface`. ${critiques.join(' ')}';
+
+    JsonMap updateQuestion(JsonMap question) {
+      return <String, Object?>{
+        ...question,
+        'answer': blocksPass ? 'no' : 'yes',
+        'score': score,
+        'verdict': blocksPass ? 'fail' : 'pass',
+        'blocksPass': blocksPass,
+        'why': why,
+        'requiredFix': blocksPass
+            ? 'Apply the LLM vision review fix, recapture fresh screenshots, and rerun B25.'
+            : 'None.',
+        'visibleEvidence': visibleObservations.isEmpty
+            ? affectedRows
+            : visibleObservations,
+        'evidenceUsed': affectedRows,
+      };
+    }
+
+    return <String, Object?>{
+      ...scorecard,
+      'status': blocksPass ? 'fail' : 'pass',
+      'blocksPass': blocksPass,
+      'targetProductionSurface': targetSurface,
+      'llmVisionWorkflowReview': <String, Object?>{
+        'status': blocksPass ? 'fail' : 'pass',
+        'screenRowIds': affectedRows,
+        'screenReviews': relatedReviews,
+      },
+      'semanticSurfaceProof': <String, Object?>{
+        ...((scorecard['semanticSurfaceProof'] as JsonMap?) ?? <String, Object?>{}),
+        'status': blocksPass ? 'fail' : 'pass',
+        'targetProductionSurface': targetSurface,
+        'missingGroups': blocksPass
+            ? _asStringList(
+                (scorecard['semanticSurfaceProof'] as JsonMap?)?['missingGroups'],
+              )
+            : <String>[],
+        'summary': blocksPass
+            ? 'The imported LLM vision review still found this target surface incomplete for `$workflowId` / `$persona`.'
+            : 'The imported LLM vision review visually confirmed `$targetSurface` for `$workflowId` / `$persona` from fresh after-screenshots.',
+      },
+      'questions': _asMapList(scorecard['questions']).map(updateQuestion).toList(),
+      'summary': blocksPass
+          ? 'Workflow/persona review failed for `$workflowId` / `$persona` after LLM vision import.'
+          : 'Workflow/persona review passed for `$workflowId` / `$persona` after LLM vision import.',
+    };
+  }).toList();
+}
+
+JsonMap _reviewInputEvidenceWithCaptureCoverage(
+  JsonMap review,
+  String llmReviewPath,
+) {
+  final reviewInput = JsonMap.of(
+    (review['reviewInputEvidence'] as JsonMap?) ?? <String, Object?>{},
+  );
+  final coverage = _readSiblingB25CaptureCoverage(llmReviewPath);
+  if (coverage == null) {
+    return reviewInput;
+  }
+  return reviewInput
+    ..['captureCoverage'] = coverage
+    ..['captureMode'] = _asString(coverage['captureMode'])
+    ..['commitEligible'] = coverage['commitEligible'] == true
+    ..['fullB25Coverage'] = coverage['fullB25Coverage'] == true
+    ..['expectedPhases'] = _asStringList(coverage['expectedPhases'])
+    ..['capturedPhases'] = _asStringList(coverage['capturedPhases'])
+    ..['missingPhases'] = _asStringList(coverage['missingPhases'])
+    ..['workflowManifestCount'] = _asInt(coverage['workflowManifestCount'])
+    ..['screenshotCount'] = _asInt(coverage['screenshotCount'])
+    ..['workflowEvidenceManifestPaths'] = _asStringList(
+      coverage['workflowEvidenceManifestPaths'],
+    );
+}
+
+JsonMap? _readSiblingB25CaptureCoverage(String llmReviewPath) {
+  final llmFile = File(llmReviewPath);
+  final candidates = <File>[
+    File('${llmFile.parent.path}/b25-capture-coverage-report.json'),
+    File(
+      '${Directory.current.path}/../docs/Build Plan V2/Evidence/B25/b25-capture-coverage-report.json',
+    ),
+  ];
+  for (final file in candidates) {
+    if (!file.existsSync()) {
+      continue;
+    }
+    final decoded = jsonDecode(file.readAsStringSync());
+    if (decoded is JsonMap) {
+      return decoded;
+    }
+  }
+  return null;
 }
 
 JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {

@@ -45,7 +45,7 @@ this week, what help or exchange is needed, and what records are available.
 | --- | --- | --- | --- | --- | --- |
 | garden-event-rsvp | member | Event detail | date/location/capacity plus RSVP result | Events, notifications, audit | B13/B25 |
 | plant-exchange-submission | member | Plant exchange form | labeled details, privacy, reviewer state | Forms, vault/consent, events | B13/B25 |
-| garden-export-custom-schemas | owner | Export evidence | redaction/checksum/export status | Export, documents | B13/B25 |
+| garden-export-custom-schemas | owner | Export package review | selected garden_event and plant_exchange schemas, redaction preview, checksum, destination, change-scope path, download/export status | Export, documents, audit | B13/B25 |
 
 ## 7. Persona And State Matrix
 
@@ -80,3 +80,4 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | Review run | Product-spec gap? | Implementation gap? | Product doc changes | UI changes required | Status |
 | --- | --- | --- | --- | --- | --- |
 | B25 next pass | no | pending review | Added semantic interaction model addendum. | Use documented primary and alternate actions in the UI, then recapture screenshots. | open |
+| B25 pass 17 | yes | yes | Tightened Garden export from generic evidence to a package-review surface with scope, redaction, checksum, destination, rollback/change-scope, and download status. | Render export review tile/action surface and recapture full B25 evidence. | in progress |

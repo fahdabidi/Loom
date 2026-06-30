@@ -795,6 +795,635 @@ class _CommunitySectionHeader extends StatelessWidget {
   }
 }
 
+class _RichFact {
+  const _RichFact({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+}
+
+class _RichWorkflowSpec {
+  const _RichWorkflowSpec({
+    required this.accent,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.body,
+    required this.facts,
+    required this.actionSurfaceTitle,
+    required this.actionHeroSubtitle,
+    required this.actionHeroBody,
+    required this.actionPanelTitle,
+    required this.actionPanelBody,
+    required this.alternateActionLabel,
+    required this.detailTitle,
+    required this.detailRows,
+    required this.stateTitle,
+    required this.stateRows,
+    required this.completeTitle,
+    required this.completeBody,
+    required this.receivedTitle,
+    required this.receivedBody,
+    required this.completeLabel,
+  });
+
+  final Color accent;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String body;
+  final List<_RichFact> facts;
+  final String actionSurfaceTitle;
+  final String actionHeroSubtitle;
+  final String actionHeroBody;
+  final String actionPanelTitle;
+  final String actionPanelBody;
+  final String alternateActionLabel;
+  final String detailTitle;
+  final List<_ActionSurfaceDetail> detailRows;
+  final String stateTitle;
+  final List<_ActionSurfaceDetail> stateRows;
+  final String completeTitle;
+  final String completeBody;
+  final String receivedTitle;
+  final String receivedBody;
+  final String completeLabel;
+}
+
+_RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
+  switch (workflowId) {
+    case 'garden-export-custom-schemas':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff376f57),
+        icon: Icons.folder_zip_outlined,
+        title: 'Garden data export package',
+        subtitle: 'Review event and plant-exchange data before download.',
+        body:
+            'Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted.',
+        facts: [
+          _RichFact(icon: Icons.dataset_outlined, label: '2 schemas selected'),
+          _RichFact(
+            icon: Icons.visibility_off_outlined,
+            label: 'Redaction preview',
+          ),
+          _RichFact(icon: Icons.verified_outlined, label: 'Checksum verified'),
+          _RichFact(icon: Icons.download_outlined, label: 'Download ready'),
+        ],
+        actionSurfaceTitle: 'Garden export review',
+        actionHeroSubtitle: 'garden_event + plant_exchange',
+        actionHeroBody:
+            'Confirm selected data, protected-field redaction, checksum, and destination before generating the export.',
+        actionPanelTitle: 'Ready to generate export',
+        actionPanelBody:
+            'The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum.',
+        alternateActionLabel: 'Change scope',
+        detailTitle: 'Package contents',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.dataset_outlined,
+            title: 'Scope',
+            body:
+                'Selected data: garden_event, plant_exchange, RSVP status, offer status, and export metadata.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.visibility_off_outlined,
+            title: 'Redaction preview',
+            body:
+                'Member phone, address, and private pickup notes are protected before transfer.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.verified_outlined,
+            title: 'Checksum',
+            body:
+                'Checksum 8F4A-PLANT verifies the package and appears in the audit trail.',
+          ),
+        ],
+        stateTitle: 'Transfer state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.download_outlined,
+            title: 'Destination',
+            body:
+                'Download to owner device first; provider transfer remains disabled until owner confirms.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.undo_outlined,
+            title: 'Rollback',
+            body:
+                'Change scope or cancel export before the package is generated.',
+          ),
+        ],
+        completeTitle: 'Export generated',
+        completeBody:
+            'Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download status.',
+        receivedTitle: 'Export status ready',
+        receivedBody:
+            'The owner can inspect export scope, redaction, checksum, and transfer status.',
+        completeLabel: 'Exported',
+      );
+    case 'book-nomination':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff5f4b8b),
+        icon: Icons.menu_book_outlined,
+        title: 'Nominate Parable of the Sower',
+        subtitle: 'Octavia E. Butler - February reading cycle.',
+        body:
+            'Share why this title belongs on the ballot and how it fits the upcoming discussion.',
+        facts: [
+          _RichFact(icon: Icons.title_outlined, label: 'Book title entered'),
+          _RichFact(icon: Icons.person_outline, label: 'Author confirmed'),
+          _RichFact(icon: Icons.forum_outlined, label: 'Discussion reason'),
+          _RichFact(icon: Icons.how_to_vote_outlined, label: 'Ballot eligible'),
+        ],
+        actionSurfaceTitle: 'Book nomination',
+        actionHeroSubtitle: 'Parable of the Sower by Octavia E. Butler',
+        actionHeroBody:
+            'Review the title, author, member rationale, genre, and meeting cycle before submitting the nomination.',
+        actionPanelTitle: 'Ready to submit nomination',
+        actionPanelBody:
+            'The nomination will be visible to members for the February vote and tied to the discussion meeting.',
+        alternateActionLabel: 'Edit nomination',
+        detailTitle: 'Nomination details',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.title_outlined,
+            title: 'Title and author',
+            body: 'Parable of the Sower - Octavia E. Butler.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.lightbulb_outline,
+            title: 'Member rationale',
+            body:
+                'Chosen for a timely discussion on resilience, community, and care.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.event_outlined,
+            title: 'Meeting cycle',
+            body: 'February vote, March living-room discussion.',
+          ),
+        ],
+        stateTitle: 'Ballot state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.how_to_vote_outlined,
+            title: 'Vote connection',
+            body:
+                'After submission, members can compare nominations and cast one vote.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.edit_note_outlined,
+            title: 'Change path',
+            body:
+                'Edit nomination details before voting opens or withdraw if the title is no longer available.',
+          ),
+        ],
+        completeTitle: 'Nomination submitted',
+        completeBody:
+            'Parable of the Sower is on the February ballot with title, author, rationale, and meeting context.',
+        receivedTitle: 'Nomination ready',
+        receivedBody:
+            'Members can read the nomination, compare vote options, and prepare for discussion.',
+        completeLabel: 'Submitted',
+      );
+    case 'book-vote':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff4e5fa8),
+        icon: Icons.how_to_vote_outlined,
+        title: 'February book ballot',
+        subtitle: 'Vote between three member nominations.',
+        body:
+            'Parable of the Sower is leading the ballot for the next monthly discussion.',
+        facts: [
+          _RichFact(icon: Icons.menu_book_outlined, label: '3 nominations'),
+          _RichFact(icon: Icons.schedule_outlined, label: 'Closes Jan 20'),
+          _RichFact(icon: Icons.how_to_vote_outlined, label: '1 member vote'),
+          _RichFact(icon: Icons.star_outline, label: 'Leading title'),
+        ],
+        actionSurfaceTitle: 'Cast book vote',
+        actionHeroSubtitle: 'February selection ballot',
+        actionHeroBody:
+            'Compare nominated books, confirm your vote, and keep the chosen discussion book visible after voting.',
+        actionPanelTitle: 'Ready to record vote',
+        actionPanelBody:
+            'Your vote will count once for Parable of the Sower and can be changed before the ballot closes.',
+        alternateActionLabel: 'Change vote',
+        detailTitle: 'Ballot options',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.menu_book_outlined,
+            title: 'Parable of the Sower',
+            body: 'Current leader with 9 votes and a member discussion note.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.menu_book_outlined,
+            title: 'The Memory Police',
+            body: 'Second place with 6 votes.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.menu_book_outlined,
+            title: 'Braiding Sweetgrass',
+            body: 'Third place with 5 votes.',
+          ),
+        ],
+        stateTitle: 'After voting',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.check_circle_outline,
+            title: 'Vote state',
+            body: 'Your selected book and vote timestamp remain visible.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.swap_horiz_outlined,
+            title: 'Change path',
+            body: 'Change vote remains available until Jan 20 at 8 PM.',
+          ),
+        ],
+        completeTitle: 'Vote recorded',
+        completeBody:
+            'Your vote for Parable of the Sower is recorded and can be changed before the ballot closes.',
+        receivedTitle: 'Vote result ready',
+        receivedBody:
+            'The selected book, vote count, and meeting context are visible to members.',
+        completeLabel: 'Voted',
+      );
+    case 'book-meeting-rsvp':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff2f6f9f),
+        icon: Icons.event_available_outlined,
+        title: 'Parable discussion night',
+        subtitle: 'Thu, Feb 15 at 7:00 PM - Maya\'s living room.',
+        body:
+            'Reserve a seat for the discussion and see host, location, capacity, and reminder status.',
+        facts: [
+          _RichFact(icon: Icons.calendar_today_outlined, label: 'Thu, Feb 15'),
+          _RichFact(icon: Icons.schedule_outlined, label: '7:00 PM'),
+          _RichFact(icon: Icons.place_outlined, label: 'Maya\'s living room'),
+          _RichFact(icon: Icons.group_outlined, label: '10 of 14 spots'),
+        ],
+        actionSurfaceTitle: 'Book meeting RSVP',
+        actionHeroSubtitle: 'Parable of the Sower discussion',
+        actionHeroBody:
+            'Check the meeting title, date, venue, host, capacity, and current RSVP before saving your response.',
+        actionPanelTitle: 'Choose attendance',
+        actionPanelBody:
+            'Going reserves a seat and sends a reminder. Maybe keeps the meeting on your calendar without taking capacity.',
+        alternateActionLabel: 'Change response',
+        detailTitle: 'Meeting details',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.person_outline,
+            title: 'Host',
+            body: 'Maya Chen hosts the February discussion.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.menu_book_outlined,
+            title: 'Selected book',
+            body: 'Parable of the Sower by Octavia E. Butler.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.group_outlined,
+            title: 'Capacity',
+            body: '10 attending, 4 seats open, waitlist starts at 14.',
+          ),
+        ],
+        stateTitle: 'Response options',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.check_circle_outline,
+            title: 'Going',
+            body: 'Reserve a seat and add a reminder to your inbox.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.help_outline,
+            title: 'Maybe or not attending',
+            body: 'Change response or release your seat before the meeting.',
+          ),
+        ],
+        completeTitle: 'RSVP confirmed',
+        completeBody:
+            'You are going to the Parable discussion; seat count, reminder, and change response stay visible.',
+        receivedTitle: 'Meeting update ready',
+        receivedBody:
+            'The meeting page shows book, date, venue, capacity, and your RSVP status.',
+        completeLabel: 'Going',
+      );
+    case 'book-discussion-message':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff6f4e7c),
+        icon: Icons.forum_outlined,
+        title: 'Discussion thread',
+        subtitle: 'Prompt: What does community care require?',
+        body:
+            'Reply to the Parable discussion with a note scoped to club members.',
+        facts: [
+          _RichFact(icon: Icons.person_outline, label: 'From Jordan'),
+          _RichFact(icon: Icons.group_outlined, label: 'Members only'),
+          _RichFact(icon: Icons.mark_email_unread_outlined, label: '3 unread'),
+          _RichFact(icon: Icons.lock_outline, label: 'Club scoped'),
+        ],
+        actionSurfaceTitle: 'Reply to discussion',
+        actionHeroSubtitle: 'Parable discussion thread',
+        actionHeroBody:
+            'Read the prompt, sender, audience, and member replies before posting your discussion note.',
+        actionPanelTitle: 'Ready to send message',
+        actionPanelBody:
+            'Your reply will appear in the club thread and stay scoped to current members.',
+        alternateActionLabel: 'Archive thread',
+        detailTitle: 'Thread context',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.question_answer_outlined,
+            title: 'Prompt',
+            body: 'What does community care require when resources are scarce?',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.person_outline,
+            title: 'Latest sender',
+            body: 'Jordan posted a discussion-prep message this morning.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.message_outlined,
+            title: 'Message body',
+            body: 'Bring one quote that changed how you read the ending.',
+          ),
+        ],
+        stateTitle: 'Conversation state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.reply_outlined,
+            title: 'Reply path',
+            body: 'Reply, mute, archive, or return later without losing place.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.lock_outline,
+            title: 'Privacy',
+            body: 'Only active book club members can read or reply.',
+          ),
+        ],
+        completeTitle: 'Reply sent',
+        completeBody:
+            'Your discussion message is posted to the Parable thread with sender and member scope.',
+        receivedTitle: 'Thread updated',
+        receivedBody:
+            'Members see sender, message body, unread state, and reply action.',
+        completeLabel: 'Sent',
+      );
+    case 'book-selection-publish':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff286b5f),
+        icon: Icons.campaign_outlined,
+        title: 'Publish February selection',
+        subtitle: 'Parable of the Sower won the member vote.',
+        body:
+            'Send the selected-book announcement with audience, author, message body, and delivery timing.',
+        facts: [
+          _RichFact(icon: Icons.group_outlined, label: 'Audience: members'),
+          _RichFact(icon: Icons.person_outline, label: 'From organizer'),
+          _RichFact(icon: Icons.today_outlined, label: 'Today 5:00 PM'),
+          _RichFact(icon: Icons.inbox_outlined, label: 'Inbox + push'),
+        ],
+        actionSurfaceTitle: 'Selection announcement',
+        actionHeroSubtitle: 'February book: Parable of the Sower',
+        actionHeroBody:
+            'Preview the announcement body, sender, audience, delivery time, and member receiver state before publishing.',
+        actionPanelTitle: 'Ready to publish',
+        actionPanelBody:
+            'Members will receive the selected book, meeting date, and discussion prompt in their inbox.',
+        alternateActionLabel: 'Save draft',
+        detailTitle: 'Announcement preview',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.person_outline,
+            title: 'Sender',
+            body: 'From Maya, Book Club Organizer.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.message_outlined,
+            title: 'Message body',
+            body:
+                'February selection: Parable of the Sower. Meeting details and reading prompt are ready.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.schedule_outlined,
+            title: 'Delivery',
+            body: 'Send today at 5:00 PM to all active members.',
+          ),
+        ],
+        stateTitle: 'Receiver state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.inbox_outlined,
+            title: 'Member inbox',
+            body:
+                'Members can read the selection and jump to RSVP or discussion.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.edit_note_outlined,
+            title: 'Draft path',
+            body: 'Preview announcement or save draft before publishing.',
+          ),
+        ],
+        completeTitle: 'Selection published',
+        completeBody:
+            'Members received the February selection announcement with book, sender, timing, and next steps.',
+        receivedTitle: 'Selection ready',
+        receivedBody:
+            'The member inbox shows the selected book, meeting date, and discussion prompt.',
+        completeLabel: 'Published',
+      );
+    case 'mosque-announcement':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff2d6a4f),
+        icon: Icons.campaign_outlined,
+        title: 'Ramadan community night',
+        subtitle: 'Announcement composer for Masjid Nur members.',
+        body:
+            'Review the message body, selected audience, sender, delivery timing, and member inbox state before publishing.',
+        facts: [
+          _RichFact(icon: Icons.group_outlined, label: 'Audience: members'),
+          _RichFact(icon: Icons.person_outline, label: 'From Masjid Admin'),
+          _RichFact(icon: Icons.schedule_outlined, label: 'Today 6:00 PM'),
+          _RichFact(icon: Icons.inbox_outlined, label: 'Inbox + push'),
+        ],
+        actionSurfaceTitle: 'Publish announcement',
+        actionHeroSubtitle: 'Ramadan community night - Friday after Maghrib',
+        actionHeroBody:
+            'Send a respectful community update with event time, volunteer note, audience, and delivery channel.',
+        actionPanelTitle: 'Ready for final review',
+        actionPanelBody:
+            'Members will receive the announcement in their inbox and notification list with read state.',
+        alternateActionLabel: 'Preview announcement',
+        detailTitle: 'Announcement preview',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.message_outlined,
+            title: 'Message body',
+            body:
+                'Join Ramadan community night after Maghrib. Iftar setup volunteers arrive at 5:30 PM.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.person_outline,
+            title: 'Sender',
+            body: 'Masjid Admin, community announcements.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.group_outlined,
+            title: 'Audience',
+            body: 'All active members; donors and care volunteers included.',
+          ),
+        ],
+        stateTitle: 'Delivery and receiver state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.schedule_outlined,
+            title: 'Delivery',
+            body: 'Send today at 6:00 PM through inbox and push notification.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.mark_email_read_outlined,
+            title: 'Member receiver state',
+            body:
+                'Members can read the posted announcement and see it as received.',
+          ),
+        ],
+        completeTitle: 'Announcement posted',
+        completeBody:
+            'Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time.',
+        receivedTitle: 'Update ready',
+        receivedBody:
+            'The member inbox shows sender, message body, audience, delivery timing, and read state.',
+        completeLabel: 'Sent',
+      );
+    case 'mosque-event-rsvp':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff2f6f9f),
+        icon: Icons.event_available_outlined,
+        title: 'Community iftar RSVP',
+        subtitle: 'Fri, Mar 14 at 6:45 PM - Fellowship hall.',
+        body:
+            'Reserve a seat and review event time, location, host, capacity, and reminder state.',
+        facts: [
+          _RichFact(icon: Icons.calendar_today_outlined, label: 'Fri, Mar 14'),
+          _RichFact(icon: Icons.schedule_outlined, label: '6:45 PM'),
+          _RichFact(icon: Icons.place_outlined, label: 'Fellowship hall'),
+          _RichFact(icon: Icons.group_outlined, label: '86 of 120 spots'),
+        ],
+        actionSurfaceTitle: 'Iftar RSVP',
+        actionHeroSubtitle: 'Ramadan community iftar',
+        actionHeroBody:
+            'Check the date, time, location, capacity, and family attendance before saving your response.',
+        actionPanelTitle: 'Choose RSVP response',
+        actionPanelBody:
+            'Going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat.',
+        alternateActionLabel: 'Change response',
+        detailTitle: 'Event details',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.person_outline,
+            title: 'Host',
+            body: 'Masjid Nur community team.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.group_outlined,
+            title: 'Capacity',
+            body: '86 attending, 34 spots available.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.place_outlined,
+            title: 'Location',
+            body: 'Fellowship hall, west entrance after Maghrib.',
+          ),
+        ],
+        stateTitle: 'Response options',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.check_circle_outline,
+            title: 'Going',
+            body: 'Reserve a seat and receive a reminder before Maghrib.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.swap_horiz_outlined,
+            title: 'Change later',
+            body: 'Change response or release your seat if plans change.',
+          ),
+        ],
+        completeTitle: 'RSVP confirmed',
+        completeBody:
+            'Your iftar RSVP is confirmed with date, time, location, capacity, and reminder state visible.',
+        receivedTitle: 'Iftar update ready',
+        receivedBody:
+            'The event page shows attendance status, capacity, and any schedule changes.',
+        completeLabel: 'Going',
+      );
+    case 'mosque-volunteer-signup':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff3f7f4c),
+        icon: Icons.volunteer_activism_outlined,
+        title: 'Iftar setup shift',
+        subtitle: 'Friday 4:30 PM - tables, check-in, and meal handoff.',
+        body:
+            'Choose the role, review shift time, protect contact details, and confirm coordinator follow-up.',
+        facts: [
+          _RichFact(
+            icon: Icons.volunteer_activism_outlined,
+            label: 'Setup role',
+          ),
+          _RichFact(icon: Icons.schedule_outlined, label: '4:30-6:30 PM shift'),
+          _RichFact(icon: Icons.phone_outlined, label: 'Phone protected'),
+          _RichFact(icon: Icons.group_outlined, label: '2 spots open'),
+        ],
+        actionSurfaceTitle: 'Volunteer signup',
+        actionHeroSubtitle: 'Iftar setup team',
+        actionHeroBody:
+            'Confirm shift role, time, location, contact preference, and coordinator receiver state before signing up.',
+        actionPanelTitle: 'Ready to sign up',
+        actionPanelBody:
+            'Your protected phone is shared only with the volunteer coordinator after confirmation.',
+        alternateActionLabel: 'Edit availability',
+        detailTitle: 'Shift details',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.task_alt_outlined,
+            title: 'Volunteer task',
+            body: 'Set up tables, check-in labels, and meal handoff station.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.schedule_outlined,
+            title: 'Time and place',
+            body: 'Friday 4:30-6:30 PM, fellowship hall west entrance.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.phone_outlined,
+            title: 'Protected contact',
+            body: 'Phone is visible only to the volunteer coordinator.',
+          ),
+        ],
+        stateTitle: 'Signup state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.check_circle_outline,
+            title: 'Confirmation',
+            body:
+                'Coordinator receives your signup and protected contact preference.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.edit_note_outlined,
+            title: 'Change path',
+            body: 'Edit availability or cancel the shift if plans change.',
+          ),
+        ],
+        completeTitle: 'Volunteer signup confirmed',
+        completeBody:
+            'You are signed up for iftar setup with protected phone, shift time, role, and coordinator follow-up.',
+        receivedTitle: 'Volunteer update ready',
+        receivedBody:
+            'The coordinator sees role, shift, protected contact state, and signup confirmation.',
+        completeLabel: 'Signed up',
+      );
+  }
+  return null;
+}
+
 class _WorkflowTile extends StatelessWidget {
   const _WorkflowTile({
     required this.extensionId,
@@ -824,6 +1453,17 @@ class _WorkflowTile extends StatelessWidget {
     if (extensionId == 'ext_garden_club' &&
         workflow.workflowId == 'plant-exchange-submission') {
       return _GardenPlantExchangeTile(
+        workflow: workflow,
+        view: view,
+        onPressed: onPressed,
+        onReceivePressed: onReceivePressed,
+      );
+    }
+    final richSpec = _richWorkflowSpecFor(workflow.workflowId);
+    if (richSpec != null) {
+      return _RichWorkflowTile(
+        extensionId: extensionId,
+        spec: richSpec,
         workflow: workflow,
         view: view,
         onPressed: onPressed,
@@ -959,6 +1599,199 @@ class _WorkflowTile extends StatelessWidget {
                   key: ValueKey('workflow-complete-${workflow.workflowId}'),
                   icon: Icons.done,
                   label: contract.successChipLabel,
+                  foreground: foreground,
+                ),
+              ),
+            if (view.received)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _StateBadge(
+                  key: ValueKey('workflow-received-${workflow.workflowId}'),
+                  icon: Icons.mark_email_read_outlined,
+                  label: 'Received',
+                  foreground: foreground,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RichWorkflowTile extends StatelessWidget {
+  const _RichWorkflowTile({
+    required this.extensionId,
+    required this.spec,
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final String extensionId;
+  final _RichWorkflowSpec spec;
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    final textTheme = Theme.of(context).textTheme;
+    final complete = view.completed || view.received;
+    final contract = productionWorkflowContractFor(
+      extensionId: extensionId,
+      workflow: workflow,
+    );
+    return DecoratedBox(
+      key: ValueKey('workflow-${workflow.workflowId}'),
+      decoration: BoxDecoration(
+        color: spec.accent,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: spec.accent.withValues(alpha: 0.22),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: foreground.withValues(alpha: 0.13),
+                  child: Icon(spec.icon, color: foreground),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        spec.title,
+                        style: textTheme.titleLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        spec.subtitle,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.94),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        complete ? spec.completeBody : spec.body,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.90),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final fact in spec.facts)
+                  _SurfaceFactPill(
+                    icon: fact.icon,
+                    label: fact.label,
+                    foreground: foreground,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: foreground.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: foreground.withValues(alpha: 0.20)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      complete ? 'Current state' : spec.actionPanelTitle,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      complete ? spec.completeBody : spec.actionPanelBody,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: foreground.withValues(alpha: 0.90),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _SurfaceFactPill(
+                      icon: Icons.compare_arrows_outlined,
+                      label: spec.alternateActionLabel,
+                      foreground: foreground,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (view.completed)
+              _WorkflowResultPanel(
+                key: ValueKey('workflow-result-${workflow.workflowId}'),
+                title: spec.completeTitle,
+                body: spec.completeBody,
+                icon: spec.icon,
+                accent: spec.accent,
+              )
+            else if (view.received)
+              _WorkflowResultPanel(
+                key: ValueKey(
+                  'workflow-received-result-${workflow.workflowId}',
+                ),
+                title: spec.receivedTitle,
+                body: spec.receivedBody,
+                icon: Icons.inbox_outlined,
+                accent: spec.accent,
+              )
+            else
+              _WorkflowAction(
+                contract: contract,
+                workflow: workflow,
+                view: view,
+                onPressed: onPressed,
+                onReceivePressed: onReceivePressed,
+              ),
+            Offstage(
+              child: Text(
+                view.personaRationale,
+                key: ValueKey('workflow-persona-state-${workflow.workflowId}'),
+              ),
+            ),
+            if (view.completed)
+              Align(
+                alignment: Alignment.centerRight,
+                child: _StateBadge(
+                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
+                  icon: Icons.done,
+                  label: spec.completeLabel,
                   foreground: foreground,
                 ),
               ),
@@ -1911,6 +2744,16 @@ class _WorkflowActionSurface extends StatelessWidget {
         isReceiverSurface: isReceiverSurface,
       );
     }
+    final richSpec = _richWorkflowSpecFor(workflow.workflowId);
+    if (richSpec != null) {
+      return _RichWorkflowActionSurface(
+        workflow: workflow,
+        spec: richSpec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+        isReceiverSurface: isReceiverSurface,
+      );
+    }
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final accent = _categoryAccentColor(contract.category, scheme);
@@ -2031,6 +2874,79 @@ class _WorkflowActionSurface extends StatelessWidget {
             actionLabel: actionLabel,
             actionIcon: contract.icon,
             confirmButtonKey: confirmButtonKey,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RichWorkflowActionSurface extends StatelessWidget {
+  const _RichWorkflowActionSurface({
+    required this.workflow,
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+    required this.isReceiverSurface,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+  final bool isReceiverSurface;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    return Scaffold(
+      backgroundColor: _screenBackgroundFor(spec.accent),
+      appBar: AppBar(
+        title: Text(
+          isReceiverSurface ? spec.receivedTitle : spec.actionSurfaceTitle,
+        ),
+        backgroundColor: spec.accent,
+        foregroundColor: foreground,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          icon: const Icon(Icons.close),
+          tooltip: 'Close',
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        children: [
+          _GardenHeroPanel(
+            accent: spec.accent,
+            icon: spec.icon,
+            title: spec.title,
+            subtitle: spec.actionHeroSubtitle,
+            body: isReceiverSurface ? spec.receivedBody : spec.actionHeroBody,
+          ),
+          const SizedBox(height: 14),
+          _RichInlineActionPanel(
+            accent: spec.accent,
+            facts: spec.facts,
+            title: isReceiverSurface
+                ? spec.receivedTitle
+                : spec.actionPanelTitle,
+            body: isReceiverSurface ? spec.receivedBody : spec.actionPanelBody,
+            alternateLabel: spec.alternateActionLabel,
+            actionLabel: actionLabel,
+            actionIcon: spec.icon,
+            confirmButtonKey: confirmButtonKey,
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: spec.accent,
+            title: spec.detailTitle,
+            rows: spec.detailRows,
+          ),
+          const SizedBox(height: 16),
+          _GardenDetailCard(
+            accent: spec.accent,
+            title: spec.stateTitle,
+            rows: spec.stateRows,
           ),
         ],
       ),
@@ -2415,6 +3331,108 @@ class _GardenInlineActionPanel extends StatelessWidget {
                   icon: Icons.lock_outline,
                   label: 'Phone/address private',
                 ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FilledButton.icon(
+                  key: confirmButtonKey,
+                  onPressed: () => Navigator.of(context).pop(true),
+                  icon: Icon(actionIcon, size: 18),
+                  label: Text(
+                    actionLabel,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: foreground,
+                    side: BorderSide(color: foreground.withValues(alpha: 0.28)),
+                  ),
+                  icon: const Icon(Icons.compare_arrows_outlined, size: 18),
+                  label: Text(
+                    alternateLabel,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RichInlineActionPanel extends StatelessWidget {
+  const _RichInlineActionPanel({
+    required this.accent,
+    required this.facts,
+    required this.title,
+    required this.body,
+    required this.alternateLabel,
+    required this.actionLabel,
+    required this.actionIcon,
+    required this.confirmButtonKey,
+  });
+
+  final Color accent;
+  final List<_RichFact> facts;
+  final String title;
+  final String body;
+  final String alternateLabel;
+  final String actionLabel;
+  final IconData actionIcon;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              body,
+              style: textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.90),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final fact in facts)
+                  _SurfaceFactPill(
+                    icon: fact.icon,
+                    label: fact.label,
+                    foreground: foreground,
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -3854,6 +4872,12 @@ String _alternateActionLabelFor(LoomWorkflowDefinition workflow) {
   if (id.contains('plant-exchange')) {
     return 'Edit offer';
   }
+  if (id.contains('nomination')) {
+    return 'Edit nomination';
+  }
+  if (id.contains('vote')) {
+    return 'Change vote';
+  }
   if (id.contains('critique')) {
     return 'Edit critique';
   }
@@ -3873,6 +4897,9 @@ String _alternateActionLabelFor(LoomWorkflowDefinition workflow) {
   }
   if (id.contains('request')) {
     return 'Edit request';
+  }
+  if (id.contains('signup')) {
+    return 'Edit availability';
   }
   return 'Edit response';
 }
