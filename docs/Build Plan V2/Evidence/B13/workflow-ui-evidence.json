@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "workflowCount": 3,
   "workflows": [
     {
@@ -35,7 +35,7 @@
         "Spring Planting Workshop | Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse | Join the club for bed prep, seedling setup, and a shared planning session before the spring exchange opens. | Choose your response | Your RSVP updates the attendee count and leaves a reminder in your community inbox. | 18 going | 6 spots left | RSVP open | Going | Maybe | Not going | Maybe later | RSVP to event | Event details | Host | Maya Chen, Garden Club coordinator | Capacity | 18 members going, 6 spots left, waitlist opens at 24. | Location | Riverside Greenhouse, north entrance. Bring gloves and a labeled seed tray. | Spring Workshop",
         "Spring Planting Workshop | Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members. | Sat, Apr 18 | 10:00 AM | Riverside Greenhouse | 18 of 24 spots | Your RSVP: Going | A reminder is set for Saturday morning. You can still change your response before capacity closes. | RSVP confirmed | You are going to Spring Planting Workshop. Calendar, attendee count, and reminder status stay visible. | Going | Care and volunteers | Private requests, volunteer shifts, and member support. | Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Members will see the plant variety, pickup window, privacy note, and how to claim the offer. | Offer plant | Garden Club"
       ],
-      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",
@@ -68,7 +68,7 @@
         "Basil seedlings | Sweet Genovese - 6 starter pots | Share healthy starts with nearby members and choose exactly what contact details are visible after a claim. | Ready for marketplace review | Confirm the variety, pickup window, and privacy note before the offer appears on the plant exchange board. | Contact after claim | Phone/address private | Offer plant | Edit offer | Offer preview | Plant details | Sweet Genovese basil, six starter pots, rooted and ready for transplant this week. | Pickup | Saturday 1-3 PM at the community shed, with porch pickup available if weather changes. | Shared with claimants | First name and in-app contact only. Phone and address stay private until you confirm. | Offer a plant",
         "Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Offer posted to the plant exchange board. | Offer posted | Basil seedlings are listed with pickup details and contact sharing limited until a member claims them. | Posted | Documents and data | Documents, exports, imports, and transfer records. | Garden data export package | Review event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | Change scope | Read only | Garden Club"
       ],
-      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",
@@ -101,7 +101,7 @@
         "Garden data export package | garden_event + plant_exchange | Confirm selected data, protected-field redaction, checksum, and destination before generating the export. | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Change scope | Generate export | Package contents | Scope | Selected data: garden_event, plant_exchange, RSVP status, offer status, and export metadata. | Member phone, address, and private pickup notes are protected before transfer. | Checksum | Checksum 8F4A-PLANT verifies the package and appears in the audit trail. | Garden export review",
         "Garden data export package | Review event and plant-exchange data before download. | Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download status. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Current state | Change scope | Export generated | Exported | Local package details | Garden Club"
       ],
-      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",

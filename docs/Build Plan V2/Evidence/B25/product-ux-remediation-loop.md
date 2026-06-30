@@ -1,8 +1,9 @@
 # B25 Product UX Remediation Loop
 
-Status: complete under `b25-production-ux-v4`; iteration 12 remediated the remaining visual-shell
-issues, recaptured fresh phase-split B12-B20 screenshot evidence, and reran the full B25 judge chain.
-The latest review passes with 0 unresolved blocker or major findings.
+Status: reopened under the hardened fresh-LLM B25 review rule. `b25-v4-pass-19` recaptured fresh
+phase-split B12-B20 screenshot evidence and reran the full B25 judge chain, but failed with 3
+unresolved major findings. The latest review has 0 blockers, 3 unresolved majors, 8 remediation
+tickets, and a pass-20 remediation plan.
 
 This log records each B25 product UX review, remediation, retest, and rerun cycle. B25 can pass only
 when the latest iteration has zero unresolved blocker or major UX findings, the screen review matrix
@@ -37,6 +38,7 @@ decision, and a git commit before the next feedback loop.
 | 13 / `b25-v4-pass-10` | Product-doc and semantic-action remediation applied; fresh review improved but failed | Fail | 0 | 1 | 0 | Product-doc coverage and visual inspection now pass; semantic interaction-model failures dropped to 16, with remaining gaps concentrated in platform/social/support flows and a smaller set of publishing/document/notification workflows. | Pass 10 added B25 semantic interaction-model addenda to 11 community product docs, added shared alternate-action/decision/receiver-state UI to workflow cards and full-screen action surfaces, recaptured all screenshots, and regenerated B25 scorecards/tickets/planner. Pass 11 must target the 16 remaining lifecycle rows and 10 workflow/persona product-surface rows. | Demo App B21-B25/B9/B10/B11 tests passed; `flutter analyze apps/loom_communities_demo` passed; `b25_capture_workflow_screenshots.dart` wrote 208 screenshots; `b25_evidence_collector.dart` generated 195 screen rows; `b25_workflow_persona_coverage_collector.dart` passed 68/68; `b25_visual_inspection_auditor.dart` passed 195/195; `b25_independent_ux_judge.dart` failed with 3 findings; `b25_workflow_interaction_model_judge.dart` failed 16/68 lifecycle rows; `production_ux_judge.dart` failed 8 criteria; `b25_iteration_scorecard.dart` reports 1 unresolved major; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-11.md`. | B25 remains reopened; pass 10 commit `e63e34f` |
 | 14 / `b25-v4-pass-11` | Interaction-model remediation applied; fresh review improved but failed | Fail | 0 | 0 | 0 | The semantic workflow interaction-model gate now passes 68/68 lifecycle rows and visual/product-doc/coverage gates remain green. Remaining failures are six direct-question criteria tied to 10 workflow/persona semantic-surface rows needing more visible domain proof. | Pass 11 consumed the pass-10 remediation plan, fixed support-surface lifecycle scoring, made primary actions match the expected semantic model, added durable social result states, recaptured screenshots, reran all B25 judges, and generated pass-12 remediation planning. Pass 12 must add visible sender/author, file metadata, RSVP result, ad no-fill disclosure, and specific target-surface proof for the remaining 10 workflow/persona rows. | Focused Demo App B21-B25/B9/B10/B11 tests passed; `flutter analyze apps/loom_communities_demo` passed; `dart analyze packages/tooling/loom_ux_judges` passed; `b25_capture_workflow_screenshots.dart` wrote 208 screenshots; `b25_evidence_collector.dart` generated 195 screen rows; `b25_workflow_persona_coverage_collector.dart` passed 68/68; `b25_visual_inspection_auditor.dart` passed 195/195; `b25_workflow_interaction_model_judge.dart` passed 68/68; `b25_independent_ux_judge.dart` failed with 2 findings; `production_ux_judge.dart` failed 6 criteria; `b25_iteration_scorecard.dart` reports 0 unresolved blockers/majors but B25 cannot pass because blocking criteria remain; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-12.md`. | B25 remains reopened; pass 11 commit `84c6998` |
 | 15 / `b25-v4-pass-12` | Semantic-surface remediation applied and production UX review passed | Pass | 0 | 0 | 0 | All stricter v4 gates now pass: product-doc coverage, fresh screenshots, full workflow/persona coverage, visual inspection, independent UX review, workflow interaction-model review, production UX judge, and iteration scorecard. | Pass 12 consumed the pass-11 remediation plan, added visible sender/author, notification content, RSVP result, document file metadata, no-fill disclosure, and protected minor-redaction proof, recaptured screenshots, reran the full B25 chain, and produced empty/pass remediation tickets and an empty pass-13 planner. | Focused Demo App B21-B25/B9/B10/B11 tests passed; `flutter analyze apps/loom_communities_demo` passed; `dart analyze packages/tooling/loom_ux_judges` passed; `b25_capture_workflow_screenshots.dart` wrote 208 screenshots; `b25_evidence_collector.dart` generated 195 screen rows; `b25_workflow_persona_coverage_collector.dart` passed 68/68; `b25_visual_inspection_auditor.dart` passed 195/195; `b25_independent_ux_judge.dart` passed with 0 findings; `b25_workflow_interaction_model_judge.dart` passed 68/68; `production_ux_judge.dart` passed 14/14 criteria; `b25_iteration_scorecard.dart` reports `B25 can pass=true`; manifest gate, B25 phase gate, boundary lint, and `git diff --check` passed. | B25 passes; pass 12 commit `7f3d71a` |
+| 16 / `b25-v4-pass-19` | Fresh LLM review rerun detected product UX failures | Fail | 0 | 3 | 0 | Generic workflow/action-surface language remains visible across primary screens; several workflows are mapped to the wrong product surface family; overall visual system still feels like hue-swapped template cards rather than a mature product experience. | Pass 19 closes by publishing fresh screenshot-backed LLM review evidence, 8 major remediation tickets, the iteration scorecard, and the pass-20 remediation plan. Pass 20 must consume that plan before implementation, fix the 44 scoped UI remediation work items, then recapture full B12-B20 evidence and rerun the fresh LLM review and production judge. | Full B12-B20 capture coverage passed with 198 screenshots, 66 workflows, and 9 manifests; B25 collector generated 195 rows; workflow/persona coverage passed 68/68; visual inspection passed; LLM freshness gate passed; LLM importer failed with 3 major findings; workflow interaction-model judge passed 68/68; production UX judge failed 8 criteria; `b25_iteration_scorecard.dart` reports 3 remaining blocking/major findings; `b25_remediation_planner.dart` generated `b25-remediation-plan-b25-v4-pass-20.md` with 11 evidence-repair work items and 44 UI remediation work items. | B25 remains reopened; pass 19 commit `TBD` |
 
 ## Iteration 3 Commit Boundary
 
@@ -122,3 +124,22 @@ findings were resolved in pass 9.
 - Result: B25 remains passing under the current UX review bar. The advisory card-surface registry is
   now available to remediation agents, but it is not yet enforced as a standalone card-surface/API
   coverage gate.
+
+## Iteration 19 Commit Boundary
+
+- Full capture coverage: `docs/Build Plan V2/Evidence/B25/b25-capture-coverage-report.json`.
+- Fresh LLM review: `docs/Build Plan V2/Evidence/B25/llm-vision-ux-review-b25-v4-pass-19.json`.
+- LLM freshness gate:
+  `docs/Build Plan V2/Evidence/B25/b25-llm-review-freshness-gate-b25-v4-pass-19.md`.
+- Production judge scorecard:
+  `docs/Build Plan V2/Evidence/B25/production-ux-criteria-scorecard.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-19.md`.
+- Remediation tickets:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-19.md`.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-20.md`.
+- Result: B25 remains reopened with 0 blockers, 3 unresolved major findings, 8 major tickets, 11
+  evidence-repair work items, and 44 UI remediation work items. Pass 20 must start from the remediation
+  plan before any implementation changes.
+- Evidence/tooling commit: `TBD`.

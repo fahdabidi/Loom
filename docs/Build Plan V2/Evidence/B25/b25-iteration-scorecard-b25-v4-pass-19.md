@@ -8,7 +8,7 @@
 | B25 can pass | `false` |
 | Remaining critical/blocker + major | 3 |
 | Resolved critical/blocker + major this pass | 0 |
-| New critical/blocker + major this pass | 3 |
+| New critical/blocker + major this pass | 0 |
 
 ## Finding Counts
 

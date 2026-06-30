@@ -5,7 +5,7 @@
   "emulatorName": "emulator-5554",
   "deviceClass": "Android emulator",
   "apiLevel": "Android 16 API 36",
-  "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
   "workflowCount": 1,
   "workflows": [
     {
@@ -44,7 +44,7 @@
         "Ramadan community night | Ramadan community night - Friday after Maghrib | The member inbox shows sender, message body, audience, delivery timing, and read state. | Update ready | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Preview announcement | Receive announcement | Announcement preview | Message body | Join Ramadan community night after Maghrib. Iftar setup volunteers arrive at 5:30 PM. | Sender | Masjid Admin, community announcements. | Audience | All active members; donors and care volunteers included.",
         "Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Current state | Preview announcement | Update ready | The member inbox shows sender, message body, audience, delivery timing, and read state. | Received | Neutral care notification | Waiting for the announcement to be sent. | From admin | Members | Today | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Waiting | Masjid Nur"
       ],
-      "commandOutputPath": "../docs/Build Plan V2/Evidence/B25/flutter-drive-b25-v4-pass-18.log",
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
       "deviceClass": "Android emulator",
       "apiLevel": "Android 16 API 36",
