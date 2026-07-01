@@ -165,12 +165,6 @@ void main() {
         );
         final prerequisitePersonaId = prerequisitePolicy.actorPersonaIds.first;
         await selectPersona(tester, prerequisitePersonaId);
-        await selectWorkflowTab(
-          tester,
-          experience: experience,
-          personaId: prerequisitePersonaId,
-          workflow: prerequisite,
-        );
         await completeWorkflow(tester, prerequisite);
         completedSetupWorkflowIds.add(prerequisiteWorkflowId);
       }
@@ -194,12 +188,6 @@ void main() {
         await ensurePrerequisiteChain(workflow);
         final actorPersonaId = policy.actorPersonaIds.first;
         await selectPersona(tester, actorPersonaId);
-        await selectWorkflowTab(
-          tester,
-          experience: experience,
-          personaId: actorPersonaId,
-          workflow: workflow,
-        );
         final entry = <String, Object?>{
           'phase': target.phase,
           'appId': target.extensionId,
