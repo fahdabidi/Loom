@@ -90,11 +90,7 @@ void main() {
 
     final workflow = experienceForExtensionId(target.extensionId).workflows
         .firstWhere((workflow) => workflow.workflowId == 'mosque-announcement');
-    await tester.scrollUntilVisible(
-      find.byKey(ValueKey('workflow-${workflow.workflowId}')),
-      180,
-      scrollable: find.byType(Scrollable).last,
-    );
+    await scrollToWorkflowCard(tester, workflow);
     await tester.pumpAndSettle();
     expect(find.text('Publish announcement'), findsOneWidget);
 
@@ -112,7 +108,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(ValueKey('workflow-action-submit-${workflow.workflowId}')),
       180,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: verticalScrollableFinder().last,
       maxScrolls: 30,
     );
     await tester.pumpAndSettle();
@@ -143,7 +139,7 @@ void main() {
       attempt < 8 && workflowCard.evaluate().isEmpty;
       attempt += 1
     ) {
-      await tester.drag(find.byType(Scrollable).last, const Offset(0, 240));
+      await tester.drag(verticalScrollableFinder().last, const Offset(0, 240));
       await tester.pumpAndSettle();
     }
     expect(workflowCard, findsOneWidget);
@@ -165,7 +161,7 @@ void main() {
     await tester.scrollUntilVisible(
       receiveSubmitButton,
       180,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: verticalScrollableFinder().last,
       maxScrolls: 30,
     );
     await tester.pumpAndSettle();

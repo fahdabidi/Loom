@@ -366,7 +366,9 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       personaId: activePersona.personaId,
       tabs: tabSpecs,
     );
-    final selectedTab = tabSpecs.firstWhere((tab) => tab.tabId == selectedTabId);
+    final selectedTab = tabSpecs.firstWhere(
+      (tab) => tab.tabId == selectedTabId,
+    );
     final selectedSections = _communitySectionsForTab(
       experience: experience,
       tab: selectedTab,
@@ -526,42 +528,42 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
             )
           else
             for (final section in selectedSections) ...[
-            _CommunitySectionHeader(
-              title: section.title,
-              subtitle: section.subtitle,
-              icon: section.icon,
-              accent: accent,
-            ),
-            const SizedBox(height: 8),
-            for (final workflow in section.workflows)
-              Builder(
-                builder: (context) {
-                  final policy = personaPolicyForWorkflow(
-                    experience.extensionId,
-                    workflow.workflowId,
-                  );
-                  final view = personaWorkflowViewFor(
-                    extensionId: experience.extensionId,
-                    workflow: workflow,
-                    personaId: activePersona.personaId,
-                    completedWorkflowIds: _completedWorkflowIds,
-                    receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
-                  );
-                  return _WorkflowTile(
-                    extensionId: experience.extensionId,
-                    workflow: workflow,
-                    view: view,
-                    onPressed: () => _confirmWorkflow(workflow),
-                    onReceivePressed: () => _receiveWorkflow(
-                      workflow: workflow,
-                      persona: activePersona,
-                      policy: policy,
-                    ),
-                  );
-                },
+              _CommunitySectionHeader(
+                title: section.title,
+                subtitle: section.subtitle,
+                icon: section.icon,
+                accent: accent,
               ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 8),
+              for (final workflow in section.workflows)
+                Builder(
+                  builder: (context) {
+                    final policy = personaPolicyForWorkflow(
+                      experience.extensionId,
+                      workflow.workflowId,
+                    );
+                    final view = personaWorkflowViewFor(
+                      extensionId: experience.extensionId,
+                      workflow: workflow,
+                      personaId: activePersona.personaId,
+                      completedWorkflowIds: _completedWorkflowIds,
+                      receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
+                    );
+                    return _WorkflowTile(
+                      extensionId: experience.extensionId,
+                      workflow: workflow,
+                      view: view,
+                      onPressed: () => _confirmWorkflow(workflow),
+                      onReceivePressed: () => _receiveWorkflow(
+                        workflow: workflow,
+                        persona: activePersona,
+                        policy: policy,
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(height: 20),
+            ],
           if (selectedTab.tabId == 'home') ...[
             const SizedBox(height: 24),
             ExpansionTile(
@@ -657,7 +659,7 @@ class _CommunityBottomTabBar extends StatelessWidget {
           ),
         ),
         child: SizedBox(
-          height: 72,
+          height: 76,
           child: ListView.separated(
             key: const ValueKey('community-bottom-tabs'),
             scrollDirection: Axis.horizontal,
@@ -678,7 +680,7 @@ class _CommunityBottomTabBar extends StatelessWidget {
                     constraints: const BoxConstraints(minWidth: 94),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 8,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: selected
@@ -5732,6 +5734,8 @@ class _SurfaceActionOrResult extends StatelessWidget {
             accent: spec.accent,
           ),
           const SizedBox(height: 10),
+          _LifecycleFollowUpPanel(spec: spec, received: false),
+          const SizedBox(height: 10),
           _StateBadge(
             key: ValueKey('workflow-complete-${workflow.workflowId}'),
             icon: Icons.done,
@@ -5752,6 +5756,8 @@ class _SurfaceActionOrResult extends StatelessWidget {
             icon: Icons.inbox_outlined,
             accent: spec.accent,
           ),
+          const SizedBox(height: 10),
+          _LifecycleFollowUpPanel(spec: spec, received: true),
           const SizedBox(height: 10),
           _StateBadge(
             key: ValueKey('workflow-received-${workflow.workflowId}'),
@@ -5783,6 +5789,154 @@ class _SurfaceActionOrResult extends StatelessWidget {
       ],
     );
   }
+}
+
+class _LifecycleFollowUpPanel extends StatelessWidget {
+  const _LifecycleFollowUpPanel({required this.spec, required this.received});
+
+  final _RichWorkflowSpec spec;
+  final bool received;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    final textTheme = Theme.of(context).textTheme;
+    final labels = _followUpActionLabelsFor(spec, received: received);
+    final rows = spec.stateRows.take(2).toList();
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              received ? 'Receiver next steps' : _followUpTitleFor(spec.layout),
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              received
+                  ? spec.receivedBody
+                  : 'The saved result keeps status, history, and change actions visible for this community task.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.88),
+              ),
+            ),
+            if (rows.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              for (final row in rows)
+                _ProductPreviewLine(
+                  icon: row.icon,
+                  title: row.title,
+                  body: row.body,
+                ),
+            ],
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final label in labels)
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: foreground,
+                      side: BorderSide(
+                        color: foreground.withValues(alpha: 0.35),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(label),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+List<String> _followUpActionLabelsFor(
+  _RichWorkflowSpec spec, {
+  required bool received,
+}) {
+  if (received) {
+    return const ['Open inbox', 'Reply', 'Archive'];
+  }
+  return switch (spec.layout) {
+    _RichWorkflowLayout.eventDetail => const [
+      'Change RSVP',
+      'Add to calendar',
+      'Invite member',
+    ],
+    _RichWorkflowLayout.formSubmission => const [
+      'Edit request',
+      'Withdraw',
+      'View status',
+    ],
+    _RichWorkflowLayout.paymentReceipt => const [
+      'Open receipt',
+      'Retry payment',
+      'Request refund',
+    ],
+    _RichWorkflowLayout.rosterProfile => const [
+      'Edit visibility',
+      'Message team',
+      'Export roster',
+    ],
+    _RichWorkflowLayout.requestReview => const [
+      'Request changes',
+      'Reopen',
+      'View history',
+    ],
+    _RichWorkflowLayout.searchAnswer => const [
+      'Ask follow-up',
+      'Open sources',
+      'Share answer',
+    ],
+    _RichWorkflowLayout.exportWizard => const [
+      'Download file',
+      'Verify checksum',
+      'Rollback',
+    ],
+    _RichWorkflowLayout.messageThread => const [
+      'Reply',
+      'Mute thread',
+      'Archive',
+    ],
+    _RichWorkflowLayout.noticeDetail => const [
+      'Edit notice',
+      'View delivery',
+      'Send follow-up',
+    ],
+    _RichWorkflowLayout.clubScoreboard => const [
+      'Edit result',
+      'Dispute',
+      'Open standings',
+    ],
+    _RichWorkflowLayout.mediaReview => const [
+      'Edit submission',
+      'Request feedback',
+      'Withdraw',
+    ],
+    _RichWorkflowLayout.adEntitlement => const [
+      'Manage plan',
+      'Open receipt',
+      'Restore',
+    ],
+    _ => [spec.alternateActionLabel, 'View history', 'Open details'],
+  };
 }
 
 class _ProductSurfacePreview extends StatelessWidget {
@@ -9982,7 +10136,7 @@ List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
                 extensionId,
                 workflow.workflowId,
               ).prerequisiteWorkflowId ??
-      workflow.workflowId,
+              workflow.workflowId,
         ),
   ];
 }
@@ -10025,10 +10179,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         ],
         requiredPermission: 'community.surface.documents.read',
       ),
-    if (_hasAnySurfaceFamily(experience, const [
-      'exchange',
-      'equipment-loan',
-    ]))
+    if (_hasAnySurfaceFamily(experience, const ['exchange', 'equipment-loan']))
       const LoomAppShellTabSpec(
         tabId: 'marketplace',
         label: 'Marketplace',
@@ -10048,10 +10199,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         cardSurfaceFamilies: ['payment', 'ad-off-entitlement'],
         requiredPermission: 'community.surface.payments.read',
       ),
-    if (_hasAnySurfaceFamily(experience, const [
-      'volunteer',
-      'care-request',
-    ]))
+    if (_hasAnySurfaceFamily(experience, const ['volunteer', 'care-request']))
       const LoomAppShellTabSpec(
         tabId: 'care',
         label: 'Care',

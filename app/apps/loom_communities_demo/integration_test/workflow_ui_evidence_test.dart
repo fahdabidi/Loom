@@ -184,7 +184,14 @@ void main() {
           workflow.workflowId,
         );
         await ensurePrerequisiteChain(workflow);
-        await selectPersona(tester, policy.actorPersonaIds.first);
+        final actorPersonaId = policy.actorPersonaIds.first;
+        await selectPersona(tester, actorPersonaId);
+        await selectWorkflowTab(
+          tester,
+          experience: experience,
+          personaId: actorPersonaId,
+          workflow: workflow,
+        );
         final entry = <String, Object?>{
           'phase': target.phase,
           'appId': target.extensionId,
@@ -225,7 +232,7 @@ void main() {
         await tester.scrollUntilVisible(
           submitButton,
           180,
-          scrollable: find.byType(Scrollable).last,
+          scrollable: verticalScrollableFinder().last,
           maxScrolls: 30,
         );
         await tester.pumpAndSettle();

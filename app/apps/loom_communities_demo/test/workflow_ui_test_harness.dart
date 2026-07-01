@@ -55,6 +55,34 @@ Future<void> selectPersona(WidgetTester tester, String personaId) async {
   expect(find.byKey(const ValueKey('persona-picker-dialog')), findsNothing);
 }
 
+Future<void> selectWorkflowTab(
+  WidgetTester tester, {
+  required LoomExperienceDefinition experience,
+  required String personaId,
+  required LoomWorkflowDefinition workflow,
+}) async {
+  final tabs = appShellTabsFor(experience: experience, personaId: personaId);
+  final targetTab = tabs.firstWhere(
+    (tab) =>
+        tab.tabId != 'home' &&
+        tab.matchesWorkflow(
+          extensionId: experience.extensionId,
+          workflow: workflow,
+        ),
+    orElse: () =>
+        tabs.firstWhere((tab) => tab.tabId == 'home', orElse: () => tabs.first),
+  );
+  final tabFinder = find.byKey(ValueKey('community-tab-${targetTab.tabId}'));
+  await tester.ensureVisible(tabFinder);
+  await tester.pumpAndSettle();
+  await tester.tap(tabFinder);
+  await tester.pumpAndSettle();
+  expect(
+    find.byKey(ValueKey('selected-tab-${targetTab.tabId}')),
+    findsOneWidget,
+  );
+}
+
 Future<void> scrollToWorkflowCard(
   WidgetTester tester,
   LoomWorkflowDefinition workflow,
@@ -66,7 +94,7 @@ Future<void> scrollToWorkflowCard(
     return;
   }
 
-  final scrollable = find.byType(Scrollable);
+  final scrollable = verticalScrollableFinder();
   expect(scrollable, findsWidgets);
   for (final offset in const [Offset(0, -240), Offset(0, 240)]) {
     for (var attempt = 0; attempt < 40; attempt += 1) {
@@ -80,7 +108,30 @@ Future<void> scrollToWorkflowCard(
     }
   }
 
+  final homeTab = find.byKey(const ValueKey('community-tab-home'));
+  if (homeTab.evaluate().isNotEmpty) {
+    await tester.ensureVisible(homeTab);
+    await tester.pumpAndSettle();
+    await tester.tap(homeTab);
+    await tester.pumpAndSettle();
+    if (workflowCard.evaluate().isNotEmpty) {
+      await tester.ensureVisible(workflowCard);
+      await tester.pumpAndSettle();
+      return;
+    }
+  }
+
   fail('Could not find workflow card ${workflow.workflowId}');
+}
+
+Finder verticalScrollableFinder() {
+  return find.byWidgetPredicate(
+    (widget) =>
+        widget is Scrollable &&
+        (widget.axisDirection == AxisDirection.down ||
+            widget.axisDirection == AxisDirection.up),
+    description: 'vertical Scrollable',
+  );
 }
 
 Future<void> completeWorkflow(
@@ -105,7 +156,7 @@ Future<void> completeWorkflow(
   await tester.scrollUntilVisible(
     submitButton,
     180,
-    scrollable: find.byType(Scrollable).last,
+    scrollable: verticalScrollableFinder().last,
     maxScrolls: 30,
   );
   await tester.pumpAndSettle();
@@ -151,7 +202,7 @@ Future<void> receiveWorkflow(
   await tester.scrollUntilVisible(
     receiveSubmitButton,
     180,
-    scrollable: find.byType(Scrollable).last,
+    scrollable: verticalScrollableFinder().last,
     maxScrolls: 30,
   );
   await tester.pumpAndSettle();
