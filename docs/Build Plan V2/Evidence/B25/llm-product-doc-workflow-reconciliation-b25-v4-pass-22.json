@@ -1,0 +1,700 @@
+{
+  "schemaVersion": 1,
+  "reviewerType": "llm-product-doc-workflow-reconciliation",
+  "runId": "b25-v4-pass-22",
+  "currentReviewRunId": "b25-v4-pass-22",
+  "freshReview": true,
+  "appCommit": "108db17",
+  "appCommitSha": "108db17",
+  "verdict": "fail",
+  "decision": "fail",
+  "finalDecision": "fail",
+  "summary": "Fail. This is a fresh pass-22 reconciliation against current B25 evidence, current lifecycle scorecards, and the Product Docs V2 community examples. Several pass-21 issues were improved: Camera no longer declares the stale skill-prompt umbrella workflow, Masjid now documents the B18-B20 persona support workflows, Platform Social now has semantic rows for ad/no-fill workflows, and the lifecycle failures dropped from 22 to 7. Product-doc reconciliation still fails because Garden Club, Neighborhood Book Club, and Chess Club Section 7 matrices use stale umbrella labels instead of exact canonical workflow IDs; the Shell doc declares a B25 shell workflow with no B25 screen/productDocCoverage evidence and no B25 semantic model; and persona-role-inventory still declares Masjid-owned support workflows while its own B25 coverage contains only the capability-matrix workflow. The remaining 7 lifecycle scorecard failures are implementation/evidence context, not the reason for this product-doc verdict.",
+  "reviewedProductDocPaths": [
+    "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+    "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+    "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+    "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+    "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+    "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+    "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+    "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md"
+  ],
+  "reviewedEvidencePaths": [
+    "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+    "docs/Build Plan V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md",
+    "docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md"
+  ],
+  "reviewedScreenRowIds": [
+    "b25-v4-row-001-garden-event-rsvp-0",
+    "b25-v4-row-007-garden-export-custom-schemas-0",
+    "b25-v4-row-010-book-nomination-0",
+    "b25-v4-row-028-book-export-metadata-0",
+    "b25-v4-row-097-chess-local-install-open-0",
+    "b25-v4-row-103-chess-match-result-0",
+    "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+    "b25-v4-row-186-wf-demo-app-persona-picker-0",
+    "b25-v4-row-190-wf-multi-persona-workflow-evidence-0"
+  ],
+  "reviewedScreenshotHashes": [
+    "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+    "9edcafd8dd3dd74ed63e2fbe40d9a10d7b5d3660ee710e2e283c929fcc0859ff",
+    "c65ba95f0649a72ce49c2f89c0990b098272bedb0ad187d2fb13f2f92b32a32c",
+    "2977562b9210388ed0d7f8b86d19d6d9e3499d7de2fc86ab4aa0c1da7fe34004",
+    "09ea49b9e56fd3ceb256d8f0edf0292d6befd4d6742f8dbf2ccdfc28bda9cd1b",
+    "957e96856642a1d3013b72adfffe3c76a0ee414ab292df2fc2d81e5689bed1c3",
+    "cd89f9f2a8f1f415e37af319be0758a70108b3439cd58a4f248baf4a79cfe0b6",
+    "df0d5f66fef7e685a4b30812bdf85f2821aa71fbe544007f74b8b21e193a43df",
+    "f21b1aa9cbb2985e21f76fe8589f0dc3684fedd2abd776d254e08f5eb0ce504c"
+  ],
+  "counts": {
+    "productDocsReviewed": 12,
+    "evidenceOwnedProductDocs": 11,
+    "section6RowsReviewed": 74,
+    "uniqueSection6WorkflowIds": 66,
+    "b25ScreenRowsReviewed": 195,
+    "b25UniqueImplementedWorkflowIds": 65,
+    "b25WorkflowPersonaRows": 68,
+    "b25LifecycleScorecards": 68,
+    "b25LifecycleFailures": 7,
+    "unresolvedReconciliationFindings": 6,
+    "unresolvedMajorReconciliationFindings": 6,
+    "unresolvedBlockerReconciliationFindings": 0,
+    "productDocsPassingReconciliation": 6,
+    "productDocsFailingReconciliation": 6,
+    "productDocWorkflowsMissingFreshB25Evidence": 1,
+    "evidenceWorkflowsMissingAnyProductDocRow": 0,
+    "contextLifecycleFailuresNotCountedAsProductDocDrift": 7
+  },
+  "contextDependencies": [
+    {
+      "id": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "status": "open",
+      "severity": "major",
+      "source": "docs/Build Plan V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md",
+      "summary": "The current lifecycle judge reports 7 failing workflow/persona scorecards: gear-loan-request, platform-blocked-target, ad-off-member-checkout, ad-off-community-checkout, ad-off-entitlement-status, ad-off-receipt-evidence, and ad-off-ad-suppression. These remain B25 implementation/evidence dependencies, but this reconciliation verdict fails on product-doc drift separately."
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "LLM-B25-WR-001",
+      "id": "LLM-B25-WR-001",
+      "severity": "major",
+      "status": "open",
+      "gapType": "persona-state-gap",
+      "communityName": "Garden Club",
+      "workflowId": "garden-event-rsvp; plant-exchange-submission; garden-export-custom-schemas",
+      "persona": "member; owner",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+      "affectedProductDocSections": [
+        "## 7. Persona And State Matrix"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-007-garden-export-custom-schemas-0"
+      ],
+      "affectedScreenshotPaths": [
+        "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+        "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+        "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+        "9edcafd8dd3dd74ed63e2fbe40d9a10d7b5d3660ee710e2e283c929fcc0859ff"
+      ],
+      "visibleTextExcerpt": "Spring Planting Workshop; Basil seedlings offer; Export garden package with redaction preview and checksum.",
+      "evidence": "Section 6, B25 semantic rows, registry rows, and screenshots use canonical workflow IDs. Section 7 still lists only 'event RSVP' and 'plant exchange' and omits 'garden-export-custom-schemas'.",
+      "rationale": "The reconciliation gate requires Section 7 actor/receiver/read-only/disabled/unauthorized states for every implemented workflow/persona with exact workflow IDs.",
+      "remediation": "Replace the stale Section 7 rows with canonical rows for garden-event-rsvp, plant-exchange-submission, and garden-export-custom-schemas, including actor, receiver, read-only, disabled/hidden, unauthorized behavior, and B25 evidence IDs.",
+      "requiredFix": "Update Garden Club Section 7 to enumerate all three canonical workflow IDs.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-002",
+      "id": "LLM-B25-WR-002",
+      "severity": "major",
+      "status": "open",
+      "gapType": "persona-state-gap",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-nomination; book-vote; book-meeting-rsvp; book-discussion-message; book-selection-publish; book-search-ai-digest; book-export-metadata",
+      "persona": "member; owner",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+      "affectedProductDocSections": [
+        "## 7. Persona And State Matrix"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-010-book-nomination-0",
+        "b25-v4-row-022-book-selection-publish-0",
+        "b25-v4-row-028-book-export-metadata-0"
+      ],
+      "affectedScreenshotPaths": [
+        "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "c65ba95f0649a72ce49c2f89c0990b098272bedb0ad187d2fb13f2f92b32a32c",
+        "32ba8bcf61b8f981fa6062d5dc9ba123b753a4f92d1227e6e795db9ee409ef76",
+        "2977562b9210388ed0d7f8b86d19d6d9e3499d7de2fc86ab4aa0c1da7fe34004"
+      ],
+      "visibleTextExcerpt": "Book nomination, vote, meeting RSVP, discussion, selection publish, search digest, and export metadata rows are all present in B25 screenshots.",
+      "evidence": "Section 6, B25 semantic rows, registry rows, and screenshots use seven canonical book workflow IDs. Section 7 still lists only 'selection publish' and 'discussion'.",
+      "rationale": "The doc does not specify persona/state behavior for five Section 6 workflows and does not use exact canonical IDs for the two rows it does include.",
+      "remediation": "Replace Section 7 with one canonical row per Section 6 workflow, covering member and owner actor/receiver/read-only/disabled/unauthorized behavior.",
+      "requiredFix": "Update Neighborhood Book Club Section 7 to enumerate all seven canonical workflow IDs.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-003",
+      "id": "LLM-B25-WR-003",
+      "severity": "major",
+      "status": "open",
+      "gapType": "persona-state-gap",
+      "communityName": "Chess Club",
+      "workflowId": "chess-local-install-open; chess-route-home; chess-match-result",
+      "persona": "member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+      "affectedProductDocSections": [
+        "## 7. Persona And State Matrix"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-097-chess-local-install-open-0",
+        "b25-v4-row-100-chess-route-home-0",
+        "b25-v4-row-103-chess-match-result-0"
+      ],
+      "affectedScreenshotPaths": [
+        "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_start.png",
+        "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_start.png",
+        "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "09ea49b9e56fd3ceb256d8f0edf0292d6befd4d6742f8dbf2ccdfc28bda9cd1b",
+        "e45d956a9a2c2c8ea3a0aee7aa4170e89c44989e5b805a93b7acef1d2420cea9",
+        "957e96856642a1d3013b72adfffe3c76a0ee414ab292df2fc2d81e5689bed1c3"
+      ],
+      "visibleTextExcerpt": "Chess Club screenshots show installed card/open route, chess home, and match result states.",
+      "evidence": "Section 6, B25 semantic rows, registry rows, and screenshots use the three canonical chess workflow IDs. Section 7 still has one umbrella row named 'package open'.",
+      "rationale": "A single umbrella state row cannot define actor, receiver, read-only, disabled/hidden, and unauthorized states for all three implemented B25 workflows.",
+      "remediation": "Replace 'package open' with canonical Section 7 rows for chess-local-install-open, chess-route-home, and chess-match-result.",
+      "requiredFix": "Update Chess Club Section 7 to enumerate all three canonical workflow IDs.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-004",
+      "id": "LLM-B25-WR-004",
+      "severity": "major",
+      "status": "open",
+      "gapType": "implementation-missing-workflow",
+      "communityName": "Loom Communities Shell",
+      "workflowId": "local-build-download-sideload-install",
+      "persona": "Owner/tester",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [],
+      "visibleTextExcerpt": "",
+      "evidence": "The Shell doc declares local-build-download-sideload-install with Test/evidence IDs including 'B25 shell rows', but independent-production-ux-review.json has no productDocCoverage entry for loom-communities-shell-product-experience.md and no B25 screen rows for local-build-download-sideload-install. Section 7 uses stale label 'local install', and there is no B25 Semantic Interaction Models section.",
+      "rationale": "A product-doc workflow that claims B25 evidence must either have fresh B25 screenshot-backed rows under the same doc ownership or be explicitly scoped out of this reconciliation.",
+      "remediation": "Choose the intended scope. If Shell is in scope, add B25 productDocCoverage, screen rows, workflow/persona coverage, screenshots, exact Section 7 workflow ID, and a B25 semantic interaction model. If Shell is out of scope, remove the B25 evidence claim or mark the workflow as out-of-scope for community screenshot reconciliation.",
+      "requiredFix": "Resolve Shell scope and evidence ownership for local-build-download-sideload-install.",
+      "ticketMode": "mixed"
+    },
+    {
+      "findingId": "LLM-B25-WR-005",
+      "id": "LLM-B25-WR-005",
+      "severity": "major",
+      "status": "open",
+      "gapType": "product-doc-missing-workflow",
+      "communityName": "persona-role-inventory",
+      "workflowId": "wf_community-persona-aware-ux; wf_multi-persona-workflow-evidence; wf_demo-app-persona-picker",
+      "persona": "admin; member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-186-wf-demo-app-persona-picker-0",
+        "b25-v4-row-188-wf-community-persona-aware-ux-0",
+        "b25-v4-row-190-wf-multi-persona-workflow-evidence-0"
+      ],
+      "affectedScreenshotPaths": [
+        "docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_dialog.png",
+        "docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
+        "docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "df0d5f66fef7e685a4b30812bdf85f2821aa71fbe544007f74b8b21e193a43df",
+        "180cb8c1f608a1cec1b02779e47e51013739260dba96fd6e1158d307f7e02255",
+        "f21b1aa9cbb2985e21f76fe8589f0dc3684fedd2abd776d254e08f5eb0ce504c"
+      ],
+      "visibleTextExcerpt": "Masjid persona picker, member care request actor state, admin announcement actor state, and member receiver handoff are captured as Masjid Nur B25 rows.",
+      "evidence": "Masjid Section 6/7/semantic/registry now documents these support workflows and B25 productDocCoverage assigns their screenshots to Masjid. Persona-role-inventory still declares the same support workflows in Sections 6/7 and registry, while its B25 productDocCoverage contains only wf_persona-role-inventory-capability-matrix rows 184-185.",
+      "rationale": "Duplicate product-doc ownership makes it unclear which doc is the source of truth and leaves persona-role-inventory with declared workflows that are not represented by its own B25 screen coverage.",
+      "remediation": "Either remove the three Masjid-owned support workflows from persona-role-inventory Sections 6/7/registry, or reassign/duplicate B25 productDocCoverage and add persona-role semantic rows and screenshots under persona-role-inventory ownership. Keep one canonical owner for each B25 workflow/persona row.",
+      "requiredFix": "Resolve duplicate ownership between Masjid and persona-role-inventory for the B18-B20 support workflows.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-006",
+      "id": "LLM-B25-WR-006",
+      "severity": "major",
+      "status": "open",
+      "gapType": "product-doc-interaction-gap",
+      "communityName": "persona-role-inventory",
+      "workflowId": "wf_persona-role-inventory-capability-matrix",
+      "persona": "admin; member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+      "affectedProductDocSections": [
+        "### B25 Semantic Interaction Models"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+        "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1"
+      ],
+      "affectedScreenshotPaths": [
+        "docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_active_admin.png",
+        "docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_member_view.png"
+      ],
+      "affectedScreenshotHashes": [
+        "cd89f9f2a8f1f415e37af319be0758a70108b3439cd58a4f248baf4a79cfe0b6"
+      ],
+      "visibleTextExcerpt": "Persona-role-inventory screenshots show role/capability matrix states for admin and member.",
+      "evidence": "The persona-role-inventory B25 Semantic Interaction Models table has two rows for wf_persona-role-inventory-capability-matrix, but the Expected decision, Required primary actions, and Required alternate/change/reject actions cells are empty.",
+      "rationale": "The reconciliation gate requires a semantic interaction model for every implemented workflow/persona, not only a result-state sentence.",
+      "remediation": "Fill the semantic model rows for admin and member with the concrete role-review decision, primary inspect/filter/verify actions, alternate filter/change persona/export/report actions, and durable result/receiver state.",
+      "requiredFix": "Complete persona-role-inventory semantic interaction rows for wf_persona-role-inventory-capability-matrix.",
+      "ticketMode": "product-doc-update"
+    }
+  ],
+  "communityResults": [
+    {
+      "communityName": "Ad-Free Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+      "status": "pass-with-context",
+      "declaredWorkflowIds": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "implementedWorkflowIds": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "section6RowsReviewed": 6,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "contextOnly": "Five ad-off workflows still fail the separate lifecycle judge, but Sections 6/7/semantic/registry reconcile structurally."
+    },
+    {
+      "communityName": "Camera Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+      "status": "pass-with-context",
+      "declaredWorkflowIds": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "implementedWorkflowIds": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "section6RowsReviewed": 3,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "contextOnly": "gear-loan-request still fails the separate lifecycle judge for decision information."
+    },
+    {
+      "communityName": "Cedar Commons HOA",
+      "productDocPath": "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "hoa-dues-payment",
+        "hoa-member-document",
+        "hoa-facility-reservation",
+        "hoa-architectural-request",
+        "hoa-committee-decision",
+        "hoa-owner-notification",
+        "hoa-export-evidence"
+      ],
+      "implementedWorkflowIds": [
+        "hoa-dues-payment",
+        "hoa-member-document",
+        "hoa-facility-reservation",
+        "hoa-architectural-request",
+        "hoa-committee-decision",
+        "hoa-owner-notification",
+        "hoa-export-evidence"
+      ],
+      "section6RowsReviewed": 7,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Chess Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "chess-local-install-open",
+        "chess-route-home",
+        "chess-match-result"
+      ],
+      "implementedWorkflowIds": [
+        "chess-local-install-open",
+        "chess-route-home",
+        "chess-match-result"
+      ],
+      "section6RowsReviewed": 3,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [
+        "Section 7 uses stale umbrella row 'package open' instead of the three canonical workflow IDs."
+      ],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Data Portability Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "implementedWorkflowIds": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "section6RowsReviewed": 9,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Garden Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "garden-event-rsvp",
+        "plant-exchange-submission",
+        "garden-export-custom-schemas"
+      ],
+      "implementedWorkflowIds": [
+        "garden-event-rsvp",
+        "plant-exchange-submission",
+        "garden-export-custom-schemas"
+      ],
+      "section6RowsReviewed": 3,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [
+        "Section 7 uses stale rows 'event RSVP' and 'plant exchange' and omits garden-export-custom-schemas."
+      ],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Loom Communities Shell",
+      "productDocPath": "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "local-build-download-sideload-install"
+      ],
+      "implementedWorkflowIds": [],
+      "section6RowsReviewed": 1,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [
+        "local-build-download-sideload-install"
+      ],
+      "visibleProofGaps": [
+        "No B25 screen row or productDocCoverage entry proves the declared B25 shell row."
+      ],
+      "personaStateGaps": [
+        "Section 7 uses stale row 'local install' instead of local-build-download-sideload-install."
+      ],
+      "interactionModelGaps": [
+        "No B25 Semantic Interaction Models section exists."
+      ],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Masjid Nur",
+      "productDocPath": "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "mosque-announcement",
+        "mosque-event-rsvp",
+        "mosque-volunteer-signup",
+        "mosque-donor-visibility",
+        "mosque-donation-payment",
+        "mosque-care-request",
+        "mosque-neutral-notification",
+        "mosque-search-ai-citation",
+        "wf_demo-app-persona-picker",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence"
+      ],
+      "implementedWorkflowIds": [
+        "mosque-announcement",
+        "mosque-event-rsvp",
+        "mosque-volunteer-signup",
+        "mosque-donor-visibility",
+        "mosque-donation-payment",
+        "mosque-care-request",
+        "mosque-neutral-notification",
+        "mosque-search-ai-citation",
+        "wf_demo-app-persona-picker",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence"
+      ],
+      "section6RowsReviewed": 13,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Neighborhood Book Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "book-nomination",
+        "book-vote",
+        "book-meeting-rsvp",
+        "book-discussion-message",
+        "book-selection-publish",
+        "book-search-ai-digest",
+        "book-export-metadata"
+      ],
+      "implementedWorkflowIds": [
+        "book-nomination",
+        "book-vote",
+        "book-meeting-rsvp",
+        "book-discussion-message",
+        "book-selection-publish",
+        "book-search-ai-digest",
+        "book-export-metadata"
+      ],
+      "section6RowsReviewed": 7,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [
+        "Section 7 uses stale rows 'selection publish' and 'discussion' and omits all seven exact canonical workflow IDs."
+      ],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "persona-role-inventory",
+      "productDocPath": "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "wf_persona-role-inventory-capability-matrix",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence",
+        "wf_demo-app-persona-picker"
+      ],
+      "implementedWorkflowIds": [
+        "wf_persona-role-inventory-capability-matrix"
+      ],
+      "section6RowsReviewed": 7,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [
+        "wf_community-persona-aware-ux under persona-role-inventory ownership",
+        "wf_multi-persona-workflow-evidence under persona-role-inventory ownership",
+        "wf_demo-app-persona-picker under persona-role-inventory ownership"
+      ],
+      "visibleProofGaps": [],
+      "personaStateGaps": [
+        "Sections 6/7 duplicate support workflows that B25 coverage currently assigns to Masjid."
+      ],
+      "interactionModelGaps": [
+        "Semantic rows for wf_persona-role-inventory-capability-matrix have empty decision/action cells; support workflows declared in Section 6 have no persona-role semantic rows."
+      ],
+      "surfaceMappingGaps": []
+    },
+    {
+      "communityName": "Member Social Space",
+      "productDocPath": "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+      "status": "pass-with-context",
+      "declaredWorkflowIds": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "implementedWorkflowIds": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "section6RowsReviewed": 8,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "contextOnly": "platform-blocked-target still fails the separate lifecycle judge for concrete object/context."
+    },
+    {
+      "communityName": "Riverside Youth Soccer",
+      "productDocPath": "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "soccer-guardian-join-approval",
+        "soccer-team-roster",
+        "soccer-minor-redaction",
+        "soccer-registration-payment",
+        "soccer-practice-schedule",
+        "soccer-reminder-notification",
+        "soccer-export-metadata"
+      ],
+      "implementedWorkflowIds": [
+        "soccer-guardian-join-approval",
+        "soccer-team-roster",
+        "soccer-minor-redaction",
+        "soccer-registration-payment",
+        "soccer-practice-schedule",
+        "soccer-reminder-notification",
+        "soccer-export-metadata"
+      ],
+      "section6RowsReviewed": 7,
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": []
+    }
+  ],
+  "perDocCoverageRows": [
+    {
+      "productDoc": "ad-off-product-experience.md",
+      "result": "pass-with-context",
+      "mainGap": "No product-doc drift; separate ad-off lifecycle failures remain."
+    },
+    {
+      "productDoc": "camera-club-product-experience.md",
+      "result": "pass-with-context",
+      "mainGap": "No product-doc drift; separate gear-loan lifecycle failure remains."
+    },
+    {
+      "productDoc": "cedar-commons-hoa-product-experience.md",
+      "result": "pass",
+      "mainGap": "None found."
+    },
+    {
+      "productDoc": "chess-club-product-experience.md",
+      "result": "fail",
+      "mainGap": "Section 7 uses stale umbrella row 'package open'."
+    },
+    {
+      "productDoc": "export-and-migration-product-experience.md",
+      "result": "pass",
+      "mainGap": "None found."
+    },
+    {
+      "productDoc": "garden-club-product-experience.md",
+      "result": "fail",
+      "mainGap": "Section 7 does not enumerate exact canonical workflow IDs."
+    },
+    {
+      "productDoc": "loom-communities-shell-product-experience.md",
+      "result": "fail",
+      "mainGap": "Declares a B25 shell workflow without B25 evidence ownership or semantic model."
+    },
+    {
+      "productDoc": "masjid-nur-product-experience.md",
+      "result": "pass",
+      "mainGap": "None found."
+    },
+    {
+      "productDoc": "neighborhood-book-club-product-experience.md",
+      "result": "fail",
+      "mainGap": "Section 7 still uses stale non-canonical rows."
+    },
+    {
+      "productDoc": "persona-role-inventory-product-experience.md",
+      "result": "fail",
+      "mainGap": "Duplicate support-workflow ownership and incomplete semantic interaction rows."
+    },
+    {
+      "productDoc": "platform-social-product-experience.md",
+      "result": "pass-with-context",
+      "mainGap": "No product-doc drift; separate blocked-target lifecycle failure remains."
+    },
+    {
+      "productDoc": "riverside-youth-soccer-product-experience.md",
+      "result": "pass",
+      "mainGap": "None found."
+    }
+  ]
+}

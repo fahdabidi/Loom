@@ -2006,220 +2006,848 @@ _RichWorkflowSpec _chessRichSpecFor(String id) {
 }
 
 _RichWorkflowSpec _cameraRichSpecFor(String id) {
+  if (id.contains('photo-walk')) {
+    return _richSurface(
+      accent: const Color(0xff2f6f9f),
+      icon: Icons.route_outlined,
+      title: 'Downtown photo walk RSVP',
+      subtitle: 'Sat 4:30 PM - Dock 4 to the riverfront pier.',
+      body:
+          'Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder.',
+      facts: const [
+        _RichFact(icon: Icons.calendar_today_outlined, label: 'Sat, 4:30 PM'),
+        _RichFact(icon: Icons.place_outlined, label: 'Dock 4 meetup'),
+        _RichFact(icon: Icons.group_outlined, label: '12 going / 4 open'),
+        _RichFact(icon: Icons.camera_alt_outlined, label: '35mm or phone'),
+      ],
+      actionSurfaceTitle: 'Photo walk RSVP',
+      actionHeroSubtitle: 'Riverfront golden-hour route',
+      actionHeroBody:
+          'Review the walk route, host note, rain plan, attendee count, and reminder before saving your RSVP.',
+      actionPanelTitle: 'Choose attendance',
+      actionPanelBody:
+          'Going reserves a spot; Maybe keeps the route in your inbox; Not going releases capacity for another member.',
+      alternateActionLabel: 'Change response',
+      detailTitle: 'Walk details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.route_outlined,
+          title: 'Route',
+          body: 'Dock 4, mural loop, riverfront pier, 75-minute walk.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Host',
+          body: 'Avery Kim hosts and shares the rain-plan update.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.group_outlined,
+          title: 'Capacity',
+          body: '12 going, 4 spots open, waitlist opens at 16.',
+        ),
+      ],
+      stateTitle: 'Response state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.check_circle_outline,
+          title: 'Going / maybe / not going',
+          body: 'Response can be changed until Saturday noon.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.notifications_outlined,
+          title: 'Reminder',
+          body: 'Member inbox keeps route, gear note, and weather update.',
+        ),
+      ],
+      completeTitle: 'Photo walk RSVP saved',
+      completeBody:
+          'Your photo walk status, route, host, capacity, reminder, and change-response path remain visible.',
+      receivedTitle: 'Photo walk update ready',
+      receivedBody:
+          'The member sees route, time, capacity, RSVP state, and reminder details.',
+      completeLabel: 'RSVP saved',
+    );
+  }
+  if (id.contains('critique')) {
+    return _richSurface(
+      accent: const Color(0xff6b5b95),
+      icon: Icons.rate_review_outlined,
+      title: 'Street portrait critique',
+      subtitle: 'Evening Reflection - consent note and reviewer queue.',
+      body:
+          'Submit a photo for critique with title, prompt, visibility, reviewer, edit path, and comment result.',
+      facts: const [
+        _RichFact(icon: Icons.image_outlined, label: 'Evening Reflection'),
+        _RichFact(icon: Icons.privacy_tip_outlined, label: 'Member visible'),
+        _RichFact(icon: Icons.rate_review_outlined, label: 'Avery reviews'),
+        _RichFact(icon: Icons.comment_outlined, label: 'Comments open'),
+      ],
+      actionSurfaceTitle: 'Critique submission',
+      actionHeroSubtitle: 'Street portrait: Evening Reflection',
+      actionHeroBody:
+          'Review the image title, prompt, consent note, member visibility, and reviewer assignment before submitting.',
+      actionPanelTitle: 'Ready for critique review',
+      actionPanelBody:
+          'Submission enters Avery\'s queue; you can edit caption, replace image, or withdraw before review.',
+      alternateActionLabel: 'Edit critique',
+      detailTitle: 'Submission details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.image_outlined,
+          title: 'Image and title',
+          body: 'Evening Reflection, street portrait, uploaded by Mina.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.question_answer_outlined,
+          title: 'Prompt',
+          body: 'Ask for feedback on composition, light, and crop.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.privacy_tip_outlined,
+          title: 'Visibility',
+          body: 'Visible to camera club members; consent note is attached.',
+        ),
+      ],
+      stateTitle: 'Review state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.rate_review_outlined,
+          title: 'Reviewer queue',
+          body: 'Avery receives the image, prompt, and visibility state.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.swap_horiz_outlined,
+          title: 'Change path',
+          body: 'Edit caption, replace image, withdraw, or resubmit.',
+        ),
+      ],
+      completeTitle: 'Critique submitted',
+      completeBody:
+          'The critique shows image, prompt, consent, reviewer queue, edit path, and comment state.',
+      receivedTitle: 'Critique result ready',
+      receivedBody:
+          'The member can read reviewer comments and follow up on the submitted image.',
+      completeLabel: 'Submitted',
+    );
+  }
   return _richSurface(
-    accent: const Color(0xff465c7b),
-    icon: id.contains('gear')
-        ? Icons.camera_alt_outlined
-        : id.contains('critique')
-        ? Icons.rate_review_outlined
-        : Icons.photo_camera_outlined,
-    title: id.contains('gear')
-        ? '35mm prime lens loan'
-        : id.contains('critique')
-        ? 'Street portrait critique'
-        : 'Downtown photo walk',
-    subtitle: id.contains('gear')
-        ? 'Friday pickup, two borrowers waiting, return Sunday.'
-        : id.contains('critique')
-        ? 'Image, prompt, consent note, and reviewer queue.'
-        : 'Sat 4:30 PM, riverfront route, golden-hour meetup.',
-    body: id.contains('gear')
-        ? 'Request or approve shared gear with owner, pickup, borrower count, privacy, and return state.'
-        : id.contains('critique')
-        ? 'Submit an image for critique with prompt, visibility, edit path, comments, and reviewer state.'
-        : 'RSVP to a photo walk with route, date, capacity, equipment notes, and reminder state.',
+    accent: const Color(0xff5a6f45),
+    icon: Icons.camera_alt_outlined,
+    title: '35mm prime lens loan',
+    subtitle: 'Sam lends the lens Friday; return due Sunday evening.',
+    body:
+        'Request shared gear with owner, pickup time, borrower count, contact privacy, waitlist, and return state.',
     facts: const [
-      _RichFact(icon: Icons.photo_camera_outlined, label: 'Camera club'),
-      _RichFact(icon: Icons.schedule_outlined, label: 'This weekend'),
-      _RichFact(icon: Icons.task_alt_outlined, label: 'Result visible'),
-      _RichFact(icon: Icons.group_outlined, label: 'Member roster'),
-      _RichFact(icon: Icons.notifications_outlined, label: 'Status notice'),
+      _RichFact(icon: Icons.camera_outdoor_outlined, label: '35mm lens'),
+      _RichFact(icon: Icons.person_outline, label: 'Owner: Sam'),
+      _RichFact(icon: Icons.people_outline, label: '2 waiting'),
+      _RichFact(icon: Icons.keyboard_return_outlined, label: 'Return Sunday'),
     ],
-    actionPanelTitle: 'Ready for member action',
+    actionSurfaceTitle: 'Gear loan request',
+    actionHeroSubtitle: '35mm prime lens from Sam',
+    actionHeroBody:
+        'Confirm pickup, borrower queue, protected contact reveal, due date, and return path before requesting the loan.',
+    actionPanelTitle: 'Ready to request gear',
     actionPanelBody:
-        'Review date, image, gear, owner, visibility, borrower or attendee state, and change path before saving.',
-    alternateActionLabel: id.contains('gear') ? 'Return item' : 'Edit response',
-    detailTitle: 'Camera details',
+        'The lender sees borrower name, pickup window, contact preference, and cancel/return path.',
+    alternateActionLabel: 'Cancel request',
+    detailTitle: 'Loan details',
     detailRows: const [
       _ActionSurfaceDetail(
-        icon: Icons.place_outlined,
-        title: 'Location or item',
-        body:
-            'Downtown route, street portrait submission result, or 35mm prime lens loan status.',
+        icon: Icons.camera_outdoor_outlined,
+        title: 'Item',
+        body: '35mm prime lens, clean condition, filter included.',
       ),
       _ActionSurfaceDetail(
-        icon: Icons.group_outlined,
-        title: 'People',
-        body:
-            'Host, reviewer, lender, borrower, attendee state, and notification status are visible.',
+        icon: Icons.schedule_outlined,
+        title: 'Pickup and return',
+        body: 'Pickup Friday 5 PM; return Sunday by 6 PM.',
       ),
       _ActionSurfaceDetail(
         icon: Icons.privacy_tip_outlined,
-        title: 'Privacy',
-        body:
-            'Contact and image visibility stay scoped to the selected audience.',
+        title: 'Contact',
+        body: 'Phone is revealed only after owner approves the loan.',
       ),
     ],
-    stateTitle: 'After save',
+    stateTitle: 'Borrower state',
     stateRows: const [
       _ActionSurfaceDetail(
-        icon: Icons.task_alt_outlined,
-        title: 'Result',
-        body:
-            'RSVP, critique result, loan status, and member notification remain visible with next steps.',
+        icon: Icons.people_outline,
+        title: 'Roster',
+        body: 'Borrower list, waitlist position, and owner decision are visible.',
       ),
       _ActionSurfaceDetail(
-        icon: Icons.swap_horiz_outlined,
-        title: 'Change path',
-        body:
-            'Change RSVP, edit critique, return gear, cancel loan, or notify the borrower as needed.',
+        icon: Icons.keyboard_return_outlined,
+        title: 'Return path',
+        body: 'Mark returned, change pickup, or cancel request.',
       ),
     ],
-    completeTitle: 'Camera action saved',
+    completeTitle: 'Gear loan requested',
     completeBody:
-        'The Camera Club surface shows route/image/gear details, people, privacy, and next steps.',
-    completeLabel: 'Saved',
+        'The loan request shows item, owner, borrower queue, pickup, protected contact, and return path.',
+    receivedTitle: 'Gear request ready',
+    receivedBody:
+        'The lender sees borrower, pickup, privacy, approval, and return status.',
+    completeLabel: 'Requested',
   );
 }
 
 _RichWorkflowSpec _platformRichSpecFor(String id) {
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    final sensitive = id.contains('sensitive');
+    final banner = id.contains('banner');
+    return _richSurface(
+      accent: sensitive
+          ? const Color(0xff6b4f78)
+          : banner
+          ? const Color(0xff406d5a)
+          : const Color(0xff7a5a2f),
+      icon: sensitive
+          ? Icons.shield_outlined
+          : banner
+          ? Icons.web_asset_off_outlined
+          : Icons.campaign_outlined,
+      title: sensitive
+          ? 'Sensitive page ad guard'
+          : banner
+          ? 'Top banner no-fill'
+          : 'Sponsored stream message',
+      subtitle: sensitive
+          ? 'Protected context blocks ad delivery and click tracking.'
+          : banner
+          ? 'Reserved banner space stays stable without sponsor fill.'
+          : 'Sponsor disclosure, placement, impression, and member context.',
+      body: sensitive
+          ? 'Show the member why ads are suppressed, preserve layout, and avoid leaking protected context.'
+          : banner
+          ? 'Show a clear no-sponsored-message state with reserved space, disclosure, and no overlap.'
+          : 'Show sponsor, disclosure, message copy, impression state, and dismiss/report alternatives.',
+      facts: [
+        if (!sensitive)
+          const _RichFact(icon: Icons.campaign_outlined, label: 'Disclosure'),
+        if (banner)
+          const _RichFact(icon: Icons.web_asset_outlined, label: 'Slot reserved'),
+        if (sensitive)
+          const _RichFact(icon: Icons.shield_outlined, label: 'Protected page'),
+        const _RichFact(icon: Icons.visibility_outlined, label: 'No overlap'),
+        const _RichFact(icon: Icons.analytics_outlined, label: 'Audit state'),
+        const _RichFact(icon: Icons.block_outlined, label: 'Dismiss/report'),
+      ],
+      actionSurfaceTitle: sensitive
+          ? 'Sensitive ad decision'
+          : banner
+          ? 'Top banner status'
+          : 'Sponsored message review',
+      actionHeroSubtitle: sensitive
+          ? 'Protected care context'
+          : banner
+          ? 'No sponsor available right now'
+          : 'Local sponsor: community newsletter',
+      actionHeroBody: sensitive
+          ? 'The page records a no-fill reason without revealing protected member context or enabling click tracking.'
+          : banner
+          ? 'Reserved space remains stable and tells members why no sponsored message is displayed.'
+          : 'Review the sponsor label, disclosure, placement, content, impression, and report path.',
+      actionPanelTitle: sensitive
+          ? 'Protected no-fill ready'
+          : banner
+          ? 'No-fill state ready'
+          : 'Sponsored message ready',
+      actionPanelBody: sensitive
+          ? 'Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason.'
+          : banner
+          ? 'The banner stays reserved, avoids content jump, and records the no-fill reason.'
+          : 'The member can dismiss, report, or continue; impression is recorded only for filled ads.',
+      alternateActionLabel: sensitive
+          ? 'Review policy'
+          : banner
+          ? 'Refresh slot'
+          : 'Report sponsor',
+      detailTitle: sensitive
+          ? 'Privacy guard details'
+          : banner
+          ? 'Banner slot details'
+          : 'Sponsored message details',
+      detailRows: [
+        _ActionSurfaceDetail(
+          icon: sensitive
+              ? Icons.shield_outlined
+              : banner
+              ? Icons.web_asset_outlined
+              : Icons.storefront_outlined,
+          title: sensitive
+              ? 'Sensitive context'
+              : banner
+              ? 'Reserved placement'
+              : 'Sponsor',
+          body: sensitive
+              ? 'Care/protected content suppresses ad targeting and click tracking.'
+              : banner
+              ? 'Top banner slot remains visible with no sponsored message right now.'
+              : 'Disclosure: Sponsored by Neighborhood Newsletter.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.info_outline,
+          title: 'Reason',
+          body: sensitive
+              ? 'No fill: sensitive context.'
+              : banner
+              ? 'No fill: no eligible sponsor for this community moment.'
+              : 'Filled ad: eligible community stream placement.',
+        ),
+        const _ActionSurfaceDetail(
+          icon: Icons.report_outlined,
+          title: 'Member control',
+          body: 'Dismiss, report, or continue without losing place in the stream.',
+        ),
+      ],
+      stateTitle: 'Ad delivery state',
+      stateRows: [
+        _ActionSurfaceDetail(
+          icon: Icons.analytics_outlined,
+          title: sensitive || banner ? 'No impression' : 'Impression recorded',
+          body: sensitive || banner
+              ? 'No impression/click is recorded because the slot is not filled.'
+              : 'Impression is recorded with sponsor disclosure and audit trail.',
+        ),
+        const _ActionSurfaceDetail(
+          icon: Icons.visibility_outlined,
+          title: 'Layout',
+          body: 'Reserved space prevents overlap, crowding, and content jumps.',
+        ),
+      ],
+      completeTitle: sensitive
+          ? 'Sensitive no-fill recorded'
+          : banner
+          ? 'Banner no-fill recorded'
+          : 'Sponsored message reviewed',
+      completeBody: sensitive
+          ? 'Protected context, no-fill reason, layout preservation, and no-click state remain visible.'
+          : banner
+          ? 'No sponsored message is shown, reserved space remains stable, and no-fill reason is recorded.'
+          : 'Sponsor, disclosure, impression, report path, and stream placement remain visible.',
+      receivedTitle: 'Ad state ready',
+      receivedBody:
+          'The member can see disclosure/no-fill reason, layout state, and any available control.',
+      completeLabel: sensitive || banner ? 'No fill' : 'Reviewed',
+    );
+  }
+  if (id.contains('message')) {
+    return _richSurface(
+      accent: const Color(0xff315c8a),
+      icon: Icons.chat_bubble_outline,
+      title: 'Community message thread',
+      subtitle: 'Maya Chen to Jordan Lee - unread member thread.',
+      body:
+          'Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive controls.',
+      facts: const [
+        _RichFact(icon: Icons.person_outline, label: 'Maya -> Jordan'),
+        _RichFact(icon: Icons.mark_email_unread_outlined, label: 'Unread'),
+        _RichFact(icon: Icons.reply_outlined, label: 'Reply available'),
+        _RichFact(icon: Icons.archive_outlined, label: 'Archive path'),
+      ],
+      actionSurfaceTitle: 'Message thread',
+      actionHeroSubtitle: 'Community message from Maya',
+      actionHeroBody:
+          'Open the thread, review sender and body, reply, mute, archive, or block if needed.',
+      actionPanelTitle: 'Ready to reply',
+      actionPanelBody:
+          'Reply keeps the thread member-scoped and preserves read/unread state.',
+      alternateActionLabel: 'Archive thread',
+      detailTitle: 'Thread details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Sender and recipient',
+          body: 'Maya Chen -> Jordan Lee, members of the same community.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.message_outlined,
+          title: 'Message body',
+          body: 'Can you bring the sign-in sheets before the meetup?',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.schedule_outlined,
+          title: 'Timestamp',
+          body: 'Today 9:12 AM, unread until opened.',
+        ),
+      ],
+      stateTitle: 'Conversation state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.reply_outlined,
+          title: 'Actions',
+          body: 'Reply, mute, archive, or block remain available.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.mark_email_read_outlined,
+          title: 'Receiver state',
+          body: 'Thread updates to read with reply history after action.',
+        ),
+      ],
+      completeTitle: 'Message thread updated',
+      completeBody:
+          'The thread shows sender, body, timestamp, reply path, read state, and archive/block controls.',
+      receivedTitle: 'Message received',
+      receivedBody:
+          'The receiver sees sender, message body, timestamp, unread/read state, and reply action.',
+      completeLabel: 'Thread updated',
+    );
+  }
+  if (id.contains('blocked')) {
+    return _richSurface(
+      accent: const Color(0xff7a4e4e),
+      icon: Icons.block_outlined,
+      title: 'Blocked connection guard',
+      subtitle: 'Invite prevented with safety explanation and audit state.',
+      body:
+          'Show the attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state.',
+      facts: const [
+        _RichFact(icon: Icons.block_outlined, label: 'Blocked'),
+        _RichFact(icon: Icons.person_outline, label: 'Target hidden'),
+        _RichFact(icon: Icons.security_outlined, label: 'Safety audit'),
+        _RichFact(icon: Icons.undo_outlined, label: 'Appeal path'),
+      ],
+      actionSurfaceTitle: 'Connection safety guard',
+      actionHeroSubtitle: 'Blocked invite prevented',
+      actionHeroBody:
+          'Review the block reason, target visibility, disabled invite path, and unblock/appeal option.',
+      actionPanelTitle: 'Ready to review safety state',
+      actionPanelBody:
+          'The member cannot send the invite while the block is active; audit state remains visible.',
+      alternateActionLabel: 'Review block',
+      detailTitle: 'Safety details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_off_outlined,
+          title: 'Target',
+          body: 'Blocked member details are hidden from the sender.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.block_outlined,
+          title: 'Disabled action',
+          body: 'Send invite is blocked until safety state changes.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.history_outlined,
+          title: 'Audit',
+          body: 'Moderator action and appeal path are recorded.',
+        ),
+      ],
+      stateTitle: 'After review',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.security_outlined,
+          title: 'Receiver protection',
+          body: 'The protected member does not receive unsafe contact.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.undo_outlined,
+          title: 'Continuation',
+          body: 'Moderator can unblock or keep the guard active.',
+        ),
+      ],
+      completeTitle: 'Blocked state confirmed',
+      completeBody:
+          'The safety guard shows blocked target, disabled action, audit, and appeal/unblock path.',
+      receivedTitle: 'Prevention received',
+      receivedBody:
+          'The member sees a safe explanation without exposing protected details.',
+      completeLabel: 'Blocked',
+    );
+  }
   return _richSurface(
     accent: const Color(0xff315c8a),
-    icon: id.contains('ad')
-        ? Icons.campaign_outlined
-        : id.contains('message')
-        ? Icons.chat_bubble_outline
-        : Icons.people_outline,
-    title: id.contains('ad')
-        ? 'Sponsored message placement'
-        : id.contains('message')
-        ? 'Community message thread'
-        : id.contains('blocked')
-        ? 'Blocked connection guard'
-        : 'Member connection invite',
-    subtitle: id.contains('ad')
-        ? 'Disclosure, no-fill reason, and content spacing are visible.'
-        : id.contains('blocked')
-        ? 'Invite is prevented with a safe explanation.'
-        : 'Member relationship state, inbox, and action history.',
+    icon: Icons.people_outline,
+    title: 'Member connection invite',
+    subtitle: 'Invite, accept/decline, recipient state, and relationship history.',
     body:
-        'Review sender, recipient, relationship, invite status, block state, sponsored disclosure, and member-safe next steps.',
+        'Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state.',
     facts: const [
       _RichFact(icon: Icons.person_outline, label: 'Member scoped'),
-      _RichFact(icon: Icons.chat_bubble_outline, label: 'Thread state'),
-      _RichFact(icon: Icons.block_outlined, label: 'Block respected'),
-      _RichFact(icon: Icons.campaign_outlined, label: 'Ad disclosure'),
+      _RichFact(icon: Icons.person_add_alt_outlined, label: 'Invite pending'),
+      _RichFact(icon: Icons.check_circle_outline, label: 'Accept/decline'),
+      _RichFact(icon: Icons.inbox_outlined, label: 'Inbox state'),
     ],
-    actionPanelTitle: 'Ready to review channel state',
+    actionPanelTitle: 'Ready to send invite',
     actionPanelBody:
-        'Open thread, accept or decline invite, block or unblock, mute/archive, or verify sponsored/no-fill state.',
-    alternateActionLabel: 'Mute or decline',
-    detailTitle: 'Channel details',
+        'Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options.',
+    alternateActionLabel: 'Cancel invite',
+    detailTitle: 'Invite details',
     detailRows: const [
       _ActionSurfaceDetail(
         icon: Icons.person_outline,
-        title: 'Relationship',
-        body:
-            'Sender, recipient, connection status, and block state are visible.',
+        title: 'Sender and recipient',
+        body: 'Maya Chen invites Jordan Lee to connect inside the community.',
       ),
       _ActionSurfaceDetail(
-        icon: Icons.chat_bubble_outline,
-        title: 'Conversation',
-        body: 'Thread shows unread/read state, reply path, mute, and archive.',
+        icon: Icons.person_add_alt_outlined,
+        title: 'Invite state',
+        body: 'Pending invite can be accepted, declined, canceled, or blocked.',
       ),
-      _ActionSurfaceDetail(
-        icon: Icons.campaign_outlined,
-        title: 'Ad handling',
-        body:
-            'Sponsored messages show disclosure or no-fill reason without crowding content.',
-      ),
-    ],
-    stateTitle: 'Member state',
-    stateRows: const [
       _ActionSurfaceDetail(
         icon: Icons.inbox_outlined,
-        title: 'Inbox',
-        body: 'Member sees connection or message state in the community inbox.',
-      ),
-      _ActionSurfaceDetail(
-        icon: Icons.security_outlined,
-        title: 'Safety',
-        body:
-            'Blocked relationships and sensitive contexts prevent unsafe delivery.',
+        title: 'Receiver inbox',
+        body: 'Recipient inbox shows sender, context, and decision buttons.',
       ),
     ],
-    completeTitle: 'Channel state saved',
+    stateTitle: 'Relationship state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.check_circle_outline,
+        title: 'Accepted',
+        body: 'Accepted invites open a thread and connection history.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.close_outlined,
+        title: 'Declined or canceled',
+        body: 'Decline/cancel keeps history without opening a thread.',
+      ),
+    ],
+    completeTitle: 'Connection invite sent',
     completeBody:
-        'The platform surface shows relationship, message, ad disclosure/no-fill, and safety state.',
-    completeLabel: 'Saved',
+        'The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation.',
+    receivedTitle: 'Connection invite ready',
+    receivedBody:
+        'The receiver can accept, decline, block, or open the related thread.',
+    completeLabel: 'Invite sent',
   );
 }
 
 _RichWorkflowSpec _adOffRichSpecFor(String id) {
+  final receipt = id.contains('receipt');
+  final suppression = id.contains('suppression');
+  final settlement = id.contains('settlement');
+  final entitlement = id.contains('entitlement');
+  final community = id.contains('community');
+  if (receipt) {
+    return _richSurface(
+      accent: const Color(0xff5b5f97),
+      icon: Icons.receipt_long_outlined,
+      title: 'Ad-off receipt history',
+      subtitle: 'Receipt ADO-1042 - 4.99 USD monthly member plan.',
+      body:
+          'Open receipt evidence with payer, amount, date, entitlement scope, payment state, refund path, and exportable audit record.',
+      facts: const [
+        _RichFact(icon: Icons.receipt_long_outlined, label: 'ADO-1042'),
+        _RichFact(icon: Icons.payments_outlined, label: '4.99 USD'),
+        _RichFact(icon: Icons.person_outline, label: 'Member payer'),
+        _RichFact(icon: Icons.download_outlined, label: 'Export receipt'),
+      ],
+      actionSurfaceTitle: 'Receipt evidence',
+      actionHeroSubtitle: 'Member ad-off receipt',
+      actionHeroBody:
+          'Review amount, payer, scope, payment status, refund/retry path, and audit metadata before sharing or exporting.',
+      actionPanelTitle: 'Ready to open receipt',
+      actionPanelBody:
+          'The receipt remains available for support, export, refund questions, and entitlement restore.',
+      alternateActionLabel: 'Export receipt',
+      detailTitle: 'Receipt details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.receipt_long_outlined,
+          title: 'Receipt',
+          body: 'ADO-1042, paid today at 2:10 PM, card ending 4242.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.workspace_premium_outlined,
+          title: 'Entitlement',
+          body: 'Member ad-free entitlement active through Aug 30.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.support_agent_outlined,
+          title: 'Support',
+          body: 'Refund/retry/support history is linked to this receipt.',
+        ),
+      ],
+      stateTitle: 'Receipt state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.download_outlined,
+          title: 'Export',
+          body: 'Receipt can be exported with checksum and audit trail.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.restore_outlined,
+          title: 'Restore',
+          body: 'Restore purchase uses this receipt and payer context.',
+        ),
+      ],
+      completeTitle: 'Receipt opened',
+      completeBody:
+          'The receipt shows amount, payer, scope, entitlement, export path, and support history.',
+      receivedTitle: 'Receipt ready',
+      receivedBody:
+          'The member can inspect amount, payer, entitlement state, and export support evidence.',
+      completeLabel: 'Receipt',
+    );
+  }
+  if (suppression) {
+    return _richSurface(
+      accent: const Color(0xff4f6f5b),
+      icon: Icons.visibility_off_outlined,
+      title: 'Ad suppression proof',
+      subtitle: 'Sponsored slots suppressed by active ad-off entitlement.',
+      body:
+          'Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision.',
+      facts: const [
+        _RichFact(icon: Icons.visibility_off_outlined, label: 'Ads hidden'),
+        _RichFact(icon: Icons.verified_user_outlined, label: 'Entitled'),
+        _RichFact(icon: Icons.campaign_outlined, label: '2 slots checked'),
+        _RichFact(icon: Icons.history_outlined, label: 'Audit trail'),
+      ],
+      actionSurfaceTitle: 'Suppression decision',
+      actionHeroSubtitle: 'No sponsored message due to ad-off',
+      actionHeroBody:
+          'Review entitlement, slot list, no-fill reason, restoration path, and settlement utility audit.',
+      actionPanelTitle: 'Ready to verify suppression',
+      actionPanelBody:
+          'Each eligible slot records ad-off suppression, no impression, and the entitlement that caused it.',
+      alternateActionLabel: 'Restore ads',
+      detailTitle: 'Suppressed slots',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.web_asset_outlined,
+          title: 'Top banner',
+          body: 'Suppressed: member ad-off entitlement active.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.dynamic_feed_outlined,
+          title: 'In-stream placement',
+          body: 'Suppressed: no impression or click recorded.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.restore_outlined,
+          title: 'Restore path',
+          body: 'Member can restore ads or manage subscription.',
+        ),
+      ],
+      stateTitle: 'After suppression',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.analytics_outlined,
+          title: 'No impression',
+          body: 'Analytics records suppression, not an ad impression.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.receipt_long_outlined,
+          title: 'Evidence',
+          body: 'Receipt and entitlement link explain the suppression.',
+        ),
+      ],
+      completeTitle: 'Suppression verified',
+      completeBody:
+          'Suppressed slots, entitlement, no-impression state, restore path, and audit evidence remain visible.',
+      receivedTitle: 'Ad-free state ready',
+      receivedBody:
+          'The member sees which slots were suppressed and how to manage or restore ads.',
+      completeLabel: 'Suppressed',
+    );
+  }
+  if (settlement) {
+    return _richSurface(
+      accent: const Color(0xff6a6d3f),
+      icon: Icons.account_balance_outlined,
+      title: 'Ad-off settlement allocation',
+      subtitle: 'Community utility allocation from ad-off revenue.',
+      body:
+          'Review monthly revenue, platform fee, community utility allocation, settlement status, and audit/rollback path.',
+      facts: const [
+        _RichFact(icon: Icons.payments_outlined, label: '120.00 USD'),
+        _RichFact(icon: Icons.account_balance_outlined, label: 'Utility fund'),
+        _RichFact(icon: Icons.schedule_outlined, label: 'Month end'),
+        _RichFact(icon: Icons.verified_outlined, label: 'Audit ready'),
+      ],
+      actionSurfaceTitle: 'Settlement utility',
+      actionHeroSubtitle: 'June ad-off utility allocation',
+      actionHeroBody:
+          'Confirm allocation, settlement destination, audit trail, and correction path before marking utility ready.',
+      actionPanelTitle: 'Ready to review settlement',
+      actionPanelBody:
+          'Admins see amount, destination, settlement status, receipt linkage, and rollback/correction path.',
+      alternateActionLabel: 'Review allocation',
+      detailTitle: 'Settlement details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.account_balance_outlined,
+          title: 'Destination',
+          body: 'Community utility fund receives June ad-off allocation.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.payments_outlined,
+          title: 'Amount',
+          body: '120.00 USD community plan, 96.00 USD utility allocation.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.history_outlined,
+          title: 'Audit',
+          body: 'Receipt, entitlement, and settlement run are linked.',
+        ),
+      ],
+      stateTitle: 'Settlement state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.verified_outlined,
+          title: 'Ready',
+          body: 'Settlement is ready for owner review and export.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.undo_outlined,
+          title: 'Correction path',
+          body: 'Admin can correct allocation before final settlement.',
+        ),
+      ],
+      completeTitle: 'Settlement reviewed',
+      completeBody:
+          'The settlement surface shows amount, destination, audit, correction path, and utility status.',
+      receivedTitle: 'Settlement state ready',
+      receivedBody:
+          'Admins can inspect amount, destination, audit trail, and correction path.',
+      completeLabel: 'Reviewed',
+    );
+  }
+  if (entitlement) {
+    return _richSurface(
+      accent: const Color(0xff4d668f),
+      icon: Icons.verified_user_outlined,
+      title: 'Ad-off entitlement status',
+      subtitle: 'Active member entitlement through Aug 30.',
+      body:
+          'Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free receiver state.',
+      facts: const [
+        _RichFact(icon: Icons.verified_user_outlined, label: 'Active'),
+        _RichFact(icon: Icons.calendar_today_outlined, label: 'Aug 30'),
+        _RichFact(icon: Icons.restore_outlined, label: 'Restore path'),
+        _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt linked'),
+      ],
+      actionSurfaceTitle: 'Entitlement status',
+      actionHeroSubtitle: 'Member ad-free entitlement',
+      actionHeroBody:
+          'Review scope, expiration, renewal, restore, receipt, and ad-slot receiver state.',
+      actionPanelTitle: 'Ready to inspect entitlement',
+      actionPanelBody:
+          'The member can manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
+      alternateActionLabel: 'Manage plan',
+      detailTitle: 'Entitlement details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Scope',
+          body: 'Member-level ad-off for current account and communities.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.calendar_today_outlined,
+          title: 'Expiration',
+          body: 'Active through Aug 30, renews monthly.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.receipt_long_outlined,
+          title: 'Receipt',
+          body: 'Receipt ADO-1042 proves payer and entitlement state.',
+        ),
+      ],
+      stateTitle: 'Receiver state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.visibility_off_outlined,
+          title: 'Ad-free slots',
+          body: 'Eligible sponsored slots are suppressed while active.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.restore_outlined,
+          title: 'Restore',
+          body: 'Restore purchase and manage plan remain available.',
+        ),
+      ],
+      completeTitle: 'Entitlement checked',
+      completeBody:
+          'Entitlement scope, expiration, receipt, restore path, and ad-free slot state remain visible.',
+      receivedTitle: 'Entitlement ready',
+      receivedBody:
+          'The member can verify active ad-off, receipt, and suppressed ad state.',
+      completeLabel: 'Active',
+    );
+  }
   return _richSurface(
     accent: const Color(0xff5b5f97),
     icon: Icons.workspace_premium_outlined,
-    title: id.contains('receipt')
-        ? 'Ad-off receipt'
-        : id.contains('suppression')
-        ? 'Ad suppression proof'
-        : id.contains('settlement')
-        ? 'Settlement allocation'
-        : id.contains('entitlement')
-        ? 'Ad-off entitlement'
-        : 'Ad-off checkout',
-    subtitle: 'Member and community ad-free options with receipt evidence.',
+    title: community ? 'Community ad-off checkout' : 'Member ad-off checkout',
+    subtitle: community
+        ? '120.00 USD monthly community ad-free plan.'
+        : '4.99 USD monthly member ad-free plan.',
     body:
-        'Confirm payer, entitlement scope, ad restoration path, receipt, settlement state, and visible ad suppression.',
-    facts: const [
-      _RichFact(icon: Icons.credit_card_outlined, label: '4.99 USD'),
-      _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt'),
-      _RichFact(icon: Icons.visibility_off_outlined, label: 'Ads suppressed'),
-      _RichFact(icon: Icons.restore_outlined, label: 'Restore path'),
+        'Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout.',
+    facts: [
+      _RichFact(
+        icon: Icons.credit_card_outlined,
+        label: community ? '120.00 USD' : '4.99 USD',
+      ),
+      _RichFact(
+        icon: Icons.person_outline,
+        label: community ? 'Community pays' : 'Member pays',
+      ),
+      const _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt'),
+      const _RichFact(icon: Icons.visibility_off_outlined, label: 'Ads hidden'),
     ],
-    actionPanelTitle: 'Ready to manage ad-off',
+    actionSurfaceTitle: community
+        ? 'Community ad-off checkout'
+        : 'Member ad-off checkout',
+    actionHeroSubtitle: community
+        ? 'Ad-free for all eligible community members'
+        : 'Ad-free for this member account',
+    actionHeroBody: community
+        ? 'Confirm payer, amount, renewal, utility settlement, receipt, and receiver entitlement before checkout.'
+        : 'Confirm payer, amount, renewal, receipt, restore path, and suppressed ad slots before checkout.',
+    actionPanelTitle: 'Ready for checkout',
     actionPanelBody:
-        'Purchase, restore, open receipt, inspect entitlement, or review settlement evidence.',
-    alternateActionLabel: 'Open receipt',
-    detailTitle: 'Ad-off details',
-    detailRows: const [
+        'Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available.',
+    alternateActionLabel: 'Change plan',
+    detailTitle: 'Checkout details',
+    detailRows: [
       _ActionSurfaceDetail(
         icon: Icons.person_outline,
-        title: 'Scope',
-        body:
-            'Member-level ad-off is 4.99 USD/month; community-level ad-off is 120.00 USD/month.',
+        title: 'Payer and scope',
+        body: community
+            ? 'Community admin pays 120.00 USD/month for eligible members.'
+            : 'Member pays 4.99 USD/month for their account.',
       ),
       _ActionSurfaceDetail(
-        icon: Icons.receipt_long_outlined,
-        title: 'Receipt',
-        body:
-            'Receipt ID, amount, payer, payment state, settlement allocation, and restore path.',
+        icon: Icons.credit_card_outlined,
+        title: 'Payment',
+        body: community
+            ? 'Payment method, renewal, utility allocation, and fee review are shown.'
+            : 'Payment method, renewal, receipt, retry, and cancellation are shown.',
       ),
-      _ActionSurfaceDetail(
+      const _ActionSurfaceDetail(
         icon: Icons.visibility_off_outlined,
-        title: 'Suppression',
-        body:
-            'Sponsored placements show entitlement suppression or no-fill state.',
+        title: 'Ad-free result',
+        body: 'Eligible sponsored slots become suppressed after payment.',
       ),
     ],
-    stateTitle: 'Entitlement state',
-    stateRows: const [
+    stateTitle: 'Checkout result',
+    stateRows: [
       _ActionSurfaceDetail(
         icon: Icons.verified_outlined,
-        title: 'Active',
-        body:
-            'Ad-free entitlement is active, amount is recorded, and member receipt remains available.',
+        title: 'Entitlement',
+        body: community
+            ? 'Community entitlement activates for eligible members.'
+            : 'Member entitlement activates immediately.',
       ),
-      _ActionSurfaceDetail(
+      const _ActionSurfaceDetail(
         icon: Icons.restore_outlined,
-        title: 'Restore',
-        body: 'Member can restore purchases or reopen receipt history.',
+        title: 'Manage',
+        body: 'Manage subscription, cancel, restore, retry, or open receipt.',
       ),
     ],
-    completeTitle: 'Ad-off state saved',
+    completeTitle: community
+        ? 'Community ad-off purchased'
+        : 'Member ad-off purchased',
     completeBody:
-        'The ad-off surface shows entitlement, receipt, ad suppression, settlement, and restore path.',
-    completeLabel: 'Active',
+        'The checkout shows payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result.',
+    receivedTitle: 'Ad-off entitlement ready',
+    receivedBody:
+        'The receiver sees entitlement, receipt, suppressed ad slots, and manage/restore path.',
+    completeLabel: 'Purchased',
   );
 }
 
@@ -2918,6 +3546,11 @@ class _RichWorkflowTile extends StatelessWidget {
               const SizedBox(height: 12),
               domainPreview,
             ],
+            const SizedBox(height: 12),
+            _InteractionModelSummary(
+              contract: contract,
+              foreground: foreground,
+            ),
             const SizedBox(height: 12),
             DecoratedBox(
               decoration: BoxDecoration(
@@ -3869,7 +4502,12 @@ class _WorkflowAction extends StatelessWidget {
             onPressed: onPressed,
             style: buttonStyle,
             icon: Icon(contract.icon, size: 18),
-            label: Text(view.actionText, textAlign: TextAlign.center),
+            label: Text(
+              contract.primaryActionLabel,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
@@ -3884,7 +4522,12 @@ class _WorkflowAction extends StatelessWidget {
             onPressed: onReceivePressed,
             style: buttonStyle,
             icon: const Icon(Icons.inbox_outlined, size: 18),
-            label: Text(view.actionText, textAlign: TextAlign.center),
+            label: Text(
+              view.actionText,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
@@ -3950,6 +4593,7 @@ class _WorkflowActionSurface extends StatelessWidget {
     if (richSpec != null) {
       return _RichWorkflowActionSurface(
         workflow: workflow,
+        contract: contract,
         spec: richSpec,
         actionLabel: actionLabel,
         confirmButtonKey: confirmButtonKey,
@@ -4086,6 +4730,7 @@ class _WorkflowActionSurface extends StatelessWidget {
 class _RichWorkflowActionSurface extends StatelessWidget {
   const _RichWorkflowActionSurface({
     required this.workflow,
+    required this.contract,
     required this.spec,
     required this.actionLabel,
     required this.confirmButtonKey,
@@ -4093,6 +4738,7 @@ class _RichWorkflowActionSurface extends StatelessWidget {
   });
 
   final LoomWorkflowDefinition workflow;
+  final LoomProductionWorkflowContract contract;
   final _RichWorkflowSpec spec;
   final String actionLabel;
   final Key confirmButtonKey;
@@ -4134,6 +4780,11 @@ class _RichWorkflowActionSurface extends StatelessWidget {
             const SizedBox(height: 14),
             domainPreview,
           ],
+          const SizedBox(height: 14),
+          _InteractionModelSummary(
+            contract: contract,
+            foreground: foreground,
+          ),
           const SizedBox(height: 14),
           _RichInlineActionPanel(
             accent: spec.accent,

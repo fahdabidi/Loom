@@ -200,3 +200,37 @@ findings were resolved in pass 9.
   Camera/Platform/Ad-Free surfaces visibly distinct rather than generic panels, and finish
   product-doc reconciliation before recapturing full B12-B20 evidence.
 - Evidence/tooling commit: `97096d9`.
+
+### Iteration 19 / `b25-v4-pass-22`
+
+- Status: failed, but converged.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-22.md`, updated community Product Docs V2
+  example specs for exact workflow/persona/semantic rows, added richer workflow-specific domain
+  previews for Camera Club, Platform Social, and Ad-Free Community, exposed interaction-model
+  summaries on rich workflow tiles/action surfaces, and repaired B20 action label wrapping behavior.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests; capture coverage passed; the B25 collector generated `195` schema v4 screen
+  rows; workflow/persona coverage passed `68 / 68`; visual inspection passed `195 / 195`.
+- Product-doc reconciliation: failed with `6` major findings. Garden Club, Neighborhood Book Club,
+  and Chess Club still have stale Section 7 persona/state rows; the shell workflow is not clearly
+  scoped into or out of B25 screenshot reconciliation; persona-role-inventory still duplicates
+  Masjid-owned support workflows and has incomplete semantic rows.
+- LLM Vision UX review: failed with `5` major findings: B20 CTA wrapping remains visible, four
+  workflow/persona scorecards still fail, seven lifecycle scorecards fail, Ad-Free still uses repeated
+  checkout-oriented panels for distinct jobs, and visible framework/surface copy still leaks into some
+  screens.
+- Workflow interaction model: improved but failed; lifecycle failures dropped from `22 / 68` to
+  `7 / 68`.
+- Production UX judge: failed `9` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-22.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-22.md` records
+  `B25 can pass=false`, `0` blockers, `6` unresolved major findings, `3` resolved
+  blocker/major findings, and `5` newly introduced blocker/major findings under the fresh LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-23.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened, but the interaction-model gate is converging. Pass 23 must first fix
+  product-doc reconciliation, then close the remaining Camera gear-loan, Platform blocked-target, and
+  Ad-Free lifecycle/surface gaps with fresh full B12-B20 screenshots.
+- Evidence/tooling commit: `TBD-pass-22`.

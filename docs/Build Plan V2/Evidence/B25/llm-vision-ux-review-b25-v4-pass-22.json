@@ -1,0 +1,699 @@
+{
+  "schemaVersion": 4,
+  "reviewerType": "llm-vision-ux-judge",
+  "runId": "b25-v4-pass-22",
+  "currentReviewRunId": "b25-v4-pass-22",
+  "freshReview": true,
+  "generatedAt": "2026-07-01T03:05:00Z",
+  "appCommit": "108db17",
+  "appCommitSha": "108db17",
+  "verdict": "fail",
+  "summary": "Fresh pass-22 screenshot-first review fails B25. Current evidence is materially improved from pass-21: full B12-B20 capture is current, several Camera Club rows now show real photo-walk, critique, and gear-loan objects, and lifecycle failures dropped to 7. The screenshots still prove production-blocking UX issues: B20 announcement CTAs visibly split primary action labels, workflow/persona direct-question scorecards fail for Camera gear loan and Platform Social connection/safety rows, lifecycle scorecards fail for 7 workflow/persona paths, and Ad-Free surfaces reuse the same checkout/entitlement/action panels across receipt, suppression, and settlement states.",
+  "evidenceInputs": [
+    "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+    "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md",
+    "docs/Build Plan V2/Evidence/B25/llm-vision-ux-review-b25-v4-pass-21.json",
+    "docs/Build Plan V2/Evidence/B25/llm-vision-ux-review-b25-v4-pass-21.md"
+  ],
+  "evidenceNotes": [
+    "Pass-21 was used only as a schema and style reference. Findings were rechecked against pass-22 screenshots and hashes before inclusion.",
+    "The current independent-production-ux-review.json declares run b25-v4-pass-22, app commit 108db17, full-b25 capture coverage pass, commitEligible=true, fullB25Coverage=true, and 195 screen rows.",
+    "Visual inspection was screenshot-first. Representative current screenshots were opened for B20 Masjid announcement action states, Camera Club gear loan, Platform Social connection/block/no-fill states, Ad-Free checkout/receipt/suppression states, and Masjid donation result states."
+  ],
+  "reviewScope": {
+    "screenRowsInEvidence": 195,
+    "workflowPersonaRowsInEvidence": 68,
+    "workflowPersonaCoverageStatus": "pass",
+    "workflowPersonaDirectQuestionStatus": "fail",
+    "workflowPersonaDirectQuestionFailingCount": 4,
+    "visualInspectionSummaryStatus": "pass",
+    "workflowLifecycleStatus": "fail",
+    "workflowLifecycleFailingCount": 7,
+    "communitiesRepresented": [
+      "Garden Club",
+      "Neighborhood Book Club",
+      "Riverside Youth Soccer",
+      "Cedar Commons HOA",
+      "Masjid Nur",
+      "Chess Club",
+      "Camera Club",
+      "Member Social Space",
+      "Ad-Free Community",
+      "Data Portability Community",
+      "persona-role-inventory"
+    ]
+  },
+  "finalDecision": {
+    "status": "fail",
+    "blocksPass": true,
+    "reason": "B25 cannot pass because current screenshots and scorecards still prove major UX defects: broken primary CTA labels in B20, failed workflow/persona scorecards for Camera Club and Platform Social, failed lifecycle scorecards for 7 workflow/persona paths, repeated Ad-Free checkout/entitlement panels across unrelated product states, and visible product-copy leakage such as 'The Masjid surface shows...' and 'Current state' on saved/result screens."
+  },
+  "unresolvedSeverityCounts": {
+    "critical": 0,
+    "blocker": 0,
+    "major": 5,
+    "minor": 0,
+    "info": 0
+  },
+  "holisticQuestionAnswers": [
+    {
+      "questionId": "llm-p22-modern-easy-appealing",
+      "scope": "holistic",
+      "question": "Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona?",
+      "answer": "partial",
+      "score": 58,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "B20 row b25-v4-row-191 shows a full-screen Publish announcement action sheet, but the primary pill splits 'Publish announcement' into 'Publish an / nounceme / nt'.",
+        "B20 row b25-v4-row-194 similarly splits 'Receive announcement' into 'Receive an / nounceme / nt'.",
+        "Platform row b25-v4-row-135 truncates the community title to 'Member Social Spa...' and still uses generic status panels."
+      ],
+      "critique": "The dark Material-style visual system is cohesive, legible, and often attractive, but production polish fails where primary actions wrap into broken word fragments, titles truncate, and several screens reuse the same dense panel stack."
+    },
+    {
+      "questionId": "llm-p22-rich-product-community-experience",
+      "scope": "holistic",
+      "question": "Does it feel like a rich product/community experience for the target user, not a workflow surface?",
+      "answer": "partial",
+      "score": 61,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Camera row b25-v4-row-106 shows a real Downtown photo walk with route, meetup, capacity, and camera reminder.",
+        "Ad-Free row b25-v4-row-149 is labeled Receipt evidence but still starts with the shared 'Ad-off checkout and entitlement' panel and payment-management prompt.",
+        "Masjid row b25-v4-row-087 says 'The Masjid surface shows privacy-safe content...' and 'Current state' on a saved donation receipt screen."
+      ],
+      "critique": "There is now real community content in many rows, but several target users would still see framework-like product surfaces rather than natural community tasks, especially saved Masjid result screens, Platform Social safety/invite flows, and Ad-Free receipt/suppression/settlement flows."
+    },
+    {
+      "questionId": "llm-p22-community-content-jobs",
+      "scope": "holistic",
+      "question": "Are primary workflows organized around community content and jobs-to-be-done?",
+      "answer": "partial",
+      "score": 64,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Camera rows b25-v4-row-106 through b25-v4-row-111 are organized around photo walks and critique submissions.",
+        "Platform rows b25-v4-row-118 through b25-v4-row-126 are organized around a generic 'Member conversation state' panel for connection entry, invite, and block guard.",
+        "Ad-Free rows b25-v4-row-139 through b25-v4-row-153 repeatedly show the same checkout/entitlement summary even when the task is receipt history or ad suppression proof."
+      ],
+      "critique": "The IA is closer to real jobs than earlier passes, but repeated shared panels still flatten distinct jobs into one workflow renderer pattern."
+    },
+    {
+      "questionId": "llm-p22-domain-native-distinct",
+      "scope": "holistic",
+      "question": "Are surfaces domain-native and distinct for each community and workflow?",
+      "answer": "partial",
+      "score": 54,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "Gear loan rows b25-v4-row-112 through b25-v4-row-114 now show a 35mm prime lens, Sam as owner, pickup, queue, and return path, but the workflow/persona and lifecycle scorecards still fail decision information.",
+        "Platform connection rows b25-v4-row-118 through b25-v4-row-126 fail workflow/persona direct-question scorecards and reuse the same Maya Chen to Jordan Lee conversation-state shell.",
+        "Ad-Free receipt and suppression rows b25-v4-row-148 through b25-v4-row-153 reuse checkout language, 'Change amount', and shared entitlement blocks."
+      ],
+      "critique": "Some communities have distinct surfaces, but Camera gear, Platform Social, and Ad-Free still need more object-specific layouts and natural actions."
+    },
+    {
+      "questionId": "llm-p22-lifecycle-alternate-receiver",
+      "scope": "holistic",
+      "question": "Do screenshots visibly prove full lifecycle, alternate, and receiver states?",
+      "answer": "no",
+      "score": 38,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "b25-workflow-lifecycle-scorecards.md reports Status fail, 68 scorecards, and 7 failing scorecards.",
+        "Failing lifecycle groups are concrete object/context, decision information, persistent result state, primary semantic action, and receiver/continuation state.",
+        "Ad-Free ad suppression b25-v4-row-153 shows suppression verified, but the same screen still presents 'Change amount' as the visible alternate action."
+      ],
+      "critique": "Entry/action/result screenshots exist, but the current evidence does not prove complete semantic lifecycle closure for all reviewed workflow/persona paths."
+    },
+    {
+      "questionId": "llm-p22-visible-layout-defects",
+      "scope": "holistic",
+      "question": "Are visible layout defects such as clipped/wrapped CTA text, crowding, repeated generic panels, weak hierarchy, or thin content absent?",
+      "answer": "no",
+      "score": 42,
+      "verdict": "fail",
+      "blocksPass": true,
+      "visibleEvidence": [
+        "b25-v4-row-191 and b25-v4-row-194 show broken CTA word wrapping.",
+        "b25-v4-row-135 truncates 'Member Social Space' in the app bar.",
+        "b25-v4-row-149 and b25-v4-row-153 show repeated shared panels and actions that do not match the specific receipt/suppression task."
+      ],
+      "critique": "The current screenshots still contain visible production defects, so the product UX bar is not met."
+    }
+  ],
+  "workflowPersonaFindings": {
+    "reviewedCount": 68,
+    "status": "fail",
+    "failingCount": 4,
+    "failingScorecardIds": [
+      "b25-wp-038-gear-loan-request-community-camera-club-member",
+      "b25-wp-040-platform-connections-entry-community-platform-social-member",
+      "b25-wp-041-platform-connection-invite-community-platform-social-member",
+      "b25-wp-042-platform-blocked-target-community-platform-social-member"
+    ],
+    "failingWorkflowIds": [
+      "gear-loan-request",
+      "platform-connections-entry",
+      "platform-connection-invite",
+      "platform-blocked-target"
+    ],
+    "summary": "Coverage is complete, but four workflow/persona direct-question scorecards still fail. The failures concentrate in Camera Club gear loan and Platform Social connection/invite/block states."
+  },
+  "workflowLifecycleScorecards": {
+    "reviewedCount": 68,
+    "status": "fail",
+    "failingCount": 7,
+    "failingScorecardIds": [
+      "b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle",
+      "b25-wp-042-platform-blocked-target-community-platform-social-member-lifecycle",
+      "b25-wp-047-ad-off-member-checkout-community-ad-off-member-lifecycle",
+      "b25-wp-048-ad-off-community-checkout-community-ad-off-member-lifecycle",
+      "b25-wp-049-ad-off-entitlement-status-community-ad-off-member-lifecycle",
+      "b25-wp-050-ad-off-receipt-evidence-community-ad-off-member-lifecycle",
+      "b25-wp-051-ad-off-ad-suppression-community-ad-off-member-lifecycle"
+    ],
+    "failingWorkflowIds": [
+      "gear-loan-request",
+      "platform-blocked-target",
+      "ad-off-member-checkout",
+      "ad-off-community-checkout",
+      "ad-off-entitlement-status",
+      "ad-off-receipt-evidence",
+      "ad-off-ad-suppression"
+    ],
+    "missingLifecycleGroups": [
+      "concrete object/context",
+      "decision information",
+      "persistent result state",
+      "primary semantic action",
+      "receiver/continuation state"
+    ]
+  },
+  "screenReviews": [
+    {
+      "screenRowId": "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+      "affectedScreenRowIds": [
+        "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+        "b25-v4-row-194-wf-multi-persona-workflow-evidence-4"
+      ],
+      "screenshotHashes": [
+        "cf6018e8858da7a027f534558022a78f8d4f21e9cbd846fdf013979bae53846b",
+        "7ab79d338062446173a77e8152823344dcbc840caf5f927d5bdead323f1c852e"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "The B20 action sheets are visually polished and show announcement preview, sender, audience, timing, and body. However, the primary pill buttons still split 'Publish announcement' and 'Receive announcement' into broken fragments across three lines.",
+      "critique": "This is a current pass-22 layout defect. The action text is the main call to action, so broken word wrapping blocks production UX."
+    },
+    {
+      "screenRowId": "b25-v4-row-112-gear-loan-request-0",
+      "affectedScreenRowIds": [
+        "b25-v4-row-112-gear-loan-request-0",
+        "b25-v4-row-113-gear-loan-request-1",
+        "b25-v4-row-114-gear-loan-request-2"
+      ],
+      "screenshotHashes": [
+        "9eeaf7cb9021506f578b3c53c7939333bcb41aa81b696410d50639b538434352",
+        "b69df1ba0f35827d79c9bb6ce85b100877da14ba098bc434d94992609d057687",
+        "c4e6a2b7a0f98ee6b0c099794934bb34cfb3236cb5261d51c74f886827b6c45f"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "The gear flow shows a 35mm prime lens, owner Sam, Friday pickup, Sunday return, two borrowers waiting, and a cancel/return path. The screen also uses generic approval/revision copy for a member loan request and the lifecycle scorecard still reports missing decision information.",
+      "critique": "The screen is no longer thin, but the decision model is not yet clear enough for a real borrower/lender gear-loan workflow."
+    },
+    {
+      "screenRowId": "b25-v4-row-118-platform-connections-entry-0",
+      "affectedScreenRowIds": [
+        "b25-v4-row-118-platform-connections-entry-0",
+        "b25-v4-row-119-platform-connections-entry-1",
+        "b25-v4-row-120-platform-connections-entry-2",
+        "b25-v4-row-121-platform-connection-invite-0",
+        "b25-v4-row-122-platform-connection-invite-1",
+        "b25-v4-row-123-platform-connection-invite-2",
+        "b25-v4-row-124-platform-blocked-target-0",
+        "b25-v4-row-125-platform-blocked-target-1",
+        "b25-v4-row-126-platform-blocked-target-2"
+      ],
+      "screenshotHashes": [
+        "680420821f2646ed4d6bb9204aa21162e3236dd330b968e1e16d59b6f7cc5551",
+        "472ad1e60dfc7ef7a853b67edbf04f86a1128a2ba0e5271ff34740e9bfc43976",
+        "dbb2c375f9e6ad4fe46d5c19f77758085511b62dc4ec4a8143379920f482a3cf",
+        "1013b2074426077e297ae191fc9326bc6b039b27a13556ad2c39af4b222aa77d",
+        "2195280f1f709eb4a07b56f18bdd9971081c5ab925fbe63ea29f9fdd7069ef7e",
+        "a208f59168d10259a7dc81cbf54bd21c5a081fee6f0714f219762fd0c1d198fa",
+        "64d0e22730f3526683b363cab29f04e87587fab8a08cd9d845e9f607e0c359b4",
+        "8990d06a5e69b0977035239df402aeb978fa6fcb3b4e39c11322afe3862d9cfa",
+        "67ba99ec3a89e805b5e6167a04f2cfc3e805d83fb7fad62cec9b85c898555bd5"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "Connection and block screens show Maya Chen to Jordan Lee, invite pending, block respected, accept/decline/archive alternatives, and safety guard copy. They also repeat the same 'Member conversation state' panel and generic decision text instead of distinct inbox, profile, invite, and block-detail surfaces.",
+      "critique": "The Platform Social workflows remain too generic for a production member social experience, and three Platform Social workflow/persona scorecards fail."
+    },
+    {
+      "screenRowId": "b25-v4-row-135-platform-top-banner-no-fill-2",
+      "affectedScreenRowIds": [
+        "b25-v4-row-133-platform-top-banner-no-fill-0",
+        "b25-v4-row-134-platform-top-banner-no-fill-1",
+        "b25-v4-row-135-platform-top-banner-no-fill-2",
+        "b25-v4-row-136-platform-sensitive-no-fill-0",
+        "b25-v4-row-137-platform-sensitive-no-fill-1",
+        "b25-v4-row-138-platform-sensitive-no-fill-2"
+      ],
+      "screenshotHashes": [
+        "9e0b613f8b64ddf8973f8fc597fe163a141d474c09a13c6ae9ccaaa6190629e3",
+        "fd23d3f9b05705ba86ff1a66cd7564a414e43d8c2133406d4e4ce06867c45c13",
+        "0aea9a9896f1b8205bbe2c9cdadcccfbdcfe9ff55c33b261d40c1ee071e1e9b2",
+        "20536adb8cde85cf33cbb0a9d2af77e48eeafd63d513c6d9aaefc0e8a73b9f11",
+        "6274426acfac06cab93322318b3273cc51e4c6259a9b05ccdb554d8b26c0d286",
+        "9b0e6b1abf5dec425be237a9f99824bfbb6e6ca54767bf1557ccc9b58675ef39"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "Top banner no-fill and sensitive no-fill rows prove reserved slot, no overlap, disclosure, audit state, and no sponsored message. The app bar title is visibly truncated to 'Member Social Spa...' and the body continues to use generic 'Sponsored placement state' and 'Edit response' sections.",
+      "critique": "The ad/no-fill evidence is functional, but the user-facing screen still reads like an ad-state audit surface rather than a native member feed or message area."
+    },
+    {
+      "screenRowId": "b25-v4-row-139-ad-off-member-checkout-0",
+      "affectedScreenRowIds": [
+        "b25-v4-row-139-ad-off-member-checkout-0",
+        "b25-v4-row-140-ad-off-member-checkout-1",
+        "b25-v4-row-141-ad-off-member-checkout-2",
+        "b25-v4-row-142-ad-off-community-checkout-0",
+        "b25-v4-row-143-ad-off-community-checkout-1",
+        "b25-v4-row-144-ad-off-community-checkout-2",
+        "b25-v4-row-145-ad-off-entitlement-status-0",
+        "b25-v4-row-146-ad-off-entitlement-status-1",
+        "b25-v4-row-147-ad-off-entitlement-status-2",
+        "b25-v4-row-148-ad-off-receipt-evidence-0",
+        "b25-v4-row-149-ad-off-receipt-evidence-1",
+        "b25-v4-row-150-ad-off-receipt-evidence-2",
+        "b25-v4-row-151-ad-off-ad-suppression-0",
+        "b25-v4-row-152-ad-off-ad-suppression-1",
+        "b25-v4-row-153-ad-off-ad-suppression-2"
+      ],
+      "screenshotHashes": [
+        "29a8d5f007bdc412783c453049d620911b676e18a22eaa2613fd68339d5abb68",
+        "de6618d915754e9ba440fa2e92334ad6218b8bc62454c90bbe741d1d92b65f8b",
+        "80435a70a2de68b1da1ed39aa9333928d32ab348feddf418692516cabc48badd",
+        "45f8f7bb96587fef972f39ac11668fecaec8968cddfa791b091be7468cd8ab06",
+        "cd83f757b661c628c9457dae81eee7a7e6f35f0fda3f94dcd72857bc7914c87e",
+        "a8a78d525eac3b65c57a2f0f4e12e4246851e72681f19911a26cea8d35c6233e",
+        "e3bd6ab43a46fae8ad7abc8bd874281caddd16cc86ae6dc47de563999b3471ef",
+        "3550bafc78a83bbe551caf9b47e60e45c4f3b00e34a90a0d19fc3117c4f5fe96",
+        "755f7c3261886f87324fbfaaa358956d68056f060226c996c54b5d1ba2d2cb27",
+        "75b0ff1c8810d250a0d87fa6c123ccf3008be1c3c33daec31e11aee617b79b0f",
+        "86fa279e65d6268739574d113ce5f00758df12ad63a4251c0dcbd505c24b6de7",
+        "0cf7d5ca77594b3cb4b5f229b1c153f05303427027472148e36d1ed10dad87ce",
+        "d17aa9cb2bf4b2d252fb79741e9f52400983f78fbf4c272f100bdfc8a50637a2",
+        "fc1b2b79e6b28c390d81cf6ee05914750f1cb32063a4623b05255241ad16af4a",
+        "7bb049b31e890a6ca123782532ae98674ccb030f7791f36c2a107dcf3a236c1a"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "Ad-Free rows show useful details such as 4.99 USD/month, 120.00 USD community plan, active entitlement through Aug 30, ADO-1042 receipt, ads hidden, two slots checked, audit trail, restore ads, and export receipt. However, receipt and suppression screens still reuse 'Ad-off checkout and entitlement' and payment actions like 'Change amount'. Five Ad-Free lifecycle scorecards fail.",
+      "critique": "The family has content but not distinct production surfaces. Receipt history should behave like receipt history, suppression proof like ad-state proof, and entitlement status like subscription management, not the same checkout card with different headers."
+    },
+    {
+      "screenRowId": "b25-v4-row-087-mosque-donation-payment-2",
+      "affectedScreenRowIds": [
+        "b25-v4-row-084-mosque-donor-visibility-2",
+        "b25-v4-row-087-mosque-donation-payment-2",
+        "b25-v4-row-090-mosque-care-request-2",
+        "b25-v4-row-093-mosque-neutral-notification-2"
+      ],
+      "screenshotHashes": [
+        "bcc3a3335f28aa13c53380d14edd39080b7ad6c90500fbd9051bd877c379f193",
+        "34a86738d3f65618a4a7126717237c78f3b66f0d6212dbc127cbb19e26266f52",
+        "435c6c0cfd52e5886197b752189dc1c3522b87008b31daae02bafbc5e9811ac8",
+        "9a9f2e02aafdae5ff494be9c0dd6d2e1adc1f293530675d50d235075a12f960e"
+      ],
+      "verdict": "fail",
+      "severity": "major",
+      "blocksPass": true,
+      "visibleEvidence": "Masjid result screens are readable and domain-colored, but saved donation/care/notification states visibly say 'The Masjid surface shows privacy-safe content, receipt or citation, receiver state, and next steps' and use 'Current state' rather than a natural receipt, care request, or inbox result.",
+      "critique": "These rows pass lifecycle, but the visible copy still exposes product-surface language to users and should be rewritten before a production UX pass."
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "B25-VISION-UX-P22-001-B20-CTA-WRAPPING",
+      "severity": "major",
+      "status": "open",
+      "blocksPass": true,
+      "affectedScreenRowIds": [
+        "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+        "b25-v4-row-194-wf-multi-persona-workflow-evidence-4"
+      ],
+      "rationale": "The primary CTAs in the current B20 Masjid admin/member action sheets visibly split 'Publish announcement' and 'Receive announcement' into broken word fragments.",
+      "remediation": "Shorten or resize primary CTA labels, adjust pill width/layout, and recapture B20 admin/member action screenshots proving intact labels on the target Android viewport."
+    },
+    {
+      "findingId": "B25-VISION-UX-P22-002-FAILED-WORKFLOW-PERSONA-SCORECARDS",
+      "severity": "major",
+      "status": "open",
+      "blocksPass": true,
+      "affectedScreenRowIds": [
+        "b25-v4-row-112-gear-loan-request-0",
+        "b25-v4-row-113-gear-loan-request-1",
+        "b25-v4-row-114-gear-loan-request-2",
+        "b25-v4-row-118-platform-connections-entry-0",
+        "b25-v4-row-119-platform-connections-entry-1",
+        "b25-v4-row-120-platform-connections-entry-2",
+        "b25-v4-row-121-platform-connection-invite-0",
+        "b25-v4-row-122-platform-connection-invite-1",
+        "b25-v4-row-123-platform-connection-invite-2",
+        "b25-v4-row-124-platform-blocked-target-0",
+        "b25-v4-row-125-platform-blocked-target-1",
+        "b25-v4-row-126-platform-blocked-target-2"
+      ],
+      "rationale": "The current workflow/persona direct-question scorecards fail for Camera Club gear-loan-request and Platform Social connections-entry, connection-invite, and blocked-target.",
+      "remediation": "Replace generic social/request panels with product-native gear-loan and social connection surfaces that clearly prove decision data, user object, action, alternate path, and result/continuation state."
+    },
+    {
+      "findingId": "B25-VISION-UX-P22-003-FAILED-LIFECYCLE-SCORECARDS",
+      "severity": "major",
+      "status": "open",
+      "blocksPass": true,
+      "affectedScreenRowIds": [
+        "b25-v4-row-112-gear-loan-request-0",
+        "b25-v4-row-113-gear-loan-request-1",
+        "b25-v4-row-114-gear-loan-request-2",
+        "b25-v4-row-124-platform-blocked-target-0",
+        "b25-v4-row-125-platform-blocked-target-1",
+        "b25-v4-row-126-platform-blocked-target-2",
+        "b25-v4-row-139-ad-off-member-checkout-0",
+        "b25-v4-row-140-ad-off-member-checkout-1",
+        "b25-v4-row-141-ad-off-member-checkout-2",
+        "b25-v4-row-142-ad-off-community-checkout-0",
+        "b25-v4-row-143-ad-off-community-checkout-1",
+        "b25-v4-row-144-ad-off-community-checkout-2",
+        "b25-v4-row-145-ad-off-entitlement-status-0",
+        "b25-v4-row-146-ad-off-entitlement-status-1",
+        "b25-v4-row-147-ad-off-entitlement-status-2",
+        "b25-v4-row-148-ad-off-receipt-evidence-0",
+        "b25-v4-row-149-ad-off-receipt-evidence-1",
+        "b25-v4-row-150-ad-off-receipt-evidence-2",
+        "b25-v4-row-151-ad-off-ad-suppression-0",
+        "b25-v4-row-152-ad-off-ad-suppression-1",
+        "b25-v4-row-153-ad-off-ad-suppression-2"
+      ],
+      "rationale": "b25-workflow-lifecycle-scorecards.md reports 7 failing lifecycle scorecards with missing concrete object/context, decision information, persistent result state, primary semantic action, and receiver/continuation state.",
+      "remediation": "For each failing lifecycle row, capture entry/action/result/continuation screenshots that visibly show concrete object data, decision criteria, semantic primary action, meaningful alternate action, durable result, and receiver/continuation state."
+    },
+    {
+      "findingId": "B25-VISION-UX-P22-004-ADFREE-REPEATED-CHECKOUT-PANELS",
+      "severity": "major",
+      "status": "open",
+      "blocksPass": true,
+      "affectedScreenRowIds": [
+        "b25-v4-row-139-ad-off-member-checkout-0",
+        "b25-v4-row-140-ad-off-member-checkout-1",
+        "b25-v4-row-141-ad-off-member-checkout-2",
+        "b25-v4-row-142-ad-off-community-checkout-0",
+        "b25-v4-row-143-ad-off-community-checkout-1",
+        "b25-v4-row-144-ad-off-community-checkout-2",
+        "b25-v4-row-145-ad-off-entitlement-status-0",
+        "b25-v4-row-146-ad-off-entitlement-status-1",
+        "b25-v4-row-147-ad-off-entitlement-status-2",
+        "b25-v4-row-148-ad-off-receipt-evidence-0",
+        "b25-v4-row-149-ad-off-receipt-evidence-1",
+        "b25-v4-row-150-ad-off-receipt-evidence-2",
+        "b25-v4-row-151-ad-off-ad-suppression-0",
+        "b25-v4-row-152-ad-off-ad-suppression-1",
+        "b25-v4-row-153-ad-off-ad-suppression-2",
+        "b25-v4-row-154-ad-off-settlement-utility-0",
+        "b25-v4-row-155-ad-off-settlement-utility-1",
+        "b25-v4-row-156-ad-off-settlement-utility-2"
+      ],
+      "rationale": "Ad-Free checkout, entitlement, receipt, suppression, and settlement rows repeatedly reuse the same checkout/entitlement card and payment-oriented prompts even when the visible job is receipt history, ad suppression proof, or utility settlement.",
+      "remediation": "Create distinct checkout review, subscription/entitlement management, receipt history, ad suppression proof, and settlement/utility history surfaces with task-specific primary and alternate actions."
+    },
+    {
+      "findingId": "B25-VISION-UX-P22-005-VISIBLE-SURFACE-COPY-LEAKAGE",
+      "severity": "major",
+      "status": "open",
+      "blocksPass": true,
+      "affectedScreenRowIds": [
+        "b25-v4-row-084-mosque-donor-visibility-2",
+        "b25-v4-row-087-mosque-donation-payment-2",
+        "b25-v4-row-090-mosque-care-request-2",
+        "b25-v4-row-093-mosque-neutral-notification-2",
+        "b25-v4-row-133-platform-top-banner-no-fill-0",
+        "b25-v4-row-134-platform-top-banner-no-fill-1",
+        "b25-v4-row-135-platform-top-banner-no-fill-2",
+        "b25-v4-row-136-platform-sensitive-no-fill-0",
+        "b25-v4-row-137-platform-sensitive-no-fill-1",
+        "b25-v4-row-138-platform-sensitive-no-fill-2"
+      ],
+      "rationale": "Current screenshots expose copy such as 'The Masjid surface shows...', 'Current state', 'Sponsored placement state', and generic 'Edit response' decision panels. Platform Social also shows title truncation as 'Member Social Spa...'.",
+      "remediation": "Rewrite result and ad/no-fill states in natural product language, remove renderer/surface/status language, and fix app-bar title truncation for Member Social Space."
+    }
+  ],
+  "reviewedScreenRowIds": [
+    "b25-v4-row-084-mosque-donor-visibility-2",
+    "b25-v4-row-087-mosque-donation-payment-2",
+    "b25-v4-row-090-mosque-care-request-2",
+    "b25-v4-row-093-mosque-neutral-notification-2",
+    "b25-v4-row-106-photo-walk-rsvp-0",
+    "b25-v4-row-107-photo-walk-rsvp-1",
+    "b25-v4-row-108-photo-walk-rsvp-2",
+    "b25-v4-row-109-critique-submission-0",
+    "b25-v4-row-110-critique-submission-1",
+    "b25-v4-row-111-critique-submission-2",
+    "b25-v4-row-112-gear-loan-request-0",
+    "b25-v4-row-113-gear-loan-request-1",
+    "b25-v4-row-114-gear-loan-request-2",
+    "b25-v4-row-118-platform-connections-entry-0",
+    "b25-v4-row-119-platform-connections-entry-1",
+    "b25-v4-row-120-platform-connections-entry-2",
+    "b25-v4-row-121-platform-connection-invite-0",
+    "b25-v4-row-122-platform-connection-invite-1",
+    "b25-v4-row-123-platform-connection-invite-2",
+    "b25-v4-row-124-platform-blocked-target-0",
+    "b25-v4-row-125-platform-blocked-target-1",
+    "b25-v4-row-126-platform-blocked-target-2",
+    "b25-v4-row-133-platform-top-banner-no-fill-0",
+    "b25-v4-row-134-platform-top-banner-no-fill-1",
+    "b25-v4-row-135-platform-top-banner-no-fill-2",
+    "b25-v4-row-136-platform-sensitive-no-fill-0",
+    "b25-v4-row-137-platform-sensitive-no-fill-1",
+    "b25-v4-row-138-platform-sensitive-no-fill-2",
+    "b25-v4-row-139-ad-off-member-checkout-0",
+    "b25-v4-row-140-ad-off-member-checkout-1",
+    "b25-v4-row-141-ad-off-member-checkout-2",
+    "b25-v4-row-142-ad-off-community-checkout-0",
+    "b25-v4-row-143-ad-off-community-checkout-1",
+    "b25-v4-row-144-ad-off-community-checkout-2",
+    "b25-v4-row-145-ad-off-entitlement-status-0",
+    "b25-v4-row-146-ad-off-entitlement-status-1",
+    "b25-v4-row-147-ad-off-entitlement-status-2",
+    "b25-v4-row-148-ad-off-receipt-evidence-0",
+    "b25-v4-row-149-ad-off-receipt-evidence-1",
+    "b25-v4-row-150-ad-off-receipt-evidence-2",
+    "b25-v4-row-151-ad-off-ad-suppression-0",
+    "b25-v4-row-152-ad-off-ad-suppression-1",
+    "b25-v4-row-153-ad-off-ad-suppression-2",
+    "b25-v4-row-154-ad-off-settlement-utility-0",
+    "b25-v4-row-155-ad-off-settlement-utility-1",
+    "b25-v4-row-156-ad-off-settlement-utility-2",
+    "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+    "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+    "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+    "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+    "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+    "b25-v4-row-195-wf-multi-persona-workflow-evidence-5"
+  ],
+  "reviewedScreenshotHashes": [
+    "bcc3a3335f28aa13c53380d14edd39080b7ad6c90500fbd9051bd877c379f193",
+    "34a86738d3f65618a4a7126717237c78f3b66f0d6212dbc127cbb19e26266f52",
+    "435c6c0cfd52e5886197b752189dc1c3522b87008b31daae02bafbc5e9811ac8",
+    "9a9f2e02aafdae5ff494be9c0dd6d2e1adc1f293530675d50d235075a12f960e",
+    "b5db1f09dd7ddd26aa52630590824b8e312f2741387b52fb76211e454cf7580d",
+    "d100f421025b393dfb192378f6d487d39aa72a2a41db99c3e3370a182799e3d0",
+    "4763fbb883d622a85ac914621c59127ee217a99dd1a84dec2d0d8c9c7670180a",
+    "8a8c5f58f7e266b1b7455c03d44445e957038666acbe43ef693a8b79b548c7f7",
+    "7f39786c7b117f0a862d4b47bcfc3db0113667edef66450d4a68fda4e5f87d26",
+    "2088e229567f17a8e84727dd74159ddec3a67e4d3551818a8788ab2b3efbd5bb",
+    "9eeaf7cb9021506f578b3c53c7939333bcb41aa81b696410d50639b538434352",
+    "b69df1ba0f35827d79c9bb6ce85b100877da14ba098bc434d94992609d057687",
+    "c4e6a2b7a0f98ee6b0c099794934bb34cfb3236cb5261d51c74f886827b6c45f",
+    "680420821f2646ed4d6bb9204aa21162e3236dd330b968e1e16d59b6f7cc5551",
+    "472ad1e60dfc7ef7a853b67edbf04f86a1128a2ba0e5271ff34740e9bfc43976",
+    "dbb2c375f9e6ad4fe46d5c19f77758085511b62dc4ec4a8143379920f482a3cf",
+    "1013b2074426077e297ae191fc9326bc6b039b27a13556ad2c39af4b222aa77d",
+    "2195280f1f709eb4a07b56f18bdd9971081c5ab925fbe63ea29f9fdd7069ef7e",
+    "a208f59168d10259a7dc81cbf54bd21c5a081fee6f0714f219762fd0c1d198fa",
+    "64d0e22730f3526683b363cab29f04e87587fab8a08cd9d845e9f607e0c359b4",
+    "8990d06a5e69b0977035239df402aeb978fa6fcb3b4e39c11322afe3862d9cfa",
+    "67ba99ec3a89e805b5e6167a04f2cfc3e805d83fb7fad62cec9b85c898555bd5",
+    "9e0b613f8b64ddf8973f8fc597fe163a141d474c09a13c6ae9ccaaa6190629e3",
+    "fd23d3f9b05705ba86ff1a66cd7564a414e43d8c2133406d4e4ce06867c45c13",
+    "0aea9a9896f1b8205bbe2c9cdadcccfbdcfe9ff55c33b261d40c1ee071e1e9b2",
+    "20536adb8cde85cf33cbb0a9d2af77e48eeafd63d513c6d9aaefc0e8a73b9f11",
+    "6274426acfac06cab93322318b3273cc51e4c6259a9b05ccdb554d8b26c0d286",
+    "9b0e6b1abf5dec425be237a9f99824bfbb6e6ca54767bf1557ccc9b58675ef39",
+    "29a8d5f007bdc412783c453049d620911b676e18a22eaa2613fd68339d5abb68",
+    "de6618d915754e9ba440fa2e92334ad6218b8bc62454c90bbe741d1d92b65f8b",
+    "80435a70a2de68b1da1ed39aa9333928d32ab348feddf418692516cabc48badd",
+    "45f8f7bb96587fef972f39ac11668fecaec8968cddfa791b091be7468cd8ab06",
+    "cd83f757b661c628c9457dae81eee7a7e6f35f0fda3f94dcd72857bc7914c87e",
+    "a8a78d525eac3b65c57a2f0f4e12e4246851e72681f19911a26cea8d35c6233e",
+    "e3bd6ab43a46fae8ad7abc8bd874281caddd16cc86ae6dc47de563999b3471ef",
+    "3550bafc78a83bbe551caf9b47e60e45c4f3b00e34a90a0d19fc3117c4f5fe96",
+    "755f7c3261886f87324fbfaaa358956d68056f060226c996c54b5d1ba2d2cb27",
+    "75b0ff1c8810d250a0d87fa6c123ccf3008be1c3c33daec31e11aee617b79b0f",
+    "86fa279e65d6268739574d113ce5f00758df12ad63a4251c0dcbd505c24b6de7",
+    "0cf7d5ca77594b3cb4b5f229b1c153f05303427027472148e36d1ed10dad87ce",
+    "d17aa9cb2bf4b2d252fb79741e9f52400983f78fbf4c272f100bdfc8a50637a2",
+    "fc1b2b79e6b28c390d81cf6ee05914750f1cb32063a4623b05255241ad16af4a",
+    "7bb049b31e890a6ca123782532ae98674ccb030f7791f36c2a107dcf3a236c1a",
+    "f059e849fe0518ac2ecf8f7071934fe9257ca477632384683980a726d80c444a",
+    "c51048fc373e504a28dda85770c70160c8bb3c6dc7c3fb06d79900b6330915fa",
+    "bfdaa419ce311d4da4c21152c90e31b402b32ad02c16a2cf05cc94f0bb03993e",
+    "f21b1aa9cbb2985e21f76fe8589f0dc3684fedd2abd776d254e08f5eb0ce504c",
+    "cf6018e8858da7a027f534558022a78f8d4f21e9cbd846fdf013979bae53846b",
+    "d1236d8ccf9830c885818a3bab3ee9b8481f9d0375283eb69285a838639b8e6f",
+    "087d2c73fd5f10d377e3ee97a377146cabc7a9fa0a7b118ee4581137411e29c3",
+    "7ab79d338062446173a77e8152823344dcbc840caf5f927d5bdead323f1c852e",
+    "03c22f2eba5b74223a87fa7bb593f681d5240dd9823bbaf47bd448d0190525fc"
+  ],
+  "screenshotRefs": [
+    {
+      "rowId": "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+      "path": "docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_action.png",
+      "hash": "cf6018e8858da7a027f534558022a78f8d4f21e9cbd846fdf013979bae53846b",
+      "visibleText": "Publish announcement; Ramadan community night; Audience: members; From Masjid Admin; Today 6:00 PM; Inbox + push"
+    },
+    {
+      "rowId": "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+      "path": "docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_action.png",
+      "hash": "7ab79d338062446173a77e8152823344dcbc840caf5f927d5bdead323f1c852e",
+      "visibleText": "Update ready; Receive announcement; Announcement preview; Message body; Sender; Audience"
+    },
+    {
+      "rowId": "b25-v4-row-113-gear-loan-request-1",
+      "path": "docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
+      "hash": "b69df1ba0f35827d79c9bb6ce85b100877da14ba098bc434d94992609d057687",
+      "visibleText": "35mm prime lens loan; Owned by Sam; pickup Friday 5 PM; 2 borrowers waiting; Change request"
+    },
+    {
+      "rowId": "b25-v4-row-122-platform-connection-invite-1",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
+      "hash": "2195280f1f709eb4a07b56f18bdd9971081c5ab925fbe63ea29f9fdd7069ef7e",
+      "visibleText": "Member connection invite; Maya Chen to Jordan Lee; Invite pending; Decline invite; Ready to send invite"
+    },
+    {
+      "rowId": "b25-v4-row-125-platform-blocked-target-1",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_action.png",
+      "hash": "8990d06a5e69b0977035239df402aeb978fa6fcb3b4e39c11322afe3862d9cfa",
+      "visibleText": "Blocked connection guard; Blocked invite prevented; Maya Chen to Jordan Lee; Block respected; Edit response"
+    },
+    {
+      "rowId": "b25-v4-row-135-platform-top-banner-no-fill-2",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png",
+      "hash": "0aea9a9896f1b8205bbe2c9cdadcccfbdcfe9ff55c33b261d40c1ee071e1e9b2",
+      "visibleText": "Member Social Spa...; Top banner no-fill; Slot reserved; No overlap; Sponsored placement state; Edit response"
+    },
+    {
+      "rowId": "b25-v4-row-140-ad-off-member-checkout-1",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_action.png",
+      "hash": "de6618d915754e9ba440fa2e92334ad6218b8bc62454c90bbe741d1d92b65f8b",
+      "visibleText": "Member ad-off checkout; 4.99 USD / month; Entitlement active through Aug 30; Eligible ads suppressed; Change amount"
+    },
+    {
+      "rowId": "b25-v4-row-149-ad-off-receipt-evidence-1",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_action.png",
+      "hash": "86fa279e65d6268739574d113ce5f00758df12ad63a4251c0dcbd505c24b6de7",
+      "visibleText": "Receipt evidence; Ad-off receipt history; Member ad-off receipt; Ad-off checkout and entitlement; Change amount; Ready to open receipt"
+    },
+    {
+      "rowId": "b25-v4-row-153-ad-off-ad-suppression-2",
+      "path": "docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_complete.png",
+      "hash": "7bb049b31e890a6ca123782532ae98674ccb030f7791f36c2a107dcf3a236c1a",
+      "visibleText": "Ad suppression proof; Ads hidden; Entitled; 2 slots checked; Audit trail; Change amount; Current state"
+    },
+    {
+      "rowId": "b25-v4-row-087-mosque-donation-payment-2",
+      "path": "docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_complete.png",
+      "hash": "34a86738d3f65618a4a7126717237c78f3b66f0d6212dbc127cbb19e26266f52",
+      "visibleText": "Sadaqah donation receipt; 50.00 USD; The Masjid surface shows privacy-safe content; Current state; Masjid record saved"
+    }
+  ],
+  "remediationTicketInputs": [
+    {
+      "ticketId": "B25-P22-TICKET-001-FIX-B20-CTA-LAYOUT",
+      "findingIds": [
+        "B25-VISION-UX-P22-001-B20-CTA-WRAPPING"
+      ],
+      "severity": "major",
+      "blocksPass": true,
+      "problemStatement": "B20 Masjid action-state primary CTAs wrap into broken word fragments.",
+      "targetExperience": "Admin and member announcement action sheets show intact primary labels and readable alternate actions on the target Android viewport.",
+      "acceptanceChecks": [
+        "No primary or secondary button text breaks inside words.",
+        "Rows b25-v4-row-191 and b25-v4-row-194 retain sender, audience, timing, preview, body, and receiver-state content.",
+        "Fresh screenshots have new hashes and pass visual inspection."
+      ]
+    },
+    {
+      "ticketId": "B25-P22-TICKET-002-CLOSE-FAILED-WP-LIFECYCLES",
+      "findingIds": [
+        "B25-VISION-UX-P22-002-FAILED-WORKFLOW-PERSONA-SCORECARDS",
+        "B25-VISION-UX-P22-003-FAILED-LIFECYCLE-SCORECARDS"
+      ],
+      "severity": "major",
+      "blocksPass": true,
+      "problemStatement": "Four workflow/persona scorecards and seven lifecycle scorecards still fail in current pass-22 evidence.",
+      "targetExperience": "Camera gear loan, Platform Social connection/block flows, and Ad-Free checkout/receipt/suppression flows must prove concrete objects, decision data, semantic action, alternate path, durable result, and continuation state from screenshots.",
+      "acceptanceChecks": [
+        "workflowPersonaScorecards has zero failed blocking rows.",
+        "workflowLifecycleScorecards.status == pass and failingScorecardCount == 0.",
+        "Affected rows show product-native surfaces instead of generic decision/action panels."
+      ]
+    },
+    {
+      "ticketId": "B25-P22-TICKET-003-DISTINCT-ADFREE-SURFACES",
+      "findingIds": [
+        "B25-VISION-UX-P22-004-ADFREE-REPEATED-CHECKOUT-PANELS"
+      ],
+      "severity": "major",
+      "blocksPass": true,
+      "problemStatement": "Ad-Free checkout, entitlement, receipt, suppression, and settlement screens reuse shared checkout/entitlement panels and task-mismatched payment actions.",
+      "targetExperience": "Use separate checkout review, receipt history, entitlement management, ad suppression proof, and settlement/utility surfaces with task-specific primary and alternate actions.",
+      "acceptanceChecks": [
+        "Receipt screens center receipt ID, date, amount, payer, export/share/support/refund path, and no payment-change CTA unless contextually relevant.",
+        "Suppression screens center suppressed slot, entitlement reason, no-impression state, restore path, and audit detail.",
+        "Settlement screens center allocation amount, destination, period, audit trail, correction/rollback path, and result state."
+      ]
+    },
+    {
+      "ticketId": "B25-P22-TICKET-004-REMOVE-SURFACE-COPY-LEAKAGE",
+      "findingIds": [
+        "B25-VISION-UX-P22-005-VISIBLE-SURFACE-COPY-LEAKAGE"
+      ],
+      "severity": "major",
+      "blocksPass": true,
+      "problemStatement": "Current screenshots expose renderer/product-surface language and generic status panels to users.",
+      "targetExperience": "Saved donation/care/notification/ad states should read like natural member/admin product pages with concrete results and next actions.",
+      "acceptanceChecks": [
+        "No user-facing result copy says 'surface shows', 'Current state', 'Sponsored placement state', or generic 'Edit response' where a domain action is expected.",
+        "Member Social Space app-bar title is not truncated on target viewport.",
+        "Result cards name concrete receipts, requests, notifications, or ad slots and their next action."
+      ]
+    }
+  ]
+}

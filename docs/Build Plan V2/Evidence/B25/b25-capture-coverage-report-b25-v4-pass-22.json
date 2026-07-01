@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "aggregatePath": "../docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
+  "captureMode": "full-b25",
+  "commitEligible": true,
+  "fullB25Coverage": true,
+  "expectedPhases": [
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "capturedPhases": [
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "missingPhases": [],
+  "unexpectedPhases": [],
+  "workflowManifestCount": 9,
+  "workflowCount": 66,
+  "screenshotCount": 198,
+  "workflowEvidenceManifestPaths": [
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json"
+  ],
+  "missingWorkflowEvidenceManifestPaths": [],
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "issues": []
+}

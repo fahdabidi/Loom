@@ -1,4 +1,4 @@
-# Loom Communities V2 Build Tracker
+﻿# Loom Communities V2 Build Tracker
 
 Status: Draft execution ledger
 
@@ -122,7 +122,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | A post-implementation outside-in product UX review critiques the actual app experience against community-specific product experience docs, rejects exposed workflow machinery, requires fresh full-coverage screenshot-backed schema v4 evidence, and only passes when primary workflows use domain-native production surfaces with positive semantic surface proof, interaction-model proof, a passing fresh non-reused LLM vision UX review, and a passing full B12-B20 capture coverage gate. | Pass 21 consumed the pass-20 remediation plan, updated exact workflow/persona mappings in community Product Docs V2, added domain preview panels for the previously generic Camera, Platform, Ad-Free, and Data Portability surfaces, and recaptured full B12-B20 evidence. It improved lifecycle failures from 26 to 22 but failed the current B25 bar with 4 unresolved major findings: 22 incomplete lifecycle rows, B20 CTA wrapping, repeated generic panels in Camera/Platform/Ad-Free flows, and remaining Product Docs reconciliation gaps. Pass 22 must start from `b25-remediation-plan-b25-v4-pass-22.md`, update product docs first, then remediate UI/content and recapture full B12-B20 evidence. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets `80146f7`; pass 16 iteration `3ad49ea`; pass 17 iteration `bc99df3`; card-surface registry prep `3606c8c`; pass 18 iteration `574cff3`; fresh-LLM hardening `bf7f393`; pass 19 fresh UX review `97d1a82`; pass 20 iteration `6ff5b8d`; pass 21 iteration `97096d9` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review remains open until fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 22 consumed the pass-21 remediation plan, improved lifecycle failures from 22 to 7, refreshed full B12-B20 evidence, and generated fresh Product Docs reconciliation, LLM vision review, production tickets, iteration scorecard, and pass-23 remediation plan. B25 still fails with 6 unresolved major findings: product-doc reconciliation gaps, B20 CTA wrapping, failed workflow/persona scorecards, 7 lifecycle gaps, repeated Ad-Free panels, and visible framework/surface copy leakage. Pass 23 starts from `b25-remediation-plan-b25-v4-pass-23.md`. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets `80146f7`; pass 16 iteration `3ad49ea`; pass 17 iteration `bc99df3`; card-surface registry prep `3606c8c`; pass 18 iteration `574cff3`; fresh-LLM hardening `bf7f393`; pass 19 fresh UX review `97d1a82`; pass 20 iteration `6ff5b8d`; pass 21 iteration `97096d9`; pass 22 iteration `TBD-pass-22` |
 
 ## Phase Outcome Summary
 
@@ -1803,6 +1803,28 @@ Closeout rule for reopened phases:
   `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-22.md` with `9` tickets and
   `3` remediation batches.
 - **Commit, v4 pass 21:** `97096d9`.
+- **Execution record, v4 pass 22:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-22.md`, updated Product Docs V2
+  community example rows for exact workflow/persona/semantic mappings, added richer domain previews
+  for Camera Club, Platform Social, and Ad-Free Community workflows, exposed interaction-model
+  summaries on rich workflow surfaces, and adjusted B20 action label wrapping. Focused production UX
+  tests, `flutter analyze apps/loom_communities_demo`, and formatting passed before full capture. Full
+  B12-B20 screenshot capture passed with `198` screenshots, `66` workflows, and `9` workflow
+  manifests; capture coverage passed; the B25 collector generated `195` schema v4 screen rows;
+  workflow/persona coverage passed `68 / 68`; visual inspection passed `195 / 195`. Fresh LLM Product
+  Docs reconciliation failed with `6` major product-doc/scope findings. Fresh LLM Vision UX review
+  failed with `5` major findings: B20 CTA wrapping, failed workflow/persona scorecards, seven
+  lifecycle failures, repeated Ad-Free checkout panels, and visible framework/surface copy leakage.
+  `b25_workflow_interaction_model_judge.dart` improved from `22 / 68` failing lifecycle rows to
+  `7 / 68`, but still failed. `production_ux_judge.dart` failed `9` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-22.md`. The iteration
+  scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-22.md` records
+  `B25 can pass=false`, `0` blockers, `6` unresolved major findings, `3` resolved
+  blocker/major findings, and `5` newly introduced blocker/major findings under the fresh LLM review.
+  The next-pass remediation planner generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-23.md` with `9` tickets and
+  `3` remediation batches.
+- **Commit, v4 pass 22:** `TBD-pass-22`.
 
 ## Gate Evidence Template
 

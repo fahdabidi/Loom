@@ -1,6 +1,6 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-21`
+Review run: `b25-v4-pass-22`
 
 Status: `llm-vision-review-fail`
 
@@ -8,20 +8,22 @@ Final decision: `fail`
 
 Screen rows collected: 195
 
-Holistic direct-question answers: 5
+Holistic direct-question answers: 6
 
-Workflow/persona scorecards: 68 (11 blocking)
+Workflow/persona scorecards: 68 (17 blocking)
 
-Workflow lifecycle scorecards: 68 (22 blocking)
+Workflow lifecycle scorecards: 68 (7 blocking)
 
 ## Current Findings
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
 | `B25-WORKFLOW-LIFECYCLE-INCOMPLETE` | major | open | Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence. |
-| `B25-VISION-UX-P21-001-INCOMPLETE-LIFECYCLES` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
-| `B25-VISION-UX-P21-002-B20-CTA-WRAPPING` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
-| `B25-VISION-UX-P21-003-REPEATED-GENERIC-SURFACE-PANELS` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
+| `B25-VISION-UX-P22-001-B20-CTA-WRAPPING` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
+| `B25-VISION-UX-P22-002-FAILED-WORKFLOW-PERSONA-SCORECARDS` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
+| `B25-VISION-UX-P22-003-FAILED-LIFECYCLE-SCORECARDS` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
+| `B25-VISION-UX-P22-004-ADFREE-REPEATED-CHECKOUT-PANELS` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
+| `B25-VISION-UX-P22-005-VISIBLE-SURFACE-COPY-LEAKAGE` | major | open | Remediate the visible product UX issue, recapture screenshots, and rerun the LLM vision UX review. |
 
 ## Community Product Experience Docs
 
@@ -43,11 +45,12 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 62 |  |  |
-| Does it feel like a rich product/community experience for the target persona? | `fail` | 66 |  |  |
-| Is it organized around community content and jobs-to-be-done rather than workflow machinery? | `fail` | 68 |  |  |
-| Are primary workflows domain-native instead of repeated generic cards? | `fail` | 55 |  |  |
-| Do screenshots show complete lifecycle, receiver, and alternate-action states? | `fail` | 35 |  |  |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 58 |  |  |
+| Does it feel like a rich product/community experience for the target user, not a workflow surface? | `fail` | 61 |  |  |
+| Are primary workflows organized around community content and jobs-to-be-done? | `fail` | 64 |  |  |
+| Are surfaces domain-native and distinct for each community and workflow? | `fail` | 54 |  |  |
+| Do screenshots visibly prove full lifecycle, alternate, and receiver states? | `fail` | 38 |  |  |
+| Are visible layout defects such as clipped/wrapped CTA text, crowding, repeated generic panels, weak hierarchy, or thin content absent? | `fail` | 42 |  |  |
 
 ## Workflow/Persona Scorecards
 
@@ -80,31 +83,31 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `b25-wp-025-mosque-announcement-community-mosque-owner` | `pass` | 3 | Workflow/persona review passed for `mosque-announcement` / `owner`. |
 | `b25-wp-026-mosque-event-rsvp-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-event-rsvp` / `member`. |
 | `b25-wp-027-mosque-volunteer-signup-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-volunteer-signup` / `member`. |
-| `b25-wp-028-mosque-donor-visibility-community-mosque-donor` | `pass` | 3 | Workflow/persona review passed for `mosque-donor-visibility` / `donor`. |
-| `b25-wp-029-mosque-donation-payment-community-mosque-donor` | `pass` | 3 | Workflow/persona review passed for `mosque-donation-payment` / `donor`. |
-| `b25-wp-030-mosque-care-request-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-care-request` / `member`. |
-| `b25-wp-031-mosque-neutral-notification-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-neutral-notification` / `member`. |
+| `b25-wp-028-mosque-donor-visibility-community-mosque-donor` | `fail` | 3 | Workflow/persona review failed for `mosque-donor-visibility` / `donor` after LLM vision import. |
+| `b25-wp-029-mosque-donation-payment-community-mosque-donor` | `fail` | 3 | Workflow/persona review failed for `mosque-donation-payment` / `donor` after LLM vision import. |
+| `b25-wp-030-mosque-care-request-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-care-request` / `member` after LLM vision import. |
+| `b25-wp-031-mosque-neutral-notification-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-neutral-notification` / `member` after LLM vision import. |
 | `b25-wp-032-mosque-search-ai-citation-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-search-ai-citation` / `member`. |
 | `b25-wp-033-chess-local-install-open-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-local-install-open` / `member`. |
 | `b25-wp-034-chess-route-home-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-route-home` / `member`. |
 | `b25-wp-035-chess-match-result-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-match-result` / `member`. |
-| `b25-wp-036-photo-walk-rsvp-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `photo-walk-rsvp` / `member` after LLM vision import. |
-| `b25-wp-037-critique-submission-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `critique-submission` / `member` after LLM vision import. |
+| `b25-wp-036-photo-walk-rsvp-community-camera-club-member` | `pass` | 3 | Workflow/persona review passed for `photo-walk-rsvp` / `member`. |
+| `b25-wp-037-critique-submission-community-camera-club-member` | `pass` | 3 | Workflow/persona review passed for `critique-submission` / `member`. |
 | `b25-wp-038-gear-loan-request-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `gear-loan-request` / `member` after LLM vision import. |
 | `b25-wp-039-platform-messages-entry-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-messages-entry` / `member`. |
-| `b25-wp-040-platform-connections-entry-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-connections-entry` / `member`. |
-| `b25-wp-041-platform-connection-invite-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-connection-invite` / `member`. |
-| `b25-wp-042-platform-blocked-target-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-blocked-target` / `member`. |
+| `b25-wp-040-platform-connections-entry-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-connections-entry` / `member` after LLM vision import. |
+| `b25-wp-041-platform-connection-invite-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-connection-invite` / `member` after LLM vision import. |
+| `b25-wp-042-platform-blocked-target-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-blocked-target` / `member` after LLM vision import. |
 | `b25-wp-043-platform-message-stream-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-message-stream` / `member`. |
 | `b25-wp-044-platform-in-stream-ad-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-in-stream-ad` / `member`. |
-| `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-top-banner-no-fill` / `member`. |
-| `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-sensitive-no-fill` / `member`. |
+| `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-top-banner-no-fill` / `member` after LLM vision import. |
+| `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-sensitive-no-fill` / `member` after LLM vision import. |
 | `b25-wp-047-ad-off-member-checkout-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-member-checkout` / `member` after LLM vision import. |
 | `b25-wp-048-ad-off-community-checkout-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-community-checkout` / `member` after LLM vision import. |
 | `b25-wp-049-ad-off-entitlement-status-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-entitlement-status` / `member` after LLM vision import. |
 | `b25-wp-050-ad-off-receipt-evidence-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-receipt-evidence` / `member` after LLM vision import. |
 | `b25-wp-051-ad-off-ad-suppression-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-ad-suppression` / `member` after LLM vision import. |
-| `b25-wp-052-ad-off-settlement-utility-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-settlement-utility` / `member` after LLM vision import. |
+| `b25-wp-052-ad-off-settlement-utility-community-ad-off-member` | `pass` | 3 | Workflow/persona review passed for `ad-off-settlement-utility` / `member`. |
 | `b25-wp-053-export-import-preview-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-import-preview` / `owner`. |
 | `b25-wp-054-export-import-replay-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-import-replay` / `owner`. |
 | `b25-wp-055-export-protected-redaction-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-protected-redaction` / `owner`. |
@@ -137,13 +140,13 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `b25-wp-009-book-search-ai-digest-community-book-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `book-search-ai-digest` / `member`. |
 | `b25-wp-010-book-export-metadata-community-book-club-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `book-export-metadata` / `owner`. |
 | `b25-wp-011-soccer-guardian-join-approval-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-guardian-join-approval` / `guardian`. |
-| `b25-wp-012-soccer-team-roster-community-youth-soccer-coach-lifecycle` | `fail` | primary semantic action; alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `soccer-team-roster` / `coach`: primary semantic action, alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-012-soccer-team-roster-community-youth-soccer-coach-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-team-roster` / `coach`. |
 | `b25-wp-013-soccer-minor-redaction-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-minor-redaction` / `guardian`. |
-| `b25-wp-014-soccer-registration-payment-community-youth-soccer-guardian-lifecycle` | `fail` | semantic interaction model | Workflow lifecycle review failed for `soccer-registration-payment` / `guardian`: semantic interaction model. |
-| `b25-wp-015-soccer-practice-schedule-community-youth-soccer-guardian-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `soccer-practice-schedule` / `guardian`: alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-014-soccer-registration-payment-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-registration-payment` / `guardian`. |
+| `b25-wp-015-soccer-practice-schedule-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-practice-schedule` / `guardian`. |
 | `b25-wp-016-soccer-reminder-notification-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-reminder-notification` / `guardian`. |
-| `b25-wp-017-soccer-export-metadata-community-youth-soccer-owner-lifecycle` | `fail` | alternate/change/reject affordance; receiver/continuation state | Workflow lifecycle review failed for `soccer-export-metadata` / `owner`: alternate/change/reject affordance, receiver/continuation state. |
-| `b25-wp-018-hoa-dues-payment-community-hoa-member-lifecycle` | `fail` | semantic interaction model | Workflow lifecycle review failed for `hoa-dues-payment` / `member`: semantic interaction model. |
+| `b25-wp-017-soccer-export-metadata-community-youth-soccer-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-export-metadata` / `owner`. |
+| `b25-wp-018-hoa-dues-payment-community-hoa-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-dues-payment` / `member`. |
 | `b25-wp-019-hoa-member-document-community-hoa-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-member-document` / `member`. |
 | `b25-wp-020-hoa-facility-reservation-community-hoa-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-facility-reservation` / `member`. |
 | `b25-wp-021-hoa-architectural-request-community-hoa-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-architectural-request` / `owner`. |
@@ -153,31 +156,31 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `b25-wp-025-mosque-announcement-community-mosque-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-announcement` / `owner`. |
 | `b25-wp-026-mosque-event-rsvp-community-mosque-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-event-rsvp` / `member`. |
 | `b25-wp-027-mosque-volunteer-signup-community-mosque-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-volunteer-signup` / `member`. |
-| `b25-wp-028-mosque-donor-visibility-community-mosque-donor-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `mosque-donor-visibility` / `donor`: alternate/change/reject affordance, semantic interaction model. |
-| `b25-wp-029-mosque-donation-payment-community-mosque-donor-lifecycle` | `fail` | semantic interaction model | Workflow lifecycle review failed for `mosque-donation-payment` / `donor`: semantic interaction model. |
-| `b25-wp-030-mosque-care-request-community-mosque-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `mosque-care-request` / `member`: alternate/change/reject affordance, semantic interaction model. |
-| `b25-wp-031-mosque-neutral-notification-community-mosque-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `mosque-neutral-notification` / `member`: alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-028-mosque-donor-visibility-community-mosque-donor-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-donor-visibility` / `donor`. |
+| `b25-wp-029-mosque-donation-payment-community-mosque-donor-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-donation-payment` / `donor`. |
+| `b25-wp-030-mosque-care-request-community-mosque-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-care-request` / `member`. |
+| `b25-wp-031-mosque-neutral-notification-community-mosque-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-neutral-notification` / `member`. |
 | `b25-wp-032-mosque-search-ai-citation-community-mosque-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-search-ai-citation` / `member`. |
 | `b25-wp-033-chess-local-install-open-community-chess-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `chess-local-install-open` / `member`. |
 | `b25-wp-034-chess-route-home-community-chess-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `chess-route-home` / `member`. |
 | `b25-wp-035-chess-match-result-community-chess-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `chess-match-result` / `member`. |
-| `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `fail` | persistent result state | Workflow lifecycle review failed for `photo-walk-rsvp` / `member`: persistent result state. |
-| `b25-wp-037-critique-submission-community-camera-club-member-lifecycle` | `fail` | semantic interaction model | Workflow lifecycle review failed for `critique-submission` / `member`: semantic interaction model. |
-| `b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `gear-loan-request` / `member`: alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `photo-walk-rsvp` / `member`. |
+| `b25-wp-037-critique-submission-community-camera-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `critique-submission` / `member`. |
+| `b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle` | `fail` | decision information | Workflow lifecycle review failed for `gear-loan-request` / `member`: decision information. |
 | `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-messages-entry` / `member`. |
 | `b25-wp-040-platform-connections-entry-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-connections-entry` / `member`. |
 | `b25-wp-041-platform-connection-invite-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-connection-invite` / `member`. |
-| `b25-wp-042-platform-blocked-target-community-platform-social-member-lifecycle` | `fail` | concrete object/context; alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `platform-blocked-target` / `member`: concrete object/context, alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-042-platform-blocked-target-community-platform-social-member-lifecycle` | `fail` | concrete object/context | Workflow lifecycle review failed for `platform-blocked-target` / `member`: concrete object/context. |
 | `b25-wp-043-platform-message-stream-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-message-stream` / `member`. |
-| `b25-wp-044-platform-in-stream-ad-community-platform-social-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `platform-in-stream-ad` / `member`: alternate/change/reject affordance, semantic interaction model. |
-| `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `platform-top-banner-no-fill` / `member`: alternate/change/reject affordance, semantic interaction model. |
-| `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `platform-sensitive-no-fill` / `member`: alternate/change/reject affordance, semantic interaction model. |
+| `b25-wp-044-platform-in-stream-ad-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-in-stream-ad` / `member`. |
+| `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-top-banner-no-fill` / `member`. |
+| `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-sensitive-no-fill` / `member`. |
 | `b25-wp-047-ad-off-member-checkout-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-member-checkout` / `member`: persistent result state, receiver/continuation state. |
-| `b25-wp-048-ad-off-community-checkout-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-community-checkout` / `member`: persistent result state, receiver/continuation state. |
-| `b25-wp-049-ad-off-entitlement-status-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-entitlement-status` / `member`: persistent result state, receiver/continuation state. |
-| `b25-wp-050-ad-off-receipt-evidence-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-receipt-evidence` / `member`: persistent result state, receiver/continuation state. |
-| `b25-wp-051-ad-off-ad-suppression-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-ad-suppression` / `member`: persistent result state, receiver/continuation state. |
-| `b25-wp-052-ad-off-settlement-utility-community-ad-off-member-lifecycle` | `fail` | persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-settlement-utility` / `member`: persistent result state, receiver/continuation state. |
+| `b25-wp-048-ad-off-community-checkout-community-ad-off-member-lifecycle` | `fail` | persistent result state | Workflow lifecycle review failed for `ad-off-community-checkout` / `member`: persistent result state. |
+| `b25-wp-049-ad-off-entitlement-status-community-ad-off-member-lifecycle` | `fail` | primary semantic action | Workflow lifecycle review failed for `ad-off-entitlement-status` / `member`: primary semantic action. |
+| `b25-wp-050-ad-off-receipt-evidence-community-ad-off-member-lifecycle` | `fail` | primary semantic action | Workflow lifecycle review failed for `ad-off-receipt-evidence` / `member`: primary semantic action. |
+| `b25-wp-051-ad-off-ad-suppression-community-ad-off-member-lifecycle` | `fail` | primary semantic action; persistent result state; receiver/continuation state | Workflow lifecycle review failed for `ad-off-ad-suppression` / `member`: primary semantic action, persistent result state, receiver/continuation state. |
+| `b25-wp-052-ad-off-settlement-utility-community-ad-off-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `ad-off-settlement-utility` / `member`. |
 | `b25-wp-053-export-import-preview-community-export-migration-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `export-import-preview` / `owner`. |
 | `b25-wp-054-export-import-replay-community-export-migration-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `export-import-replay` / `owner`. |
 | `b25-wp-055-export-protected-redaction-community-export-migration-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `export-protected-redaction` / `owner`. |
