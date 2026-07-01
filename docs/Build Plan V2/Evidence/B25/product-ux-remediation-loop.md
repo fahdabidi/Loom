@@ -464,4 +464,4 @@ findings were resolved in pass 9.
   into genuinely community-specific product surfaces, close the `28` lifecycle scorecards, and either
   redesign or exclude platform/harness rows from production product review scope before another full
   B12-B20 recapture.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `562a424`.
