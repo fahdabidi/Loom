@@ -310,7 +310,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Your memberships determine which community actions are available. Choose a role to review permissions, receiver states, and available community tasks.',
+                    'Your memberships determine which community actions are available. Choose the role you want to use in this community.',
                   ),
                   const SizedBox(height: 8),
                   for (final persona in personas)
@@ -379,7 +379,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           ),
           IconButton(
             key: const ValueKey('persona-picker-button'),
-            tooltip: 'Personas',
+            tooltip: 'Switch role',
             onPressed: () => _showPersonaPicker(experience, activePersona),
             icon: const Icon(Icons.people_outline),
           ),
@@ -613,6 +613,9 @@ List<_CommunityWorkflowSection> _communitySectionsFor(
 const List<String> _orderedSectionTitles = [
   'Announcements',
   'Upcoming events',
+  'Knowledge and search',
+  'Sponsored placement',
+  'Ad-free account',
   'Giving',
   'Care and volunteers',
   'Requests and approvals',
@@ -650,12 +653,22 @@ IconData _communityIconFor(String extensionId) {
 String _sectionTitleFor(LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
   final title = workflow.title.toLowerCase();
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return 'Knowledge and search';
+  }
+  if (id.contains('in-stream-ad') ||
+      id.contains('top-banner') ||
+      id.contains('no-fill') ||
+      id.contains('sensitive-no-fill') ||
+      id.contains('sponsor')) {
+    return 'Sponsored placement';
+  }
   if (id.contains('announcement') ||
       id.contains('publish') ||
       id.contains('notification') ||
-      id.contains('reminder') ||
-      id.contains('digest') ||
-      id.contains('search-ai')) {
+      id.contains('reminder')) {
     return 'Announcements';
   }
   if (id.contains('rsvp') ||
@@ -665,11 +678,13 @@ String _sectionTitleFor(LoomWorkflowDefinition workflow) {
       title.contains('photo-walk')) {
     return 'Upcoming events';
   }
+  if (id.contains('ad-off')) {
+    return 'Ad-free account';
+  }
   if (id.contains('payment') ||
       id.contains('dues') ||
       id.contains('donation') ||
       id.contains('checkout') ||
-      id.contains('ad-off') ||
       title.contains('receipt') ||
       title.contains('reservation')) {
     return 'Giving';
@@ -712,6 +727,10 @@ String _sectionSubtitleFor(String title, LoomExperienceDefinition experience) {
       return 'Dates, capacity, and attendance actions.';
     case 'Giving':
       return 'Payments, donations, receipts, and member preferences.';
+    case 'Knowledge and search':
+      return 'Cited answers, source visibility, and saved digests.';
+    case 'Sponsored placement':
+      return 'Reserved ad slots, disclosures, no-fill state, and member controls.';
     case 'Care and volunteers':
       return 'Private requests, volunteer shifts, and member support.';
     case 'Requests and approvals':
@@ -732,6 +751,10 @@ IconData _sectionIconFor(String title) {
       return Icons.event_outlined;
     case 'Giving':
       return Icons.volunteer_activism_outlined;
+    case 'Knowledge and search':
+      return Icons.manage_search_outlined;
+    case 'Sponsored placement':
+      return Icons.campaign_outlined;
     case 'Care and volunteers':
       return Icons.handshake_outlined;
     case 'Requests and approvals':
@@ -2552,7 +2575,7 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
           ? 'Sensitive no-fill recorded'
           : banner
           ? 'Banner no-fill recorded'
-          : 'Sponsored message detailsed',
+          : 'Sponsored message details',
       completeBody: sensitive
           ? 'Protected context, no-fill reason, layout preservation, and no-click state remain visible.'
           : banner
@@ -2974,7 +2997,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
           body: 'Admin can correct allocation before final settlement.',
         ),
       ],
-      completeTitle: 'Settlement detailsed',
+      completeTitle: 'Settlement recorded',
       completeBody:
           'The settlement surface shows amount, destination, audit, correction option, and utility status.',
       receivedTitle: 'Settlement state ready',
@@ -4709,8 +4732,15 @@ class _ProductSurfaceFrame extends StatelessWidget {
         onPressed: onPressed,
         onReceivePressed: onReceivePressed,
       ),
-      _RichWorkflowLayout.paymentReceipt ||
-      _RichWorkflowLayout.adEntitlement => _ReceiptProductFrame(
+      _RichWorkflowLayout.paymentReceipt => _ReceiptProductFrame(
+        spec: spec,
+        contract: contract,
+        workflow: workflow,
+        view: view,
+        onPressed: onPressed,
+        onReceivePressed: onReceivePressed,
+      ),
+      _RichWorkflowLayout.adEntitlement => _AdFreeProductFrame(
         spec: spec,
         contract: contract,
         workflow: workflow,
@@ -4975,6 +5005,93 @@ class _ReceiptProductFrame extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             _PaymentReceiptPreview(spec: spec),
+            const SizedBox(height: 12),
+            _SurfaceActionOrResult(
+              spec: spec,
+              contract: contract,
+              workflow: workflow,
+              view: view,
+              onPressed: onPressed,
+              onReceivePressed: onReceivePressed,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AdFreeProductFrame extends StatelessWidget {
+  const _AdFreeProductFrame({
+    required this.spec,
+    required this.contract,
+    required this.workflow,
+    required this.view,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final _RichWorkflowSpec spec;
+  final LoomProductionWorkflowContract contract;
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = spec.accent;
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: spec.accent.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Icon(spec.icon, color: spec.accent, size: 30),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        spec.title,
+                        style: textTheme.headlineSmall?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        spec.body,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.84),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _AdEntitlementPreview(spec: spec),
             const SizedBox(height: 12),
             _SurfaceActionOrResult(
               spec: spec,
@@ -5771,13 +5888,25 @@ class _AdEntitlementPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(spec.accent);
+    final title = spec.title.toLowerCase();
+    final account =
+        title.contains('ad-off') ||
+        title.contains('ad-free') ||
+        title.contains('settlement') ||
+        title.contains('entitlement') ||
+        title.contains('receipt');
     final sponsored =
-        !spec.title.toLowerCase().contains('no-fill') &&
-        !spec.title.toLowerCase().contains('guard') &&
-        !spec.title.toLowerCase().contains('suppression');
+        !account &&
+        !title.contains('no-fill') &&
+        !title.contains('guard') &&
+        !title.contains('suppression');
     return _ProductPreviewCard(
       spec: spec,
-      title: sponsored ? 'In-stream placement' : 'Ad slot state',
+      title: sponsored
+          ? 'In-stream placement'
+          : account
+          ? 'Ad-free account'
+          : 'Ad slot state',
       children: [
         DecoratedBox(
           decoration: BoxDecoration(
@@ -5804,6 +5933,8 @@ class _AdEntitlementPreview extends StatelessWidget {
                       child: Text(
                         sponsored
                             ? 'Sponsored by Neighborhood Newsletter'
+                            : account
+                            ? 'Ad-free status active'
                             : 'No sponsored message right now',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: foreground,
@@ -5817,6 +5948,8 @@ class _AdEntitlementPreview extends StatelessWidget {
                 Text(
                   sponsored
                       ? 'Disclosure, sponsor creative, impression state, dismiss, report, and manage-ad controls sit inside the stream.'
+                      : account
+                      ? 'Entitlement, receipt, renewal, restore action, and affected ad slots stay together without payment-screen context.'
                       : 'Reserved slot, no-fill reason, privacy-safe suppression, and manage-ad controls preserve layout without covering content.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: foreground.withValues(alpha: 0.86),
@@ -7526,16 +7659,16 @@ List<_ActionSurfaceDetail> _actionProofRowsFor(_RichWorkflowLayout layout) {
     ],
     _RichWorkflowLayout.adEntitlement => const [
       _ActionSurfaceDetail(
-        icon: Icons.campaign_outlined,
-        title: 'Ad placement',
+        icon: Icons.block_outlined,
+        title: 'Ad-free account',
         body:
-            'Reserved slot, sponsor or no-fill reason, disclosure, and report/dismiss actions are visible.',
+            'Entitlement scope, renewal or expiry, receipt link, restore/manage action, and affected ad slots are visible.',
       ),
       _ActionSurfaceDetail(
-        icon: Icons.block_outlined,
-        title: 'Ad-free entitlement',
+        icon: Icons.account_balance_wallet_outlined,
+        title: 'Receipt or settlement',
         body:
-            'Suppression status, receipt, restore/manage option, and fallback no-fill state remain visible.',
+            'Payment receipt, settlement ID, utility allocation, audit status, correction, and rollback path remain visible where applicable.',
       ),
     ],
     _RichWorkflowLayout.rosterProfile => const [
@@ -7708,17 +7841,32 @@ class _AdEntitlementActionConsole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = '${spec.title} ${spec.subtitle}'.toLowerCase();
+    final settlement = text.contains('settlement');
+    final account =
+        text.contains('ad-off') ||
+        text.contains('ad-free') ||
+        text.contains('entitlement') ||
+        text.contains('receipt') ||
+        settlement;
     return _DomainActionConsole(
       spec: spec,
-      title: 'Sponsored-message controls',
-      body:
-          'Review reserved slot behavior, disclosure, no-fill reason, entitlement, receipt, and restore option.',
+      title: settlement
+          ? 'Settlement and audit'
+          : account
+          ? 'Ad-free account controls'
+          : 'Sponsored-message controls',
+      body: settlement
+          ? 'Review funded amount, settlement ID, utility impact, audit status, and correction or rollback path.'
+          : account
+          ? 'Review entitlement, renewal, receipt, restore/manage action, and affected ad slots.'
+          : 'Review reserved slot behavior, disclosure, no-fill reason, entitlement, receipt, and restore option.',
       primaryLabel: actionLabel,
-      alternateLabels: const [
-        'Manage entitlement',
-        'Report ad issue',
-        'Restore receipt',
-      ],
+      alternateLabels: settlement
+          ? const ['Correct allocation', 'Rollback', 'Export audit']
+          : account
+          ? const ['Manage subscription', 'Restore purchase', 'Open receipt']
+          : const ['Manage entitlement', 'Report ad issue', 'Restore receipt'],
       primaryIcon: Icons.block_outlined,
       leadingRows: spec.detailRows.take(4).toList(),
       resultRows: spec.stateRows.take(4).toList(),
@@ -7889,7 +8037,7 @@ class _DomainActionConsole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = _foregroundFor(spec.accent);
+    final foreground = spec.accent;
     final textTheme = Theme.of(context).textTheme;
     final proofRows = _actionProofRowsFor(spec.layout);
     final outlined = OutlinedButton.styleFrom(
@@ -8884,7 +9032,7 @@ class _PersonaStatusStrip extends StatelessWidget {
                   vertical: 8,
                 ),
                 child: Text(
-                  '$personaCount personas',
+                  '$personaCount roles',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: foreground,
                     fontWeight: FontWeight.w700,
@@ -9572,6 +9720,47 @@ LoomWorkflowCardSurfaceRegistryEntry _cardSurfaceRegistryEntryForWorkflowId(
       alternateActions: const ['Edit published update', 'Unpublish'],
     );
   }
+  if (id.contains('ad-off')) {
+    if (id.contains('settlement')) {
+      return _registryEntry(
+        workflowId: workflowId,
+        cardSurfaceFamily: 'ad-off-settlement',
+        apiContract: 'CommunityAdOffSettlementApi',
+        requiredInteractions: const [
+          'calculateUtilityAllocation',
+          'getSettlementRecord',
+          'reviewSettlement',
+          'correctAllocation',
+          'rollbackSettlement',
+          'exportSettlementAudit',
+          'memberSettlementVisibility',
+        ],
+        primaryActions: const ['Review settlement', 'Export audit'],
+        alternateActions: const ['Correct allocation', 'Rollback'],
+      );
+    }
+    return _registryEntry(
+      workflowId: workflowId,
+      cardSurfaceFamily: 'ad-off-entitlement',
+      apiContract: 'CommunityAdOffEntitlementApi',
+      requiredInteractions: const [
+        'startCheckout',
+        'confirmEntitlement',
+        'restoreEntitlement',
+        'manageSubscription',
+        'openReceipt',
+        'listSuppressedAdSlots',
+        'verifyNoFillReason',
+        'renewOrCancel',
+      ],
+      primaryActions: const [
+        'Activate ad-free',
+        'Manage subscription',
+        'Restore purchase',
+      ],
+      alternateActions: const ['Open receipt', 'View suppressed slots'],
+    );
+  }
   if (id.contains('ad-off') ||
       id.contains('payment') ||
       id.contains('donation') ||
@@ -10223,6 +10412,21 @@ String _receiverActionLabel({
 String _workflowCategoryFor(LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
   final title = workflow.title.toLowerCase();
+  if (id.contains('ad-off')) {
+    return 'Ad-free';
+  }
+  if (id.contains('search') ||
+      id.contains('digest') ||
+      id.contains('citation')) {
+    return 'Knowledge';
+  }
+  if (id.contains('in-stream-ad') ||
+      id.contains('top-banner') ||
+      id.contains('no-fill') ||
+      id.contains('sensitive-no-fill') ||
+      id.contains('sponsor')) {
+    return 'Ads';
+  }
   if (id.contains('rsvp') ||
       title.contains('event') ||
       title.contains('schedule') ||
@@ -10233,16 +10437,13 @@ String _workflowCategoryFor(LoomWorkflowDefinition workflow) {
       id.contains('dues') ||
       id.contains('donation') ||
       id.contains('checkout') ||
-      id.contains('ad-off') ||
       title.contains('receipt') ||
       title.contains('reservation')) {
     return 'Payment';
   }
   if (id.contains('announcement') ||
       id.contains('publish') ||
-      id.contains('notification') ||
-      id.contains('digest') ||
-      id.contains('search-ai')) {
+      id.contains('notification')) {
     return 'Publishing';
   }
   if (id.contains('approval') ||
@@ -10259,7 +10460,6 @@ String _workflowCategoryFor(LoomWorkflowDefinition workflow) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('ad') ||
       id.contains('banner') ||
       id.contains('blocked') ||
       id.contains('stream')) {
@@ -10274,6 +10474,12 @@ String _surfaceLabelFor(String category) {
       return 'Event details';
     case 'Payment':
       return 'Payment details';
+    case 'Ad-free':
+      return 'Ad-free account';
+    case 'Ads':
+      return 'Ad placement';
+    case 'Knowledge':
+      return 'Knowledge answer';
     case 'Publishing':
       return 'Member update';
     case 'Approval':
@@ -10317,16 +10523,21 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Record donation';
   }
   if (id.contains('checkout')) {
-    return 'Confirm ad-off';
+    return id.contains('ad-off')
+        ? 'Start ad-free checkout'
+        : 'Confirm checkout';
   }
   if (id.contains('entitlement')) {
-    return 'Confirm status';
+    return 'Manage entitlement';
   }
   if (id.contains('receipt')) {
-    return 'Confirm receipt';
+    return 'Open receipt';
   }
   if (id.contains('suppression')) {
-    return 'Confirm ad state';
+    return 'Verify ad suppression';
+  }
+  if (id.contains('settlement')) {
+    return 'Review settlement';
   }
   if (id.contains('announcement')) {
     return 'Publish announcement';
@@ -10430,11 +10641,15 @@ String _alternateActionLabelFor(LoomWorkflowDefinition workflow) {
       id.contains('photo-walk')) {
     return 'Change response';
   }
+  if (id.contains('ad-off')) {
+    return id.contains('settlement')
+        ? 'Correct allocation'
+        : 'Restore or cancel';
+  }
   if (id.contains('payment') ||
       id.contains('dues') ||
       id.contains('donation') ||
-      id.contains('checkout') ||
-      id.contains('ad-off')) {
+      id.contains('checkout')) {
     return 'Change amount';
   }
   if (id.contains('document')) {
@@ -10497,6 +10712,11 @@ String _decisionSummaryFor(String category, LoomWorkflowDefinition workflow) {
       id.contains('photo-walk')) {
     return 'Event date, time, location, capacity, and Going/Maybe/Not going options are visible.';
   }
+  if (id.contains('ad-off')) {
+    return id.contains('settlement')
+        ? 'Funded amount, settlement ID, utility allocation, audit status, correction, and rollback path are visible.'
+        : 'Entitlement scope, renewal or expiry, receipt link, restore/manage action, and affected ad slots are visible.';
+  }
   if (id.contains('payment') ||
       id.contains('dues') ||
       id.contains('donation') ||
@@ -10554,6 +10774,11 @@ String _receiverStateSummaryFor(
       id.contains('photo-walk')) {
     return 'The calendar, attendee roster, and member record remain visible after the response.';
   }
+  if (id.contains('ad-off')) {
+    return id.contains('settlement')
+        ? 'Settlement ID, funded amount, audit status, utility impact, correction, and rollback path remain visible.'
+        : 'Ad-free entitlement, receipt, renewal, restore path, and suppressed ad slots remain available.';
+  }
   if (id.contains('payment') ||
       id.contains('dues') ||
       id.contains('donation') ||
@@ -10598,6 +10823,12 @@ String _screenTitleFor(String category, LoomWorkflowDefinition workflow) {
       return 'Event details';
     case 'Payment':
       return 'Payment checkout';
+    case 'Ad-free':
+      return 'Ad-free account';
+    case 'Ads':
+      return 'Ad slot state';
+    case 'Knowledge':
+      return 'Cited answer';
     case 'Publishing':
       return 'Announcement composer';
     case 'Approval':
@@ -10616,6 +10847,12 @@ Color _categoryAccentColor(String category, ColorScheme scheme) {
       return const Color(0xff2f6f9f);
     case 'Payment':
       return const Color(0xff7b4f9d);
+    case 'Ad-free':
+      return const Color(0xff4d668f);
+    case 'Ads':
+      return const Color(0xff6d5a1e);
+    case 'Knowledge':
+      return const Color(0xff4e5fa8);
     case 'Publishing':
       return const Color(0xff00796b);
     case 'Approval':
@@ -10639,6 +10876,12 @@ String _domainSurfaceTitleFor(
       return 'Coordinate attendance';
     case 'Payment':
       return 'Record payment';
+    case 'Ad-free':
+      return 'Manage ad-free account';
+    case 'Ads':
+      return 'Review sponsored placement';
+    case 'Knowledge':
+      return 'Use cited answer';
     case 'Publishing':
       return 'Send community notice';
     case 'Approval':
@@ -10664,6 +10907,12 @@ String _domainSurfaceLeadFor(
         return 'Member attendance and event changes are shown in one place.';
       case 'Payment':
         return 'The member can open the receipt, privacy choice, and amount.';
+      case 'Ad-free':
+        return 'The member sees ad-free entitlement, receipt, renewal, and affected ad slots.';
+      case 'Ads':
+        return 'The member sees disclosure, no-fill reason, dismissal, or report state.';
+      case 'Knowledge':
+        return 'The member sees the cited answer, source visibility, and saved digest state.';
       case 'Publishing':
         return 'The member sees the message, audience, and delivery channel.';
       case 'Approval':
@@ -10681,6 +10930,12 @@ String _domainSurfaceLeadFor(
       return 'This screen helps you publish event details, capacity, and attendance state.';
     case 'Payment':
       return 'This screen helps you capture the amount, receipt, and privacy setting.';
+    case 'Ad-free':
+      return 'This screen helps you manage entitlement, receipt, renewal, restore, and affected ad slots.';
+    case 'Ads':
+      return 'This screen helps you inspect disclosure, reserved slot, sponsor or no-fill reason, and controls.';
+    case 'Knowledge':
+      return 'This screen helps you inspect query, answer, citations, source visibility, and follow-up.';
     case 'Publishing':
       return 'This screen helps you send a scoped announcement to the selected audience.';
     case 'Approval':
@@ -10701,6 +10956,12 @@ String _surfaceInputFor(String category, LoomWorkflowDefinition workflow) {
       return 'Date, location, capacity, and attendee state are included.';
     case 'Payment':
       return 'Amount, payer, privacy choice, and receipt destination are included.';
+    case 'Ad-free':
+      return 'Entitlement scope, renewal, receipt, restore/manage action, and affected ad slots are included.';
+    case 'Ads':
+      return 'Reserved slot, disclosure/no-fill reason, impression state, and report/dismiss controls are included.';
+    case 'Knowledge':
+      return 'Query, answer, citations, source visibility, save/share, and refresh state are included.';
     case 'Publishing':
       return 'Message, audience, preview, and delivery channel are included.';
     case 'Approval':
@@ -10735,6 +10996,12 @@ String _surfaceOutcomeFor(String category, LoomWorkflowDefinition workflow) {
       return 'Attendance, capacity, and reminders update for the community.';
     case 'Payment':
       return 'The payment record and receipt become available to the right member.';
+    case 'Ad-free':
+      return 'The entitlement, renewal or expiry, receipt, restore path, and ad suppression state remain visible.';
+    case 'Ads':
+      return 'The ad slot preserves layout with disclosure, impression/no-fill, and member controls visible.';
+    case 'Knowledge':
+      return 'The cited answer can be saved, shared, refreshed, and checked for stale sources.';
     case 'Publishing':
       return 'The announcement appears in the member inbox and notification channel.';
     case 'Approval':
@@ -10755,6 +11022,12 @@ String _inputSummaryFor(String category, LoomWorkflowDefinition workflow) {
       return 'Date, location, capacity, and attendee details are ready.';
     case 'Payment':
       return 'Amount, payer, privacy choice, and receipt details are ready.';
+    case 'Ad-free':
+      return 'Entitlement scope, receipt, renewal, restore, and suppressed ad slots are ready.';
+    case 'Ads':
+      return 'Disclosure, slot state, no-fill reason, and member controls are ready.';
+    case 'Knowledge':
+      return 'Query, answer, citations, source visibility, and follow-up prompts are ready.';
     case 'Publishing':
       return 'Message, audience, preview, and send timing are ready.';
     case 'Approval':
@@ -10774,6 +11047,12 @@ String _validationSummaryFor(String category) {
   switch (category) {
     case 'Payment':
       return 'Receipt and privacy settings are saved with the payment.';
+    case 'Ad-free':
+      return 'Entitlement, receipt, restore/manage action, and affected ad slots are checked.';
+    case 'Ads':
+      return 'Disclosure, impression/no-fill state, and member controls are checked.';
+    case 'Knowledge':
+      return 'Citations, source visibility, stale-source handling, and saved digest state are checked.';
     case 'Publishing':
       return 'Audience, citation, and notification scope are reviewed before send.';
     case 'Portability':
@@ -10810,6 +11089,12 @@ String _successTitleFor(String category, LoomWorkflowDefinition workflow) {
   switch (category) {
     case 'Payment':
       return 'Receipt saved';
+    case 'Ad-free':
+      return 'Ad-free account updated';
+    case 'Ads':
+      return 'Ad slot recorded';
+    case 'Knowledge':
+      return 'Answer saved';
     case 'Publishing':
       return 'Update sent';
     case 'Approval':
@@ -10852,6 +11137,12 @@ String _successBodyFor(String category, LoomWorkflowDefinition workflow) {
       return 'Event details and attendance records are up to date.';
     case 'Payment':
       return 'The receipt is saved and available to the member.';
+    case 'Ad-free':
+      return 'The entitlement, receipt, renewal, restore path, and suppressed ad slots remain visible.';
+    case 'Ads':
+      return 'The slot keeps disclosure/no-fill state, member control, and stable layout visible.';
+    case 'Knowledge':
+      return 'The cited answer is saved with source visibility and refresh/follow-up actions.';
     case 'Publishing':
       return 'The update is available to the selected audience.';
     case 'Approval':
@@ -10870,6 +11161,12 @@ String _receiverTitleFor(String category, String objectLabel) {
       return 'Event update ready';
     case 'Payment':
       return 'Receipt ready';
+    case 'Ad-free':
+      return 'Ad-free status ready';
+    case 'Ads':
+      return 'Ad slot state ready';
+    case 'Knowledge':
+      return 'Saved answer ready';
     case 'Publishing':
       return 'Update ready';
     case 'Approval':
@@ -10886,6 +11183,12 @@ String _successChipLabelFor(String category) {
   switch (category) {
     case 'Payment':
       return 'Receipt';
+    case 'Ad-free':
+      return 'Ad-free';
+    case 'Ads':
+      return 'Recorded';
+    case 'Knowledge':
+      return 'Saved';
     case 'Publishing':
       return 'Sent';
     case 'Approval':
@@ -10904,6 +11207,12 @@ String _trustSummaryFor(String category) {
   switch (category) {
     case 'Payment':
       return 'Payments and receipts stay tied to the member account.';
+    case 'Ad-free':
+      return 'Ad-free entitlement and receipt records stay tied to the member account.';
+    case 'Ads':
+      return 'Sponsored placement and no-fill decisions preserve member trust.';
+    case 'Knowledge':
+      return 'Answers stay permission-aware and cite visible sources.';
     case 'Publishing':
       return 'Only the selected audience receives the update.';
     case 'Portability':
@@ -10920,6 +11229,12 @@ IconData _iconFor(String category) {
       return Icons.event_available_outlined;
     case 'Payment':
       return Icons.receipt_long_outlined;
+    case 'Ad-free':
+      return Icons.block_outlined;
+    case 'Ads':
+      return Icons.campaign_outlined;
+    case 'Knowledge':
+      return Icons.manage_search_outlined;
     case 'Publishing':
       return Icons.campaign_outlined;
     case 'Approval':
@@ -11122,7 +11437,7 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'garden-coordinator',
       label: 'Garden Coordinator',
       roleLabel: 'Coordinator',
-      description: 'Reviews events, exchanges, and garden exports.',
+      description: 'Coordinates events, exchanges, and garden exports.',
     ),
     LoomPersonaDefinition(
       personaId: 'garden-member',
@@ -11164,7 +11479,7 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'hoa-board',
       label: 'HOA Board',
       roleLabel: 'Board',
-      description: 'Reviews requests, sends decisions, and exports records.',
+      description: 'Manages requests, sends decisions, and exports records.',
     ),
     LoomPersonaDefinition(
       personaId: 'hoa-homeowner',
@@ -11193,7 +11508,7 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'chess-organizer',
       label: 'Chess Organizer',
       roleLabel: 'Organizer',
-      description: 'Reviews community homes and match records.',
+      description: 'Runs community homes and match records.',
     ),
     LoomPersonaDefinition(
       personaId: 'chess-player',
@@ -11207,7 +11522,7 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'camera-organizer',
       label: 'Camera Organizer',
       roleLabel: 'Organizer',
-      description: 'Reviews RSVPs, critiques, and gear-loan requests.',
+      description: 'Coordinates RSVPs, critiques, and gear-loan requests.',
     ),
     LoomPersonaDefinition(
       personaId: 'camera-member',
@@ -11227,13 +11542,13 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
       personaId: 'platform-moderator',
       label: 'Moderator',
       roleLabel: 'Moderator',
-      description: 'Reviews prevention and sensitive-page behavior.',
+      description: 'Manages prevention and sensitive-page behavior.',
     ),
     LoomPersonaDefinition(
       personaId: 'platform-blocked-member',
       label: 'Blocked Member',
       roleLabel: 'Restricted',
-      description: 'Confirms blocked social capabilities stay unavailable.',
+      description: 'Sees restricted social actions and account status.',
     ),
   ],
   'ext_ad_off': [
@@ -11515,7 +11830,7 @@ LoomWorkflowPersonaPolicy _platformPolicy(String workflowId) {
         actorPersonaIds: ['platform-member'],
         receiverPersonaIds: ['platform-moderator'],
         disabledReason:
-            'Blocked or moderator personas do not send this member invite.',
+            'Blocked or moderator roles do not send this member invite.',
         receiverEntryText:
             'A member invite attempt is ready for moderator action.',
         receiverActionText: 'Open invite',
@@ -11569,7 +11884,7 @@ LoomWorkflowPersonaPolicy _adOffPolicy(String workflowId) {
         actorPersonaIds: ['ad-off-admin'],
         readOnlyPersonaIds: ['ad-off-member', 'ad-off-viewer'],
         readOnlyText:
-            'Non-admin personas can open economics without recalculating settlement.',
+            'Non-admin roles can open economics without recalculating settlement.',
       );
   }
   return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['ad-off-admin']);
@@ -11586,7 +11901,7 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
       return const LoomWorkflowPersonaPolicy(
         actorPersonaIds: ['export-owner'],
         readOnlyPersonaIds: ['export-member', 'export-provider'],
-        readOnlyText: 'Non-owner personas open redacted portability evidence.',
+        readOnlyText: 'Non-owner roles open redacted portability evidence.',
       );
     case 'export-full-bundle':
       return const LoomWorkflowPersonaPolicy(

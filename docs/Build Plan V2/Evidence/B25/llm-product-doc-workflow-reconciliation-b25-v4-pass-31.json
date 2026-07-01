@@ -1,0 +1,1659 @@
+﻿{
+    "schemaVersion":  1,
+    "reviewerType":  "llm-product-doc-workflow-reconciliation",
+    "currentReviewRunId":  "b25-v4-pass-31",
+    "freshReview":  true,
+    "appCommitSha":  "1341976",
+    "reviewedProductDocPaths":  [
+                                    "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md"
+                                ],
+    "reviewedEvidencePaths":  [
+                                  "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+                                  "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+                                  "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+                                  "docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+                                  "docs/Build Plan V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md",
+                                  "docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+                                  "docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json"
+                              ],
+    "reviewedScreenRowIds":  [
+                                 "b25-v4-row-001-garden-event-rsvp-0",
+                                 "b25-v4-row-002-garden-event-rsvp-1",
+                                 "b25-v4-row-003-garden-event-rsvp-2",
+                                 "b25-v4-row-004-plant-exchange-submission-0",
+                                 "b25-v4-row-005-plant-exchange-submission-1",
+                                 "b25-v4-row-006-plant-exchange-submission-2",
+                                 "b25-v4-row-007-garden-export-custom-schemas-0",
+                                 "b25-v4-row-008-garden-export-custom-schemas-1",
+                                 "b25-v4-row-009-garden-export-custom-schemas-2",
+                                 "b25-v4-row-010-book-nomination-0",
+                                 "b25-v4-row-011-book-nomination-1",
+                                 "b25-v4-row-012-book-nomination-2",
+                                 "b25-v4-row-013-book-selection-publish-0",
+                                 "b25-v4-row-014-book-selection-publish-1",
+                                 "b25-v4-row-015-book-selection-publish-2",
+                                 "b25-v4-row-016-soccer-team-roster-0",
+                                 "b25-v4-row-017-soccer-team-roster-1",
+                                 "b25-v4-row-018-soccer-team-roster-2",
+                                 "b25-v4-row-019-soccer-reminder-notification-0",
+                                 "b25-v4-row-020-soccer-reminder-notification-1",
+                                 "b25-v4-row-021-soccer-reminder-notification-2",
+                                 "b25-v4-row-022-hoa-facility-reservation-0",
+                                 "b25-v4-row-023-hoa-facility-reservation-1",
+                                 "b25-v4-row-024-hoa-facility-reservation-2",
+                                 "b25-v4-row-025-hoa-export-evidence-0",
+                                 "b25-v4-row-026-hoa-export-evidence-1",
+                                 "b25-v4-row-027-hoa-export-evidence-2",
+                                 "b25-v4-row-028-mosque-donor-visibility-0",
+                                 "b25-v4-row-029-mosque-donor-visibility-1",
+                                 "b25-v4-row-030-mosque-donor-visibility-2",
+                                 "b25-v4-row-031-mosque-search-ai-citation-0",
+                                 "b25-v4-row-032-mosque-search-ai-citation-1",
+                                 "b25-v4-row-033-mosque-search-ai-citation-2",
+                                 "b25-v4-row-034-book-vote-0",
+                                 "b25-v4-row-035-book-vote-1",
+                                 "b25-v4-row-036-book-vote-2",
+                                 "b25-v4-row-037-book-search-ai-digest-0",
+                                 "b25-v4-row-038-book-search-ai-digest-1",
+                                 "b25-v4-row-039-book-search-ai-digest-2",
+                                 "b25-v4-row-040-soccer-minor-redaction-0",
+                                 "b25-v4-row-041-soccer-minor-redaction-1",
+                                 "b25-v4-row-042-soccer-minor-redaction-2",
+                                 "b25-v4-row-043-soccer-export-metadata-0",
+                                 "b25-v4-row-044-soccer-export-metadata-1",
+                                 "b25-v4-row-045-soccer-export-metadata-2",
+                                 "b25-v4-row-046-hoa-architectural-request-0",
+                                 "b25-v4-row-047-hoa-architectural-request-1",
+                                 "b25-v4-row-048-hoa-architectural-request-2",
+                                 "b25-v4-row-049-mosque-announcement-0",
+                                 "b25-v4-row-050-mosque-announcement-1",
+                                 "b25-v4-row-051-mosque-announcement-2",
+                                 "b25-v4-row-052-mosque-donation-payment-0",
+                                 "b25-v4-row-053-mosque-donation-payment-1",
+                                 "b25-v4-row-054-mosque-donation-payment-2",
+                                 "b25-v4-row-055-book-meeting-rsvp-0",
+                                 "b25-v4-row-056-book-meeting-rsvp-1",
+                                 "b25-v4-row-057-book-meeting-rsvp-2",
+                                 "b25-v4-row-058-book-export-metadata-0",
+                                 "b25-v4-row-059-book-export-metadata-1",
+                                 "b25-v4-row-060-book-export-metadata-2",
+                                 "b25-v4-row-061-soccer-registration-payment-0",
+                                 "b25-v4-row-062-soccer-registration-payment-1",
+                                 "b25-v4-row-063-soccer-registration-payment-2",
+                                 "b25-v4-row-064-hoa-dues-payment-0",
+                                 "b25-v4-row-065-hoa-dues-payment-1",
+                                 "b25-v4-row-066-hoa-dues-payment-2",
+                                 "b25-v4-row-067-hoa-committee-decision-0",
+                                 "b25-v4-row-068-hoa-committee-decision-1",
+                                 "b25-v4-row-069-hoa-committee-decision-2",
+                                 "b25-v4-row-070-mosque-event-rsvp-0",
+                                 "b25-v4-row-071-mosque-event-rsvp-1",
+                                 "b25-v4-row-072-mosque-event-rsvp-2",
+                                 "b25-v4-row-073-mosque-care-request-0",
+                                 "b25-v4-row-074-mosque-care-request-1",
+                                 "b25-v4-row-075-mosque-care-request-2",
+                                 "b25-v4-row-076-book-discussion-message-0",
+                                 "b25-v4-row-077-book-discussion-message-1",
+                                 "b25-v4-row-078-book-discussion-message-2",
+                                 "b25-v4-row-079-soccer-guardian-join-approval-0",
+                                 "b25-v4-row-080-soccer-guardian-join-approval-1",
+                                 "b25-v4-row-081-soccer-guardian-join-approval-2",
+                                 "b25-v4-row-082-soccer-practice-schedule-0",
+                                 "b25-v4-row-083-soccer-practice-schedule-1",
+                                 "b25-v4-row-084-soccer-practice-schedule-2",
+                                 "b25-v4-row-085-hoa-member-document-0",
+                                 "b25-v4-row-086-hoa-member-document-1",
+                                 "b25-v4-row-087-hoa-member-document-2",
+                                 "b25-v4-row-088-hoa-owner-notification-0",
+                                 "b25-v4-row-089-hoa-owner-notification-1",
+                                 "b25-v4-row-090-hoa-owner-notification-2",
+                                 "b25-v4-row-091-mosque-volunteer-signup-0",
+                                 "b25-v4-row-092-mosque-volunteer-signup-1",
+                                 "b25-v4-row-093-mosque-volunteer-signup-2",
+                                 "b25-v4-row-094-mosque-neutral-notification-0",
+                                 "b25-v4-row-095-mosque-neutral-notification-1",
+                                 "b25-v4-row-096-mosque-neutral-notification-2",
+                                 "b25-v4-row-097-chess-local-install-open-0",
+                                 "b25-v4-row-098-chess-local-install-open-1",
+                                 "b25-v4-row-099-chess-local-install-open-2",
+                                 "b25-v4-row-100-chess-route-home-0",
+                                 "b25-v4-row-101-chess-route-home-1",
+                                 "b25-v4-row-102-chess-route-home-2",
+                                 "b25-v4-row-103-chess-match-result-0",
+                                 "b25-v4-row-104-chess-match-result-1",
+                                 "b25-v4-row-105-chess-match-result-2",
+                                 "b25-v4-row-106-photo-walk-rsvp-0",
+                                 "b25-v4-row-107-photo-walk-rsvp-1",
+                                 "b25-v4-row-108-photo-walk-rsvp-2",
+                                 "b25-v4-row-109-critique-submission-0",
+                                 "b25-v4-row-110-critique-submission-1",
+                                 "b25-v4-row-111-critique-submission-2",
+                                 "b25-v4-row-112-gear-loan-request-0",
+                                 "b25-v4-row-113-gear-loan-request-1",
+                                 "b25-v4-row-114-gear-loan-request-2",
+                                 "b25-v4-row-115-platform-messages-entry-0",
+                                 "b25-v4-row-116-platform-messages-entry-1",
+                                 "b25-v4-row-117-platform-messages-entry-2",
+                                 "b25-v4-row-118-platform-blocked-target-0",
+                                 "b25-v4-row-119-platform-blocked-target-1",
+                                 "b25-v4-row-120-platform-blocked-target-2",
+                                 "b25-v4-row-121-platform-top-banner-no-fill-0",
+                                 "b25-v4-row-122-platform-top-banner-no-fill-1",
+                                 "b25-v4-row-123-platform-top-banner-no-fill-2",
+                                 "b25-v4-row-124-ad-off-community-checkout-0",
+                                 "b25-v4-row-125-ad-off-community-checkout-1",
+                                 "b25-v4-row-126-ad-off-community-checkout-2",
+                                 "b25-v4-row-127-ad-off-ad-suppression-0",
+                                 "b25-v4-row-128-ad-off-ad-suppression-1",
+                                 "b25-v4-row-129-ad-off-ad-suppression-2",
+                                 "b25-v4-row-130-export-import-replay-0",
+                                 "b25-v4-row-131-export-import-replay-1",
+                                 "b25-v4-row-132-export-import-replay-2",
+                                 "b25-v4-row-133-export-full-bundle-0",
+                                 "b25-v4-row-134-export-full-bundle-1",
+                                 "b25-v4-row-135-export-full-bundle-2",
+                                 "b25-v4-row-136-export-transfer-verification-0",
+                                 "b25-v4-row-137-export-transfer-verification-1",
+                                 "b25-v4-row-138-export-transfer-verification-2",
+                                 "b25-v4-row-139-platform-connections-entry-0",
+                                 "b25-v4-row-140-platform-connections-entry-1",
+                                 "b25-v4-row-141-platform-connections-entry-2",
+                                 "b25-v4-row-142-platform-message-stream-0",
+                                 "b25-v4-row-143-platform-message-stream-1",
+                                 "b25-v4-row-144-platform-message-stream-2",
+                                 "b25-v4-row-145-platform-sensitive-no-fill-0",
+                                 "b25-v4-row-146-platform-sensitive-no-fill-1",
+                                 "b25-v4-row-147-platform-sensitive-no-fill-2",
+                                 "b25-v4-row-148-ad-off-entitlement-status-0",
+                                 "b25-v4-row-149-ad-off-entitlement-status-1",
+                                 "b25-v4-row-150-ad-off-entitlement-status-2",
+                                 "b25-v4-row-151-ad-off-settlement-utility-0",
+                                 "b25-v4-row-152-ad-off-settlement-utility-1",
+                                 "b25-v4-row-153-ad-off-settlement-utility-2",
+                                 "b25-v4-row-154-export-protected-redaction-0",
+                                 "b25-v4-row-155-export-protected-redaction-1",
+                                 "b25-v4-row-156-export-protected-redaction-2",
+                                 "b25-v4-row-157-export-redacted-bundle-0",
+                                 "b25-v4-row-158-export-redacted-bundle-1",
+                                 "b25-v4-row-159-export-redacted-bundle-2",
+                                 "b25-v4-row-160-export-transfer-rollback-0",
+                                 "b25-v4-row-161-export-transfer-rollback-1",
+                                 "b25-v4-row-162-export-transfer-rollback-2",
+                                 "b25-v4-row-163-platform-connection-invite-0",
+                                 "b25-v4-row-164-platform-connection-invite-1",
+                                 "b25-v4-row-165-platform-connection-invite-2",
+                                 "b25-v4-row-166-platform-in-stream-ad-0",
+                                 "b25-v4-row-167-platform-in-stream-ad-1",
+                                 "b25-v4-row-168-platform-in-stream-ad-2",
+                                 "b25-v4-row-169-ad-off-member-checkout-0",
+                                 "b25-v4-row-170-ad-off-member-checkout-1",
+                                 "b25-v4-row-171-ad-off-member-checkout-2",
+                                 "b25-v4-row-172-ad-off-receipt-evidence-0",
+                                 "b25-v4-row-173-ad-off-receipt-evidence-1",
+                                 "b25-v4-row-174-ad-off-receipt-evidence-2",
+                                 "b25-v4-row-175-export-import-preview-0",
+                                 "b25-v4-row-176-export-import-preview-1",
+                                 "b25-v4-row-177-export-import-preview-2",
+                                 "b25-v4-row-178-export-schema-listing-0",
+                                 "b25-v4-row-179-export-schema-listing-1",
+                                 "b25-v4-row-180-export-schema-listing-2",
+                                 "b25-v4-row-181-export-checksum-evidence-0",
+                                 "b25-v4-row-182-export-checksum-evidence-1",
+                                 "b25-v4-row-183-export-checksum-evidence-2",
+                                 "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+                                 "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+                                 "b25-v4-row-186-wf-demo-app-persona-picker-0",
+                                 "b25-v4-row-187-wf-demo-app-persona-picker-1",
+                                 "b25-v4-row-188-wf-community-persona-aware-ux-0",
+                                 "b25-v4-row-189-wf-community-persona-aware-ux-1",
+                                 "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+                                 "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+                                 "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+                                 "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+                                 "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+                                 "b25-v4-row-195-wf-multi-persona-workflow-evidence-5"
+                             ],
+    "reviewedScreenshotHashes":  [
+                                     "ef3749d00738a042493ed4b52d238cc95b66dccf5a63dc2cb80acbd02df6df00",
+                                     "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+                                     "a327b7666e947e40df9c581da26b12a444089874f22fc120c2711dd814231f25",
+                                     "df68258e4083172d8542ec358bc98d3fc364ebed323e8a41ea2b1f64524a9b16",
+                                     "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1",
+                                     "dc548cefd4c408ae1d5bd6ea976a207bd84ec6f58818f54f3df604fd40e5e562",
+                                     "da25563f81536b3e1b789ac78a5820bd4c84e5ed029e787271d6e4471806d23a",
+                                     "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143",
+                                     "44bf2f943a4fa0dc505e29a876ec69e2ff32f51009f999706b6ae749c2d96435",
+                                     "fc1ce987f772f48a45338fd48db559340f6c489151f6610f9dfca42d7dece65e",
+                                     "16ff197fe838c1f7368deb7e523be0c21e0e3a79858be83f77318ee156937d52",
+                                     "c2f32fefe3366e7ed532d8e60b03e46d232096b055c3d9ccff533dc0ba6fccaa",
+                                     "c358c121cb025785471000cd0f66553286d074e3a57527396190c6a06abf48db",
+                                     "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524",
+                                     "4bed222a17304f58f1071de084730df562db8848cabab6beb41a9cf48e7343b9",
+                                     "bd97de277beca442672855c309b7b548286bdf19b4e060066ec57129da323f50",
+                                     "3b8b9e956f0ba4e174bf716ae592eba2c8e46f62620ce4097f7217b2ddffeb3f",
+                                     "9ef993352f9fc891a8119ebf166c33ace84250c544a93a76c25a9d401520fa16",
+                                     "fdacd9bee9f82523bed501414b967571bfcfe8f32f7d6718e78aeacd349187a6",
+                                     "014e567dd55a0ffaccbf0d581c70e1d08f54ca209e06a99631b860a2b062c83c",
+                                     "ff0cc5bfcb74515ae11d6b53d5ea02a622674f3b214c04e92b22d331c1144fd9",
+                                     "252e27c9badc7b1b3d8d00eff67a7092302910a920487a82ea34a13202b97e59",
+                                     "301a34e98c37ff61990eef2916b2123bd688a5af533b7fc55340db6aed05dc9d",
+                                     "7844ae3a8b58c1d0ff14b44087290efcf860a5c69b7d5127cd5b9b5359ce0137",
+                                     "5f70256be5c22e9128ba73bb9fd99e683e06d81cc6a0cfed7fe34218970747d4",
+                                     "3637e2f534762324f2dcf60ad6ba02cecf021ff46bcfe3c716cb290736085fb2",
+                                     "e1cfc302e90782fda1848f9e253c11059390e939beb46245abe2b6dd6c988494",
+                                     "d13a23805f731806b730f7a0f27f07c487e1f7f58309f04babc6dbd628a9aa9f",
+                                     "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447",
+                                     "f8dbff6d4fae57deef815ba5682da90f645def5dbe09b5608334883fea0a79cd",
+                                     "63997b071f995fb350e360390a91649221032fd0aaf5591aa54b165bafa6b896",
+                                     "6f3c5bb2b2f3af0d3b8da76fb4787ac5ef8769ab45132ab8fa43a2f64c853407",
+                                     "abf8322377bc0b1186f2d1eeaae9fc42cea561769d4500921e19957ffab083da",
+                                     "44b76f2b0e6ad8762c8614e1057236ccc34eab5b7171b4f04967f3aad10e8c57",
+                                     "e32a11ee741f0148d6dc064d83b5d0f5c12661bbc255e4ca38795547c226fb59",
+                                     "eabac36feacf73ae8be01a78828b2ca4fce90ad1aac3892f8ecf058c2ec75568",
+                                     "12463bc898e0d29d6dd1bfedda63ed896184e8981474e9b8244707fe43c1a8ba",
+                                     "40740868e4ac1e4f8cd7ee5725967e28bd55f93613da276e2a04b6aac626e19f",
+                                     "347e17572310a0742721ecea5a33b585951523b5c73f1f6bd24834019f981f6d",
+                                     "94b332c047d6bd3b7fccdbee8b8c4ca82c33fa7e1c5ad46909a6fb045c805ef1",
+                                     "b523bc25b476bf62ce073168ddddbf349e70256df197bae3ae65fe753de95e96",
+                                     "12564e5cdb455bb4d7bff03a257bb33e9a1fc919e6bbc34070db8214d08b67ce",
+                                     "d28d38afe70fa7aa948abd91a64eaae4baa29acca407b836fdccfb91a8fee821",
+                                     "8b4cf856f50643e81ff3d14973c87292ced7826508142cf13ff3cd5afe3aded8",
+                                     "19cef73b8d118021f316a5e72c11873054446d80552ed0785ff28713122a0498",
+                                     "d17ccbed8d99da8262279c7dba41edfe91cfe2f1b45e985843e7e4ddd7467771",
+                                     "5d4d6de75c22b8315d9dbd5f7916859311bbb78dfd6a61122d68c40e8b2cd22c",
+                                     "7e06d8369c9f66a4fc171e0c2f2e27940fbb5794e0707735b6d566cb0f86dba8",
+                                     "3f010f3273f67b6aff273b1537860cb4751ba16a24c39a9d9b16079b0d8adcbc",
+                                     "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44",
+                                     "8c879a949beb68ef14e07fd9ba058d7e4f383081c914f055c3fc62747a769376",
+                                     "370ed5396ba48fba8865d470f4c71f4a42bed1b19440c19ce9071adeea2e2fee",
+                                     "4714e8a44423c8f9a9bb79b1139321607fde3a99b451fe4b11619a24c6561021",
+                                     "24802e05d5800a746e2f0304a162b78de8c85afc5a39a05ad6a4b2f0c2ea561d",
+                                     "1947a68efa1242314ec5ba206ef127abb0fff58a16134f194c087de1883b89c7",
+                                     "d14f70288a77ea3ad86cd790291f75f234511f7a024b90eed9c7dbe22284d7cc",
+                                     "5ab003744b08950e16386860c849ff214554ef524dd40232ba6f5829b2ff327c",
+                                     "0c617975ec415ad42fd9f9278246de6023e9be52d9c7a908a3186a611f54222a",
+                                     "12a534e5d787d6433648e3221f14675b51781fb2cdc9a5f340131e32f8203155",
+                                     "a71fa13709a4fafa069da6b585cc9842cfa55e339dd74d83fa978e7f503ae471",
+                                     "01c536f4b8439ac96635bf3ee1ea708f190ce16e1686bb1d464601fa1bfbbec8",
+                                     "144670321e259d54727c566d709d660c6bce0c7b430432778b86cf74dc0af595",
+                                     "991652e835e7f0e7f2c79ed12e249a97f21af8a11b3cd1dbaca4f6a4020c59d4",
+                                     "c9f50db78eadca7dce4dd3f0b10acbc521e94782171e966d6e61a8c0440abe50",
+                                     "c2882993c671354c523a616d698464adb526783851d81203a55183293af1c73a",
+                                     "ed71aa261b2c37f9fb50584c94d6e1188ba82ec3364712a92b7680a60b6c08be",
+                                     "347626d4c5a068178876dc8dfe6fb095a5419838a1c454c4c42cab2d1dd6f807",
+                                     "15342b98d51aa8063e6fcd42cc6e44ad2fa37bbaf5ca9b333b4491f7a28b7a85",
+                                     "5b88a4cc856acbf78a73296b485d6b7bd8ea83805cc203c10cc29a92ab6bf5ef",
+                                     "75a97ee0f0a575bce23db530da089b39c0c0c1fbe4415d919f92156dae3d2abd",
+                                     "f47713eb6df7182a208ba1810ed186f0014354b85eb5470cc98dd6079bd898fc",
+                                     "3b1f63d13561b16f321d7f77f3042fbf16674f2edabbd3f669d04eff127378bd",
+                                     "7a7e50b5ed7942a45f67899299b56f186e30167bccc18a911c7e2ece5e05034b",
+                                     "fe4b89b33dbfb30bdb48d61705454b98e26dd9118e9beb32718a1775b25f628b",
+                                     "9fd426901a3f9d1137595a7cf14c21f227c7353f79cc67ec4de4c998d570f374",
+                                     "63c1e91d7e02ed455a570d2e62ade4c38138e3418e0894c629f8e928d56a410f",
+                                     "e90705523609677dfe743cbf0492701f919a4923603c0c1dddb70d9e1b2f0680",
+                                     "42df170906de13a6f31b6b4ecf637da94047a0b8c6b29711da7501771d1cfada",
+                                     "4a486f2eef4a934cadfa950cc5767f9aa373ca5d3849e7c6e5fc4fff2dc430da",
+                                     "bbc764301b15e6ff6d853c20d7284d1e94e77d80c87a5cc149a178f0ccdc224c",
+                                     "43657491af078b55c81204f588da393255ebe213cb0fad5ed55afda3ebe0541e",
+                                     "3f76410995aee6514ec900431a1d172f1ad17fb15c8fed0d7dacf2716ae17920",
+                                     "cb027fe3577432991767e559efc01dd5153c4de4000205bb8ab7d779e55fb012",
+                                     "df16602abee699b969db9ce3a453c3fbd30b69f0a54379bacb980f949d22e5d9",
+                                     "96e0cc7503745dd93093c9219ad99923771c48230f9e7bed586b16ca76330950",
+                                     "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a",
+                                     "8cda11afe938a4120ef7e44a5f20698c46af29385daa288dce88ee53423c4c2f",
+                                     "331e5d3ba4d4bbd59a478fac3dc30188d28643301a8f8520a06ffe68c5e07c4a",
+                                     "786d3ac23cfdf6a828805bfe6febb7b4990a851217eeafc767fe2705740b7dcf",
+                                     "6c5424f53856dfba531e7742fcb0964f32b9a8f684670871bfc48f512ef11457",
+                                     "e3cee651485adb88f2e06d0a3198313714c05d072ed6d3c4860bd2a8b10cc8b8",
+                                     "49e6fc594c77dca1eb94d587a9ea6482c45fd0f8b42892ccb0aa00b1a1aad937",
+                                     "737e782ed7900e6db0452a3c4c299362eb090a4056055c0d79476db9f18fee40",
+                                     "dbadd537fb7862024d046cf503f39f8264269e3e1f5b1b3871a6ef8abbd8e4ec",
+                                     "27adf4f0d69fbaee141d08a5257ddd2c485f08f05c575cd747b3aadfd5e278d2",
+                                     "d1491ba139aec3bc375adb57935d600ea89d883bb360f882fa6be043385d3f45",
+                                     "affabf88fe29c4e2421b6f893e591db4aff3c230a1c3cb6feb542f0658046866",
+                                     "07baaa0a0f26900925121f7a8d180c60a69dde0e05df52515b1c1c26ab6e11a7",
+                                     "347c01be8b323a940a0db651f82ea1b4688de25d4bbfb2351c706e164d17874b",
+                                     "7898dcf6102081b57fe3958efa1d3ca9bced951df436ec8adaf2de7236a42643",
+                                     "07baaa0a0f26900925121f7a8d180c60a69dde0e05df52515b1c1c26ab6e11a7",
+                                     "b7e0a64014314b4a23b1e4d165e4ec7552a1b0e331ff288ee0b507ba9b9f838c",
+                                     "8c8ab6be3844003c66cebed7879afc625eeaaf4733a9c19065a62f9f6b392e31",
+                                     "d955c8845ed8dc98cd3e843db3c706ad513580ae3ee05707113c77087ecef37e",
+                                     "060d531f51db9aa39a1afeefca4bce9414dfdaaddb34f3c474b1da44d5c5b8a2",
+                                     "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+                                     "574cafe8d81975b1bc69675b69b43bf668fc9b5970d355c2b0e2e665b0f42e3e",
+                                     "7006bccd9582f75dfa7360fccd97ebe5337bc3e9b74b1a9d11a3ac33e670044b",
+                                     "b4d670a73d69c3f2db3ddf955d8674b59fc207a525ae6a120978e01280479481",
+                                     "f910896950ed18f6308f157f1779d51561576da28babb78f93181c959aebc1fb",
+                                     "92c230871b8653c4b3fbcfcf4d588edc7ed88251636197268d14869251d9b6c9",
+                                     "93506ceed2f0c5183776d8ba064738658fa88a703d9cbb0a34af0476ab115720",
+                                     "1a7e077adc751f2839849381b9107eacfe7246bd2259134a8393d5c6022f45fd",
+                                     "f8b52f3c6de939b94068e62b3c117543c995d8c4f4ea150d6bbdec7b0cdab607",
+                                     "bf44c2e4141e37397340c40d36b078375470399b0ffffc867f822debda867d48",
+                                     "93ffbde5b47efd1b951588bc2591327d4d20aa17b0f113b7ecaee00cd1bed78e",
+                                     "35f582072eec14b30e3b3c4280a0e9395ca109ff25721b3598abacbd2602daac",
+                                     "f27e05b0c4e73566ccf27b4b95d04e22093418a80457c2f98eebae6e43382fcc",
+                                     "0ef38f657bcc980b0d0a302fa416778e680ead092655e63c5baa91a34bd5a859",
+                                     "184bfd610cf5b6573ca847429acb00505c71cc2fd38424d888e04c1246bdb6a2",
+                                     "0e36c60c6ce8c104fef9fd875684061b3cb70f68c119aff09ea2ae1743113aa8",
+                                     "4a2dafc487167e5fbcc7a3f67d3224fd6d3e99a90819d2eed0a0e263912289b9",
+                                     "611ba47662c4771c76b78af6178809b423dc684d61cebec484c16d12ddcac818",
+                                     "bd9b195e418193c8d59a18930ce90b3b6e8aae7a416230e6965be8ba28890fbf",
+                                     "fb878979c371e15e401a5bfa3dcd34a887f6b324277481340225673e38fa4f06",
+                                     "e7cbf7cb9319ee41ad5053683eefdcaedda46cf775dc9c8aaa0071320f065bc1",
+                                     "099114860db27369df342e9020428e6cc0fa54d47fa83bdc594572f98290302d",
+                                     "b412a9af6945b19ff7fb400467a6f8f221615e1ee5ab997c16f80d819c96b05a",
+                                     "89073f38da1b44427cd90eb4e295a376f969ca809ce4536f5bf878072087fd87",
+                                     "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+                                     "1a66e12236e0c8b0cfb66995a1d0743d21feac3ca254cf4ee72c11d188353ac8",
+                                     "fb8da8ba6d70ae00ffca02adb9b477e696e037e1d77ca01d0b0ec0bc01b7b69d",
+                                     "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+                                     "8d5cdd9f712d24a8913c3c468efe6fc0a6754e1b7a8c31e8335f28ecc94b168b",
+                                     "5642edf3d3b669e722d72e037431c151e0e04ed74245ea31b7889038e79a8438",
+                                     "dd848bc655bbcbda2cb99b4761ce7565eaf2d0b67132efdfc7287abc186b12a7",
+                                     "b89adada362a544b58820d3ad3a471b2cb70953730e2556294f7d2d3512faa4d",
+                                     "e41b17a5ac44fec9499be4aa279352009a620a1a2fa141288a1b243ea3b6bb70",
+                                     "14934449a9a5539ae89f78a5a9637aaf778d1c81842ad121db3b3b968f79ddd4",
+                                     "3d3ca6398128d6d008a60f7e0860500d0c47f923cd02a607ba112c9cb197a7bc",
+                                     "0cd45773a5ccdd6c621077474d98fcd7f230a6eeef45ef73c02ed16f3ade1ff2",
+                                     "cb87aa49dccad06c0aa6ababe2d16c0c100b90eac3ea7b4b6597cbca2c77594f",
+                                     "93ffbde5b47efd1b951588bc2591327d4d20aa17b0f113b7ecaee00cd1bed78e",
+                                     "58ddf9716e6a522628588d0b5010adaf4734766c5b7824b548fce8f6cde9bfdb",
+                                     "e3bdd065a3131bfadeb0483767747b04f88a2c167322cb366edd7ef13d606002",
+                                     "ad7431dc2317bada08ef250f08741db20b1d684f637d5b3f8ab16a17161a3ffa",
+                                     "3d1634bf37ad22a0817630620470e12ec43d40f5c0a06451fb2e95e2b31ea48d",
+                                     "550cc781871fea433c74019d99b1408501738732a25d4dd7bfdf132a6080bb17",
+                                     "fcac3cf779a08b0164eefe4968f7e766a8263aa05e95d365015741189a65d001",
+                                     "5d36b3b3a91018888873c66b9328b0917746e149418652f43420673a680f633c",
+                                     "c08de0e575d0e47aecf97f5ebff927250f06f48876f1c001eef8c067ccfc2e2c",
+                                     "9c280f42498c52f56b33c10357710fb9b1b6a83bfd3c60b6c03ff18bde219e6e",
+                                     "e290e9dcd8257625215a12f01b80f5630a60b0cb0981ce2f3e4372e5a84a9e6c",
+                                     "4e31628d05326dc236aa76233f9c7c2485223ec298195cc66d15ebd3a6b258c9",
+                                     "ea3f860ebd54d5b5c075160e1fc2d4ba97406861f95d6d38232ebbe299dfd6fa",
+                                     "8d1d7522dedc02c4ff5a6f0c0db8944a60e86289381b968ba8f63c8f2aab37eb",
+                                     "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+                                     "8d5cdd9f712d24a8913c3c468efe6fc0a6754e1b7a8c31e8335f28ecc94b168b",
+                                     "4f609974b9bb397f82b129a16e0794a861d09429500a7854d69c00d068f65f89",
+                                     "bde4866224ad345d68707d121479698d8bcfc5c883a285535ea139812bbadc7c",
+                                     "c4c332bafc942a39bcd1fae1500bd88c9f6925c4e5ad65f8b98d1ee1ce9bf0ce",
+                                     "908e2a425318986dab83a0c4b15c363b5882eee388cf2cf807acbf9cd42807bc",
+                                     "cd71f450c5e4981bdc86e66ab057b6aa2a7783f9888105a851a25e7f099a2e11",
+                                     "3a912fba766a90f89b24e2d35a0ae37b631458141862077eef4d5611b7736c36",
+                                     "d34f379a6158ec97dd484e18b66f041c8d951a9054677ccb7d439897dba570a3",
+                                     "cf4b257599faf41cad75b7d2a425fad29c27af87c9875155d860fd7cb9909ca4",
+                                     "2b4952137ba959f3d8d52b0ef12ccd557cc2929f8f2190154ce7a5e1ba410f18",
+                                     "5da0bc1c170800361ae6d68fb29f5d0f7730f043f8a8a4b2b187fcd90065e7c2",
+                                     "2f62b7ca8e580b69bd4f6f3f4adb5adcced276436aaa6cdbb105e72ac07dfca2",
+                                     "43896712d71327aac08780ff2eef987406d240340bb3239bb1f789aa392ce6f3",
+                                     "37cb5187092b4b03d51b07cbc3159a4bde2450f752626e8e870cba0141744817",
+                                     "ac53d8de41840c6738103b2c471086a0bb60eda7578e3934e7278fafe4630ddf",
+                                     "09c8b43e3e1abb6640105bf40b2de4c7eed41d47e10d2f48f0ba9f0c8f3906e1",
+                                     "cb87c90ef49267ea8cdefd910f12e59bf5d6acd1220df95ab8cb627b3e7bf8bd",
+                                     "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+                                     "1a66e12236e0c8b0cfb66995a1d0743d21feac3ca254cf4ee72c11d188353ac8",
+                                     "1af08b85307eea319b79d81d43213f46e95f80927ca720591b21a1d2f9fa52db",
+                                     "f751fdb15d35ec7fea5b4ccd065f2a47bbde9054f539c3cb1556ad12f887643a",
+                                     "7617defb9f981a5f64fa36be99ba63cd6163dbf952ac6d8390cf3fe0141c3820",
+                                     "6b5d6f59876f51087786f002215b8702900dff48f32ddadc8a71400215dbb896",
+                                     "b77070009ecabd58ca167ce60841f41c1f9d2029dfdaf5855edb08cff59bacfa",
+                                     "09e71494d0a62f094eb5063c002a74c9cd03a3ae488663ce50c53658889eba2d",
+                                     "a98175622442e2f2131164910a92a7b1ec18e4bf501dbd9c7cd29f20d36f6eee",
+                                     "d6bfe1eff0cca2c72125a169316bb74539e67a2b526d7756cc45b6907809d7c8",
+                                     "03050a3045ef8e9984aac6d700cef4bf8ffd14a943118d5750e98f2e7bae4a94",
+                                     "03050a3045ef8e9984aac6d700cef4bf8ffd14a943118d5750e98f2e7bae4a94",
+                                     "4a0e6125b3757ae9ffc647644011fc9830f362795b3fc4197bd0babb61fb4c29",
+                                     "7a7e50b5ed7942a45f67899299b56f186e30167bccc18a911c7e2ece5e05034b",
+                                     "3f010f3273f67b6aff273b1537860cb4751ba16a24c39a9d9b16079b0d8adcbc",
+                                     "3f010f3273f67b6aff273b1537860cb4751ba16a24c39a9d9b16079b0d8adcbc",
+                                     "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44",
+                                     "8c879a949beb68ef14e07fd9ba058d7e4f383081c914f055c3fc62747a769376",
+                                     "33625224ab7ff52e8e862447adeaafa7889e82cacabe8c055ce35b912b542b47",
+                                     "5e5fc32996d313c205def04dfcf37a9522b142209907516ecd8153b4e39630b7",
+                                     "3d72adbe6fcc94ba6f935a0340b4b568b3683ff953de2991fe533f9b2d6c02ad"
+                                 ],
+    "communityResults":  [
+                             {
+                                 "communityName":  "Ad-Free Community",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "ad-off-ad-suppression",
+                                                             "ad-off-community-checkout",
+                                                             "ad-off-entitlement-status",
+                                                             "ad-off-member-checkout",
+                                                             "ad-off-receipt-evidence",
+                                                             "ad-off-settlement-utility"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "ad-off-ad-suppression",
+                                                                "ad-off-community-checkout",
+                                                                "ad-off-entitlement-status",
+                                                                "ad-off-member-checkout",
+                                                                "ad-off-receipt-evidence",
+                                                                "ad-off-settlement-utility"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "ad-off-member-checkout | member | Member checkout | price, payer, payment method, review step, receipt, active entitlement",
+                                                              "ad-off-community-checkout | member | Community ad-off funding | funded coverage, community payer context, review step, settlement status",
+                                                              "ad-off-entitlement-status | member | Entitlement status | active/inactive state, renewal/expiry, managed subscription, affected ad surfaces",
+                                                              "ad-off-receipt-evidence | member | Receipt evidence | receipt ID, amount, payer, date, entitlement link, export/view action",
+                                                              "ad-off-ad-suppression | member | Ad suppression proof | suppressed surface, no-fill/ad-off reason, restoration/manage path",
+                                                              "ad-off-settlement-utility | member | Utility allocation | funded amount, settlement ID, utility impact, audit status"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+                                                            "LLM-B25-WR-013: ad-off-ad-suppression",
+                                                            "LLM-B25-WR-014: ad-off-entitlement-status"
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-124-ad-off-community-checkout-0",
+                                                                      "workflowId":  "ad-off-community-checkout",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_start.png",
+                                                                      "screenshotHash":  "bd9b195e418193c8d59a18930ce90b3b6e8aae7a416230e6965be8ba28890fbf",
+                                                                      "visibleTextExcerpt":  "Community ad-off checkout | Confirm payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage option before checkout. | Ad-free account | Ad-free status active | Entitlement, receipt, renewal..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-125-ad-off-community-checkout-1",
+                                                                      "workflowId":  "ad-off-community-checkout",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_action.png",
+                                                                      "screenshotHash":  "fb878979c371e15e401a5bfa3dcd34a887f6b324277481340225673e38fa4f06",
+                                                                      "visibleTextExcerpt":  "Ad-free account | Ad-free status active | Entitlement, receipt, renewal, restore action, and affected ad slots stay together without payment-screen context. | Payer and scope | Community admin pays 120.00 USD/month for e..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Camera Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "critique-submission",
+                                                             "gear-loan-request",
+                                                             "photo-walk-rsvp"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "critique-submission",
+                                                                "gear-loan-request",
+                                                                "photo-walk-rsvp"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "photo-walk-rsvp | member | Photo walk event detail | named route, date/time, location, capacity, RSVP choice, change path, confirmed state",
+                                                              "critique-submission | member | Critique submission/review | image/work title, prompt, consent note, reviewer queue, edit/withdraw path, result state",
+                                                              "gear-loan-request | member | Gear loan request detail | gear item, owner, borrower count, pickup/return timing, approve/request/change path, return state"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+                                                          "LLM-B25-WR-007: photo-walk-rsvp"
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-106-photo-walk-rsvp-0",
+                                                                      "workflowId":  "photo-walk-rsvp",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+                                                                      "screenshotHash":  "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+                                                                      "visibleTextExcerpt":  "Downtown photo walk RSVP | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-107-photo-walk-rsvp-1",
+                                                                      "workflowId":  "photo-walk-rsvp",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+                                                                      "screenshotHash":  "574cafe8d81975b1bc69675b69b43bf668fc9b5970d355c2b0e2e665b0f42e3e",
+                                                                      "visibleTextExcerpt":  "Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 me..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Cedar Commons HOA",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "hoa-architectural-request",
+                                                             "hoa-committee-decision",
+                                                             "hoa-dues-payment",
+                                                             "hoa-export-evidence",
+                                                             "hoa-facility-reservation",
+                                                             "hoa-member-document",
+                                                             "hoa-owner-notification"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "hoa-architectural-request",
+                                                                "hoa-committee-decision",
+                                                                "hoa-dues-payment",
+                                                                "hoa-export-evidence",
+                                                                "hoa-facility-reservation",
+                                                                "hoa-member-document",
+                                                                "hoa-owner-notification"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "hoa-dues-payment | member | Dues payment | amount and receipt",
+                                                              "hoa-member-document | member | Document center | document title/access",
+                                                              "hoa-facility-reservation | member | Reservation detail | facility/date/status",
+                                                              "hoa-architectural-request | owner | Request form | change details/submitted state",
+                                                              "hoa-committee-decision | owner | Review queue | requester, decision actions, status history, request-changes path",
+                                                              "hoa-owner-notification | owner | Owner notification | sender, audience, body, sent/received state",
+                                                              "hoa-export-evidence | owner | Export status | scope/checksum/rollback"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "LLM-B25-WR-006: hoa-owner-notification"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-022-hoa-facility-reservation-0",
+                                                                      "workflowId":  "hoa-facility-reservation",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+                                                                      "screenshotHash":  "252e27c9badc7b1b3d8d00eff67a7092302910a920487a82ea34a13202b97e59",
+                                                                      "visibleTextExcerpt":  "Clubhouse Room A reservation | Amount, owner, reservation or dues item, receipt destination, retry option, and status are visible. | Event details | Property | Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-023-hoa-facility-reservation-1",
+                                                                      "workflowId":  "hoa-facility-reservation",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+                                                                      "screenshotHash":  "301a34e98c37ff61990eef2916b2123bd688a5af533b7fc55340db6aed05dc9d",
+                                                                      "visibleTextExcerpt":  "Event details | Property | Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is the HOA board. | Record | Community Rules, Room A reservation, dues receipt, or architectural case. | History | Status, reviewer, re..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Chess Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "chess-local-install-open",
+                                                             "chess-match-result",
+                                                             "chess-route-home"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "chess-local-install-open",
+                                                                "chess-match-result",
+                                                                "chess-route-home"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "chess-local-install-open | member | Installed card/open route | parsed Chess Club identity, card, local route, and open state",
+                                                              "chess-route-home | member | Chess home | chess content, route state, next match or result action",
+                                                              "chess-match-result | member | Match result surface | players, round, result, next action, correction path"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-097-chess-local-install-open-0",
+                                                                      "workflowId":  "chess-local-install-open",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_start.png",
+                                                                      "screenshotHash":  "affabf88fe29c4e2421b6f893e591db4aff3c230a1c3cb6feb542f0658046866",
+                                                                      "visibleTextExcerpt":  "Chess Club home | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Confirm player..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-098-chess-local-install-open-1",
+                                                                      "workflowId":  "chess-local-install-open",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_action.png",
+                                                                      "screenshotHash":  "07baaa0a0f26900925121f7a8d180c60a69dde0e05df52515b1c1c26ab6e11a7",
+                                                                      "visibleTextExcerpt":  "Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Club record | Review players, ro..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Data Portability Community",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "export-checksum-evidence",
+                                                             "export-full-bundle",
+                                                             "export-import-preview",
+                                                             "export-import-replay",
+                                                             "export-protected-redaction",
+                                                             "export-redacted-bundle",
+                                                             "export-schema-listing",
+                                                             "export-transfer-rollback",
+                                                             "export-transfer-verification"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "export-checksum-evidence",
+                                                                "export-full-bundle",
+                                                                "export-import-preview",
+                                                                "export-import-replay",
+                                                                "export-protected-redaction",
+                                                                "export-redacted-bundle",
+                                                                "export-schema-listing",
+                                                                "export-transfer-rollback",
+                                                                "export-transfer-verification"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "export-import-preview | owner | Export/import preview | selected scope, redaction preview, destination, change-scope path",
+                                                              "export-import-replay | owner | Import replay | replay source, validation status, retry/cancel, receiver state",
+                                                              "export-protected-redaction | owner | Protected redaction review | protected fields, redaction choices, preview, audit state",
+                                                              "export-schema-listing | owner | Schema listing | schema names, included/excluded components, protected-data labels",
+                                                              "export-full-bundle | owner | Full bundle generation | scope, file count, checksum, download state",
+                                                              "export-redacted-bundle | owner | Redacted bundle generation | redaction summary, checksum, download state",
+                                                              "export-checksum-evidence | owner | Checksum verification | checksum, verification result, retry path",
+                                                              "export-transfer-verification | owner | Provider transfer verification | source/destination, transfer ID, status, retry/cancel path",
+                                                              "export-transfer-rollback | owner | Transfer rollback | rollback reason, source/destination, rollback availability, completed state"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "LLM-B25-WR-015: export-protected-redaction"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-130-export-import-replay-0",
+                                                                      "workflowId":  "export-import-replay",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_start.png",
+                                                                      "screenshotHash":  "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+                                                                      "visibleTextExcerpt":  "Legacy import preview | Preview rows, conflicts, replay checkpoint, and rollback marker. | Export steps | 1 | Rows preview | 48 members, 22 documents, 12 receipts, and three duplicate records are visible. | 2 | Conflict ..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-131-export-import-replay-1",
+                                                                      "workflowId":  "export-import-replay",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_action.png",
+                                                                      "screenshotHash":  "1a66e12236e0c8b0cfb66995a1d0743d21feac3ca254cf4ee72c11d188353ac8",
+                                                                      "visibleTextExcerpt":  "Export steps | 1 | Rows preview | 48 members, 22 documents, 12 receipts, and three duplicate records are visible. | 2 | Conflict choices | Duplicates can be accepted, skipped, or held for owner decision. | 3 | Replay che..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Garden Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "garden-event-rsvp",
+                                                             "garden-export-custom-schemas",
+                                                             "plant-exchange-submission"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "garden-event-rsvp",
+                                                                "garden-export-custom-schemas",
+                                                                "plant-exchange-submission"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "garden-event-rsvp | member | Event detail | date/location/capacity plus RSVP result",
+                                                              "plant-exchange-submission | member | Plant exchange form | labeled details, privacy, reviewer state",
+                                                              "garden-export-custom-schemas | owner | Export package review | selected garden_event and plant_exchange schemas, redaction preview, checksum, destination, change-scope path, download/export status"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-001-garden-event-rsvp-0",
+                                                                      "workflowId":  "garden-event-rsvp",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+                                                                      "screenshotHash":  "ef3749d00738a042493ed4b52d238cc95b66dccf5a63dc2cb80acbd02df6df00",
+                                                                      "visibleTextExcerpt":  "Spring Planting Workshop | Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members. | Sat, Apr 18 | 10:00 AM | Riverside Greenhouse | 18 of 24 spots | Your RSVP | Choose Going, Maybe, or Not goin..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-002-garden-event-rsvp-1",
+                                                                      "workflowId":  "garden-event-rsvp",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_action.png",
+                                                                      "screenshotHash":  "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+                                                                      "visibleTextExcerpt":  "Spring Planting Workshop | Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse | Join the club for bed prep, seedling setup, and a shared planning session before the spring exchange opens. | Choose your response | Your R..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Loom Communities shell",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+
+                                                         ],
+                                 "implementedWorkflowIds":  [
+
+                                                            ],
+                                 "section6RowsReviewed":  [
+
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Masjid Nur",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "mosque-announcement",
+                                                             "mosque-care-request",
+                                                             "mosque-donation-payment",
+                                                             "mosque-donor-visibility",
+                                                             "mosque-event-rsvp",
+                                                             "mosque-neutral-notification",
+                                                             "mosque-search-ai-citation",
+                                                             "mosque-volunteer-signup",
+                                                             "wf_community-persona-aware-ux",
+                                                             "wf_demo-app-persona-picker",
+                                                             "wf_multi-persona-workflow-evidence"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "mosque-announcement",
+                                                                "mosque-care-request",
+                                                                "mosque-donation-payment",
+                                                                "mosque-donor-visibility",
+                                                                "mosque-event-rsvp",
+                                                                "mosque-neutral-notification",
+                                                                "mosque-search-ai-citation",
+                                                                "mosque-volunteer-signup",
+                                                                "wf_community-persona-aware-ux",
+                                                                "wf_demo-app-persona-picker",
+                                                                "wf_multi-persona-workflow-evidence"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "mosque-announcement | owner | Announcement compose/feed | sender, audience, body, timing, sent state, receiver/read state",
+                                                              "mosque-event-rsvp | member | Event detail | event title, date/time, location, capacity, RSVP choice/result",
+                                                              "mosque-volunteer-signup | member | Volunteer shift detail | shift role/time, open spots, volunteer roster/count, signup/edit/cancel state",
+                                                              "mosque-donor-visibility | donor | Donor privacy preference | visibility choice, amount context, receipt visibility, change path",
+                                                              "mosque-donation-payment | donor | Donation/payment | amount, privacy, receipt, payer, retry/manage path",
+                                                              "mosque-care-request | member | Protected care form/review | private/public split, recipient state, status history",
+                                                              "mosque-neutral-notification | member | Notification inbox/detail | sender, audience, message body, timestamp, read/received state",
+                                                              "mosque-search-ai-citation | member | Search/AI answer | query, answer, citation/source visibility, follow-up action",
+                                                              "wf_demo-app-persona-picker | member | Persona switch support surface | available personas, current role, capability preview, disabled/hidden implications",
+                                                              "wf_community-persona-aware-ux | admin | Persona-aware admin view | admin-capable workflow list, disabled/read-only member rows, role explanation",
+                                                              "wf_community-persona-aware-ux | member | Persona-aware member view | member-capable workflow list, read-only/hidden admin rows, role explanation",
+                                                              "wf_multi-persona-workflow-evidence | admin | Actor-to-receiver handoff | admin-created announcement state, persona switch path, receiver target",
+                                                              "wf_multi-persona-workflow-evidence | member | Receiver handoff evidence | received announcement, sender/body/timestamp, read state, continuation action"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+                                                          "LLM-B25-WR-002: mosque-donor-visibility"
+                                                      ],
+                                 "personaStateGaps":  [
+                                                          "LLM-B25-WR-005: mosque-event-rsvp"
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-028-mosque-donor-visibility-0",
+                                                                      "workflowId":  "mosque-donor-visibility",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+                                                                      "screenshotHash":  "d13a23805f731806b730f7a0f27f07c487e1f7f58309f04babc6dbd628a9aa9f",
+                                                                      "visibleTextExcerpt":  "Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Amount, donor visibility, receipt destination, and giving history are visible before saving. | Community care | Privacy c..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-029-mosque-donor-visibility-1",
+                                                                      "workflowId":  "mosque-donor-visibility",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+                                                                      "screenshotHash":  "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447",
+                                                                      "visibleTextExcerpt":  "Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Amount, donor visibility, receipt destination, and giving history are visible before saving. | This view shows editable d..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Neighborhood Book Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "book-discussion-message",
+                                                             "book-export-metadata",
+                                                             "book-meeting-rsvp",
+                                                             "book-nomination",
+                                                             "book-search-ai-digest",
+                                                             "book-selection-publish",
+                                                             "book-vote"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "book-discussion-message",
+                                                                "book-export-metadata",
+                                                                "book-meeting-rsvp",
+                                                                "book-nomination",
+                                                                "book-search-ai-digest",
+                                                                "book-selection-publish",
+                                                                "book-vote"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "book-nomination | member | Nomination form/detail | book title/author/reason and submitted state",
+                                                              "book-vote | member | Vote surface | candidates and voted result",
+                                                              "book-meeting-rsvp | member | Meeting detail | date/location/attendance",
+                                                              "book-discussion-message | member | Discussion thread | prompt/message/sender",
+                                                              "book-selection-publish | owner | Admin publish | selected book/audience/timing",
+                                                              "book-search-ai-digest | member | Search/digest | query/citations/summary",
+                                                              "book-export-metadata | owner | Export status | scope/checksum/redaction"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+                                                          "LLM-B25-WR-003: book-vote"
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "LLM-B25-WR-004: book-search-ai-digest"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-010-book-nomination-0",
+                                                                      "workflowId":  "book-nomination",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+                                                                      "screenshotHash":  "fc1ce987f772f48a45338fd48db559340f6c489151f6610f9dfca42d7dece65e",
+                                                                      "visibleTextExcerpt":  "Nominate Parable of the Sower | Octavia E. Butler - February reading cycle. | Share why this title belongs on the ballot and how it fits the upcoming discussion. | Book title entered | Author confirmed | Discussion reaso..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-011-book-nomination-1",
+                                                                      "workflowId":  "book-nomination",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_action.png",
+                                                                      "screenshotHash":  "16ff197fe838c1f7368deb7e523be0c21e0e3a79858be83f77318ee156937d52",
+                                                                      "visibleTextExcerpt":  "Nominate Parable of the Sower | Parable of the Sower by Octavia E. Butler | Confirm the title, author, member rationale, genre, and meeting cycle before submitting the nomination. | This view shows editable details, curr..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "persona-role-inventory",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "wf_persona-role-inventory-capability-matrix"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "wf_persona-role-inventory-capability-matrix"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "wf_persona-role-inventory-capability-matrix | admin | Persona role matrix | role names, allowed/disabled/hidden states, coverage verdict",
+                                                              "wf_persona-role-inventory-capability-matrix | member | Persona role matrix | member-safe role names, allowed/disabled/hidden states, coverage verdict"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+                                                                      "workflowId":  "wf_persona-role-inventory-capability-matrix",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_active_admin.png",
+                                                                      "screenshotHash":  "d6bfe1eff0cca2c72125a169316bb74539e67a2b526d7756cc45b6907809d7c8",
+                                                                      "visibleTextExcerpt":  "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 roles | Announcements |..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+                                                                      "workflowId":  "wf_persona-role-inventory-capability-matrix",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_picker.png",
+                                                                      "screenshotHash":  "03050a3045ef8e9984aac6d700cef4bf8ffd14a943118d5750e98f2e7bae4a94",
+                                                                      "visibleTextExcerpt":  "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 roles | Announcements |..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Member Social Space",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "platform-blocked-target",
+                                                             "platform-connection-invite",
+                                                             "platform-connections-entry",
+                                                             "platform-in-stream-ad",
+                                                             "platform-messages-entry",
+                                                             "platform-message-stream",
+                                                             "platform-sensitive-no-fill",
+                                                             "platform-top-banner-no-fill"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "platform-blocked-target",
+                                                                "platform-connection-invite",
+                                                                "platform-connections-entry",
+                                                                "platform-in-stream-ad",
+                                                                "platform-messages-entry",
+                                                                "platform-message-stream",
+                                                                "platform-sensitive-no-fill",
+                                                                "platform-top-banner-no-fill"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "platform-messages-entry | member | Message thread entry | sender, recipient, preview/body, read/unread, reply/mute/archive path",
+                                                              "platform-connections-entry | member | Connections entry | suggested member, relationship status, invite/accept/decline/block path",
+                                                              "platform-connection-invite | member | Connection invite | inviter, invite reason, accept/decline/cancel, receiver state",
+                                                              "platform-blocked-target | member | Blocked connection state | blocked member, reason/status, unblock path, safety state",
+                                                              "platform-message-stream | member | Message stream | participants, message preview, timestamp, reply/mark-read/mute state",
+                                                              "platform-in-stream-ad | member | In-stream sponsored item | sponsor, disclosure, content context, impression/click state",
+                                                              "platform-top-banner-no-fill | member | Top banner no-fill | reserved space, no-fill reason, shell layout preserved",
+                                                              "platform-sensitive-no-fill | member | Sensitive no-fill | protected context, ad suppressed state, no content overlap"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+                                                          "LLM-B25-WR-008: platform-blocked-target",
+                                                          "LLM-B25-WR-012: platform-in-stream-ad"
+                                                      ],
+                                 "personaStateGaps":  [
+                                                          "LLM-B25-WR-010: platform-message-stream"
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+                                                            "LLM-B25-WR-009: platform-top-banner-no-fill",
+                                                            "LLM-B25-WR-011: platform-sensitive-no-fill"
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-115-platform-messages-entry-0",
+                                                                      "workflowId":  "platform-messages-entry",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_start.png",
+                                                                      "screenshotHash":  "bf44c2e4141e37397340c40d36b078375470399b0ffffc867f822debda867d48",
+                                                                      "visibleTextExcerpt":  "Conversation | Sender and recipient | Maya Chen -\u003e Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actio..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-116-platform-messages-entry-1",
+                                                                      "workflowId":  "platform-messages-entry",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_action.png",
+                                                                      "screenshotHash":  "93ffbde5b47efd1b951588bc2591327d4d20aa17b0f113b7ecaee00cd1bed78e",
+                                                                      "visibleTextExcerpt":  "Conversation | Sender and recipient | Maya Chen -\u003e Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actio..."
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Riverside Youth Soccer",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "soccer-export-metadata",
+                                                             "soccer-guardian-join-approval",
+                                                             "soccer-minor-redaction",
+                                                             "soccer-practice-schedule",
+                                                             "soccer-registration-payment",
+                                                             "soccer-reminder-notification",
+                                                             "soccer-team-roster"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "soccer-export-metadata",
+                                                                "soccer-guardian-join-approval",
+                                                                "soccer-minor-redaction",
+                                                                "soccer-practice-schedule",
+                                                                "soccer-registration-payment",
+                                                                "soccer-reminder-notification",
+                                                                "soccer-team-roster"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "soccer-guardian-join-approval | guardian | Join approval | guardian request and approval state",
+                                                              "soccer-team-roster | coach | Roster | team list and approved/redacted state",
+                                                              "soccer-minor-redaction | guardian | Protected profile | redacted minor fields",
+                                                              "soccer-registration-payment | guardian | Payment surface | amount, receipt, status",
+                                                              "soccer-practice-schedule | guardian | Schedule detail | date/time/location",
+                                                              "soccer-reminder-notification | guardian | Reminder center | audience/channel/sent state",
+                                                              "soccer-export-metadata | owner | Export status | redaction/checksum/scope"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+                                                          "LLM-B25-WR-001: soccer-team-roster"
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-016-soccer-team-roster-0",
+                                                                      "workflowId":  "soccer-team-roster",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+                                                                      "screenshotHash":  "bd97de277beca442672855c309b7b548286bdf19b4e060066ec57129da323f50",
+                                                                      "visibleTextExcerpt":  "U10 Falcons roster | Open player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive details. | Roster and visibility | Featured player | Leo Rivera, jersey 14, guardian Mia Riv..."
+                                                                  },
+                                                                  {
+                                                                      "rowId":  "b25-v4-row-017-soccer-team-roster-1",
+                                                                      "workflowId":  "soccer-team-roster",
+                                                                      "screenshotPath":  "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+                                                                      "screenshotHash":  "3b8b9e956f0ba4e174bf716ae592eba2c8e46f62620ce4097f7217b2ddffeb3f",
+                                                                      "visibleTextExcerpt":  "Roster and visibility | Featured player | Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday. | Protected fields | Birthdates and medical notes are redacted unless the coach has permission. | Team con..."
+                                                                  }
+                                                              ]
+                             }
+                         ],
+    "findings":  [
+                     {
+                         "findingId":  "LLM-B25-WR-001",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Riverside Youth Soccer",
+                         "workflowId":  "soccer-team-roster",
+                         "persona":  "coach",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-016-soccer-team-roster-0",
+                                                      "b25-v4-row-017-soccer-team-roster-1",
+                                                      "b25-v4-row-018-soccer-team-roster-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "bd97de277beca442672855c309b7b548286bdf19b4e060066ec57129da323f50",
+                                                          "3b8b9e956f0ba4e174bf716ae592eba2c8e46f62620ce4097f7217b2ddffeb3f",
+                                                          "9ef993352f9fc891a8119ebf166c33ace84250c544a93a76c25a9d401520fa16"
+                                                      ],
+                         "visibleTextExcerpt":  "U10 Falcons roster | Open player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive details. | Roster and visibility | Featured player | Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday. | Protected fields | Birthdates and medical notes are redacted unless the coach has permission. | Team context | U10 Falcons practice Saturday at Riverside Field 3. | Roster visibility | Open roster details, update team notes, message guardians, or export a protected team sheet. | Message guardians | Open roster | Community setup files | Riverside Youth Soccer | Roster and visibility | Featured player | Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday. | Protected fields | Birthdates and medical notes are redacted unless the coach has permission. | Team context | U10 F...",
+                         "requiredFix":  "The docs require a coach roster management lifecycle with roster rows, protected minor fields, waiver/status history, edit/request-guardian-update/redact/undo paths, and guardian receiver state. Current rows prove viewing/opening/filtering/exporting the roster, while the current lifecycle scorecard still fails primary semantic action, alternate/change/reject affordance, and semantic interaction model. Add a concrete roster update/save/waiver action, a real edit or undo/redaction alternate path, and a guardian continuation/receiver state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-002",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Masjid Nur",
+                         "workflowId":  "mosque-donor-visibility",
+                         "persona":  "donor",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-028-mosque-donor-visibility-0",
+                                                      "b25-v4-row-029-mosque-donor-visibility-1",
+                                                      "b25-v4-row-030-mosque-donor-visibility-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "d13a23805f731806b730f7a0f27f07c487e1f7f58309f04babc6dbd628a9aa9f",
+                                                          "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447",
+                                                          "f8dbff6d4fae57deef815ba5682da90f645def5dbe09b5608334883fea0a79cd"
+                                                      ],
+                         "visibleTextExcerpt":  "Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Amount, donor visibility, receipt destination, and giving history are visible before saving. | Community care | Privacy checked | Receipt record | Member inbox | This view shows editable details, current progress, and the next step before saving. | Edit response | Save details | Member-visible summary, protected details, receipt or citation, and recipient preview stay visible before sending. | Update privacy | Save visibility | Community setup files | Masjid Nur | Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Amount, donor visibility, receipt destination, and giving history are visible before saving. | This view shows editable details, current progress, and the next step before saving. | E...",
+                         "requiredFix":  "The docs require visibility choice, amount/fund context, receipt visibility, saved preference, visibility history, and a change path. Current screenshots show an anonymous donor preference and saved record, but the current lifecycle scorecard fails persistent result state; the result state does not make the durable chosen visibility/history/receipt visibility concrete enough for later review. Add explicit saved visibility value, receipt visibility, timestamp/history, and change/manage state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-003",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Neighborhood Book Club",
+                         "workflowId":  "book-vote",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-034-book-vote-0",
+                                                      "b25-v4-row-035-book-vote-1",
+                                                      "b25-v4-row-036-book-vote-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "44b76f2b0e6ad8762c8614e1057236ccc34eab5b7171b4f04967f3aad10e8c57",
+                                                          "e32a11ee741f0148d6dc064d83b5d0f5c12661bbc255e4ca38795547c226fb59",
+                                                          "eabac36feacf73ae8be01a78828b2ca4fce90ad1aac3892f8ecf058c2ec75568"
+                                                      ],
+                         "visibleTextExcerpt":  "February book ballot | Vote between three member nominations. | Parable of the Sower is leading the ballot for the next monthly discussion. | 3 nominations | Closes Jan 20 | 1 member vote | Leading title | This view shows editable details, current progress, and the next step before saving. | Change vote | Ballot choice | Your vote will count once for Parable of the Sower and can be changed before the ballot closes. | Record vote | Community setup files | Neighborhood Book Club | February book ballot | February selection ballot | Compare nominated books, confirm your vote, and keep the chosen discussion book visible after voting. | This view shows editable details, current progress, and the next step before saving. | Change vote | Ballot choice | Your vote will count once for Parable of the Sower and can be changed before the ballot closes...",
+                         "requiredFix":  "The docs require candidates, selected/voted result, change/clear vote path, and member receiver state. Current screenshots show candidates and a saved vote, but the current lifecycle scorecard still fails persistent result state. Strengthen the result screen with a durable ballot receipt/audit state, selected title, close/deadline state, and organizer/member continuation state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-004",
+                         "severity":  "major",
+                         "gapType":  "product-doc-interaction-gap",
+                         "communityName":  "Neighborhood Book Club",
+                         "workflowId":  "book-search-ai-digest",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-037-book-search-ai-digest-0",
+                                                      "b25-v4-row-038-book-search-ai-digest-1",
+                                                      "b25-v4-row-039-book-search-ai-digest-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "12463bc898e0d29d6dd1bfedda63ed896184e8981474e9b8244707fe43c1a8ba",
+                                                          "40740868e4ac1e4f8cd7ee5725967e28bd55f93613da276e2a04b6aac626e19f",
+                                                          "347e17572310a0742721ecea5a33b585951523b5c73f1f6bd24834019f981f6d"
+                                                      ],
+                         "visibleTextExcerpt":  "Answer with sources | Query | Query: \"What should we discuss before chapter 6?\" | Answer summary | Focus the chapter 6 discussion on mutual aid, scarcity, and Lauren\u0027s journal voice. | Source snippets | Cites member notes, the February nomination rationale, and the March discussion prompt. | Citation detail | Each citation shows source title, author or member, and why it is visible to this member. | Reading guide answer | Confirm the AI answer, quoted source snippets, citation list, and follow-up prompts before saving it to the club digest. | Reading guide | The digest will save the answer, source citations, and suggested discussion prompts for members. | Ask follow-up | Generate cited answer | Documents and data | Documents, exports, imports, and transfer records. | Neighborhood Book Club | Answer with sources | Query | Query: \"What shou...",
+                         "requiredFix":  "The visible UI implements a cited reading-guide flow with query, answer, source snippets, source visibility, open sources, refine query, save/share/follow-up actions, and saved guide state. The product doc semantic row still uses the generic submit/save/send model and generic result wording, so the docs do not fully specify the workflow visible in screenshots. Update Sections 6-8 and the B25 semantic/card-surface rows to name the cited-answer lifecycle, concrete primary and alternate actions, saved digest result, stale/private-source handling, and receiver/continuation state before judging implementation complete.",
+                         "ticketMode":  "product-doc-update"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-005",
+                         "severity":  "major",
+                         "gapType":  "persona-state-gap",
+                         "communityName":  "Masjid Nur",
+                         "workflowId":  "mosque-event-rsvp",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-070-mosque-event-rsvp-0",
+                                                      "b25-v4-row-071-mosque-event-rsvp-1",
+                                                      "b25-v4-row-072-mosque-event-rsvp-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "75a97ee0f0a575bce23db530da089b39c0c0c1fbe4415d919f92156dae3d2abd",
+                                                          "f47713eb6df7182a208ba1810ed186f0014354b85eb5470cc98dd6079bd898fc",
+                                                          "3b1f63d13561b16f321d7f77f3042fbf16674f2edabbd3f669d04eff127378bd"
+                                                      ],
+                         "visibleTextExcerpt":  "Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat after checking event time, location, host, capacity, and reminder details. | Fri, Mar 14 | 6:45 PM | Fellowship hall | 86 of 120 spots | Event date, time, location, capacity, and Going/Maybe/Not going options are visible. | Change response | Choose RSVP response | Going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | RSVP to event | Knowledge and search | Cited answers, source visibility, and saved digests. | Masjid Nur | Community iftar RSVP | Ramadan community iftar | Confirm the date, time, location, capacity, and family attendance before saving your response. | Event date, time, location, capacity, and Going/Maybe/Not going options are visible. | Change response | Choose RSVP response | Going re...",
+                         "requiredFix":  "The docs require RSVP choice/result plus capacity or attendee state updates and continuation/receiver state. Current screenshots show event details, Going confirmation, and change response, but the lifecycle scorecard fails receiver/continuation state and the capacity/attendee value is not visibly updated after RSVP. Add the post-RSVP attendee/capacity update, reminder/inbox continuation, or receiver state required by the doc, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-006",
+                         "severity":  "major",
+                         "gapType":  "product-doc-interaction-gap",
+                         "communityName":  "Cedar Commons HOA",
+                         "workflowId":  "hoa-owner-notification",
+                         "persona":  "owner",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-088-hoa-owner-notification-0",
+                                                      "b25-v4-row-089-hoa-owner-notification-1",
+                                                      "b25-v4-row-090-hoa-owner-notification-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "331e5d3ba4d4bbd59a478fac3dc30188d28643301a8f8520a06ffe68c5e07c4a",
+                                                          "786d3ac23cfdf6a828805bfe6febb7b4990a851217eeafc767fe2705740b7dcf",
+                                                          "6c5424f53856dfba531e7742fcb0964f32b9a8f684670871bfc48f512ef11457"
+                                                      ],
+                         "visibleTextExcerpt":  "Notice preview | Sender and recipient | From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42. | Message body | Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days. | Delivery | Send today at 4:15 PM to owner inbox and email receipt. | Owner inbox | Owner sees decision, sender, message body, timestamp, condition, and appeal option. | Owner decision notice | Send the owner notice with board sender, decision summary, required paint condition, delivery time, and owner inbox state. | Delivery details | The owner receives the board decision, condition, appeal/reopen option, and message timestamp in their inbox. | Edit notice | Send notification | Giving | Payments, donations, receipts, and member preferences. | Cedar Commons HOA | Notice preview | Sender and recipient | From Cedar Commons...",
+                         "requiredFix":  "The screenshots show a concrete owner notice flow with sender, recipient, body, delivery time, edit notice, save draft, change audience, send notification, delivered state, inbox receipt, and appeal/reopen follow-up. The B25 semantic row is still the generic submit/save/send template, so the product doc does not fully specify the lifecycle now visible in evidence. Replace the generic semantic model with owner-notice-specific decision data, primary send action, edit/save-draft/change-audience alternatives, delivery result, and owner receiver/read state.",
+                         "ticketMode":  "product-doc-update"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-007",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Camera Club",
+                         "workflowId":  "photo-walk-rsvp",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-106-photo-walk-rsvp-0",
+                                                      "b25-v4-row-107-photo-walk-rsvp-1",
+                                                      "b25-v4-row-108-photo-walk-rsvp-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+                                                          "574cafe8d81975b1bc69675b69b43bf668fc9b5970d355c2b0e2e665b0f42e3e",
+                                                          "7006bccd9582f75dfa7360fccd97ebe5337bc3e9b74b1a9d11a3ac33e670044b"
+                                                      ],
+                         "visibleTextExcerpt":  "Downtown photo walk RSVP | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Response choices | Going reserves a spot; Maybe keeps the route in your inbox; Not going releases capacity for another member. | Change response | RSVP to event | Camera Club | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Choose attendance | Event date, capacity, ...",
+                         "requiredFix":  "The docs require named route/date/location/capacity, RSVP choice, change path, and confirmed state. Current screenshots prove route/event detail and action choices, but the current lifecycle scorecard fails persistent result state; the completion screen says RSVP saved without a concrete selected response and later reminder/calendar or capacity continuation. Show the selected attendance value, durable confirmation, change-until deadline, and reminder/capacity continuation state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-008",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-blocked-target",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-118-platform-blocked-target-0",
+                                                      "b25-v4-row-119-platform-blocked-target-1",
+                                                      "b25-v4-row-120-platform-blocked-target-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "f27e05b0c4e73566ccf27b4b95d04e22093418a80457c2f98eebae6e43382fcc",
+                                                          "0ef38f657bcc980b0d0a302fa416778e680ead092655e63c5baa91a34bd5a859",
+                                                          "184bfd610cf5b6573ca847429acb00505c71cc2fd38424d888e04c1246bdb6a2"
+                                                      ],
+                         "visibleTextExcerpt":  "Conversation | Sender and protected recipient | Maya Chen attempted to invite Jordan Lee; Jordan remains protected by an active block. | Attempted invite body | Invite text: \"Join my community circle for Saturday event planning.\" | Community safety record | Safety note from moderator Alex, updated today at 10:30 AM. | Receiver protection | The protected member does not receive unsafe contact. | Blocked connection guard | Show sender, protected recipient, attempted invite body, disabled send option, safety reason, appeal/unblock option, and audit timestamp. | Conversation actions | The member cannot send the invite while the block is active; the attempted message body stays in audit, not in Jordan\u0027s inbox. | Open block details | Confirm blocked state | Member Social Space | Conversation | Sender and protected recipient | Maya Chen attempte...",
+                         "requiredFix":  "The docs require blocked member, reason/status, disabled message/invite state, unblock/appeal/keep-blocked or cancel-invite alternatives, safety audit, and protected receiver state. Current screenshots show the blocked guard and disabled send, but the current lifecycle scorecard fails alternate/change/reject affordance and semantic model; the action row exposes reply/mute/archive rather than the documented unblock/appeal/keep-blocked/cancel-invite choices. Add the documented safety alternatives and receiver protection state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-009",
+                         "severity":  "major",
+                         "gapType":  "surface-mismatch",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-top-banner-no-fill",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-121-platform-top-banner-no-fill-0",
+                                                      "b25-v4-row-122-platform-top-banner-no-fill-1",
+                                                      "b25-v4-row-123-platform-top-banner-no-fill-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "0e36c60c6ce8c104fef9fd875684061b3cb70f68c119aff09ea2ae1743113aa8",
+                                                          "4a2dafc487167e5fbcc7a3f67d3224fd6d3e99a90819d2eed0a0e263912289b9",
+                                                          "611ba47662c4771c76b78af6178809b423dc684d61cebec484c16d12ddcac818"
+                                                      ],
+                         "visibleTextExcerpt":  "Top banner no-fill | Show a clear no-sponsored-message state with reserved space, disclosure, and no overlap. | Ad slot state | No sponsored message right now | Reserved slot, no-fill reason, privacy-safe suppression, and manage-ad controls preserve layout without covering content. | Reserved placement | Top banner slot remains visible with no sponsored message right now. | Reason | No fill: no eligible sponsor for this community moment. | No impression | No impression/click is recorded because the slot is not filled. | Layout | Reserved space prevents overlap, crowding, and content jumps. | Ad-free controls | The banner stays reserved, avoids content jump, and records the no-fill reason. | Refresh slot | Open ad details | Member Social Space | Ad slot state | No sponsored message right now | Reserved slot, no-fill reason, privacy-safe su...",
+                         "requiredFix":  "The docs specify a top-banner no-fill surface with reserved space, no-fill reason, no click/impression state, refresh-slot or inspect-reason alternative, and stable layout. Current screenshots prove the reserved slot, but the action row mixes unrelated ad-off entitlement, receipt, report, and restore controls and the lifecycle scorecard fails alternate/semantic model. Either document those extra ad-off controls for this workflow or remove them from the no-fill flow; in either case show the refresh/inspect no-fill alternative and recapture.",
+                         "ticketMode":  "mixed"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-010",
+                         "severity":  "major",
+                         "gapType":  "persona-state-gap",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-message-stream",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-142-platform-message-stream-0",
+                                                      "b25-v4-row-143-platform-message-stream-1",
+                                                      "b25-v4-row-144-platform-message-stream-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "cb87aa49dccad06c0aa6ababe2d16c0c100b90eac3ea7b4b6597cbca2c77594f",
+                                                          "93ffbde5b47efd1b951588bc2591327d4d20aa17b0f113b7ecaee00cd1bed78e",
+                                                          "58ddf9716e6a522628588d0b5010adaf4734766c5b7824b548fce8f6cde9bfdb"
+                                                      ],
+                         "visibleTextExcerpt":  "Conversation | Sender and recipient | Maya Chen -\u003e Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block remain available. | Community message thread | Read sender, recipient, timestamp, message preview, unread receipt, reply option, mute, and archive controls. | Conversation actions | Reply keeps the thread member-scoped and preserves read/unread receipt. | Archive thread | Send message | Member Social Space | Conversation | Sender and recipient | Maya Chen -\u003e Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block remain available. | Thread a...",
+                         "requiredFix":  "The docs require participants, preview/body, timestamp, reply/mark-read/mute/archive state, and sender/receiver delivery/read continuation. Current screenshots show the thread and actions, but the current lifecycle scorecard fails persistent result state; the completion state does not sufficiently prove a durable reply/read history and receiver continuation beyond a generic thread-updated message. Add explicit read/delivery or reply-history state tied to sender/recipient, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-011",
+                         "severity":  "major",
+                         "gapType":  "surface-mismatch",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-sensitive-no-fill",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-145-platform-sensitive-no-fill-0",
+                                                      "b25-v4-row-146-platform-sensitive-no-fill-1",
+                                                      "b25-v4-row-147-platform-sensitive-no-fill-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "e3bdd065a3131bfadeb0483767747b04f88a2c167322cb366edd7ef13d606002",
+                                                          "ad7431dc2317bada08ef250f08741db20b1d684f637d5b3f8ab16a17161a3ffa",
+                                                          "3d1634bf37ad22a0817630620470e12ec43d40f5c0a06451fb2e95e2b31ea48d"
+                                                      ],
+                         "visibleTextExcerpt":  "Sensitive page ad guard | Show the member why ads are suppressed, preserve layout, and avoid leaking protected context. | Ad slot state | No sponsored message right now | Reserved slot, no-fill reason, privacy-safe suppression, and manage-ad controls preserve layout without covering content. | Sensitive context | Care/protected content suppresses ad targeting and click tracking. | Reason | No fill: sensitive context. | No impression | No impression/click is recorded because the slot is not filled. | Layout | Reserved space prevents overlap, crowding, and content jumps. | Ad-free controls | Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason. | Policy details | Start sensitive page ad status | Member Social Space | Ad slot state | No sponsored message right now | Reserved slot, no-fill reason, privacy...",
+                         "requiredFix":  "The docs require protected context, privacy-safe no-fill reason, no-click state, preserved content layout, and review-policy or hide-explanation alternatives. Current rows show sensitive no-fill, but the action screen switches into sponsored-message/ad-off account controls such as manage entitlement, report ad issue, and restore receipt. The lifecycle scorecard fails alternate/semantic model. Align the UI and docs around the sensitive no-fill policy interaction, add the documented policy/hide alternative, and recapture.",
+                         "ticketMode":  "mixed"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-012",
+                         "severity":  "major",
+                         "gapType":  "visible-proof-gap",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-in-stream-ad",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-166-platform-in-stream-ad-0",
+                                                      "b25-v4-row-167-platform-in-stream-ad-1",
+                                                      "b25-v4-row-168-platform-in-stream-ad-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "cf4b257599faf41cad75b7d2a425fad29c27af87c9875155d860fd7cb9909ca4",
+                                                          "2b4952137ba959f3d8d52b0ef12ccd557cc2929f8f2190154ce7a5e1ba410f18",
+                                                          "5da0bc1c170800361ae6d68fb29f5d0f7730f043f8a8a4b2b187fcd90065e7c2"
+                                                      ],
+                         "visibleTextExcerpt":  "Sponsored stream message | Show sponsor, disclosure, message copy, impression state, and dismiss/report alternatives. | In-stream placement | Sponsored by Neighborhood Newsletter | Disclosure, sponsor creative, impression state, dismiss, report, and manage-ad controls sit inside the stream. | Sponsor | Disclosure: Sponsored by Neighborhood Newsletter. | Reason | Filled ad: eligible community stream placement. | Impression recorded | Impression is recorded with sponsor disclosure and audit trail. | Layout | Reserved space prevents overlap, crowding, and content jumps. | Ad-free controls | The member can dismiss, report, or continue; impression is recorded only for filled ads. | Report sponsor | Open ad details | Member Social Space | In-stream placement | Sponsored by Neighborhood Newsletter | Disclosure, sponsor creative, impression state...",
+                         "requiredFix":  "The docs require sponsor identity, disclosure, body/content context, impression/click state, and report/dismiss/hide or continue controls. Current screenshots show sponsor and report/open details, but the lifecycle scorecard fails alternate/semantic model and the result state is only reviewed. Add visible dismiss/hide/report alternatives, preserve stream position, and show the resulting impression/click/dismiss state, then recapture.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-013",
+                         "severity":  "major",
+                         "gapType":  "surface-mismatch",
+                         "communityName":  "Ad-Free Community",
+                         "workflowId":  "ad-off-ad-suppression",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-127-ad-off-ad-suppression-0",
+                                                      "b25-v4-row-128-ad-off-ad-suppression-1",
+                                                      "b25-v4-row-129-ad-off-ad-suppression-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "099114860db27369df342e9020428e6cc0fa54d47fa83bdc594572f98290302d",
+                                                          "b412a9af6945b19ff7fb400467a6f8f221615e1ee5ab997c16f80d819c96b05a",
+                                                          "89073f38da1b44427cd90eb4e295a376f969ca809ce4536f5bf878072087fd87"
+                                                      ],
+                         "visibleTextExcerpt":  "Ad suppression proof | Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision. | Ad slot state | No sponsored message right now | Reserved slot, no-fill reason, privacy-safe suppression, and manage-ad controls preserve layout without covering content. | Top banner | Suppressed: member ad-off entitlement active. | In-stream placement | Suppressed: no impression or click recorded. | No impression | Analytics records suppression, not an ad impression. | Evidence | Receipt and entitlement link explain the suppression. | Ad-free controls | Confirm ad suppression status, each eligible slot, no impression, and the entitlement that caused it. | Restore ads | Verify ad suppression | Ad-Free Community | Ad slot state | No sponsored message right now | Reserved slot, no-fill reaso...",
+                         "requiredFix":  "The product doc maps this workflow to ad suppression proof and the B25 registry maps it to an ad surface / CommunityAdSurfaceApi. Current screen rows classify it as payment / CommunityPaymentSurfaceApi with target surface requiring amount, so the workflow/persona scorecard fails missing amount even though the visible UI is an ad-suppression proof. Align the evidence/card-surface mapping and semantic model to the documented ad suppression surface, or explicitly update the doc if a payment amount is truly required, then recapture.",
+                         "ticketMode":  "mixed"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-014",
+                         "severity":  "major",
+                         "gapType":  "surface-mismatch",
+                         "communityName":  "Ad-Free Community",
+                         "workflowId":  "ad-off-entitlement-status",
+                         "persona":  "member",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-148-ad-off-entitlement-status-0",
+                                                      "b25-v4-row-149-ad-off-entitlement-status-1",
+                                                      "b25-v4-row-150-ad-off-entitlement-status-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "550cc781871fea433c74019d99b1408501738732a25d4dd7bfdf132a6080bb17",
+                                                          "fcac3cf779a08b0164eefe4968f7e766a8263aa05e95d365015741189a65d001",
+                                                          "5d36b3b3a91018888873c66b9328b0917746e149418652f43420673a680f633c"
+                                                      ],
+                         "visibleTextExcerpt":  "Ad-off entitlement record | Open entitlement scope, expiration, subscription state, restore option, receipt link, and ad-free member view. | Ad-free account | Ad-free status active | Entitlement, receipt, renewal, restore action, and affected ad slots stay together without payment-screen context. | Scope | Member-level ad-off for current account and communities. | Expiration | Active through Aug 30, renews monthly. | Ad-free slots | Eligible sponsored slots are suppressed while active. | Restore | Restore purchase and manage plan remain available. | Ad-free controls | Confirm subscription record, manage subscription, restore purchase, open receipt, or verify suppressed ad slots. | Manage plan | Manage entitlement | Ad-Free Community | Ad-free account | Ad-free status active | Entitlement, receipt, renewal, restore action, and affected ad ...",
+                         "requiredFix":  "The product doc maps entitlement status to active/inactive state, renewal/expiry, managed subscription, affected ad surfaces, and the ad-off entitlement / CommunityAdSurfaceApi registry. Current rows classify it as payment / CommunityPaymentSurfaceApi with a payment amount requirement, causing the scorecard to fail despite visible entitlement status. Align the card-surface/target mapping to entitlement status or revise the doc if payment amount is required on this screen, then recapture.",
+                         "ticketMode":  "mixed"
+                     },
+                     {
+                         "findingId":  "LLM-B25-WR-015",
+                         "severity":  "major",
+                         "gapType":  "product-doc-interaction-gap",
+                         "communityName":  "Data Portability Community",
+                         "workflowId":  "export-protected-redaction",
+                         "persona":  "owner",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "## 8. Content And Seed Data Requirements",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "affectedScreenRowIds":  [
+                                                      "b25-v4-row-154-export-protected-redaction-0",
+                                                      "b25-v4-row-155-export-protected-redaction-1",
+                                                      "b25-v4-row-156-export-protected-redaction-2"
+                                                  ],
+                         "affectedScreenshotPaths":  [
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
+                                                         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
+                                                     ],
+                         "affectedScreenshotHashes":  [
+                                                          "4e31628d05326dc236aa76233f9c7c2485223ec298195cc66d15ebd3a6b258c9",
+                                                          "ea3f860ebd54d5b5c075160e1fc2d4ba97406861f95d6d38232ebbe299dfd6fa",
+                                                          "8d1d7522dedc02c4ff5a6f0c0db8944a60e86289381b968ba8f63c8f2aab37eb"
+                                                      ],
+                         "visibleTextExcerpt":  "Protected redaction preview | Mask protected fields with policy reasons before export. | Export steps | 1 | Protected values | Phone, care, vault, payment, and private notes are masked. | 2 | Policy reason | Each masked field shows the policy and persona allowed to reveal it. | 3 | Before/after | Owner compares source label, exported safe value, and redaction count. | 4 | Owner artifact | Owner can download or transfer only after required verification succeeds. | 5 | Audit trail | Scope, decision, timestamp, checksum, and actor are preserved. | Package progress | Apply the protected-field mask and keep before/after preview, policy reason, and reveal permission visible. | Reveal field | Generate export | Data Portability Community | Export steps | 1 | Protected values | Phone, care, vault, payment, and private notes are masked. | 2 | Polic...",
+                         "requiredFix":  "Current screenshots show protected values, policy reasons, before/after preview, audit trail, change scope, retry, and generate export. The current workflow/persona semantic proof still fails because it expects concrete protected subject/persona terms such as protected youth/minor profile and guardian/coach visibility, while the product doc only specifies generic protected fields/redaction choices. Make the source of truth concrete: either update the product doc/seed requirements to name the protected record classes and reveal personas the proof expects, or update the evidence mapping to the generic Data Portability protected-field model, then recapture.",
+                         "ticketMode":  "mixed"
+                     }
+                 ],
+    "finalDecision":  "fail"
+}

@@ -545,3 +545,42 @@ findings were resolved in pass 9.
   repeated-card scaffold for the failing families, or pause for a planning reset if the next pass does
   not reduce blocker/major counts materially.
 - Evidence/tooling commit: `0dd2c6c`.
+
+### Iteration 28 / `b25-v4-pass-31`
+
+- Status: failed. The pass reduced some targeted copy/surface routing issues but did not reach the
+  production UX bar.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-31.md`, separated knowledge/search,
+  sponsored-placement, and ad-free account sections, moved ad-off entitlement/settlement flows away
+  from generic payment and sponsored-message language, reduced persona-picker harness copy, and added
+  more account-specific ad-free controls.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests. `b25_capture_coverage_gate.dart` passed as commit-eligible. The B25 collector
+  generated `195` schema v4 screen rows; workflow/persona coverage passed `68 / 68`; visual inspection
+  passed `195 / 195`; and the LLM review freshness gate passed for `b25-v4-pass-31`.
+- Product-doc reconciliation: failed with `15` major findings. The reconciliation found that several
+  product docs and screenshots still disagree about concrete lifecycle proof, especially roster
+  management, donor visibility, book vote/search, RSVP result state, HOA owner notice, platform/ad
+  no-fill, ad-off entitlement/suppression, message stream, and export protected-redaction proof.
+- LLM Vision UX review: failed with `4` major findings. The review found the app still has repeated-card
+  fatigue, weak product-surface differentiation, utility/evidence-style screens, and dimmed action
+  states that do not yet feel like modern production community experiences.
+- Workflow interaction model: failed `12 / 68` lifecycle scorecards. Missing groups include primary
+  semantic action, alternate/change/reject affordance, semantic interaction model, persistent result
+  state, decision information, and receiver/continuation state.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-31.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-31.md` records
+  `B25 can pass=false`, `0` blockers, `20` unresolved major findings, `0` resolved
+  blocker/major findings, and `20` new blocker/major finding IDs after the Product Docs
+  reconciliation findings were attached to the main review evidence.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-32.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened and is still not converging. Pass 32 should pause for product-shell
+  planning before more card-copy edits: the current centralized renderer needs first-class tabbed
+  navigation, configurable surface grouping/pinning, expanded/medium/minimized card states, external
+  document opening, and a flexible workflow status/step model before further UX remediation is likely
+  to materially reduce blocker/major findings.
+- Evidence/tooling commit: pending.

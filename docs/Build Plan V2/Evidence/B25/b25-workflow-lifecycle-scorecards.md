@@ -4,8 +4,8 @@
 | --- | --- |
 | Status | `fail` |
 | Scorecards | 68 |
-| Failing scorecards | 11 |
-| Missing lifecycle groups | alternate/change/reject affordance; concrete object/context; decision information; persistent result state; primary semantic action; receiver/continuation state; semantic interaction model |
+| Failing scorecards | 12 |
+| Missing lifecycle groups | alternate/change/reject affordance; decision information; persistent result state; primary semantic action; receiver/continuation state; semantic interaction model |
 
 | Scorecard | Status | Community | Workflow | Persona | Missing lifecycle groups | Target surface |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -21,7 +21,7 @@
 | `b25-wp-010-mosque-donor-visibility-community-mosque-donor-lifecycle` | `fail` | Masjid Nur | `mosque-donor-visibility` | donor | persistent result state | donor privacy preference surface with visibility choice, donation context, confirmation, and receipt visibility state |
 | `b25-wp-011-mosque-search-ai-citation-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-search-ai-citation` | member |  | search/AI answer surface with query, result, citation, source, and follow-up action |
 | `b25-wp-012-book-vote-community-book-club-member-lifecycle` | `fail` | Neighborhood Book Club | `book-vote` | member | persistent result state | book club reading/voting surface with nominations, vote state, selected book, meeting context, and discussion |
-| `b25-wp-013-book-search-ai-digest-community-book-club-member-lifecycle` | `fail` | Neighborhood Book Club | `book-search-ai-digest` | member | concrete object/context; decision information; alternate/change/reject affordance; persistent result state; receiver/continuation state; semantic interaction model | search/AI answer surface with query, result, citation, source, and follow-up action |
+| `b25-wp-013-book-search-ai-digest-community-book-club-member-lifecycle` | `fail` | Neighborhood Book Club | `book-search-ai-digest` | member | decision information; alternate/change/reject affordance; persistent result state; receiver/continuation state; semantic interaction model | search/AI answer surface with query, result, citation, source, and follow-up action |
 | `b25-wp-014-soccer-minor-redaction-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-minor-redaction` | guardian |  | protected youth roster/profile surface with minor-data redaction, guardian visibility, and coach-only detail state |
 | `b25-wp-015-soccer-export-metadata-community-youth-soccer-owner-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-export-metadata` | owner |  | export/import wizard with preview, redaction, checksum, transfer status, and rollback state |
 | `b25-wp-016-hoa-architectural-request-community-hoa-owner-lifecycle` | `pass` | Cedar Commons HOA | `hoa-architectural-request` | owner |  | request detail and admin review queue with submitted data, decision action, status, and notification |
@@ -32,7 +32,7 @@
 | `b25-wp-021-soccer-registration-payment-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-registration-payment` | guardian |  | payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail |
 | `b25-wp-022-hoa-dues-payment-community-hoa-member-lifecycle` | `pass` | Cedar Commons HOA | `hoa-dues-payment` | member |  | payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail |
 | `b25-wp-023-hoa-committee-decision-community-hoa-owner-lifecycle` | `pass` | Cedar Commons HOA | `hoa-committee-decision` | owner |  | request detail and admin review queue with submitted data, decision action, status, and notification |
-| `b25-wp-024-mosque-event-rsvp-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-event-rsvp` | member |  | event detail with schedule, location, capacity/status, RSVP action, and result state |
+| `b25-wp-024-mosque-event-rsvp-community-mosque-member-lifecycle` | `fail` | Masjid Nur | `mosque-event-rsvp` | member | receiver/continuation state | event detail with schedule, location, capacity/status, RSVP action, and result state |
 | `b25-wp-025-mosque-care-request-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-care-request` | member |  | protected care request form and private response/status surface |
 | `b25-wp-026-book-discussion-message-community-book-club-member-lifecycle` | `pass` | Neighborhood Book Club | `book-discussion-message` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-027-soccer-guardian-join-approval-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-guardian-join-approval` | guardian |  | request detail and admin review queue with submitted data, decision action, status, and notification |
