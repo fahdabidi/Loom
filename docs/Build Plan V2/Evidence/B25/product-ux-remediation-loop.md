@@ -583,4 +583,4 @@ findings were resolved in pass 9.
   navigation, configurable surface grouping/pinning, expanded/medium/minimized card states, external
   document opening, and a flexible workflow status/step model before further UX remediation is likely
   to materially reduce blocker/major findings.
-- Evidence/tooling commit: pending.
+- Evidence/tooling commit: `af3ce6e`.
