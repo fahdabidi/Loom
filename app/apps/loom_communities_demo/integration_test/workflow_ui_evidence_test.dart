@@ -673,7 +673,10 @@ Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
   await tester.scrollUntilVisible(
     tab,
     120,
-    scrollable: find.byKey(const ValueKey('community-bottom-tabs')),
+    scrollable: find.descendant(
+      of: find.byKey(const ValueKey('community-bottom-tabs')),
+      matching: find.byType(Scrollable),
+    ),
     maxScrolls: 16,
   );
   await tester.pumpAndSettle();
