@@ -1,33 +1,33 @@
 {
   "schemaVersion": 1,
   "scorecardType": "b25-iteration",
-  "reviewRunId": "b25-v4-pass-25",
+  "reviewRunId": "b25-v4-pass-26",
   "reviewStandardVersion": "b25-production-ux-v4",
-  "generatedAt": "2026-07-01T08:21:55.787870Z",
+  "generatedAt": "2026-07-01T09:58:03.927418Z",
   "status": "fail",
   "finalDecision": "fail",
   "b25CanPass": false,
   "findingCounts": {
     "total": 6,
-    "criticalBlocker": 1,
-    "major": 5,
+    "criticalBlocker": 0,
+    "major": 6,
     "minor": 0,
     "polish": 0,
-    "unresolvedCriticalBlocker": 1,
-    "unresolvedMajor": 5,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 6,
     "unresolvedBlockingMajor": 6,
     "resolvedCriticalBlocker": 0,
     "resolvedMajor": 0,
     "resolvedBlockingMajor": 0
   },
   "convergence": {
-    "previousReviewRunId": "",
+    "previousReviewRunId": "b25-v4-pass-25",
     "resolvedCriticalBlockerThisPass": 0,
     "resolvedMajorThisPass": 0,
-    "newCriticalBlockerThisPass": 1,
+    "newCriticalBlockerThisPass": 0,
     "newMajorThisPass": 5,
-    "resolvedBlockingMajorThisPass": 0,
-    "newBlockingMajorThisPass": 6,
+    "resolvedBlockingMajorThisPass": 5,
+    "newBlockingMajorThisPass": 5,
     "remainingBlockingMajor": 6
   },
   "judgeSummary": {
@@ -41,91 +41,84 @@
   },
   "blockingFindings": [
     {
+      "findingId": "B25-VISION-P26-MAJ-001-repeated-workflow-card-renderer",
+      "severity": "major",
+      "status": "open",
+      "title": "Primary experiences still use one repeated workflow-card renderer across unrelated communities",
+      "requiredFix": "Replace the repeated card renderer with domain-native product surfaces per community: event detail/RSVP, feed/inbox/thread, donation/payment checkout, receipt/history, protected care request form, admin review queue, social connection guard, export/import wizard, and transfer status screens with visibly distinct layouts and content density."
+    },
+    {
+      "findingId": "B25-VISION-P26-MAJ-002-product-copy-still-sounds-like-review-spec-or-harness-language",
+      "severity": "major",
+      "status": "open",
+      "title": "Visible copy still exposes review/spec/harness framing instead of natural product language",
+      "requiredFix": "Rewrite user-facing copy as domain product language. Remove review/spec/test phrasing and local package or persona-preview copy from production-facing screens. Put implementation metadata behind diagnostics, not in the primary community experience."
+    },
+    {
+      "findingId": "B25-VISION-P26-MAJ-003-distinct-workflow-rows-reuse-identical-screenshot-pixels",
+      "severity": "major",
+      "status": "open",
+      "title": "Distinct screen rows reuse identical screenshot hashes and do not prove distinct production states",
+      "requiredFix": "Recapture or redesign the affected workflows so every distinct workflow/persona/state has visibly distinct content, state, and lifecycle proof. If two rows intentionally share a surface, merge the evidence rather than claiming separate production states."
+    },
+    {
+      "findingId": "B25-VISION-P26-MAJ-004-workflow-lifecycles-remain-incomplete-or-wrong-for-production",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycles are not visually complete enough for production handoff, receipt, and recovery states",
+      "requiredFix": "For each affected workflow/persona pair, capture entry, decision, primary action, alternate/change/reject path, persistent result, receipt/history/status, and receiver/continuation states in visible UI. The member/receiver state must not reuse actor/composer copy."
+    },
+    {
+      "findingId": "B25-VISION-P26-MAJ-005-visual-polish-below-production-bar",
+      "severity": "major",
+      "status": "open",
+      "title": "Visual polish remains below the production bar because of title truncation, dense card stacks, and one-note palettes",
+      "requiredFix": "Improve production visual hierarchy: shorter responsive app-bar titles or branded headers, more varied domain components, less oversized card stacking, clearer section density, and layouts that make primary decisions visible without excessive scroll."
+    },
+    {
       "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
       "severity": "major",
       "status": "open",
       "title": "Workflow lifecycle UX is incomplete",
       "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
-    },
-    {
-      "findingId": "LLM-UX-primary-experience-still-uses-one-repeated-workflow-card-renderer-across-unrelated-communities",
-      "severity": "critical-blocker",
-      "status": "open",
-      "title": "Primary experience still uses one repeated workflow-card renderer across unrelated communities",
-      "requiredFix": "Replace the generic workflow-card renderer as the primary UX. Build domain-native surfaces per community/job: event detail and RSVP, donation/payment checkout and receipt, inbox/thread, facility calendar, approval queue, export wizard with real step navigation, roster table/detail, marketplace listing, and critique/media detail."
-    },
-    {
-      "findingId": "LLM-UX-user-facing-copy-still-exposes-review-evidence-platform-and-harness-language",
-      "severity": "major",
-      "status": "open",
-      "title": "User-facing copy still exposes review, evidence, platform, and harness language",
-      "requiredFix": "Rewrite screens in domain user language and remove evidence/test/framework copy. Move persona switching, local package details, no-fill diagnostics, workflow IDs, and generic review scaffolding out of production surfaces or behind explicit developer-only evidence tooling."
-    },
-    {
-      "findingId": "LLM-UX-distinct-workflow-rows-reuse-identical-screenshot-pixels-and-do-not-prove-distinct-production-states",
-      "severity": "major",
-      "status": "open",
-      "title": "Distinct workflow rows reuse identical screenshot pixels and do not prove distinct production states",
-      "requiredFix": "Recapture or redesign distinct workflow states so each workflow/persona row proves its own object, action, result, and continuation state."
-    },
-    {
-      "findingId": "LLM-UX-workflow-lifecycles-are-not-visually-complete-enough-for-production-handoff-receipt-and-recovery-states",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow lifecycles are not visually complete enough for production handoff, receipt, and recovery states",
-      "requiredFix": "For each failing lifecycle, add the missing production state: concrete object/context, decision information, primary semantic action, alternate/change/reject path, durable result/receipt, and receiver or continuation surface."
-    },
-    {
-      "findingId": "LLM-UX-visual-polish-is-below-the-production-bar-because-of-title-truncation-dense-card-stacks-and-one-note-per-community-palettes",
-      "severity": "major",
-      "status": "open",
-      "title": "Visual polish is below the production bar because of title truncation, dense card stacks, and one-note per-community palettes",
-      "requiredFix": "Polish the shell and information hierarchy: avoid clipped primary titles, reduce chip density, use tabs/sections/lists/forms where appropriate, add community-specific identity/content treatment, and vary surface composition by task while preserving accessibility."
     }
   ],
   "resolvedBlockingFindingsThisPass": [],
   "newBlockingFindingsThisPass": [
     {
-      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "findingId": "B25-VISION-P26-MAJ-001-repeated-workflow-card-renderer",
       "severity": "major",
       "status": "open",
-      "title": "Workflow lifecycle UX is incomplete",
-      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+      "title": "Primary experiences still use one repeated workflow-card renderer across unrelated communities",
+      "requiredFix": "Replace the repeated card renderer with domain-native product surfaces per community: event detail/RSVP, feed/inbox/thread, donation/payment checkout, receipt/history, protected care request form, admin review queue, social connection guard, export/import wizard, and transfer status screens with visibly distinct layouts and content density."
     },
     {
-      "findingId": "LLM-UX-primary-experience-still-uses-one-repeated-workflow-card-renderer-across-unrelated-communities",
-      "severity": "critical-blocker",
-      "status": "open",
-      "title": "Primary experience still uses one repeated workflow-card renderer across unrelated communities",
-      "requiredFix": "Replace the generic workflow-card renderer as the primary UX. Build domain-native surfaces per community/job: event detail and RSVP, donation/payment checkout and receipt, inbox/thread, facility calendar, approval queue, export wizard with real step navigation, roster table/detail, marketplace listing, and critique/media detail."
-    },
-    {
-      "findingId": "LLM-UX-user-facing-copy-still-exposes-review-evidence-platform-and-harness-language",
+      "findingId": "B25-VISION-P26-MAJ-002-product-copy-still-sounds-like-review-spec-or-harness-language",
       "severity": "major",
       "status": "open",
-      "title": "User-facing copy still exposes review, evidence, platform, and harness language",
-      "requiredFix": "Rewrite screens in domain user language and remove evidence/test/framework copy. Move persona switching, local package details, no-fill diagnostics, workflow IDs, and generic review scaffolding out of production surfaces or behind explicit developer-only evidence tooling."
+      "title": "Visible copy still exposes review/spec/harness framing instead of natural product language",
+      "requiredFix": "Rewrite user-facing copy as domain product language. Remove review/spec/test phrasing and local package or persona-preview copy from production-facing screens. Put implementation metadata behind diagnostics, not in the primary community experience."
     },
     {
-      "findingId": "LLM-UX-distinct-workflow-rows-reuse-identical-screenshot-pixels-and-do-not-prove-distinct-production-states",
+      "findingId": "B25-VISION-P26-MAJ-003-distinct-workflow-rows-reuse-identical-screenshot-pixels",
       "severity": "major",
       "status": "open",
-      "title": "Distinct workflow rows reuse identical screenshot pixels and do not prove distinct production states",
-      "requiredFix": "Recapture or redesign distinct workflow states so each workflow/persona row proves its own object, action, result, and continuation state."
+      "title": "Distinct screen rows reuse identical screenshot hashes and do not prove distinct production states",
+      "requiredFix": "Recapture or redesign the affected workflows so every distinct workflow/persona/state has visibly distinct content, state, and lifecycle proof. If two rows intentionally share a surface, merge the evidence rather than claiming separate production states."
     },
     {
-      "findingId": "LLM-UX-workflow-lifecycles-are-not-visually-complete-enough-for-production-handoff-receipt-and-recovery-states",
+      "findingId": "B25-VISION-P26-MAJ-004-workflow-lifecycles-remain-incomplete-or-wrong-for-production",
       "severity": "major",
       "status": "open",
       "title": "Workflow lifecycles are not visually complete enough for production handoff, receipt, and recovery states",
-      "requiredFix": "For each failing lifecycle, add the missing production state: concrete object/context, decision information, primary semantic action, alternate/change/reject path, durable result/receipt, and receiver or continuation surface."
+      "requiredFix": "For each affected workflow/persona pair, capture entry, decision, primary action, alternate/change/reject path, persistent result, receipt/history/status, and receiver/continuation states in visible UI. The member/receiver state must not reuse actor/composer copy."
     },
     {
-      "findingId": "LLM-UX-visual-polish-is-below-the-production-bar-because-of-title-truncation-dense-card-stacks-and-one-note-per-community-palettes",
+      "findingId": "B25-VISION-P26-MAJ-005-visual-polish-below-production-bar",
       "severity": "major",
       "status": "open",
-      "title": "Visual polish is below the production bar because of title truncation, dense card stacks, and one-note per-community palettes",
-      "requiredFix": "Polish the shell and information hierarchy: avoid clipped primary titles, reduce chip density, use tabs/sections/lists/forms where appropriate, add community-specific identity/content treatment, and vary surface composition by task while preserving accessibility."
+      "title": "Visual polish remains below the production bar because of title truncation, dense card stacks, and one-note palettes",
+      "requiredFix": "Improve production visual hierarchy: shorter responsive app-bar titles or branded headers, more varied domain components, less oversized card stacking, clearer section density, and layouts that make primary decisions visible without excessive scroll."
     }
   ],
   "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."

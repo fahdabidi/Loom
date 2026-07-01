@@ -348,3 +348,39 @@ findings were resolved in pass 9.
   the product-doc mapping gaps, and then recapture full B12-B20 evidence before rerunning the fresh LLM
   reconciliation and Vision UX gates.
 - Evidence/tooling commit: `b151e8c`.
+
+### Iteration 23 / `b25-v4-pass-26`
+
+- Status: failed, but produced a complete evidence-backed handoff for the next remediation loop.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-26.md`, expanded the Demo App's shared surface
+  model with additional rich layout families for event detail, form submission, payment receipt,
+  roster/profile, request review, media review, and ad entitlement surfaces, and removed additional
+  visible review/spec/harness copy from the primary product renderer.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests using direct WSL invocation; `b25_capture_coverage_gate.dart` passed as
+  commit-eligible. The B25 collector generated `195` schema v4 screen rows; workflow/persona coverage
+  passed `68 / 68`; visual inspection passed `195 / 195`.
+- Product-doc reconciliation: failed with `6` major findings. The reconciliation found all B25
+  workflow IDs represented in both Product Docs V2 Section 6 and current evidence, but current evidence
+  still conflicts with documented surface, content, semantic-interaction, screenshot-proof, and visual
+  standards.
+- LLM Vision UX review: failed with `5` major findings: repeated workflow-card renderer across
+  unrelated communities, visible review/spec/harness copy, duplicated screenshot states for distinct
+  rows, incomplete handoff/receipt/recovery lifecycle proof, and visual polish gaps around title
+  truncation, dense stacks, and one-note palettes.
+- Workflow interaction model: failed `22 / 68` lifecycle scorecards. The remaining gaps are primary
+  semantic action, alternate/change/reject affordance, concrete object/context, persistent result, and
+  receiver/continuation state proof in the visible screenshots.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-26.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-26.md` records
+  `B25 can pass=false`, `0` blockers, `6` unresolved major findings, `5` resolved blocker/major
+  findings, and `5` newly introduced blocker/major findings under the fresh LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-27.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 27 must move from rich shared layouts to visibly distinct
+  product-specific screen structures, eliminate remaining review/spec copy, repair duplicate evidence
+  states, and close the 22 failing lifecycle rows with fresh full B12-B20 screenshots.
+- Evidence/tooling commit: `TBD`.

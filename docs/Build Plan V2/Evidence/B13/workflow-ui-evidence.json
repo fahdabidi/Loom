@@ -49,7 +49,7 @@
       "workflowId": "plant-exchange-submission",
       "expectedAssertions": [
         "Members can offer seedlings and request exchange matches.",
-        "Submit a basil seedling offer to the plant exchange workflow.",
+        "Submit a basil seedling offer to the plant exchange.",
         "Plant exchange record created for basil seedlings."
       ],
       "screenshotNames": [

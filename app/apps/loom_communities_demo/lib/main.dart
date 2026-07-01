@@ -804,11 +804,18 @@ class _RichFact {
 
 enum _RichWorkflowLayout {
   standard,
+  eventDetail,
+  formSubmission,
+  paymentReceipt,
+  rosterProfile,
+  requestReview,
   searchAnswer,
   exportWizard,
   messageThread,
   noticeDetail,
   clubScoreboard,
+  mediaReview,
+  adEntitlement,
 }
 
 class _RichWorkflowSpec {
@@ -1196,7 +1203,7 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
         actionSurfaceTitle: 'Selection announcement',
         actionHeroSubtitle: 'February book: Parable of the Sower',
         actionHeroBody:
-            'Preview the announcement body, sender, audience, delivery time, and member receiver state before publishing.',
+            'Preview the announcement body, sender, audience, delivery time, and member inbox preview before publishing.',
         actionPanelTitle: 'Announcement publish review',
         actionPanelBody:
             'Members will receive the selected book, meeting date, and discussion prompt in their inbox.',
@@ -1418,7 +1425,7 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
             body: 'All active members; donors and care volunteers included.',
           ),
         ],
-        stateTitle: 'Delivery and receiver state',
+        stateTitle: 'Delivery and member inbox',
         stateRows: [
           _ActionSurfaceDetail(
             icon: Icons.schedule_outlined,
@@ -1427,7 +1434,7 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
           ),
           _ActionSurfaceDetail(
             icon: Icons.mark_email_read_outlined,
-            title: 'Member receiver state',
+            title: 'Member inbox preview',
             body:
                 'Members can read the posted announcement and see it as received.',
           ),
@@ -1521,7 +1528,7 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
         actionSurfaceTitle: 'Volunteer signup',
         actionHeroSubtitle: 'Iftar setup team',
         actionHeroBody:
-            'Confirm shift role, time, location, contact preference, and coordinator receiver state before signing up.',
+            'Confirm shift role, time, location, contact preference, and coordinator handoff before signing up.',
         actionPanelTitle: 'Shift signup review',
         actionPanelBody:
             'Your protected phone is shared only with the volunteer coordinator after confirmation.',
@@ -1604,8 +1611,8 @@ _RichWorkflowSpec _fallbackRichWorkflowSpecFor(String workflowId) {
   return _richSurface(
     accent: const Color(0xff246b62),
     icon: Icons.apps_outlined,
-    title: 'Community activity',
-    subtitle: 'Member task with visible state and next steps.',
+    title: 'Community item',
+    subtitle: 'Details, action, and result are ready.',
     body:
         'Review the community object, decision details, available changes, and final status before saving.',
     facts: const [
@@ -1626,12 +1633,12 @@ _RichWorkflowSpec _fallbackRichWorkflowSpecFor(String workflowId) {
         body: 'The member can save, edit, cancel, or return later.',
       ),
     ],
-    stateTitle: 'Saved state',
+    stateTitle: 'Saved details',
     stateRows: const [
       _ActionSurfaceDetail(
         icon: Icons.task_alt_outlined,
         title: 'Result',
-        body: 'The saved state remains visible with next steps.',
+        body: 'The saved details remain visible with next steps.',
       ),
     ],
   );
@@ -1835,12 +1842,12 @@ _RichWorkflowSpec _soccerRichSpecFor(String id) {
         ? 'Practice starts at 9:00 AM, field and gear note included.'
         : 'Roster and registration data with minor protection.',
     body: id.contains('schedule')
-        ? 'Publish team schedule details with time, field, capacity, RSVP available state, guardian receiver state, and confirmed attendance result.'
+        ? 'Publish team schedule details with time, field, capacity, guardian inbox preview, and confirmed attendance result.'
         : id.contains('reminder')
-        ? 'Send the reminder message body with sender, guardian audience, timestamp, inbox channel, and receiver state.'
+        ? 'Send the reminder message body with sender, guardian audience, timestamp, and inbox channel.'
         : id.contains('export')
         ? 'Show protected roster scope, redaction preview, checksum verification, transfer status, and guardian or coach visibility.'
-        : 'Show protected minor data, redaction, saved result state, export scope, and permission boundaries for coaches and guardians.',
+        : 'Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians.',
     facts: const [
       _RichFact(icon: Icons.schedule_outlined, label: 'Saturday 9 AM'),
       _RichFact(icon: Icons.place_outlined, label: 'Field 3'),
@@ -1850,7 +1857,7 @@ _RichWorkflowSpec _soccerRichSpecFor(String id) {
     ],
     actionPanelTitle: 'Publish review',
     actionPanelBody:
-        'Review time, field, recipient guardians, protected details, and receiver state before saving.',
+        'Review time, field, recipient guardians, protected details, and inbox preview before saving.',
     alternateActionLabel: 'Edit details',
     detailTitle: 'Team details',
     detailRows: const [
@@ -1889,7 +1896,7 @@ _RichWorkflowSpec _soccerRichSpecFor(String id) {
     ],
     completeTitle: 'Team update saved',
     completeBody:
-        'The soccer update shows RSVP status, reminder body, checksum or saved result state, receiver state, and protected data handling.',
+        'The soccer update shows RSVP status, reminder body, checksum or saved result, inbox preview, and protected data handling.',
     completeLabel: 'Saved',
   );
 }
@@ -1919,7 +1926,7 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
       actionSurfaceTitle: 'Send owner notice',
       actionHeroSubtitle: 'Avery Brooks - architectural decision',
       actionHeroBody:
-          'Review sender, recipient, decision body, condition, timestamp, and owner receiver state before sending.',
+          'Review sender, recipient, decision body, condition, timestamp, and homeowner inbox preview before sending.',
       actionPanelTitle: 'Owner notification review',
       actionPanelBody:
           'The owner receives the board decision, condition, appeal/reopen path, and message timestamp in their inbox.',
@@ -1944,7 +1951,7 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
           body: 'Send today at 4:15 PM to owner inbox and email receipt.',
         ),
       ],
-      stateTitle: 'Owner receiver state',
+      stateTitle: 'Homeowner inbox preview',
       stateRows: const [
         _ActionSurfaceDetail(
           icon: Icons.inbox_outlined,
@@ -2008,7 +2015,7 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
         : id.contains('document')
         ? 'Open the governing document with version, access state, acknowledgement, and download history.'
         : isApproval
-        ? 'Review request materials, committee note, approve/reject/request changes, and owner receiver state.'
+        ? 'Review request materials, committee note, approve/reject/request changes, and homeowner notification.'
         : 'Prepare HOA records with documents, cases, receipts, redaction, checksum, and transfer status.',
     facts: const [
       _RichFact(icon: Icons.home_outlined, label: 'Cedar Commons'),
@@ -2113,7 +2120,7 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
         ? 'Submit or review care support without exposing sensitive details in notifications or public views.'
         : id.contains('donation') || id.contains('donor')
         ? 'Confirm amount, donor visibility, receipt destination, and giving history before saving.'
-        : 'Search public announcement content with citations, sender, delivery timing, and member receiver state.',
+        : 'Search public announcement content with citations, sender, delivery timing, and member inbox preview.',
     facts: const [
       _RichFact(icon: Icons.favorite_outline, label: 'Community care'),
       _RichFact(icon: Icons.privacy_tip_outlined, label: 'Privacy checked'),
@@ -2122,7 +2129,7 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
     ],
     actionPanelTitle: 'Save review',
     actionPanelBody:
-        'Review member-visible summary, protected details, receipt or citation, and receiver state before sending.',
+        'Review member-visible summary, protected details, receipt or citation, and recipient preview before sending.',
     alternateActionLabel: 'Update privacy',
     detailTitle: 'Masjid details',
     detailRows: const [
@@ -2977,7 +2984,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       title: 'Ad-off entitlement status',
       subtitle: 'Active member entitlement through Aug 30.',
       body:
-          'Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free receiver state.',
+          'Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free member view.',
       facts: const [
         _RichFact(icon: Icons.verified_user_outlined, label: 'Active'),
         _RichFact(icon: Icons.calendar_today_outlined, label: 'Aug 30'),
@@ -2987,7 +2994,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       actionSurfaceTitle: 'Entitlement status',
       actionHeroSubtitle: 'Member ad-free entitlement',
       actionHeroBody:
-          'Review scope, expiration, renewal, restore, receipt, and ad-slot receiver state.',
+          'Review scope, expiration, renewal, restore, receipt, and ad-slot member view.',
       actionPanelTitle: 'Entitlement review',
       actionPanelBody:
           'Confirm subscription status, manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
@@ -3490,7 +3497,7 @@ _RichWorkflowSpec _exportRichSpecFor(String id) {
 }
 
 _RichWorkflowSpec _richSurface({
-  _RichWorkflowLayout layout = _RichWorkflowLayout.standard,
+  _RichWorkflowLayout? layout,
   required Color accent,
   required IconData icon,
   required String title,
@@ -3514,7 +3521,7 @@ _RichWorkflowSpec _richSurface({
   String? completeLabel,
 }) {
   return _RichWorkflowSpec(
-    layout: layout,
+    layout: layout ?? _inferredRichWorkflowLayout(title, subtitle, detailTitle),
     accent: accent,
     icon: icon,
     title: title,
@@ -3524,10 +3531,10 @@ _RichWorkflowSpec _richSurface({
     actionSurfaceTitle: actionSurfaceTitle ?? title,
     actionHeroSubtitle: actionHeroSubtitle ?? subtitle,
     actionHeroBody: actionHeroBody ?? body,
-    actionPanelTitle: actionPanelTitle ?? 'Review checkpoint',
+    actionPanelTitle: actionPanelTitle ?? 'Details to confirm',
     actionPanelBody:
         actionPanelBody ??
-        'Confirm details, choose the right action, keep the alternate path available, and preserve the result state.',
+        'Check the details, make changes if needed, then save the result with a clear receipt and next step.',
     alternateActionLabel: alternateActionLabel ?? 'Edit details',
     detailTitle: detailTitle,
     detailRows: detailRows,
@@ -3539,9 +3546,105 @@ _RichWorkflowSpec _richSurface({
     receivedTitle: receivedTitle ?? '$title ready',
     receivedBody:
         receivedBody ??
-        'The receiving persona can inspect the saved state, context, and next steps.',
+        'The recipient can review the saved details, understand what changed, and continue from the next step.',
     completeLabel: completeLabel ?? 'Saved',
   );
+}
+
+_RichWorkflowLayout _inferredRichWorkflowLayout(
+  String title,
+  String subtitle,
+  String detailTitle,
+) {
+  final text = '$title $subtitle $detailTitle'.toLowerCase();
+  if (text.contains('export') ||
+      text.contains('import') ||
+      text.contains('transfer') ||
+      text.contains('redaction') ||
+      text.contains('checksum') ||
+      text.contains('schema')) {
+    return _RichWorkflowLayout.exportWizard;
+  }
+  if (text.contains('search') ||
+      text.contains('citation') ||
+      text.contains('digest') ||
+      text.contains('answer')) {
+    return _RichWorkflowLayout.searchAnswer;
+  }
+  if (text.contains('message') ||
+      text.contains('thread') ||
+      text.contains('connection') ||
+      text.contains('invite') ||
+      text.contains('blocked')) {
+    return _RichWorkflowLayout.messageThread;
+  }
+  if (text.contains('announcement') ||
+      text.contains('notification') ||
+      text.contains('notice') ||
+      text.contains('publish')) {
+    return _RichWorkflowLayout.noticeDetail;
+  }
+  if (text.contains('rsvp') ||
+      text.contains('event') ||
+      text.contains('schedule') ||
+      text.contains('practice') ||
+      text.contains('meeting') ||
+      text.contains('walk')) {
+    return _RichWorkflowLayout.eventDetail;
+  }
+  if (text.contains('payment') ||
+      text.contains('donation') ||
+      text.contains('dues') ||
+      text.contains('checkout') ||
+      text.contains('receipt') ||
+      text.contains('settlement') ||
+      text.contains('fee')) {
+    if (text.contains('ad-off') || text.contains('ad-free')) {
+      return _RichWorkflowLayout.adEntitlement;
+    }
+    return _RichWorkflowLayout.paymentReceipt;
+  }
+  if (text.contains('ad-off') ||
+      text.contains('ad-free') ||
+      text.contains('suppression') ||
+      text.contains('entitlement')) {
+    return _RichWorkflowLayout.adEntitlement;
+  }
+  if (text.contains('roster') ||
+      text.contains('minor') ||
+      text.contains('guardian') ||
+      text.contains('team')) {
+    return _RichWorkflowLayout.rosterProfile;
+  }
+  if (text.contains('request') ||
+      text.contains('approval') ||
+      text.contains('decision') ||
+      text.contains('committee') ||
+      text.contains('review')) {
+    return _RichWorkflowLayout.requestReview;
+  }
+  if (text.contains('critique') ||
+      text.contains('camera') ||
+      text.contains('photo')) {
+    return _RichWorkflowLayout.mediaReview;
+  }
+  if (text.contains('volunteer') ||
+      text.contains('plant') ||
+      text.contains('gear') ||
+      text.contains('loan') ||
+      text.contains('offer') ||
+      text.contains('form') ||
+      text.contains('care')) {
+    return _RichWorkflowLayout.formSubmission;
+  }
+  if (text.contains('book') ||
+      text.contains('vote') ||
+      text.contains('nomination') ||
+      text.contains('chess') ||
+      text.contains('match')) {
+    return _RichWorkflowLayout.clubScoreboard;
+  }
+  return _RichWorkflowLayout.standard;
 }
 
 Widget? _domainPreviewPanelFor(
@@ -3801,7 +3904,7 @@ Widget? _domainPreviewPanelFor(
             ),
             _DomainPreviewRow(
               icon: Icons.visibility_off_outlined,
-              title: 'Ad-free receiver state',
+              title: 'Ad-free member view',
               body: 'Eligible banner and stream slots remain suppressed.',
             ),
           ]
@@ -4680,11 +4783,18 @@ class _ProductSurfacePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (spec.layout) {
+      _RichWorkflowLayout.eventDetail => _EventDetailPreview(spec: spec),
+      _RichWorkflowLayout.formSubmission => _FormSubmissionPreview(spec: spec),
+      _RichWorkflowLayout.paymentReceipt => _PaymentReceiptPreview(spec: spec),
+      _RichWorkflowLayout.rosterProfile => _RosterProfilePreview(spec: spec),
+      _RichWorkflowLayout.requestReview => _RequestReviewPreview(spec: spec),
       _RichWorkflowLayout.searchAnswer => _SearchAnswerPreview(spec: spec),
       _RichWorkflowLayout.exportWizard => _ExportWizardPreview(spec: spec),
       _RichWorkflowLayout.messageThread => _MessageThreadPreview(spec: spec),
       _RichWorkflowLayout.noticeDetail => _NoticeDetailPreview(spec: spec),
       _RichWorkflowLayout.clubScoreboard => _ClubScoreboardPreview(spec: spec),
+      _RichWorkflowLayout.mediaReview => _MediaReviewPreview(spec: spec),
+      _RichWorkflowLayout.adEntitlement => _AdEntitlementPreview(spec: spec),
       _ => _ProductDetailPreview(spec: spec),
     };
   }
@@ -4739,13 +4849,147 @@ class _ProductSurfaceStatusPanel extends StatelessWidget {
 
 String _surfaceStatusTitleFor(_RichWorkflowLayout layout) {
   return switch (layout) {
+    _RichWorkflowLayout.eventDetail => 'Event plan and response',
+    _RichWorkflowLayout.formSubmission => 'Form and handoff status',
+    _RichWorkflowLayout.paymentReceipt => 'Payment and receipt status',
+    _RichWorkflowLayout.rosterProfile => 'Roster visibility and role state',
+    _RichWorkflowLayout.requestReview => 'Review queue status',
     _RichWorkflowLayout.searchAnswer => 'Reading guide status',
     _RichWorkflowLayout.exportWizard => 'Export package status',
     _RichWorkflowLayout.messageThread => 'Thread state and actions',
     _RichWorkflowLayout.noticeDetail => 'Notice delivery state',
     _RichWorkflowLayout.clubScoreboard => 'Club board state',
+    _RichWorkflowLayout.mediaReview => 'Submission and critique status',
+    _RichWorkflowLayout.adEntitlement => 'Ad-free entitlement state',
     _ => 'Current state',
   };
+}
+
+class _EventDetailPreview extends StatelessWidget {
+  const _EventDetailPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = spec.detailRows.isEmpty ? spec.stateRows : spec.detailRows;
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Event details',
+      children: [
+        for (final row in rows.take(4))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final fact in spec.facts.take(3))
+              _SurfaceFactPill(
+                icon: fact.icon,
+                label: fact.label,
+                foreground: _foregroundFor(spec.accent),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FormSubmissionPreview extends StatelessWidget {
+  const _FormSubmissionPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Submitted details',
+      children: [
+        for (final row in spec.detailRows.take(3))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+        for (final row in spec.stateRows.take(2))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+      ],
+    );
+  }
+}
+
+class _PaymentReceiptPreview extends StatelessWidget {
+  const _PaymentReceiptPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Checkout review',
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final fact in spec.facts.take(4))
+              _SurfaceFactPill(
+                icon: fact.icon,
+                label: fact.label,
+                foreground: foreground,
+              ),
+          ],
+        ),
+        for (final row in [
+          ...spec.detailRows.take(2),
+          ...spec.stateRows.take(2),
+        ])
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+      ],
+    );
+  }
+}
+
+class _RosterProfilePreview extends StatelessWidget {
+  const _RosterProfilePreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Roster and visibility',
+      children: [
+        for (final row in spec.detailRows.take(4))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+      ],
+    );
+  }
+}
+
+class _RequestReviewPreview extends StatelessWidget {
+  const _RequestReviewPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = [...spec.detailRows.take(3), ...spec.stateRows.take(2)];
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Review queue',
+      children: [
+        for (var index = 0; index < rows.length; index++)
+          _WizardStepLine(
+            index: index + 1,
+            icon: rows[index].icon,
+            title: rows[index].title,
+            body: rows[index].body,
+          ),
+      ],
+    );
+  }
 }
 
 class _SearchAnswerPreview extends StatelessWidget {
@@ -4864,6 +5108,46 @@ class _ClubScoreboardPreview extends StatelessWidget {
           ],
         ),
         for (final row in spec.detailRows.take(3))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+      ],
+    );
+  }
+}
+
+class _MediaReviewPreview extends StatelessWidget {
+  const _MediaReviewPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Creative review',
+      children: [
+        for (final row in spec.detailRows.take(3))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+        for (final row in spec.stateRows.take(2))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+      ],
+    );
+  }
+}
+
+class _AdEntitlementPreview extends StatelessWidget {
+  const _AdEntitlementPreview({required this.spec});
+
+  final _RichWorkflowSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProductPreviewCard(
+      spec: spec,
+      title: 'Ad-free status',
+      children: [
+        for (final row in spec.detailRows.take(2))
+          _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
+        for (final row in spec.stateRows.take(3))
           _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
       ],
     );
@@ -8893,7 +9177,7 @@ String _decisionSummaryFor(String category, LoomWorkflowDefinition workflow) {
       id.contains('import')) {
     return 'Review scope, redaction, checksum, destination, retry, rollback, and change-scope options.';
   }
-  return 'Review the object details, editable fields, final status, and continuation path before saving.';
+  return 'Review the details, editable fields, final status, and next step before saving.';
 }
 
 String _receiverStateSummaryFor(
@@ -9748,7 +10032,7 @@ LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
         receiverPersonaIds: ['hoa-board'],
         receiverEntryText: 'A homeowner action is ready for board review.',
         receiverActionText: 'Review',
-        receiverResultText: 'Board received the homeowner workflow result.',
+        receiverResultText: 'Board received the homeowner request update.',
       );
     case 'hoa-committee-decision':
       return const LoomWorkflowPersonaPolicy(
@@ -9796,10 +10080,9 @@ LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
       return const LoomWorkflowPersonaPolicy(
         actorPersonaIds: ['mosque-member'],
         receiverPersonaIds: ['mosque-admin'],
-        receiverEntryText:
-            'A member workflow result is ready for admin review.',
+        receiverEntryText: 'A member submission is ready for admin review.',
         receiverActionText: 'Review',
-        receiverResultText: 'Admin received the member workflow result.',
+        receiverResultText: 'Admin received the member submission.',
       );
     case 'mosque-neutral-notification':
       return const LoomWorkflowPersonaPolicy(
@@ -10002,8 +10285,7 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
         workflowId: 'plant-exchange-submission',
         title: 'Plant exchange submission',
         entryText: 'Members can offer seedlings and request exchange matches.',
-        actionText:
-            'Submit a basil seedling offer to the plant exchange workflow.',
+        actionText: 'Submit a basil seedling offer to the plant exchange.',
         resultText: 'Plant exchange record created for basil seedlings.',
       ),
       LoomWorkflowDefinition(
@@ -10159,16 +10441,16 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'hoa-architectural-request',
         title: 'Architectural request',
-        entryText: 'Fence color request is ready for workflow review.',
+        entryText: 'Fence color request is ready for board review.',
         actionText: 'Submit architectural request for committee review.',
         resultText: 'Architectural request case opened.',
       ),
       LoomWorkflowDefinition(
         workflowId: 'hoa-committee-decision',
-        title: 'Committee workflow decision',
+        title: 'Committee decision',
         entryText: 'Committee review step is waiting.',
-        actionText: 'Approve the architectural review workflow.',
-        resultText: 'Workflow completed with approved decision.',
+        actionText: 'Approve the architectural request.',
+        resultText: 'Architectural request approved.',
       ),
       LoomWorkflowDefinition(
         workflowId: 'hoa-owner-notification',
@@ -10270,7 +10552,7 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
         workflowId: 'chess-route-home',
         title: 'Route-defined home',
         entryText: 'Chess Club route renders a domain-specific home.',
-        actionText: 'Open the Chess Club home workflow route.',
+        actionText: 'Open the Chess Club home.',
         resultText: 'Chess Club home route rendered.',
       ),
       LoomWorkflowDefinition(
@@ -10320,14 +10602,14 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'platform-messages-entry',
         title: 'Messages entry',
-        entryText: 'Shell-owned Messages surface is visible.',
+        entryText: 'Messages are available from the app bar.',
         actionText: 'Open Messages entry from the app bar.',
         resultText: 'Messages entry is reachable.',
       ),
       LoomWorkflowDefinition(
         workflowId: 'platform-connections-entry',
         title: 'Connections entry',
-        entryText: 'Shell-owned Connections surface is visible.',
+        entryText: 'Connections are available from the app bar.',
         actionText: 'Open Connections entry from the app bar.',
         resultText: 'Connections entry is reachable.',
       ),
@@ -10384,14 +10666,14 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
       LoomWorkflowDefinition(
         workflowId: 'ad-off-member-checkout',
         title: 'Member ad-off checkout',
-        entryText: 'Member ad-off purchase is shell-owned.',
+        entryText: 'Member ad-free checkout is available.',
         actionText: 'Complete member ad-off checkout.',
         resultText: 'Member ad-off entitlement active.',
       ),
       LoomWorkflowDefinition(
         workflowId: 'ad-off-community-checkout',
         title: 'Community ad-off checkout',
-        entryText: 'Community-wide ad-off purchase is shell-owned.',
+        entryText: 'Community-wide ad-free checkout is available.',
         actionText: 'Complete community ad-off checkout.',
         resultText: 'Community ad-off entitlement active.',
       ),

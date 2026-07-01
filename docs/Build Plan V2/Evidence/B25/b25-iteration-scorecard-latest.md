@@ -2,20 +2,20 @@
 
 | Field | Value |
 | --- | --- |
-| Review run | `b25-v4-pass-25` |
+| Review run | `b25-v4-pass-26` |
 | Status | `fail` |
 | Final decision | `fail` |
 | B25 can pass | `false` |
 | Remaining critical/blocker + major | 6 |
-| Resolved critical/blocker + major this pass | 0 |
-| New critical/blocker + major this pass | 6 |
+| Resolved critical/blocker + major this pass | 5 |
+| New critical/blocker + major this pass | 5 |
 
 ## Finding Counts
 
 | Severity | Total | Unresolved | Resolved |
 | --- | ---: | ---: | ---: |
-| Critical/blocker | 1 | 1 | 0 |
-| Major | 5 | 5 | 0 |
+| Critical/blocker | 0 | 0 | 0 |
+| Major | 6 | 6 | 0 |
 | Minor | 0 | n/a | n/a |
 | Polish | 0 | n/a | n/a |
 
@@ -33,12 +33,12 @@
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
+| `B25-VISION-P26-MAJ-001-repeated-workflow-card-renderer` | major | open | Replace the repeated card renderer with domain-native product surfaces per community: event detail/RSVP, feed/inbox/thread, donation/payment checkout, receipt/history, protected care request form, admin review queue, social connection guard, export/import wizard, and transfer status screens with visibly distinct layouts and content density. |
+| `B25-VISION-P26-MAJ-002-product-copy-still-sounds-like-review-spec-or-harness-language` | major | open | Rewrite user-facing copy as domain product language. Remove review/spec/test phrasing and local package or persona-preview copy from production-facing screens. Put implementation metadata behind diagnostics, not in the primary community experience. |
+| `B25-VISION-P26-MAJ-003-distinct-workflow-rows-reuse-identical-screenshot-pixels` | major | open | Recapture or redesign the affected workflows so every distinct workflow/persona/state has visibly distinct content, state, and lifecycle proof. If two rows intentionally share a surface, merge the evidence rather than claiming separate production states. |
+| `B25-VISION-P26-MAJ-004-workflow-lifecycles-remain-incomplete-or-wrong-for-production` | major | open | For each affected workflow/persona pair, capture entry, decision, primary action, alternate/change/reject path, persistent result, receipt/history/status, and receiver/continuation states in visible UI. The member/receiver state must not reuse actor/composer copy. |
+| `B25-VISION-P26-MAJ-005-visual-polish-below-production-bar` | major | open | Improve production visual hierarchy: shorter responsive app-bar titles or branded headers, more varied domain components, less oversized card stacking, clearer section density, and layouts that make primary decisions visible without excessive scroll. |
 | `B25-WORKFLOW-LIFECYCLE-INCOMPLETE` | major | open | Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence. |
-| `LLM-UX-primary-experience-still-uses-one-repeated-workflow-card-renderer-across-unrelated-communities` | critical-blocker | open | Replace the generic workflow-card renderer as the primary UX. Build domain-native surfaces per community/job: event detail and RSVP, donation/payment checkout and receipt, inbox/thread, facility calendar, approval queue, export wizard with real step navigation, roster table/detail, marketplace listing, and critique/media detail. |
-| `LLM-UX-user-facing-copy-still-exposes-review-evidence-platform-and-harness-language` | major | open | Rewrite screens in domain user language and remove evidence/test/framework copy. Move persona switching, local package details, no-fill diagnostics, workflow IDs, and generic review scaffolding out of production surfaces or behind explicit developer-only evidence tooling. |
-| `LLM-UX-distinct-workflow-rows-reuse-identical-screenshot-pixels-and-do-not-prove-distinct-production-states` | major | open | Recapture or redesign distinct workflow states so each workflow/persona row proves its own object, action, result, and continuation state. |
-| `LLM-UX-workflow-lifecycles-are-not-visually-complete-enough-for-production-handoff-receipt-and-recovery-states` | major | open | For each failing lifecycle, add the missing production state: concrete object/context, decision information, primary semantic action, alternate/change/reject path, durable result/receipt, and receiver or continuation surface. |
-| `LLM-UX-visual-polish-is-below-the-production-bar-because-of-title-truncation-dense-card-stacks-and-one-note-per-community-palettes` | major | open | Polish the shell and information hierarchy: avoid clipped primary titles, reduce chip density, use tabs/sections/lists/forms where appropriate, add community-specific identity/content treatment, and vary surface composition by task while preserving accessibility. |
 
 ## Required Next Action
 
