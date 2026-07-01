@@ -1,0 +1,580 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-28",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-01T12:01:00.479822Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 38,
+    "criticalBlocker": 0,
+    "major": 38,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 38,
+    "unresolvedBlockingMajor": 38,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 38,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 38,
+    "remainingBlockingMajor": 38
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 16,
+    "passedCriteria": 7,
+    "failedCriteria": 9,
+    "blockingCriterionFailures": 9,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "B25-VISION-P28-MAJ-001",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Replace the shared action/review template with workflow-specific product surfaces: event RSVP detail, ballot, payment checkout, document view, review queue, message thread, care request, donation receipt, and export wizard. Remove generic lifecycle copy and make each screen use task-specific hierarchy, fields, alternatives, validation, and receipt/status states."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-002",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Remove persona-picker and role-inventory harness screens from production UX evidence or redesign them as a true admin/member permissions surface. Production screenshots should show logged-in role state, disabled/hidden actions, and receiver behavior without a \"choose viewing role\" modal."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-003",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Create separate admin compose/publish screens and member inbox/detail screens. Member screenshots must show received message body, sender, delivery timestamp, read/receipt state, and natural actions such as mark read, reply, save, mute, or open event details, without publish/preview composer copy."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-004",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Build a real export/import console with distinct surfaces for schema catalog, redaction preview, checksum verification, import conflict preview, transfer status, and rollback. Use primary actions like Verify checksum, Exclude schema, Resolve conflict, Start rollback, Retry transfer, and Download bundle, with durable audit/result states."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-005",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Add concrete media and placement proof: critique screens need an image thumbnail/detail, prompt, consent, comments, edit/withdraw, and reviewer/result state. Platform ad screens need actual stream context, sponsor creative/disclosure, no-fill reserved banner space, suppression reason, and dismiss/report/manage affordances in situ."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    },
+    {
+      "findingId": "LLM-B25-WR-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-team-roster` / `coach` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): primary semantic action, alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-team-roster` / `coach` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): primary semantic action, alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-reminder-notification` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-reminder-notification` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `hoa-export-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `hoa-export-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-004",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-donor-visibility` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-donor-visibility` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-005",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-search-ai-citation` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-search-ai-citation` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-006",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-vote` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-vote` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-007",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-search-ai-digest` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): concrete object/context, decision information, alternate/change/reject affordance, persistent result state, receiver/continuation state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-search-ai-digest` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): concrete object/context, decision information, alternate/change/reject affordance, persistent result state, receiver/continuation state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-008",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-minor-redaction` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-minor-redaction` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-009",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-010",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-donation-payment` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-donation-payment` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-011",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-012",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-registration-payment` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-registration-payment` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-013",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-practice-schedule` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-practice-schedule` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-014",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `hoa-owner-notification` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `hoa-owner-notification` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-015",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-neutral-notification` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-neutral-notification` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-016",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `photo-walk-rsvp` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `photo-walk-rsvp` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-017",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `gear-loan-request` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `gear-loan-request` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-018",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-blocked-target` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-blocked-target` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-019",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-top-banner-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-top-banner-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-020",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `ad-off-ad-suppression` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `ad-off-ad-suppression` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-021",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-full-bundle` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-full-bundle` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-022",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-message-stream` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-message-stream` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-023",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-sensitive-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-sensitive-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-024",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `ad-off-settlement-utility` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `ad-off-settlement-utility` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-025",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-protected-redaction` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-protected-redaction` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-026",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-in-stream-ad` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-in-stream-ad` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-027",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-schema-listing` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-schema-listing` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-028",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-checksum-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-checksum-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-029",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-verification` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-verification` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-030",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `ad-off-entitlement-status` / `member`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `ad-off-entitlement-status` / `member`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-031",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-rollback` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-rollback` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-032",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-import-preview` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-import-preview` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "B25-VISION-P28-MAJ-001",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Replace the shared action/review template with workflow-specific product surfaces: event RSVP detail, ballot, payment checkout, document view, review queue, message thread, care request, donation receipt, and export wizard. Remove generic lifecycle copy and make each screen use task-specific hierarchy, fields, alternatives, validation, and receipt/status states."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-002",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Remove persona-picker and role-inventory harness screens from production UX evidence or redesign them as a true admin/member permissions surface. Production screenshots should show logged-in role state, disabled/hidden actions, and receiver behavior without a \"choose viewing role\" modal."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-003",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Create separate admin compose/publish screens and member inbox/detail screens. Member screenshots must show received message body, sender, delivery timestamp, read/receipt state, and natural actions such as mark read, reply, save, mute, or open event details, without publish/preview composer copy."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-004",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Build a real export/import console with distinct surfaces for schema catalog, redaction preview, checksum verification, import conflict preview, transfer status, and rollback. Use primary actions like Verify checksum, Exclude schema, Resolve conflict, Start rollback, Retry transfer, and Download bundle, with durable audit/result states."
+    },
+    {
+      "findingId": "B25-VISION-P28-MAJ-005",
+      "severity": "major",
+      "status": "open",
+      "title": "",
+      "requiredFix": "Add concrete media and placement proof: critique screens need an image thumbnail/detail, prompt, consent, comments, edit/withdraw, and reviewer/result state. Platform ad screens need actual stream context, sponsor creative/disclosure, no-fill reserved banner space, suppression reason, and dismiss/report/manage affordances in situ."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    },
+    {
+      "findingId": "LLM-B25-WR-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-team-roster` / `coach` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): primary semantic action, alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-team-roster` / `coach` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): primary semantic action, alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-reminder-notification` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-reminder-notification` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `hoa-export-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `hoa-export-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-004",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-donor-visibility` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-donor-visibility` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-005",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-search-ai-citation` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-search-ai-citation` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-006",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-vote` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-vote` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-007",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-search-ai-digest` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): concrete object/context, decision information, alternate/change/reject affordance, persistent result state, receiver/continuation state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-search-ai-digest` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): concrete object/context, decision information, alternate/change/reject affordance, persistent result state, receiver/continuation state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-008",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-minor-redaction` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-minor-redaction` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-009",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-010",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-donation-payment` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-donation-payment` / `donor` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-011",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `book-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `book-export-metadata` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-012",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-registration-payment` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-registration-payment` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-013",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `soccer-practice-schedule` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `soccer-practice-schedule` / `guardian` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-014",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `hoa-owner-notification` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `hoa-owner-notification` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, receiver/continuation state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-015",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `mosque-neutral-notification` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `mosque-neutral-notification` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-016",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `photo-walk-rsvp` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `photo-walk-rsvp` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-017",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `gear-loan-request` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `gear-loan-request` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-018",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-blocked-target` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-blocked-target` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-019",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-top-banner-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-top-banner-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-020",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `ad-off-ad-suppression` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `ad-off-ad-suppression` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-021",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-full-bundle` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-full-bundle` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-022",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-message-stream` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-message-stream` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-023",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-sensitive-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-sensitive-no-fill` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-024",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `ad-off-settlement-utility` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `ad-off-settlement-utility` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-025",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-protected-redaction` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-protected-redaction` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-026",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `platform-in-stream-ad` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `platform-in-stream-ad` / `member` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-027",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-schema-listing` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-schema-listing` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): persistent result state. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-028",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: screenshots for `export-checksum-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable.",
+      "requiredFix": "Implementation/evidence remediation: screenshots for `export-checksum-evidence` / `owner` do not satisfy the product-doc lifecycle model. Add/recapture visible UI proof for missing lifecycle group(s): alternate/change/reject affordance, semantic interaction model. The fix must show the named domain object, decision data, semantic primary action, required alternate/change/reject path, persistent result/receipt state, and receiver/continuation state where applicable."
+    },
+    {
+      "findingId": "LLM-B25-WR-029",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-verification` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-verification` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-030",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `ad-off-entitlement-status` / `member`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `ad-off-entitlement-status` / `member`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-031",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-rollback` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-transfer-rollback` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    },
+    {
+      "findingId": "LLM-B25-WR-032",
+      "severity": "major",
+      "status": "open",
+      "title": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-import-preview` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface.",
+      "requiredFix": "Implementation/evidence remediation: workflow/persona direct-question review blocks pass for `export-import-preview` / `owner`. Recapture screenshots that visibly prove the product-doc required proof, persona state, and production workflow outcome rather than only a partial action surface."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}
