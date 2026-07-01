@@ -13,6 +13,13 @@ final Set<String> _phaseFilter = _phaseFilterText
     .map((phase) => phase.trim())
     .where((phase) => phase.isNotEmpty)
     .toSet();
+const _workflowShardCount = int.fromEnvironment(
+  'LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT',
+  defaultValue: 1,
+);
+const _workflowShardIndex = int.fromEnvironment(
+  'LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX',
+);
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -123,6 +130,7 @@ void main() {
       );
     }
 
+    var targetWorkflowOrdinal = 0;
     for (final target in loomEvidenceTargets.where(
       (target) => _includePhase(target.phase),
     )) {
@@ -133,8 +141,38 @@ void main() {
         displayName: target.communityName,
       );
       expect(find.text(experience.tagline), findsOneWidget);
+      final completedSetupWorkflowIds = <String>{};
+
+      Future<void> ensurePrerequisiteChain(
+        LoomWorkflowDefinition workflow,
+      ) async {
+        final policy = personaPolicyForWorkflow(
+          target.extensionId,
+          workflow.workflowId,
+        );
+        final prerequisiteWorkflowId = policy.prerequisiteWorkflowId;
+        if (prerequisiteWorkflowId == null ||
+            completedSetupWorkflowIds.contains(prerequisiteWorkflowId)) {
+          return;
+        }
+        final prerequisite = experience.workflows.firstWhere(
+          (candidate) => candidate.workflowId == prerequisiteWorkflowId,
+        );
+        await ensurePrerequisiteChain(prerequisite);
+        await completeWorkflowAsActor(
+          tester,
+          extensionId: target.extensionId,
+          workflow: prerequisite,
+        );
+        completedSetupWorkflowIds.add(prerequisiteWorkflowId);
+      }
 
       for (final workflow in experience.workflows) {
+        final workflowOrdinal = targetWorkflowOrdinal;
+        targetWorkflowOrdinal += 1;
+        if (!_includeWorkflowShard(workflowOrdinal)) {
+          continue;
+        }
         emitProgress(
           'workflow-start',
           phase: target.phase,
@@ -145,6 +183,7 @@ void main() {
           target.extensionId,
           workflow.workflowId,
         );
+        await ensurePrerequisiteChain(workflow);
         await selectPersona(tester, policy.actorPersonaIds.first);
         final entry = <String, Object?>{
           'phase': target.phase,
@@ -168,12 +207,7 @@ void main() {
         final workflowButton = find.byKey(
           ValueKey('workflow-button-${workflow.workflowId}'),
         );
-        await tester.scrollUntilVisible(
-          workflowButton,
-          160,
-          scrollable: find.byType(Scrollable).last,
-          maxScrolls: 30,
-        );
+        await tester.ensureVisible(workflowButton);
         await tester.pumpAndSettle();
         await tester.tap(workflowButton);
         await tester.pumpAndSettle();
@@ -213,6 +247,7 @@ void main() {
           'screenshotNames': [start, action, complete],
           'status': 'pass',
         });
+        completedSetupWorkflowIds.add(workflow.workflowId);
         emitProgress(
           'workflow-complete',
           phase: target.phase,
@@ -522,13 +557,20 @@ int _workflowEvidenceEntryCount() {
   if (_includePhase('B12')) {
     total += 1;
   }
+  var targetWorkflowOrdinal = 0;
   for (final target in loomEvidenceTargets.where(
     (target) => _includePhase(target.phase),
   )) {
-    total += experienceForExtensionId(
+    for (final _ in experienceForExtensionId(
       target.extensionId,
       displayName: target.communityName,
-    ).workflows.length;
+    ).workflows) {
+      final workflowOrdinal = targetWorkflowOrdinal;
+      targetWorkflowOrdinal += 1;
+      if (_includeWorkflowShard(workflowOrdinal)) {
+        total += 1;
+      }
+    }
   }
   if (_includePhase('B17')) {
     total += 1;
@@ -555,6 +597,16 @@ String _screenshotName(
 
 bool _includePhase(String phase) {
   return _phaseFilter.isEmpty || _phaseFilter.contains(phase);
+}
+
+bool _includeWorkflowShard(int workflowOrdinal) {
+  if (_workflowShardCount <= 1) {
+    return true;
+  }
+  if (_workflowShardIndex < 0 || _workflowShardIndex >= _workflowShardCount) {
+    return true;
+  }
+  return workflowOrdinal % _workflowShardCount == _workflowShardIndex;
 }
 
 Future<void> _scrollToWorkflow(

@@ -98,9 +98,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Publish announcement'), findsOneWidget);
 
-    await tester.tap(
-      find.byKey(ValueKey('workflow-button-${workflow.workflowId}')),
+    final workflowButton = find.byKey(
+      ValueKey('workflow-button-${workflow.workflowId}'),
     );
+    await tester.ensureVisible(workflowButton);
+    await tester.pumpAndSettle();
+    await tester.tap(workflowButton);
     await tester.pumpAndSettle();
     expect(
       find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
@@ -145,9 +148,12 @@ void main() {
     }
     expect(workflowCard, findsOneWidget);
     expect(find.text('Receive announcement'), findsOneWidget);
-    await tester.tap(
-      find.byKey(ValueKey('workflow-receive-button-${workflow.workflowId}')),
+    final receiveButton = find.byKey(
+      ValueKey('workflow-receive-button-${workflow.workflowId}'),
     );
+    await tester.ensureVisible(receiveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(receiveButton);
     await tester.pumpAndSettle();
     expect(
       find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),

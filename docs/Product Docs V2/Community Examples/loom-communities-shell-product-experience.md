@@ -41,13 +41,19 @@ show raw extension IDs, package implementation details, or test-only workflow la
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| local-build-download-sideload-install | Owner/tester | Add Community flow and installed card | package pair selected, import succeeds, branded card appears | Local backend import, App Shell open latest | B1a, B9, B10, B11, B25 shell rows |
+| local-build-download-sideload-install | Owner/tester | Add Community flow and installed card | package pair selected, import succeeds, branded card appears | Local backend import, App Shell open latest | B1a, B9, B10, B11; explicitly scoped out of B25 community screenshot reconciliation |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| local install | Owner can add package pair | Member later sees installed card | Installed card readable | Add disabled while validating | Invalid packages show error and do not install |
+| local-build-download-sideload-install | Owner/tester can add package pair | Member later sees installed card | Installed card readable | Add disabled while validating | Invalid packages show error and do not install |
+
+### B25 Scope Note
+
+The shell local-install workflow is validated by B1a, B9, B10, and B11. It is not an owned B25
+community/product-experience screenshot row unless a future pass explicitly adds shell screenshots,
+screen rows, and semantic lifecycle scorecards for this workflow.
 
 ## 8. Content And Seed Data Requirements
 
@@ -64,7 +70,7 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `local-build-download-sideload-install` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad decision, impression/click/no-fill, disclosure/ad-off, restore/receipt evidence | Demo renderer must select a domain-native surface for `ad` and LocalInAppBackend must expose/import the state for these interactions. |
+| `local-build-download-sideload-install` | [community-card-home](../../CardSurfaces/community-card-home.md) | `CommunityRegistryApi` / `CommunityExtensionPackageApi` | select extension package, select initialization package, validate/import, render installed card, open local route | Demo shell renderer owns this flow; B25 community screenshot reconciliation treats it as out of scope unless shell evidence rows are added. |
 
 ## 10. Review And Remediation Log
 

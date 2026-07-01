@@ -1865,7 +1865,7 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
         ? 'Document opened'
         : 'HOA record saved',
     completeBody:
-        'The HOA surface shows the record, owner, amount or decision, status history, and member receiver state.',
+        'The homeowner record now shows owner, amount or decision, status history, and member next steps.',
     completeLabel: isApproval
         ? 'Decided'
         : isDocument
@@ -1949,7 +1949,7 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
     ],
     completeTitle: 'Masjid record saved',
     completeBody:
-        'The Masjid surface shows privacy-safe content, receipt or citation, receiver state, and next steps.',
+        'Members see the privacy-safe update, receipt or citation, current status, and clear next step.',
     completeLabel: 'Saved',
   );
 }
@@ -2149,7 +2149,7 @@ _RichWorkflowSpec _cameraRichSpecFor(String id) {
         'Confirm pickup, borrower queue, protected contact reveal, due date, and return path before requesting the loan.',
     actionPanelTitle: 'Ready to request gear',
     actionPanelBody:
-        'The lender sees borrower name, pickup window, contact preference, and cancel/return path.',
+        'Decision pending: the lender reviews borrower name, pickup window, contact preference, and cancel/return path.',
     alternateActionLabel: 'Cancel request',
     detailTitle: 'Loan details',
     detailRows: const [
@@ -2174,7 +2174,8 @@ _RichWorkflowSpec _cameraRichSpecFor(String id) {
       _ActionSurfaceDetail(
         icon: Icons.people_outline,
         title: 'Roster',
-        body: 'Borrower list, waitlist position, and owner decision are visible.',
+        body:
+            'Borrower list, waitlist position, available status, and owner decision are visible.',
       ),
       _ActionSurfaceDetail(
         icon: Icons.keyboard_return_outlined,
@@ -2184,10 +2185,10 @@ _RichWorkflowSpec _cameraRichSpecFor(String id) {
     ],
     completeTitle: 'Gear loan requested',
     completeBody:
-        'The loan request shows item, owner, borrower queue, pickup, protected contact, and return path.',
+        'The loan request status shows item, owner, borrower queue, pickup, protected contact, and return path.',
     receivedTitle: 'Gear request ready',
     receivedBody:
-        'The lender sees borrower, pickup, privacy, approval, and return status.',
+        'The lender sees borrower, pickup, privacy, pending approval decision, and return status.',
     completeLabel: 'Requested',
   );
 }
@@ -2226,7 +2227,10 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
         if (!sensitive)
           const _RichFact(icon: Icons.campaign_outlined, label: 'Disclosure'),
         if (banner)
-          const _RichFact(icon: Icons.web_asset_outlined, label: 'Slot reserved'),
+          const _RichFact(
+            icon: Icons.web_asset_outlined,
+            label: 'Slot reserved',
+          ),
         if (sensitive)
           const _RichFact(icon: Icons.shield_outlined, label: 'Protected page'),
         const _RichFact(icon: Icons.visibility_outlined, label: 'No overlap'),
@@ -2298,7 +2302,8 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
         const _ActionSurfaceDetail(
           icon: Icons.report_outlined,
           title: 'Member control',
-          body: 'Dismiss, report, or continue without losing place in the stream.',
+          body:
+              'Dismiss, report, or continue without losing place in the stream.',
         ),
       ],
       stateTitle: 'Ad delivery state',
@@ -2401,12 +2406,12 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
       title: 'Blocked connection guard',
       subtitle: 'Invite prevented with safety explanation and audit state.',
       body:
-          'Show the attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state.',
+          'Show the community safety record, attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state.',
       facts: const [
         _RichFact(icon: Icons.block_outlined, label: 'Blocked'),
+        _RichFact(icon: Icons.article_outlined, label: 'Safety record'),
         _RichFact(icon: Icons.person_outline, label: 'Target hidden'),
         _RichFact(icon: Icons.security_outlined, label: 'Safety audit'),
-        _RichFact(icon: Icons.undo_outlined, label: 'Appeal path'),
       ],
       actionSurfaceTitle: 'Connection safety guard',
       actionHeroSubtitle: 'Blocked invite prevented',
@@ -2422,6 +2427,11 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
           icon: Icons.person_off_outlined,
           title: 'Target',
           body: 'Blocked member details are hidden from the sender.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.article_outlined,
+          title: 'Community safety record',
+          body: 'Record details explain why this connection remains blocked.',
         ),
         _ActionSurfaceDetail(
           icon: Icons.block_outlined,
@@ -2449,7 +2459,7 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
       ],
       completeTitle: 'Blocked state confirmed',
       completeBody:
-          'The safety guard shows blocked target, disabled action, audit, and appeal/unblock path.',
+          'The community safety record shows blocked target, disabled action, audit, and appeal/unblock path.',
       receivedTitle: 'Prevention received',
       receivedBody:
           'The member sees a safe explanation without exposing protected details.',
@@ -2460,7 +2470,8 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
     accent: const Color(0xff315c8a),
     icon: Icons.people_outline,
     title: 'Member connection invite',
-    subtitle: 'Invite, accept/decline, recipient state, and relationship history.',
+    subtitle:
+        'Invite, accept/decline, recipient state, and relationship history.',
     body:
         'Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state.',
     facts: const [
@@ -2540,7 +2551,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
           'Review amount, payer, scope, payment status, refund/retry path, and audit metadata before sharing or exporting.',
       actionPanelTitle: 'Ready to open receipt',
       actionPanelBody:
-          'The receipt remains available for support, export, refund questions, and entitlement restore.',
+          'Confirm receipt status, history, support, export, refund questions, and entitlement restore.',
       alternateActionLabel: 'Export receipt',
       detailTitle: 'Receipt details',
       detailRows: const [
@@ -2575,10 +2586,10 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       ],
       completeTitle: 'Receipt opened',
       completeBody:
-          'The receipt shows amount, payer, scope, entitlement, export path, and support history.',
+          'Receipt status is confirmed with amount, payer, scope, entitlement, export path, and support history.',
       receivedTitle: 'Receipt ready',
       receivedBody:
-          'The member can inspect amount, payer, entitlement state, and export support evidence.',
+          'The member can inspect receipt history, entitlement status, and export support evidence.',
       completeLabel: 'Receipt',
     );
   }
@@ -2602,7 +2613,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
           'Review entitlement, slot list, no-fill reason, restoration path, and settlement utility audit.',
       actionPanelTitle: 'Ready to verify suppression',
       actionPanelBody:
-          'Each eligible slot records ad-off suppression, no impression, and the entitlement that caused it.',
+          'Confirm ad suppression status, each eligible slot, no impression, and the entitlement that caused it.',
       alternateActionLabel: 'Restore ads',
       detailTitle: 'Suppressed slots',
       detailRows: const [
@@ -2637,10 +2648,10 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       ],
       completeTitle: 'Suppression verified',
       completeBody:
-          'Suppressed slots, entitlement, no-impression state, restore path, and audit evidence remain visible.',
+          'Ad suppression status is confirmed with suppressed slots, entitlement, no-impression history, restore path, and audit evidence.',
       receivedTitle: 'Ad-free state ready',
       receivedBody:
-          'The member sees which slots were suppressed and how to manage or restore ads.',
+          'The member sees suppression history, which slots were hidden, and how to manage or restore ads.',
       completeLabel: 'Suppressed',
     );
   }
@@ -2726,7 +2737,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
           'Review scope, expiration, renewal, restore, receipt, and ad-slot receiver state.',
       actionPanelTitle: 'Ready to inspect entitlement',
       actionPanelBody:
-          'The member can manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
+          'Confirm subscription status, manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
       alternateActionLabel: 'Manage plan',
       detailTitle: 'Entitlement details',
       detailRows: const [
@@ -2761,10 +2772,10 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       ],
       completeTitle: 'Entitlement checked',
       completeBody:
-          'Entitlement scope, expiration, receipt, restore path, and ad-free slot state remain visible.',
+          'Subscription status is confirmed with entitlement scope, expiration, receipt, restore path, and ad-free slot history.',
       receivedTitle: 'Entitlement ready',
       receivedBody:
-          'The member can verify active ad-off, receipt, and suppressed ad state.',
+          'The member can verify active ad-off subscription, receipt history, and suppressed ad status.',
       completeLabel: 'Active',
     );
   }
@@ -2800,7 +2811,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
         : 'Confirm payer, amount, renewal, receipt, restore path, and suppressed ad slots before checkout.',
     actionPanelTitle: 'Ready for checkout',
     actionPanelBody:
-        'Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available.',
+        'Confirm checkout status; purchase creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available.',
     alternateActionLabel: 'Change plan',
     detailTitle: 'Checkout details',
     detailRows: [
@@ -2843,10 +2854,10 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
         ? 'Community ad-off purchased'
         : 'Member ad-off purchased',
     completeBody:
-        'The checkout shows payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result.',
+        'Checkout status is complete with payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result.',
     receivedTitle: 'Ad-off entitlement ready',
     receivedBody:
-        'The receiver sees entitlement, receipt, suppressed ad slots, and manage/restore path.',
+        'The receiver sees entitlement status, receipt history, suppressed ad slots, and manage/restore next step.',
     completeLabel: 'Purchased',
   );
 }
@@ -3058,9 +3069,15 @@ Widget? _domainPreviewPanelFor(
     return _DomainPreviewPanel(
       accent: accent,
       foreground: foreground,
-      title: workflowId.contains('ad') || workflowId.contains('no-fill')
-          ? 'Sponsored placement state'
-          : 'Member conversation state',
+      title: workflowId.contains('sensitive')
+          ? 'Privacy-safe ad suppression'
+          : workflowId.contains('banner')
+          ? 'Top banner reserved space'
+          : workflowId.contains('ad') || workflowId.contains('no-fill')
+          ? 'Sponsored message placement'
+          : workflowId.contains('blocked')
+          ? 'Connection safety guard'
+          : 'Member conversation',
       rows: [
         if (workflowId.contains('ad') ||
             workflowId.contains('no-fill')) ...const [
@@ -3104,30 +3121,125 @@ Widget? _domainPreviewPanelFor(
     );
   }
   if (workflowId.startsWith('ad-off-')) {
+    final title = workflowId.contains('receipt')
+        ? 'Receipt history'
+        : workflowId.contains('suppression')
+        ? 'Ad suppression proof'
+        : workflowId.contains('entitlement')
+        ? 'Subscription status'
+        : workflowId.contains('settlement')
+        ? 'Settlement allocation'
+        : workflowId.contains('community')
+        ? 'Community checkout'
+        : 'Member checkout';
+    final rows = workflowId.contains('receipt')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.receipt_long_outlined,
+              title: 'Receipt ADO-1042',
+              body:
+                  'Amount, payer, paid date, scope, refund support, and export trail are visible.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.download_outlined,
+              title: 'Export and support',
+              body:
+                  'Member can export the receipt or open support history without returning to checkout.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.verified_user_outlined,
+              title: 'Linked entitlement',
+              body:
+                  'Receipt links directly to current ad-free entitlement and restore path.',
+            ),
+          ]
+        : workflowId.contains('suppression')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.visibility_off_outlined,
+              title: 'Suppressed top banner',
+              body:
+                  'No ad rendered; no impression or click recorded for the active entitlement.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.dynamic_feed_outlined,
+              title: 'Suppressed stream slot',
+              body:
+                  'The stream explains why sponsored content is hidden without exposing private data.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.restore_outlined,
+              title: 'Restore/manage path',
+              body:
+                  'Member can restore ads or manage ad-off from the same proof screen.',
+            ),
+          ]
+        : workflowId.contains('entitlement')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.verified_user_outlined,
+              title: 'Active through Aug 30',
+              body:
+                  'Subscription state, renewal, receipt, and plan scope are visible.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.restore_outlined,
+              title: 'Manage or restore',
+              body:
+                  'Member can manage plan, restore purchase, or open receipt history.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.visibility_off_outlined,
+              title: 'Ad-free receiver state',
+              body: 'Eligible banner and stream slots remain suppressed.',
+            ),
+          ]
+        : workflowId.contains('settlement')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.account_balance_outlined,
+              title: 'Utility allocation',
+              body:
+                  'Community utility fund destination, amount, and month-end status are visible.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.history_outlined,
+              title: 'Audit trail',
+              body:
+                  'Settlement run, receipts, and rollback/correction path are linked.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.verified_outlined,
+              title: 'Ready for owner review',
+              body:
+                  'Owner can verify or correct allocation before final settlement.',
+            ),
+          ]
+        : const [
+            _DomainPreviewRow(
+              icon: Icons.payments_outlined,
+              title: 'Plan review',
+              body:
+                  'Payer, amount, payment method, renewal, and scope are confirmed before purchase.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.receipt_long_outlined,
+              title: 'Receipt after checkout',
+              body:
+                  'Purchase creates receipt evidence and immediate entitlement status.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.visibility_off_outlined,
+              title: 'Ads hidden after payment',
+              body:
+                  'Eligible sponsored slots show a suppressed state with manage/restore controls.',
+            ),
+          ];
     return _DomainPreviewPanel(
       accent: accent,
       foreground: foreground,
-      title: 'Ad-off checkout and entitlement',
-      rows: const [
-        _DomainPreviewRow(
-          icon: Icons.payments_outlined,
-          title: '4.99 USD / month',
-          body:
-              'Payer, payment method, review step, retry path, and receipt are visible.',
-        ),
-        _DomainPreviewRow(
-          icon: Icons.verified_user_outlined,
-          title: 'Entitlement active through Aug 30',
-          body:
-              'Member can manage subscription, restore purchase, or export receipt.',
-        ),
-        _DomainPreviewRow(
-          icon: Icons.visibility_off_outlined,
-          title: 'Eligible ads suppressed',
-          body:
-              'Suppressed slots show ad-off reason and settlement/utility audit.',
-        ),
-      ],
+      title: title,
+      rows: rows,
     );
   }
   if (workflowId.startsWith('export-')) {
@@ -3564,7 +3676,7 @@ class _RichWorkflowTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      complete ? 'Current state' : spec.actionPanelTitle,
+                      complete ? spec.stateTitle : spec.actionPanelTitle,
                       style: textTheme.titleMedium?.copyWith(
                         color: foreground,
                         fontWeight: FontWeight.w800,
@@ -4781,10 +4893,7 @@ class _RichWorkflowActionSurface extends StatelessWidget {
             domainPreview,
           ],
           const SizedBox(height: 14),
-          _InteractionModelSummary(
-            contract: contract,
-            foreground: foreground,
-          ),
+          _InteractionModelSummary(contract: contract, foreground: foreground),
           const SizedBox(height: 14),
           _RichInlineActionPanel(
             accent: spec.accent,
@@ -5298,22 +5407,48 @@ class _RichInlineActionPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(alternateLabel),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton.icon(
-                    key: confirmButtonKey,
-                    onPressed: () => Navigator.of(context).pop(true),
-                    icon: Icon(actionIcon, size: 18),
-                    label: Text(actionLabel, textAlign: TextAlign.center),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 360;
+                final primary = FilledButton.icon(
+                  key: confirmButtonKey,
+                  onPressed: () => Navigator.of(context).pop(true),
+                  icon: compact
+                      ? const SizedBox.shrink()
+                      : Icon(actionIcon, size: 18),
+                  label: Text(
+                    actionLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                );
+                final secondary = TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    alternateLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+                if (compact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      primary,
+                      const SizedBox(height: 8),
+                      Align(alignment: Alignment.centerRight, child: secondary),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    secondary,
+                    const SizedBox(width: 12),
+                    Expanded(child: primary),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -7122,7 +7257,16 @@ String _primaryActionLabelFor(LoomWorkflowDefinition workflow) {
     return 'Record donation';
   }
   if (id.contains('checkout')) {
-    return 'Buy ad-off';
+    return 'Confirm ad-off';
+  }
+  if (id.contains('entitlement')) {
+    return 'Confirm status';
+  }
+  if (id.contains('receipt')) {
+    return 'Confirm receipt';
+  }
+  if (id.contains('suppression')) {
+    return 'Confirm ad state';
   }
   if (id.contains('announcement')) {
     return 'Publish announcement';

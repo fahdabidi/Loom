@@ -51,8 +51,9 @@ this week, what help or exchange is needed, and what records are available.
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| event RSVP | member acts | coordinator sees attendance | non-attendee can view event | RSVP disabled when full | non-members hidden |
-| plant exchange | member submits | coordinator reviews | other members see public summary | submit disabled if missing fields | private details hidden |
+| garden-event-rsvp | member chooses going/maybe/not attending for the Spring Workshop | coordinator sees attendee count and waitlist | non-attendee can view event date/location/capacity | RSVP disabled when full or closed | non-members cannot RSVP and see public event summary only |
+| plant-exchange-submission | member submits plant offer/request with variety and pickup window | coordinator reviews public summary and protected contact handoff | other members see availability and safe pickup details | submit disabled if labeled fields or privacy check are missing | private contact details hidden until approved handoff |
+| garden-export-custom-schemas | owner selects garden_event and plant_exchange schemas for export | provider/import reviewer sees checksum and redaction status | members see export status without protected fields | export disabled until redaction preview and checksum pass | non-owners cannot generate or transfer the export |
 
 ## 8. Content And Seed Data Requirements
 

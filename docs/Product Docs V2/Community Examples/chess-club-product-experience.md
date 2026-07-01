@@ -46,7 +46,9 @@ or metadata-only route.
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| package open | organizer opens | player sees same home | card identity readable | invalid package blocked | invalid files not installed |
+| chess-local-install-open | tester installs local Chess Club package and opens the community card | member sees branded chess home after install | installed card identity and route are readable | invalid package pair blocked with error | invalid files are not installed |
+| chess-route-home | member opens the local chess route/home | player sees tonight ladder, pairings, and standings | non-active player can read public club home | action disabled when no match is scheduled | non-members see public club summary only |
+| chess-match-result | member records match result with players, round, score, and correction path | opponent/standings view receives updated result | members can read saved result and standings impact | save disabled without opponent/score/result | non-members cannot record match result |
 
 ## 8. Content And Seed Data Requirements
 

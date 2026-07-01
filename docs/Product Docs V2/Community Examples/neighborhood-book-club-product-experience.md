@@ -56,8 +56,13 @@ meets, and how the member participates next.
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| selection publish | organizer publishes | member sees selected book | guests read public meeting summary | publish hidden for members | no admin action |
-| discussion | member posts | members see thread | organizer can moderate/read | send disabled without text | non-members hidden |
+| book-nomination | member submits a concrete book nomination with title/author/rationale | organizer sees nomination in ballot-prep queue | members can read submitted nomination and rationale | submit disabled without title, author, and rationale | non-members cannot nominate and see public reading list only |
+| book-vote | member casts or changes vote on open ballot | organizer sees aggregate vote status/results | members can read ballot and their selected state | voting disabled after close or without eligibility | guests cannot vote and see public meeting summary only |
+| book-meeting-rsvp | member chooses going/maybe/not attending for the named meeting | organizer sees attendee count and waitlist | non-attendees can view meeting details | RSVP disabled when closed or full | non-members cannot RSVP |
+| book-discussion-message | member posts/replies in discussion thread | members see sender, body, timestamp, and read/unread state | organizer can moderate/read thread | send disabled without message body | non-members cannot post or read private discussion |
+| book-selection-publish | owner publishes selected book announcement to members | members receive selected book and meeting update | guests can read public meeting summary | publish hidden for members | non-owners cannot publish |
+| book-search-ai-digest | member asks for cited club digest/search result | members receive answer with citations and source visibility | organizer can read saved digest | answer disabled without query/source context | non-members cannot query private club data |
+| book-export-metadata | owner exports book club metadata with redaction/checksum | provider/import reviewer sees verified export status | members see export status without protected fields | export disabled until checksum and redaction preview pass | non-owners cannot export or transfer |
 
 ## 8. Content And Seed Data Requirements
 

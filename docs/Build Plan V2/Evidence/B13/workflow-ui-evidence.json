@@ -1,4 +1,4 @@
-{
+﻿{
   "schemaVersion": 1,
   "phase": "B13",
   "status": "pass",
@@ -98,8 +98,8 @@
       ],
       "screenshotVisibleTexts": [
         "Garden data export package | Review event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | Generate export | Local package details | Garden Club",
-        "Garden data export package | garden_event + plant_exchange | Confirm selected data, protected-field redaction, checksum, and destination before generating the export. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Generate export | Package contents | Scope | Selected data: garden_event, plant_exchange, RSVP status, offer status, and export metadata. | Member phone, address, and private pickup notes are protected before transfer. | Checksum | Checksum 8F4A-PLANT verifies the package and appears in the audit trail. | Garden export review",
-        "Garden data export package | Review event and plant-exchange data before download. | Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download status. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Export generated | Exported | Garden Club"
+        "Garden data export package | garden_event + plant_exchange | Confirm selected data, protected-field redaction, checksum, and destination before generating the export. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready to generate export | The package will include event attendance, plant offers, redacted member contact fields, and an audit checksum. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Generate export | Garden export review",
+        "Garden data export package | Review event and plant-exchange data before download. | Garden Club export is ready with redaction preview, checksum 8F4A-PLANT, and download status. | 2 schemas selected | Redaction preview | Checksum verified | Download ready | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Export generated | Exported | Garden Club"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",

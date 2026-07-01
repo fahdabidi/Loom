@@ -2071,47 +2071,54 @@ JsonMap buildB25LlmUxReviewImport(
     runId: runId,
     currentScreenRowIds: rowIds,
   );
-  final normalizedHolisticAnswers =
-      _asMapList(llmReview['holisticQuestionAnswers']).map((answer) {
-        final affectedRows = _resolveB25ScreenRowIds(
-          _asStringList(answer['affectedScreenRowIds']),
-          rowIds,
+  final listedHolisticAnswers = _asMapList(
+    llmReview['holisticQuestionAnswers'],
+  );
+  final llmHolisticAnswers = listedHolisticAnswers.isNotEmpty
+      ? listedHolisticAnswers
+      : _llmDirectQuestionAnswerList(
+          llmReview['holisticDirectQuestionAnswers'],
         );
-        final score = _asInt(answer['score']);
-        final answerValue = _asString(answer['answer'] ?? answer['verdict']);
-        return <String, Object?>{
-          ...answer,
-          'questionId': _asString(
-            answer['questionId'],
-            fallback: 'llm-${_slug(_asString(answer['question']))}',
-          ),
-          'scope': 'holistic',
-          'answer': answerValue.isEmpty
-              ? (score >= 80 ? 'yes' : 'no')
-              : answerValue,
-          'verdict':
-              answerValue == 'no' ||
-                  answerValue == 'partial' ||
-                  answerValue == 'fail' ||
-                  score < 80
-              ? 'fail'
-              : 'pass',
-          'score': score,
-          'blocksPass':
-              answer['blocksPass'] == true ||
-              answerValue == 'no' ||
+  final normalizedHolisticAnswers = llmHolisticAnswers.map((answer) {
+    final affectedRows = _resolveB25ScreenRowIds(
+      _asStringList(answer['affectedScreenRowIds']),
+      rowIds,
+    );
+    final score = _asInt(answer['score']);
+    final answerValue = _asString(answer['answer'] ?? answer['verdict']);
+    return <String, Object?>{
+      ...answer,
+      'questionId': _asString(
+        answer['questionId'],
+        fallback: 'llm-${_slug(_asString(answer['question']))}',
+      ),
+      'scope': 'holistic',
+      'answer': answerValue.isEmpty
+          ? (score >= 80 ? 'yes' : 'no')
+          : answerValue,
+      'verdict':
+          answerValue == 'no' ||
               answerValue == 'partial' ||
               answerValue == 'fail' ||
-              score < 80,
-          'visibleEvidence': _asStringList(answer['visibleEvidence']).isEmpty
-              ? <String>[
-                  _asString(answer['visibleEvidence']),
-                ].where((value) => value.trim().isNotEmpty).toList()
-              : _asStringList(answer['visibleEvidence']),
-          'affectedScreenRowIds': affectedRows,
-          'evidenceUsed': affectedRows,
-        };
-      }).toList();
+              score < 80
+          ? 'fail'
+          : 'pass',
+      'score': score,
+      'blocksPass':
+          answer['blocksPass'] == true ||
+          answerValue == 'no' ||
+          answerValue == 'partial' ||
+          answerValue == 'fail' ||
+          score < 80,
+      'visibleEvidence': _asStringList(answer['visibleEvidence']).isEmpty
+          ? <String>[
+              _asString(answer['visibleEvidence']),
+            ].where((value) => value.trim().isNotEmpty).toList()
+          : _asStringList(answer['visibleEvidence']),
+      'affectedScreenRowIds': affectedRows,
+      'evidenceUsed': affectedRows,
+    };
+  }).toList();
   final normalizedScreenReviews = _asMapList(llmReview['screenReviews']).map((
     row,
   ) {
@@ -2344,6 +2351,24 @@ JsonMap buildB25LlmUxReviewImport(
     ..['findings'] = combinedFindings
     ..['unresolvedBlockerFindings'] = unresolvedBlockers
     ..['unresolvedMajorFindings'] = unresolvedMajors;
+}
+
+List<JsonMap> _llmDirectQuestionAnswerList(Object? value) {
+  final listedAnswers = _asMapList(value);
+  if (listedAnswers.isNotEmpty) {
+    return listedAnswers;
+  }
+  if (value is! JsonMap) {
+    return const <JsonMap>[];
+  }
+  return value.entries.where((entry) => entry.value is JsonMap).map((entry) {
+    final answer = JsonMap.of(entry.value as JsonMap);
+    return <String, Object?>{
+      ...answer,
+      'questionId': _asString(answer['questionId'], fallback: entry.key),
+      'question': _asString(answer['question'], fallback: entry.key),
+    };
+  }).toList();
 }
 
 List<JsonMap> _workflowPersonaScorecardsWithLlmReview(

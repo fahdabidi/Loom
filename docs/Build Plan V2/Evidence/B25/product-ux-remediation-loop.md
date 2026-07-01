@@ -234,3 +234,44 @@ findings were resolved in pass 9.
   product-doc reconciliation, then close the remaining Camera gear-loan, Platform blocked-target, and
   Ad-Free lifecycle/surface gaps with fresh full B12-B20 screenshots.
 - Evidence/tooling commit: `45264e1`.
+
+### Iteration 20 / `b25-v4-pass-23`
+
+- Status: failed, but converged.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-23.md`, repaired stale Product Docs V2 community
+  example mappings for Garden Club, Neighborhood Book Club, Chess Club, Loom Communities Shell, and
+  Persona Role Inventory, added richer B25 UI content for platform messaging/block-state, ad-off,
+  camera gear loan, and portability-style surfaces, fixed compact action-button wrapping, and hardened
+  the capture/import tooling so full B12-B20 evidence and LLM direct-question answers flow through the
+  production judge.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests; capture coverage passed and the B25 collector generated `195` schema v4 screen
+  rows. Workflow/persona coverage passed `68 / 68`, visual inspection passed `195 / 195`, and the
+  semantic workflow interaction-model gate passed `68 / 68`.
+- Product-doc reconciliation: passed. The fresh LLM Product Docs to Evidence Workflow Reconciliation
+  review covered `13` community product docs, `195` screen rows, and `179` unique screenshot hashes with
+  `0` findings.
+- LLM Vision UX review: failed with `4` major findings and `1` minor finding. Major findings:
+  `B25-P23-VISION-MAJOR-001` Book Club AI digest still appears as generic community activity;
+  `B25-P23-VISION-MAJOR-002` Book Club export still contains youth-sports protected-data language;
+  `B25-P23-VISION-MAJOR-003` Data Portability workflows repeat the same wizard surface across distinct
+  tasks; `B25-P23-VISION-MAJOR-004` Chess Club screens remain thin/repeated rather than a rich club home
+  and match-result experience.
+- Deterministic semantic surface proof: improved, but still has `4` blocking workflow/persona rows:
+  `hoa-owner-notification` needs visible sender/recipient and timestamp/delivery timing proof;
+  `platform-blocked-target`, `platform-connections-entry`, and `platform-connection-invite` need visible
+  message/invite body content.
+- Production UX judge: failed `8 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-23.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-23.md` records
+  `B25 can pass=false`, `0` blockers, `4` unresolved major findings, `0` newly introduced
+  blocker/major findings, and `4` remaining blocking/major findings.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-24.md` with `8` tickets and `3`
+  remediation batches.
+- Result: B25 remains reopened, but the loop is still converging. Pass 24 must prioritize the four LLM
+  major findings, then close the four remaining semantic surface-proof rows, recapture full B12-B20
+  evidence, rerun fresh Product Docs reconciliation and Vision UX review, and regenerate
+  tickets/scorecards.
+- Evidence/tooling commit: pending current iteration commit.

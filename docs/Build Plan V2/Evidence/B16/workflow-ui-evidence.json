@@ -1,4 +1,4 @@
-{
+﻿{
   "schemaVersion": 1,
   "phase": "B16",
   "status": "pass",
@@ -31,75 +31,9 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_complete.png"
       ],
       "screenshotVisibleTexts": [
-        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Reply | Member Social Space",
-        "Community message thread | Community message from Maya | Open the thread, review sender and body, reply, mute, archive, or block if needed. | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Maya -> Jordan | Unread | Reply available | Archive path | Reply | Message thread",
-        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | The thread shows sender, body, timestamp, reply path, read state, and archive/block controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Current state | Message thread updated | Thread updated | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_platform_social",
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "workflowId": "platform-connections-entry",
-      "expectedAssertions": [
-        "Shell-owned Connections surface is visible.",
-        "Open Connections entry from the app bar.",
-        "Connections entry is reachable."
-      ],
-      "screenshotNames": [
-        "B16_ext_platform_social_platform-connections-entry_start",
-        "B16_ext_platform_social_platform-connections-entry_action",
-        "B16_ext_platform_social_platform-connections-entry_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Cancel invite | Connect | Member Social Space",
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Member scoped | Accept/decline | Inbox state | Cancel invite | Connect",
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Current state | Cancel invite | Connection invite sent | Invite sent | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_platform_social",
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "workflowId": "platform-connection-invite",
-      "expectedAssertions": [
-        "Member can invite an unblocked owner connection.",
-        "Send connection invite.",
-        "Connection invite state is invited."
-      ],
-      "screenshotNames": [
-        "B16_ext_platform_social_platform-connection-invite_start",
-        "B16_ext_platform_social_platform-connection-invite_action",
-        "B16_ext_platform_social_platform-connection-invite_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Cancel invite | Send invite | Member Social Space",
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Member scoped | Accept/decline | Inbox state | Cancel invite | Send invite",
-        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Current state | Cancel invite | Connection invite sent | Invite sent | Member Social Space"
+        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Reply | Member Social Space",
+        "Community message thread | Community message from Maya | Open the thread, review sender and body, reply, mute, archive, or block if needed. | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Maya -> Jordan | Unread | Reply available | Archive path | Reply | Message thread",
+        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | The thread shows sender, body, timestamp, reply path, read state, and archive/block controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Conversation state | Message thread updated | Thread updated | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -130,75 +64,9 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_complete.png"
       ],
       "screenshotVisibleTexts": [
-        "Blocked connection guard | Invite prevented with safety explanation and audit state. | Show the attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state. | Blocked | Target hidden | Safety audit | Appeal path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ready to review safety state | The member cannot send the invite while the block is active; audit state remains visible. | Review block | Check blocked state | Member Social Space",
-        "Blocked connection guard | Blocked invite prevented | Review the block reason, target visibility, disabled invite path, and unblock/appeal option. | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ready to review safety state | The member cannot send the invite while the block is active; audit state remains visible. | Blocked | Target hidden | Safety audit | Appeal path | Review block | Check blocked state | Connection safety guard",
-        "Blocked connection guard | Invite prevented with safety explanation and audit state. | The safety guard shows blocked target, disabled action, audit, and appeal/unblock path. | Blocked | Target hidden | Safety audit | Appeal path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Current state | Review block | Blocked state confirmed | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_platform_social",
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "workflowId": "platform-message-stream",
-      "expectedAssertions": [
-        "Community general thread has messages.",
-        "Render the community message stream.",
-        "Message stream renders two messages."
-      ],
-      "screenshotNames": [
-        "B16_ext_platform_social_platform-message-stream_start",
-        "B16_ext_platform_social_platform-message-stream_action",
-        "B16_ext_platform_social_platform-message-stream_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Send message | Member Social Space",
-        "Community message thread | Community message from Maya | Open the thread, review sender and body, reply, mute, archive, or block if needed. | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Maya -> Jordan | Unread | Reply available | Archive path | Send message | Message thread",
-        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | The thread shows sender, body, timestamp, reply path, read state, and archive/block controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation state | Maya Chen → Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Current state | Message thread updated | Thread updated | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_platform_social",
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "workflowId": "platform-in-stream-ad",
-      "expectedAssertions": [
-        "In-stream ad slot can fill with disclosure.",
-        "Render sponsored in-stream ad item.",
-        "Sponsored disclosure is visible."
-      ],
-      "screenshotNames": [
-        "B16_ext_platform_social_platform-in-stream-ad_start",
-        "B16_ext_platform_social_platform-in-stream-ad_action",
-        "B16_ext_platform_social_platform-in-stream-ad_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Sponsored stream message | Sponsor disclosure, placement, impression, and member context. | Show sponsor, disclosure, message copy, impression state, and dismiss/report alternatives. | Disclosure | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Sponsored message ready | The member can dismiss, report, or continue; impression is recorded only for filled ads. | Report sponsor | Review ad state | Member Social Space",
-        "Sponsored stream message | Local sponsor: community newsletter | Review the sponsor label, disclosure, placement, content, impression, and report path. | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Sponsored message ready | The member can dismiss, report, or continue; impression is recorded only for filled ads. | Disclosure | No overlap | Audit state | Dismiss/report | Report sponsor | Review ad state | Sponsored message review",
-        "Sponsored stream message | Sponsor disclosure, placement, impression, and member context. | Sponsor, disclosure, impression, report path, and stream placement remain visible. | Disclosure | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Current state | Report sponsor | Sponsored message reviewed | Reviewed | Member Social Space"
+        "Blocked connection guard | Invite prevented with safety explanation and audit state. | Show the community safety record, attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state. | Blocked | Safety record | Target hidden | Safety audit | Connection safety guard | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ready to review safety state | The member cannot send the invite while the block is active; audit state remains visible. | Review block | Check blocked state | Member Social Space",
+        "Blocked connection guard | Blocked invite prevented | Review the block reason, target visibility, disabled invite path, and unblock/appeal option. | Connection safety guard | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ready to review safety state | The member cannot send the invite while the block is active; audit state remains visible. | Blocked | Safety record | Target hidden | Safety audit | Check blocked state | Review block",
+        "Blocked connection guard | Invite prevented with safety explanation and audit state. | The community safety record shows blocked target, disabled action, audit, and appeal/unblock path. | Blocked | Safety record | Target hidden | Safety audit | Connection safety guard | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | After review | Review block | Blocked state confirmed | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -229,75 +97,9 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_complete.png"
       ],
       "screenshotVisibleTexts": [
-        "Top banner no-fill | Reserved banner space stays stable without sponsor fill. | Show a clear no-sponsored-message state with reserved space, disclosure, and no overlap. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | No-fill state ready | The banner stays reserved, avoids content jump, and records the no-fill reason. | Refresh slot | Review ad state | Member Social Space",
-        "Top banner no-fill | No sponsor available right now | Reserved space remains stable and tells members why no sponsored message is displayed. | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | No-fill state ready | The banner stays reserved, avoids content jump, and records the no-fill reason. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Refresh slot | Review ad state | Top banner status",
-        "Top banner no-fill | Reserved banner space stays stable without sponsor fill. | No sponsored message is shown, reserved space remains stable, and no-fill reason is recorded. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Current state | Refresh slot | Banner no-fill recorded | No fill | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_platform_social",
-      "communityId": "community_platform_social",
-      "communityName": "Member Social Space",
-      "workflowId": "platform-sensitive-no-fill",
-      "expectedAssertions": [
-        "Sensitive contexts suppress ad fills.",
-        "Request ad decision in sensitive context.",
-        "Sensitive-context ad decision is no-fill."
-      ],
-      "screenshotNames": [
-        "B16_ext_platform_social_platform-sensitive-no-fill_start",
-        "B16_ext_platform_social_platform-sensitive-no-fill_action",
-        "B16_ext_platform_social_platform-sensitive-no-fill_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Sensitive page ad guard | Protected context blocks ad delivery and click tracking. | Show the member why ads are suppressed, preserve layout, and avoid leaking protected context. | Protected page | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Protected no-fill ready | Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason. | Review policy | Start sensitive page ad status | Member Social Space",
-        "Sensitive page ad guard | Protected care context | The page records a no-fill reason without revealing protected member context or enabling click tracking. | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Protected no-fill ready | Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason. | Protected page | No overlap | Audit state | Dismiss/report | Review policy | Start sensitive page ad status | Sensitive ad decision",
-        "Sensitive page ad guard | Protected context blocks ad delivery and click tracking. | Protected context, no-fill reason, layout preservation, and no-click state remain visible. | Protected page | No overlap | Audit state | Dismiss/report | Sponsored placement state | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Current state | Review policy | Sensitive no-fill recorded | No fill | Member Social Space"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_ad_off",
-      "communityId": "community_ad_off",
-      "communityName": "Ad-Free Community",
-      "workflowId": "ad-off-member-checkout",
-      "expectedAssertions": [
-        "Member ad-off purchase is shell-owned.",
-        "Complete member ad-off checkout.",
-        "Member ad-off entitlement active."
-      ],
-      "screenshotNames": [
-        "B16_ext_ad_off_ad-off-member-checkout_start",
-        "B16_ext_ad_off_ad-off-member-checkout_action",
-        "B16_ext_ad_off_ad-off-member-checkout_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Member ad-off checkout | 4.99 USD monthly member ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout. | 4.99 USD | Member pays | Receipt | Ads hidden | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | Change plan | Buy ad-off | Ad-Free Community",
-        "Member ad-off checkout | Ad-free for this member account | Confirm payer, amount, renewal, receipt, restore path, and suppressed ad slots before checkout. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | 4.99 USD | Member pays | Receipt | Ads hidden | Change plan | Buy ad-off",
-        "Member ad-off checkout | 4.99 USD monthly member ad-free plan. | The checkout shows payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result. | 4.99 USD | Member pays | Receipt | Ads hidden | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Change plan | Member ad-off purchased | Purchased | Ad-Free Community"
+        "Top banner no-fill | Reserved banner space stays stable without sponsor fill. | Show a clear no-sponsored-message state with reserved space, disclosure, and no overlap. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Top banner reserved space | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | No-fill state ready | The banner stays reserved, avoids content jump, and records the no-fill reason. | Refresh slot | Review ad state | Member Social Space",
+        "Top banner no-fill | No sponsor available right now | Reserved space remains stable and tells members why no sponsored message is displayed. | Top banner reserved space | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | No-fill state ready | The banner stays reserved, avoids content jump, and records the no-fill reason. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Review ad state | Refresh slot | Top banner status",
+        "Top banner no-fill | Reserved banner space stays stable without sponsor fill. | No sponsored message is shown, reserved space remains stable, and no-fill reason is recorded. | Disclosure | Slot reserved | No overlap | Audit state | Dismiss/report | Top banner reserved space | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ad delivery state | Refresh slot | Banner no-fill recorded | No fill | Member Social Space"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -328,75 +130,9 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_complete.png"
       ],
       "screenshotVisibleTexts": [
-        "Community ad-off checkout | 120.00 USD monthly community ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout. | 120.00 USD | Community pays | Receipt | Ads hidden | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | Change plan | Buy ad-off | Ad-Free Community",
-        "Community ad-off checkout | Ad-free for all eligible community members | Confirm payer, amount, renewal, utility settlement, receipt, and receiver entitlement before checkout. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Checkout creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | 120.00 USD | Community pays | Receipt | Ads hidden | Change plan | Buy ad-off",
-        "Community ad-off checkout | 120.00 USD monthly community ad-free plan. | The checkout shows payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result. | 120.00 USD | Community pays | Receipt | Ads hidden | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Change plan | Community ad-off purchased | Purchased | Ad-Free Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_ad_off",
-      "communityId": "community_ad_off",
-      "communityName": "Ad-Free Community",
-      "workflowId": "ad-off-entitlement-status",
-      "expectedAssertions": [
-        "Ad-off entitlement can be restored and checked.",
-        "Verify member and community entitlement status.",
-        "Entitlement status shows active."
-      ],
-      "screenshotNames": [
-        "B16_ext_ad_off_ad-off-entitlement-status_start",
-        "B16_ext_ad_off_ad-off-entitlement-status_action",
-        "B16_ext_ad_off_ad-off-entitlement-status_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Ad-off entitlement status | Active member entitlement through Aug 30. | Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free receiver state. | Active | Aug 30 | Restore path | Receipt linked | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to inspect entitlement | The member can manage subscription, restore purchase, open receipt, or verify suppressed ad slots. | Manage plan | Review ad state | Ad-Free Community",
-        "Ad-off entitlement status | Member ad-free entitlement | Review scope, expiration, renewal, restore, receipt, and ad-slot receiver state. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to inspect entitlement | The member can manage subscription, restore purchase, open receipt, or verify suppressed ad slots. | Active | Aug 30 | Restore path | Receipt linked | Manage plan | Review ad state | Entitlement status",
-        "Ad-off entitlement status | Active member entitlement through Aug 30. | Entitlement scope, expiration, receipt, restore path, and ad-free slot state remain visible. | Active | Aug 30 | Restore path | Receipt linked | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Manage plan | Entitlement checked | Ad-Free Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_ad_off",
-      "communityId": "community_ad_off",
-      "communityName": "Ad-Free Community",
-      "workflowId": "ad-off-receipt-evidence",
-      "expectedAssertions": [
-        "Ad-off purchases link to receipt ledger records.",
-        "Open ad-off receipt evidence.",
-        "Ad-off receipt evidence displayed."
-      ],
-      "screenshotNames": [
-        "B16_ext_ad_off_ad-off-receipt-evidence_start",
-        "B16_ext_ad_off_ad-off-receipt-evidence_action",
-        "B16_ext_ad_off_ad-off-receipt-evidence_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Ad-off receipt history | Receipt ADO-1042 - 4.99 USD monthly member plan. | Open receipt evidence with payer, amount, date, entitlement scope, payment state, refund path, and exportable audit record. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to open receipt | The receipt remains available for support, export, refund questions, and entitlement restore. | Review ad state | Ad-Free Community",
-        "Ad-off receipt history | Member ad-off receipt | Review amount, payer, scope, payment status, refund/retry path, and audit metadata before sharing or exporting. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to open receipt | The receipt remains available for support, export, refund questions, and entitlement restore. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Review ad state | Receipt evidence",
-        "Ad-off receipt history | Receipt ADO-1042 - 4.99 USD monthly member plan. | The receipt shows amount, payer, scope, entitlement, export path, and support history. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Receipt opened | Receipt | Ad-Free Community"
+        "Community ad-off checkout | 120.00 USD monthly community ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout. | 120.00 USD | Community pays | Receipt | Ads hidden | Community checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Confirm checkout status; purchase creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | Change plan | Confirm ad-off | Ad-Free Community",
+        "Community ad-off checkout | Ad-free for all eligible community members | Confirm payer, amount, renewal, utility settlement, receipt, and receiver entitlement before checkout. | Community checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Confirm checkout status; purchase creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | 120.00 USD | Community pays | Receipt | Ads hidden | Confirm ad-off | Change plan",
+        "Community ad-off checkout | 120.00 USD monthly community ad-free plan. | Checkout status is complete with payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result. | 120.00 USD | Community pays | Receipt | Ads hidden | Community checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Checkout result | Change plan | Community ad-off purchased | Purchased | Ad-Free Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -427,75 +163,9 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_complete.png"
       ],
       "screenshotVisibleTexts": [
-        "Ad suppression proof | Sponsored slots suppressed by active ad-off entitlement. | Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision. | Ads hidden | Entitled | 2 slots checked | Audit trail | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to verify suppression | Each eligible slot records ad-off suppression, no impression, and the entitlement that caused it. | Restore ads | Review ad state | Ad-Free Community",
-        "Ad suppression proof | No sponsored message due to ad-off | Review entitlement, slot list, no-fill reason, restoration path, and settlement utility audit. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to verify suppression | Each eligible slot records ad-off suppression, no impression, and the entitlement that caused it. | Ads hidden | Entitled | 2 slots checked | Audit trail | Restore ads | Review ad state | Suppression decision",
-        "Ad suppression proof | Sponsored slots suppressed by active ad-off entitlement. | Suppressed slots, entitlement, no-impression state, restore path, and audit evidence remain visible. | Ads hidden | Entitled | 2 slots checked | Audit trail | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Restore ads | Suppression verified | Suppressed | Ad-Free Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_ad_off",
-      "communityId": "community_ad_off",
-      "communityName": "Ad-Free Community",
-      "workflowId": "ad-off-settlement-utility",
-      "expectedAssertions": [
-        "Ad-off economics produce auditable settlement records.",
-        "Calculate settlement and utility allocation.",
-        "Settlement and utility allocation recorded."
-      ],
-      "screenshotNames": [
-        "B16_ext_ad_off_ad-off-settlement-utility_start",
-        "B16_ext_ad_off_ad-off-settlement-utility_action",
-        "B16_ext_ad_off_ad-off-settlement-utility_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Ad-off settlement allocation | Community utility allocation from ad-off revenue. | Review monthly revenue, platform fee, community utility allocation, settlement status, and audit/rollback path. | 120.00 USD | Utility fund | Month end | Audit ready | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to review settlement | Admins see amount, destination, settlement status, receipt linkage, and rollback/correction path. | Review allocation | Review ad state | Ad-Free Community",
-        "Ad-off settlement allocation | June ad-off utility allocation | Confirm allocation, settlement destination, audit trail, and correction path before marking utility ready. | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to review settlement | Admins see amount, destination, settlement status, receipt linkage, and rollback/correction path. | 120.00 USD | Utility fund | Month end | Audit ready | Review allocation | Review ad state | Settlement utility",
-        "Ad-off settlement allocation | Community utility allocation from ad-off revenue. | The settlement surface shows amount, destination, audit, correction path, and utility status. | 120.00 USD | Utility fund | Month end | Audit ready | Ad-off checkout and entitlement | 4.99 USD / month | Payer, payment method, review step, retry path, and receipt are visible. | Entitlement active through Aug 30 | Member can manage subscription, restore purchase, or export receipt. | Eligible ads suppressed | Suppressed slots show ad-off reason and settlement/utility audit. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Current state | Review allocation | Settlement reviewed | Reviewed | Ad-Free Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_export_migration",
-      "communityId": "community_export_migration",
-      "communityName": "Data Portability Community",
-      "workflowId": "export-import-preview",
-      "expectedAssertions": [
-        "Legacy import can be previewed for sensitive fields.",
-        "Preview legacy CSV import.",
-        "Import preview reports one sensitive field."
-      ],
-      "screenshotNames": [
-        "B16_ext_export_migration_export-import-preview_start",
-        "B16_ext_export_migration_export-import-preview_action",
-        "B16_ext_export_migration_export-import-preview_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
-        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
+        "Ad suppression proof | Sponsored slots suppressed by active ad-off entitlement. | Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision. | Ads hidden | Entitled | 2 slots checked | Audit trail | Suppressed top banner | No ad rendered; no impression or click recorded for the active entitlement. | Suppressed stream slot | The stream explains why sponsored content is hidden without exposing private data. | Restore/manage path | Member can restore ads or manage ad-off from the same proof screen. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to verify suppression | Confirm ad suppression status, each eligible slot, no impression, and the entitlement that caused it. | Restore ads | Confirm ad state | Ad-Free Community",
+        "Ad suppression proof | No sponsored message due to ad-off | Review entitlement, slot list, no-fill reason, restoration path, and settlement utility audit. | Suppressed top banner | No ad rendered; no impression or click recorded for the active entitlement. | Suppressed stream slot | The stream explains why sponsored content is hidden without exposing private data. | Restore/manage path | Member can restore ads or manage ad-off from the same proof screen. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to verify suppression | Confirm ad suppression status, each eligible slot, no impression, and the entitlement that caused it. | Ads hidden | Entitled | 2 slots checked | Audit trail | Confirm ad state | Restore ads | Suppression decision",
+        "Ad suppression proof | Sponsored slots suppressed by active ad-off entitlement. | Ad suppression status is confirmed with suppressed slots, entitlement, no-impression history, restore path, and audit evidence. | Ads hidden | Entitled | 2 slots checked | Audit trail | Suppressed top banner | No ad rendered; no impression or click recorded for the active entitlement. | Suppressed stream slot | The stream explains why sponsored content is hidden without exposing private data. | Restore/manage path | Member can restore ads or manage ad-off from the same proof screen. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | After suppression | Restore ads | Suppression verified | Suppressed | Ad-Free Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -528,73 +198,7 @@
       "screenshotVisibleTexts": [
         "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
         "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_export_migration",
-      "communityId": "community_export_migration",
-      "communityName": "Data Portability Community",
-      "workflowId": "export-protected-redaction",
-      "expectedAssertions": [
-        "Imported phone number routes to protected vault.",
-        "Open protected field redaction evidence.",
-        "Protected phone field renders redacted."
-      ],
-      "screenshotNames": [
-        "B16_ext_export_migration_export-protected-redaction_start",
-        "B16_ext_export_migration_export-protected-redaction_action",
-        "B16_ext_export_migration_export-protected-redaction_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
-        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_export_migration",
-      "communityId": "community_export_migration",
-      "communityName": "Data Portability Community",
-      "workflowId": "export-schema-listing",
-      "expectedAssertions": [
-        "Custom member note schema is exportable.",
-        "List exportable extension schemas.",
-        "custom_member_note appears in exportable schema list."
-      ],
-      "screenshotNames": [
-        "B16_ext_export_migration_export-schema-listing_start",
-        "B16_ext_export_migration_export-schema-listing_action",
-        "B16_ext_export_migration_export-schema-listing_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
-        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
+        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -627,73 +231,7 @@
       "screenshotVisibleTexts": [
         "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
         "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_export_migration",
-      "communityId": "community_export_migration",
-      "communityName": "Data Portability Community",
-      "workflowId": "export-redacted-bundle",
-      "expectedAssertions": [
-        "Redacted export excludes protected raw values.",
-        "Create redacted export bundle.",
-        "Redacted export marks protected vault as redacted."
-      ],
-      "screenshotNames": [
-        "B16_ext_export_migration_export-redacted-bundle_start",
-        "B16_ext_export_migration_export-redacted-bundle_action",
-        "B16_ext_export_migration_export-redacted-bundle_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
-        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
-      ],
-      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
-      "emulatorName": "emulator-5554",
-      "deviceClass": "Android emulator",
-      "apiLevel": "Android 16 API 36",
-      "pass": true
-    },
-    {
-      "phase": "B16",
-      "appId": "ext_export_migration",
-      "communityId": "community_export_migration",
-      "communityName": "Data Portability Community",
-      "workflowId": "export-checksum-evidence",
-      "expectedAssertions": [
-        "Export bundle should carry checksum evidence.",
-        "Verify export checksum.",
-        "Export checksum evidence recorded."
-      ],
-      "screenshotNames": [
-        "B16_ext_export_migration_export-checksum-evidence_start",
-        "B16_ext_export_migration_export-checksum-evidence_action",
-        "B16_ext_export_migration_export-checksum-evidence_complete"
-      ],
-      "status": "pass",
-      "screenshotPaths": [
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_start.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_complete.png"
-      ],
-      "screenshotVisibleTexts": [
-        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
-        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
+        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -726,7 +264,238 @@
       "screenshotVisibleTexts": [
         "Provider transfer verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
         "Provider transfer verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Provider transfer verification | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
+        "Provider transfer verification | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-connections-entry",
+      "expectedAssertions": [
+        "Shell-owned Connections surface is visible.",
+        "Open Connections entry from the app bar.",
+        "Connections entry is reachable."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-connections-entry_start",
+        "B16_ext_platform_social_platform-connections-entry_action",
+        "B16_ext_platform_social_platform-connections-entry_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Cancel invite | Connect | Member Social Space",
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Member scoped | Accept/decline | Inbox state | Connect | Cancel invite",
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Relationship state | Cancel invite | Connection invite sent | Invite sent | Member Social Space"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-message-stream",
+      "expectedAssertions": [
+        "Community general thread has messages.",
+        "Render the community message stream.",
+        "Message stream renders two messages."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-message-stream_start",
+        "B16_ext_platform_social_platform-message-stream_action",
+        "B16_ext_platform_social_platform-message-stream_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Send message | Member Social Space",
+        "Community message thread | Community message from Maya | Open the thread, review sender and body, reply, mute, archive, or block if needed. | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Ready to reply | Reply keeps the thread member-scoped and preserves read/unread state. | Maya -> Jordan | Unread | Reply available | Archive path | Send message | Message thread",
+        "Community message thread | Maya Chen to Jordan Lee - unread member thread. | The thread shows sender, body, timestamp, reply path, read state, and archive/block controls. | Maya -> Jordan | Unread | Reply available | Archive path | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Archive thread | Conversation state | Message thread updated | Thread updated | Member Social Space"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-sensitive-no-fill",
+      "expectedAssertions": [
+        "Sensitive contexts suppress ad fills.",
+        "Request ad decision in sensitive context.",
+        "Sensitive-context ad decision is no-fill."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-sensitive-no-fill_start",
+        "B16_ext_platform_social_platform-sensitive-no-fill_action",
+        "B16_ext_platform_social_platform-sensitive-no-fill_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Sensitive page ad guard | Protected context blocks ad delivery and click tracking. | Show the member why ads are suppressed, preserve layout, and avoid leaking protected context. | Protected page | No overlap | Audit state | Dismiss/report | Privacy-safe ad suppression | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Protected no-fill ready | Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason. | Review policy | Start sensitive page ad status | Member Social Space",
+        "Sensitive page ad guard | Protected care context | The page records a no-fill reason without revealing protected member context or enabling click tracking. | Privacy-safe ad suppression | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Protected no-fill ready | Ad delivery is suppressed, no click is recorded, and the member sees a privacy-safe reason. | Protected page | No overlap | Audit state | Dismiss/report | Start sensitive page ad status | Review policy | Sensitive ad decision",
+        "Sensitive page ad guard | Protected context blocks ad delivery and click tracking. | Protected context, no-fill reason, layout preservation, and no-click state remain visible. | Protected page | No overlap | Audit state | Dismiss/report | Privacy-safe ad suppression | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ad delivery state | Review policy | Sensitive no-fill recorded | No fill | Member Social Space"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-entitlement-status",
+      "expectedAssertions": [
+        "Ad-off entitlement can be restored and checked.",
+        "Verify member and community entitlement status.",
+        "Entitlement status shows active."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-entitlement-status_start",
+        "B16_ext_ad_off_ad-off-entitlement-status_action",
+        "B16_ext_ad_off_ad-off-entitlement-status_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Ad-off entitlement status | Active member entitlement through Aug 30. | Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free receiver state. | Active | Aug 30 | Restore path | Receipt linked | Subscription status | Active through Aug 30 | Subscription state, renewal, receipt, and plan scope are visible. | Manage or restore | Member can manage plan, restore purchase, or open receipt history. | Ad-free receiver state | Eligible banner and stream slots remain suppressed. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to inspect entitlement | Confirm subscription status, manage subscription, restore purchase, open receipt, or verify suppressed ad slots. | Manage plan | Confirm status | Ad-Free Community",
+        "Ad-off entitlement status | Member ad-free entitlement | Review scope, expiration, renewal, restore, receipt, and ad-slot receiver state. | Subscription status | Active through Aug 30 | Subscription state, renewal, receipt, and plan scope are visible. | Manage or restore | Member can manage plan, restore purchase, or open receipt history. | Ad-free receiver state | Eligible banner and stream slots remain suppressed. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to inspect entitlement | Confirm subscription status, manage subscription, restore purchase, open receipt, or verify suppressed ad slots. | Active | Aug 30 | Restore path | Receipt linked | Confirm status | Manage plan | Entitlement status",
+        "Ad-off entitlement status | Active member entitlement through Aug 30. | Subscription status is confirmed with entitlement scope, expiration, receipt, restore path, and ad-free slot history. | Active | Aug 30 | Restore path | Receipt linked | Subscription status | Active through Aug 30 | Subscription state, renewal, receipt, and plan scope are visible. | Manage or restore | Member can manage plan, restore purchase, or open receipt history. | Ad-free receiver state | Eligible banner and stream slots remain suppressed. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Receiver state | Manage plan | Entitlement checked | Ad-Free Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-settlement-utility",
+      "expectedAssertions": [
+        "Ad-off economics produce auditable settlement records.",
+        "Calculate settlement and utility allocation.",
+        "Settlement and utility allocation recorded."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-settlement-utility_start",
+        "B16_ext_ad_off_ad-off-settlement-utility_action",
+        "B16_ext_ad_off_ad-off-settlement-utility_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Ad-off settlement allocation | Community utility allocation from ad-off revenue. | Review monthly revenue, platform fee, community utility allocation, settlement status, and audit/rollback path. | 120.00 USD | Utility fund | Month end | Audit ready | Settlement allocation | Utility allocation | Community utility fund destination, amount, and month-end status are visible. | Audit trail | Settlement run, receipts, and rollback/correction path are linked. | Ready for owner review | Owner can verify or correct allocation before final settlement. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to review settlement | Admins see amount, destination, settlement status, receipt linkage, and rollback/correction path. | Review allocation | Review ad state | Ad-Free Community",
+        "Ad-off settlement allocation | June ad-off utility allocation | Confirm allocation, settlement destination, audit trail, and correction path before marking utility ready. | Settlement allocation | Utility allocation | Community utility fund destination, amount, and month-end status are visible. | Audit trail | Settlement run, receipts, and rollback/correction path are linked. | Ready for owner review | Owner can verify or correct allocation before final settlement. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to review settlement | Admins see amount, destination, settlement status, receipt linkage, and rollback/correction path. | 120.00 USD | Utility fund | Month end | Audit ready | Review ad state | Review allocation | Settlement utility",
+        "Ad-off settlement allocation | Community utility allocation from ad-off revenue. | The settlement surface shows amount, destination, audit, correction path, and utility status. | 120.00 USD | Utility fund | Month end | Audit ready | Settlement allocation | Utility allocation | Community utility fund destination, amount, and month-end status are visible. | Audit trail | Settlement run, receipts, and rollback/correction path are linked. | Ready for owner review | Owner can verify or correct allocation before final settlement. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Settlement state | Review allocation | Settlement reviewed | Reviewed | Ad-Free Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-protected-redaction",
+      "expectedAssertions": [
+        "Imported phone number routes to protected vault.",
+        "Open protected field redaction evidence.",
+        "Protected phone field renders redacted."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-protected-redaction_start",
+        "B16_ext_export_migration_export-protected-redaction_action",
+        "B16_ext_export_migration_export-protected-redaction_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
+        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
+        "Protected redaction preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-redacted-bundle",
+      "expectedAssertions": [
+        "Redacted export excludes protected raw values.",
+        "Create redacted export bundle.",
+        "Redacted export marks protected vault as redacted."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-redacted-bundle_start",
+        "B16_ext_export_migration_export-redacted-bundle_action",
+        "B16_ext_export_migration_export-redacted-bundle_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
+        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
+        "Full export bundle | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -759,7 +528,238 @@
       "screenshotVisibleTexts": [
         "Provider rollback | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
         "Provider rollback | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
-        "Provider rollback | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Current state | Portability state saved | Ready | Data Portability Community"
+        "Provider rollback | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-connection-invite",
+      "expectedAssertions": [
+        "Member can invite an unblocked owner connection.",
+        "Send connection invite.",
+        "Connection invite state is invited."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-connection-invite_start",
+        "B16_ext_platform_social_platform-connection-invite_action",
+        "B16_ext_platform_social_platform-connection-invite_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Cancel invite | Send invite | Member Social Space",
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state. | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Invite pending | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Ready to send invite | Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options. | Member scoped | Accept/decline | Inbox state | Send invite | Cancel invite",
+        "Member connection invite | Invite, accept/decline, recipient state, and relationship history. | The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation. | Member scoped | Invite pending | Accept/decline | Inbox state | Member conversation | Maya Chen â†’ Jordan Lee | Thread preview includes sender, recipient, timestamp, and read state. | Accept, decline, mute, archive, or block are visible alternatives. | Block respected | Blocked members cannot send; unblock and safety state remain clear. | Decide whether to reply, send, accept, decline, mute, archive, or block this member communication. | Decline invite | Relationship state | Cancel invite | Connection invite sent | Invite sent | Member Social Space"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_platform_social",
+      "communityId": "community_platform_social",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-in-stream-ad",
+      "expectedAssertions": [
+        "In-stream ad slot can fill with disclosure.",
+        "Render sponsored in-stream ad item.",
+        "Sponsored disclosure is visible."
+      ],
+      "screenshotNames": [
+        "B16_ext_platform_social_platform-in-stream-ad_start",
+        "B16_ext_platform_social_platform-in-stream-ad_action",
+        "B16_ext_platform_social_platform-in-stream-ad_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Sponsored stream message | Sponsor disclosure, placement, impression, and member context. | Show sponsor, disclosure, message copy, impression state, and dismiss/report alternatives. | Disclosure | No overlap | Audit state | Dismiss/report | Sponsored message placement | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Sponsored message ready | The member can dismiss, report, or continue; impression is recorded only for filled ads. | Report sponsor | Review ad state | Member Social Space",
+        "Sponsored stream message | Local sponsor: community newsletter | Review the sponsor label, disclosure, placement, content, impression, and report path. | Sponsored message placement | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Sponsored message ready | The member can dismiss, report, or continue; impression is recorded only for filled ads. | Disclosure | No overlap | Audit state | Dismiss/report | Review ad state | Report sponsor | Sponsored message review",
+        "Sponsored stream message | Sponsor disclosure, placement, impression, and member context. | Sponsor, disclosure, impression, report path, and stream placement remain visible. | Disclosure | No overlap | Audit state | Dismiss/report | Sponsored message placement | Sponsored disclosure | Reserved slot shows sponsor, disclosure, or no-fill reason. | Sensitive context protected | Ad click is hidden when content is protected or suppressed. | Impression state | Impression/click is recorded only when an ad is actually filled. | Decide what to save, what to change, and what status or next step should remain visible afterward. | Edit response | Ad delivery state | Report sponsor | Sponsored message reviewed | Reviewed | Member Social Space"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-member-checkout",
+      "expectedAssertions": [
+        "Member ad-off purchase is shell-owned.",
+        "Complete member ad-off checkout.",
+        "Member ad-off entitlement active."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-member-checkout_start",
+        "B16_ext_ad_off_ad-off-member-checkout_action",
+        "B16_ext_ad_off_ad-off-member-checkout_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Member ad-off checkout | 4.99 USD monthly member ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout. | 4.99 USD | Member pays | Receipt | Ads hidden | Member checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Confirm checkout status; purchase creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | Change plan | Confirm ad-off | Ad-Free Community",
+        "Member ad-off checkout | Ad-free for this member account | Confirm payer, amount, renewal, receipt, restore path, and suppressed ad slots before checkout. | Member checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready for checkout | Confirm checkout status; purchase creates receipt evidence, activates entitlement, and leaves manage/cancel/restore actions available. | 4.99 USD | Member pays | Receipt | Ads hidden | Confirm ad-off | Change plan",
+        "Member ad-off checkout | 4.99 USD monthly member ad-free plan. | Checkout status is complete with payer, amount, scope, receipt, entitlement, manage path, and suppressed ad result. | 4.99 USD | Member pays | Receipt | Ads hidden | Member checkout | Plan review | Payer, amount, payment method, renewal, and scope are confirmed before purchase. | Receipt after checkout | Purchase creates receipt evidence and immediate entitlement status. | Ads hidden after payment | Eligible sponsored slots show a suppressed state with manage/restore controls. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Checkout result | Change plan | Member ad-off purchased | Purchased | Ad-Free Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_ad_off",
+      "communityId": "community_ad_off",
+      "communityName": "Ad-Free Community",
+      "workflowId": "ad-off-receipt-evidence",
+      "expectedAssertions": [
+        "Ad-off purchases link to receipt ledger records.",
+        "Open ad-off receipt evidence.",
+        "Ad-off receipt evidence displayed."
+      ],
+      "screenshotNames": [
+        "B16_ext_ad_off_ad-off-receipt-evidence_start",
+        "B16_ext_ad_off_ad-off-receipt-evidence_action",
+        "B16_ext_ad_off_ad-off-receipt-evidence_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Ad-off receipt history | Receipt ADO-1042 - 4.99 USD monthly member plan. | Open receipt evidence with payer, amount, date, entitlement scope, payment state, refund path, and exportable audit record. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Receipt history | Receipt ADO-1042 | Amount, payer, paid date, scope, refund support, and export trail are visible. | Export and support | Member can export the receipt or open support history without returning to checkout. | Linked entitlement | Receipt links directly to current ad-free entitlement and restore path. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to open receipt | Confirm receipt status, history, support, export, refund questions, and entitlement restore. | Confirm receipt | Ad-Free Community",
+        "Ad-off receipt history | Member ad-off receipt | Review amount, payer, scope, payment status, refund/retry path, and audit metadata before sharing or exporting. | Receipt history | Receipt ADO-1042 | Amount, payer, paid date, scope, refund support, and export trail are visible. | Export and support | Member can export the receipt or open support history without returning to checkout. | Linked entitlement | Receipt links directly to current ad-free entitlement and restore path. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Ready to open receipt | Confirm receipt status, history, support, export, refund questions, and entitlement restore. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Confirm receipt | Receipt evidence",
+        "Ad-off receipt history | Receipt ADO-1042 - 4.99 USD monthly member plan. | Receipt status is confirmed with amount, payer, scope, entitlement, export path, and support history. | ADO-1042 | 4.99 USD | Member payer | Export receipt | Receipt history | Receipt ADO-1042 | Amount, payer, paid date, scope, refund support, and export trail are visible. | Export and support | Member can export the receipt or open support history without returning to checkout. | Linked entitlement | Receipt links directly to current ad-free entitlement and restore path. | Decide the amount, payer context, visibility, receipt destination, and whether to edit or manage the payment. | Change amount | Receipt state | Receipt opened | Receipt | Ad-Free Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-import-preview",
+      "expectedAssertions": [
+        "Legacy import can be previewed for sensitive fields.",
+        "Preview legacy CSV import.",
+        "Import preview reports one sensitive field."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-import-preview_start",
+        "B16_ext_export_migration_export-import-preview_action",
+        "B16_ext_export_migration_export-import-preview_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
+        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
+        "Legacy import preview | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-schema-listing",
+      "expectedAssertions": [
+        "Custom member note schema is exportable.",
+        "List exportable extension schemas.",
+        "custom_member_note appears in exportable schema list."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-schema-listing_start",
+        "B16_ext_export_migration_export-schema-listing_action",
+        "B16_ext_export_migration_export-schema-listing_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
+        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
+        "Exportable schema list | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B16",
+      "appId": "ext_export_migration",
+      "communityId": "community_export_migration",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-checksum-evidence",
+      "expectedAssertions": [
+        "Export bundle should carry checksum evidence.",
+        "Verify export checksum.",
+        "Export checksum evidence recorded."
+      ],
+      "screenshotNames": [
+        "B16_ext_export_migration_export-checksum-evidence_start",
+        "B16_ext_export_migration_export-checksum-evidence_action",
+        "B16_ext_export_migration_export-checksum-evidence_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Generate export | Data Portability Community",
+        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status. | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Ready for portability action | Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Generate export",
+        "Checksum verification | Scope, redaction, checksum, destination, and audit trail. | The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status. | Scope selected | Redacted preview | Checksum | Guardian/coach visibility | Portability wizard | Scope and redaction | Members, receipts, documents, and protected fields are previewed before export. | Checksum 9A7F-PORT | Verification must pass before transfer or download is marked complete. | Transfer rollback available | Owner can cancel, retry, roll back, or inspect provider status. | Decide the scope, redaction, checksum, destination, and whether to retry, roll back, or change scope. | Change scope | Transfer state | Portability state saved | Ready | Data Portability Community"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",
@@ -767,5 +767,6 @@
       "apiLevel": "Android 16 API 36",
       "pass": true
     }
-  ]
+  ],
+  "workflowShards": 3
 }

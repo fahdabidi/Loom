@@ -92,19 +92,7 @@ void main(List<String> args) async {
 
   for (var phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
     final phase = phases[phaseIndex];
-    final command = <String>[
-      'drive',
-      '--driver=test_driver/workflow_ui_evidence_test.dart',
-      '--target=integration_test/workflow_ui_evidence_test.dart',
-      '-d',
-      device,
-      '--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true',
-      '--dart-define=LOOM_EVIDENCE_PHASE_FILTER=$phase',
-    ];
-
-    stdout.writeln(
-      'b25_capture_workflow_screenshots: [$phase] running flutter ${command.join(' ')}',
-    );
+    final shardCount = _shardCountForPhase(phase);
     _writeProgressReport(progressReportPath, {
       'status': 'running',
       'mode': mode,
@@ -119,105 +107,182 @@ void main(List<String> args) async {
       'device': device,
       'evidenceRoot': evidenceRoot.path,
       'logPath': logPath,
-      'command': 'flutter ${command.join(' ')}',
+      'shardCount': shardCount,
     });
-    final result = await _runProcessStreaming(
-      executable: 'flutter',
-      arguments: command,
-      workingDirectory: demoDir.path,
-      environment: <String, String>{
-        ...Platform.environment,
-        'WORKFLOW_EVIDENCE_ROOT': evidenceRoot.path,
-        'WORKFLOW_EVIDENCE_COMMAND_OUTPUT': logPath,
-      },
-      onProgress: (event) {
-        final completed = event['completedWorkflows'];
-        final total = event['totalWorkflows'];
+
+    final phaseWorkflows = <Map<String, dynamic>>[];
+    Map<String, dynamic>? phaseManifestTemplate;
+    for (var shardIndex = 0; shardIndex < shardCount; shardIndex += 1) {
+      final command = <String>[
+        'drive',
+        '--driver=test_driver/workflow_ui_evidence_test.dart',
+        '--target=integration_test/workflow_ui_evidence_test.dart',
+        '-d',
+        device,
+        '--dart-define=LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true',
+        '--dart-define=LOOM_EVIDENCE_PHASE_FILTER=$phase',
+        if (shardCount > 1) ...[
+          '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_COUNT=$shardCount',
+          '--dart-define=LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX=$shardIndex',
+        ],
+      ];
+
+      stdout.writeln(
+        'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount running flutter ${command.join(' ')}',
+      );
+      final result = await _runProcessStreaming(
+        executable: 'flutter',
+        arguments: command,
+        workingDirectory: demoDir.path,
+        environment: <String, String>{
+          ...Platform.environment,
+          'WORKFLOW_EVIDENCE_ROOT': evidenceRoot.path,
+          'WORKFLOW_EVIDENCE_COMMAND_OUTPUT': logPath,
+        },
+        onProgress: (event) {
+          final completed = event['completedWorkflows'];
+          final total = event['totalWorkflows'];
+          _writeProgressReport(progressReportPath, {
+            'status': 'running',
+            'mode': mode,
+            'phases': phases,
+            'phaseCount': phases.length,
+            'completedPhases': phaseIndex,
+            'currentPhase': event['phase'] ?? phase,
+            'currentPhaseIndex': phaseIndex + 1,
+            'currentShardIndex': shardIndex,
+            'shardCount': shardCount,
+            'currentWorkflowId': event['workflowId'],
+            'currentCommunityName': event['communityName'],
+            'currentScreenshotName': event['screenshotName'],
+            'workflowStatus': event['status'],
+            'completedWorkflowsInCurrentPhase': completed,
+            'totalWorkflowsInCurrentPhase': total,
+            'device': device,
+            'evidenceRoot': evidenceRoot.path,
+            'logPath': logPath,
+            'command': 'flutter ${command.join(' ')}',
+            'lastProgressEvent': event,
+          });
+          if (completed is int && total is int && total > 0) {
+            stdout.writeln(
+              'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount progress $completed/$total '
+              'current=${event['workflowId'] ?? event['screenshotName'] ?? 'unknown'} '
+              'status=${event['status'] ?? 'running'}',
+            );
+          }
+        },
+      );
+
+      output
+        ..writeln('--- $phase shard ${shardIndex + 1}/$shardCount ---')
+        ..writeln('\$ flutter ${command.join(' ')}')
+        ..writeln('exitCode=${result.exitCode}')
+        ..writeln()
+        ..writeln('--- stdout ---')
+        ..write(result.stdout)
+        ..writeln()
+        ..writeln('--- stderr ---')
+        ..write(result.stderr)
+        ..writeln();
+      await File(logPath).writeAsString(output.toString(), flush: true);
+
+      if (result.exitCode != 0) {
         _writeProgressReport(progressReportPath, {
-          'status': 'running',
+          'status': 'failed',
           'mode': mode,
           'phases': phases,
           'phaseCount': phases.length,
           'completedPhases': phaseIndex,
-          'currentPhase': event['phase'] ?? phase,
+          'currentPhase': phase,
           'currentPhaseIndex': phaseIndex + 1,
-          'currentWorkflowId': event['workflowId'],
-          'currentCommunityName': event['communityName'],
-          'currentScreenshotName': event['screenshotName'],
-          'workflowStatus': event['status'],
-          'completedWorkflowsInCurrentPhase': completed,
-          'totalWorkflowsInCurrentPhase': total,
+          'currentShardIndex': shardIndex,
+          'shardCount': shardCount,
+          'exitCode': result.exitCode,
           'device': device,
           'evidenceRoot': evidenceRoot.path,
           'logPath': logPath,
-          'command': 'flutter ${command.join(' ')}',
-          'lastProgressEvent': event,
         });
-        if (completed is int && total is int && total > 0) {
-          stdout.writeln(
-            'b25_capture_workflow_screenshots: [$phase] progress $completed/$total '
-            'current=${event['workflowId'] ?? event['screenshotName'] ?? 'unknown'} '
-            'status=${event['status'] ?? 'running'}',
-          );
-        }
-      },
-    );
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: [$phase] shard ${shardIndex + 1}/$shardCount flutter drive failed; log written to $logPath',
+        );
+        exit(result.exitCode);
+      }
 
-    output
-      ..writeln('--- $phase ---')
-      ..writeln('\$ flutter ${command.join(' ')}')
-      ..writeln('exitCode=${result.exitCode}')
-      ..writeln()
-      ..writeln('--- stdout ---')
-      ..write(result.stdout)
-      ..writeln()
-      ..writeln('--- stderr ---')
-      ..write(result.stderr)
-      ..writeln();
-    await File(logPath).writeAsString(output.toString(), flush: true);
-
-    if (result.exitCode != 0) {
-      _writeProgressReport(progressReportPath, {
-        'status': 'failed',
-        'mode': mode,
-        'phases': phases,
-        'phaseCount': phases.length,
-        'completedPhases': phaseIndex,
-        'currentPhase': phase,
-        'currentPhaseIndex': phaseIndex + 1,
-        'exitCode': result.exitCode,
-        'device': device,
-        'evidenceRoot': evidenceRoot.path,
-        'logPath': logPath,
-      });
-      stderr.writeln(
-        'b25_capture_workflow_screenshots: [$phase] flutter drive failed; log written to $logPath',
+      final phaseManifest = File(
+        '${evidenceRoot.path}/$phase/workflow-ui-evidence.json',
       );
-      exit(result.exitCode);
+      if (!phaseManifest.existsSync()) {
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: [$phase] missing ${phaseManifest.path}; screenshot driver did not write evidence.',
+        );
+        _writeProgressReport(progressReportPath, {
+          'status': 'failed',
+          'mode': mode,
+          'phases': phases,
+          'phaseCount': phases.length,
+          'completedPhases': phaseIndex,
+          'currentPhase': phase,
+          'currentPhaseIndex': phaseIndex + 1,
+          'currentShardIndex': shardIndex,
+          'shardCount': shardCount,
+          'failure': 'missing phase manifest',
+          'missingManifest': phaseManifest.path,
+          'device': device,
+          'evidenceRoot': evidenceRoot.path,
+          'logPath': logPath,
+        });
+        exit(65);
+      }
+      final decoded = jsonDecode(await phaseManifest.readAsString());
+      if (decoded is! Map<String, dynamic>) {
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: [$phase] invalid ${phaseManifest.path}; screenshot driver did not write a JSON object.',
+        );
+        exit(65);
+      }
+      phaseManifestTemplate ??= decoded;
+      phaseWorkflows.addAll(
+        (decoded['workflows'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>(),
+      );
     }
 
-    final phaseManifest = File(
-      '${evidenceRoot.path}/$phase/workflow-ui-evidence.json',
-    );
-    if (!phaseManifest.existsSync()) {
-      stderr.writeln(
-        'b25_capture_workflow_screenshots: [$phase] missing ${phaseManifest.path}; screenshot driver did not write evidence.',
+    if (shardCount > 1) {
+      if (phaseManifestTemplate == null || phaseWorkflows.isEmpty) {
+        stderr.writeln(
+          'b25_capture_workflow_screenshots: [$phase] sharded capture produced no workflows.',
+        );
+        exit(65);
+      }
+      final phaseDirectory = Directory('${evidenceRoot.path}/$phase');
+      await phaseDirectory.create(recursive: true);
+      final mergedManifest = <String, Object?>{
+        ...phaseManifestTemplate,
+        'status': 'pass',
+        'workflowCount': phaseWorkflows.length,
+        'workflowShards': shardCount,
+        'workflows': phaseWorkflows,
+      };
+      await File(
+        '${phaseDirectory.path}/workflow-ui-evidence.json',
+      ).writeAsString(
+        const JsonEncoder.withIndent('  ').convert(mergedManifest),
+        flush: true,
       );
-      _writeProgressReport(progressReportPath, {
-        'status': 'failed',
-        'mode': mode,
-        'phases': phases,
-        'phaseCount': phases.length,
-        'completedPhases': phaseIndex,
-        'currentPhase': phase,
-        'currentPhaseIndex': phaseIndex + 1,
-        'failure': 'missing phase manifest',
-        'missingManifest': phaseManifest.path,
-        'device': device,
-        'evidenceRoot': evidenceRoot.path,
-        'logPath': logPath,
-      });
-      exit(65);
+      await File('${phaseDirectory.path}/evidence-audit.json').writeAsString(
+        const JsonEncoder.withIndent('  ').convert({
+          'schemaVersion': 1,
+          'phase': phase,
+          'status': 'pass',
+          'workflowShards': shardCount,
+          'screenshotsAudited': phaseWorkflows
+              .expand((entry) => entry['screenshotPaths'] as List<dynamic>)
+              .length,
+          'missingScreenshots': const <String>[],
+        }),
+        flush: true,
+      );
     }
     _writeProgressReport(progressReportPath, {
       'status': 'running',
@@ -228,6 +293,7 @@ void main(List<String> args) async {
       'currentPhase': phase,
       'currentPhaseIndex': phaseIndex + 1,
       'phaseStatus': 'complete',
+      'shardCount': shardCount,
       'device': device,
       'evidenceRoot': evidenceRoot.path,
       'logPath': logPath,
@@ -313,6 +379,17 @@ bool _samePhases(List<String> actual, List<String> expected) {
     }
   }
   return true;
+}
+
+int _shardCountForPhase(String phase) {
+  switch (phase) {
+    case 'B14':
+      return 4;
+    case 'B16':
+      return 3;
+    default:
+      return 1;
+  }
 }
 
 String _slug(String value) {

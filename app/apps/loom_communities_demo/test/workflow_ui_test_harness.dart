@@ -88,9 +88,12 @@ Future<void> completeWorkflow(
   LoomWorkflowDefinition workflow,
 ) async {
   await scrollToWorkflowCard(tester, workflow);
-  await tester.tap(
-    find.byKey(ValueKey('workflow-button-${workflow.workflowId}')),
+  final workflowButton = find.byKey(
+    ValueKey('workflow-button-${workflow.workflowId}'),
   );
+  await tester.ensureVisible(workflowButton);
+  await tester.pumpAndSettle();
+  await tester.tap(workflowButton);
   await tester.pumpAndSettle();
   expect(
     find.byKey(ValueKey('workflow-action-surface-${workflow.workflowId}')),
