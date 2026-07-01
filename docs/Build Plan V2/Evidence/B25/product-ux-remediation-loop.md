@@ -274,4 +274,4 @@ findings were resolved in pass 9.
   major findings, then close the four remaining semantic surface-proof rows, recapture full B12-B20
   evidence, rerun fresh Product Docs reconciliation and Vision UX review, and regenerate
   tickets/scorecards.
-- Evidence/tooling commit: pending current iteration commit.
+- Evidence/tooling commit: `a3f0db9`.
