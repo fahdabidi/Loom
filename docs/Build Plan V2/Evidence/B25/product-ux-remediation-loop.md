@@ -504,4 +504,4 @@ findings were resolved in pass 9.
   panels, build a true export/portability workspace, make persona handoffs product-grade, reduce
   repeated-card visual fatigue, and add durable result states for the four failing lifecycle rows
   before another full B12-B20 recapture.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `00b0339`.
