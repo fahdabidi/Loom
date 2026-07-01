@@ -32,13 +32,22 @@ a real user would expect.
   the same registry metadata on each screen row plus a top-level `cardSurfaceRegistry`. This registry is
   remediation context only in B25; it must not be treated as a standalone card-surface/API coverage
   pass/fail gate until a later phase explicitly enables that gate.
+- Persona-specific app-shell navigation context for every community. Each community product
+  experience doc must define `persona -> tabs -> pinned surfaces -> customization knobs`, including
+  mandatory Home and Messages/Communication tabs, custom labels/icons/order, persona visibility,
+  hidden/disabled rules, surface-to-tab assignments, minimized/medium/expanded defaults, and safe
+  theme/typography/color/density customization. B25 uses this as remediation context and must open
+  tickets when screenshots show long generic surface lists, missing persona tabs, missing Messages
+  access, wrong persona visibility, or customization gaps that keep the UI from feeling like a
+  production app.
 - LLM Product Docs to Evidence Workflow Reconciliation report at
   `docs/Build Plan V2/Evidence/B25/llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`.
   The reviewer must inspect every relevant Product Docs V2 community example doc, especially
-  `## 6. Workflow-To-Surface Mapping`, compare it to current screenshot/review evidence, and decide
-  whether the product docs list every implemented workflow, every documented workflow is implemented
-  and screenshot-backed, and any visible flow or UI interaction missing from the docs must be added to
-  the product doc before UI remediation continues.
+  `## 3.1 Persona Tabs, Pins, And Customization` and `## 6. Workflow-To-Surface Mapping`, compare them
+  to current screenshot/review evidence, and decide whether the product docs list every implemented
+  workflow, every documented workflow is implemented and screenshot-backed, every persona has the
+  expected tab/navigation/customization model, and any visible flow or UI interaction missing from the
+  docs must be added to the product doc before UI remediation continues.
 - Complete product UX screen inventory and review matrix at
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`, with one row for every
   implemented screen, state, dialog, card, feed item, form, confirmation, error, empty state, persona
@@ -151,8 +160,8 @@ B25 has two execution contexts, and the product-doc write target differs by cont
 Both contexts must use the same structure from
 `docs/Build Plan V2/Skill/references/community-product-experience-template.md`: community identity and
 promise, personas/jobs, information architecture, home requirements, domain-native product surfaces,
-workflow-to-surface mapping, persona/state matrix, content/seed requirements, visual/interaction
-standard, and review/remediation log.
+persona tabs/pins/customization, workflow-to-surface mapping, persona/state matrix, content/seed
+requirements, visual/interaction standard, and review/remediation log.
 
 Every community product experience doc must also include a B25 advisory card-surface registry mapping.
 This mapping helps remediation agents select the right card surface and fake-backend state shape for a

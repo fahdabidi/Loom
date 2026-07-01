@@ -24,7 +24,17 @@
 | Book club home | Current book cycle. | Member | current/next book, nominations, vote status, meeting, discussion prompt. | Vote / RSVP / discuss |
 | Nomination/detail | Submit or inspect nomination. | Member | title, author, reason, nominator. | Nominate book |
 | Vote surface | Pick/read vote state. | Member | candidates, current totals/status, deadline. | Cast vote |
+| Reading calendar | Track meetings, reading deadlines, and reminders. | Member/organizer | meeting title, date/time, location/link, recurrence, RSVP/reminder state. | RSVP / add reminder |
+| Reading materials | Open book guides, author links, excerpts, or external notes. | Member | document/link title, source, access, embedded/external open choice. | Open material |
+| Shared library | Borrow or give away books, DVDs, audiobooks, or board games. | Member | item title/format, owner/current holder, due date, queue, loan/giveaway state. | Browse library / join queue |
 | Discussion | Member conversation. | Member | prompt, latest messages, author. | Send message |
+
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Member | Home, Books, Calendar, Discussions, Messages | current selection, open ballot, next meeting | Book-forward typography, cover art where available, reading-progress and vote state. |
+| Host | Home, Books, Calendar, Admin, Documents, Messages | nomination queue, ballot results, selected-book publish action | Host tabs expose publish and export surfaces that members see as read-only or hidden. |
 
 ## 4. Home Screen Requirements
 
@@ -37,7 +47,9 @@ meets, and how the member participates next.
 | --- | --- | --- | --- | --- |
 | Nomination | title, author, reason, nominator | draft/submitted/selected | nominate, edit | workflow card only |
 | Vote | candidates, deadline, vote status | open/voted/closed | vote, change vote | abstract poll chip |
-| Meeting RSVP | date, location, attendance | open/RSVPed/full | RSVP | checklist dialog |
+| Calendar meeting RSVP | meeting title, date, location/link, recurrence/reminder, attendance | open/RSVPed/full/cancelled | RSVP, change RSVP, add reminder | checklist dialog |
+| Reading materials | title, author/source, version/date, access, open mode | available/read/acknowledged/access-requested | open embedded, launch external, save, acknowledge | raw external URL |
+| Shared library | book/DVD/game title, format, owner/current holder, due date, queue position, condition | available/queued/borrowed/overdue/given/returned/lost | browse, list item, request loan, join queue, return, claim giveaway | generic equipment wording or no current-holder state |
 | Discussion | prompt, message body, sender | empty/unread/sent | reply | generic message workflow |
 
 ## 6. Workflow-To-Surface Mapping
@@ -46,7 +58,9 @@ meets, and how the member participates next.
 | --- | --- | --- | --- | --- | --- |
 | book-nomination | member | Nomination form/detail | book title/author/reason and submitted state | Publishing/forms/events | B14/B25 |
 | book-vote | member | Vote surface | candidates and voted result | Voting/events/audit | B14/B25 |
-| book-meeting-rsvp | member | Meeting detail | date/location/attendance | Events/notifications | B14/B25 |
+| book-meeting-rsvp | member | Reading calendar meeting detail | meeting title, date/time, location/link, recurrence/reminder, attendance | Calendar/events/notifications | B14/B25 |
+| book-reading-material | member | Reading materials detail | document/link title, source, embedded/external open option, access/acknowledgement state | Documents/external documents/audit | B14/B25 |
+| book-shared-library | member | Shared library item detail | searchable book/DVD/game listing, owner/current holder, queue position, due date, loan/giveaway mode, return or transfer state | Shared item marketplace/loan/giveaway, notifications, audit | B25 |
 | book-discussion-message | member | Discussion thread | prompt/message/sender | Messaging/events | B14/B25 |
 | book-selection-publish | owner | Admin publish | selected book/audience/timing | Publishing/notifications | B14/B25 |
 | book-search-ai-digest | member | Search/digest | query/citations/summary | Search/AI/digest | B14/B25 |
@@ -59,6 +73,8 @@ meets, and how the member participates next.
 | book-nomination | member submits a concrete book nomination with title/author/rationale | organizer sees nomination in ballot-prep queue | members can read submitted nomination and rationale | submit disabled without title, author, and rationale | non-members cannot nominate and see public reading list only |
 | book-vote | member casts or changes vote on open ballot | organizer sees aggregate vote status/results | members can read ballot and their selected state | voting disabled after close or without eligibility | guests cannot vote and see public meeting summary only |
 | book-meeting-rsvp | member chooses going/maybe/not attending for the named meeting | organizer sees attendee count and waitlist | non-attendees can view meeting details | RSVP disabled when closed or full | non-members cannot RSVP |
+| book-reading-material | member opens a reading guide, external note, or excerpt | organizer sees access/acknowledgement where required | source/version readable | request access shown for private materials | non-members cannot open private club materials |
+| book-shared-library | member borrows, queues for, lists, or gives away a club item | owner/steward sees borrower, queue, current-holder/custody, due, and return state | members can see availability and queue position with privacy-safe holder labels | loan disabled when unavailable; queue shown when waitlisted | private owner/current-holder contact hidden until approved handoff |
 | book-discussion-message | member posts/replies in discussion thread | members see sender, body, timestamp, and read/unread state | organizer can moderate/read thread | send disabled without message body | non-members cannot post or read private discussion |
 | book-selection-publish | owner publishes selected book announcement to members | members receive selected book and meeting update | guests can read public meeting summary | publish hidden for members | non-owners cannot publish |
 | book-search-ai-digest | member asks for cited club digest/search result | members receive answer with citations and source visibility | organizer can read saved digest | answer disabled without query/source context | non-members cannot query private club data |
@@ -66,8 +82,9 @@ meets, and how the member participates next.
 
 ## 8. Content And Seed Data Requirements
 
-Use real book titles/authors, meeting dates/locations, discussion prompts, vote candidates, digest
-citations, sender names, and export metadata.
+Use real book titles/authors, meeting dates/locations/links, reading material titles/sources,
+shared-library item formats, current-holder/queue/due-date examples, discussion prompts, vote
+candidates, digest citations, sender names, and export metadata.
 
 ## 9. Visual And Interaction Standard
 
@@ -83,6 +100,8 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | book-nomination | member | Member decides whether a concrete title belongs on the ballot after reviewing title, author, rationale, genre, nominator, and meeting cycle. | submit nomination, nominate book, save nomination | edit nomination, withdraw nomination, change title | Fresh screenshots must show title/author/rationale, ballot state, edit path, submitted result, and member receiver state for this persona. |
 | book-vote | member | Member chooses one nominated book after comparing candidates, vote deadline, current count, selected state, and meeting context. | record vote, vote, select book | change vote, clear vote, choose another book | Fresh screenshots must show nominated books, selected/winning state, change-vote path, recorded result, and member receiver state for this persona. |
 | book-meeting-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| book-reading-material | member | Member opens a concrete reading material with title/source/access, chooses embedded or external open, and can save or acknowledge it. | open document, launch external, save material, acknowledge | request access, mark unread, share within club | Fresh screenshots must show title/source/version, embedded/external open choices, access/acknowledgement state, and reading-cycle linkage. |
+| book-shared-library | member | Member browses books, DVDs, or games, checks current holder/queue/due date, requests a loan or giveaway, and can list/edit/delist their own item. | browse library, list item, request loan, join waitlist, claim giveaway, return item | leave queue, edit listing, delist, report lost, renew/extend, cancel loan | Fresh screenshots must show item title/format, owner/current-holder privacy, queue position, custody/due/condition state, and return or ownership-transfer result. |
 | book-discussion-message | member | Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths. | send message, reply, send invite, accept invite, connect | decline, block, mute, archive, cancel invite | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | book-selection-publish | owner | Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update. | publish announcement, send announcement, post announcement, schedule announcement | edit announcement, preview announcement, save draft, schedule later, change audience | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | book-search-ai-digest | member | User decides a concrete community task with enough context, a semantic primary action, a meaningful alternative, and a durable result. | submit, save, send | edit, change, undo, reject, withdraw | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
@@ -97,7 +116,9 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | --- | --- | --- | --- | --- |
 | `book-nomination` | [nomination](../../CardSurfaces/book-nomination.md) | `CommunityNominationApi` | create/edit/withdraw nomination, duplicate/eligibility checks, ballot linkage, status | Demo renderer must select a domain-native surface for `nomination` and LocalInAppBackend must expose/import the state for these interactions. |
 | `book-vote` | [vote](../../CardSurfaces/vote-poll.md) | `CommunityVoteApi` | open/close ballot, cast/change/clear vote, results/tie handling, selection publish | Demo renderer must select a domain-native surface for `vote` and LocalInAppBackend must expose/import the state for these interactions. |
-| `book-meeting-rsvp` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must select a domain-native surface for `event-rsvp` and LocalInAppBackend must expose/import the state for these interactions. |
+| `book-meeting-rsvp` | [calendar](../../CardSurfaces/calendar.md) and [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityCalendarSurfaceApi` / `CommunityEventRsvpApi` | named meeting detail, recurrence/reminder, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must show meeting title/date/location/link, reminder, RSVP result, and change path. |
+| `book-reading-material` | [documents](../../CardSurfaces/documents.md) and [external-document-link](../../CardSurfaces/external-document-link.md) | `CommunityDocumentSurfaceApi` / `CommunityExternalDocumentApi` | list/open/download/acknowledge/request access, embedded browser open, external app launch, version/audit trail | Demo renderer must show reading material title/source/version, embedded/external open choices, acknowledgement/access state, and reading-cycle context. |
+| `book-shared-library` | [equipment-loan](../../CardSurfaces/equipment-loan.md) | `CommunityEquipmentLoanApi` | browse/search items, list/edit/pause/delist personal item, request/reserve/approve, join/leave/advance queue, show current holder/custody history, claim giveaway, pickup/return or transfer | Demo renderer must show item title/format, owner/current holder or privacy-safe hold state, queue/due date, condition, loan/giveaway mode, borrower/claim state, and return/transfer state. |
 | `book-discussion-message` | [thread](../../CardSurfaces/discussion-message.md) | `CommunityThreadApi` | reply/edit/delete, read/unread, moderate/mute/archive, attachments/mentions | Demo renderer must select a domain-native surface for `thread` and LocalInAppBackend must expose/import the state for these interactions. |
 | `book-selection-publish` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must select a domain-native surface for `announcement` and LocalInAppBackend must expose/import the state for these interactions. |
 | `book-search-ai-digest` | [knowledge](../../CardSurfaces/search-ai-digest.md) | `CommunityKnowledgeSurfaceApi` | query/citations, save/share digest, source visibility, stale citation handling | Demo renderer must select a domain-native surface for `knowledge` and LocalInAppBackend must expose/import the state for these interactions. |

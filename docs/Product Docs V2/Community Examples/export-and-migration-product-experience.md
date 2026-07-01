@@ -26,6 +26,13 @@
 | Verification | Confirm integrity. | Owner/admin | checksum, file count, result. | Verify |
 | Migration/rollback | Track provider transfer. | Owner/admin | source/destination, status, rollback option. | Transfer / rollback |
 
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Data owner | Home, Export, Transfer, Documents, Messages | export scope, redaction preview, checksum status | Migration/status visual language, explicit data scope and rollback state. |
+| Provider/import reviewer | Home, Transfer, Audit, Documents, Messages | import verification, rollback queue, transfer receipt | Provider tabs expose verification and rollback actions with audit trail. |
+
 ## 4. Home Screen Requirements
 
 The user must see a migration dashboard with scope, redaction, verification, and rollback state, not a

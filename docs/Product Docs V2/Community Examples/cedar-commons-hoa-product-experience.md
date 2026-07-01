@@ -23,8 +23,17 @@
 | --- | --- | --- | --- | --- |
 | HOA home | Current obligations and requests. | Member/board | dues, documents, reservations, requests, board notices. | Pay dues / submit request |
 | Dues payment | Pay and view receipt. | Member | amount, due date, payer, receipt. | Pay dues |
-| Document center | Read HOA docs. | Member | doc title, status, date. | Open document |
-| Review queue | Board decision. | Board | requester, change, comments, approve/reject. | Approve request |
+| Document center | Read HOA docs and linked external records. | Member | doc title, version/date, access state, embedded/external open option. | Open document |
+| HOA calendar | See meetings, reservation windows, dues deadlines, and review dates. | Member/board | date, location, conflict/status, reminder. | Reserve / add reminder |
+| Workflow status center | Track multi-step HOA cases. | Member/board | submitted details, current step, reviewer, requested changes, payment/document checkpoints, status history. | Continue case |
+| Review queue | Board decision. | Board | requester, change, comments, approve/reject/request changes. | Approve request |
+
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Homeowner | Home, Documents, Payments, Requests, Messages | dues receipt, active request status, governing docs | Civic/blue palette, property/lot context, readable status and receipt hierarchy. |
+| Board reviewer | Home, Board, Documents, Payments, Requests, Messages | architectural decision queue, owner notifications, facility requests | Board tabs expose decision/comment/reopen actions with history and owner notification state. |
 
 ## 4. Home Screen Requirements
 
@@ -36,19 +45,19 @@ actions.
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Dues | amount, due date, payer, receipt | due/paid/failed | pay, view receipt | generic payment chip |
-| Documents | title, version/date, access | available/read | open, export | metadata card only |
+| Documents | title, version/date, access, provider/source, embedded/external open choices | available/read/acknowledged/access-requested | open embedded, open external, download, acknowledge, request access | metadata card only |
 | Facility reservation | facility, date, time, status | open/reserved/conflict | reserve, cancel | checklist modal |
-| Review queue | request, requester, decision, audit | pending/approved/denied | approve, reject, comment | unlabeled task |
+| Workflow status / review queue | request, requester, current step, reviewer, payment/document checkpoints, comments, audit | submitted/under-review/changes-needed/approved/denied/reopened | approve, reject, request changes, attach document, reopen | single rigid approval card |
 
 ## 6. Workflow-To-Surface Mapping
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | hoa-dues-payment | member | Dues payment | amount and receipt | Wallet/receipts | B14/B25 |
-| hoa-member-document | member | Document center | document title/access | Documents/audit | B14/B25 |
-| hoa-facility-reservation | member | Reservation detail | facility/date/status | Facilities/events | B14/B25 |
-| hoa-architectural-request | owner | Request form | change details/submitted state | Cases/tasks/documents | B14/B25 |
-| hoa-committee-decision | owner | Review queue | requester, decision actions, status history, request-changes path | Cases/tasks/audit | B14/B25 |
+| hoa-member-document | member | Document center | document title, version, access state, embedded/external open choices, acknowledgement/download state | Documents/external documents/audit | B14/B25 |
+| hoa-facility-reservation | member | Calendar reservation detail | facility/date/time, conflict status, reservation window, reminder state | Calendar/facilities/events | B14/B25 |
+| hoa-architectural-request | owner | Workflow status case | change details, current step, reviewer, requested-changes path, document/payment checkpoint, submitted state | Workflow status/cases/tasks/documents | B14/B25 |
+| hoa-committee-decision | owner | Workflow status review queue | requester, decision actions, status history, request-changes path, comments, owner receiver state | Workflow status/cases/tasks/audit | B14/B25 |
 | hoa-owner-notification | owner | Owner notification | sender, audience, body, sent/received state | Notifications/events | B14/B25 |
 | hoa-export-evidence | owner | Export status | scope/checksum/rollback | Export/provider transfer | B14/B25 |
 
@@ -96,10 +105,10 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
 | `hoa-dues-payment` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must select a domain-native surface for `payment` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-member-document` | [operations](../../CardSurfaces/documents-facilities-roster.md) | `CommunityOperationsSurfaceApi` | document/version/access, facility reserve/edit/cancel, conflict handling, roster history | Demo renderer must select a domain-native surface for `operations` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-facility-reservation` | [operations](../../CardSurfaces/documents-facilities-roster.md) | `CommunityOperationsSurfaceApi` | document/version/access, facility reserve/edit/cancel, conflict handling, roster history | Demo renderer must select a domain-native surface for `operations` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-architectural-request` | [approval](../../CardSurfaces/approval-request.md) | `CommunityApprovalApi` | approve/reject/request changes, comments/history, assignee/committee state, appeal/reopen | Demo renderer must select a domain-native surface for `approval` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-committee-decision` | [approval](../../CardSurfaces/approval-request.md) | `CommunityApprovalApi` | approve/reject/request changes, comments/history, assignee/committee state, appeal/reopen | Demo renderer must show requester, decision actions, request-changes path, comments/history, and resulting notification state. |
+| `hoa-member-document` | [documents](../../CardSurfaces/documents.md) and [external-document-link](../../CardSurfaces/external-document-link.md) | `CommunityDocumentSurfaceApi` / `CommunityExternalDocumentApi` | list/open/download/acknowledge/request access, embedded browser open, external app launch, version/audit trail | Demo renderer must show HOA document title/version/source, embedded/external open options, acknowledgement/access state, and audit. |
+| `hoa-facility-reservation` | [calendar](../../CardSurfaces/calendar.md) | `CommunityCalendarSurfaceApi` | list/create/update/cancel/reschedule reservation item, conflict detection, reminders, linked facility status | Demo renderer must show facility/date/time/conflict state, reserve/change/cancel actions, and reminder state. |
+| `hoa-architectural-request` | [workflow-status](../../CardSurfaces/workflow-status.md) | `CommunityWorkflowStatusApi` | create case, current step, reviewer, request changes, attach documents, payment checkpoint, reopen/cancel, audit | Demo renderer must show current step, submitted details, reviewer, request-changes path, document/payment checkpoint, and owner receiver state. |
+| `hoa-committee-decision` | [workflow-status](../../CardSurfaces/workflow-status.md) | `CommunityWorkflowStatusApi` | approve/reject/request changes, comments/history, reviewer/committee state, appeal/reopen, owner notification | Demo renderer must show requester, decision actions, request-changes path, comments/history, and resulting owner notification state. |
 | `hoa-owner-notification` | [notification-inbox](../../CardSurfaces/notification-inbox.md) | `CommunityNotificationSurfaceApi` | sender, audience, body, timing, delivery/read state | Demo renderer must show sender, audience, message body, timestamp, sent/read state, and receiver state. |
 | `hoa-export-evidence` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
 

@@ -23,9 +23,18 @@
 | --- | --- | --- | --- | --- |
 | Masjid home | Current community life. | Member/admin | announcements, upcoming events/prayer/community updates, giving, volunteers, care. | Read update / donate / volunteer |
 | Announcement compose/feed | Publish and receive updates. | Admin/member | body, sender, audience, timing, delivery/read state. | Publish / read |
+| Masjid calendar | Coordinate events, classes, volunteer shifts, and reminders. | Admin/member | event/class title, date/time, location, recurrence, capacity, reminder state. | RSVP / add reminder |
+| Documents and links | Open khutbah notes, forms, policies, or external resources. | Member/admin | document title, source, version/date, embedded/external open choice, access state. | Open document |
 | Donation | Give with visibility controls. | Member | amount, fund, privacy, receipt. | Donate |
 | Care request | Protected support request. | Member/admin | public summary, private fields, recipient state. | Submit / review |
 | Volunteer signup | Coordinate help. | Member/admin | need, shift, capacity, signup state. | Volunteer |
+
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Community member | Home, Calendar, Giving, Care, Messages | Friday service/iftar, donation receipt, care request status | Calm green palette, prayer/community language, clear charitable and care privacy cues. |
+| Masjid admin | Home, Calendar, Giving, Care, Admin, Messages | announcement composer, volunteer roster, donation status, care review | Admin tabs expose compose/review surfaces and protected care handoff state. |
 
 ## 4. Home Screen Requirements
 
@@ -37,6 +46,8 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Announcement/feed | title/body, sender, audience, timing, channel, read state | draft/sent/read | publish, read | publish workflow card |
+| Calendar | event/class title, date/time, location, recurrence, capacity, reminder | upcoming/RSVPed/full/cancelled | RSVP, change RSVP, add reminder, open linked volunteer shift | generic event chip |
+| Documents/external links | title, source, version/date, access, open mode | available/read/acknowledged/access-requested | open embedded, launch external, download, acknowledge | hidden document link |
 | Donation | amount, fund/purpose, privacy, receipt | pending/paid/failed | donate, view receipt | abstract payment chip |
 | Care request | public summary, private details, recipient, privacy label | draft/submitted/assigned | submit, review | exposing protected details |
 | Volunteer | role, shift, capacity, signup status | open/full/signed-up | volunteer, cancel | generic task card |
@@ -46,7 +57,8 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | mosque-announcement | owner | Announcement compose/feed | sender, audience, body, timing, sent state, receiver/read state | Publishing/notifications/events | B14/B20/B25 |
-| mosque-event-rsvp | member | Event detail | event title, date/time, location, capacity, RSVP choice/result | Events/notifications | B14/B25 |
+| mosque-event-rsvp | member | Masjid calendar event detail | event/class title, date/time, location, recurrence, capacity, RSVP choice/result, reminder state | Calendar/events/notifications | B14/B25 |
+| mosque-document-resource | member | Documents and external resource detail | document title, source, embedded/external open option, access/acknowledgement state | Documents/external documents/audit | B14/B25 |
 | mosque-volunteer-signup | member | Volunteer shift detail | shift role/time, open spots, volunteer roster/count, signup/edit/cancel state | Forms/events | B14/B25 |
 | mosque-donor-visibility | donor | Donor privacy preference | visibility choice, amount context, receipt visibility, change path | Wallet/receipts/vault | B14/B25 |
 | mosque-donation-payment | donor | Donation/payment | amount, privacy, receipt, payer, retry/manage path | Wallet/receipts | B14/B25 |
@@ -65,6 +77,7 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 | --- | --- | --- | --- | --- | --- |
 | mosque-announcement | owner sends | member reads/receives announcement | prior announcements archived | send disabled without audience/body | non-owner cannot publish |
 | mosque-event-rsvp | member chooses RSVP | capacity/attendee state updates | confirmed RSVP remains readable | RSVP disabled when full/closed | non-member cannot RSVP |
+| mosque-document-resource | member opens a khutbah note, form, or policy | admin sees access/acknowledgement audit where needed | document version/source readable | acknowledge/download disabled without access | protected resources require permission |
 | mosque-volunteer-signup | member signs up or edits availability | coordinator sees volunteer roster/count | signup status readable | signup disabled when shift full | non-member cannot see protected contact |
 | mosque-donor-visibility | donor chooses visibility | donation/receipt respects visibility | visibility history readable | public display disabled when anonymous | non-donor cannot edit visibility |
 | mosque-donation-payment | donor pays | receipt/settlement records donation | receipt readable/exportable | pay disabled after completed unless retry/manage | non-donor cannot view private receipt |
@@ -79,8 +92,9 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 
 ## 8. Content And Seed Data Requirements
 
-Use realistic announcement body, sender/role, audience, delivery timing, donation amount/fund,
-receipt, volunteer shift/capacity, care privacy indicators, and receiver state.
+Use realistic announcement body, sender/role, audience, delivery timing, event/class dates, document
+titles/sources, donation amount/fund, receipt, volunteer shift/capacity, care privacy indicators, and
+receiver state.
 
 ## 9. Visual And Interaction Standard
 
@@ -95,6 +109,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | --- | --- | --- | --- | --- | --- |
 | mosque-announcement | owner | Admin decides whether a concrete announcement is ready for a named audience and delivery timing; members can later read the delivered update. | publish announcement, send announcement, post announcement, schedule announcement | edit announcement, preview announcement, save draft, schedule later, change audience | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | mosque-event-rsvp | member | Member decides attendance for a named dated event with time, location, capacity/status, and a later change path. | rsvp, attend, going, reserve spot, confirm attendance | decline, not attending, maybe, change response, edit response, cancel rsvp | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| mosque-document-resource | member | Member opens a concrete Masjid document/resource, reviews source/version/access, chooses embedded or external open, and acknowledges if required. | open document, launch external, download, acknowledge | request access, save, mark unread, ask follow-up | Fresh screenshots must show title/source/version, embedded/external open choices, access/acknowledgement state, and audit-safe receiver state. |
 | mosque-volunteer-signup | member | Member chooses whether to volunteer for a concrete iftar shift after reviewing role, time, location, capacity, protected contact sharing, and coordinator follow-up. | sign up, submit signup, volunteer, confirm shift | edit availability, cancel signup, change shift, withdraw | Fresh screenshots must show role, shift time/location, protected contact, signup confirmation, edit/cancel path, and coordinator receiver state for this persona. |
 | mosque-donor-visibility | donor | Donor decides whether their name is public, anonymous, or restricted after seeing donation amount, fund, receipt visibility, and change path. | save visibility, set anonymous, update donor preference | change visibility, edit preference, reveal name, keep anonymous | Fresh screenshots must show amount/fund context, visibility choice, receipt visibility, saved preference, and change path. |
 | mosque-donation-payment | donor | Payer decides what amount or entitlement to pay for, sees cost/recipient/visibility, and can change or manage the payment. | pay, donate, give, checkout, subscribe | change amount, edit payment, manage, cancel subscription, refund, retry payment | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
@@ -115,15 +130,16 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
 | `mosque-announcement` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must show announcement composer/feed, sender, audience, body, timing, sent state, and receiver/read state. |
-| `mosque-event-rsvp` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must show event title, date/time, location, capacity, RSVP choice, change path, and result. |
+| `mosque-event-rsvp` | [calendar](../../CardSurfaces/calendar.md) and [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityCalendarSurfaceApi` / `CommunityEventRsvpApi` | named event/class detail, recurrence/reminder, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must show event title, date/time, location, recurrence/reminder, capacity, RSVP choice, change path, and result. |
+| `mosque-document-resource` | [documents](../../CardSurfaces/documents.md) and [external-document-link](../../CardSurfaces/external-document-link.md) | `CommunityDocumentSurfaceApi` / `CommunityExternalDocumentApi` | list/open/download/acknowledge/request access, embedded browser open, external app launch, version/audit trail | Demo renderer must show document title/source/version, embedded/external open choices, acknowledgement/access state, and audit-safe history. |
 | `mosque-volunteer-signup` | [volunteer-signup](../../CardSurfaces/volunteer-signup.md) | `CommunityVolunteerApi` | shift slots, count/roster, availability, cancel/edit, check-in/no-show | Demo renderer must show role, time, open spots, volunteer count/roster, signup/edit/cancel, and protected contact handling. |
 | `mosque-donor-visibility` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | donor visibility, receipt visibility, change/manage preference | Demo renderer must show visibility choice, donation context, receipt visibility, and change path. |
 | `mosque-donation-payment` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must show amount, payer, privacy, receipt, retry/manage path, and status. |
 | `mosque-care-request` | [protected-request](../../CardSurfaces/care-protected-request.md) | `CommunityProtectedRequestApi` | submit/update/withdraw, protected/public split, admin review, neutral notification | Demo renderer must show private/public split, recipient state, status history, and protected audit treatment. |
 | `mosque-neutral-notification` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | sender, audience, timestamp, message body, receiver read state | Demo renderer must show sender, audience, body, timestamp, and read/received state. |
 | `mosque-search-ai-citation` | [search-ai](../../CardSurfaces/search-ai-digest.md) | `CommunitySearchAiSurfaceApi` | query/history, answer, citation detail, source visibility, save/share | Demo renderer must show query, answer, citation/source visibility, and follow-up action. |
-| `wf_demo-app-persona-picker` | [app-shell](../15-the-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | persona switch, active role, capability preview, hidden/disabled state | Demo renderer must show persona options, selected role, capability impact, and current community state. |
-| `wf_community-persona-aware-ux` | [app-shell](../15-the-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | actor/receiver/read-only/disabled/hidden role rendering | Demo renderer must show admin/member differences, disabled/hidden explanations, and role-driven workflow availability. |
+| `wf_demo-app-persona-picker` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | persona switch, active role, capability preview, hidden/disabled state | Demo renderer must show persona options, selected role, capability impact, and current community state. |
+| `wf_community-persona-aware-ux` | [app-shell](../15-main-loom-app-app-shell-and-required-structure.md) | `CommunityAppShellApi` | actor/receiver/read-only/disabled/hidden role rendering | Demo renderer must show admin/member differences, disabled/hidden explanations, and role-driven workflow availability. |
 | `wf_multi-persona-workflow-evidence` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | actor-created announcement, persona switch, receiver inbox/read state | Demo renderer must show admin-created sender/body/audience/timestamp and member receiver/read continuation. |
 
 ## 10. Review And Remediation Log

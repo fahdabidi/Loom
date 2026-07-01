@@ -1,27 +1,65 @@
-# Equipment Loan Surface
+# Shared Item Marketplace, Loan, And Giveaway Surface
+
+Surface family id: `equipment-loan`
+
+The family id is retained for compatibility with existing Demo App and API mappings, but the product
+surface is generic: it covers any community-owned or member-owned item that can be discovered,
+borrowed, queued for, tracked, returned, or permanently given away.
 
 ## Supported Interactions
 
-- Member offers equipment, requests a loan, approves/declines loan, schedules pickup, checks item out,
-  extends loan, returns item, marks damaged, cancels, and sees availability.
-- Supports personally owned gear and community-owned inventory.
+- Browse and search available items, filter by category/availability/location/condition/owner/use
+  policy, inspect item details, and discover what can be borrowed, reserved, queued for, claimed, or
+  taken as a giveaway.
+- Member lists personal equipment, community steward lists shared inventory, lender approves/declines
+  loans, borrower requests/reserves, joins/leaves a queue, schedules pickup, checks item out, extends
+  loan, returns item, marks damaged/lost/overdue, cancels, and sees availability.
+- Listing owner can create, modify, pause, reactivate, or delist an item, update availability windows,
+  photos, condition, pickup policy, deposit/fee, and loan/giveaway mode.
+- Track the current holder, borrower/claim queue, custody history, condition checks at checkout/return,
+  return reminders, overdue state, dispute/loss/damage resolution, and privacy-scoped contact handoff.
+- Support personally owned items, community-owned inventory, short-term loans, deposits/fees, and
+  giveaway/free-item flows where an owner is giving an item away permanently.
 
 ## Personas and Permissions
 
 | Persona | Permissions | Can do |
 | --- | --- | --- |
-| Lender | `community.surface.equipment.loan.write` | Offer item, approve/decline, schedule pickup, mark returned/damaged. |
-| Borrower | `community.surface.equipment.loan.request` | Request, cancel, extend, return. |
-| Equipment steward | `community.surface.equipment.loan.admin` | Moderate inventory, visibility, disputes. |
+| Browser/borrower/recipient | `community.surface.equipment.browse` | Search listings, inspect details, request loan, reserve, join queue, claim giveaway, view own holder/return status. |
+| Lender/listing owner | `community.surface.equipment.list` | List personal item, edit/pause/reactivate/delist listing, approve/decline, schedule pickup, see queue, mark returned/damaged/lost. |
+| Item steward/librarian | `community.surface.equipment.admin` | Moderate inventory, queues, custody, visibility, disputes, deposits, categories, and giveaway rules. |
 
 ## Custom Experience Guidance
 
-Customize equipment category, condition, deposit/fee, pickup windows, loan duration, privacy-safe
-contact, care instructions, and return checklist. A tennis club can let a member loan a spare racquet
-with grip size, string tension, pickup court, and return date.
+Customize item category, condition, photos, deposit/fee, pickup windows, loan duration, queue policy,
+renewal rules, privacy-safe contact, care instructions, return checklist, giveaway eligibility, and
+discovery filters.
+
+Examples:
+
+- A tennis, pickleball, or soccer community can let members browse racquets, balls, pinnies, cones,
+  or goals by size/condition, join a queue, see who currently has an item when policy allows, and
+  reserve the next available slot.
+- A camera club can browse lenses, tripods, lights, and backdrops by mount/brand/condition; list
+  personal gear; approve a borrower; track checkout, return, and damage.
+- A neighborhood book, DVD, board-game, or toy library can show title, format, owner/library shelf,
+  current holder, due date, queue position, renew/return actions, and replacement/lost status.
+- A community group can list party supplies, folding tables, chairs, camping gear, tools, or an old set
+  of wine glasses as a giveaway with pickup instructions, claim/transfer state, and closed listing.
+- A mosque, HOA, school, or club can manage shared projectors, microphones, sports kits, keys, tables,
+  or facility equipment with steward approval, custody history, and return reminders.
+
+Use domain labels in the UI. A book-share extension should say "Browse library", "Join waitlist",
+"Return book", and "Currently borrowed by..." rather than exposing "equipment" copy.
 
 ## API Support
 
-Requires `CommunityEquipmentLoanApi`: `offerEquipment`, `requestLoan`, `approveLoan`, `declineLoan`,
-`schedulePickup`, `checkOut`, `extendLoan`, `returnItem`, `markDamaged`, `cancelLoan`,
-`listAvailability`, `privacyScopedContact`.
+Requires `CommunityEquipmentLoanApi`: `browseEquipment`, `searchEquipment`, `getEquipmentDetail`,
+`listEquipmentListing`, `createEquipmentListing`, `updateEquipmentListing`, `removeEquipmentListing`,
+`pauseEquipmentListing`, `reactivateEquipmentListing`, `updateAvailability`, `offerEquipment`,
+`offerGiveaway`, `claimGiveaway`, `requestLoan`, `reserveLoan`, `approveLoan`, `declineLoan`,
+`joinLoanQueue`, `leaveLoanQueue`, `listLoanQueue`, `advanceLoanQueue`, `schedulePickup`, `checkOut`,
+`getCurrentHolder`, `transferCustody`, `listCustodyHistory`, `recordConditionCheck`, `extendLoan`,
+`returnItem`, `sendReturnReminder`, `reportOverdue`, `markDamaged`, `reportLostItem`,
+`resolveLoanDispute`, `cancelLoan`, `listAvailability`, `listBorrowers`, `privacyScopedContact`,
+`transferGiveawayOwnership`.

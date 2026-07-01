@@ -26,6 +26,13 @@
 | Connections | Manage graph. | Member | invites, connection status, block state. | Invite/block |
 | Stream/ad | Show required sponsored content. | Member | disclosure, no-fill/sponsored state. | View / dismiss if allowed |
 
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Member | Home, Messages, Connections, Invites | open thread, pending invite, blocked/muted state | Communication-first layout, clear unread/relationship status, safe blocking controls. |
+| Moderator | Home, Messages, Connections, Admin | report queue, moderation status, connection audit | Moderator tabs expose moderation state without leaking protected member data. |
+
 ## 4. Home Screen Requirements
 
 The app must keep Messages and Connections available from the shell and make social state readable as

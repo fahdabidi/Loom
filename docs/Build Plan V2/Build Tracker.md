@@ -41,7 +41,8 @@ surface and its required domain content and affordances, not merely show that no
 detected. Each pass must also emit and commit a B25 iteration scorecard showing pass/fail, current
 critical/blocker and major counts, blocker/major findings resolved in that pass, newly introduced
 blocker/major findings, judge failures, and the next action.
-The B25 tool sequence is product experience doc steward -> advisory card-surface registry refresh ->
+The B25 tool sequence is product experience doc steward -> advisory card-surface/app-shell navigation
+registry refresh ->
 full B12-B20 screenshot capture -> `b25_capture_coverage_gate.dart` -> evidence collector -> workflow/persona coverage collector ->
 visual inspection auditor -> deterministic review scaffold -> LLM Product Docs to Evidence Workflow
 Reconciliation Agent -> LLM Vision UX Judge Agent -> LLM review freshness gate -> LLM review importer
@@ -59,6 +60,12 @@ The advisory card-surface registry records `workflow -> cardSurfaceFamily -> API
 interactions/actions -> renderer/fake-backend support` in the community product docs and B25 evidence
 JSON. B25 uses this as remediation context only; do not treat it as a standalone card-surface/API
 coverage gate until a later phase explicitly enables that gate.
+The app-shell navigation registry records `persona -> tabs -> pinned surfaces -> customization knobs`
+in the community product docs and B25 evidence. Home and Messages/Communication are mandatory;
+custom tabs, tab labels/icons/order, persona visibility, surface assignment, pinned state,
+minimized/medium/expanded defaults, and theme/typography/color/density customization must be reviewed
+as remediation context whenever the UI still feels like one long generic surface list or exposes the
+wrong navigation for a persona.
 Native Loom repo runs write community product experience docs under
 `docs/Product Docs V2/Community Examples/<community>-product-experience.md`. Standalone Skill runs treat
 the fetched Loom Product Docs V2 as read-only and write the same product contract locally under
@@ -67,11 +74,12 @@ summary derived from those product docs, not a substitute for them. Tickets must
 `product-spec-gap`, `implementation-gap`, `evidence-gap`, or `mixed-gap`; product-spec gaps update the
 product doc before UI remediation begins.
 The LLM Product Docs to Evidence Workflow Reconciliation Agent must inspect each community product
-doc's `## 6. Workflow-To-Surface Mapping`, Sections 7-9, B25 semantic interaction model, and
-card-surface registry against the current screenshots/review evidence. It opens tickets when product
-docs omit screenshot-visible workflows/interactions, when documented workflows lack screenshot-backed
-implementation, when required visible proof is absent, or when product docs/evidence map a primary job
-to a generic surface.
+doc's `## 3.1 Persona Tabs, Pins, And Customization`, `## 6. Workflow-To-Surface Mapping`, Sections
+7-9, B25 semantic interaction model, card-surface registry, and app-shell navigation registry against
+the current screenshots/review evidence. It opens tickets when product docs omit screenshot-visible
+workflows/interactions/tabs/customization, when documented workflows or persona tabs lack
+screenshot-backed implementation, when required visible proof is absent, or when product docs/evidence
+map a primary job to a generic surface.
 The next remediation pass starts by feeding the committed tickets and scorecard to the remediation
 planner before any worker implements fixes.
 

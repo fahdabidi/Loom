@@ -16,6 +16,7 @@ Provide the LLM reviewer only evidence and product artifacts, not worker impleme
 
 - Every relevant `docs/Product Docs V2/Community Examples/*-product-experience.md` file, or the
   standalone Skill equivalent at `<extension-workspace>/docs/product/community-product-experience.md`.
+- The `## 3.1 Persona Tabs, Pins, And Customization` section from each product doc.
 - The `## 6. Workflow-To-Surface Mapping` section from each product doc.
 - The same product doc's `## 7. Persona And State Matrix`.
 - The same product doc's `## 8. Content And Seed Data Requirements`.
@@ -45,6 +46,9 @@ The community product docs currently use this Section 6 table shape:
 
 Use these companion sections to validate Section 6:
 
+- Section 3.1 must define persona-specific tabs, pinned surfaces, required Home and
+  Messages/Communication, custom labels/icons/order/visibility, hidden/disabled rules, surface-to-tab
+  assignment, presentation defaults, and customization knobs.
 - Section 7 must define actor, receiver, read-only, disabled/hidden, and unauthorized behavior.
 - Section 8 must provide realistic seed/content requirements sufficient for screenshot review.
 - Section 9 must define the visual/interaction standard for this community.
@@ -64,23 +68,30 @@ For each community product doc, perform these checks:
    dialog, form, feed item, or interaction in screenshots, find a matching Section 6 row and companion
    Section 7/B25 semantic interaction row. Fail if the UI implements or exposes a flow not documented
    in the product doc.
-3. **Visible proof completeness.** For every Section 6 row, inspect screenshots and visible text for
+3. **Persona navigation coverage.** Cross-check Section 3.1 against screenshots and evidence. Fail if
+   Home or Messages/Communication is missing, a persona lacks the documented custom tabs, a restricted
+   tab leaks to an unauthorized persona, a documented pinned surface is absent, or a long generic home
+   list remains where Section 3.1 calls for a tabbed information architecture.
+4. **Customization proof.** Fail if the product doc declares a community-card, tab, typography,
+   density, icon, color, or surface presentation customization that is not visible in screenshots, or
+   if screenshots show customization not reflected in Section 3.1.
+5. **Visible proof completeness.** For every Section 6 row, inspect screenshots and visible text for
    the required visible proof. Fail if the UI only shows vague workflow text, status chips, or a
    generic action card instead of the required domain content.
-4. **Persona/state completeness.** Cross-check Section 7 against the screenshots. Fail if actor,
+6. **Persona/state completeness.** Cross-check Section 7 against the screenshots. Fail if actor,
    receiver, read-only, disabled/hidden, or unauthorized states are required but not screenshot-backed,
    or if screenshots show persona behavior not documented.
-5. **Lifecycle completeness.** Cross-check the B25 semantic interaction table and card-surface registry.
+7. **Lifecycle completeness.** Cross-check the B25 semantic interaction table and card-surface registry.
    Fail if the product doc or UI lacks required primary actions, alternate/change/reject/defer actions,
    result states, receiver states, or API-backed interactions.
-6. **Surface mapping quality.** Fail if the product doc maps a primary workflow to a generic card,
+8. **Surface mapping quality.** Fail if the product doc maps a primary workflow to a generic card,
    checklist modal, metadata surface, or vague product surface when the workflow requires a
    domain-native surface.
-7. **Product-doc expansion from screenshots.** If screenshots show interactions such as `Change
+9. **Product-doc expansion from screenshots.** If screenshots show interactions such as `Change
    response`, `Edit offer`, `Waiting`, `Sent`, roster counts, receipt states, privacy checks, or other
    UI states that are not explicitly captured in Sections 6/7/8/semantic/card-registry rows, create a
    product-doc update finding so the docs become the source of truth for that behavior.
-8. **Implementation remediation from docs.** If the product doc clearly requires richer domain content
+10. **Implementation remediation from docs.** If the product doc clearly requires richer domain content
    or lifecycle actions than the screenshot provides, create an implementation remediation finding
    rather than weakening the doc.
 
@@ -88,6 +99,10 @@ For each community product doc, perform these checks:
 
 Ask these questions for each community:
 
+- Does `## 3.1 Persona Tabs, Pins, And Customization` define the tab/navigation/customization model
+  needed for every persona visible in the current evidence?
+- Do screenshots prove the documented tabs, pinned surfaces, Home/Messages requirements, persona
+  visibility, and customization knobs?
 - Does `## 6. Workflow-To-Surface Mapping` list every workflow visible in the current screenshots and
   review rows?
 - Does every Section 6 workflow have fresh screenshot evidence for the named persona and product
@@ -150,7 +165,7 @@ Use this shape:
       "workflowId": "<workflow-id>",
       "persona": "<persona>",
       "affectedProductDocPath": "<path>",
-      "affectedProductDocSections": ["## 6. Workflow-To-Surface Mapping"],
+      "affectedProductDocSections": ["## 3.1 Persona Tabs, Pins, And Customization", "## 6. Workflow-To-Surface Mapping"],
       "affectedScreenRowIds": [],
       "affectedScreenshotPaths": [],
       "affectedScreenshotHashes": [],

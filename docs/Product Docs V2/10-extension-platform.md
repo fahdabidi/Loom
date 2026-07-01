@@ -173,12 +173,17 @@ in [../CardSurfaces/README.md](../CardSurfaces/README.md) defines reusable surfa
 announcements, event RSVP, member meetups, volunteer signup, equipment loans, payments, care requests,
 approvals, documents/facilities/roster, search/AI, export/transfer, messaging/connections, ads,
 custom forms, notification inbox, and community home.
+The catalog also includes App Shell navigation/theming, Calendar, dedicated Documents, external
+document links, workflow status/case, and an expanded shared-item marketplace/loan/giveaway surface
+for tools, books, DVDs, games, gear, party supplies, and other lendable community items.
 
 For every selected surface, the extension must declare:
 
 - the surface family and route/card mount points;
 - personas, role grants, permissions, unauthorized behavior, and receiver states;
 - customized content fields, icons, imagery, action labels, and domain copy;
+- persona-specific tab assignments, pinned surfaces, presentation states, and theme/customization
+  knobs when the extension needs a custom information architecture;
 - API/rules/events/workflows/jobs used for every primary and alternate interaction;
 - fake backend fixtures for entry, action, result, receiver, read-only, disabled, and unauthorized
   states;
@@ -191,6 +196,26 @@ the executable API contract is
 [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml).
 An extension cannot claim a selected surface is implemented unless every selected interaction appears
 in its workflow docs, API/rules/events map, fake backend fixtures, tests, and B25 evidence.
+
+### 6.2 Surface Navigation, Documents, Calendar, Workflow Status, and Equipment
+
+Extensions must treat these as first-class product surfaces when relevant:
+
+- **Tabs/navigation/theme:** declare Home/default placement, Messages/Communication, persona-specific
+  tab labels/icons/order/visibility, pinned surfaces, surface assignment, minimized/medium/expanded
+  behavior, and safe theme/customization tokens. A member, admin, reviewer, coach, guardian, donor, or
+  other persona may receive different tabs, but required shell destinations and accessibility bounds
+  still apply.
+- **Calendar:** declare agenda/list/month use, recurring schedules, reminders, external feed import or
+  export, conflict handling, and links into event/reservation/payment/status workflows.
+- **Documents:** declare document library categories, embedded/external open behavior, access request,
+  acknowledgement, version history, and audit/export treatment.
+- **Workflow status/case:** declare arbitrary step templates, status names, reviewer/requester roles,
+  feedback/payment/document checkpoints, receiver states, and audit.
+- **Shared item marketplace/loan/giveaway:** declare browse/search/listing, personal vs. community
+  inventory, modify/pause/delist, queue/hold position, current holder, custody history, loan vs.
+  giveaway mode, pickup/return, borrower/claim roster, privacy-safe contact, condition checks,
+  overdue/lost/damage/dispute handling, and ownership transfer.
 
 ## 7. User Stories
 

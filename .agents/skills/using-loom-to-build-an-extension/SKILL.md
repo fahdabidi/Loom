@@ -51,6 +51,18 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     [Community Card Surfaces OpenAPI](../../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
     and the Product Docs V2
     [Card Surface Workflow and User Story Coverage](../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
+    When the community needs schedule, document, case/status, external resource, tab/navigation, or
+    shared-item behavior, prefer the dedicated `calendar`, `documents`, `workflow-status`,
+    `external-document-link`, `app-shell-navigation-theming`, and expanded `equipment-loan`
+    marketplace/loan/giveaway surfaces instead of folding those workflows into generic cards. The
+    extension product doc must also declare the persona-specific app-shell navigation model: required
+    Home and Messages/Communication tabs, custom tabs, tab labels/icons/order, persona visibility,
+    surface-to-tab assignments, pinned surfaces, minimized/medium/expanded defaults, and safe
+    theme/customization knobs for community cards, tabs, typography, buttons, edit fields, badges,
+    density, spacing, and colors. For any
+    book/DVD/game/tool/gear/library/giveaway sharing use case, require browse/search, list/modify/
+    delist, queue or hold state, current-holder or privacy-safe unavailable state, custody history,
+    due/return/overdue/damage/lost state, and giveaway ownership transfer where applicable.
 16. Do not claim any community extension is complete when a requested, declared, seeded, or route-linked
     workflow is missing, unreachable, unimplemented, only stubbed, only metadata-rendered, or only
     validated through direct service calls.

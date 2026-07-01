@@ -8,21 +8,16 @@ should choose card surfaces before it writes routes, schemas, rules, workflows, 
 surface has a domain interaction model, persona/permission model, customization points, and backend API
 support requirements.
 
-This folder is the Skill-local copy of the canonical catalog in
-[../../../../CardSurfaces/README.md](../../../../CardSurfaces/README.md). Use the Skill-local copy
-while building an extension so the guidance is available even when the Skill is packaged separately.
-
 ## How To Use This Catalog
 
 1. Identify the community job-to-be-done.
 2. Select the closest card surface family.
 3. Configure domain copy, fields, actions, icons, imagery, and role/persona rules.
-4. Map every interaction to the API contracts in
-   [../../../../API/CardSurfaces/README.md](../../../../API/CardSurfaces/README.md).
+4. Map every interaction to the API contracts in [../API/CardSurfaces/README.md](../API/CardSurfaces/README.md).
 5. Verify that selected interactions exist in the executable
-   [Community Card Surfaces OpenAPI](../../../../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
+   [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
    and the Product Docs V2
-   [workflow/user-story coverage map](../../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
+   [workflow/user-story coverage map](../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
 6. Add seed data and fake backend fixtures for entry, action, result, receiver, read-only, disabled, and unauthorized states.
 7. Capture B25 screenshot evidence for every persona/state before claiming production UX readiness.
 
@@ -31,11 +26,13 @@ while building an extension so the guidance is available even when the Skill is 
 | Surface | Use for |
 | --- | --- |
 | [Community Card and Home](./community-card-home.md) | Installed community identity, entry, pinned state, next action. |
+| [App Shell Navigation, Tabs, Pinning, and Theming](./app-shell-navigation-theming.md) | Persona-specific community tabs, pinned surfaces, card expansion states, theme tokens, and customization knobs. |
 | [Announcement and Publish](./announcement-publish.md) | Compose, preview, schedule, publish, read, and revise announcements. |
+| [Calendar](./calendar.md) | Agenda, schedule, recurring events, reminders, feeds, imports, exports, and conflicts. |
 | [Event RSVP](./event-rsvp.md) | Events, classes, practices, meetings, services, and capacity-based attendance. |
 | [Member Meetup Scheduling](./member-meetup-scheduling.md) | One-to-one or small-group tennis matches, study sessions, photo walks, pickup games. |
 | [Volunteer Signup](./volunteer-signup.md) | Shifts, roles, rosters, protected contact, check-in, and coordinator handoff. |
-| [Equipment Loan](./equipment-loan.md) | Member-owned racquets, cameras, lenses, tools, books, or community gear loans. |
+| [Shared Item Marketplace, Loan, and Giveaway](./equipment-loan.md) | Browse, list, modify, delist, queue for, loan, reserve, track custody, return, or give away member/community items. |
 | [Plant or Item Exchange](./plant-exchange.md) | Offers, claims, pickup, privacy-safe contact, and handoff. |
 | [Book Nomination](./book-nomination.md) | Nominations, rationale, eligibility, duplicate checks, ballot handoff. |
 | [Vote and Poll](./vote-poll.md) | Ballots, polls, votes, change vote, close, results, selected outcome. |
@@ -43,6 +40,9 @@ while building an extension so the guidance is available even when the Skill is 
 | [Payment, Donation, Dues, and Ad-Off](./payment-donation-dues-ad-off.md) | Checkout, donation, dues, receipts, refunds, recurring payments, ad-off. |
 | [Care and Protected Request](./care-protected-request.md) | Sensitive care/support requests with protected/public data split. |
 | [Approval and Request](./approval-request.md) | HOA architectural requests, join approvals, committee reviews, gear approvals. |
+| [Workflow Status and Case](./workflow-status.md) | Arbitrary multi-step workflows, case status, feedback, approvals, documents, and audit. |
+| [Documents](./documents.md) | Dedicated document library, embedded/external open, access requests, versions, acknowledgement. |
+| [External Document Link](./external-document-link.md) | Google Docs, PDFs, HTML pages, and provider-hosted documents with embedded/external open modes. |
 | [Documents, Facilities, and Roster](./documents-facilities-roster.md) | Document viewers, facility booking, team/committee roster state. |
 | [Search and AI Digest](./search-ai-digest.md) | Permission-aware search, citations, AI answers, saved/shareable digests. |
 | [Export, Import, and Transfer](./export-import-transfer.md) | Export scope, redaction, checksum, provider transfer, rollback. |

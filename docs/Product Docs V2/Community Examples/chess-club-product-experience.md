@@ -22,6 +22,15 @@
 | Surface | Purpose | Primary persona | Required content | Primary action |
 | --- | --- | --- | --- | --- |
 | Chess home | Demonstrate arbitrary package rendering. | Organizer/player | club name, chess identity, match/event summary, member action. | Open home / join activity |
+| Match meetup scheduler | Let members schedule ladder games or casual matches. | Player | opponent, proposed time/place/board, response state, calendar reminder. | Propose match / accept |
+| Match calendar | Show club nights, tournaments, and scheduled member matches. | Player/organizer | event title, date/time, location, opponent/pairing, reminder state. | RSVP / add reminder |
+
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Player | Home, Matches, Calendar, Rankings, Messages | next match, open challenge, latest result | Board/tournament visual language, rank/status clarity, quick match reporting. |
+| Organizer | Home, Matches, Calendar, Admin, Documents, Messages | pairing queue, result disputes, export package | Organizer tabs expose schedule, dispute, and export controls. |
 
 ## 4. Home Screen Requirements
 
@@ -33,6 +42,8 @@ or metadata-only route.
 | Surface | Required visible content | Required states | Natural actions | Anti-patterns |
 | --- | --- | --- | --- | --- |
 | Club home | chess identity, match/event context, member action | loaded/opened | open, join, view | package proof card only |
+| Match meetup | opponent, proposed slot, location/board, accept/decline, reschedule | proposed/accepted/declined/rescheduled/completed | propose, accept, decline, reschedule, record result | generic request without opponent/time |
+| Calendar | club night/tournament/match, date/time/location, reminder | upcoming/RSVPed/cancelled | RSVP, add reminder, open match | raw event row |
 
 ## 6. Workflow-To-Surface Mapping
 
@@ -40,6 +51,7 @@ or metadata-only route.
 | --- | --- | --- | --- | --- | --- |
 | chess-local-install-open | member | Installed card/open route | parsed Chess Club identity, card, local route, and open state | Local backend/App Shell | B9/B25 |
 | chess-route-home | member | Chess home | chess content, route state, next match or result action | Runtime bridge | B9/B25 |
+| chess-match-meetup | member | Match meetup scheduler | opponent, proposed time/place/board, accept/decline/reschedule state | Member meetup/calendar/events | B25 |
 | chess-match-result | member | Match result surface | players, round, result, next action, correction path | Runtime bridge/events | B9/B25 |
 
 ## 7. Persona And State Matrix
@@ -48,11 +60,13 @@ or metadata-only route.
 | --- | --- | --- | --- | --- | --- |
 | chess-local-install-open | tester installs local Chess Club package and opens the community card | member sees branded chess home after install | installed card identity and route are readable | invalid package pair blocked with error | invalid files are not installed |
 | chess-route-home | member opens the local chess route/home | player sees tonight ladder, pairings, and standings | non-active player can read public club home | action disabled when no match is scheduled | non-members see public club summary only |
+| chess-match-meetup | member proposes or accepts a match with opponent/time/place | opponent receives invite and response state | club members can see accepted public match slot where policy allows | accept disabled after expiry or conflict | non-members cannot schedule private member matches |
 | chess-match-result | member records match result with players, round, score, and correction path | opponent/standings view receives updated result | members can read saved result and standings impact | save disabled without opponent/score/result | non-members cannot record match result |
 
 ## 8. Content And Seed Data Requirements
 
-Use club name, chess icon/identity, match/night copy, and at least one realistic club action.
+Use club name, chess icon/identity, match/night copy, opponent names, proposed match slots, board/table
+labels, and at least one realistic club action.
 
 ## 9. Visual And Interaction Standard
 
@@ -67,6 +81,7 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | --- | --- | --- | --- | --- | --- |
 | chess-local-install-open | member | Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths. | record match, submit score, save result | edit score, undo result, correct result, dispute result | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | chess-route-home | member | Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths. | record match, submit score, save result | edit score, undo result, correct result, dispute result | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| chess-match-meetup | member | Member schedules a match with a concrete opponent after seeing available times, location/board, response state, and reschedule path. | propose meetup, accept match, add reminder | decline, reschedule, cancel meetup, suggest new time | Fresh screenshots must show opponent, time/location/board, invite/response state, calendar/reminder, and reschedule/cancel path. |
 | chess-match-result | member | Participant records or reviews a concrete match with opponent, score/result, and correction/dispute paths. | record match, submit score, save result | edit score, undo result, correct result, dispute result | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
@@ -77,7 +92,8 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
 | `chess-local-install-open` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | local package import/open, route state, installed card status | Demo renderer must show parsed Chess Club identity, local route, installed card, and open state. |
-| `chess-route-home` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | scheduled match/session, player context, route/open state | Demo renderer must show chess home, next match/session, players, and primary action. |
+| `chess-route-home` | [calendar](../../CardSurfaces/calendar.md) | `CommunityCalendarSurfaceApi` | scheduled match/session, club night/tournament, player context, route/open state, reminder | Demo renderer must show chess home, next match/session, players, date/time/location, and primary action. |
+| `chess-match-meetup` | [member-meetup](../../CardSurfaces/member-meetup-scheduling.md) and [calendar](../../CardSurfaces/calendar.md) | `CommunityMeetupApi` / `CommunityCalendarSurfaceApi` | propose/accept/decline/reschedule/cancel, availability, reminder, receiver state | Demo renderer must show opponent, proposed slot/location/board, invite response, reschedule/cancel, and calendar state. |
 | `chess-match-result` | [approval-request](../../CardSurfaces/approval-request.md) | `CommunityRequestSurfaceApi` | submit/edit result, status, correction path, notification | Demo renderer must show players, round, outcome, correction path, and next action. |
 
 ## 10. Review And Remediation Log

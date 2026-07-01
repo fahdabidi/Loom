@@ -4963,6 +4963,32 @@
       "lastRunAt": "2026-06-28T20:33:12.154Z",
       "supersededBy": "b25-production-ux-v4-direct-question-gates",
       "executionTarget": "demo-loom-communities-app-local-backend"
+    },
+    {
+      "testId": "wf_app-shell-persona-tabs-customization",
+      "type": "workflow",
+      "owningComponent": null,
+      "coversComponents": [
+        "workflow-validation-harness",
+        "loom-communities-demo-app",
+        "community-card",
+        "app-shell-runtime",
+        "navigation-panel",
+        "role-policy-consent-engine"
+      ],
+      "dependents": [],
+      "phase": "B25",
+      "lastRunComponentVersions": {
+        "workflow-validation-harness": "09c26b466480",
+        "loom-communities-demo-app": "dd8ff5d27a80",
+        "community-card": "e973568f1cfa",
+        "app-shell-runtime": "c7c0a602fdad",
+        "navigation-panel": "ffc2aecac272",
+        "role-policy-consent-engine": "01288a26926f"
+      },
+      "status": "pass",
+      "lastRunAt": "2026-07-01T00:00:00Z",
+      "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],
   "skillModes": [

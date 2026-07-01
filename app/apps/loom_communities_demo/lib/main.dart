@@ -201,6 +201,7 @@ class _LocalExtensionScreen extends StatefulWidget {
 class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
   final Set<String> _completedWorkflowIds = {};
   final Set<String> _receivedWorkflowPersonaKeys = {};
+  final Map<String, String> _selectedTabIdByPersonaId = {};
   String? _selectedPersonaId;
 
   LocalInstalledCommunity get community => widget.community;
@@ -346,6 +347,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     }
     setState(() {
       _selectedPersonaId = selected;
+      _selectedTabIdByPersonaId.putIfAbsent(selected, () => 'home');
     });
   }
 
@@ -356,6 +358,19 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       displayName: community.displayName,
     );
     final activePersona = _activePersona(experience);
+    final tabSpecs = appShellTabsFor(
+      experience: experience,
+      personaId: activePersona.personaId,
+    );
+    final selectedTabId = _selectedTabIdFor(
+      personaId: activePersona.personaId,
+      tabs: tabSpecs,
+    );
+    final selectedTab = tabSpecs.firstWhere((tab) => tab.tabId == selectedTabId);
+    final selectedSections = _communitySectionsForTab(
+      experience: experience,
+      tab: selectedTab,
+    );
     final textTheme = Theme.of(context).textTheme;
     final accent = Color(experience.accentColor);
     final background = _screenBackgroundFor(accent);
@@ -374,7 +389,9 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           IconButton(
             key: const ValueKey('messages-button'),
             tooltip: 'Messages',
-            onPressed: () {},
+            onPressed: () => setState(() {
+              _selectedTabIdByPersonaId[activePersona.personaId] = 'messages';
+            }),
             icon: const Icon(Icons.chat_bubble_outline),
           ),
           IconButton(
@@ -495,7 +512,20 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
             ),
           ),
           const SizedBox(height: 22),
-          for (final section in _communitySectionsFor(experience)) ...[
+          _SelectedTabHeader(
+            tab: selectedTab,
+            accent: accent,
+            persona: activePersona,
+          ),
+          const SizedBox(height: 10),
+          if (selectedTab.tabId == 'messages')
+            _MessagesTabSurface(
+              experience: experience,
+              persona: activePersona,
+              accent: accent,
+            )
+          else
+            for (final section in selectedSections) ...[
             _CommunitySectionHeader(
               title: section.title,
               subtitle: section.subtitle,
@@ -532,46 +562,293 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
               ),
             const SizedBox(height: 20),
           ],
-          const SizedBox(height: 24),
-          ExpansionTile(
-            title: const Text('Community setup files'),
-            leading: const Icon(Icons.inventory_2_outlined),
-            collapsedTextColor: Colors.white,
-            collapsedIconColor: Colors.white,
-            textColor: Colors.white,
-            iconColor: Colors.white,
-            children: [
-              _ExtensionInfoTile(
-                icon: Icons.extension_outlined,
-                title: 'Package',
-                value: community.extensionId,
-              ),
-              _ExtensionInfoTile(
-                icon: Icons.palette_outlined,
-                title: 'Accent',
-                value: community.accentColor,
-              ),
-              _ExtensionInfoTile(
-                icon: Icons.image_outlined,
-                title: 'Card image',
-                value: community.cardImageAssetId ?? 'generated fallback',
-              ),
-              if (seedDataFiles.isEmpty)
-                const ListTile(
-                  dense: true,
-                  leading: Icon(Icons.description_outlined),
-                  title: Text('No seed files recorded.'),
-                )
-              else
-                for (final seedDataFile in seedDataFiles)
-                  ListTile(
+          if (selectedTab.tabId == 'home') ...[
+            const SizedBox(height: 24),
+            ExpansionTile(
+              title: const Text('Community setup files'),
+              leading: const Icon(Icons.inventory_2_outlined),
+              collapsedTextColor: Colors.white,
+              collapsedIconColor: Colors.white,
+              textColor: Colors.white,
+              iconColor: Colors.white,
+              children: [
+                _ExtensionInfoTile(
+                  icon: Icons.extension_outlined,
+                  title: 'Package',
+                  value: community.extensionId,
+                ),
+                _ExtensionInfoTile(
+                  icon: Icons.palette_outlined,
+                  title: 'Accent',
+                  value: community.accentColor,
+                ),
+                _ExtensionInfoTile(
+                  icon: Icons.image_outlined,
+                  title: 'Card image',
+                  value: community.cardImageAssetId ?? 'generated fallback',
+                ),
+                if (seedDataFiles.isEmpty)
+                  const ListTile(
                     dense: true,
-                    leading: const Icon(Icons.description_outlined),
-                    title: Text(seedDataFile),
-                  ),
-            ],
-          ),
+                    leading: Icon(Icons.description_outlined),
+                    title: Text('No seed files recorded.'),
+                  )
+                else
+                  for (final seedDataFile in seedDataFiles)
+                    ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.description_outlined),
+                      title: Text(seedDataFile),
+                    ),
+              ],
+            ),
+          ],
         ],
+      ),
+      bottomNavigationBar: _CommunityBottomTabBar(
+        tabs: tabSpecs,
+        selectedTabId: selectedTabId,
+        accent: accent,
+        onSelected: (tabId) => setState(() {
+          _selectedTabIdByPersonaId[activePersona.personaId] = tabId;
+        }),
+      ),
+    );
+  }
+
+  String _selectedTabIdFor({
+    required String personaId,
+    required List<LoomAppShellTabSpec> tabs,
+  }) {
+    final selected = _selectedTabIdByPersonaId[personaId] ?? 'home';
+    if (tabs.any((tab) => tab.tabId == selected)) {
+      return selected;
+    }
+    return tabs.first.tabId;
+  }
+}
+
+class _CommunityBottomTabBar extends StatelessWidget {
+  const _CommunityBottomTabBar({
+    required this.tabs,
+    required this.selectedTabId,
+    required this.accent,
+    required this.onSelected,
+  });
+
+  final List<LoomAppShellTabSpec> tabs;
+  final String selectedTabId;
+  final Color accent;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = Color.alphaBlend(
+      accent.withValues(alpha: 0.12),
+      Theme.of(context).colorScheme.surface,
+    );
+    return SafeArea(
+      top: false,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: background,
+          border: Border(
+            top: BorderSide(color: accent.withValues(alpha: 0.24)),
+          ),
+        ),
+        child: SizedBox(
+          height: 72,
+          child: ListView.separated(
+            key: const ValueKey('community-bottom-tabs'),
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            itemBuilder: (context, index) {
+              final tab = tabs[index];
+              final selected = tab.tabId == selectedTabId;
+              return Semantics(
+                selected: selected,
+                button: true,
+                label: '${tab.label} tab',
+                child: InkWell(
+                  key: ValueKey('community-tab-${tab.tabId}'),
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => onSelected(tab.tabId),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    constraints: const BoxConstraints(minWidth: 94),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? accent
+                          : Colors.white.withValues(alpha: 0.68),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: selected
+                            ? accent
+                            : accent.withValues(alpha: 0.26),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          tab.icon,
+                          size: 21,
+                          color: selected ? Colors.white : accent,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          tab.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: selected ? Colors.white : accent,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            itemCount: tabs.length,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SelectedTabHeader extends StatelessWidget {
+  const _SelectedTabHeader({
+    required this.tab,
+    required this.accent,
+    required this.persona,
+  });
+
+  final LoomAppShellTabSpec tab;
+  final Color accent;
+  final LoomPersonaDefinition persona;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      key: ValueKey('selected-tab-${tab.tabId}'),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          children: [
+            Icon(tab.icon, color: foreground),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tab.label,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    tab.descriptionFor(persona),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground.withValues(alpha: 0.88),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MessagesTabSurface extends StatelessWidget {
+  const _MessagesTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      key: const ValueKey('messages-tab-surface'),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.forum_outlined, color: foreground),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${experience.displayName} messages',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${persona.label} can continue community threads, member messages, and connection invites from this shell-owned communication tab.',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: foreground.withValues(alpha: 0.92),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.mark_chat_unread_outlined,
+                  label: 'Threads',
+                  foreground: foreground,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.people_alt_outlined,
+                  label: 'Connections',
+                  foreground: foreground,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.notifications_active_outlined,
+                  label: 'Unread state',
+                  foreground: foreground,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -596,6 +873,46 @@ List<_CommunityWorkflowSection> _communitySectionsFor(
 ) {
   final groups = <String, List<LoomWorkflowDefinition>>{};
   for (final workflow in experience.workflows) {
+    groups.putIfAbsent(_sectionTitleFor(workflow), () => []).add(workflow);
+  }
+  return [
+    for (final title in _orderedSectionTitles)
+      if ((groups[title] ?? const []).isNotEmpty)
+        _CommunityWorkflowSection(
+          title: title,
+          subtitle: _sectionSubtitleFor(title, experience),
+          icon: _sectionIconFor(title),
+          workflows: groups[title]!,
+        ),
+  ];
+}
+
+List<_CommunityWorkflowSection> _communitySectionsForTab({
+  required LoomExperienceDefinition experience,
+  required LoomAppShellTabSpec tab,
+}) {
+  if (tab.tabId == 'home') {
+    return _communitySectionsFor(experience);
+  }
+  final matchingWorkflows = [
+    for (final workflow in experience.workflows)
+      if (tab.matchesWorkflow(
+        extensionId: experience.extensionId,
+        workflow: workflow,
+      ))
+        workflow,
+  ];
+  final pinned = {
+    for (final workflow in matchingWorkflows)
+      if (tab.pinnedWorkflowIds.contains(workflow.workflowId)) workflow,
+  };
+  final orderedWorkflows = [
+    ...pinned,
+    for (final workflow in matchingWorkflows)
+      if (!pinned.contains(workflow)) workflow,
+  ];
+  final groups = <String, List<LoomWorkflowDefinition>>{};
+  for (final workflow in orderedWorkflows) {
     groups.putIfAbsent(_sectionTitleFor(workflow), () => []).add(workflow);
   }
   return [
@@ -9307,6 +9624,65 @@ class LoomWorkflowCardSurfaceRegistryEntry {
   final String fakeBackendSupport;
 }
 
+class LoomAppShellTabSpec {
+  const LoomAppShellTabSpec({
+    required this.tabId,
+    required this.label,
+    required this.icon,
+    required this.description,
+    this.sectionTitles = const [],
+    this.cardSurfaceFamilies = const [],
+    this.pinnedWorkflowIds = const [],
+    this.visiblePersonaIds = const [],
+    this.requiredPermission = 'community.surface.navigation.read',
+  });
+
+  final String tabId;
+  final String label;
+  final IconData icon;
+  final String description;
+  final List<String> sectionTitles;
+  final List<String> cardSurfaceFamilies;
+  final List<String> pinnedWorkflowIds;
+  final List<String> visiblePersonaIds;
+  final String requiredPermission;
+
+  bool isVisibleFor(String personaId) {
+    return visiblePersonaIds.isEmpty || visiblePersonaIds.contains(personaId);
+  }
+
+  bool matchesWorkflow({
+    required String extensionId,
+    required LoomWorkflowDefinition workflow,
+  }) {
+    if (tabId == 'home') {
+      return true;
+    }
+    if (tabId == 'messages') {
+      return false;
+    }
+    if (pinnedWorkflowIds.contains(workflow.workflowId)) {
+      return true;
+    }
+    final sectionTitle = _sectionTitleFor(workflow);
+    if (sectionTitles.contains(sectionTitle)) {
+      return true;
+    }
+    final registry = cardSurfaceRegistryEntryFor(
+      extensionId: extensionId,
+      workflow: workflow,
+    );
+    return cardSurfaceFamilies.contains(registry.cardSurfaceFamily);
+  }
+
+  String descriptionFor(LoomPersonaDefinition persona) {
+    if (visiblePersonaIds.isEmpty) {
+      return description;
+    }
+    return '$description Tuned for ${persona.label}.';
+  }
+}
+
 class LoomExperienceDefinition {
   const LoomExperienceDefinition({
     required this.extensionId,
@@ -9606,9 +9982,180 @@ List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
                 extensionId,
                 workflow.workflowId,
               ).prerequisiteWorkflowId ??
-              workflow.workflowId,
+      workflow.workflowId,
         ),
   ];
+}
+
+List<LoomAppShellTabSpec> appShellTabsFor({
+  required LoomExperienceDefinition experience,
+  required String personaId,
+}) {
+  final generatedTabs = <LoomAppShellTabSpec>[
+    const LoomAppShellTabSpec(
+      tabId: 'home',
+      label: 'Home',
+      icon: Icons.home_outlined,
+      description: 'Pinned and unassigned community surfaces.',
+      requiredPermission: 'community.surface.navigation.read',
+    ),
+    if (_hasAnySection(experience, const ['Upcoming events']))
+      const LoomAppShellTabSpec(
+        tabId: 'calendar',
+        label: 'Calendar',
+        icon: Icons.calendar_month_outlined,
+        description: 'Events, schedules, capacity, and reminders.',
+        sectionTitles: ['Upcoming events'],
+        cardSurfaceFamilies: ['event-rsvp', 'calendar'],
+        requiredPermission: 'community.surface.calendar.read',
+      ),
+    if (_hasAnySection(experience, const ['Documents and data']))
+      const LoomAppShellTabSpec(
+        tabId: 'documents',
+        label: 'Documents',
+        icon: Icons.folder_open_outlined,
+        description: 'Documents, exports, transfers, and audit records.',
+        sectionTitles: ['Documents and data'],
+        cardSurfaceFamilies: [
+          'documents',
+          'external-document-link',
+          'operations',
+          'portability',
+          'workflow-status',
+        ],
+        requiredPermission: 'community.surface.documents.read',
+      ),
+    if (_hasAnySurfaceFamily(experience, const [
+      'exchange',
+      'equipment-loan',
+    ]))
+      const LoomAppShellTabSpec(
+        tabId: 'marketplace',
+        label: 'Marketplace',
+        icon: Icons.storefront_outlined,
+        description: 'Shared items, offers, claims, loans, and giveaways.',
+        sectionTitles: ['Care and volunteers', 'Member tools'],
+        cardSurfaceFamilies: ['exchange', 'equipment-loan'],
+        requiredPermission: 'community.surface.marketplace.read',
+      ),
+    if (_hasAnySection(experience, const ['Giving']))
+      const LoomAppShellTabSpec(
+        tabId: 'giving',
+        label: 'Giving',
+        icon: Icons.payments_outlined,
+        description: 'Payments, dues, donations, receipts, and ad-off state.',
+        sectionTitles: ['Giving'],
+        cardSurfaceFamilies: ['payment', 'ad-off-entitlement'],
+        requiredPermission: 'community.surface.payments.read',
+      ),
+    if (_hasAnySurfaceFamily(experience, const [
+      'volunteer',
+      'care-request',
+    ]))
+      const LoomAppShellTabSpec(
+        tabId: 'care',
+        label: 'Care',
+        icon: Icons.volunteer_activism_outlined,
+        description: 'Care requests, volunteer shifts, and member support.',
+        sectionTitles: ['Care and volunteers'],
+        cardSurfaceFamilies: ['volunteer', 'care-request'],
+        requiredPermission: 'community.surface.care.read',
+      ),
+    if (_personaCanAdministerAnyWorkflow(experience, personaId))
+      LoomAppShellTabSpec(
+        tabId: 'admin',
+        label: _adminTabLabelFor(experience.extensionId),
+        icon: Icons.admin_panel_settings_outlined,
+        description: 'Role-specific publishing, approvals, and operations.',
+        sectionTitles: const [
+          'Announcements',
+          'Requests and approvals',
+          'Sponsored placement',
+        ],
+        cardSurfaceFamilies: const [
+          'announcement',
+          'approval',
+          'ad',
+          'workflow-status',
+        ],
+        visiblePersonaIds: [personaId],
+        requiredPermission: 'community.surface.navigation.configure',
+      ),
+    const LoomAppShellTabSpec(
+      tabId: 'messages',
+      label: 'Messages',
+      icon: Icons.forum_outlined,
+      description: 'Shell-owned communication and connections.',
+      requiredPermission: 'community.surface.messages.read',
+    ),
+  ];
+  return [
+    for (final tab in generatedTabs)
+      if (tab.isVisibleFor(personaId)) tab,
+  ];
+}
+
+bool _hasAnySection(
+  LoomExperienceDefinition experience,
+  List<String> sectionTitles,
+) {
+  return experience.workflows.any(
+    (workflow) => sectionTitles.contains(_sectionTitleFor(workflow)),
+  );
+}
+
+bool _hasAnySurfaceFamily(
+  LoomExperienceDefinition experience,
+  List<String> surfaceFamilies,
+) {
+  return experience.workflows.any((workflow) {
+    final entry = cardSurfaceRegistryEntryFor(
+      extensionId: experience.extensionId,
+      workflow: workflow,
+    );
+    return surfaceFamilies.contains(entry.cardSurfaceFamily);
+  });
+}
+
+bool _personaCanAdministerAnyWorkflow(
+  LoomExperienceDefinition experience,
+  String personaId,
+) {
+  return experience.workflows.any((workflow) {
+    final state = personaWorkflowStateFor(
+      extensionId: experience.extensionId,
+      workflowId: workflow.workflowId,
+      personaId: personaId,
+    );
+    if (state != LoomPersonaWorkflowState.actor) {
+      return false;
+    }
+    final entry = cardSurfaceRegistryEntryFor(
+      extensionId: experience.extensionId,
+      workflow: workflow,
+    );
+    return entry.cardSurfaceFamily == 'announcement' ||
+        entry.cardSurfaceFamily == 'approval' ||
+        entry.cardSurfaceFamily == 'ad' ||
+        entry.cardSurfaceFamily == 'workflow-status' ||
+        _sectionTitleFor(workflow) == 'Requests and approvals';
+  });
+}
+
+String _adminTabLabelFor(String extensionId) {
+  switch (extensionId) {
+    case 'ext_youth_soccer':
+      return 'Coach';
+    case 'ext_hoa':
+      return 'Board';
+    case 'ext_mosque':
+      return 'Admin';
+    case 'ext_garden_club':
+      return 'Organize';
+    case 'ext_book_club':
+      return 'Host';
+  }
+  return 'Admin';
 }
 
 String workflowPersonaReceiptKey({

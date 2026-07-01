@@ -41,7 +41,7 @@ tags:
   - name: Volunteer Surface
     description: Volunteer signup interactions implemented by CommunityVolunteerApi.
   - name: Equipment Loan Surface
-    description: Equipment loan interactions implemented by CommunityEquipmentLoanApi.
+    description: Shared item marketplace, loan, queue, custody, and giveaway interactions implemented by CommunityEquipmentLoanApi.
   - name: Plant And Item Exchange Surface
     description: Plant exchange interactions implemented by CommunityExchangeApi.
   - name: Book Nomination Surface
@@ -70,6 +70,16 @@ tags:
     description: Custom form submission interactions implemented by CommunityFormSurfaceApi.
   - name: Notification Inbox Surface
     description: Notification inbox interactions implemented by CommunityInboxSurfaceApi.
+  - name: App Shell Navigation Surface
+    description: Persona-aware App Shell tabs, pinning, presentation, theme, customization knobs, and messages-tab interactions implemented by CommunityAppShellNavigationApi.
+  - name: Calendar Surface
+    description: Calendar, schedule, recurrence, reminder, import/export, and linked-surface interactions implemented by CommunityCalendarSurfaceApi.
+  - name: Workflow Status Surface
+    description: Arbitrary multi-step request/case/status interactions implemented by CommunityWorkflowStatusApi.
+  - name: Documents Surface
+    description: Dedicated document library, embedded/external open, access, version, and audit interactions implemented by CommunityDocumentSurfaceApi.
+  - name: External Document Link Surface
+    description: External document preview, embedded browser, external app launch, link, access, and audit interactions implemented by CommunityExternalDocumentApi.
 paths:
   /v1/communities/{communityId}/card-surfaces/community-home/get-home-summary:
     get:
@@ -7892,6 +7902,3871 @@ paths:
           $ref: '../_shared/errors.yaml#/components/responses/NotFound'
         '409':
           $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/browse-equipment:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_browseEquipment
+      summary: Read browseEquipment for the equipment loan surface.
+      description: Supports the `browseEquipment` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: browseEquipment
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/search-equipment:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_searchEquipment
+      summary: Read searchEquipment for the equipment loan surface.
+      description: Supports the `searchEquipment` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: searchEquipment
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/get-equipment-detail:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_getEquipmentDetail
+      summary: Read getEquipmentDetail for the equipment loan surface.
+      description: Supports the `getEquipmentDetail` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: getEquipmentDetail
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/list-equipment-listing:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_listEquipmentListing
+      summary: Read listEquipmentListing for the equipment loan surface.
+      description: Supports the `listEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: listEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/create-equipment-listing:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_createEquipmentListing
+      summary: Execute createEquipmentListing for the equipment loan surface.
+      description: Supports the `createEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: createEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/update-equipment-listing:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_updateEquipmentListing
+      summary: Execute updateEquipmentListing for the equipment loan surface.
+      description: Supports the `updateEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: updateEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/remove-equipment-listing:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_removeEquipmentListing
+      summary: Execute removeEquipmentListing for the equipment loan surface.
+      description: Supports the `removeEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: removeEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/offer-giveaway:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_offerGiveaway
+      summary: Execute offerGiveaway for the equipment loan surface.
+      description: Supports the `offerGiveaway` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: offerGiveaway
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/claim-giveaway:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_claimGiveaway
+      summary: Execute claimGiveaway for the equipment loan surface.
+      description: Supports the `claimGiveaway` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: claimGiveaway
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/reserve-loan:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_reserveLoan
+      summary: Execute reserveLoan for the equipment loan surface.
+      description: Supports the `reserveLoan` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: reserveLoan
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/list-borrowers:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_listBorrowers
+      summary: Read listBorrowers for the equipment loan surface.
+      description: Supports the `listBorrowers` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: listBorrowers
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/transfer-giveaway-ownership:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_transferGiveawayOwnership
+      summary: Execute transferGiveawayOwnership for the equipment loan surface.
+      description: Supports the `transferGiveawayOwnership` interaction required by the `CommunityEquipmentLoanApi` card-surface contract.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: transferGiveawayOwnership
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/get-tab-configuration:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_getTabConfiguration
+      summary: Read getTabConfiguration for the app shell navigation surface.
+      description: Supports the `getTabConfiguration` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: getTabConfiguration
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/update-tab-configuration:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_updateTabConfiguration
+      summary: Execute updateTabConfiguration for the app shell navigation surface.
+      description: Supports the `updateTabConfiguration` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: updateTabConfiguration
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/assign-surface-to-tab:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_assignSurfaceToTab
+      summary: Execute assignSurfaceToTab for the app shell navigation surface.
+      description: Supports the `assignSurfaceToTab` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: assignSurfaceToTab
+      x-loom-permission-scope: community.surface.app-shell-navigation.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/pin-surface:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_pinSurface
+      summary: Execute pinSurface for the app shell navigation surface.
+      description: Supports the `pinSurface` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: pinSurface
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/unpin-surface:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_unpinSurface
+      summary: Execute unpinSurface for the app shell navigation surface.
+      description: Supports the `unpinSurface` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: unpinSurface
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/set-surface-presentation-state:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_setSurfacePresentationState
+      summary: Execute setSurfacePresentationState for the app shell navigation surface.
+      description: Supports the `setSurfacePresentationState` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: setSurfacePresentationState
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/persist-surface-focus-state:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_persistSurfaceFocusState
+      summary: Execute persistSurfaceFocusState for the app shell navigation surface.
+      description: Supports the `persistSurfaceFocusState` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: persistSurfaceFocusState
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/resolve-community-theme:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_resolveCommunityTheme
+      summary: Read resolveCommunityTheme for the app shell navigation surface.
+      description: Supports the `resolveCommunityTheme` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: resolveCommunityTheme
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/update-community-theme:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_updateCommunityTheme
+      summary: Execute updateCommunityTheme for the app shell navigation surface.
+      description: Supports the `updateCommunityTheme` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: updateCommunityTheme
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/validate-theme-contrast:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_validateThemeContrast
+      summary: Read validateThemeContrast for the app shell navigation surface.
+      description: Supports the `validateThemeContrast` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: validateThemeContrast
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/get-messages-tab-state:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_getMessagesTabState
+      summary: Read getMessagesTabState for the app shell navigation surface.
+      description: Supports the `getMessagesTabState` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: getMessagesTabState
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/open-messages-tab:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_openMessagesTab
+      summary: Read openMessagesTab for the app shell navigation surface.
+      description: Supports the `openMessagesTab` interaction required by the `CommunityAppShellNavigationApi` card-surface contract.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: openMessagesTab
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/list-calendar-items:
+    get:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_listCalendarItems
+      summary: Read listCalendarItems for the calendar surface.
+      description: Supports the `listCalendarItems` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: listCalendarItems
+      x-loom-permission-scope: community.surface.calendar.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/get-calendar-item:
+    get:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_getCalendarItem
+      summary: Read getCalendarItem for the calendar surface.
+      description: Supports the `getCalendarItem` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: getCalendarItem
+      x-loom-permission-scope: community.surface.calendar.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/create-calendar-item:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_createCalendarItem
+      summary: Execute createCalendarItem for the calendar surface.
+      description: Supports the `createCalendarItem` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: createCalendarItem
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/update-calendar-item:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_updateCalendarItem
+      summary: Execute updateCalendarItem for the calendar surface.
+      description: Supports the `updateCalendarItem` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: updateCalendarItem
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/cancel-calendar-item:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_cancelCalendarItem
+      summary: Execute cancelCalendarItem for the calendar surface.
+      description: Supports the `cancelCalendarItem` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: cancelCalendarItem
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/reschedule-calendar-item:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_rescheduleCalendarItem
+      summary: Execute rescheduleCalendarItem for the calendar surface.
+      description: Supports the `rescheduleCalendarItem` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: rescheduleCalendarItem
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/create-recurring-schedule:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_createRecurringSchedule
+      summary: Execute createRecurringSchedule for the calendar surface.
+      description: Supports the `createRecurringSchedule` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: createRecurringSchedule
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/subscribe-calendar-feed:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_subscribeCalendarFeed
+      summary: Execute subscribeCalendarFeed for the calendar surface.
+      description: Supports the `subscribeCalendarFeed` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: subscribeCalendarFeed
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/import-ics-feed:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_importIcsFeed
+      summary: Execute importIcsFeed for the calendar surface.
+      description: Supports the `importIcsFeed` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: importIcsFeed
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/export-calendar-feed:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_exportCalendarFeed
+      summary: Execute exportCalendarFeed for the calendar surface.
+      description: Supports the `exportCalendarFeed` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: exportCalendarFeed
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/sync-external-calendar:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_syncExternalCalendar
+      summary: Execute syncExternalCalendar for the calendar surface.
+      description: Supports the `syncExternalCalendar` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: syncExternalCalendar
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/detect-calendar-conflicts:
+    get:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_detectCalendarConflicts
+      summary: Read detectCalendarConflicts for the calendar surface.
+      description: Supports the `detectCalendarConflicts` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: detectCalendarConflicts
+      x-loom-permission-scope: community.surface.calendar.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/set-reminder:
+    post:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_setReminder
+      summary: Execute setReminder for the calendar surface.
+      description: Supports the `setReminder` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: setReminder
+      x-loom-permission-scope: community.surface.calendar.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/calendar/open-linked-surface:
+    get:
+      tags:
+        - Calendar Surface
+      operationId: CommunityCalendarSurfaceApi_openLinkedSurface
+      summary: Read openLinkedSurface for the calendar surface.
+      description: Supports the `openLinkedSurface` interaction required by the `CommunityCalendarSurfaceApi` card-surface contract.
+      x-loom-surface-family: calendar
+      x-loom-api-contract: CommunityCalendarSurfaceApi
+      x-loom-contract-operation: openLinkedSurface
+      x-loom-permission-scope: community.surface.calendar.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/create-workflow-instance:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_createWorkflowInstance
+      summary: Execute createWorkflowInstance for the workflow status surface.
+      description: Supports the `createWorkflowInstance` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: createWorkflowInstance
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/get-workflow-status:
+    get:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_getWorkflowStatus
+      summary: Read getWorkflowStatus for the workflow status surface.
+      description: Supports the `getWorkflowStatus` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: getWorkflowStatus
+      x-loom-permission-scope: community.surface.workflow-status.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/list-workflow-steps:
+    get:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_listWorkflowSteps
+      summary: Read listWorkflowSteps for the workflow status surface.
+      description: Supports the `listWorkflowSteps` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: listWorkflowSteps
+      x-loom-permission-scope: community.surface.workflow-status.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/transition-workflow-step:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_transitionWorkflowStep
+      summary: Execute transitionWorkflowStep for the workflow status surface.
+      description: Supports the `transitionWorkflowStep` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: transitionWorkflowStep
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/assign-workflow-reviewer:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_assignWorkflowReviewer
+      summary: Execute assignWorkflowReviewer for the workflow status surface.
+      description: Supports the `assignWorkflowReviewer` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: assignWorkflowReviewer
+      x-loom-permission-scope: community.surface.workflow-status.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/request-workflow-changes:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_requestWorkflowChanges
+      summary: Execute requestWorkflowChanges for the workflow status surface.
+      description: Supports the `requestWorkflowChanges` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: requestWorkflowChanges
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/approve-workflow-step:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_approveWorkflowStep
+      summary: Execute approveWorkflowStep for the workflow status surface.
+      description: Supports the `approveWorkflowStep` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: approveWorkflowStep
+      x-loom-permission-scope: community.surface.workflow-status.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/reject-workflow-step:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_rejectWorkflowStep
+      summary: Execute rejectWorkflowStep for the workflow status surface.
+      description: Supports the `rejectWorkflowStep` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: rejectWorkflowStep
+      x-loom-permission-scope: community.surface.workflow-status.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/add-workflow-comment:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_addWorkflowComment
+      summary: Execute addWorkflowComment for the workflow status surface.
+      description: Supports the `addWorkflowComment` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: addWorkflowComment
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/attach-workflow-document:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_attachWorkflowDocument
+      summary: Execute attachWorkflowDocument for the workflow status surface.
+      description: Supports the `attachWorkflowDocument` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: attachWorkflowDocument
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/record-workflow-payment-needed:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_recordWorkflowPaymentNeeded
+      summary: Execute recordWorkflowPaymentNeeded for the workflow status surface.
+      description: Supports the `recordWorkflowPaymentNeeded` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: recordWorkflowPaymentNeeded
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/notify-workflow-participants:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_notifyWorkflowParticipants
+      summary: Execute notifyWorkflowParticipants for the workflow status surface.
+      description: Supports the `notifyWorkflowParticipants` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: notifyWorkflowParticipants
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/reopen-workflow:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_reopenWorkflow
+      summary: Execute reopenWorkflow for the workflow status surface.
+      description: Supports the `reopenWorkflow` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: reopenWorkflow
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/cancel-workflow:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_cancelWorkflow
+      summary: Execute cancelWorkflow for the workflow status surface.
+      description: Supports the `cancelWorkflow` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: cancelWorkflow
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/workflow-status/workflow-audit-trail:
+    post:
+      tags:
+        - Workflow Status Surface
+      operationId: CommunityWorkflowStatusApi_workflowAuditTrail
+      summary: Execute workflowAuditTrail for the workflow status surface.
+      description: Supports the `workflowAuditTrail` interaction required by the `CommunityWorkflowStatusApi` card-surface contract.
+      x-loom-surface-family: workflow-status
+      x-loom-api-contract: CommunityWorkflowStatusApi
+      x-loom-contract-operation: workflowAuditTrail
+      x-loom-permission-scope: community.surface.workflow-status.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/list-documents:
+    get:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_listDocuments
+      summary: Read listDocuments for the documents surface.
+      description: Supports the `listDocuments` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: listDocuments
+      x-loom-permission-scope: community.surface.documents.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/get-document-detail:
+    get:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_getDocumentDetail
+      summary: Read getDocumentDetail for the documents surface.
+      description: Supports the `getDocumentDetail` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: getDocumentDetail
+      x-loom-permission-scope: community.surface.documents.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/open-embedded-document:
+    get:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_openEmbeddedDocument
+      summary: Read openEmbeddedDocument for the documents surface.
+      description: Supports the `openEmbeddedDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: openEmbeddedDocument
+      x-loom-permission-scope: community.surface.documents.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/open-external-document:
+    get:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_openExternalDocument
+      summary: Read openExternalDocument for the documents surface.
+      description: Supports the `openExternalDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: openExternalDocument
+      x-loom-permission-scope: community.surface.documents.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/download-document:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_downloadDocument
+      summary: Execute downloadDocument for the documents surface.
+      description: Supports the `downloadDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: downloadDocument
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/acknowledge-document:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_acknowledgeDocument
+      summary: Execute acknowledgeDocument for the documents surface.
+      description: Supports the `acknowledgeDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: acknowledgeDocument
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/request-document-access:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_requestDocumentAccess
+      summary: Execute requestDocumentAccess for the documents surface.
+      description: Supports the `requestDocumentAccess` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: requestDocumentAccess
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/list-document-versions:
+    get:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_listDocumentVersions
+      summary: Read listDocumentVersions for the documents surface.
+      description: Supports the `listDocumentVersions` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: listDocumentVersions
+      x-loom-permission-scope: community.surface.documents.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/link-external-document:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_linkExternalDocument
+      summary: Execute linkExternalDocument for the documents surface.
+      description: Supports the `linkExternalDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: linkExternalDocument
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/refresh-external-preview:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_refreshExternalPreview
+      summary: Execute refreshExternalPreview for the documents surface.
+      description: Supports the `refreshExternalPreview` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: refreshExternalPreview
+      x-loom-permission-scope: community.surface.documents.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/set-document-permissions:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_setDocumentPermissions
+      summary: Execute setDocumentPermissions for the documents surface.
+      description: Supports the `setDocumentPermissions` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: setDocumentPermissions
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/retire-document:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_retireDocument
+      summary: Execute retireDocument for the documents surface.
+      description: Supports the `retireDocument` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: retireDocument
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/documents/document-audit-trail:
+    post:
+      tags:
+        - Documents Surface
+      operationId: CommunityDocumentSurfaceApi_documentAuditTrail
+      summary: Execute documentAuditTrail for the documents surface.
+      description: Supports the `documentAuditTrail` interaction required by the `CommunityDocumentSurfaceApi` card-surface contract.
+      x-loom-surface-family: documents
+      x-loom-api-contract: CommunityDocumentSurfaceApi
+      x-loom-contract-operation: documentAuditTrail
+      x-loom-permission-scope: community.surface.documents.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/register-external-document:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_registerExternalDocument
+      summary: Execute registerExternalDocument for the external document link surface.
+      description: Supports the `registerExternalDocument` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: registerExternalDocument
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/get-external-document-preview:
+    get:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_getExternalDocumentPreview
+      summary: Read getExternalDocumentPreview for the external document link surface.
+      description: Supports the `getExternalDocumentPreview` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: getExternalDocumentPreview
+      x-loom-permission-scope: community.surface.external-document-link.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/open-embedded-external-document:
+    get:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_openEmbeddedExternalDocument
+      summary: Read openEmbeddedExternalDocument for the external document link surface.
+      description: Supports the `openEmbeddedExternalDocument` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: openEmbeddedExternalDocument
+      x-loom-permission-scope: community.surface.external-document-link.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/launch-external-document:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_launchExternalDocument
+      summary: Execute launchExternalDocument for the external document link surface.
+      description: Supports the `launchExternalDocument` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: launchExternalDocument
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/copy-external-document-link:
+    get:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_copyExternalDocumentLink
+      summary: Read copyExternalDocumentLink for the external document link surface.
+      description: Supports the `copyExternalDocumentLink` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: copyExternalDocumentLink
+      x-loom-permission-scope: community.surface.external-document-link.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/refresh-external-document-metadata:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_refreshExternalDocumentMetadata
+      summary: Execute refreshExternalDocumentMetadata for the external document link surface.
+      description: Supports the `refreshExternalDocumentMetadata` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: refreshExternalDocumentMetadata
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/record-external-document-open:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_recordExternalDocumentOpen
+      summary: Execute recordExternalDocumentOpen for the external document link surface.
+      description: Supports the `recordExternalDocumentOpen` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: recordExternalDocumentOpen
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/request-external-document-access:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_requestExternalDocumentAccess
+      summary: Execute requestExternalDocumentAccess for the external document link surface.
+      description: Supports the `requestExternalDocumentAccess` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: requestExternalDocumentAccess
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/revoke-external-document:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_revokeExternalDocument
+      summary: Execute revokeExternalDocument for the external document link surface.
+      description: Supports the `revokeExternalDocument` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: revokeExternalDocument
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/external-document-link/external-document-audit-trail:
+    post:
+      tags:
+        - External Document Link Surface
+      operationId: CommunityExternalDocumentApi_externalDocumentAuditTrail
+      summary: Execute externalDocumentAuditTrail for the external document link surface.
+      description: Supports the `externalDocumentAuditTrail` interaction required by the `CommunityExternalDocumentApi` card-surface contract.
+      x-loom-surface-family: external-document-link
+      x-loom-api-contract: CommunityExternalDocumentApi
+      x-loom-contract-operation: externalDocumentAuditTrail
+      x-loom-permission-scope: community.surface.external-document-link.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/pause-equipment-listing:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_pauseEquipmentListing
+      summary: Execute pauseEquipmentListing for the shared item marketplace surface.
+      description: Supports the `pauseEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: pauseEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/reactivate-equipment-listing:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_reactivateEquipmentListing
+      summary: Execute reactivateEquipmentListing for the shared item marketplace surface.
+      description: Supports the `reactivateEquipmentListing` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: reactivateEquipmentListing
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/update-availability:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_updateAvailability
+      summary: Execute updateAvailability for the shared item marketplace surface.
+      description: Supports the `updateAvailability` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: updateAvailability
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/join-loan-queue:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_joinLoanQueue
+      summary: Execute joinLoanQueue for the shared item marketplace surface.
+      description: Supports the `joinLoanQueue` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: joinLoanQueue
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/leave-loan-queue:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_leaveLoanQueue
+      summary: Execute leaveLoanQueue for the shared item marketplace surface.
+      description: Supports the `leaveLoanQueue` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: leaveLoanQueue
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/list-loan-queue:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_listLoanQueue
+      summary: Read listLoanQueue for the shared item marketplace surface.
+      description: Supports the `listLoanQueue` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: listLoanQueue
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/advance-loan-queue:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_advanceLoanQueue
+      summary: Execute advanceLoanQueue for the shared item marketplace surface.
+      description: Supports the `advanceLoanQueue` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: advanceLoanQueue
+      x-loom-permission-scope: community.surface.equipment-loan.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/get-current-holder:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_getCurrentHolder
+      summary: Read getCurrentHolder for the shared item marketplace surface.
+      description: Supports the `getCurrentHolder` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: getCurrentHolder
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/transfer-custody:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_transferCustody
+      summary: Execute transferCustody for the shared item marketplace surface.
+      description: Supports the `transferCustody` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: transferCustody
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/list-custody-history:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_listCustodyHistory
+      summary: Read listCustodyHistory for the shared item marketplace surface.
+      description: Supports the `listCustodyHistory` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: listCustodyHistory
+      x-loom-permission-scope: community.surface.equipment-loan.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/record-condition-check:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_recordConditionCheck
+      summary: Execute recordConditionCheck for the shared item marketplace surface.
+      description: Supports the `recordConditionCheck` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: recordConditionCheck
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/send-return-reminder:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_sendReturnReminder
+      summary: Execute sendReturnReminder for the shared item marketplace surface.
+      description: Supports the `sendReturnReminder` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: sendReturnReminder
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/report-overdue:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_reportOverdue
+      summary: Execute reportOverdue for the shared item marketplace surface.
+      description: Supports the `reportOverdue` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: reportOverdue
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/report-lost-item:
+    post:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_reportLostItem
+      summary: Execute reportLostItem for the shared item marketplace surface.
+      description: Supports the `reportLostItem` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: reportLostItem
+      x-loom-permission-scope: community.surface.equipment-loan.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/equipment-loan/resolve-loan-dispute:
+    get:
+      tags:
+        - Equipment Loan Surface
+      operationId: CommunityEquipmentLoanApi_resolveLoanDispute
+      summary: Read resolveLoanDispute for the shared item marketplace surface.
+      description: Supports the `resolveLoanDispute` interaction required by the `CommunityEquipmentLoanApi` card-surface contract. The `equipment-loan` family id is retained for compatibility and applies to generic shared-item libraries, equipment, books, DVDs, games, tools, and giveaways.
+      x-loom-surface-family: equipment-loan
+      x-loom-api-contract: CommunityEquipmentLoanApi
+      x-loom-contract-operation: resolveLoanDispute
+      x-loom-permission-scope: community.surface.equipment-loan.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/get-persona-tab-configuration:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_getPersonaTabConfiguration
+      summary: Read getPersonaTabConfiguration for persona-aware app shell navigation.
+      description: Read persona-specific tabs, labels, order, visibility, pins, and surface assignments for one persona.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: getPersonaTabConfiguration
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/update-persona-tab-configuration:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_updatePersonaTabConfiguration
+      summary: Execute updatePersonaTabConfiguration for persona-aware app shell navigation.
+      description: Update persona-specific tab labels, order, visibility, pins, and surface assignments.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: updatePersonaTabConfiguration
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/resolve-persona-tabs:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_resolvePersonaTabs
+      summary: Read resolvePersonaTabs for persona-aware app shell navigation.
+      description: Resolve effective Home, Messages, and community-defined tabs after persona permissions and policy filtering.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: resolvePersonaTabs
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/assign-surface-to-persona-tab:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_assignSurfaceToPersonaTab
+      summary: Execute assignSurfaceToPersonaTab for persona-aware app shell navigation.
+      description: Assign or remove a card surface from a tab for a specific persona or persona group.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: assignSurfaceToPersonaTab
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/pin-surface-for-persona:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_pinSurfaceForPersona
+      summary: Execute pinSurfaceForPersona for persona-aware app shell navigation.
+      description: Pin an important card surface within a tab for a specific persona or persona group.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: pinSurfaceForPersona
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/unpin-surface-for-persona:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_unpinSurfaceForPersona
+      summary: Execute unpinSurfaceForPersona for persona-aware app shell navigation.
+      description: Remove a persona-specific pinned surface from a tab.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: unpinSurfaceForPersona
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/get-customization-knobs:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_getCustomizationKnobs
+      summary: Read getCustomizationKnobs for persona-aware app shell navigation.
+      description: Read configurable theme, typography, icon, spacing, density, card, tab, and surface presentation knobs.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: getCustomizationKnobs
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/update-customization-knobs:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_updateCustomizationKnobs
+      summary: Execute updateCustomizationKnobs for persona-aware app shell navigation.
+      description: Update bounded customization knobs for theme, typography, icon, spacing, density, card, tab, and surface presentation.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: updateCustomizationKnobs
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/preview-navigation-configuration:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_previewNavigationConfiguration
+      summary: Execute previewNavigationConfiguration for persona-aware app shell navigation.
+      description: Preview the tab, pin, theme, typography, and surface state that a persona will see before publishing configuration.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: previewNavigationConfiguration
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/validate-persona-navigation:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_validatePersonaNavigation
+      summary: Execute validatePersonaNavigation for persona-aware app shell navigation.
+      description: Validate persona tab configuration against required Home/Messages, permission, accessibility, and hidden/disabled rules.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: validatePersonaNavigation
+      x-loom-permission-scope: community.surface.app-shell-navigation.admin
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/get-persona-surface-presentation-state:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_getPersonaSurfacePresentationState
+      summary: Read getPersonaSurfacePresentationState for persona-aware app shell navigation.
+      description: Read minimized, medium/in-focus, expanded, pinned, and scroll focus state for a persona.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: getPersonaSurfacePresentationState
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/update-persona-surface-presentation-state:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_updatePersonaSurfacePresentationState
+      summary: Execute updatePersonaSurfacePresentationState for persona-aware app shell navigation.
+      description: Persist minimized, medium/in-focus, expanded, pinned, and scroll focus state for a persona.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: updatePersonaSurfacePresentationState
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -7944,6 +11819,11 @@ components:
         - ad
         - form
         - inbox
+        - external-document-link
+        - documents
+        - workflow-status
+        - calendar
+        - app-shell-navigation
     SurfaceActionRequest:
       type: object
       required:

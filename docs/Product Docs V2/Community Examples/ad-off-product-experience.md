@@ -26,6 +26,13 @@
 | Entitlement status | Show active state. | Member | active/inactive, renewal, affected surfaces. | Manage |
 | Receipt/settlement | Prove payment allocation. | Member/owner | receipt, settlement, utility funding. | View receipt |
 
+## 3.1 Persona Tabs, Pins, And Customization
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| Member | Home, Ad-Free, Receipts, Messages | entitlement status, renewal date, suppressed ad slots | Account-style palette, receipt clarity, restore/manage actions. |
+| Owner/operator | Home, Ad-Free, Settlement, Documents, Messages | settlement review, allocation corrections, audit export | Operator tabs expose settlement and correction surfaces hidden from members. |
+
 ## 4. Home Screen Requirements
 
 The user must understand what ad-off changes, what it costs, and what receipt/entitlement state exists

@@ -29,6 +29,16 @@ Define the community's real product structure, not workflow categories.
 | Home | `<what the home prioritizes>` | `<persona>` | `<current activity, alerts, sections>` | `<main next action>` |
 | `<domain surface>` | `<purpose>` | `<persona>` | `<content>` | `<action>` |
 
+## 3.1 Persona Tabs, Pins, And Customization
+
+Define the App Shell navigation model and customization knobs. Home and Messages/Communication are
+always required, but every persona can receive different tabs, pinned surfaces, labels, icons, order,
+and hidden/disabled states.
+
+| Persona | Required tabs | Pinned surfaces | Customization notes |
+| --- | --- | --- | --- |
+| `<persona>` | `Home, <domain tab>, Messages` | `<surface or workflow>` | `<theme, typography, density, icon, color, card, tab, or surface presentation choices>` |
+
 ## 4. Home Screen Requirements
 
 The first screen after opening the community must show:
