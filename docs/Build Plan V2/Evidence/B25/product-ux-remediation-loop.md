@@ -544,4 +544,4 @@ findings were resolved in pass 9.
   edits alone; it should either make a deeper product-surface architecture change that replaces the
   repeated-card scaffold for the failing families, or pause for a planning reset if the next pass does
   not reduce blocker/major counts materially.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `0dd2c6c`.
