@@ -347,4 +347,4 @@ findings were resolved in pass 9.
   instead introduce truly distinct production surfaces for the highest-impact workflow families, repair
   the product-doc mapping gaps, and then recapture full B12-B20 evidence before rerunning the fresh LLM
   reconciliation and Vision UX gates.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `b151e8c`.

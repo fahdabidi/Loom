@@ -428,7 +428,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Reopened | Product-UX v4 pass 25 failed with 1 blocker, 5 major LLM Vision findings, 16 major Product Docs reconciliation findings, and 9 remediation tickets. Pass 26 must start from `b25-remediation-plan-b25-v4-pass-26.md`, repair Product Docs/workflow evidence alignment, replace repeated shared workflow-card UI with truly distinct production surfaces for the highest-impact workflow families, close the 13 remaining lifecycle scorecards, then recapture full B12-B20 evidence, rerun fresh LLM Product Docs reconciliation and Vision UX review, and regenerate tickets/scorecard. |
+| B25 | `b151e8c` | Reopened | Product-UX v4 pass 25 failed with 1 blocker, 5 major LLM Vision findings, 16 major Product Docs reconciliation findings, and 9 remediation tickets. Pass 26 must start from `b25-remediation-plan-b25-v4-pass-26.md`, repair Product Docs/workflow evidence alignment, replace repeated shared workflow-card UI with truly distinct production surfaces for the highest-impact workflow families, close the 13 remaining lifecycle scorecards, then recapture full B12-B20 evidence, rerun fresh LLM Product Docs reconciliation and Vision UX review, and regenerate tickets/scorecard. |
 
 Closeout rule for reopened phases:
 
@@ -1879,7 +1879,7 @@ Closeout rule for reopened phases:
   `B25 can pass=false` with `6` remaining blocker/major findings. The next-pass remediation planner
   generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-26.md` with `9` tickets
   and `3` remediation batches.
-- **Commit, v4 pass 25:** `TBD`.
+- **Commit, v4 pass 25:** `b151e8c`.
 
 ## Gate Evidence Template
 
