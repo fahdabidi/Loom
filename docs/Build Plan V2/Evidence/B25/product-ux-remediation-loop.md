@@ -199,4 +199,4 @@ findings were resolved in pass 9.
 - Result: B25 remains reopened. Pass 22 must fix the 22 lifecycle rows, repair B20 CTA wrapping, make
   Camera/Platform/Ad-Free surfaces visibly distinct rather than generic panels, and finish
   product-doc reconciliation before recapturing full B12-B20 evidence.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `97096d9`.
