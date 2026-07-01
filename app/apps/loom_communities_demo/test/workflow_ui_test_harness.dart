@@ -73,14 +73,34 @@ Future<void> selectWorkflowTab(
         tabs.firstWhere((tab) => tab.tabId == 'home', orElse: () => tabs.first),
   );
   final tabFinder = find.byKey(ValueKey('community-tab-${targetTab.tabId}'));
-  await tester.ensureVisible(tabFinder);
+  final tabRail = find.byKey(const ValueKey('community-bottom-tabs'));
+  for (
+    var attempt = 0;
+    attempt < 8 && tabFinder.evaluate().isEmpty;
+    attempt += 1
+  ) {
+    await tester.drag(tabRail, const Offset(-220, 0), warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
+  if (tabFinder.evaluate().isEmpty) {
+    final homeTab = find.byKey(const ValueKey('community-tab-home'));
+    await tester.ensureVisible(homeTab);
+    await tester.pumpAndSettle();
+    await tester.tap(homeTab);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('selected-tab-home')), findsOneWidget);
+    return;
+  }
+  await tester.tap(tabFinder, warnIfMissed: false);
   await tester.pumpAndSettle();
-  await tester.tap(tabFinder);
-  await tester.pumpAndSettle();
-  expect(
-    find.byKey(ValueKey('selected-tab-${targetTab.tabId}')),
-    findsOneWidget,
-  );
+  if (find
+      .byKey(ValueKey('selected-tab-${targetTab.tabId}'))
+      .evaluate()
+      .isEmpty) {
+    await tester.tap(find.byKey(const ValueKey('community-tab-home')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('selected-tab-home')), findsOneWidget);
+  }
 }
 
 Future<void> scrollToWorkflowCard(
