@@ -1,16 +1,16 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-33`
+Review run: `b25-v4-pass-34`
 
 Status: `llm-vision-review-fail`
 
 Final decision: `fail`
 
-Screen rows collected: 195
+Screen rows collected: 198
 
-Holistic direct-question answers: 4
+Holistic direct-question answers: 3
 
-Workflow/persona scorecards: 68 (68 blocking)
+Workflow/persona scorecards: 68 (22 blocking)
 
 Workflow lifecycle scorecards: 68 (6 blocking)
 
@@ -18,13 +18,13 @@ Workflow lifecycle scorecards: 68 (6 blocking)
 
 | Finding | Severity | Status | Required fix |
 | --- | --- | --- | --- |
+| `B25-VISUAL-UX-INSPECTION-FAILED` | major | open | Replace the affected screens with screenshot-proven domain-native surfaces and rerun the independent visual UX judge. |
 | `B25-WORKFLOW-PERSONA-UX-FAILED` | major | open | Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence. |
 | `B25-WORKFLOW-LIFECYCLE-INCOMPLETE` | major | open | Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence. |
 | `B25-HOLISTIC-UX-FAILED` | major | open | Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review. |
-| `LLM-B25-VISION-001` | major | open | Replace dimmed action modals with durable full-bright product action surfaces and recapture all action rows. |
-| `LLM-B25-VISION-002` | major | open | Replace generic status/checklist utility panels with surface-specific product layouts. |
-| `LLM-B25-VISION-003` | major | open | Capture and, if needed, implement persona-specific tabs, pinned surfaces, and card size states as first-class product navigation. |
-| `LLM-B25-VISION-004` | major | open | Make lifecycle actions domain-specific and visible in screenshots for every primary workflow. |
+| `LLM-B25-VISION-034-001` | major | open | Create readable, domain-native action/detail surfaces for the affected workflows. Use opaque surface colors with accessible contrast, screen-specific layout, real domain objects and inputs, explicit primary/secondary/lifecycle actions, and visible result/receiver states; then full recapture B12-B20 evidence. |
+| `LLM-B25-VISION-034-002` | major | open | For each blocking workflow/persona pair, implement a surface that makes the target persona real job obvious: object context, user inputs/decision data, primary action, alternative/change/reject/cancel path, result/receipt/history, and receiver/continuation state. |
+| `LLM-B25-VISION-034-003` | major | open | Add visible post-action result/receipt/status/history/receiver states to the affected workflows and recapture start/action/result rows proving those states. |
 
 ## Community Product Experience Docs
 
@@ -46,83 +46,82 @@ Workflow lifecycle scorecards: 68 (6 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Does the overall UI feel production-grade for the target users, not merely workflow-complete? | `fail` | 68 |  | Remove dimmed workflow-modal action states and replace utility/status panels with specialized product screens. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 70 |  | Capture and implement persona-specific tabs, pinned surfaces, Messages tab behavior, and minimized/medium/expanded cards. |
-| Are main user-facing screens organized around community content and jobs-to-be-done rather than a global workflow/evidence surface? | `fail` | 72 |  | Give each major surface family its own product layout and lifecycle model. |
-| Are blocking or major overlap, clipping, crowding, repeated-card, checklist-modal, thin-content, and default-scaffold findings absent? | `fail` | 58 |  | Fix modal/dimmed action evidence and repeated utility panel layouts before closeout. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas? | `fail` | 62 |  |  |
+| Does the experience feel like a rich community product rather than a workflow implementation surface? | `fail` | 58 |  |  |
+| Can target users see the full task lifecycle, including alternate actions and persistent result/receiver states? | `fail` | 60 |  |  |
 
 ## Workflow/Persona Scorecards
 
 | Scorecard | Status | Screens | Summary |
 | --- | --- | ---: | --- |
-| `b25-wp-001-garden-event-rsvp-community-garden-club-member` | `fail` | 3 | Workflow/persona review failed for `garden-event-rsvp` / `member` after LLM vision import. |
+| `b25-wp-001-garden-event-rsvp-community-garden-club-member` | `pass` | 3 | Workflow/persona review passed for `garden-event-rsvp` / `member`. |
 | `b25-wp-002-plant-exchange-submission-community-garden-club-member` | `fail` | 3 | Workflow/persona review failed for `plant-exchange-submission` / `member` after LLM vision import. |
 | `b25-wp-003-garden-export-custom-schemas-community-garden-club-owner` | `fail` | 3 | Workflow/persona review failed for `garden-export-custom-schemas` / `owner` after LLM vision import. |
-| `b25-wp-004-book-nomination-community-book-club-member` | `fail` | 3 | Workflow/persona review failed for `book-nomination` / `member` after LLM vision import. |
+| `b25-wp-004-book-nomination-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-nomination` / `member`. |
 | `b25-wp-005-book-selection-publish-community-book-club-owner` | `fail` | 3 | Workflow/persona review failed for `book-selection-publish` / `owner` after LLM vision import. |
-| `b25-wp-006-soccer-team-roster-community-youth-soccer-coach` | `fail` | 3 | Workflow/persona review failed for `soccer-team-roster` / `coach` after LLM vision import. |
-| `b25-wp-007-soccer-reminder-notification-community-youth-soccer-guardian` | `fail` | 3 | Workflow/persona review failed for `soccer-reminder-notification` / `guardian` after LLM vision import. |
-| `b25-wp-008-hoa-facility-reservation-community-hoa-member` | `fail` | 3 | Workflow/persona review failed for `hoa-facility-reservation` / `member` after LLM vision import. |
-| `b25-wp-009-hoa-export-evidence-community-hoa-owner` | `fail` | 3 | Workflow/persona review failed for `hoa-export-evidence` / `owner` after LLM vision import. |
+| `b25-wp-006-soccer-team-roster-community-youth-soccer-coach` | `pass` | 3 | Workflow/persona review passed for `soccer-team-roster` / `coach`. |
+| `b25-wp-007-soccer-reminder-notification-community-youth-soccer-guardian` | `pass` | 3 | Workflow/persona review passed for `soccer-reminder-notification` / `guardian`. |
+| `b25-wp-008-hoa-facility-reservation-community-hoa-member` | `pass` | 3 | Workflow/persona review passed for `hoa-facility-reservation` / `member`. |
+| `b25-wp-009-hoa-export-evidence-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-export-evidence` / `owner`. |
 | `b25-wp-010-mosque-donor-visibility-community-mosque-donor` | `fail` | 3 | Workflow/persona review failed for `mosque-donor-visibility` / `donor` after LLM vision import. |
-| `b25-wp-011-mosque-search-ai-citation-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-search-ai-citation` / `member` after LLM vision import. |
+| `b25-wp-011-mosque-search-ai-citation-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-search-ai-citation` / `member`. |
 | `b25-wp-012-book-vote-community-book-club-member` | `fail` | 3 | Workflow/persona review failed for `book-vote` / `member` after LLM vision import. |
-| `b25-wp-013-book-search-ai-digest-community-book-club-member` | `fail` | 3 | Workflow/persona review failed for `book-search-ai-digest` / `member` after LLM vision import. |
+| `b25-wp-013-book-search-ai-digest-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-search-ai-digest` / `member`. |
 | `b25-wp-014-soccer-minor-redaction-community-youth-soccer-guardian` | `fail` | 3 | Workflow/persona review failed for `soccer-minor-redaction` / `guardian` after LLM vision import. |
 | `b25-wp-015-soccer-export-metadata-community-youth-soccer-owner` | `fail` | 3 | Workflow/persona review failed for `soccer-export-metadata` / `owner` after LLM vision import. |
-| `b25-wp-016-hoa-architectural-request-community-hoa-owner` | `fail` | 3 | Workflow/persona review failed for `hoa-architectural-request` / `owner` after LLM vision import. |
-| `b25-wp-017-mosque-announcement-community-mosque-owner` | `fail` | 3 | Workflow/persona review failed for `mosque-announcement` / `owner` after LLM vision import. |
-| `b25-wp-018-mosque-donation-payment-community-mosque-donor` | `fail` | 3 | Workflow/persona review failed for `mosque-donation-payment` / `donor` after LLM vision import. |
-| `b25-wp-019-book-meeting-rsvp-community-book-club-member` | `fail` | 3 | Workflow/persona review failed for `book-meeting-rsvp` / `member` after LLM vision import. |
-| `b25-wp-020-book-export-metadata-community-book-club-owner` | `fail` | 3 | Workflow/persona review failed for `book-export-metadata` / `owner` after LLM vision import. |
-| `b25-wp-021-soccer-registration-payment-community-youth-soccer-guardian` | `fail` | 3 | Workflow/persona review failed for `soccer-registration-payment` / `guardian` after LLM vision import. |
+| `b25-wp-016-hoa-architectural-request-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-architectural-request` / `owner`. |
+| `b25-wp-017-mosque-announcement-community-mosque-owner` | `pass` | 3 | Workflow/persona review passed for `mosque-announcement` / `owner`. |
+| `b25-wp-018-mosque-donation-payment-community-mosque-donor` | `pass` | 3 | Workflow/persona review passed for `mosque-donation-payment` / `donor`. |
+| `b25-wp-019-book-meeting-rsvp-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-meeting-rsvp` / `member`. |
+| `b25-wp-020-book-export-metadata-community-book-club-owner` | `pass` | 3 | Workflow/persona review passed for `book-export-metadata` / `owner`. |
+| `b25-wp-021-soccer-registration-payment-community-youth-soccer-guardian` | `pass` | 3 | Workflow/persona review passed for `soccer-registration-payment` / `guardian`. |
 | `b25-wp-022-hoa-dues-payment-community-hoa-member` | `fail` | 3 | Workflow/persona review failed for `hoa-dues-payment` / `member` after LLM vision import. |
-| `b25-wp-023-hoa-committee-decision-community-hoa-owner` | `fail` | 3 | Workflow/persona review failed for `hoa-committee-decision` / `owner` after LLM vision import. |
-| `b25-wp-024-mosque-event-rsvp-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-event-rsvp` / `member` after LLM vision import. |
-| `b25-wp-025-mosque-care-request-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-care-request` / `member` after LLM vision import. |
-| `b25-wp-026-book-discussion-message-community-book-club-member` | `fail` | 3 | Workflow/persona review failed for `book-discussion-message` / `member` after LLM vision import. |
-| `b25-wp-027-soccer-guardian-join-approval-community-youth-soccer-guardian` | `fail` | 3 | Workflow/persona review failed for `soccer-guardian-join-approval` / `guardian` after LLM vision import. |
-| `b25-wp-028-soccer-practice-schedule-community-youth-soccer-guardian` | `fail` | 3 | Workflow/persona review failed for `soccer-practice-schedule` / `guardian` after LLM vision import. |
+| `b25-wp-023-hoa-committee-decision-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-committee-decision` / `owner`. |
+| `b25-wp-024-mosque-event-rsvp-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-event-rsvp` / `member`. |
+| `b25-wp-025-mosque-care-request-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-care-request` / `member`. |
+| `b25-wp-026-book-discussion-message-community-book-club-member` | `pass` | 3 | Workflow/persona review passed for `book-discussion-message` / `member`. |
+| `b25-wp-027-soccer-guardian-join-approval-community-youth-soccer-guardian` | `pass` | 3 | Workflow/persona review passed for `soccer-guardian-join-approval` / `guardian`. |
+| `b25-wp-028-soccer-practice-schedule-community-youth-soccer-guardian` | `pass` | 3 | Workflow/persona review passed for `soccer-practice-schedule` / `guardian`. |
 | `b25-wp-029-hoa-member-document-community-hoa-member` | `fail` | 3 | Workflow/persona review failed for `hoa-member-document` / `member` after LLM vision import. |
-| `b25-wp-030-hoa-owner-notification-community-hoa-owner` | `fail` | 3 | Workflow/persona review failed for `hoa-owner-notification` / `owner` after LLM vision import. |
-| `b25-wp-031-mosque-volunteer-signup-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-volunteer-signup` / `member` after LLM vision import. |
-| `b25-wp-032-mosque-neutral-notification-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `mosque-neutral-notification` / `member` after LLM vision import. |
-| `b25-wp-033-chess-local-install-open-community-chess-club-member` | `fail` | 3 | Workflow/persona review failed for `chess-local-install-open` / `member` after LLM vision import. |
-| `b25-wp-034-chess-route-home-community-chess-club-member` | `fail` | 3 | Workflow/persona review failed for `chess-route-home` / `member` after LLM vision import. |
-| `b25-wp-035-chess-match-result-community-chess-club-member` | `fail` | 3 | Workflow/persona review failed for `chess-match-result` / `member` after LLM vision import. |
+| `b25-wp-030-hoa-owner-notification-community-hoa-owner` | `pass` | 3 | Workflow/persona review passed for `hoa-owner-notification` / `owner`. |
+| `b25-wp-031-mosque-volunteer-signup-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-volunteer-signup` / `member`. |
+| `b25-wp-032-mosque-neutral-notification-community-mosque-member` | `pass` | 3 | Workflow/persona review passed for `mosque-neutral-notification` / `member`. |
+| `b25-wp-033-chess-local-install-open-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-local-install-open` / `member`. |
+| `b25-wp-034-chess-route-home-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-route-home` / `member`. |
+| `b25-wp-035-chess-match-result-community-chess-club-member` | `pass` | 3 | Workflow/persona review passed for `chess-match-result` / `member`. |
 | `b25-wp-036-photo-walk-rsvp-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `photo-walk-rsvp` / `member` after LLM vision import. |
-| `b25-wp-037-critique-submission-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `critique-submission` / `member` after LLM vision import. |
-| `b25-wp-038-gear-loan-request-community-camera-club-member` | `fail` | 3 | Workflow/persona review failed for `gear-loan-request` / `member` after LLM vision import. |
+| `b25-wp-037-critique-submission-community-camera-club-member` | `pass` | 3 | Workflow/persona review passed for `critique-submission` / `member`. |
+| `b25-wp-038-gear-loan-request-community-camera-club-member` | `pass` | 3 | Workflow/persona review passed for `gear-loan-request` / `member`. |
 | `b25-wp-039-platform-messages-entry-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-messages-entry` / `member` after LLM vision import. |
 | `b25-wp-040-platform-blocked-target-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-blocked-target` / `member` after LLM vision import. |
 | `b25-wp-041-platform-top-banner-no-fill-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-top-banner-no-fill` / `member` after LLM vision import. |
 | `b25-wp-042-ad-off-community-checkout-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-community-checkout` / `member` after LLM vision import. |
 | `b25-wp-043-ad-off-ad-suppression-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-ad-suppression` / `member` after LLM vision import. |
 | `b25-wp-044-export-import-replay-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-import-replay` / `owner` after LLM vision import. |
-| `b25-wp-045-export-full-bundle-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-full-bundle` / `owner` after LLM vision import. |
-| `b25-wp-046-export-transfer-verification-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-transfer-verification` / `owner` after LLM vision import. |
-| `b25-wp-047-platform-connections-entry-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-connections-entry` / `member` after LLM vision import. |
+| `b25-wp-045-export-full-bundle-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-full-bundle` / `owner`. |
+| `b25-wp-046-export-transfer-verification-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-transfer-verification` / `owner`. |
+| `b25-wp-047-platform-connections-entry-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-connections-entry` / `member`. |
 | `b25-wp-048-platform-message-stream-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-message-stream` / `member` after LLM vision import. |
 | `b25-wp-049-platform-sensitive-no-fill-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-sensitive-no-fill` / `member` after LLM vision import. |
 | `b25-wp-050-ad-off-entitlement-status-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-entitlement-status` / `member` after LLM vision import. |
 | `b25-wp-051-ad-off-settlement-utility-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-settlement-utility` / `member` after LLM vision import. |
 | `b25-wp-052-export-protected-redaction-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-protected-redaction` / `owner` after LLM vision import. |
-| `b25-wp-053-export-redacted-bundle-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-redacted-bundle` / `owner` after LLM vision import. |
-| `b25-wp-054-export-transfer-rollback-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-transfer-rollback` / `owner` after LLM vision import. |
-| `b25-wp-055-platform-connection-invite-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-connection-invite` / `member` after LLM vision import. |
-| `b25-wp-056-platform-in-stream-ad-community-platform-social-member` | `fail` | 3 | Workflow/persona review failed for `platform-in-stream-ad` / `member` after LLM vision import. |
-| `b25-wp-057-ad-off-member-checkout-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-member-checkout` / `member` after LLM vision import. |
-| `b25-wp-058-ad-off-receipt-evidence-community-ad-off-member` | `fail` | 3 | Workflow/persona review failed for `ad-off-receipt-evidence` / `member` after LLM vision import. |
+| `b25-wp-053-export-redacted-bundle-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-redacted-bundle` / `owner`. |
+| `b25-wp-054-export-transfer-rollback-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-transfer-rollback` / `owner`. |
+| `b25-wp-055-platform-connection-invite-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-connection-invite` / `member`. |
+| `b25-wp-056-platform-in-stream-ad-community-platform-social-member` | `pass` | 3 | Workflow/persona review passed for `platform-in-stream-ad` / `member`. |
+| `b25-wp-057-ad-off-member-checkout-community-ad-off-member` | `pass` | 3 | Workflow/persona review passed for `ad-off-member-checkout` / `member`. |
+| `b25-wp-058-ad-off-receipt-evidence-community-ad-off-member` | `pass` | 3 | Workflow/persona review passed for `ad-off-receipt-evidence` / `member`. |
 | `b25-wp-059-export-import-preview-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-import-preview` / `owner` after LLM vision import. |
-| `b25-wp-060-export-schema-listing-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-schema-listing` / `owner` after LLM vision import. |
-| `b25-wp-061-export-checksum-evidence-community-export-migration-owner` | `fail` | 3 | Workflow/persona review failed for `export-checksum-evidence` / `owner` after LLM vision import. |
-| `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `fail` | 1 | Workflow/persona review failed for `wf_persona-role-inventory-capability-matrix` / `admin` after LLM vision import. |
-| `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `fail` | 1 | Workflow/persona review failed for `wf_persona-role-inventory-capability-matrix` / `member` after LLM vision import. |
-| `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `fail` | 2 | Workflow/persona review failed for `wf_demo-app-persona-picker` / `member` after LLM vision import. |
-| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `fail` | 1 | Workflow/persona review failed for `wf_community-persona-aware-ux` / `member` after LLM vision import. |
-| `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `fail` | 1 | Workflow/persona review failed for `wf_community-persona-aware-ux` / `admin` after LLM vision import. |
-| `b25-wp-067-wf-multi-persona-workflow-evidence-community-mosque-admin` | `fail` | 3 | Workflow/persona review failed for `wf_multi-persona-workflow-evidence` / `admin` after LLM vision import. |
-| `b25-wp-068-wf-multi-persona-workflow-evidence-community-mosque-member` | `fail` | 3 | Workflow/persona review failed for `wf_multi-persona-workflow-evidence` / `member` after LLM vision import. |
+| `b25-wp-060-export-schema-listing-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-schema-listing` / `owner`. |
+| `b25-wp-061-export-checksum-evidence-community-export-migration-owner` | `pass` | 3 | Workflow/persona review passed for `export-checksum-evidence` / `owner`. |
+| `b25-wp-062-wf-persona-role-inventory-capability-matrix-persona-role-inventory-admin` | `pass` | 1 | Workflow/persona review passed for `wf_persona-role-inventory-capability-matrix` / `admin`. |
+| `b25-wp-063-wf-persona-role-inventory-capability-matrix-persona-role-inventory-member` | `pass` | 1 | Workflow/persona review passed for `wf_persona-role-inventory-capability-matrix` / `member`. |
+| `b25-wp-064-wf-demo-app-persona-picker-community-mosque-member` | `pass` | 2 | Workflow/persona review passed for `wf_demo-app-persona-picker` / `member`. |
+| `b25-wp-065-wf-community-persona-aware-ux-community-mosque-member` | `pass` | 1 | Workflow/persona review passed for `wf_community-persona-aware-ux` / `member`. |
+| `b25-wp-066-wf-community-persona-aware-ux-community-mosque-admin` | `pass` | 1 | Workflow/persona review passed for `wf_community-persona-aware-ux` / `admin`. |
+| `b25-wp-067-wf-multi-persona-workflow-evidence-community-mosque-admin` | `pass` | 4 | Workflow/persona review passed for `wf_multi-persona-workflow-evidence` / `admin`. |
+| `b25-wp-068-wf-multi-persona-workflow-evidence-community-mosque-member` | `pass` | 5 | Workflow/persona review passed for `wf_multi-persona-workflow-evidence` / `member`. |
 
 ## Workflow Lifecycle Scorecards
 

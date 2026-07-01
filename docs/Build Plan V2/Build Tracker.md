@@ -130,7 +130,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review remains open until fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 33 consumed the pass-33 remediation plan, refreshed full B12-B20 evidence with `198` screenshots and `66` workflows, passed workflow/persona coverage `68 / 68`, passed visual inspection `195 / 195`, and generated fresh Product Docs reconciliation plus LLM Vision UX reviews. B25 still fails with `0` blockers and `5` unresolved major finding groups. The fresh reviews say the app improved but still has dimmed/modal action-state screenshots, generic utility/status panels for several surface families, insufficient proof of persona-specific tabs/pins/minimized-medium-expanded navigation, and incomplete domain-specific lifecycle proof for `6 / 68` lifecycle scorecards. Pass 34 starts from `b25-remediation-plan-b25-v4-pass-34.md`; the loop is still converging because remaining major groups dropped from pass 32's `9` to pass 33's `5`. | Historical v3 implementation `ccc3f40`; v4 pass 1 evidence `647c38f`; pass-result clarification `c5799e6`; ticket/planner closeout `5d4e313`; coverage/judge-tool update `e46cbaa`; detailed ticket schema update `f617625`; work-item split update `42e7cdf`; reference-pattern ticket update `6d01a22`; v4 pass 2 `68b5fad`; v4 pass 3 `9c59a5a`; v4 pass 4 `b672089`; visual gate hardening `7217a1f`; visual gate rerun `39a1210`; visual-gate remediation plan `a893e53`; pass 6 `c1ec0c2`; capture tooling fix `5c83f4b`; pass 7 `10cf7a5`; pass 8 `c062daa`; pass 9 `605158d`; semantic-closure/product-doc/interaction-model gate update `4289b3d`; pass 10 `e63e34f`; pass 11 `84c6998`; pass 12 `7f3d71a`; pass 13 LLM vision gate/tickets `80146f7`; pass 16 iteration `3ad49ea`; pass 17 iteration `bc99df3`; card-surface registry prep `3606c8c`; pass 18 iteration `574cff3`; fresh-LLM hardening `bf7f393`; pass 19 fresh UX review `97d1a82`; pass 20 iteration `6ff5b8d`; pass 21 iteration `97096d9`; pass 22 iteration `45264e1`; pass 23 iteration `a3f0db9`; pass 24 iteration `99ed5f3`; pass 25 iteration `b151e8c`; pass 26 iteration `83efed7`; pass 27 iteration `176e15f`; pass 28 iteration `562a424`; pass 29 iteration `00b0339`; pass 30 iteration `0dd2c6c`; pass 31 iteration `af3ce6e`; pass 32 implementation `613fde3`; pass 32 evidence `9ffb789`; pass 33 capture fixes `76c0f90`, `441e2ae`; pass 33 iteration `a2f0628` |
+| B25 | Reopened | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review remains open until fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Current pass 34 refreshed full B12-B20 evidence with `201` screenshots and `66` workflows, passed capture coverage and workflow/persona coverage `68 / 68`, but still fails production UX with `0` blockers and `4` unresolved major finding groups. Remaining issues are low-contrast/repeated action shells and `6 / 68` lifecycle scorecards missing persistent result-state proof. Pass 35 starts from `b25-remediation-plan-b25-v4-pass-35.md`; the loop is still converging because remaining major groups dropped from pass 33's `5` to pass 34's `4`. | Historical v3 implementation `ccc3f40`; pass 33 iteration `a2f0628`; pass 34 implementation `690e8f4`; pass 34 capture helper `963b0ab`; pass 34 evidence commit pending. |
 
 ## Phase Outcome Summary
 
@@ -2074,6 +2074,29 @@ Closeout rule for reopened phases:
   tickets and `3` remediation batches. The loop is still converging because remaining major groups
   dropped from pass 32's `9` to pass 33's `5`.
 - **Evidence/tooling commit, v4 pass 33:** `a2f0628`.
+
+- **Execution record, v4 pass 34:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-34.md`. Implementation commits
+  `690e8f4` and `963b0ab` replaced dimmed modal action states with full-screen action surfaces, added
+  B20 tab/pinned-surface screenshots, and fixed the horizontal-tab evidence capture helper. Full
+  B12-B20 screenshot capture then passed with `201` screenshots, `66` workflows, and `9` workflow
+  manifests on `emulator-5554`; capture coverage passed; the B25 collector generated `198` schema v4
+  screen rows for `b25-v4-pass-34`; workflow/persona coverage passed `68 / 68`; visual inspection
+  failed `13 / 198` rows for `B25-REPEATED-CARD-SHELL-LIKELY`; and the LLM freshness gate passed for
+  `b25-v4-pass-34`. Fresh LLM Product Docs reconciliation failed with `22` implementation-visible-proof
+  findings where product docs define domain-native surfaces but screenshots still fail the production
+  bar. Fresh LLM Vision UX review failed with `3` major findings: low-contrast/repeated action shells,
+  insufficient workflow/persona product depth on `16` workflows, and missing persistent lifecycle
+  result proof on `6` workflows. The semantic interaction model judge failed `6 / 68` lifecycle
+  scorecards. The production UX judge failed with `0` blockers and `4` unresolved major finding groups
+  and generated `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-34.md`. The
+  iteration scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-34.md`
+  records `B25 can pass=false` and `4` remaining blocking/major groups. The next-pass remediation
+  planner generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-35.md` with
+  `9` tickets and `3` remediation batches. The loop is still converging because remaining major groups
+  dropped from pass 33's `5` to pass 34's `4`, but pass 35 must fix the remaining contrast/action-shell
+  and lifecycle-result issues.
+- **Evidence/tooling commit, v4 pass 34:** pending.
 
 ## Gate Evidence Template
 

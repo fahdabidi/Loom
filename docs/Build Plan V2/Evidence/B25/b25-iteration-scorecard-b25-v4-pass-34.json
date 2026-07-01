@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-34",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-01T21:24:40.581713Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 4,
+    "criticalBlocker": 0,
+    "major": 4,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 4,
+    "unresolvedBlockingMajor": 4,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 4,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 4,
+    "remainingBlockingMajor": 4
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 16,
+    "passedCriteria": 7,
+    "failedCriteria": 9,
+    "blockingCriterionFailures": 9,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "LLM-B25-VISION-034-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Action/detail screens still use low-contrast repeated utility shells",
+      "requiredFix": "Create readable, domain-native action/detail surfaces for the affected workflows. Use opaque surface colors with accessible contrast, screen-specific layout, real domain objects and inputs, explicit primary/secondary/lifecycle actions, and visible result/receiver states; then full recapture B12-B20 evidence."
+    },
+    {
+      "findingId": "LLM-B25-VISION-034-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow/persona product experience remains too generic on sixteen workflows",
+      "requiredFix": "For each blocking workflow/persona pair, implement a surface that makes the target persona real job obvious: object context, user inputs/decision data, primary action, alternative/change/reject/cancel path, result/receipt/history, and receiver/continuation state."
+    },
+    {
+      "findingId": "LLM-B25-VISION-034-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Six workflows still lack visible persistent result/lifecycle proof",
+      "requiredFix": "Add visible post-action result/receipt/status/history/receiver states to the affected workflows and recapture start/action/result rows proving those states."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "LLM-B25-VISION-034-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Action/detail screens still use low-contrast repeated utility shells",
+      "requiredFix": "Create readable, domain-native action/detail surfaces for the affected workflows. Use opaque surface colors with accessible contrast, screen-specific layout, real domain objects and inputs, explicit primary/secondary/lifecycle actions, and visible result/receiver states; then full recapture B12-B20 evidence."
+    },
+    {
+      "findingId": "LLM-B25-VISION-034-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow/persona product experience remains too generic on sixteen workflows",
+      "requiredFix": "For each blocking workflow/persona pair, implement a surface that makes the target persona real job obvious: object context, user inputs/decision data, primary action, alternative/change/reject/cancel path, result/receipt/history, and receiver/continuation state."
+    },
+    {
+      "findingId": "LLM-B25-VISION-034-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Six workflows still lack visible persistent result/lifecycle proof",
+      "requiredFix": "Add visible post-action result/receipt/status/history/receiver states to the affected workflows and recapture start/action/result rows proving those states."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}

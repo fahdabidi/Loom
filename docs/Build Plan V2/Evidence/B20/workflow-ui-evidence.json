@@ -25,7 +25,10 @@
         "B20_announcement_admin_complete",
         "B20_announcement_member_ready",
         "B20_announcement_member_action",
-        "B20_announcement_member_received"
+        "B20_announcement_member_received",
+        "B20_member_calendar_tab_pinned_event",
+        "B20_member_messages_tab",
+        "B20_admin_custom_tab_pinned_surface"
       ],
       "status": "pass",
       "screenshotPaths": [
@@ -34,7 +37,10 @@
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_complete.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_ready.png",
         "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_action.png",
-        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_received.png"
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_member_received.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_member_calendar_tab_pinned_event.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_member_messages_tab.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_admin_custom_tab_pinned_surface.png"
       ],
       "screenshotVisibleTexts": [
         "Ramadan community night | Announcement composer for Masjid Nur members. | Confirm the message body, selected audience, sender, delivery timing, and member inbox preview before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Publish details | Members will receive the announcement in their inbox and notification list with read receipt. | Publish announcement | Masjid Nur | Home | Calendar | Giving | Care",
@@ -42,7 +48,10 @@
         "Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Delivery and member inbox | Announcement posted | Sent | Masjid Nur | Home | Calendar | Giving | Care",
         "Ramadan community night | Announcement composer for Masjid Nur members. | Confirm the message body, selected audience, sender, delivery timing, and member inbox preview before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Publish details | Members will receive the announcement in their inbox and notification list with read receipt. | Receive announcement | Masjid Nur | Home | Calendar | Giving | Care",
         "Ramadan community night | Ramadan community night - Friday after Maghrib | The member inbox shows sender, message body, audience, delivery timing, and read receipt. | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Update ready | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Receive announcement",
-        "Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Delivery and member inbox | Update ready | The member inbox shows sender, message body, audience, delivery timing, and read receipt. | Received | Masjid Nur | Home | Calendar | Giving | Care"
+        "Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Delivery and member inbox | Update ready | The member inbox shows sender, message body, audience, delivery timing, and read receipt. | Received | Masjid Nur | Home | Calendar | Giving | Care",
+        "Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat after checking event time, location, host, capacity, and reminder details. | Fri, Mar 14 | 6:45 PM | Fellowship hall | 86 of 120 spots | Event date, time, location, capacity, and Going/Maybe/Not going options are visible. | Change response | Choose RSVP response | Going reserves a spot; maybe keeps the event visible without taking capacity; not attending releases your seat. | RSVP to event | Masjid Nur | Calendar | Giving | Care | Messages",
+        "Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Community Member | Member - Receives announcements, RSVPs, volunteers, gives, and requests care. | 2 roles | Messages | Shell-owned communication and connections. | Masjid Nur messages | Community Member can continue community threads, member messages, and connection invites from this shell-owned communication tab. | Threads | Connections | Unread state | Calendar | Giving | Care",
+        "Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 roles | Admin | Role-specific publishing, approvals, and operations. Tuned for Masjid Admin. | Announcements | Updates, reminders, and member notices for Masjid Nur. | Ramadan community night | Announcement composer for Masjid Nur members. | Members can read the Ramadan community night update in their inbox with sender, audience, and delivery time. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + push | Message body, audience, delivery timing, preview, and draft option stay visible before publishing. | Preview announcement | Delivery and member inbox | Announcement posted | Sent | Giving | Care | Messages"
       ],
       "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
       "emulatorName": "emulator-5554",

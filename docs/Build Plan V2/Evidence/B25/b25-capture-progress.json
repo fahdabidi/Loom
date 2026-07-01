@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "toolId": "b25_capture_workflow_screenshots",
-  "updatedAt": "2026-07-01T19:57:19.847142Z",
+  "updatedAt": "2026-07-01T21:07:57.237011Z",
   "status": "complete",
   "mode": "full-b25",
   "phases": [
@@ -17,7 +17,7 @@
   ],
   "phaseCount": 9,
   "completedPhases": 9,
-  "screenshotCount": 198,
+  "screenshotCount": 201,
   "aggregatePath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json",
   "commitEligible": true,
   "device": "emulator-5554",
