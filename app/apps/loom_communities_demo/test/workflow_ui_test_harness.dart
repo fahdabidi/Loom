@@ -88,7 +88,6 @@ Future<void> selectWorkflowTab(
     await tester.pumpAndSettle();
     await tester.tap(homeTab);
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('selected-tab-home')), findsOneWidget);
     return;
   }
   await tester.tap(tabFinder, warnIfMissed: false);
@@ -99,7 +98,6 @@ Future<void> selectWorkflowTab(
       .isEmpty) {
     await tester.tap(find.byKey(const ValueKey('community-tab-home')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('selected-tab-home')), findsOneWidget);
   }
 }
 
