@@ -383,4 +383,4 @@ findings were resolved in pass 9.
 - Result: B25 remains reopened. Pass 27 must move from rich shared layouts to visibly distinct
   product-specific screen structures, eliminate remaining review/spec copy, repair duplicate evidence
   states, and close the 22 failing lifecycle rows with fresh full B12-B20 screenshots.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `83efed7`.
