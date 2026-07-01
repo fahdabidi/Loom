@@ -308,3 +308,43 @@ findings were resolved in pass 9.
   visible UI, repair lifecycle proof for the named workflows, and exclude or reclassify test-harness
   persona surfaces before recapturing full B12-B20 evidence.
 - Evidence/tooling commit: `99ed5f3`.
+
+### Iteration 22 / `b25-v4-pass-25`
+
+- Status: failed. The pass made visible UI progress, but the fresh judges raised the bar and still
+  found production UX blockers.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-25.md`, added richer non-standard product-surface
+  layouts for search answers, export wizards, message threads, notice details, and club scoreboards in
+  the Demo App, removed visible workflow-contract strings such as "Ready to", "Decide", "Receiver
+  state", and "Member state" from the primary renderer, and scoped the Loom Communities shell product
+  doc out of B25 community screenshot reconciliation unless a future pass adds dedicated shell rows.
+- Capture/evidence: the first capture attempt wrote malformed off-path evidence because of a shell
+  quoting issue; that artifact was rejected. The accepted capture used direct WSL invocation with the
+  canonical evidence path, passed full B12-B20 coverage with `198` screenshots, `66` workflows, and `9`
+  workflow manifests, and `b25_capture_coverage_gate.dart` passed as commit-eligible. The B25 collector
+  generated `195` schema v4 screen rows; workflow/persona coverage passed `68 / 68`; visual inspection
+  passed `195 / 195`.
+- Product-doc reconciliation: failed with `16` major findings. The reconciliation agent found product
+  doc/workflow mapping and evidence gaps across multiple community examples, so pass 26 must repair
+  product docs and evidence alignment before trying to close the UX review.
+- LLM Vision UX review: failed with `1` blocker and `4` major findings. The review found the suite
+  still relies on one repeated workflow-card renderer across unrelated communities, still exposes
+  review/evidence/platform/harness language, still has duplicated screenshot states that do not prove
+  distinct product states, still lacks complete handoff/receipt/recovery lifecycle proof, and still has
+  visual polish issues around title truncation, dense card stacks, and one-note palettes.
+- Workflow interaction model: failed with `13 / 68` lifecycle scorecards still missing primary
+  semantic action, semantic interaction model, concrete object/context, alternate/change/reject
+  affordance, or persistent result state.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-25.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-25.md` records
+  `B25 can pass=false` with `6` remaining blocker/major findings.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-26.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 26 must stop trying to make the shared renderer look richer and
+  instead introduce truly distinct production surfaces for the highest-impact workflow families, repair
+  the product-doc mapping gaps, and then recapture full B12-B20 evidence before rerunning the fresh LLM
+  reconciliation and Vision UX gates.
+- Evidence/tooling commit: `TBD`.

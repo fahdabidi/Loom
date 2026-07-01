@@ -39,6 +39,17 @@ show raw extension IDs, package implementation details, or test-only workflow la
 
 ## 6. Workflow-To-Surface Mapping
 
+The Loom Communities shell is a platform host, not a community extension. B25 community screenshot
+reconciliation should not treat the local package install flow as one of the community/example
+workflows unless a future pass adds dedicated shell screenshot rows, workflow/persona scorecards, and
+semantic lifecycle evidence for it.
+
+| Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
+| --- | --- | --- | --- | --- | --- |
+| _No B25 community screenshot workflow rows_ | _N/A_ | _N/A_ | _N/A_ | _N/A_ | Shell flow remains covered by B1a, B9, B10, and B11. |
+
+## 6A. Platform Workflow Mapping Outside B25
+
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | local-build-download-sideload-install | Owner/tester | Add Community flow and installed card | package pair selected, import succeeds, branded card appears | Local backend import, App Shell open latest | B1a, B9, B10, B11; explicitly scoped out of B25 community screenshot reconciliation |

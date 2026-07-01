@@ -428,7 +428,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | None | Reopened | Product-UX v4 pass 23 failed with 4 unresolved major findings and 8 remediation tickets. Pass 24 must start from `b25-remediation-plan-b25-v4-pass-24.md`, fix the Book Club AI digest, Book Club export copy, Data Portability differentiated wizard surfaces, Chess Club rich home/match-result surfaces, and the remaining HOA/Member Social semantic surface-proof gaps, then recapture full B12-B20 evidence, rerun fresh LLM Product Docs reconciliation and Vision UX review, and regenerate tickets/scorecard. |
+| B25 | None | Reopened | Product-UX v4 pass 25 failed with 1 blocker, 5 major LLM Vision findings, 16 major Product Docs reconciliation findings, and 9 remediation tickets. Pass 26 must start from `b25-remediation-plan-b25-v4-pass-26.md`, repair Product Docs/workflow evidence alignment, replace repeated shared workflow-card UI with truly distinct production surfaces for the highest-impact workflow families, close the 13 remaining lifecycle scorecards, then recapture full B12-B20 evidence, rerun fresh LLM Product Docs reconciliation and Vision UX review, and regenerate tickets/scorecard. |
 
 Closeout rule for reopened phases:
 
@@ -1825,6 +1825,61 @@ Closeout rule for reopened phases:
   `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-23.md` with `9` tickets and
   `3` remediation batches.
 - **Commit, v4 pass 22:** `45264e1`.
+- **Execution record, v4 pass 23:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-23.md`, repaired Product Docs V2
+  community example mappings for Garden Club, Neighborhood Book Club, Chess Club, Loom Communities
+  Shell, and Persona Role Inventory, added richer platform messaging/block-state, ad-off, camera gear
+  loan, and portability-style surfaces, fixed compact action-button wrapping, and hardened the
+  capture/import tooling so full B12-B20 evidence and LLM direct-question answers flow through the
+  production judge. Focused production UX tests, `flutter analyze apps/loom_communities_demo`, and
+  formatting passed before full capture. Full B12-B20 screenshot capture passed with `198`
+  screenshots, `66` workflows, and `9` workflow manifests; capture coverage passed; the B25 collector
+  generated `195` schema v4 screen rows; workflow/persona coverage passed `68 / 68`; visual inspection
+  passed `195 / 195`; and the semantic workflow interaction-model gate passed `68 / 68`. Fresh LLM
+  Product Docs reconciliation passed with `0` findings. Fresh LLM Vision UX review failed with `4`
+  major findings and `1` minor finding around Book Club digest/export, Data Portability repetition, and
+  Chess Club thin/repeated screens. The production UX judge failed `8 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-23.md`. The next-pass
+  remediation planner generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-24.md`
+  with `8` tickets and `3` remediation batches.
+- **Commit, v4 pass 23:** `a3f0db9`.
+- **Execution record, v4 pass 24:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-24.md`, added richer Book Club AI
+  digest and export metadata surfaces, diversified Data Portability import/export/redaction/checksum/
+  rollback surfaces, added HOA owner-notification sender/recipient/timing proof, and strengthened
+  Member Social Space message/invite/block-state content in the Demo App. Full B12-B20 screenshot
+  capture passed with `198` screenshots and `66` workflows; capture coverage passed; the B25 collector
+  generated `195` schema v4 screen rows; workflow/persona coverage passed `68 / 68`; visual inspection
+  passed `195 / 195`. Fresh LLM Product Docs reconciliation failed with `8` major findings. Fresh LLM
+  Vision UX review failed with `1` critical/blocker and `3` major findings: repeated workflow-card
+  scaffold, visible contract-style copy, missing object/result/continuation proof, and harness persona
+  surfaces in reviewed product evidence. The production UX judge failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-24.md`. The next-pass
+  remediation planner generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-25.md`
+  with `9` tickets and `3` remediation batches.
+- **Commit, v4 pass 24:** `99ed5f3`.
+- **Execution record, v4 pass 25:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-25.md`, added richer non-standard
+  product-surface layouts for search answers, export wizards, message threads, notice details, and
+  club scoreboards, removed visible workflow-contract strings such as "Ready to", "Decide", "Receiver
+  state", and "Member state" from the primary renderer, and scoped the Loom Communities shell product
+  doc out of B25 community screenshot reconciliation unless a future pass adds dedicated shell rows.
+  The first capture attempt wrote off-path evidence because of shell quoting and was rejected; the
+  accepted direct WSL capture passed full B12-B20 coverage with `198` screenshots, `66` workflows, and
+  `9` workflow manifests. Capture coverage passed; the B25 collector generated `195` schema v4 screen
+  rows; workflow/persona coverage passed `68 / 68`; visual inspection passed `195 / 195`. Fresh LLM
+  Product Docs reconciliation failed with `16` major findings. Fresh LLM Vision UX review failed with
+  `1` blocker and `4` major findings: one repeated workflow-card renderer across unrelated
+  communities, visible review/evidence/platform/harness language, duplicated screenshot states that do
+  not prove distinct production states, incomplete handoff/receipt/recovery lifecycle proof, and visual
+  polish gaps. `b25_workflow_interaction_model_judge.dart` failed `13 / 68` lifecycle scorecards. The
+  production UX judge failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-25.md`. The iteration
+  scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-25.md` records
+  `B25 can pass=false` with `6` remaining blocker/major findings. The next-pass remediation planner
+  generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-26.md` with `9` tickets
+  and `3` remediation batches.
+- **Commit, v4 pass 25:** `TBD`.
 
 ## Gate Evidence Template
 

@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-25",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-01T08:21:55.787870Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 6,
+    "criticalBlocker": 1,
+    "major": 5,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 1,
+    "unresolvedMajor": 5,
+    "unresolvedBlockingMajor": 6,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 1,
+    "newMajorThisPass": 5,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 6,
+    "remainingBlockingMajor": 6
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 16,
+    "passedCriteria": 7,
+    "failedCriteria": 9,
+    "blockingCriterionFailures": 9,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    },
+    {
+      "findingId": "LLM-UX-primary-experience-still-uses-one-repeated-workflow-card-renderer-across-unrelated-communities",
+      "severity": "critical-blocker",
+      "status": "open",
+      "title": "Primary experience still uses one repeated workflow-card renderer across unrelated communities",
+      "requiredFix": "Replace the generic workflow-card renderer as the primary UX. Build domain-native surfaces per community/job: event detail and RSVP, donation/payment checkout and receipt, inbox/thread, facility calendar, approval queue, export wizard with real step navigation, roster table/detail, marketplace listing, and critique/media detail."
+    },
+    {
+      "findingId": "LLM-UX-user-facing-copy-still-exposes-review-evidence-platform-and-harness-language",
+      "severity": "major",
+      "status": "open",
+      "title": "User-facing copy still exposes review, evidence, platform, and harness language",
+      "requiredFix": "Rewrite screens in domain user language and remove evidence/test/framework copy. Move persona switching, local package details, no-fill diagnostics, workflow IDs, and generic review scaffolding out of production surfaces or behind explicit developer-only evidence tooling."
+    },
+    {
+      "findingId": "LLM-UX-distinct-workflow-rows-reuse-identical-screenshot-pixels-and-do-not-prove-distinct-production-states",
+      "severity": "major",
+      "status": "open",
+      "title": "Distinct workflow rows reuse identical screenshot pixels and do not prove distinct production states",
+      "requiredFix": "Recapture or redesign distinct workflow states so each workflow/persona row proves its own object, action, result, and continuation state."
+    },
+    {
+      "findingId": "LLM-UX-workflow-lifecycles-are-not-visually-complete-enough-for-production-handoff-receipt-and-recovery-states",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycles are not visually complete enough for production handoff, receipt, and recovery states",
+      "requiredFix": "For each failing lifecycle, add the missing production state: concrete object/context, decision information, primary semantic action, alternate/change/reject path, durable result/receipt, and receiver or continuation surface."
+    },
+    {
+      "findingId": "LLM-UX-visual-polish-is-below-the-production-bar-because-of-title-truncation-dense-card-stacks-and-one-note-per-community-palettes",
+      "severity": "major",
+      "status": "open",
+      "title": "Visual polish is below the production bar because of title truncation, dense card stacks, and one-note per-community palettes",
+      "requiredFix": "Polish the shell and information hierarchy: avoid clipped primary titles, reduce chip density, use tabs/sections/lists/forms where appropriate, add community-specific identity/content treatment, and vary surface composition by task while preserving accessibility."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    },
+    {
+      "findingId": "LLM-UX-primary-experience-still-uses-one-repeated-workflow-card-renderer-across-unrelated-communities",
+      "severity": "critical-blocker",
+      "status": "open",
+      "title": "Primary experience still uses one repeated workflow-card renderer across unrelated communities",
+      "requiredFix": "Replace the generic workflow-card renderer as the primary UX. Build domain-native surfaces per community/job: event detail and RSVP, donation/payment checkout and receipt, inbox/thread, facility calendar, approval queue, export wizard with real step navigation, roster table/detail, marketplace listing, and critique/media detail."
+    },
+    {
+      "findingId": "LLM-UX-user-facing-copy-still-exposes-review-evidence-platform-and-harness-language",
+      "severity": "major",
+      "status": "open",
+      "title": "User-facing copy still exposes review, evidence, platform, and harness language",
+      "requiredFix": "Rewrite screens in domain user language and remove evidence/test/framework copy. Move persona switching, local package details, no-fill diagnostics, workflow IDs, and generic review scaffolding out of production surfaces or behind explicit developer-only evidence tooling."
+    },
+    {
+      "findingId": "LLM-UX-distinct-workflow-rows-reuse-identical-screenshot-pixels-and-do-not-prove-distinct-production-states",
+      "severity": "major",
+      "status": "open",
+      "title": "Distinct workflow rows reuse identical screenshot pixels and do not prove distinct production states",
+      "requiredFix": "Recapture or redesign distinct workflow states so each workflow/persona row proves its own object, action, result, and continuation state."
+    },
+    {
+      "findingId": "LLM-UX-workflow-lifecycles-are-not-visually-complete-enough-for-production-handoff-receipt-and-recovery-states",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycles are not visually complete enough for production handoff, receipt, and recovery states",
+      "requiredFix": "For each failing lifecycle, add the missing production state: concrete object/context, decision information, primary semantic action, alternate/change/reject path, durable result/receipt, and receiver or continuation surface."
+    },
+    {
+      "findingId": "LLM-UX-visual-polish-is-below-the-production-bar-because-of-title-truncation-dense-card-stacks-and-one-note-per-community-palettes",
+      "severity": "major",
+      "status": "open",
+      "title": "Visual polish is below the production bar because of title truncation, dense card stacks, and one-note per-community palettes",
+      "requiredFix": "Polish the shell and information hierarchy: avoid clipped primary titles, reduce chip density, use tabs/sections/lists/forms where appropriate, add community-specific identity/content treatment, and vary surface composition by task while preserving accessibility."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}
