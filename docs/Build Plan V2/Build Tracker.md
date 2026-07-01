@@ -270,6 +270,10 @@ and removing obvious workflow-harness copy does not imply a B25 pass.
 If B25 fails with any blocker or major finding, the phase enters a remediation loop: fix, rebuild,
 relaunch, recapture evidence, regenerate the screen matrix, rerun the review, and repeat until blocker
 and major counts are zero.
+Use the repeatable WSL launcher for visible/manual emulator review instead of ad hoc emulator commands:
+`bash app/packages/tooling/launch_loom_demo_emulators.sh --restart --mode both --run-app --app-target manual`.
+The `--restart` mode stops attached emulator instances before launching both AVDs with `-read-only`,
+which avoids Android's concurrent-emulator failure when a prior window was started writable.
 Each B25 loop iteration must be committed before the next UX feedback or remediation loop starts. The
 iteration commit must include the current review/remediation evidence, screenshots or screenshot
 references, tests run, remaining findings, and tracker/remediation-loop updates.

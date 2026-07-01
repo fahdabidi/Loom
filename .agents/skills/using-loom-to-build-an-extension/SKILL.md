@@ -544,6 +544,16 @@ community product doc's `## 6. Workflow-To-Surface Mapping` and companion Sectio
 interaction rows, and card-surface registry rows to the current screenshots, visible text, screen
 matrix, workflow/persona coverage, and review JSON. Its blocker/major product-doc, implementation,
 evidence, or mapping findings must be converted into remediation tickets.
+For visible manual review or dual-emulator B25 runs, launch emulators with the hardened launcher rather
+than ad hoc `flutter emulators --launch` commands. The reliable concurrent-emulator path starts from a
+clean emulator state and launches both AVDs read-only:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom" && bash app/packages/tooling/launch_loom_demo_emulators.sh --restart --mode both --run-app --app-target manual'
+```
+
+Use `--dry-run` on the same script to verify paths and the selected command without stopping or
+starting emulator instances.
 Before the judge runs, collect evidence with:
 
 ```powershell

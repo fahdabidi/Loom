@@ -288,8 +288,16 @@ the owner explicitly asks for review-only planning or pauses implementation.
 
    The B25 `production-ux-blueprint.md` is then derived from these product docs as the review summary.
    The blueprint is not sufficient by itself.
-3. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit and
-   capture fresh screenshots for every screen/persona/state using the host-side `flutter drive`
+3. **Live app capture:** relaunch the Demo App on the Android emulator from the current app commit.
+   Use the hardened launcher for visible/manual review or dual-emulator review windows; it stops
+   attached emulator instances when `--restart` is used, then launches the primary and manual-review
+   AVDs with `-read-only` so Android's concurrent-emulator guard does not block the second window.
+
+   ```powershell
+   wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom" && bash app/packages/tooling/launch_loom_demo_emulators.sh --restart --mode both --run-app --app-target manual'
+   ```
+
+   Then capture fresh screenshots for every screen/persona/state using the host-side `flutter drive`
    screenshot writer. Do not use `flutter test integration_test/workflow_ui_evidence_test.dart` for
    B25 capture; that path can pass without persisting PNGs into the Evidence folders.
 

@@ -26,6 +26,28 @@ judge failures into fix batches for the next worker iteration.
 
 Run from `app/` with WSL Ubuntu:
 
+### Repeatable Android Emulator Launch
+
+Use the launcher script before manual B25 review or evidence capture instead of starting emulator
+windows ad hoc. Android requires concurrent emulator instances to be started read-only; if one
+non-read-only instance is already running, the second window can fail to launch. The hardened path is
+to stop attached emulator instances and relaunch the primary and manual-review AVDs together with
+`-read-only`:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom" && bash app/packages/tooling/launch_loom_demo_emulators.sh --restart --mode both --run-app --app-target manual'
+```
+
+For diagnostics without touching the current emulator state, run:
+
+```powershell
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom" && bash app/packages/tooling/launch_loom_demo_emulators.sh --dry-run --mode both --run-app --app-target manual'
+```
+
+The script writes emulator stdout/stderr logs under `.codex-logs/`, waits for Android boot completion,
+prints device progress, and can preload the example communities with
+`LOOM_PRELOAD_EXAMPLE_COMMUNITIES=true`.
+
 Before running the CLIs, complete the product-doc gate:
 
 - Native Loom repo B25: create or update
