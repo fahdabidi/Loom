@@ -584,3 +584,42 @@ findings were resolved in pass 9.
   document opening, and a flexible workflow status/step model before further UX remediation is likely
   to materially reduce blocker/major findings.
 - Evidence/tooling commit: `af3ce6e`.
+
+### Iteration 29 / `b25-v4-pass-32`
+
+- Status: failed. The pass implemented the planned app-shell/tab/card-surface registry remediation
+  before capture, but the fresh B25 review still found the visible experience below the production UX
+  bar.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-32.md` and committed app-shell navigation
+  remediation in `613fde3`: persona-specific tabs, mandatory Home and Messages/Communication tab
+  rules, card-surface registry docs, new calendar/documents/workflow-status/external-link/app-shell
+  card-surface docs, equipment-loan expansion, OpenAPI app-shell navigation operations, and a focused
+  app-shell persona tab test.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests on `emulator-5554`. `b25_capture_coverage_gate.dart` passed as commit-eligible.
+  The B25 collector generated `195` schema v4 screen rows for run `b25-v4-pass-32`; workflow/persona
+  coverage passed `68 / 68`; visual inspection passed `195 / 195`; and the LLM review freshness gate
+  passed for the fresh pass-32 vision artifact.
+- Product-doc reconciliation: failed with `3` major finding groups. The reconciliation found that the
+  product docs now define the richer app-shell/tab/card-surface model, but the screenshots do not yet
+  prove persona-specific tabs, pinned surfaces, customization states, lifecycle states, or visibly
+  distinct implementations of the documented card surfaces across all communities.
+- LLM Vision UX review: failed with `5` major findings and no blockers. The review found systemic
+  repeated-card/product-panel treatment, dimmed action-state screenshots that do not prove usable
+  product states, utility/export/ad/social/chess flows that still look like status/evidence panels,
+  insufficient evidence for the tab/pin/customization navigation model, and incomplete lifecycle proof.
+- Workflow interaction model: failed `12 / 68` lifecycle scorecards, unchanged from pass 31.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-32.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-32.md` records
+  `B25 can pass=false`, `0` blockers, `9` unresolved major finding groups, `0` resolved
+  blocker/major findings, and `9` new blocker/major finding groups.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-33.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 32 reduced the finding count from pass 31's `20` major groups to
+  `9`, so the loop is still converging. Pass 33 should implement visible tab/pinned-surface evidence
+  and replace the remaining repeated utility/status panels with task-specific product surfaces rather
+  than continue copy-only changes.
+- Implementation commit: `613fde3`.

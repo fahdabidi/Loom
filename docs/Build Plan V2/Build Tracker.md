@@ -2026,6 +2026,28 @@ Closeout rule for reopened phases:
   remediation planner generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-32.md`
   with `9` tickets and `3` remediation batches.
 - **Commit, v4 pass 31:** `af3ce6e`.
+- **Execution record, v4 pass 32:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-32.md`, committed the app-shell
+  navigation/card-surface registry remediation in `613fde3`, and then ran a fresh full B25 review
+  against that committed app SHA. Full B12-B20 screenshot capture passed with `198` screenshots,
+  `66` workflows, and `9` workflow manifests on `emulator-5554`; capture coverage passed; the B25
+  collector generated `195` schema v4 screen rows for `b25-v4-pass-32`; workflow/persona coverage
+  passed `68 / 68`; visual inspection passed `195 / 195`; and the LLM freshness gate passed for
+  `b25-v4-pass-32`. Fresh LLM Product Docs reconciliation failed with `3` major finding groups:
+  screenshots do not yet prove persona tabs/pins/customization, distinct documented card-surface
+  implementations, or lifecycle states across all communities. Fresh LLM Vision UX review failed with
+  `5` major finding groups: repeated card/product-panel treatment, dimmed action-state evidence,
+  utility/export/ad/social/chess status panels, missing tab/pinned-surface evidence, and incomplete
+  lifecycle proof. The semantic interaction model judge failed `12 / 68` lifecycle scorecards. The
+  production UX judge failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-32.md`. The iteration
+  scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-32.md` records
+  `B25 can pass=false`, `0` blockers, `9` unresolved major finding groups, `0` resolved
+  blocker/major findings, and `9` new blocker/major finding groups. The next-pass remediation planner
+  generated `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-33.md` with `9`
+  tickets and `3` remediation batches. The loop is still converging because the unresolved major count
+  dropped from pass 31's `20` groups to `9`, but B25 remains reopened.
+- **Implementation commit, v4 pass 32:** `613fde3`.
 
 ## Gate Evidence Template
 

@@ -4988,6 +4988,7 @@
       },
       "status": "pass",
       "lastRunAt": "2026-07-01T00:00:00Z",
+      "testHash": "8b2216507839",
       "executionTarget": "demo-loom-communities-app-local-backend"
     }
   ],

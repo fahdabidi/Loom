@@ -1,6 +1,6 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-31`
+Review run: `b25-v4-pass-32`
 
 Status: `llm-vision-review-fail`
 
@@ -21,10 +21,14 @@ Workflow lifecycle scorecards: 68 (12 blocking)
 | `B25-WORKFLOW-PERSONA-UX-FAILED` | major | open | Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence. |
 | `B25-WORKFLOW-LIFECYCLE-INCOMPLETE` | major | open | Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence. |
 | `B25-HOLISTIC-UX-FAILED` | major | open | Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review. |
-| `LLM-B25-VISION-001` | major | open | Replace the repeated stacked-card shell with differentiated product surfaces for each community and workflow, then recapture B25 screenshots and rerun the LLM vision review. |
-| `LLM-B25-VISION-002` | major | open | Convert utility-looking evidence panels into full product flows with concrete records, tables, previews, and task-specific controls before B25 can pass. |
-| `LLM-B25-VISION-003` | major | open | Redesign action, decision, review, and confirmation states so they are clear production interaction surfaces, not dimmed evidence overlays. |
-| `LLM-B25-VISION-004` | major | open | Raise visual identity and product-surface depth across all communities before another B25 review. |
+| `LLM-B25-WR-001` | major | open | Capture and/or implement the documented persona tab model, Home/Messages tabs, custom tabs, pinned surfaces, and minimized/medium/expanded navigation states for each community. |
+| `LLM-B25-WR-002` | major | open | Remediate the UI so each documented card surface is rendered as a visibly distinct product surface with the documented interactions/actions. |
+| `LLM-B25-WR-003` | major | open | Update product docs if needed, then implement and recapture lifecycle states so the screenshots visibly prove the semantic interaction model. |
+| `LLM-B25-VISION-001` | major | open | Create distinct product frames for the highest-volume surfaces: event/calendar, documents, approval/status, marketplace/loan, messages, export/data, payments, and community home. Each frame needs its own layout, hierarchy, content model, and action/result region. |
+| `LLM-B25-VISION-002` | major | open | Capture or implement action/result states as normal full-bright product screens with persistent status, history, receipt, or receiver state; avoid relying on dimmed transitional overlays as B25 proof. |
+| `LLM-B25-VISION-003` | major | open | Replace utility/status cards with task-specific product surfaces: export wizard with data previews and files, ad-free billing/account settings, social inbox/thread UI, chess board/match UI, and document viewer/link handling. |
+| `LLM-B25-VISION-004` | major | open | Add screenshot coverage for community home tab, Messages/Communication tab, custom persona tabs, pinned surfaces, and minimized/medium/expanded card states; update UI where the tab model is not visible or not useful. |
+| `LLM-B25-VISION-005` | major | open | For each primary workflow, add visible lifecycle controls and state: edit/change/cancel/reject/defer where required, durable result/history/receipt state, and receiver or continuation screens. Recapture after screenshots proving those states. |
 
 ## Community Product Experience Docs
 
@@ -46,10 +50,10 @@ Workflow lifecycle scorecards: 68 (12 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | `fail` | 46 |  | Create differentiated community/product surfaces rather than relying on one universal card shell. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 58 |  | Improve hierarchy, component variety, navigation affordances, and action-state clarity across the full pass. |
-| Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `fail` | 55 |  | Reframe utility and platform flows as product IA: wizards, inbox/feed, billing settings, board/match views, and data previews. |
-| Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `fail` | 42 |  | Remove repeated-card dependence and replace dimmed action states with clear accessible production pages or modals. |
+| Does the overall UI feel production-grade for the target users, not merely workflow-complete? | `fail` | 48 |  | Build distinct surface families and capture full tab/navigation/lifecycle states. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 55 |  | Reduce repeated-card density, expose tabbed IA, improve visual rhythm, and use surface-specific layouts. |
+| Are main user-facing screens organized around community content and jobs-to-be-done rather than a global workflow/evidence surface? | `fail` | 52 |  | Map each workflow to a richer surface and make home/tab navigation prioritize community jobs. |
+| Are blocking or major overlap, clipping, crowding, repeated-card, checklist-modal, thin-content, and default-scaffold findings absent? | `fail` | 42 |  | Fix systemic repeated-card and dimmed-state evidence before attempting closeout. |
 
 ## Workflow/Persona Scorecards
 
