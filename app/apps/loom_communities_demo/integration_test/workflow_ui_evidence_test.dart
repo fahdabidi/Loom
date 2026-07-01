@@ -408,9 +408,17 @@ void main() {
       await selectPersona(tester, 'mosque-admin');
       await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_admin_start');
-      await tester.tap(
-        find.byKey(ValueKey('workflow-button-${announcement.workflowId}')),
+      final announcementActionButton = find.byKey(
+        ValueKey('workflow-button-${announcement.workflowId}'),
       );
+      await tester.scrollUntilVisible(
+        announcementActionButton,
+        180,
+        scrollable: verticalScrollableFinder().last,
+        maxScrolls: 30,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(announcementActionButton, warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(
         find.byKey(
@@ -436,11 +444,17 @@ void main() {
       await selectPersona(tester, 'mosque-member');
       await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_member_ready');
-      await tester.tap(
-        find.byKey(
-          ValueKey('workflow-receive-button-${announcement.workflowId}'),
-        ),
+      final announcementReceiveButton = find.byKey(
+        ValueKey('workflow-receive-button-${announcement.workflowId}'),
       );
+      await tester.scrollUntilVisible(
+        announcementReceiveButton,
+        180,
+        scrollable: verticalScrollableFinder().last,
+        maxScrolls: 30,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(announcementReceiveButton, warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(
         find.byKey(
