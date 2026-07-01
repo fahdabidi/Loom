@@ -43,13 +43,29 @@ generic export workflow list.
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| export-migration | owner/admin | Export wizard and transfer status | scope/redaction/checksum/rollback state | Export/provider transfer/audit | B16/B25 |
+| export-import-preview | owner | Export/import preview | selected scope, redaction preview, destination, change-scope path | Export/provider transfer/audit | B16/B25 |
+| export-import-replay | owner | Import replay | replay source, validation status, retry/cancel, receiver state | Import/provider transfer/audit | B16/B25 |
+| export-protected-redaction | owner | Protected redaction review | protected fields, redaction choices, preview, audit state | Export/vault/audit | B16/B25 |
+| export-schema-listing | owner | Schema listing | schema names, included/excluded components, protected-data labels | Export/schema registry | B16/B25 |
+| export-full-bundle | owner | Full bundle generation | scope, file count, checksum, download state | Export/documents/audit | B16/B25 |
+| export-redacted-bundle | owner | Redacted bundle generation | redaction summary, checksum, download state | Export/vault/audit | B16/B25 |
+| export-checksum-evidence | owner | Checksum verification | checksum, verification result, retry path | Export/audit | B16/B25 |
+| export-transfer-verification | owner | Provider transfer verification | source/destination, transfer ID, status, retry/cancel path | Provider transfer/audit | B16/B25 |
+| export-transfer-rollback | owner | Transfer rollback | rollback reason, source/destination, rollback availability, completed state | Provider transfer/audit | B16/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| export/migration | owner starts/verifies | members see applicable notice | verified package read-only | rollback disabled when unavailable | non-owner hidden |
+| export-import-preview | owner reviews scope before export | members see only applicable notice | preview is readable before run | export disabled until required scope is selected | non-owner hidden |
+| export-import-replay | owner replays import | affected members see migration notice if relevant | replay log readable | replay disabled after final verification | non-owner hidden |
+| export-protected-redaction | owner reviews protected-data redaction | protected members see safe notice only | redaction preview readable | export disabled until protected choice confirmed | non-owner hidden |
+| export-schema-listing | owner reviews included schemas | no member receiver state unless notified | schema list readable | edit disabled after package generation | non-owner hidden |
+| export-full-bundle | owner generates full bundle | members see applicable notice | generated bundle metadata readable | download disabled until checksum passes | non-owner hidden |
+| export-redacted-bundle | owner generates redacted bundle | members see protected-data notice | redaction summary readable | download disabled until redaction passes | non-owner hidden |
+| export-checksum-evidence | owner verifies checksum | audit records verification | checksum readable/exportable | transfer disabled until checksum passes | non-owner hidden |
+| export-transfer-verification | owner verifies provider transfer | destination provider receives transfer state | verification record readable | rollback disabled until transfer starts | non-owner hidden |
+| export-transfer-rollback | owner rolls back transfer | destination/source show restored state | rollback audit readable | rollback disabled when unavailable | non-owner hidden |
 
 ## 8. Content And Seed Data Requirements
 
@@ -72,6 +88,10 @@ This B25 addendum defines the production interaction model the UI must prove fro
 | export-protected-redaction | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | export-schema-listing | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 | export-full-bundle | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| export-redacted-bundle | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| export-checksum-evidence | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| export-transfer-verification | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
+| export-transfer-rollback | owner | Admin selects export/import/transfer scope, reviews redaction/checksum/status, and can cancel, retry, or roll back. | export, download export, start transfer, import data | change scope, cancel transfer, rollback, retry, redaction preview | Fresh screenshots must show status, receipt/history/confirmation, and any receiver or continuation state for this persona. |
 
 
 ### B25 Card Surface Registry Mapping
@@ -80,7 +100,15 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `export-migration` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
+| `export-import-preview` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must show scope, redaction preview, destination, change-scope, and run state. |
+| `export-import-replay` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | replay import, validate, retry/cancel, audit | Demo renderer must show replay source, validation result, retry/cancel, and receiver state. |
+| `export-protected-redaction` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | protected redaction preview, confirm, audit | Demo renderer must show protected fields, redaction choices, preview, and audit state. |
+| `export-schema-listing` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | schema listing, included/excluded scope, labels | Demo renderer must show schema names, protected labels, included/excluded components, and next step. |
+| `export-full-bundle` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | generate/download/checksum full bundle | Demo renderer must show full bundle scope, file count, checksum, download, and cancel/change path. |
+| `export-redacted-bundle` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | redacted bundle, redaction summary, checksum | Demo renderer must show redaction summary, checksum, download, and rollback/change path. |
+| `export-checksum-evidence` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | checksum verify/retry/audit | Demo renderer must show checksum, verification result, retry, and audit state. |
+| `export-transfer-verification` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | provider transfer verify/retry/cancel | Demo renderer must show source, destination, transfer ID, status, retry, and cancel. |
+| `export-transfer-rollback` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | rollback request/confirm/result/audit | Demo renderer must show rollback reason, source/destination, availability, confirm, and completed state. |
 
 ## 10. Review And Remediation Log
 

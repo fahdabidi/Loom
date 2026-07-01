@@ -43,15 +43,27 @@ product UI, not as test assertions.
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| messaging-thread | member | Message thread | participant/message/read state | Messaging/events | B16/B25 |
-| connections-invite-block | member | Connections | invite/block state | Connections/policy | B16/B25 |
-| in-stream-ad | member | Stream/ad | disclosure/no-fill state | Ads/ad decision | B16/B25 |
+| platform-messages-entry | member | Message thread entry | sender, recipient, preview/body, read/unread, reply/mute/archive path | Messaging/events | B16/B25 |
+| platform-connections-entry | member | Connections entry | suggested member, relationship status, invite/accept/decline/block path | Connections/policy | B16/B25 |
+| platform-connection-invite | member | Connection invite | inviter, invite reason, accept/decline/cancel, receiver state | Connections/events | B16/B25 |
+| platform-blocked-target | member | Blocked connection state | blocked member, reason/status, unblock path, safety state | Connections/safety | B16/B25 |
+| platform-message-stream | member | Message stream | participants, message preview, timestamp, reply/mark-read/mute state | Messaging/events | B16/B25 |
+| platform-in-stream-ad | member | In-stream sponsored item | sponsor, disclosure, content context, impression/click state | Ads/ad decision | B16/B25 |
+| platform-top-banner-no-fill | member | Top banner no-fill | reserved space, no-fill reason, shell layout preserved | Ads/ad decision/App Shell | B16/B25 |
+| platform-sensitive-no-fill | member | Sensitive no-fill | protected context, ad suppressed state, no content overlap | Ads/protected-data policy | B16/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| connections | member invites/blocks | recipient sees invite/blocked state | moderator observes invariant | blocked users disabled | extensions cannot hide shell surfaces |
+| platform-messages-entry | member opens/replies | recipient sees sent/read state | archived thread remains readable | reply disabled when blocked | non-member cannot view thread |
+| platform-connections-entry | member invites/accepts/declines | recipient sees invitation state | existing connection state is readable | duplicate invite disabled | blocked users hidden from invite |
+| platform-connection-invite | member accepts or declines | inviter sees accepted/declined state | invite history readable | accept disabled after expiration | blocked inviter cannot re-invite |
+| platform-blocked-target | member blocks/unblocks | target cannot message while blocked | block reason/state readable | message action disabled while blocked | extensions cannot override block |
+| platform-message-stream | member reads/replies/mutes | sender sees delivery/read state | muted thread remains readable | reply disabled when blocked | non-member cannot view stream |
+| platform-in-stream-ad | member views sponsored item | advertiser receives impression/click event | disclosure remains visible | dismiss disabled when required | extensions cannot hide required ad slot |
+| platform-top-banner-no-fill | member sees reserved shell slot | shell keeps layout stable | no-fill state visible | click disabled because no ad filled | extension cannot collapse slot |
+| platform-sensitive-no-fill | member sees protected content without ad | ad decision records suppression | suppression state readable | ad click hidden | extension cannot show ad in sensitive context |
 
 ## 8. Content And Seed Data Requirements
 
@@ -83,9 +95,14 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `messaging-thread` | [thread](../../CardSurfaces/discussion-message.md) | `CommunityThreadApi` | reply/edit/delete, read/unread, moderate/mute/archive, attachments/mentions | Demo renderer must select a domain-native surface for `thread` and LocalInAppBackend must expose/import the state for these interactions. |
-| `connections-invite-block` | [social](../../CardSurfaces/messaging-connections.md) | `CommunitySocialSurfaceApi` | invite/accept/decline/cancel, block/unblock, connection status, thread state | Demo renderer must select a domain-native surface for `social` and LocalInAppBackend must expose/import the state for these interactions. |
-| `in-stream-ad` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad decision, impression/click/no-fill, disclosure/ad-off, restore/receipt evidence | Demo renderer must select a domain-native surface for `ad` and LocalInAppBackend must expose/import the state for these interactions. |
+| `platform-messages-entry` | [thread](../../CardSurfaces/discussion-message.md) | `CommunityThreadApi` | reply/edit/delete, read/unread, moderate/mute/archive, attachments/mentions | Demo renderer must show sender, recipient, body, timestamp/read state, reply, mute/archive, and block-aware disabled states. |
+| `platform-connections-entry` | [social](../../CardSurfaces/messaging-connections.md) | `CommunitySocialSurfaceApi` | invite/accept/decline/cancel, block/unblock, connection status, thread state | Demo renderer must show suggested member, relationship state, invite/accept/decline/block, and receiver state. |
+| `platform-connection-invite` | [social](../../CardSurfaces/messaging-connections.md) | `CommunitySocialSurfaceApi` | invite/accept/decline/cancel, block/unblock, connection status, thread state | Demo renderer must show inviter, invite reason, accept/decline/cancel, and resulting connection status. |
+| `platform-blocked-target` | [social](../../CardSurfaces/messaging-connections.md) | `CommunitySocialSurfaceApi` | block/unblock, blocked message state, safety audit | Demo renderer must show blocked target, reason/status, unblock path, and disabled message affordance. |
+| `platform-message-stream` | [thread](../../CardSurfaces/discussion-message.md) | `CommunityThreadApi` | thread read/reply/mute/archive and delivery state | Demo renderer must show message stream, timestamp, sender/recipient, read state, reply, mute, and archive. |
+| `platform-in-stream-ad` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad decision, impression/click/no-fill, disclosure/ad-off, restore/receipt evidence | Demo renderer must show sponsored disclosure, sponsor/body, impression/click state, and content context. |
+| `platform-top-banner-no-fill` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | top banner reserved space, no-fill reason, layout preservation | Demo renderer must show reserved banner area, no-fill reason, and stable layout. |
+| `platform-sensitive-no-fill` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | sensitive-context suppression, disclosure/no-fill state | Demo renderer must show protected context, ad suppression reason, and no-overlap content state. |
 
 ## 10. Review And Remediation Log
 

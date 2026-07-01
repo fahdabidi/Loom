@@ -41,14 +41,25 @@ role coverage, persona differences, and remaining gaps visible. It must not be a
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| persona-role-inventory | builder/reviewer | Persona role matrix | role names, allowed/disabled/hidden states, coverage verdict | App shell role policy, permission rules | B23/B25 |
-| persona-aware-ux | builder/reviewer | Evidence detail | actor/receiver screenshots and state descriptions | Role/policy/consent engine | B23/B25 |
+| wf_persona-role-inventory-capability-matrix | admin | Persona role matrix | role names, allowed/disabled/hidden states, coverage verdict | App shell role policy, permission rules | B23/B25 |
+| wf_persona-role-inventory-capability-matrix | member | Persona role matrix | member-safe role names, allowed/disabled/hidden states, coverage verdict | App shell role policy, permission rules | B23/B25 |
+| wf_community-persona-aware-ux | admin | Persona-aware evidence detail | actor/receiver screenshots, admin-only actions, disabled/hidden member states | Role/policy/consent engine | B23/B25 |
+| wf_community-persona-aware-ux | member | Persona-aware evidence detail | member-visible actions, receiver states, denied/hidden admin actions | Role/policy/consent engine | B23/B25 |
+| wf_multi-persona-workflow-evidence | admin | Multi-persona handoff evidence | actor state, persona switch, receiver continuation state | Role/policy/consent engine | B23/B25 |
+| wf_multi-persona-workflow-evidence | member | Multi-persona handoff evidence | receiver state, read-only/available actions, continuation path | Role/policy/consent engine | B23/B25 |
+| wf_demo-app-persona-picker | member | Persona picker | active persona, role description, return-to-workflow state | App shell persona switcher | B23/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| persona-role-inventory | builder inspects capability map | reviewer reads coverage | read-only evidence detail | unavailable actions marked hidden/disabled | unauthorized states shown as denied without protected data |
+| wf_persona-role-inventory-capability-matrix | admin inspects capability map | reviewer reads coverage | read-only evidence detail | unavailable actions marked hidden/disabled | unauthorized states shown as denied without protected data |
+| wf_persona-role-inventory-capability-matrix | member inspects member-safe matrix | reviewer reads coverage | member-safe read-only detail | admin-only actions hidden/disabled | protected data redacted |
+| wf_community-persona-aware-ux | admin acts on admin workflow | member receives or reads state | sent/created state readable | member-only controls hidden | non-role actions denied |
+| wf_community-persona-aware-ux | member acts on member workflow | admin receives relevant state | completed/received state readable | admin-only controls hidden | non-role actions denied |
+| wf_multi-persona-workflow-evidence | admin creates actor state | member sees receiver continuation | actor state readable | duplicate actor action disabled | unauthorized handoff denied |
+| wf_multi-persona-workflow-evidence | member continues receiver state | admin sees completed receiver status | received state readable | unavailable receiver actions disabled | unauthorized handoff denied |
+| wf_demo-app-persona-picker | member switches active persona | app returns to selected workflow state | role description readable | unavailable persona hidden | unauthorized persona switch denied |
 
 ## 8. Content And Seed Data Requirements
 
@@ -76,8 +87,10 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `persona-role-inventory` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
-| `persona-aware-ux` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+| `wf_persona-role-inventory-capability-matrix` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | capability matrix, role filters, allowed/disabled/hidden states, evidence links | Demo renderer must show role names, persona split, allowed/disabled/hidden actions, and coverage verdicts. |
+| `wf_community-persona-aware-ux` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | actor/receiver/read-only/disabled/hidden states | Demo renderer must show persona-specific available actions, receiver state, hidden/disabled controls, and denial/redaction behavior. |
+| `wf_multi-persona-workflow-evidence` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | actor-created state, persona switch, receiver continuation | Demo renderer must show handoff from actor to receiver, continuation action, and final state. |
+| `wf_demo-app-persona-picker` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | persona picker, active role, return-to-workflow state | Demo renderer must show active persona, role summary, available switch targets, and selected workflow continuity. |
 
 ## 10. Review And Remediation Log
 

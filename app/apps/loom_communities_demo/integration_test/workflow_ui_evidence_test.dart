@@ -165,9 +165,17 @@ void main() {
         await scrollToWorkflowCard(tester, workflow);
         await capture(start);
 
-        await tester.tap(
-          find.byKey(ValueKey('workflow-button-${workflow.workflowId}')),
+        final workflowButton = find.byKey(
+          ValueKey('workflow-button-${workflow.workflowId}'),
         );
+        await tester.scrollUntilVisible(
+          workflowButton,
+          160,
+          scrollable: find.byType(Scrollable).last,
+          maxScrolls: 30,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(workflowButton);
         await tester.pumpAndSettle();
         expect(
           find.byKey(

@@ -38,8 +38,9 @@ or metadata-only route.
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| arbitrary-package-open | organizer | Installed card/open route | parsed Chess Club identity | Local backend/App Shell | B9/B25 |
-| chess-club-home | player | Chess home | chess content and action | Runtime bridge | B9/B25 |
+| chess-local-install-open | member | Installed card/open route | parsed Chess Club identity, card, local route, and open state | Local backend/App Shell | B9/B25 |
+| chess-route-home | member | Chess home | chess content, route state, next match or result action | Runtime bridge | B9/B25 |
+| chess-match-result | member | Match result surface | players, round, result, next action, correction path | Runtime bridge/events | B9/B25 |
 
 ## 7. Persona And State Matrix
 
@@ -73,8 +74,9 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `arbitrary-package-open` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
-| `chess-club-home` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+| `chess-local-install-open` | [custom-form-submission](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | local package import/open, route state, installed card status | Demo renderer must show parsed Chess Club identity, local route, installed card, and open state. |
+| `chess-route-home` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | scheduled match/session, player context, route/open state | Demo renderer must show chess home, next match/session, players, and primary action. |
+| `chess-match-result` | [approval-request](../../CardSurfaces/approval-request.md) | `CommunityRequestSurfaceApi` | submit/edit result, status, correction path, notification | Demo renderer must show players, round, outcome, correction path, and next action. |
 
 ## 10. Review And Remediation Log
 

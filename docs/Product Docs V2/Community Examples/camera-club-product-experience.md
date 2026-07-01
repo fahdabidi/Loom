@@ -42,15 +42,18 @@ parsing.
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
 | skill-prompt-build-validate-complete | organizer | Validation report and installed community | complete=true plus local open | Skill harness/local backend/App Shell | B11/B25 |
-| camera-photo-walk | member | Photo walk | date/location/action | Events | B15/B25 |
-| camera-critique-submission | member | Critique form | submission/review state | Forms/events | B15/B25 |
+| photo-walk-rsvp | member | Photo walk event detail | named route, date/time, location, capacity, RSVP choice, change path, confirmed state | Events, notifications, audit | B15/B25 |
+| critique-submission | member | Critique submission/review | image/work title, prompt, consent note, reviewer queue, edit/withdraw path, result state | Forms, media, events | B15/B25 |
+| gear-loan-request | member | Gear loan request detail | gear item, owner, borrower count, pickup/return timing, approve/request/change path, return state | Requests, equipment loan, notifications | B15/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| prompt build | organizer validates | member opens generated home | validation report read-only after pass | package paths withheld until complete | incomplete report blocks delivery |
-| critique | member submits | organizer reviews | member sees status | submit disabled without required fields | non-member hidden |
+| skill-prompt-build-validate-complete | organizer validates generated package/report | member opens generated home after install | validation report read-only after pass | package paths withheld until complete | incomplete report blocks delivery |
+| photo-walk-rsvp | member chooses going/maybe/not going | event capacity and attendee state update | confirmed RSVP remains visible | RSVP disabled when capacity closes | non-member cannot RSVP |
+| critique-submission | member submits or edits critique item | organizer/reviewer sees queue and comments | submitted critique status is readable | submit disabled without required image/prompt/consent | non-member cannot submit |
+| gear-loan-request | member requests/changes gear loan | owner/reviewer sees borrower and pickup state | return status is readable | request disabled when item unavailable | non-member cannot view protected owner contact |
 
 ## 8. Content And Seed Data Requirements
 
@@ -80,8 +83,9 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
 | `skill-prompt-build-validate-complete` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
-| `camera-photo-walk` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must select a domain-native surface for `event-rsvp` and LocalInAppBackend must expose/import the state for these interactions. |
-| `camera-critique-submission` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+| `photo-walk-rsvp` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must show a route/date/location/capacity RSVP surface and LocalInAppBackend must expose/import the state for these interactions. |
+| `critique-submission` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, reviewer state, result visibility | Demo renderer must show image/work title, prompt, comments, reviewer queue, edit/withdraw, and result state. |
+| `gear-loan-request` | [equipment-loan](../../CardSurfaces/equipment-loan.md) | `CommunityEquipmentLoanApi` | offer/request/approve/decline/return, borrower roster, pickup/return timing | Demo renderer must show gear item, owner, borrower count, pickup/return, request/change/cancel, and return state. |
 
 ## 10. Review And Remediation Log
 

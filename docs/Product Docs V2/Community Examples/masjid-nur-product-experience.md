@@ -45,18 +45,27 @@ volunteer needs, and care. It must not be a global workflow list or generic repe
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| mosque-announcement-publish | admin | Announcement compose/feed | sender, audience, body, timing, sent state | Publishing/notifications/events | B14/B20/B25 |
-| mosque-announcement-receive | member | Announcement feed/inbox | body, sender, read/received state | Messaging/notifications | B14/B20/B25 |
-| mosque-donation | member | Donation/payment | amount, privacy, receipt | Wallet/receipts | B14/B25 |
-| mosque-care-request | member/admin | Protected care form/review | private/public split, recipient state | Vault/cases/audit | B14/B25 |
-| mosque-volunteer-signup | member | Volunteer detail | shift/capacity/signup state | Forms/events | B14/B25 |
+| mosque-announcement | owner | Announcement compose/feed | sender, audience, body, timing, sent state, receiver/read state | Publishing/notifications/events | B14/B20/B25 |
+| mosque-event-rsvp | member | Event detail | event title, date/time, location, capacity, RSVP choice/result | Events/notifications | B14/B25 |
+| mosque-volunteer-signup | member | Volunteer shift detail | shift role/time, open spots, volunteer roster/count, signup/edit/cancel state | Forms/events | B14/B25 |
+| mosque-donor-visibility | donor | Donor privacy preference | visibility choice, amount context, receipt visibility, change path | Wallet/receipts/vault | B14/B25 |
+| mosque-donation-payment | donor | Donation/payment | amount, privacy, receipt, payer, retry/manage path | Wallet/receipts | B14/B25 |
+| mosque-care-request | member | Protected care form/review | private/public split, recipient state, status history | Vault/cases/audit | B14/B25 |
+| mosque-neutral-notification | member | Notification inbox/detail | sender, audience, message body, timestamp, read/received state | Notifications/events | B14/B25 |
+| mosque-search-ai-citation | member | Search/AI answer | query, answer, citation/source visibility, follow-up action | Search/AI/digest | B14/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| announcement | admin composes/sends | member reads inbox/feed | other members read sent item | publish hidden for member | non-admin cannot send |
-| care request | member submits | admin/support receives | member sees status | protected fields hidden broadly | unauthorized personas denied |
+| mosque-announcement | owner sends | member reads/receives announcement | prior announcements archived | send disabled without audience/body | non-owner cannot publish |
+| mosque-event-rsvp | member chooses RSVP | capacity/attendee state updates | confirmed RSVP remains readable | RSVP disabled when full/closed | non-member cannot RSVP |
+| mosque-volunteer-signup | member signs up or edits availability | coordinator sees volunteer roster/count | signup status readable | signup disabled when shift full | non-member cannot see protected contact |
+| mosque-donor-visibility | donor chooses visibility | donation/receipt respects visibility | visibility history readable | public display disabled when anonymous | non-donor cannot edit visibility |
+| mosque-donation-payment | donor pays | receipt/settlement records donation | receipt readable/exportable | pay disabled after completed unless retry/manage | non-donor cannot view private receipt |
+| mosque-care-request | member requests | care team receives neutral protected state | requester sees status | private fields hidden from general members | unauthorized denied |
+| mosque-neutral-notification | member receives neutral notice | sender sees delivery status | notice readable | action disabled after read if no reply allowed | non-recipient hidden |
+| mosque-search-ai-citation | member asks/searches | cited source visibility obeys permission | digest readable | citation hidden when source unauthorized | unauthorized source redacted |
 
 ## 8. Content And Seed Data Requirements
 
@@ -95,9 +104,14 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `mosque-announcement-publish` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must select a domain-native surface for `announcement` and LocalInAppBackend must expose/import the state for these interactions. |
-| `mosque-announcement-receive` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must select a domain-native surface for `announcement` and LocalInAppBackend must expose/import the state for these interactions. |
-| `mosque-donation` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must select a domain-native surface for `payment` and LocalInAppBackend must expose/import the state for these interactions. |
+| `mosque-announcement` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | draft/edit/preview, schedule/publish/cancel, delivery/read receipts/revisions | Demo renderer must show announcement composer/feed, sender, audience, body, timing, sent state, and receiver/read state. |
+| `mosque-event-rsvp` | [event-rsvp](../../CardSurfaces/event-rsvp.md) | `CommunityEventRsvpApi` | named event detail, going/maybe/not-going, change/cancel RSVP, capacity/attendee state | Demo renderer must show event title, date/time, location, capacity, RSVP choice, change path, and result. |
+| `mosque-volunteer-signup` | [volunteer-signup](../../CardSurfaces/volunteer-signup.md) | `CommunityVolunteerApi` | shift slots, count/roster, availability, cancel/edit, check-in/no-show | Demo renderer must show role, time, open spots, volunteer count/roster, signup/edit/cancel, and protected contact handling. |
+| `mosque-donor-visibility` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | donor visibility, receipt visibility, change/manage preference | Demo renderer must show visibility choice, donation context, receipt visibility, and change path. |
+| `mosque-donation-payment` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must show amount, payer, privacy, receipt, retry/manage path, and status. |
+| `mosque-care-request` | [protected-request](../../CardSurfaces/care-protected-request.md) | `CommunityProtectedRequestApi` | submit/update/withdraw, protected/public split, admin review, neutral notification | Demo renderer must show private/public split, recipient state, status history, and protected audit treatment. |
+| `mosque-neutral-notification` | [announcement](../../CardSurfaces/announcement-publish.md) | `CommunityAnnouncementApi` | sender, audience, timestamp, message body, receiver read state | Demo renderer must show sender, audience, body, timestamp, and read/received state. |
+| `mosque-search-ai-citation` | [search-ai](../../CardSurfaces/search-ai-digest.md) | `CommunitySearchAiSurfaceApi` | query/history, answer, citation detail, source visibility, save/share | Demo renderer must show query, answer, citation/source visibility, and follow-up action. |
 | `mosque-care-request` | [care-request](../../CardSurfaces/care-protected-request.md) | `CommunityCareRequestApi` | submit/update/withdraw, assign/review/resolve, protected detail split, redacted audit | Demo renderer must select a domain-native surface for `care-request` and LocalInAppBackend must expose/import the state for these interactions. |
 | `mosque-volunteer-signup` | [volunteer](../../CardSurfaces/volunteer-signup.md) | `CommunityVolunteerApi` | shift list, signup/edit/cancel, volunteer count/roster, check-in/no-show | Demo renderer must select a domain-native surface for `volunteer` and LocalInAppBackend must expose/import the state for these interactions. |
 

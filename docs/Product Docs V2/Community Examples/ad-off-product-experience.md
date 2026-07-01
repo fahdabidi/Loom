@@ -43,14 +43,23 @@ without reading implementation terms.
 
 | Workflow | Persona | Product surface | Required visible proof | Loom APIs/rules/events | Test/evidence IDs |
 | --- | --- | --- | --- | --- | --- |
-| member-ad-off-purchase | member | Purchase/entitlement | price, receipt, active ad-off | Wallet/ads/receipts | B16/B25 |
-| owner-ad-off-funding | owner | Funding/settlement | funding amount, utility allocation | Settlement/utility | B16/B25 |
+| ad-off-member-checkout | member | Member checkout | price, payer, payment method, review step, receipt, active entitlement | Wallet/ads/receipts | B16/B25 |
+| ad-off-community-checkout | member | Community ad-off funding | funded coverage, community payer context, review step, settlement status | Wallet/settlement/ads | B16/B25 |
+| ad-off-entitlement-status | member | Entitlement status | active/inactive state, renewal/expiry, managed subscription, affected ad surfaces | Ads/entitlements | B16/B25 |
+| ad-off-receipt-evidence | member | Receipt evidence | receipt ID, amount, payer, date, entitlement link, export/view action | Receipts/audit | B16/B25 |
+| ad-off-ad-suppression | member | Ad suppression proof | suppressed surface, no-fill/ad-off reason, restoration/manage path | Ads/ad decision | B16/B25 |
+| ad-off-settlement-utility | member | Utility allocation | funded amount, settlement ID, utility impact, audit status | Settlement/utility | B16/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| ad-off purchase | member pays | shell suppresses eligible ads | receipt is read-only | buy disabled when active | non-payer cannot manage receipt |
+| ad-off-member-checkout | member pays for personal ad-off | shell suppresses eligible ads after confirmation | receipt remains readable/exportable | checkout disabled when active until manage path | non-payer cannot manage receipt |
+| ad-off-community-checkout | member funds community ad-off | members see funded ad-off status where eligible | funding record readable | duplicate funding disabled during active period | non-owner cannot alter settlement record |
+| ad-off-entitlement-status | member manages entitlement | shell/ad slots honor active state | entitlement status readable | manage disabled when no entitlement | other members cannot view private payment details |
+| ad-off-receipt-evidence | member views receipt | receipt can be exported/shared as allowed | issued receipt read-only | refund/manage disabled unless eligible | non-payer cannot view receipt |
+| ad-off-ad-suppression | member sees suppressed ad surface | ad decision records suppression | no-fill/ad-off reason readable | ad click hidden while suppressed | extension cannot bypass entitlement |
+| ad-off-settlement-utility | member reviews utility allocation | owner/settlement records show funded utility | allocation audit readable | edit disabled after settlement | non-owner cannot mutate settlement |
 
 ## 8. Content And Seed Data Requirements
 
@@ -82,8 +91,12 @@ This B25 advisory registry maps each documented community workflow to the canoni
 
 | Workflow | Card surface family | API contract | Required interactions/actions | Renderer/fake-backend support |
 | --- | --- | --- | --- | --- |
-| `member-ad-off-purchase` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must select a domain-native surface for `payment` and LocalInAppBackend must expose/import the state for these interactions. |
-| `owner-ad-off-funding` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must select a domain-native surface for `payment` and LocalInAppBackend must expose/import the state for these interactions. |
+| `ad-off-member-checkout` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | intent/confirm/retry, receipt/refund, recurring/entitlement, settlement state | Demo renderer must show price, payer, payment method, review, confirm, receipt, manage/change, and active entitlement. |
+| `ad-off-community-checkout` | [payment](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | community funding intent/confirm/retry, settlement, utility allocation | Demo renderer must show funded coverage, community payer, review/confirm, settlement, and utility allocation. |
+| `ad-off-entitlement-status` | [ad-off-entitlement](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | entitlement active/inactive, renewal, restore/manage, affected surfaces | Demo renderer must show active state, renewal, manage/cancel, and surfaces affected. |
+| `ad-off-receipt-evidence` | [receipt](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | receipt lookup/export/refund eligibility, audit trail | Demo renderer must show receipt ID, amount, payer, date, view/export, and entitlement link. |
+| `ad-off-ad-suppression` | [ad](../../CardSurfaces/ads-no-fill-ad-off.md) | `CommunityAdSurfaceApi` | ad-off suppression/no-fill reason, restore/receipt evidence | Demo renderer must show suppressed slot, reason, manage/restore path, and no content overlap. |
+| `ad-off-settlement-utility` | [settlement](../../CardSurfaces/payment-donation-dues-ad-off.md) | `CommunityPaymentSurfaceApi` | settlement status, utility allocation, audit | Demo renderer must show settlement ID, funded utility amount, allocation status, and audit state. |
 
 ## 10. Review And Remediation Log
 

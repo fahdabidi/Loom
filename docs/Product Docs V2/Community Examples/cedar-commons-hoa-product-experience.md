@@ -47,16 +47,22 @@ actions.
 | hoa-dues-payment | member | Dues payment | amount and receipt | Wallet/receipts | B14/B25 |
 | hoa-member-document | member | Document center | document title/access | Documents/audit | B14/B25 |
 | hoa-facility-reservation | member | Reservation detail | facility/date/status | Facilities/events | B14/B25 |
-| hoa-architectural-request | member | Request form | change details/submitted state | Cases/tasks/documents | B14/B25 |
-| hoa-board-review | board | Review queue | requester, decision actions | Cases/tasks/audit | B14/B25 |
+| hoa-architectural-request | owner | Request form | change details/submitted state | Cases/tasks/documents | B14/B25 |
+| hoa-committee-decision | owner | Review queue | requester, decision actions, status history, request-changes path | Cases/tasks/audit | B14/B25 |
+| hoa-owner-notification | owner | Owner notification | sender, audience, body, sent/received state | Notifications/events | B14/B25 |
 | hoa-export-evidence | owner | Export status | scope/checksum/rollback | Export/provider transfer | B14/B25 |
 
 ## 7. Persona And State Matrix
 
 | Workflow | Actor state | Receiver state | Read-only state | Disabled/hidden state | Unauthorized behavior |
 | --- | --- | --- | --- | --- | --- |
-| architectural request | member submits | board reviews | member sees status | approve hidden for member | non-board denied |
-| dues payment | member pays | board sees ledger | receipt read-only after pay | pay disabled after paid | non-member hidden |
+| hoa-dues-payment | member pays quarterly dues | HOA ledger records paid/receipt state | receipt read-only after pay | pay disabled after paid; retry shown on failure | non-member hidden |
+| hoa-member-document | member opens governing document | board/admin sees access audit | document metadata/read state visible | download disabled without permission | non-member denied |
+| hoa-facility-reservation | member reserves facility | owner/board sees reservation status | confirmed reservation readable | reserve disabled on conflict | non-member denied |
+| hoa-architectural-request | owner submits exterior request | committee sees requester/details | owner sees status history | approve hidden for owner | non-owner denied |
+| hoa-committee-decision | owner/committee reviews request | homeowner receives approved/rejected/changes state | decision history readable | duplicate decision disabled | non-committee denied |
+| hoa-owner-notification | owner sends notice | members receive message/read state | sent notice readable | send disabled until audience/body ready | non-owner denied |
+| hoa-export-evidence | owner generates export | board/member notices if applicable | checksum/scope readable | transfer disabled until checksum passes | non-owner hidden |
 
 ## 8. Content And Seed Data Requirements
 
@@ -93,7 +99,8 @@ This B25 advisory registry maps each documented community workflow to the canoni
 | `hoa-member-document` | [operations](../../CardSurfaces/documents-facilities-roster.md) | `CommunityOperationsSurfaceApi` | document/version/access, facility reserve/edit/cancel, conflict handling, roster history | Demo renderer must select a domain-native surface for `operations` and LocalInAppBackend must expose/import the state for these interactions. |
 | `hoa-facility-reservation` | [operations](../../CardSurfaces/documents-facilities-roster.md) | `CommunityOperationsSurfaceApi` | document/version/access, facility reserve/edit/cancel, conflict handling, roster history | Demo renderer must select a domain-native surface for `operations` and LocalInAppBackend must expose/import the state for these interactions. |
 | `hoa-architectural-request` | [approval](../../CardSurfaces/approval-request.md) | `CommunityApprovalApi` | approve/reject/request changes, comments/history, assignee/committee state, appeal/reopen | Demo renderer must select a domain-native surface for `approval` and LocalInAppBackend must expose/import the state for these interactions. |
-| `hoa-board-review` | [form](../../CardSurfaces/custom-form-submission.md) | `CommunityFormSurfaceApi` | load/validate/save draft, submit/update/withdraw, protected field routing, review/export | Demo renderer must select a domain-native surface for `form` and LocalInAppBackend must expose/import the state for these interactions. |
+| `hoa-committee-decision` | [approval](../../CardSurfaces/approval-request.md) | `CommunityApprovalApi` | approve/reject/request changes, comments/history, assignee/committee state, appeal/reopen | Demo renderer must show requester, decision actions, request-changes path, comments/history, and resulting notification state. |
+| `hoa-owner-notification` | [notification-inbox](../../CardSurfaces/notification-inbox.md) | `CommunityNotificationSurfaceApi` | sender, audience, body, timing, delivery/read state | Demo renderer must show sender, audience, message body, timestamp, sent/read state, and receiver state. |
 | `hoa-export-evidence` | [portability](../../CardSurfaces/export-import-transfer.md) | `CommunityPortabilitySurfaceApi` | scope/redaction preview, generate/download/checksum, transfer/rollback, audit trail | Demo renderer must select a domain-native surface for `portability` and LocalInAppBackend must expose/import the state for these interactions. |
 
 ## 10. Review And Remediation Log

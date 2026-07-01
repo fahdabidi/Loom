@@ -2347,6 +2347,276 @@ _RichWorkflowSpec _richSurface({
   );
 }
 
+Widget? _domainPreviewPanelFor(
+  String workflowId, {
+  required Color accent,
+  required Color foreground,
+}) {
+  if (workflowId.contains('photo-walk')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Photo walk details',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.route_outlined,
+          title: 'Riverfront golden-hour route',
+          body: 'Meet at Dock 4, walk the mural loop, finish at the pier.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.groups_outlined,
+          title: '12 going, 4 spots left',
+          body: 'Maybe and Not going stay available until Saturday noon.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.camera_alt_outlined,
+          title: 'Bring 35mm or phone camera',
+          body: 'Reminder includes rain plan, gear note, and host contact.',
+        ),
+      ],
+    );
+  }
+  if (workflowId.contains('critique')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Critique submission',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.image_outlined,
+          title: 'Street portrait: “Evening Reflection”',
+          body: 'Prompt, consent note, and visibility are reviewed together.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.rate_review_outlined,
+          title: 'Reviewer queue',
+          body:
+              'Avery reviews composition; comments and edit path remain open.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.swap_horiz_outlined,
+          title: 'Edit or withdraw',
+          body:
+              'Member can update caption, replace image, or withdraw before review.',
+        ),
+      ],
+    );
+  }
+  if (workflowId.contains('gear')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Gear loan roster',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.camera_outdoor_outlined,
+          title: '35mm prime lens',
+          body: 'Owned by Sam; pickup Friday 5 PM and return Sunday evening.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.people_outline,
+          title: '2 borrowers waiting',
+          body: 'Borrower list is visible after owner approves the loan.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.keyboard_return_outlined,
+          title: 'Return and cancel path',
+          body: 'Member can cancel request, update pickup, or mark returned.',
+        ),
+      ],
+    );
+  }
+  if (workflowId.startsWith('platform-')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: workflowId.contains('ad') || workflowId.contains('no-fill')
+          ? 'Sponsored placement state'
+          : 'Member conversation state',
+      rows: [
+        if (workflowId.contains('ad') ||
+            workflowId.contains('no-fill')) ...const [
+          _DomainPreviewRow(
+            icon: Icons.campaign_outlined,
+            title: 'Sponsored disclosure',
+            body: 'Reserved slot shows sponsor, disclosure, or no-fill reason.',
+          ),
+          _DomainPreviewRow(
+            icon: Icons.visibility_off_outlined,
+            title: 'Sensitive context protected',
+            body: 'Ad click is hidden when content is protected or suppressed.',
+          ),
+          _DomainPreviewRow(
+            icon: Icons.analytics_outlined,
+            title: 'Impression state',
+            body:
+                'Impression/click is recorded only when an ad is actually filled.',
+          ),
+        ] else ...const [
+          _DomainPreviewRow(
+            icon: Icons.person_outline,
+            title: 'Maya Chen → Jordan Lee',
+            body:
+                'Thread preview includes sender, recipient, timestamp, and read state.',
+          ),
+          _DomainPreviewRow(
+            icon: Icons.mark_email_unread_outlined,
+            title: 'Invite pending',
+            body:
+                'Accept, decline, mute, archive, or block are visible alternatives.',
+          ),
+          _DomainPreviewRow(
+            icon: Icons.block_outlined,
+            title: 'Block respected',
+            body:
+                'Blocked members cannot send; unblock and safety state remain clear.',
+          ),
+        ],
+      ],
+    );
+  }
+  if (workflowId.startsWith('ad-off-')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Ad-off checkout and entitlement',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.payments_outlined,
+          title: '4.99 USD / month',
+          body:
+              'Payer, payment method, review step, retry path, and receipt are visible.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.verified_user_outlined,
+          title: 'Entitlement active through Aug 30',
+          body:
+              'Member can manage subscription, restore purchase, or export receipt.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.visibility_off_outlined,
+          title: 'Eligible ads suppressed',
+          body:
+              'Suppressed slots show ad-off reason and settlement/utility audit.',
+        ),
+      ],
+    );
+  }
+  if (workflowId.startsWith('export-')) {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Portability wizard',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.fact_check_outlined,
+          title: 'Scope and redaction',
+          body:
+              'Members, receipts, documents, and protected fields are previewed before export.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.verified_outlined,
+          title: 'Checksum 9A7F-PORT',
+          body:
+              'Verification must pass before transfer or download is marked complete.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.undo_outlined,
+          title: 'Transfer rollback available',
+          body:
+              'Owner can cancel, retry, roll back, or inspect provider status.',
+        ),
+      ],
+    );
+  }
+  return null;
+}
+
+class _DomainPreviewRow {
+  const _DomainPreviewRow({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+}
+
+class _DomainPreviewPanel extends StatelessWidget {
+  const _DomainPreviewPanel({
+    required this.accent,
+    required this.foreground,
+    required this.title,
+    required this.rows,
+  });
+
+  final Color accent;
+  final Color foreground;
+  final String title;
+  final List<_DomainPreviewRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            for (final row in rows) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(row.icon, color: foreground, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          row.title,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: foreground,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          row.body,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: foreground.withValues(alpha: 0.88),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (row != rows.last) const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WorkflowTile extends StatelessWidget {
   const _WorkflowTile({
     required this.extensionId,
@@ -2568,6 +2838,11 @@ class _RichWorkflowTile extends StatelessWidget {
       extensionId: extensionId,
       workflow: workflow,
     );
+    final domainPreview = _domainPreviewPanelFor(
+      workflow.workflowId,
+      accent: spec.accent,
+      foreground: foreground,
+    );
     return DecoratedBox(
       key: ValueKey('workflow-${workflow.workflowId}'),
       decoration: BoxDecoration(
@@ -2639,6 +2914,10 @@ class _RichWorkflowTile extends StatelessWidget {
                   ),
               ],
             ),
+            if (domainPreview != null) ...[
+              const SizedBox(height: 12),
+              domainPreview,
+            ],
             const SizedBox(height: 12),
             DecoratedBox(
               decoration: BoxDecoration(
@@ -3822,6 +4101,11 @@ class _RichWorkflowActionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(spec.accent);
+    final domainPreview = _domainPreviewPanelFor(
+      workflow.workflowId,
+      accent: spec.accent,
+      foreground: foreground,
+    );
     return Scaffold(
       backgroundColor: _screenBackgroundFor(spec.accent),
       appBar: AppBar(
@@ -3846,6 +4130,10 @@ class _RichWorkflowActionSurface extends StatelessWidget {
             subtitle: spec.actionHeroSubtitle,
             body: isReceiverSurface ? spec.receivedBody : spec.actionHeroBody,
           ),
+          if (domainPreview != null) ...[
+            const SizedBox(height: 14),
+            domainPreview,
+          ],
           const SizedBox(height: 14),
           _RichInlineActionPanel(
             accent: spec.accent,

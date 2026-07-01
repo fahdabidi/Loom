@@ -166,3 +166,37 @@ findings were resolved in pass 9.
 - Result: B25 remains reopened with 0 blockers, 4 unresolved major findings, 7 major tickets, 6
   product-spec work items, 26 evidence-repair work items, and 27 UI remediation work items.
 - Evidence/tooling commit: `6ff5b8d`.
+
+### Iteration 18 / `b25-v4-pass-21`
+
+- Status: failed, but converged.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-21.md`, updated community Product Docs V2 rows to
+  use exact B25 workflow IDs/persona-state mapping where the prior pass still used umbrella IDs, added
+  domain preview panels for Camera Club, Platform Social, Ad-Free Community, and Data Portability
+  workflows, and repaired the evidence harness so offscreen workflow buttons are scrolled into view
+  before capture.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests; capture coverage passed; the B25 collector generated `195` schema v4 screen
+  rows; workflow/persona coverage passed `68 / 68`; visual inspection passed `195 / 195`.
+- Product-doc reconciliation: failed. Product Docs V2 community examples improved, but Section 7 and
+  semantic rows remain stale or incomplete in several docs, including Masjid B17-B20 support workflows,
+  Platform Social semantic rows, and Riverside Youth Soccer Section 7 lifecycle rows.
+- LLM Vision UX review: failed with three major findings:
+  `B25-VISION-UX-P21-001-INCOMPLETE-LIFECYCLES`,
+  `B25-VISION-UX-P21-002-B20-CTA-WRAPPING`, and
+  `B25-VISION-UX-P21-003-REPEATED-GENERIC-SURFACE-PANELS`.
+- Workflow interaction model: improved but failed; lifecycle failures dropped from `26 / 68` to
+  `22 / 68`.
+- Production UX judge: failed `9` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-21.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-21.md` records
+  `B25 can pass=false`, `0` blockers, `4` unresolved major findings, and `4` remaining
+  blocking/major findings.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-22.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 22 must fix the 22 lifecycle rows, repair B20 CTA wrapping, make
+  Camera/Platform/Ad-Free surfaces visibly distinct rather than generic panels, and finish
+  product-doc reconciliation before recapturing full B12-B20 evidence.
+- Evidence/tooling commit: `TBD`.

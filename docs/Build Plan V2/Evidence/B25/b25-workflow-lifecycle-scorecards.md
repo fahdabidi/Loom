@@ -4,8 +4,8 @@
 | --- | --- |
 | Status | `fail` |
 | Scorecards | 68 |
-| Failing scorecards | 26 |
-| Missing lifecycle groups | alternate/change/reject affordance; persistent result state; primary semantic action; receiver/continuation state; semantic interaction model |
+| Failing scorecards | 22 |
+| Missing lifecycle groups | alternate/change/reject affordance; concrete object/context; persistent result state; primary semantic action; receiver/continuation state; semantic interaction model |
 
 | Scorecard | Status | Community | Workflow | Persona | Missing lifecycle groups | Target surface |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -47,11 +47,11 @@
 | `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `fail` | Camera Club | `photo-walk-rsvp` | member | persistent result state | event detail with schedule, location, capacity/status, RSVP action, and result state |
 | `b25-wp-037-critique-submission-community-camera-club-member-lifecycle` | `fail` | Camera Club | `critique-submission` | member | semantic interaction model | critique submission/review surface with image/work title, comments, reviewer state, and result |
 | `b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle` | `fail` | Camera Club | `gear-loan-request` | member | alternate/change/reject affordance; semantic interaction model | request detail and admin review queue with submitted data, decision action, status, and notification |
-| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-messages-entry` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
-| `b25-wp-040-platform-connections-entry-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-connections-entry` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
-| `b25-wp-041-platform-connection-invite-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-connection-invite` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
-| `b25-wp-042-platform-blocked-target-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-blocked-target` | member | alternate/change/reject affordance; semantic interaction model | inbox, message thread, connection card, invite, or block-state surface |
-| `b25-wp-043-platform-message-stream-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-message-stream` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-messages-entry` | member |  | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-040-platform-connections-entry-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-connections-entry` | member |  | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-041-platform-connection-invite-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-connection-invite` | member |  | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-042-platform-blocked-target-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-blocked-target` | member | concrete object/context; alternate/change/reject affordance; semantic interaction model | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-043-platform-message-stream-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-message-stream` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-044-platform-in-stream-ad-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-in-stream-ad` | member | alternate/change/reject affordance; semantic interaction model | community feed surface with clearly labeled in-stream ad placement, disclosure, content context, and no-blocking interaction state |
 | `b25-wp-045-platform-top-banner-no-fill-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-top-banner-no-fill` | member | alternate/change/reject affordance; semantic interaction model | App Shell top banner ad slot no-fill surface with preserved layout, disclosure/reserved space, and no content overlap |
 | `b25-wp-046-platform-sensitive-no-fill-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-sensitive-no-fill` | member | alternate/change/reject affordance; semantic interaction model | sensitive-context ad suppression surface with protected content visible and ad slot safely no-filled |
