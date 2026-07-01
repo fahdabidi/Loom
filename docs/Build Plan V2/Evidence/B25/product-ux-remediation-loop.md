@@ -307,4 +307,4 @@ findings were resolved in pass 9.
   domain-native screen structures for primary workflow families, remove workflow-contract language from
   visible UI, repair lifecycle proof for the named workflows, and exclude or reclassify test-harness
   persona surfaces before recapturing full B12-B20 evidence.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `99ed5f3`.
