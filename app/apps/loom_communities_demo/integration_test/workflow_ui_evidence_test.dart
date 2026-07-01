@@ -425,7 +425,7 @@ void main() {
       await tester.scrollUntilVisible(
         announcementSubmitButton,
         180,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: verticalScrollableFinder().last,
         maxScrolls: 30,
       );
       await tester.pumpAndSettle();
@@ -455,7 +455,7 @@ void main() {
       await tester.scrollUntilVisible(
         announcementReceiveSubmitButton,
         180,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: verticalScrollableFinder().last,
         maxScrolls: 30,
       );
       await tester.pumpAndSettle();
@@ -622,7 +622,7 @@ Future<void> _scrollToWorkflow(
     await tester.pumpAndSettle();
     return;
   }
-  final scrollable = find.byType(Scrollable);
+  final scrollable = verticalScrollableFinder().last;
   for (var index = 0; index < 40; index += 1) {
     await tester.drag(scrollable, const Offset(0, -180), warnIfMissed: false);
     await tester.pumpAndSettle();
