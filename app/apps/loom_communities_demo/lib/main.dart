@@ -1403,9 +1403,9 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
             body: 'Change vote remains available until Jan 20 at 8 PM.',
           ),
         ],
-        completeTitle: 'Vote recorded',
+        completeTitle: 'Vote confirmed',
         completeBody:
-            'Your vote for Parable of the Sower is recorded and can be changed before the ballot closes.',
+            'Your vote for Parable of the Sower is confirmed, status is saved, and it can be changed before the ballot closes.',
         receivedTitle: 'Vote result ready',
         receivedBody:
             'The selected book, vote count, and meeting context are visible to members.',
@@ -2429,10 +2429,11 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
     completeTitle: isApproval
         ? 'Request outcome saved'
         : isDocument
-        ? 'Document opened'
+        ? 'Document viewed'
         : 'HOA record saved',
-    completeBody:
-        'The homeowner record now shows owner, amount or decision, status history, and member next steps.',
+    completeBody: isDocument
+        ? 'The document is viewed and acknowledged with access state, version history, and member download option visible.'
+        : 'The homeowner record now shows owner, amount or decision, status history, and member next steps.',
     completeLabel: isApproval
         ? 'Outcome recorded'
         : isDocument
@@ -2514,9 +2515,9 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
             'Update privacy, edit request, withdraw, or open receipt where allowed.',
       ),
     ],
-    completeTitle: 'Masjid record saved',
+    completeTitle: 'Masjid preference confirmed',
     completeBody:
-        'Members see the privacy-safe update, receipt or citation, current progress, and clear next step.',
+        'Members see the privacy-safe update, receipt history or citation, confirmed status, current progress, and clear next step.',
     completeLabel: 'Saved',
   );
 }
@@ -2627,9 +2628,9 @@ _RichWorkflowSpec _cameraRichSpecFor(String id) {
           body: 'Member inbox keeps route, gear note, and weather update.',
         ),
       ],
-      completeTitle: 'Photo walk RSVP saved',
+      completeTitle: 'Photo walk RSVP confirmed',
       completeBody:
-          'Your photo walk status, route, host, capacity, reminder, and change-response option remain visible.',
+          'Your photo walk attendance is confirmed with status, route, host, capacity, reminder, and change-response option visible.',
       receivedTitle: 'Photo walk update ready',
       receivedBody:
           'The member sees route, time, capacity, RSVP state, and reminder details.',
@@ -2960,9 +2961,9 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
           body: 'Thread updates to read with reply history after action.',
         ),
       ],
-      completeTitle: 'Message thread updated',
+      completeTitle: 'Message sent',
       completeBody:
-          'The thread shows sender, body, timestamp, reply option, read receipt, and archive/block controls.',
+          'The thread shows the sent message, receiver read status, timestamp, reply option, receipt history, and archive/block controls.',
       receivedTitle: 'Message received',
       receivedBody:
           'The receiver sees sender, message body, timestamp, unread/read receipt, and reply action.',
@@ -7028,7 +7029,7 @@ Color _screenBackgroundFor(Color accent) {
 }
 
 Color _actionScreenBackgroundFor(Color accent) {
-  return Color.alphaBlend(accent.withValues(alpha: 0.08), Colors.white);
+  return _screenBackgroundFor(accent);
 }
 
 class _InteractionModelSummary extends StatelessWidget {
@@ -8512,7 +8513,7 @@ class _DomainActionConsole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = spec.accent;
+    final foreground = _foregroundFor(spec.accent);
     final textTheme = Theme.of(context).textTheme;
     final proofRows = _actionProofRowsFor(spec.layout);
     final outlined = OutlinedButton.styleFrom(
@@ -8528,80 +8529,83 @@ class _DomainActionConsole extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: textTheme.titleLarge?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              body,
-              style: textTheme.bodyMedium?.copyWith(
-                color: foreground.withValues(alpha: 0.88),
-              ),
-            ),
-            const SizedBox(height: 12),
-            for (final row in proofRows)
-              _ProductPreviewLine(
-                icon: row.icon,
-                title: row.title,
-                body: row.body,
-              ),
-            const SizedBox(height: 4),
-            for (final row in leadingRows)
-              _ProductPreviewLine(
-                icon: row.icon,
-                title: row.title,
-                body: row.body,
-              ),
-            const SizedBox(height: 2),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final label in alternateLabels.take(3))
-                  OutlinedButton(
-                    onPressed: () {},
-                    style: outlined,
-                    child: Text(label),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                key: confirmButtonKey,
-                onPressed: () => Navigator.of(context).pop(true),
-                icon: Icon(primaryIcon, size: 18),
-                label: Text(primaryLabel, textAlign: TextAlign.center),
-              ),
-            ),
-            if (resultRows.isNotEmpty) ...[
-              const SizedBox(height: 14),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: foreground),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                _resultTitleFor(spec.layout),
-                style: textTheme.titleMedium?.copyWith(
+                title,
+                style: textTheme.titleLarge?.copyWith(
                   color: foreground,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 8),
-              for (final row in resultRows)
+              const SizedBox(height: 6),
+              Text(
+                body,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: foreground.withValues(alpha: 0.88),
+                ),
+              ),
+              const SizedBox(height: 12),
+              for (final row in proofRows)
                 _ProductPreviewLine(
                   icon: row.icon,
                   title: row.title,
                   body: row.body,
                 ),
+              const SizedBox(height: 4),
+              for (final row in leadingRows)
+                _ProductPreviewLine(
+                  icon: row.icon,
+                  title: row.title,
+                  body: row.body,
+                ),
+              const SizedBox(height: 2),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final label in alternateLabels.take(3))
+                    OutlinedButton(
+                      onPressed: () {},
+                      style: outlined,
+                      child: Text(label),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: confirmButtonKey,
+                  onPressed: () => Navigator.of(context).pop(true),
+                  icon: Icon(primaryIcon, size: 18),
+                  label: Text(primaryLabel, textAlign: TextAlign.center),
+                ),
+              ),
+              if (resultRows.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+                Text(
+                  _resultTitleFor(spec.layout),
+                  style: textTheme.titleMedium?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                for (final row in resultRows)
+                  _ProductPreviewLine(
+                    icon: row.icon,
+                    title: row.title,
+                    body: row.body,
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
