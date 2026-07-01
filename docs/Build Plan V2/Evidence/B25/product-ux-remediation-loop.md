@@ -423,4 +423,4 @@ findings were resolved in pass 9.
   framework/review/lifecycle copy, repair duplicate evidence states, close lifecycle proof gaps, and
   either redesign the persona-picker/wf_* rows as production account/role surfaces or remove them from
   B25 production review scope before another full B12-B20 recapture.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `176e15f`.
