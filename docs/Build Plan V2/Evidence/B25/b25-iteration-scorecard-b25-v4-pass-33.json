@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-33",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-01T20:07:11.703138Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 5,
+    "criticalBlocker": 0,
+    "major": 5,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 5,
+    "unresolvedBlockingMajor": 5,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 5,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 5,
+    "remainingBlockingMajor": 5
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 16,
+    "passedCriteria": 7,
+    "failedCriteria": 9,
+    "blockingCriterionFailures": 9,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "LLM-B25-VISION-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Action/review states are still dimmed modal-style screens rather than durable product states",
+      "requiredFix": "Replace dimmed action modals with durable full-bright product action surfaces and recapture all action rows."
+    },
+    {
+      "findingId": "LLM-B25-VISION-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Many utility flows still look like status/checklist panels instead of product-native screens",
+      "requiredFix": "Replace generic status/checklist utility panels with surface-specific product layouts."
+    },
+    {
+      "findingId": "LLM-B25-VISION-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Tabbed information architecture is visible but not yet proven as a persona-customized navigation model",
+      "requiredFix": "Capture and, if needed, implement persona-specific tabs, pinned surfaces, and card size states as first-class product navigation."
+    },
+    {
+      "findingId": "LLM-B25-VISION-004",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle controls improved but are not complete or screen-specific enough across all primary flows",
+      "requiredFix": "Make lifecycle actions domain-specific and visible in screenshots for every primary workflow."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "LLM-B25-VISION-001",
+      "severity": "major",
+      "status": "open",
+      "title": "Action/review states are still dimmed modal-style screens rather than durable product states",
+      "requiredFix": "Replace dimmed action modals with durable full-bright product action surfaces and recapture all action rows."
+    },
+    {
+      "findingId": "LLM-B25-VISION-002",
+      "severity": "major",
+      "status": "open",
+      "title": "Many utility flows still look like status/checklist panels instead of product-native screens",
+      "requiredFix": "Replace generic status/checklist utility panels with surface-specific product layouts."
+    },
+    {
+      "findingId": "LLM-B25-VISION-003",
+      "severity": "major",
+      "status": "open",
+      "title": "Tabbed information architecture is visible but not yet proven as a persona-customized navigation model",
+      "requiredFix": "Capture and, if needed, implement persona-specific tabs, pinned surfaces, and card size states as first-class product navigation."
+    },
+    {
+      "findingId": "LLM-B25-VISION-004",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle controls improved but are not complete or screen-specific enough across all primary flows",
+      "requiredFix": "Make lifecycle actions domain-specific and visible in screenshots for every primary workflow."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}

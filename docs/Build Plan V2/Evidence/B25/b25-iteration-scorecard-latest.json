@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "scorecardType": "b25-iteration",
-  "reviewRunId": "b25-v4-pass-32",
+  "reviewRunId": "b25-v4-pass-33",
   "reviewStandardVersion": "b25-production-ux-v4",
-  "generatedAt": "2026-07-01T17:56:07.266872Z",
+  "generatedAt": "2026-07-01T20:07:11.703138Z",
   "status": "fail",
   "finalDecision": "fail",
   "b25CanPass": false,
   "findingCounts": {
-    "total": 9,
+    "total": 5,
     "criticalBlocker": 0,
-    "major": 9,
+    "major": 5,
     "minor": 0,
     "polish": 0,
     "unresolvedCriticalBlocker": 0,
-    "unresolvedMajor": 9,
-    "unresolvedBlockingMajor": 9,
+    "unresolvedMajor": 5,
+    "unresolvedBlockingMajor": 5,
     "resolvedCriticalBlocker": 0,
     "resolvedMajor": 0,
     "resolvedBlockingMajor": 0
@@ -25,10 +25,10 @@
     "resolvedCriticalBlockerThisPass": 0,
     "resolvedMajorThisPass": 0,
     "newCriticalBlockerThisPass": 0,
-    "newMajorThisPass": 9,
+    "newMajorThisPass": 5,
     "resolvedBlockingMajorThisPass": 0,
-    "newBlockingMajorThisPass": 9,
-    "remainingBlockingMajor": 9
+    "newBlockingMajorThisPass": 5,
+    "remainingBlockingMajor": 5
   },
   "judgeSummary": {
     "status": "fail",
@@ -41,60 +41,32 @@
   },
   "blockingFindings": [
     {
-      "findingId": "LLM-B25-WR-001",
-      "severity": "major",
-      "status": "open",
-      "title": "implementation-missing-workflow",
-      "requiredFix": "Capture and/or implement the documented persona tab model, Home/Messages tabs, custom tabs, pinned surfaces, and minimized/medium/expanded navigation states for each community."
-    },
-    {
-      "findingId": "LLM-B25-WR-002",
-      "severity": "major",
-      "status": "open",
-      "title": "surface-mismatch",
-      "requiredFix": "Remediate the UI so each documented card surface is rendered as a visibly distinct product surface with the documented interactions/actions."
-    },
-    {
-      "findingId": "LLM-B25-WR-003",
-      "severity": "major",
-      "status": "open",
-      "title": "visible-proof-gap",
-      "requiredFix": "Update product docs if needed, then implement and recapture lifecycle states so the screenshots visibly prove the semantic interaction model."
-    },
-    {
       "findingId": "LLM-B25-VISION-001",
       "severity": "major",
       "status": "open",
-      "title": "Primary experience still relies on a repeated stacked-card scaffold",
-      "requiredFix": "Create distinct product frames for the highest-volume surfaces: event/calendar, documents, approval/status, marketplace/loan, messages, export/data, payments, and community home. Each frame needs its own layout, hierarchy, content model, and action/result region."
+      "title": "Action/review states are still dimmed modal-style screens rather than durable product states",
+      "requiredFix": "Replace dimmed action modals with durable full-bright product action surfaces and recapture all action rows."
     },
     {
       "findingId": "LLM-B25-VISION-002",
       "severity": "major",
       "status": "open",
-      "title": "Action-state screenshots are dimmed and do not prove usable after states",
-      "requiredFix": "Capture or implement action/result states as normal full-bright product screens with persistent status, history, receipt, or receiver state; avoid relying on dimmed transitional overlays as B25 proof."
+      "title": "Many utility flows still look like status/checklist panels instead of product-native screens",
+      "requiredFix": "Replace generic status/checklist utility panels with surface-specific product layouts."
     },
     {
       "findingId": "LLM-B25-VISION-003",
       "severity": "major",
       "status": "open",
-      "title": "Utility/export/ad/social/chess flows still look like status/evidence panels",
-      "requiredFix": "Replace utility/status cards with task-specific product surfaces: export wizard with data previews and files, ad-free billing/account settings, social inbox/thread UI, chess board/match UI, and document viewer/link handling."
+      "title": "Tabbed information architecture is visible but not yet proven as a persona-customized navigation model",
+      "requiredFix": "Capture and, if needed, implement persona-specific tabs, pinned surfaces, and card size states as first-class product navigation."
     },
     {
       "findingId": "LLM-B25-VISION-004",
       "severity": "major",
       "status": "open",
-      "title": "Persona tabs/navigation and pinned surfaces are not sufficiently visible in committed evidence",
-      "requiredFix": "Add screenshot coverage for community home tab, Messages/Communication tab, custom persona tabs, pinned surfaces, and minimized/medium/expanded card states; update UI where the tab model is not visible or not useful."
-    },
-    {
-      "findingId": "LLM-B25-VISION-005",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow lifecycle proof remains incomplete in visible UI",
-      "requiredFix": "For each primary workflow, add visible lifecycle controls and state: edit/change/cancel/reject/defer where required, durable result/history/receipt state, and receiver or continuation screens. Recapture after screenshots proving those states."
+      "title": "Workflow lifecycle controls improved but are not complete or screen-specific enough across all primary flows",
+      "requiredFix": "Make lifecycle actions domain-specific and visible in screenshots for every primary workflow."
     },
     {
       "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
@@ -107,60 +79,32 @@
   "resolvedBlockingFindingsThisPass": [],
   "newBlockingFindingsThisPass": [
     {
-      "findingId": "LLM-B25-WR-001",
-      "severity": "major",
-      "status": "open",
-      "title": "implementation-missing-workflow",
-      "requiredFix": "Capture and/or implement the documented persona tab model, Home/Messages tabs, custom tabs, pinned surfaces, and minimized/medium/expanded navigation states for each community."
-    },
-    {
-      "findingId": "LLM-B25-WR-002",
-      "severity": "major",
-      "status": "open",
-      "title": "surface-mismatch",
-      "requiredFix": "Remediate the UI so each documented card surface is rendered as a visibly distinct product surface with the documented interactions/actions."
-    },
-    {
-      "findingId": "LLM-B25-WR-003",
-      "severity": "major",
-      "status": "open",
-      "title": "visible-proof-gap",
-      "requiredFix": "Update product docs if needed, then implement and recapture lifecycle states so the screenshots visibly prove the semantic interaction model."
-    },
-    {
       "findingId": "LLM-B25-VISION-001",
       "severity": "major",
       "status": "open",
-      "title": "Primary experience still relies on a repeated stacked-card scaffold",
-      "requiredFix": "Create distinct product frames for the highest-volume surfaces: event/calendar, documents, approval/status, marketplace/loan, messages, export/data, payments, and community home. Each frame needs its own layout, hierarchy, content model, and action/result region."
+      "title": "Action/review states are still dimmed modal-style screens rather than durable product states",
+      "requiredFix": "Replace dimmed action modals with durable full-bright product action surfaces and recapture all action rows."
     },
     {
       "findingId": "LLM-B25-VISION-002",
       "severity": "major",
       "status": "open",
-      "title": "Action-state screenshots are dimmed and do not prove usable after states",
-      "requiredFix": "Capture or implement action/result states as normal full-bright product screens with persistent status, history, receipt, or receiver state; avoid relying on dimmed transitional overlays as B25 proof."
+      "title": "Many utility flows still look like status/checklist panels instead of product-native screens",
+      "requiredFix": "Replace generic status/checklist utility panels with surface-specific product layouts."
     },
     {
       "findingId": "LLM-B25-VISION-003",
       "severity": "major",
       "status": "open",
-      "title": "Utility/export/ad/social/chess flows still look like status/evidence panels",
-      "requiredFix": "Replace utility/status cards with task-specific product surfaces: export wizard with data previews and files, ad-free billing/account settings, social inbox/thread UI, chess board/match UI, and document viewer/link handling."
+      "title": "Tabbed information architecture is visible but not yet proven as a persona-customized navigation model",
+      "requiredFix": "Capture and, if needed, implement persona-specific tabs, pinned surfaces, and card size states as first-class product navigation."
     },
     {
       "findingId": "LLM-B25-VISION-004",
       "severity": "major",
       "status": "open",
-      "title": "Persona tabs/navigation and pinned surfaces are not sufficiently visible in committed evidence",
-      "requiredFix": "Add screenshot coverage for community home tab, Messages/Communication tab, custom persona tabs, pinned surfaces, and minimized/medium/expanded card states; update UI where the tab model is not visible or not useful."
-    },
-    {
-      "findingId": "LLM-B25-VISION-005",
-      "severity": "major",
-      "status": "open",
-      "title": "Workflow lifecycle proof remains incomplete in visible UI",
-      "requiredFix": "For each primary workflow, add visible lifecycle controls and state: edit/change/cancel/reject/defer where required, durable result/history/receipt state, and receiver or continuation screens. Recapture after screenshots proving those states."
+      "title": "Workflow lifecycle controls improved but are not complete or screen-specific enough across all primary flows",
+      "requiredFix": "Make lifecycle actions domain-specific and visible in screenshots for every primary workflow."
     },
     {
       "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",

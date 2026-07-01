@@ -624,3 +624,40 @@ findings were resolved in pass 9.
   than continue copy-only changes.
 - Implementation commit: `613fde3`.
 - Evidence/tooling commit: `9ffb789`.
+
+### Iteration 30 / `b25-v4-pass-33`
+
+- Status: failed, but the loop is still converging. Pass 33 reduced the scorecard's remaining
+  blocking/major count from pass 32's `9` major groups to `5`.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-33.md`, added visible lifecycle follow-up actions
+  to completed/received workflow states, kept the app-shell tab/card-surface renderer centralized, and
+  hardened the B25 capture harness so vertical scrolling is not confused by the horizontal tab rail and
+  the B20 multi-persona announcement action buttons are scrolled into view before tapping.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests on `emulator-5554`. The first pass-33 capture attempts exposed capture-harness
+  failures at B19/B20; after commits `76c0f90` and `441e2ae`, the full capture completed and
+  `b25_capture_coverage_gate.dart` passed as commit-eligible. The B25 collector generated `195` schema
+  v4 screen rows for `b25-v4-pass-33`; workflow/persona coverage passed `68 / 68`; visual inspection
+  passed `195 / 195`; and the LLM review freshness gate passed for the fresh pass-33 vision artifact.
+- Product-doc reconciliation: failed with `3` major finding groups. The product docs contain the richer
+  persona-tab, card-surface, and lifecycle contracts, but current screenshots still do not fully prove
+  persona-specific tabs/pins/customization, distinct documented card-surface implementations, or
+  domain-specific lifecycle states across every community.
+- LLM Vision UX review: failed with `4` major findings and no blockers. The review found dimmed/modal
+  action-state screenshots, utility/export/ad/social/chess flows still using generic status/checklist
+  panels, incomplete evidence for persona-custom tabs/pinned/minimized/medium/expanded navigation, and
+  lifecycle controls that are not yet domain-specific enough across all primary workflows.
+- Workflow interaction model: failed `6 / 68` lifecycle scorecards, down from `12 / 68` in pass 32.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-33.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-33.md` records
+  `B25 can pass=false`, `0` blockers, `5` unresolved major finding groups, `0` resolved
+  blocker/major findings, and `5` new blocker/major finding groups.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-34.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened and continues to converge. Pass 34 should focus on full-bright durable
+  action/review screens, specialized utility/product layouts, explicit tab/pinned/expanded evidence,
+  and domain-specific lifecycle controls.
+- Evidence/tooling commit: `TBD`.
