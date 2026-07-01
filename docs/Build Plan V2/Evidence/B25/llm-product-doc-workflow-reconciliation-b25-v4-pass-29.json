@@ -1,0 +1,1563 @@
+{
+  "schemaVersion": 1,
+  "reviewerType": "llm-product-doc-workflow-reconciliation",
+  "currentReviewRunId": "b25-v4-pass-29",
+  "freshReview": true,
+  "appCommitSha": "6803c4f",
+  "reviewedProductDocPaths": [
+    "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+    "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+    "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+    "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+    "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+    "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+    "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+    "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md"
+  ],
+  "reviewedEvidencePaths": [
+    "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+    "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+    "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+    "docs/Build Plan V2/Evidence/B12/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B13/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B14/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B16/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B17/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B18/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B19/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B20/workflow-ui-evidence.json",
+    "docs/Build Plan V2/Evidence/B20/all-workflow-ui-evidence.json"
+  ],
+  "reviewedScreenRowIds": [
+    "b25-v4-row-001-garden-event-rsvp-0",
+    "b25-v4-row-002-garden-event-rsvp-1",
+    "b25-v4-row-003-garden-event-rsvp-2",
+    "b25-v4-row-004-plant-exchange-submission-0",
+    "b25-v4-row-005-plant-exchange-submission-1",
+    "b25-v4-row-006-plant-exchange-submission-2",
+    "b25-v4-row-007-garden-export-custom-schemas-0",
+    "b25-v4-row-008-garden-export-custom-schemas-1",
+    "b25-v4-row-009-garden-export-custom-schemas-2",
+    "b25-v4-row-010-book-nomination-0",
+    "b25-v4-row-011-book-nomination-1",
+    "b25-v4-row-012-book-nomination-2",
+    "b25-v4-row-013-book-selection-publish-0",
+    "b25-v4-row-014-book-selection-publish-1",
+    "b25-v4-row-015-book-selection-publish-2",
+    "b25-v4-row-016-soccer-team-roster-0",
+    "b25-v4-row-017-soccer-team-roster-1",
+    "b25-v4-row-018-soccer-team-roster-2",
+    "b25-v4-row-019-soccer-reminder-notification-0",
+    "b25-v4-row-020-soccer-reminder-notification-1",
+    "b25-v4-row-021-soccer-reminder-notification-2",
+    "b25-v4-row-022-hoa-facility-reservation-0",
+    "b25-v4-row-023-hoa-facility-reservation-1",
+    "b25-v4-row-024-hoa-facility-reservation-2",
+    "b25-v4-row-025-hoa-export-evidence-0",
+    "b25-v4-row-026-hoa-export-evidence-1",
+    "b25-v4-row-027-hoa-export-evidence-2",
+    "b25-v4-row-028-mosque-donor-visibility-0",
+    "b25-v4-row-029-mosque-donor-visibility-1",
+    "b25-v4-row-030-mosque-donor-visibility-2",
+    "b25-v4-row-031-mosque-search-ai-citation-0",
+    "b25-v4-row-032-mosque-search-ai-citation-1",
+    "b25-v4-row-033-mosque-search-ai-citation-2",
+    "b25-v4-row-034-book-vote-0",
+    "b25-v4-row-035-book-vote-1",
+    "b25-v4-row-036-book-vote-2",
+    "b25-v4-row-037-book-search-ai-digest-0",
+    "b25-v4-row-038-book-search-ai-digest-1",
+    "b25-v4-row-039-book-search-ai-digest-2",
+    "b25-v4-row-040-soccer-minor-redaction-0",
+    "b25-v4-row-041-soccer-minor-redaction-1",
+    "b25-v4-row-042-soccer-minor-redaction-2",
+    "b25-v4-row-043-soccer-export-metadata-0",
+    "b25-v4-row-044-soccer-export-metadata-1",
+    "b25-v4-row-045-soccer-export-metadata-2",
+    "b25-v4-row-046-hoa-architectural-request-0",
+    "b25-v4-row-047-hoa-architectural-request-1",
+    "b25-v4-row-048-hoa-architectural-request-2",
+    "b25-v4-row-049-mosque-announcement-0",
+    "b25-v4-row-050-mosque-announcement-1",
+    "b25-v4-row-051-mosque-announcement-2",
+    "b25-v4-row-052-mosque-donation-payment-0",
+    "b25-v4-row-053-mosque-donation-payment-1",
+    "b25-v4-row-054-mosque-donation-payment-2",
+    "b25-v4-row-055-book-meeting-rsvp-0",
+    "b25-v4-row-056-book-meeting-rsvp-1",
+    "b25-v4-row-057-book-meeting-rsvp-2",
+    "b25-v4-row-058-book-export-metadata-0",
+    "b25-v4-row-059-book-export-metadata-1",
+    "b25-v4-row-060-book-export-metadata-2",
+    "b25-v4-row-061-soccer-registration-payment-0",
+    "b25-v4-row-062-soccer-registration-payment-1",
+    "b25-v4-row-063-soccer-registration-payment-2",
+    "b25-v4-row-064-hoa-dues-payment-0",
+    "b25-v4-row-065-hoa-dues-payment-1",
+    "b25-v4-row-066-hoa-dues-payment-2",
+    "b25-v4-row-067-hoa-committee-decision-0",
+    "b25-v4-row-068-hoa-committee-decision-1",
+    "b25-v4-row-069-hoa-committee-decision-2",
+    "b25-v4-row-070-mosque-event-rsvp-0",
+    "b25-v4-row-071-mosque-event-rsvp-1",
+    "b25-v4-row-072-mosque-event-rsvp-2",
+    "b25-v4-row-073-mosque-care-request-0",
+    "b25-v4-row-074-mosque-care-request-1",
+    "b25-v4-row-075-mosque-care-request-2",
+    "b25-v4-row-076-book-discussion-message-0",
+    "b25-v4-row-077-book-discussion-message-1",
+    "b25-v4-row-078-book-discussion-message-2",
+    "b25-v4-row-079-soccer-guardian-join-approval-0",
+    "b25-v4-row-080-soccer-guardian-join-approval-1",
+    "b25-v4-row-081-soccer-guardian-join-approval-2",
+    "b25-v4-row-082-soccer-practice-schedule-0",
+    "b25-v4-row-083-soccer-practice-schedule-1",
+    "b25-v4-row-084-soccer-practice-schedule-2",
+    "b25-v4-row-085-hoa-member-document-0",
+    "b25-v4-row-086-hoa-member-document-1",
+    "b25-v4-row-087-hoa-member-document-2",
+    "b25-v4-row-088-hoa-owner-notification-0",
+    "b25-v4-row-089-hoa-owner-notification-1",
+    "b25-v4-row-090-hoa-owner-notification-2",
+    "b25-v4-row-091-mosque-volunteer-signup-0",
+    "b25-v4-row-092-mosque-volunteer-signup-1",
+    "b25-v4-row-093-mosque-volunteer-signup-2",
+    "b25-v4-row-094-mosque-neutral-notification-0",
+    "b25-v4-row-095-mosque-neutral-notification-1",
+    "b25-v4-row-096-mosque-neutral-notification-2",
+    "b25-v4-row-097-chess-local-install-open-0",
+    "b25-v4-row-098-chess-local-install-open-1",
+    "b25-v4-row-099-chess-local-install-open-2",
+    "b25-v4-row-100-chess-route-home-0",
+    "b25-v4-row-101-chess-route-home-1",
+    "b25-v4-row-102-chess-route-home-2",
+    "b25-v4-row-103-chess-match-result-0",
+    "b25-v4-row-104-chess-match-result-1",
+    "b25-v4-row-105-chess-match-result-2",
+    "b25-v4-row-106-photo-walk-rsvp-0",
+    "b25-v4-row-107-photo-walk-rsvp-1",
+    "b25-v4-row-108-photo-walk-rsvp-2",
+    "b25-v4-row-109-critique-submission-0",
+    "b25-v4-row-110-critique-submission-1",
+    "b25-v4-row-111-critique-submission-2",
+    "b25-v4-row-112-gear-loan-request-0",
+    "b25-v4-row-113-gear-loan-request-1",
+    "b25-v4-row-114-gear-loan-request-2",
+    "b25-v4-row-115-platform-messages-entry-0",
+    "b25-v4-row-116-platform-messages-entry-1",
+    "b25-v4-row-117-platform-messages-entry-2",
+    "b25-v4-row-118-platform-blocked-target-0",
+    "b25-v4-row-119-platform-blocked-target-1",
+    "b25-v4-row-120-platform-blocked-target-2",
+    "b25-v4-row-121-platform-top-banner-no-fill-0",
+    "b25-v4-row-122-platform-top-banner-no-fill-1",
+    "b25-v4-row-123-platform-top-banner-no-fill-2",
+    "b25-v4-row-124-ad-off-community-checkout-0",
+    "b25-v4-row-125-ad-off-community-checkout-1",
+    "b25-v4-row-126-ad-off-community-checkout-2",
+    "b25-v4-row-127-ad-off-ad-suppression-0",
+    "b25-v4-row-128-ad-off-ad-suppression-1",
+    "b25-v4-row-129-ad-off-ad-suppression-2",
+    "b25-v4-row-130-export-import-replay-0",
+    "b25-v4-row-131-export-import-replay-1",
+    "b25-v4-row-132-export-import-replay-2",
+    "b25-v4-row-133-export-full-bundle-0",
+    "b25-v4-row-134-export-full-bundle-1",
+    "b25-v4-row-135-export-full-bundle-2",
+    "b25-v4-row-136-export-transfer-verification-0",
+    "b25-v4-row-137-export-transfer-verification-1",
+    "b25-v4-row-138-export-transfer-verification-2",
+    "b25-v4-row-139-platform-connections-entry-0",
+    "b25-v4-row-140-platform-connections-entry-1",
+    "b25-v4-row-141-platform-connections-entry-2",
+    "b25-v4-row-142-platform-message-stream-0",
+    "b25-v4-row-143-platform-message-stream-1",
+    "b25-v4-row-144-platform-message-stream-2",
+    "b25-v4-row-145-platform-sensitive-no-fill-0",
+    "b25-v4-row-146-platform-sensitive-no-fill-1",
+    "b25-v4-row-147-platform-sensitive-no-fill-2",
+    "b25-v4-row-148-ad-off-entitlement-status-0",
+    "b25-v4-row-149-ad-off-entitlement-status-1",
+    "b25-v4-row-150-ad-off-entitlement-status-2",
+    "b25-v4-row-151-ad-off-settlement-utility-0",
+    "b25-v4-row-152-ad-off-settlement-utility-1",
+    "b25-v4-row-153-ad-off-settlement-utility-2",
+    "b25-v4-row-154-export-protected-redaction-0",
+    "b25-v4-row-155-export-protected-redaction-1",
+    "b25-v4-row-156-export-protected-redaction-2",
+    "b25-v4-row-157-export-redacted-bundle-0",
+    "b25-v4-row-158-export-redacted-bundle-1",
+    "b25-v4-row-159-export-redacted-bundle-2",
+    "b25-v4-row-160-export-transfer-rollback-0",
+    "b25-v4-row-161-export-transfer-rollback-1",
+    "b25-v4-row-162-export-transfer-rollback-2",
+    "b25-v4-row-163-platform-connection-invite-0",
+    "b25-v4-row-164-platform-connection-invite-1",
+    "b25-v4-row-165-platform-connection-invite-2",
+    "b25-v4-row-166-platform-in-stream-ad-0",
+    "b25-v4-row-167-platform-in-stream-ad-1",
+    "b25-v4-row-168-platform-in-stream-ad-2",
+    "b25-v4-row-169-ad-off-member-checkout-0",
+    "b25-v4-row-170-ad-off-member-checkout-1",
+    "b25-v4-row-171-ad-off-member-checkout-2",
+    "b25-v4-row-172-ad-off-receipt-evidence-0",
+    "b25-v4-row-173-ad-off-receipt-evidence-1",
+    "b25-v4-row-174-ad-off-receipt-evidence-2",
+    "b25-v4-row-175-export-import-preview-0",
+    "b25-v4-row-176-export-import-preview-1",
+    "b25-v4-row-177-export-import-preview-2",
+    "b25-v4-row-178-export-schema-listing-0",
+    "b25-v4-row-179-export-schema-listing-1",
+    "b25-v4-row-180-export-schema-listing-2",
+    "b25-v4-row-181-export-checksum-evidence-0",
+    "b25-v4-row-182-export-checksum-evidence-1",
+    "b25-v4-row-183-export-checksum-evidence-2",
+    "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+    "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+    "b25-v4-row-186-wf-demo-app-persona-picker-0",
+    "b25-v4-row-187-wf-demo-app-persona-picker-1",
+    "b25-v4-row-188-wf-community-persona-aware-ux-0",
+    "b25-v4-row-189-wf-community-persona-aware-ux-1",
+    "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+    "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+    "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+    "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+    "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+    "b25-v4-row-195-wf-multi-persona-workflow-evidence-5"
+  ],
+  "reviewedScreenshotHashes": [
+    "ef3749d00738a042493ed4b52d238cc95b66dccf5a63dc2cb80acbd02df6df00",
+    "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+    "a327b7666e947e40df9c581da26b12a444089874f22fc120c2711dd814231f25",
+    "df68258e4083172d8542ec358bc98d3fc364ebed323e8a41ea2b1f64524a9b16",
+    "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1",
+    "dc548cefd4c408ae1d5bd6ea976a207bd84ec6f58818f54f3df604fd40e5e562",
+    "164bfba2826a1abf32b12717e4453a500bca5ce3460c2dfacecee8cc205e4800",
+    "b2666969a895ccfa7a9542cfd68ca5e8f506b4359ab5b11649b2bce2831bbf58",
+    "d9a2281127a410ccb5449c1d8e089024d6620cb9fe60e036d031a03498318997",
+    "f2600c91a9666292141d1d2a228fff364f92c5c56fedae35cc4a32e780484374",
+    "bea32ee0dedb329c2f6dc7ab40af28ddda031875042e155e24b325f489c1e4a7",
+    "24f810a44353f9acf6247744bae595b2f7c4c2054e9c1f1fd49d5c3b695df8b8",
+    "f1fff929a15f3d21565d525c3f0d3d4dc0c3fcaa8c4c710344c44a4dfe6d9249",
+    "af402e999b2864c00741d05926961dce115c8af8294a7cb9d7e647fb259f7194",
+    "ac773b7914830920933e2b00be403e4d1a4be5b8ee52230af6b3e1a24a0c0275",
+    "bd97de277beca442672855c309b7b548286bdf19b4e060066ec57129da323f50",
+    "7eade14a749805298856ada6330603cc3c2836232409f50a931cd47a73e80748",
+    "9ef993352f9fc891a8119ebf166c33ace84250c544a93a76c25a9d401520fa16",
+    "fdacd9bee9f82523bed501414b967571bfcfe8f32f7d6718e78aeacd349187a6",
+    "32d7d3b597b273cb216df1ea903bef49df0f41a58b783c5899a5a72cbb8a326e",
+    "ff0cc5bfcb74515ae11d6b53d5ea02a622674f3b214c04e92b22d331c1144fd9",
+    "6139e726e2a723650b141dd398a9cd9d8ddcf66142aea477535627286198a84a",
+    "4761cebab6209b75330d632fc9a0c534742f0d23092462fcf8ae414a63e7e62b",
+    "e8bdbc9c325b068593706da1f9e985c82eaea983709eac99066393ea5c05948e",
+    "5f70256be5c22e9128ba73bb9fd99e683e06d81cc6a0cfed7fe34218970747d4",
+    "425d95d9c359497d8f289f4bb729dc2ea1eab5b4fb70ae1a811bf72d9aa517eb",
+    "e1cfc302e90782fda1848f9e253c11059390e939beb46245abe2b6dd6c988494",
+    "7d2f25d6d2a37618ca9d4cf003678a97f9dab7fc4571b41cb82e0e9e13cacdcb",
+    "b3b2e1dc7e9b09da7b870ba88690c9d8373a36bca5e7e4ba4eb5d38b30cecba1",
+    "3fb2aac187407268daf34a42bc8d934556a263d08d027396f707836d7a771e32",
+    "e9df888f0b99d78c2f4a566323b270cbe799e34f09ba115b152aa45438e15684",
+    "7a6db6c6ab29fc9a4f14cc0569e2ead16613f5cb4c910a1c8144a2e386c9e63c",
+    "d45b0a70847ba09f214285d51db3b00c96590473ba54731550a0edfab8cd4c21",
+    "3a7d6717915950efa6cc01c884689f7b756f605dfee5fd511e3214fca16f7a96",
+    "f27d5dcc5003b7a068194639c7b66569dd3841fbdb1bae2d1ea3d90b58c96687",
+    "259fc621762b894d5a2166964db5fb6d9465799a2b670a1a6c1a25f2e412438a",
+    "b6b7b756cf0c0b6f3b2b63f0186fccaf7be4ae01910ee23d274142918e443933",
+    "9a23fa4d75386cd4d4e1201e4acab77a442cfd2e08cc81b5d9aae3048965ce3c",
+    "edd692c0da1a2714ebe4fd4c3d01ca72c221d2708ffc502b32a898025faad60b",
+    "94b332c047d6bd3b7fccdbee8b8c4ca82c33fa7e1c5ad46909a6fb045c805ef1",
+    "9ec4bf0d641d9719fd8cc2a5ef41579fced7544ad0650acb21457cfdb27edc36",
+    "12564e5cdb455bb4d7bff03a257bb33e9a1fc919e6bbc34070db8214d08b67ce",
+    "d28d38afe70fa7aa948abd91a64eaae4baa29acca407b836fdccfb91a8fee821",
+    "27162589c99edc53e29b354c30de280225fca76708e6dd5ec0785abbb81453cc",
+    "19cef73b8d118021f316a5e72c11873054446d80552ed0785ff28713122a0498",
+    "f3a1ca70966893d27cc7376623770ab1fa609a6db4b991ade5978d9d6bc44d2a",
+    "94320b77a6616f65eb596e3144d5a5ff82869048357ba29137eb78e5dc8fc8a8",
+    "f83af95f33ec880b25a641d94b10322c2faa746bc2f68491ad6d2387f81310e3",
+    "afe1d24793bb02ccaf95089570cdd618af842f68287928b949eac562c211fd76",
+    "53fd6cc554c4becf35b6fc56cd9c50466967fabc981ef88d301d2d33238993ca",
+    "8c771edc22c99f394fa734a63624434b453f930df04dc28c2aedb0dfba97ef52",
+    "04bbdaaa7df746df213a4d776e068fc15932abf4993e2235eda98a220d7acb2e",
+    "95a93b0081446b86a844ce074efbc0624241a451d5da775a72a8533e045f1826",
+    "e4ce1ebae177206359b2c7265d5413773436aa0f351fa1e033d5d66ca658cc87",
+    "5248a69c95cb0230fee0dd790c0b6f469e0603c16bdeabb4fa6ba34424593086",
+    "b915efef85777a0f670c702ddbd0d51b99e4cdfa7bbfd9974c7f99ecdd1fb1f8",
+    "7775f09227a8910bac5285d7e14d6037046a3dd46443f96fa5fb0539c5761b5b",
+    "0c617975ec415ad42fd9f9278246de6023e9be52d9c7a908a3186a611f54222a",
+    "a116fd3a99b541043ce0e1050dd6b4c17308ac9ce03d05cc8bd5335f4b1da73c",
+    "a71fa13709a4fafa069da6b585cc9842cfa55e339dd74d83fa978e7f503ae471",
+    "01c536f4b8439ac96635bf3ee1ea708f190ce16e1686bb1d464601fa1bfbbec8",
+    "c97254438f23dc16787a7554fad631c3cc5d5ca4c2e14fad1930bcca92223af3",
+    "991652e835e7f0e7f2c79ed12e249a97f21af8a11b3cd1dbaca4f6a4020c59d4",
+    "7e2cfffdde6434696a7e0f47d413b8404778758a5a2d79791140a457b73c9f4c",
+    "a5661c0da32fda9975e532f37e8e97dfa31f3438a125e6050939dab818123cb3",
+    "8113e44496e6c303ab55483b8ab3ae16bcd86b65b1697a3a3eeb2849cca8ac44",
+    "64738b6c5767f879f6896c7116beafa3b2ce4701c7f99002b0b4f28f745518b8",
+    "ae372eb58ce318cbbbed4bd156e76b33838b04466442b454b21a8626eb3bd1c0",
+    "af2382dcd1735ffb6cf1e52741717941d7ded88ea465e5dbf6808495ad72dd7c",
+    "2f479c4aeca480299b0952a7e7ee74c38b476bec6ba2940f1c3c40a1cba0302d",
+    "6f171a5ff201e7e3cd7728cedf3560d36e1f840c1803eb6fd85ae6ab22b1f42e",
+    "1ad89db106e1683de7246b95d70bc50a72aaab9b71b5f05aab2990046508f226",
+    "9fde7650223c1ca4d1addb55fecb41d05c0c5425f69fa0bf03212dfb18e3b488",
+    "2bc0d7adeac82d0be512bdb87040802cfcbfe3e848b26723e81a69f6b087dddd",
+    "9fd426901a3f9d1137595a7cf14c21f227c7353f79cc67ec4de4c998d570f374",
+    "66e79296c8803710bdc5a07f4873f98d8f5183866bfa706e423c1bd9b79a6b04",
+    "4651f7647c911080637e2061c64bfd62c870cfdd53f5c449fcd40d4d3accb73f",
+    "3ddf67b0d9d0a5bf9d7b807f16bd11a34dc3f5c3bb5ff0d9bc1dcbef9c962061",
+    "4a486f2eef4a934cadfa950cc5767f9aa373ca5d3849e7c6e5fc4fff2dc430da",
+    "d6663083868136a64d9eb1a4c5fa19206d7ae077fd4149226d88035d4ef74bd4",
+    "43657491af078b55c81204f588da393255ebe213cb0fad5ed55afda3ebe0541e",
+    "3f76410995aee6514ec900431a1d172f1ad17fb15c8fed0d7dacf2716ae17920",
+    "b75fba53fdfdea2ba436bebf28a3faf27db4c00bbf2600caf3f78a35f7878ecc",
+    "df16602abee699b969db9ce3a453c3fbd30b69f0a54379bacb980f949d22e5d9",
+    "e5b455ef815f3302032b67f8cbe7a12d405a8b1aaa0cd751fb8e3405bd2a7729",
+    "ae8ac6378484dbbd88abbf79184a2c87261e8a791ad59adf5caf0e4959f0b7ed",
+    "87b59e7081f14e08702f92985618eb0cee3878c6eb0e225a8328a52f120fe177",
+    "331e5d3ba4d4bbd59a478fac3dc30188d28643301a8f8520a06ffe68c5e07c4a",
+    "2bc9cd95367ca66a086e3e051aa485f323a0442df4305ad758478addf8993c45",
+    "6c5424f53856dfba531e7742fcb0964f32b9a8f684670871bfc48f512ef11457",
+    "39726eb308af772e813c34b233f02973de4a5dea0493151e075877c09bf063ff",
+    "cdf8581c4e1d59ef7d4b66a204502e1f306ab83180b1d61868d28b890649419d",
+    "514008c71cb609d2051025c5d1ba69cc9f06e483c808e7f34243c0032ca21f24",
+    "57fbcffbc267eb1c26afa8f55dc7f8db621ad2e2aa12c31a9f53824debebf329",
+    "2cb441b32ca573a61d4255b71d20ae85d2f25cb0b27e2838eb0cccfc808ef436",
+    "d1491ba139aec3bc375adb57935d600ea89d883bb360f882fa6be043385d3f45",
+    "affabf88fe29c4e2421b6f893e591db4aff3c230a1c3cb6feb542f0658046866",
+    "feff839db3dfac6e920f7a61442816806208a3976ba6b83f08952d62270b33b7",
+    "347c01be8b323a940a0db651f82ea1b4688de25d4bbfb2351c706e164d17874b",
+    "7898dcf6102081b57fe3958efa1d3ca9bced951df436ec8adaf2de7236a42643",
+    "feff839db3dfac6e920f7a61442816806208a3976ba6b83f08952d62270b33b7",
+    "b7e0a64014314b4a23b1e4d165e4ec7552a1b0e331ff288ee0b507ba9b9f838c",
+    "8c8ab6be3844003c66cebed7879afc625eeaaf4733a9c19065a62f9f6b392e31",
+    "857612f9534d61f7d0704d8c4d26c8e4f79ccc14785e77117f262cbdc31d2583",
+    "060d531f51db9aa39a1afeefca4bce9414dfdaaddb34f3c474b1da44d5c5b8a2",
+    "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+    "69edc883b7b49fe647dc86bce96c5c402caf1ea75b84475dab40b935f6bad45f",
+    "7006bccd9582f75dfa7360fccd97ebe5337bc3e9b74b1a9d11a3ac33e670044b",
+    "8927a621f92fa07628a8f0f7bf7f791177d32606ae5601f7b4761464b58696c8",
+    "d7caa0b810d060db174a898715e941ca7878277a930fd0d79185d8270d6627d2",
+    "92c230871b8653c4b3fbcfcf4d588edc7ed88251636197268d14869251d9b6c9",
+    "93506ceed2f0c5183776d8ba064738658fa88a703d9cbb0a34af0476ab115720",
+    "98c27c93a434efe31e9b5436234e71830db9fe8e3a3f9bec1a093c93855840a2",
+    "f8b52f3c6de939b94068e62b3c117543c995d8c4f4ea150d6bbdec7b0cdab607",
+    "bf44c2e4141e37397340c40d36b078375470399b0ffffc867f822debda867d48",
+    "8bab690cfab11dbdeaa6a2eedde654e5074a859eeb8501017cad7e4f85b93fcd",
+    "35f582072eec14b30e3b3c4280a0e9395ca109ff25721b3598abacbd2602daac",
+    "f27e05b0c4e73566ccf27b4b95d04e22093418a80457c2f98eebae6e43382fcc",
+    "fd10e4511662f0c72f6618108198c42b57ebb01f260dbd0a4b4be234010d128f",
+    "184bfd610cf5b6573ca847429acb00505c71cc2fd38424d888e04c1246bdb6a2",
+    "a01bf704c765b331044550bd7dcd6c85e4afc6ac8249c1ca28d11684c0b8392e",
+    "14c73c0dd5b26338ef487c63c6ea96c7080c4ee67ac4a52f83bc7a2011604380",
+    "e25c1c5dd9e736d16334a07e3967f13e1ed293f9827a88f5ddedba675b687793",
+    "4c01ef6db0867ec0985ea76731db1ee438829d49316b26b150c94681f6d0ca1c",
+    "7befdc6519ae1755713e7f58deca4ffb22067cbfb5131a385c7ea43de9602996",
+    "94becd59934b281caaa4b28b63f53eb1bcd33463d2f90fafdbc9a0b151b46280",
+    "21f1dff29dbb0b231b1940b19707df6b330b2d84805fc15404564002fd9eb849",
+    "8771a7ada04198f9d3e4e95bf2c747d8aa8cd0a4bea2ce70589925d887e24461",
+    "d93ef5fbc6b25a6831d4331e09a7976503b18aad9d1ead9c3cda4fe6a7c72e59",
+    "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+    "125fbf41c6e2f39267055bff75868cb9e427bdd96ec3992d9758297c38a62132",
+    "fb8da8ba6d70ae00ffca02adb9b477e696e037e1d77ca01d0b0ec0bc01b7b69d",
+    "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+    "2837bd7b4c5fc8374686fa9e524eba9dca5849d823892072f7909742c75be68c",
+    "5642edf3d3b669e722d72e037431c151e0e04ed74245ea31b7889038e79a8438",
+    "dd848bc655bbcbda2cb99b4761ce7565eaf2d0b67132efdfc7287abc186b12a7",
+    "421ef2c9b02083455a3e669f67dfc917d4c07cbad32cb9580dc0790e3500682c",
+    "e41b17a5ac44fec9499be4aa279352009a620a1a2fa141288a1b243ea3b6bb70",
+    "14934449a9a5539ae89f78a5a9637aaf778d1c81842ad121db3b3b968f79ddd4",
+    "5a532792ccd6df59f6eae9fbe59094e53b47181a49bd861713755bbe5228e61b",
+    "0cd45773a5ccdd6c621077474d98fcd7f230a6eeef45ef73c02ed16f3ade1ff2",
+    "663f2751f64a621a52b031203c8f5c4807db815e72ade6531db8cdeb6e4c5ac6",
+    "8bab690cfab11dbdeaa6a2eedde654e5074a859eeb8501017cad7e4f85b93fcd",
+    "42d8dad55ed9f88a5f1263b37126f9a0af9d39fe981bb41e62793654b7a8a2ed",
+    "e222ad22947459371dbff3681f962c2d3fb28178dc4065b2652c12d26cdd387e",
+    "ca2a144da38d799d88fcd2893c08acd6a18bf42cb62357ee468e675b0090bc79",
+    "29c341d377406ae10eef8b519382b95dc2c671d8de83693bf033e9130e8b5af2",
+    "58b311a321a28290f2b06290df387331d67de9be42fa86cca62ebde8f859675a",
+    "fcd0f1f09b539bbe20c6aaaf8771774d65d2d8076a6e101bdc9d5d3defaad4cd",
+    "065b770cb9de7b1eff611230e46f89ebff11412188daf1c716222f992b5bd51d",
+    "47d9adbd962aa06f804b243da6cb083edb62cbadd6d4b8185f0036eee4447243",
+    "85e0925ba4a0ecd8019176a4f1a75842a5190c92a2537ff9953d805f412368fd",
+    "4f009d1a665cabe0e96f8c8e828b5d9db61f0b21720dc3fcc0977889e8745732",
+    "4e31628d05326dc236aa76233f9c7c2485223ec298195cc66d15ebd3a6b258c9",
+    "464e2d56181e948bc3afc9bcd44a97230011d252c5ba861357ffff920e8d6a09",
+    "8d1d7522dedc02c4ff5a6f0c0db8944a60e86289381b968ba8f63c8f2aab37eb",
+    "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+    "2837bd7b4c5fc8374686fa9e524eba9dca5849d823892072f7909742c75be68c",
+    "4f609974b9bb397f82b129a16e0794a861d09429500a7854d69c00d068f65f89",
+    "bde4866224ad345d68707d121479698d8bcfc5c883a285535ea139812bbadc7c",
+    "92321c7b7d9d3370e61e0352fc5a95c78553869f87b3e41a2d3da8aa99b40e63",
+    "908e2a425318986dab83a0c4b15c363b5882eee388cf2cf807acbf9cd42807bc",
+    "cd71f450c5e4981bdc86e66ab057b6aa2a7783f9888105a851a25e7f099a2e11",
+    "0f1ba8d81aec84364cfec1ca3359241ddbbbea03ca71c016ba51fd2ee7a2fe01",
+    "d34f379a6158ec97dd484e18b66f041c8d951a9054677ccb7d439897dba570a3",
+    "5dbab589b837eae35e10d3ce436b30921a298a130376d155038aa09d05c0321c",
+    "f614b8016501b408debdaff17bdb9e459b81abeaeedb96a2731d53d0976d9662",
+    "c7ed6dfcb5ed701c51e2b4b53490d55952084d348029756862ad9c7c5266174f",
+    "64a16a34c6b8d0af4fb90dccd30da8cacadc8af527c4ef38d7af248f7f73807e",
+    "4c4eb6b9870a2b020b2978c27e7f5b72a41e5c8a9fbfeb76ba17bb19da62c611",
+    "c75b7d547f1373e4fd779ac7408d85613ae6be986d321dc5acedf68a116baac6",
+    "d97f3d6b17388278fa49fecbd69778d83f4a3ea4599a7fec221589ee4cd621aa",
+    "2af9ce618ee4866b376f2602fda9674de70ef06fba03fb80ed862d0cd95a2d64",
+    "8ec10e16b2f0fc7ab32018eab5f2274f48edb9cdf1a3e7df26db3e4865915664",
+    "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+    "125fbf41c6e2f39267055bff75868cb9e427bdd96ec3992d9758297c38a62132",
+    "1af08b85307eea319b79d81d43213f46e95f80927ca720591b21a1d2f9fa52db",
+    "f751fdb15d35ec7fea5b4ccd065f2a47bbde9054f539c3cb1556ad12f887643a",
+    "f889924077f31c1f3fdccc400a340ee5662eea6b00d446b4cd1cc979efa18dde",
+    "6b5d6f59876f51087786f002215b8702900dff48f32ddadc8a71400215dbb896",
+    "b77070009ecabd58ca167ce60841f41c1f9d2029dfdaf5855edb08cff59bacfa",
+    "2d4e607ddfbfc47ef60ac032912ca95b53a299f2418282c7420474f3820ffc67",
+    "a98175622442e2f2131164910a92a7b1ec18e4bf501dbd9c7cd29f20d36f6eee",
+    "68658fcf9561f66bc9cafe5956cc96add13067c86350108dd535dc6739e1c6ef",
+    "125a3809d1bf47c4069b9037fe49e71c1368b868e66acdd2423167a19f557820",
+    "125a3809d1bf47c4069b9037fe49e71c1368b868e66acdd2423167a19f557820",
+    "a51b5535b7469a3ce2b01f8747bc2df4971d188fd878f7889f70e4ff97389398",
+    "9fde7650223c1ca4d1addb55fecb41d05c0c5425f69fa0bf03212dfb18e3b488",
+    "afe1d24793bb02ccaf95089570cdd618af842f68287928b949eac562c211fd76",
+    "afe1d24793bb02ccaf95089570cdd618af842f68287928b949eac562c211fd76",
+    "53fd6cc554c4becf35b6fc56cd9c50466967fabc981ef88d301d2d33238993ca",
+    "8c771edc22c99f394fa734a63624434b453f930df04dc28c2aedb0dfba97ef52",
+    "07a649782b909cf204ebf7eb4d97bcc87f8daaca7d487ce5cbe6eb73df038758",
+    "3774b6d7428f1289f0aaf66de1b6d24fe9ab60f84ec0c1dc4e67d82bbc05ff28",
+    "679f780947691ab3a2bcc01e5cb66155a62836fef16acb16180a7697dc37e4ae"
+  ],
+  "communityResults": [
+    {
+      "communityName": "Ad-Free Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "implementedWorkflowIds": [
+        "ad-off-community-checkout",
+        "ad-off-ad-suppression",
+        "ad-off-entitlement-status",
+        "ad-off-settlement-utility",
+        "ad-off-member-checkout",
+        "ad-off-receipt-evidence"
+      ],
+      "section6RowsReviewed": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-124-ad-off-community-checkout-0",
+          "workflowId": "ad-off-community-checkout",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-community-checkout_start.png",
+          "screenshotHash": "4c01ef6db0867ec0985ea76731db1ee438829d49316b26b150c94681f6d0ca1c",
+          "visibleTextExcerpt": "Community ad-off checkout | Confirm payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage option before checkout. | Payment summary | 120.00 USD | Community pays | Receipt | Ads hidden | Payer and scope | Community admin pay..."
+        },
+        {
+          "screenRowId": "b25-v4-row-127-ad-off-ad-suppression-0",
+          "workflowId": "ad-off-ad-suppression",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-ad-suppression_start.png",
+          "screenshotHash": "21f1dff29dbb0b231b1940b19707df6b330b2d84805fc15404564002fd9eb849",
+          "visibleTextExcerpt": "Ad suppression proof | Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision. | Payment summary | Ads hidden | Entitled | 2 slots checked | Audit trail | Top banner | Suppressed: member ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-148-ad-off-entitlement-status-0",
+          "workflowId": "ad-off-entitlement-status",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-entitlement-status_start.png",
+          "screenshotHash": "58b311a321a28290f2b06290df387331d67de9be42fa86cca62ebde8f859675a",
+          "visibleTextExcerpt": "Ad-off entitlement record | Open entitlement scope, expiration, subscription state, restore option, receipt link, and ad-free member view. | Payment summary | Active | Aug 30 | Restore option | Receipt linked | Scope | Member-level ad-off for current accoun..."
+        },
+        {
+          "screenRowId": "b25-v4-row-151-ad-off-settlement-utility-0",
+          "workflowId": "ad-off-settlement-utility",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-settlement-utility_start.png",
+          "screenshotHash": "47d9adbd962aa06f804b243da6cb083edb62cbadd6d4b8185f0036eee4447243",
+          "visibleTextExcerpt": "Ad-off settlement allocation | Confirm monthly revenue, platform fee, community utility allocation, settlement status, and audit/rollback option. | Payment summary | 120.00 USD | Utility fund | Month end | Audit ready | Destination | Community utility fund ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-169-ad-off-member-checkout-0",
+          "workflowId": "ad-off-member-checkout",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-member-checkout_start.png",
+          "screenshotHash": "64a16a34c6b8d0af4fb90dccd30da8cacadc8af527c4ef38d7af248f7f73807e",
+          "visibleTextExcerpt": "Member ad-off checkout | Confirm payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage option before checkout. | Payment summary | 4.99 USD | Member pays | Receipt | Ads hidden | Payer and scope | Member pays 4.99 USD/month ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-172-ad-off-receipt-evidence-0",
+          "workflowId": "ad-off-receipt-evidence",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_ad_off_ad-off-receipt-evidence_start.png",
+          "screenshotHash": "d97f3d6b17388278fa49fecbd69778d83f4a3ea4599a7fec221589ee4cd621aa",
+          "visibleTextExcerpt": "Ad-off receipt history | Open receipt evidence with payer, amount, date, entitlement scope, payment state, refund option, and exportable audit record. | Payment summary | ADO-1042 | 4.99 USD | Member payer | Export receipt | Receipt | ADO-1042, paid today a..."
+        }
+      ]
+    },
+    {
+      "communityName": "Camera Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "implementedWorkflowIds": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "section6RowsReviewed": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [
+        "The product doc requires RSVP choice, change path, and confirmed state for the named photo walk. Current lifecycle evidence for this workflow fails persistent result state, so B25 cannot prove the documented confirmed/attending state from the current screenshot-backed scorecard."
+      ],
+      "personaStateGaps": [],
+      "interactionModelGaps": [
+        "photo-walk-rsvp / member: current B25 scorecard does not clear the product-doc lifecycle/result-state requirement."
+      ],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-106-photo-walk-rsvp-0",
+          "workflowId": "photo-walk-rsvp",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+          "screenshotHash": "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+          "visibleTextExcerpt": "Downtown photo walk RSVP | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rai..."
+        },
+        {
+          "screenRowId": "b25-v4-row-109-critique-submission-0",
+          "workflowId": "critique-submission",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_start.png",
+          "screenshotHash": "8927a621f92fa07628a8f0f7bf7f791177d32606ae5601f7b4761464b58696c8",
+          "visibleTextExcerpt": "Street portrait critique | Evening Reflection - consent note and reviewer queue. | Submitted details | Image and title | Evening Reflection, street portrait, uploaded by Mina. | Prompt | Ask for feedback on composition, light, and crop. | Visibility | Visib..."
+        },
+        {
+          "screenRowId": "b25-v4-row-112-gear-loan-request-0",
+          "workflowId": "gear-loan-request",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
+          "screenshotHash": "93506ceed2f0c5183776d8ba064738658fa88a703d9cbb0a34af0476ab115720",
+          "visibleTextExcerpt": "35mm prime lens loan | Sam lends the lens Friday; return due Sunday evening. | Submitted details | Item | 35mm prime lens, clean condition, filter included. | Pickup and return | Pickup Friday 5 PM; return Sunday by 6 PM. | Contact | Phone is revealed only ..."
+        }
+      ]
+    },
+    {
+      "communityName": "Cedar Commons HOA",
+      "productDocPath": "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "hoa-dues-payment",
+        "hoa-member-document",
+        "hoa-facility-reservation",
+        "hoa-architectural-request",
+        "hoa-committee-decision",
+        "hoa-owner-notification",
+        "hoa-export-evidence"
+      ],
+      "implementedWorkflowIds": [
+        "hoa-facility-reservation",
+        "hoa-export-evidence",
+        "hoa-architectural-request",
+        "hoa-dues-payment",
+        "hoa-committee-decision",
+        "hoa-member-document",
+        "hoa-owner-notification"
+      ],
+      "section6RowsReviewed": [
+        "hoa-dues-payment",
+        "hoa-member-document",
+        "hoa-facility-reservation",
+        "hoa-architectural-request",
+        "hoa-committee-decision",
+        "hoa-owner-notification",
+        "hoa-export-evidence"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-022-hoa-facility-reservation-0",
+          "workflowId": "hoa-facility-reservation",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+          "screenshotHash": "6139e726e2a723650b141dd398a9cd9d8ddcf66142aea477535627286198a84a",
+          "visibleTextExcerpt": "Clubhouse Room A reservation | Confirm amount, owner, reservation or dues item, receipt destination, retry option, and status before confirming. | Payment summary | Cedar Commons | Receipt/audit | Documents | Availability | Property | Lot 42, homeowner Aver..."
+        },
+        {
+          "screenRowId": "b25-v4-row-025-hoa-export-evidence-0",
+          "workflowId": "hoa-export-evidence",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+          "screenshotHash": "5f70256be5c22e9128ba73bb9fd99e683e06d81cc6a0cfed7fe34218970747d4",
+          "visibleTextExcerpt": "HOA records export | Documents, receipts, facilities, and case history. | Export steps | 1 | Property | Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is the HOA board. | 2 | Record | Community Rules, Room A reservation, dues receipt, or architec..."
+        },
+        {
+          "screenRowId": "b25-v4-row-046-hoa-architectural-request-0",
+          "workflowId": "hoa-architectural-request",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-architectural-request_start.png",
+          "screenshotHash": "f3a1ca70966893d27cc7376623770ab1fa609a6db4b991ade5978d9d6bc44d2a",
+          "visibleTextExcerpt": "Fence color request | Lot 42 fence repaint, slate gray, decision due Friday. | Submitted details | Property | Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is the HOA board. | Record | Community Rules, Room A reservation, dues receipt, or archit..."
+        },
+        {
+          "screenRowId": "b25-v4-row-064-hoa-dues-payment-0",
+          "workflowId": "hoa-dues-payment",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-dues-payment_start.png",
+          "screenshotHash": "7e2cfffdde6434696a7e0f47d413b8404778758a5a2d79791140a457b73c9f4c",
+          "visibleTextExcerpt": "Quarterly HOA dues | Confirm amount, owner, reservation or dues item, receipt destination, retry option, and status before confirming. | Payment summary | Cedar Commons | Receipt/audit | Documents | Availability | Property | Lot 42, homeowner Avery Brooks, ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-067-hoa-committee-decision-0",
+          "workflowId": "hoa-committee-decision",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-committee-decision_start.png",
+          "screenshotHash": "64738b6c5767f879f6896c7116beafa3b2ce4701c7f99002b0b4f28f745518b8",
+          "visibleTextExcerpt": "Architectural committee decision | Board decision, conditions, comments, and owner follow-up. | Submitted details | Property | Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is the HOA board. | Record | Community Rules, Room A reservation, dues r..."
+        },
+        {
+          "screenRowId": "b25-v4-row-085-hoa-member-document-0",
+          "workflowId": "hoa-member-document",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-member-document_start.png",
+          "screenshotHash": "e5b455ef815f3302032b67f8cbe7a12d405a8b1aaa0cd751fb8e3405bd2a7729",
+          "visibleTextExcerpt": "Community Rules document | Version 2026.3, members can open and acknowledge. | Open the governing document with version, access state, acknowledgement, and download history. | Cedar Commons | Receipt/audit | Documents | Availability | Decision history | Con..."
+        },
+        {
+          "screenRowId": "b25-v4-row-088-hoa-owner-notification-0",
+          "workflowId": "hoa-owner-notification",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-owner-notification_start.png",
+          "screenshotHash": "331e5d3ba4d4bbd59a478fac3dc30188d28643301a8f8520a06ffe68c5e07c4a",
+          "visibleTextExcerpt": "Notice preview | Sender and recipient | From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42. | Message body | Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days. | Delivery | Send today at 4:15 PM t..."
+        }
+      ]
+    },
+    {
+      "communityName": "Chess Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "chess-local-install-open",
+        "chess-route-home",
+        "chess-match-result"
+      ],
+      "implementedWorkflowIds": [
+        "chess-local-install-open",
+        "chess-route-home",
+        "chess-match-result"
+      ],
+      "section6RowsReviewed": [
+        "chess-local-install-open",
+        "chess-route-home",
+        "chess-match-result"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-097-chess-local-install-open-0",
+          "workflowId": "chess-local-install-open",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-local-install-open_start.png",
+          "screenshotHash": "affabf88fe29c4e2421b6f893e591db4aff3c230a1c3cb6feb542f0658046866",
+          "visibleTextExcerpt": "Chess Club home | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Confirm player names, round, board, result, edit op..."
+        },
+        {
+          "screenRowId": "b25-v4-row-100-chess-route-home-0",
+          "workflowId": "chess-route-home",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-route-home_start.png",
+          "screenshotHash": "7898dcf6102081b57fe3958efa1d3ca9bced951df436ec8adaf2de7236a42643",
+          "visibleTextExcerpt": "Chess Club home | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Confirm player names, round, board, result, edit op..."
+        },
+        {
+          "screenRowId": "b25-v4-row-103-chess-match-result-0",
+          "workflowId": "chess-match-result",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_chess_club_chess-match-result_start.png",
+          "screenshotHash": "8c8ab6be3844003c66cebed7879afc625eeaaf4733a9c19065a62f9f6b392e31",
+          "visibleTextExcerpt": "Chess Club home | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, player..."
+        }
+      ]
+    },
+    {
+      "communityName": "Data Portability Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "implementedWorkflowIds": [
+        "export-import-replay",
+        "export-full-bundle",
+        "export-transfer-verification",
+        "export-protected-redaction",
+        "export-redacted-bundle",
+        "export-transfer-rollback",
+        "export-import-preview",
+        "export-schema-listing",
+        "export-checksum-evidence"
+      ],
+      "section6RowsReviewed": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [
+        "export-protected-redaction / owner: current B25 scorecard does not clear the product-doc lifecycle/result-state requirement."
+      ],
+      "surfaceMappingGaps": [
+        "Section 6 requires protected fields, redaction choices, preview, and audit state; screenshots show generic protected-field masking, policy reasons, before/after preview, and audit trail, but the current B25 workflow/persona scorecard fails because it expects protected youth/minor profile and guardian/coach visibility proof that is not stated in the export product doc."
+      ],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-130-export-import-replay-0",
+          "workflowId": "export-import-replay",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-replay_start.png",
+          "screenshotHash": "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+          "visibleTextExcerpt": "Legacy import preview | Preview rows, conflicts, replay checkpoint, and rollback marker. | Export steps | 1 | Rows preview | 48 members, 22 documents, 12 receipts, and three duplicate records are visible. | 2 | Conflict choices | Duplicates can be accepted,..."
+        },
+        {
+          "screenRowId": "b25-v4-row-133-export-full-bundle-0",
+          "workflowId": "export-full-bundle",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-full-bundle_start.png",
+          "screenshotHash": "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+          "visibleTextExcerpt": "Full export bundle | Generate a downloadable package with scope, redaction, and checksum. | Export steps | 1 | Bundle contents | Members, receipts, documents, messages, custom records, and export metadata. | 2 | Redaction | Protected fields are counted and ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-136-export-transfer-verification-0",
+          "workflowId": "export-transfer-verification",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-verification_start.png",
+          "screenshotHash": "dd848bc655bbcbda2cb99b4761ce7565eaf2d0b67132efdfc7287abc186b12a7",
+          "visibleTextExcerpt": "Provider transfer verification | Verify destination provider, handshake, receipt, and audit trail. | Export steps | 1 | Destination | Provider Cloud HOA receives bundle E-204 after handshake. | 2 | Hash match | Source hash and provider receipt hash match be..."
+        },
+        {
+          "screenRowId": "b25-v4-row-154-export-protected-redaction-0",
+          "workflowId": "export-protected-redaction",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+          "screenshotHash": "4e31628d05326dc236aa76233f9c7c2485223ec298195cc66d15ebd3a6b258c9",
+          "visibleTextExcerpt": "Protected redaction preview | Mask protected fields with policy reasons before export. | Export steps | 1 | Protected values | Phone, care, vault, payment, and private notes are masked. | 2 | Policy reason | Each masked field shows the policy and persona al..."
+        },
+        {
+          "screenRowId": "b25-v4-row-157-export-redacted-bundle-0",
+          "workflowId": "export-redacted-bundle",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-redacted-bundle_start.png",
+          "screenshotHash": "c35e7efccc27bf2c7667d6d4a9b3aaf5cee9b2fd4233454253baa7a7e3d58955",
+          "visibleTextExcerpt": "Full export bundle | Generate a downloadable package with scope, redaction, and checksum. | Export steps | 1 | Bundle contents | Members, receipts, documents, messages, custom records, and export metadata. | 2 | Redaction | Protected fields are counted and ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-160-export-transfer-rollback-0",
+          "workflowId": "export-transfer-rollback",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-transfer-rollback_start.png",
+          "screenshotHash": "bde4866224ad345d68707d121479698d8bcfc5c883a285535ea139812bbadc7c",
+          "visibleTextExcerpt": "Provider rollback plan | Recover from provider mismatch using the last good snapshot. | Export steps | 1 | Mismatch | Destination provider hash differs from source package checksum. | 2 | Rollback checkpoint | Snapshot E-204 is the last good state and can b..."
+        },
+        {
+          "screenRowId": "b25-v4-row-175-export-import-preview-0",
+          "workflowId": "export-import-preview",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-import-preview_start.png",
+          "screenshotHash": "495f78fcc8ae709aab6f8998415a14ac14e0de812dac411c386d57037b6bfe5a",
+          "visibleTextExcerpt": "Legacy import preview | Preview rows, conflicts, replay checkpoint, and rollback marker. | Export steps | 1 | Rows preview | 48 members, 22 documents, 12 receipts, and three duplicate records are visible. | 2 | Conflict choices | Duplicates can be accepted,..."
+        },
+        {
+          "screenRowId": "b25-v4-row-178-export-schema-listing-0",
+          "workflowId": "export-schema-listing",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-schema-listing_start.png",
+          "screenshotHash": "f751fdb15d35ec7fea5b4ccd065f2a47bbde9054f539c3cb1556ad12f887643a",
+          "visibleTextExcerpt": "Exportable schema catalog | List schemas, field classes, custom records, and history. | Export steps | 1 | Schema list | community, member, receipt, document, message, task, event, and custom tables. | 2 | Field classes | Public, member, protected, payment,..."
+        },
+        {
+          "screenRowId": "b25-v4-row-181-export-checksum-evidence-0",
+          "workflowId": "export-checksum-evidence",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-checksum-evidence_start.png",
+          "screenshotHash": "b77070009ecabd58ca167ce60841f41c1f9d2029dfdaf5855edb08cff59bacfa",
+          "visibleTextExcerpt": "Checksum evidence record | Verify digest, file count, byte size, and integrity receipt. | Export steps | 1 | Digest | Checksum 9A7F-PORT, file count 84, size 18.4 MB, SHA-256 verified. | 2 | Comparison | Source package hash and destination package hash must..."
+        }
+      ]
+    },
+    {
+      "communityName": "Garden Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "garden-event-rsvp",
+        "plant-exchange-submission",
+        "garden-export-custom-schemas"
+      ],
+      "implementedWorkflowIds": [
+        "garden-event-rsvp",
+        "plant-exchange-submission",
+        "garden-export-custom-schemas"
+      ],
+      "section6RowsReviewed": [
+        "garden-event-rsvp",
+        "plant-exchange-submission",
+        "garden-export-custom-schemas"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-001-garden-event-rsvp-0",
+          "workflowId": "garden-event-rsvp",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+          "screenshotHash": "ef3749d00738a042493ed4b52d238cc95b66dccf5a63dc2cb80acbd02df6df00",
+          "visibleTextExcerpt": "Spring Planting Workshop | Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members. | Sat, Apr 18 | 10:00 AM | Riverside Greenhouse | 18 of 24 spots | Your RSVP | Choose Going, Maybe, or Not going after checking the schedule, locati..."
+        },
+        {
+          "screenRowId": "b25-v4-row-004-plant-exchange-submission-0",
+          "workflowId": "plant-exchange-submission",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+          "screenshotHash": "df68258e4083172d8542ec358bc98d3fc364ebed323e8a41ea2b1f64524a9b16",
+          "visibleTextExcerpt": "Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat 1-3 PM | Contact after claim | Members will see the plant variety, pickup win..."
+        },
+        {
+          "screenRowId": "b25-v4-row-007-garden-export-custom-schemas-0",
+          "workflowId": "garden-export-custom-schemas",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+          "screenshotHash": "164bfba2826a1abf32b12717e4453a500bca5ce3460c2dfacecee8cc205e4800",
+          "visibleTextExcerpt": "Garden data export package | Choose event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields redacted. | 2 schemas selected | Redaction preview | Checksum verified | Downloa..."
+        }
+      ]
+    },
+    {
+      "communityName": "Loom Communities Shell",
+      "productDocPath": "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [],
+      "implementedWorkflowIds": [],
+      "section6RowsReviewed": [],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": []
+    },
+    {
+      "communityName": "Masjid Nur",
+      "productDocPath": "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "mosque-announcement",
+        "mosque-event-rsvp",
+        "mosque-volunteer-signup",
+        "mosque-donor-visibility",
+        "mosque-donation-payment",
+        "mosque-care-request",
+        "mosque-neutral-notification",
+        "mosque-search-ai-citation",
+        "wf_demo-app-persona-picker",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence"
+      ],
+      "implementedWorkflowIds": [
+        "mosque-donor-visibility",
+        "mosque-search-ai-citation",
+        "mosque-announcement",
+        "mosque-donation-payment",
+        "mosque-event-rsvp",
+        "mosque-care-request",
+        "mosque-volunteer-signup",
+        "mosque-neutral-notification",
+        "wf_demo-app-persona-picker",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence"
+      ],
+      "section6RowsReviewed": [
+        "mosque-announcement",
+        "mosque-event-rsvp",
+        "mosque-volunteer-signup",
+        "mosque-donor-visibility",
+        "mosque-donation-payment",
+        "mosque-care-request",
+        "mosque-neutral-notification",
+        "mosque-search-ai-citation",
+        "wf_demo-app-persona-picker",
+        "wf_community-persona-aware-ux",
+        "wf_community-persona-aware-ux",
+        "wf_multi-persona-workflow-evidence",
+        "wf_multi-persona-workflow-evidence"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [
+        "The product doc requires donor visibility choice, amount context, receipt visibility, and a change path. Current lifecycle evidence fails persistent result state; the result text says saved but does not make the durable selected visibility/receipt state sufficiently explicit for the B25 lifecycle proof."
+      ],
+      "personaStateGaps": [],
+      "interactionModelGaps": [
+        "mosque-donor-visibility / donor: current B25 scorecard does not clear the product-doc lifecycle/result-state requirement."
+      ],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-028-mosque-donor-visibility-0",
+          "workflowId": "mosque-donor-visibility",
+          "persona": "donor",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+          "screenshotHash": "7d2f25d6d2a37618ca9d4cf003678a97f9dab7fc4571b41cb82e0e9e13cacdcb",
+          "visibleTextExcerpt": "Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Confirm amount, donor visibility, receipt destination, and giving history before saving. | Community care | Privacy checked | Receipt record | Member inbox | ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-031-mosque-search-ai-citation-0",
+          "workflowId": "mosque-search-ai-citation",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png",
+          "screenshotHash": "e9df888f0b99d78c2f4a566323b270cbe799e34f09ba115b152aa45438e15684",
+          "visibleTextExcerpt": "Answer with sources | Query | Member-safe update with respectful language and privacy boundaries. | Public summary | Member-facing text stays neutral and does not reveal sensitive care details. | Protected details | Private notes are visible only to the car..."
+        },
+        {
+          "screenRowId": "b25-v4-row-049-mosque-announcement-0",
+          "workflowId": "mosque-announcement",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-announcement_start.png",
+          "screenshotHash": "afe1d24793bb02ccaf95089570cdd618af842f68287928b949eac562c211fd76",
+          "visibleTextExcerpt": "Ramadan community night | Announcement composer for Masjid Nur members. | Confirm the message body, selected audience, sender, delivery timing, and member inbox preview before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + pus..."
+        },
+        {
+          "screenRowId": "b25-v4-row-052-mosque-donation-payment-0",
+          "workflowId": "mosque-donation-payment",
+          "persona": "donor",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donation-payment_start.png",
+          "screenshotHash": "04bbdaaa7df746df213a4d776e068fc15932abf4993e2235eda98a220d7acb2e",
+          "visibleTextExcerpt": "Sadaqah donation receipt | Confirm amount, donor visibility, receipt destination, and giving history before saving. | Payment summary | Community care | Privacy checked | Receipt record | Member inbox | Public summary | Member-facing text stays neutral and ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-070-mosque-event-rsvp-0",
+          "workflowId": "mosque-event-rsvp",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-event-rsvp_start.png",
+          "screenshotHash": "2f479c4aeca480299b0952a7e7ee74c38b476bec6ba2940f1c3c40a1cba0302d",
+          "visibleTextExcerpt": "Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat after checking event time, location, host, capacity, and reminder details. | Fri, Mar 14 | 6:45 PM | Fellowship hall | 86 of 120 spots | Confirm the event date, time, location..."
+        },
+        {
+          "screenRowId": "b25-v4-row-073-mosque-care-request-0",
+          "workflowId": "mosque-care-request",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-care-request_start.png",
+          "screenshotHash": "9fde7650223c1ca4d1addb55fecb41d05c0c5425f69fa0bf03212dfb18e3b488",
+          "visibleTextExcerpt": "Private care request | Meal support request with public summary and protected details. | Submitted details | Public summary | Member-facing text stays neutral and does not reveal sensitive care details. | Protected details | Private notes are visible only t..."
+        },
+        {
+          "screenRowId": "b25-v4-row-091-mosque-volunteer-signup-0",
+          "workflowId": "mosque-volunteer-signup",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-volunteer-signup_start.png",
+          "screenshotHash": "39726eb308af772e813c34b233f02973de4a5dea0493151e075877c09bf063ff",
+          "visibleTextExcerpt": "Iftar setup shift | Friday 4:30 PM - tables, check-in, and meal handoff. | Choose the role, confirm shift time, protect contact details, and confirm coordinator follow-up. | Setup role | 4:30-6:30 PM shift | Phone protected | 2 spots open | Confirm the deta..."
+        },
+        {
+          "screenRowId": "b25-v4-row-094-mosque-neutral-notification-0",
+          "workflowId": "mosque-neutral-notification",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-neutral-notification_start.png",
+          "screenshotHash": "57fbcffbc267eb1c26afa8f55dc7f8db621ad2e2aa12c31a9f53824debebf329",
+          "visibleTextExcerpt": "Neutral care receipt | Search public announcement content with citations, sender, delivery timing, and member inbox preview. | Payment summary | Community care | Privacy checked | Receipt record | Member inbox | Public summary | Member-facing text stays neu..."
+        },
+        {
+          "screenRowId": "b25-v4-row-186-wf-demo-app-persona-picker-0",
+          "workflowId": "wf_demo-app-persona-picker",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B18/screenshots/B18_persona_picker_dialog.png",
+          "screenshotHash": "125a3809d1bf47c4069b9037fe49e71c1368b868e66acdd2423167a19f557820",
+          "visibleTextExcerpt": "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member no..."
+        },
+        {
+          "screenRowId": "b25-v4-row-188-wf-community-persona-aware-ux-0",
+          "workflowId": "wf_community-persona-aware-ux",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B19/screenshots/B19_member_care_request_actor.png",
+          "screenshotHash": "9fde7650223c1ca4d1addb55fecb41d05c0c5425f69fa0bf03212dfb18e3b488",
+          "visibleTextExcerpt": "Private care request | Meal support request with public summary and protected details. | Submitted details | Public summary | Member-facing text stays neutral and does not reveal sensitive care details. | Protected details | Private notes are visible only t..."
+        },
+        {
+          "screenRowId": "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+          "workflowId": "wf_multi-persona-workflow-evidence",
+          "persona": "admin",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_announcement_admin_start.png",
+          "screenshotHash": "afe1d24793bb02ccaf95089570cdd618af842f68287928b949eac562c211fd76",
+          "visibleTextExcerpt": "Ramadan community night | Announcement composer for Masjid Nur members. | Confirm the message body, selected audience, sender, delivery timing, and member inbox preview before publishing. | Audience: members | From Masjid Admin | Today 6:00 PM | Inbox + pus..."
+        }
+      ]
+    },
+    {
+      "communityName": "Neighborhood Book Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "book-nomination",
+        "book-vote",
+        "book-meeting-rsvp",
+        "book-discussion-message",
+        "book-selection-publish",
+        "book-search-ai-digest",
+        "book-export-metadata"
+      ],
+      "implementedWorkflowIds": [
+        "book-nomination",
+        "book-selection-publish",
+        "book-vote",
+        "book-search-ai-digest",
+        "book-meeting-rsvp",
+        "book-export-metadata",
+        "book-discussion-message"
+      ],
+      "section6RowsReviewed": [
+        "book-nomination",
+        "book-vote",
+        "book-meeting-rsvp",
+        "book-discussion-message",
+        "book-selection-publish",
+        "book-search-ai-digest",
+        "book-export-metadata"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [
+        "The product doc requires candidates and voted result. Current lifecycle evidence fails persistent result state, so the screenshot-backed review does not yet clear the documented requirement for a durable selected-book vote state despite visible vote-saved language."
+      ],
+      "personaStateGaps": [],
+      "interactionModelGaps": [
+        "book-vote / member: current B25 scorecard does not clear the product-doc lifecycle/result-state requirement."
+      ],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-010-book-nomination-0",
+          "workflowId": "book-nomination",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+          "screenshotHash": "f2600c91a9666292141d1d2a228fff364f92c5c56fedae35cc4a32e780484374",
+          "visibleTextExcerpt": "Nominate Parable of the Sower | Octavia E. Butler - February reading cycle. | Share why this title belongs on the ballot and how it fits the upcoming discussion. | Book title entered | Author confirmed | Discussion reason | Ballot eligible | Confirm the det..."
+        },
+        {
+          "screenRowId": "b25-v4-row-013-book-selection-publish-0",
+          "workflowId": "book-selection-publish",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+          "screenshotHash": "f1fff929a15f3d21565d525c3f0d3d4dc0c3fcaa8c4c710344c44a4dfe6d9249",
+          "visibleTextExcerpt": "Publish February selection | Parable of the Sower won the member vote. | Send the selected-book announcement with audience, author, message body, and delivery timing. | Audience: members | From organizer | Today 5:00 PM | Inbox + push | Confirm the message ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-034-book-vote-0",
+          "workflowId": "book-vote",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+          "screenshotHash": "3a7d6717915950efa6cc01c884689f7b756f605dfee5fd511e3214fca16f7a96",
+          "visibleTextExcerpt": "February book ballot | Vote between three member nominations. | Parable of the Sower is leading the ballot for the next monthly discussion. | 3 nominations | Closes Jan 20 | 1 member vote | Leading title | Confirm the details, editable fields, final progres..."
+        },
+        {
+          "screenRowId": "b25-v4-row-037-book-search-ai-digest-0",
+          "workflowId": "book-search-ai-digest",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png",
+          "screenshotHash": "b6b7b756cf0c0b6f3b2b63f0186fccaf7be4ae01910ee23d274142918e443933",
+          "visibleTextExcerpt": "Answer with sources | Query | Query: \"What should we discuss before chapter 6?\" | Answer summary | Focus the chapter 6 discussion on mutual aid, scarcity, and Lauren's journal voice. | Source snippets | Cites member notes, the February nomination rationale,..."
+        },
+        {
+          "screenRowId": "b25-v4-row-055-book-meeting-rsvp-0",
+          "workflowId": "book-meeting-rsvp",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-meeting-rsvp_start.png",
+          "screenshotHash": "5248a69c95cb0230fee0dd790c0b6f469e0603c16bdeabb4fa6ba34424593086",
+          "visibleTextExcerpt": "Parable discussion night | Thu, Feb 15 at 7:00 PM - Maya's living room. | Reserve a seat for the discussion and see host, location, capacity, and reminder status. | Thu, Feb 15 | 7:00 PM | Maya's living room | 10 of 14 spots | Confirm the event date, time, ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-058-book-export-metadata-0",
+          "workflowId": "book-export-metadata",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-export-metadata_start.png",
+          "screenshotHash": "0c617975ec415ad42fd9f9278246de6023e9be52d9c7a908a3186a611f54222a",
+          "visibleTextExcerpt": "Book club export package | Nominations, votes, RSVPs, threads, and reading schedule. | Export steps | 1 | Reading data | Nominations, selected books, ballot counts, reading schedule, and meeting RSVP records. | 2 | Redaction preview | Member email, phone, a..."
+        },
+        {
+          "screenRowId": "b25-v4-row-076-book-discussion-message-0",
+          "workflowId": "book-discussion-message",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-discussion-message_start.png",
+          "screenshotHash": "66e79296c8803710bdc5a07f4873f98d8f5183866bfa706e423c1bd9b79a6b04",
+          "visibleTextExcerpt": "Discussion thread | Prompt: What does community care require? | Reply to the Parable discussion with a note scoped to club members. | From Jordan | Members only | 3 unread | Club scoped | Confirm sender, recipient, message body, timestamp, reply, send, acce..."
+        }
+      ]
+    },
+    {
+      "communityName": "persona-role-inventory",
+      "productDocPath": "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "wf_persona-role-inventory-capability-matrix"
+      ],
+      "implementedWorkflowIds": [
+        "wf_persona-role-inventory-capability-matrix"
+      ],
+      "section6RowsReviewed": [
+        "wf_persona-role-inventory-capability-matrix",
+        "wf_persona-role-inventory-capability-matrix"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+          "workflowId": "wf_persona-role-inventory-capability-matrix",
+          "persona": "admin",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B17/screenshots/B17_persona_inventory_active_admin.png",
+          "screenshotHash": "68658fcf9561f66bc9cafe5956cc96add13067c86350108dd535dc6739e1c6ef",
+          "visibleTextExcerpt": "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral notifications. | 2 personas | Announcements | Updates, reminders, and member no..."
+        }
+      ]
+    },
+    {
+      "communityName": "Member Social Space",
+      "productDocPath": "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "implementedWorkflowIds": [
+        "platform-messages-entry",
+        "platform-blocked-target",
+        "platform-top-banner-no-fill",
+        "platform-connections-entry",
+        "platform-message-stream",
+        "platform-sensitive-no-fill",
+        "platform-connection-invite",
+        "platform-in-stream-ad"
+      ],
+      "section6RowsReviewed": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [
+        "The product doc requires participants, message preview, timestamp, and reply/mark-read/mute state. Current lifecycle evidence fails persistent result state; the screenshots show thread-updated/read-receipt copy but do not clear the durable sent/received/read/archived state required by the lifecycle model."
+      ],
+      "personaStateGaps": [],
+      "interactionModelGaps": [
+        "platform-message-stream / member: current B25 scorecard does not clear the product-doc lifecycle/result-state requirement."
+      ],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-115-platform-messages-entry-0",
+          "workflowId": "platform-messages-entry",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-messages-entry_start.png",
+          "screenshotHash": "bf44c2e4141e37397340c40d36b078375470399b0ffffc867f822debda867d48",
+          "visibleTextExcerpt": "Conversation | Sender and recipient | Maya Chen -> Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block r..."
+        },
+        {
+          "screenRowId": "b25-v4-row-118-platform-blocked-target-0",
+          "workflowId": "platform-blocked-target",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-blocked-target_start.png",
+          "screenshotHash": "f27e05b0c4e73566ccf27b4b95d04e22093418a80457c2f98eebae6e43382fcc",
+          "visibleTextExcerpt": "Conversation | Sender and protected recipient | Maya Chen attempted to invite Jordan Lee; Jordan remains protected by an active block. | Attempted invite body | Invite text: \"Join my community circle for Saturday event planning.\" | Community safety record |..."
+        },
+        {
+          "screenRowId": "b25-v4-row-121-platform-top-banner-no-fill-0",
+          "workflowId": "platform-top-banner-no-fill",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-top-banner-no-fill_start.png",
+          "screenshotHash": "a01bf704c765b331044550bd7dcd6c85e4afc6ac8249c1ca28d11684c0b8392e",
+          "visibleTextExcerpt": "Top banner no-fill | Show a clear no-sponsored-message state with reserved space, disclosure, and no overlap. | Payment summary | Disclosure | Slot reserved | No overlap | Audit state | Reserved placement | Top banner slot remains visible with no sponsored ..."
+        },
+        {
+          "screenRowId": "b25-v4-row-139-platform-connections-entry-0",
+          "workflowId": "platform-connections-entry",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connections-entry_start.png",
+          "screenshotHash": "14934449a9a5539ae89f78a5a9637aaf778d1c81842ad121db3b3b968f79ddd4",
+          "visibleTextExcerpt": "Conversation | Sender and recipient | Maya Chen invites Jordan Lee to connect inside the community. | Invite body | Message: \"Want to coordinate the Saturday welcome table together?\" | Timestamp | Today 9:12 AM, expires in 7 days if unanswered. | Accepted |..."
+        },
+        {
+          "screenRowId": "b25-v4-row-142-platform-message-stream-0",
+          "workflowId": "platform-message-stream",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+          "screenshotHash": "663f2751f64a621a52b031203c8f5c4807db815e72ade6531db8cdeb6e4c5ac6",
+          "visibleTextExcerpt": "Conversation | Sender and recipient | Maya Chen -> Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block r..."
+        },
+        {
+          "screenRowId": "b25-v4-row-145-platform-sensitive-no-fill-0",
+          "workflowId": "platform-sensitive-no-fill",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-sensitive-no-fill_start.png",
+          "screenshotHash": "e222ad22947459371dbff3681f962c2d3fb28178dc4065b2652c12d26cdd387e",
+          "visibleTextExcerpt": "Sensitive page ad guard | Show the member why ads are suppressed, preserve layout, and avoid leaking protected context. | Payment summary | Protected page | No overlap | Audit state | Dismiss/report | Sensitive context | Care/protected content suppresses ad..."
+        },
+        {
+          "screenRowId": "b25-v4-row-163-platform-connection-invite-0",
+          "workflowId": "platform-connection-invite",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-connection-invite_start.png",
+          "screenshotHash": "cd71f450c5e4981bdc86e66ab057b6aa2a7783f9888105a851a25e7f099a2e11",
+          "visibleTextExcerpt": "Conversation | Sender and recipient | Maya Chen invites Jordan Lee to connect inside the community. | Invite body | Message: \"Want to coordinate the Saturday welcome table together?\" | Timestamp | Today 9:12 AM, expires in 7 days if unanswered. | Accepted |..."
+        },
+        {
+          "screenRowId": "b25-v4-row-166-platform-in-stream-ad-0",
+          "workflowId": "platform-in-stream-ad",
+          "persona": "member",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-in-stream-ad_start.png",
+          "screenshotHash": "5dbab589b837eae35e10d3ce436b30921a298a130376d155038aa09d05c0321c",
+          "visibleTextExcerpt": "Sponsored stream message | Show sponsor, disclosure, message copy, impression state, and dismiss/report alternatives. | Payment summary | Disclosure | No overlap | Audit state | Dismiss/report | Sponsor | Disclosure: Sponsored by Neighborhood Newsletter. | ..."
+        }
+      ]
+    },
+    {
+      "communityName": "Riverside Youth Soccer",
+      "productDocPath": "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md",
+      "status": "pass",
+      "declaredWorkflowIds": [
+        "soccer-guardian-join-approval",
+        "soccer-team-roster",
+        "soccer-minor-redaction",
+        "soccer-registration-payment",
+        "soccer-practice-schedule",
+        "soccer-reminder-notification",
+        "soccer-export-metadata"
+      ],
+      "implementedWorkflowIds": [
+        "soccer-team-roster",
+        "soccer-reminder-notification",
+        "soccer-minor-redaction",
+        "soccer-export-metadata",
+        "soccer-registration-payment",
+        "soccer-guardian-join-approval",
+        "soccer-practice-schedule"
+      ],
+      "section6RowsReviewed": [
+        "soccer-guardian-join-approval",
+        "soccer-team-roster",
+        "soccer-minor-redaction",
+        "soccer-registration-payment",
+        "soccer-practice-schedule",
+        "soccer-reminder-notification",
+        "soccer-export-metadata"
+      ],
+      "missingFromProductDoc": [],
+      "missingFromEvidence": [],
+      "visibleProofGaps": [],
+      "personaStateGaps": [],
+      "interactionModelGaps": [],
+      "surfaceMappingGaps": [],
+      "screenshotBackedExamples": [
+        {
+          "screenRowId": "b25-v4-row-016-soccer-team-roster-0",
+          "workflowId": "soccer-team-roster",
+          "persona": "coach",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+          "screenshotHash": "bd97de277beca442672855c309b7b548286bdf19b4e060066ec57129da323f50",
+          "visibleTextExcerpt": "U10 Falcons roster | Open player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive details. | Roster and visibility | Featured player | Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday. | Pr..."
+        },
+        {
+          "screenRowId": "b25-v4-row-019-soccer-reminder-notification-0",
+          "workflowId": "soccer-reminder-notification",
+          "persona": "guardian",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+          "screenshotHash": "fdacd9bee9f82523bed501414b967571bfcfe8f32f7d6718e78aeacd349187a6",
+          "visibleTextExcerpt": "Guardian practice reminder | Send the reminder message body with sender, guardian audience, timestamp, and inbox channel. | Event details | Team | U10 Falcons, coach Jordan Patel, 12-player roster. | Schedule | Saturday practice at 9:00 AM on Riverside Fiel..."
+        },
+        {
+          "screenRowId": "b25-v4-row-040-soccer-minor-redaction-0",
+          "workflowId": "soccer-minor-redaction",
+          "persona": "guardian",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_start.png",
+          "screenshotHash": "94b332c047d6bd3b7fccdbee8b8c4ca82c33fa7e1c5ad46909a6fb045c805ef1",
+          "visibleTextExcerpt": "Youth privacy record | Show protected minor data, redaction result, export scope, and permission boundaries for coaches and guardians. | Roster and visibility | Team | U10 Falcons, coach Jordan Patel, 12-player roster. | Schedule | Saturday practice at 9:00..."
+        },
+        {
+          "screenRowId": "b25-v4-row-043-soccer-export-metadata-0",
+          "workflowId": "soccer-export-metadata",
+          "persona": "owner",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-export-metadata_start.png",
+          "screenshotHash": "d28d38afe70fa7aa948abd91a64eaae4baa29acca407b836fdccfb91a8fee821",
+          "visibleTextExcerpt": "Protected soccer export | Roster and registration data with minor protection. | Export steps | 1 | Team | U10 Falcons, coach Jordan Patel, 12-player roster. | 2 | Schedule | Saturday practice at 9:00 AM on Riverside Field 3 with RSVP and attendance result v..."
+        },
+        {
+          "screenRowId": "b25-v4-row-061-soccer-registration-payment-0",
+          "workflowId": "soccer-registration-payment",
+          "persona": "guardian",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-registration-payment_start.png",
+          "screenshotHash": "01c536f4b8439ac96635bf3ee1ea708f190ce16e1686bb1d464601fa1bfbbec8",
+          "visibleTextExcerpt": "Season registration fee | Confirm payer, player, season fee, receipt destination, retry option, and scholarship note before payment. | Payment summary | 125.00 USD | Leo Rivera | Receipt saved | Private payer | Registration | U10 Falcons spring season regis..."
+        },
+        {
+          "screenRowId": "b25-v4-row-079-soccer-guardian-join-approval-0",
+          "workflowId": "soccer-guardian-join-approval",
+          "persona": "guardian",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-guardian-join-approval_start.png",
+          "screenshotHash": "4a486f2eef4a934cadfa950cc5767f9aa373ca5d3849e7c6e5fc4fff2dc430da",
+          "visibleTextExcerpt": "Guardian approval desk | Confirm guardian identity, player connection, emergency-contact status, and approval notes before activating membership. | Roster and visibility | Guardian | Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today. | Sa..."
+        },
+        {
+          "screenRowId": "b25-v4-row-082-soccer-practice-schedule-0",
+          "workflowId": "soccer-practice-schedule",
+          "persona": "guardian",
+          "screenshotPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-practice-schedule_start.png",
+          "screenshotHash": "3f76410995aee6514ec900431a1d172f1ad17fb15c8fed0d7dacf2716ae17920",
+          "visibleTextExcerpt": "Saturday practice schedule | Publish team schedule details with time, field, capacity, guardian inbox preview, and confirmed attendance result. | Event details | Team | U10 Falcons, coach Jordan Patel, 12-player roster. | Schedule | Saturday practice at 9:0..."
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "LLM-B25-WR-001",
+      "severity": "major",
+      "gapType": "surface-mismatch",
+      "communityName": "Data Portability Community",
+      "workflowId": "export-protected-redaction",
+      "persona": "owner",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-154-export-protected-redaction-0",
+        "b25-v4-row-155-export-protected-redaction-1",
+        "b25-v4-row-156-export-protected-redaction-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_export_migration_export-protected-redaction_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "4e31628d05326dc236aa76233f9c7c2485223ec298195cc66d15ebd3a6b258c9",
+        "464e2d56181e948bc3afc9bcd44a97230011d252c5ba861357ffff920e8d6a09",
+        "8d1d7522dedc02c4ff5a6f0c0db8944a60e86289381b968ba8f63c8f2aab37eb"
+      ],
+      "visibleTextExcerpt": "Protected redaction preview | Mask protected fields with policy reasons before export. | Export steps | 1 | Protected values | Phone, care, vault, payment, and private notes are masked. | 2 | Policy reason | Each masked field shows the policy and persona allowed to reveal it. | 3 | Before/after | Owner compares source label, exported safe value, and redaction count. | 4 | Owner artifact | Owner can download or transfer only after required verification succeeds. | 5 | Audit trail | Scope, decision, timestamp, checksum, and actor are preserved. | Package progress | Apply the protected-field mask and keep before/after preview, policy reason, and reveal permission visible. | Reveal field | Generate export | Data Portability Community | Export steps | 1 | Protected values | Phone, care, vault, payment, and private notes are masked. | 2 | Policy reason | Each masked field shows the policy a...",
+      "requiredFix": "Resolve the export redaction criteria drift before the next judge pass: either update the product doc and seed content to require a concrete protected-person/guardian visibility example and capture that UI, or repair/re-run the evidence mapping so export-protected-redaction is judged against export-specific protected fields, redaction choices, preview, and audit state.",
+      "ticketMode": "mixed"
+    },
+    {
+      "findingId": "LLM-B25-WR-002",
+      "severity": "major",
+      "gapType": "visible-proof-gap",
+      "communityName": "Camera Club",
+      "workflowId": "photo-walk-rsvp",
+      "persona": "member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-106-photo-walk-rsvp-0",
+        "b25-v4-row-107-photo-walk-rsvp-1",
+        "b25-v4-row-108-photo-walk-rsvp-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "03f70d5ca1798ade26a2671fb1f3b7c34c152962605fc45b6436b7eebaaeb9e5",
+        "69edc883b7b49fe647dc86bce96c5c402caf1ea75b84475dab40b935f6bad45f",
+        "7006bccd9582f75dfa7360fccd97ebe5337bc3e9b74b1a9d11a3ac33e670044b"
+      ],
+      "visibleTextExcerpt": "Downtown photo walk RSVP | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Response choices | Going reserves a spot; Maybe keeps the route in your inbox; Not going releases capacity for another member. | Change response | RSVP to event | Camera Club | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Choose attendance | Review the event, capacity, location, and reminders before saving a r...",
+      "requiredFix": "Implementation/evidence remediation: make the result screen unambiguously show the selected RSVP state as confirmed/attending or not attending, preserve the change-response path, update attendee/capacity context, and recapture the three workflow screenshots so the lifecycle scorecard passes persistent result state.",
+      "ticketMode": "implementation-remediation"
+    },
+    {
+      "findingId": "LLM-B25-WR-003",
+      "severity": "major",
+      "gapType": "visible-proof-gap",
+      "communityName": "Masjid Nur",
+      "workflowId": "mosque-donor-visibility",
+      "persona": "donor",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-028-mosque-donor-visibility-0",
+        "b25-v4-row-029-mosque-donor-visibility-1",
+        "b25-v4-row-030-mosque-donor-visibility-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "7d2f25d6d2a37618ca9d4cf003678a97f9dab7fc4571b41cb82e0e9e13cacdcb",
+        "b3b2e1dc7e9b09da7b870ba88690c9d8373a36bca5e7e4ba4eb5d38b30cecba1",
+        "3fb2aac187407268daf34a42bc8d934556a263d08d027396f707836d7a771e32"
+      ],
+      "visibleTextExcerpt": "Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Confirm amount, donor visibility, receipt destination, and giving history before saving. | Community care | Privacy checked | Receipt record | Member inbox | Confirm the details, editable fields, final progress, and next step before saving. | Edit response | Save details | Confirm member-visible summary, protected details, receipt or citation, and recipient preview before sending. | Update privacy | Save visibility | Community setup files | Masjid Nur | Anonymous donor preference | Member-safe update with respectful language and privacy boundaries. | Confirm amount, donor visibility, receipt destination, and giving history before saving. | Confirm the details, editable fields, final progress, and next step before saving. | Edit response | Save details | Confirm member-visible summary, pr...",
+      "requiredFix": "Implementation/evidence remediation: show the saved donor visibility setting, receipt destination/visibility, amount context, status/history or account result, and the available change path on the result state, then recapture the donor workflow screenshots.",
+      "ticketMode": "implementation-remediation"
+    },
+    {
+      "findingId": "LLM-B25-WR-004",
+      "severity": "major",
+      "gapType": "visible-proof-gap",
+      "communityName": "Neighborhood Book Club",
+      "workflowId": "book-vote",
+      "persona": "member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-034-book-vote-0",
+        "b25-v4-row-035-book-vote-1",
+        "b25-v4-row-036-book-vote-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "3a7d6717915950efa6cc01c884689f7b756f605dfee5fd511e3214fca16f7a96",
+        "f27d5dcc5003b7a068194639c7b66569dd3841fbdb1bae2d1ea3d90b58c96687",
+        "259fc621762b894d5a2166964db5fb6d9465799a2b670a1a6c1a25f2e412438a"
+      ],
+      "visibleTextExcerpt": "February book ballot | Vote between three member nominations. | Parable of the Sower is leading the ballot for the next monthly discussion. | 3 nominations | Closes Jan 20 | 1 member vote | Leading title | Confirm the details, editable fields, final progress, and next step before saving. | Change vote | Ballot choice | Your vote will count once for Parable of the Sower and can be changed before the ballot closes. | Record vote | Community setup files | Neighborhood Book Club | February book ballot | February selection ballot | Compare nominated books, confirm your vote, and keep the chosen discussion book visible after voting. | Confirm the details, editable fields, final progress, and next step before saving. | Change vote | Ballot choice | Your vote will count once for Parable of the Sower and can be changed before the ballot closes. | 3 nominations | Closes Jan 20 | 1 member vote |...",
+      "requiredFix": "Implementation/evidence remediation: make the completed vote state durable and specific, including selected title, voted status, whether the ballot remains open/changed, and organizer/aggregate continuation state, then recapture the workflow evidence.",
+      "ticketMode": "implementation-remediation"
+    },
+    {
+      "findingId": "LLM-B25-WR-005",
+      "severity": "major",
+      "gapType": "visible-proof-gap",
+      "communityName": "Member Social Space",
+      "workflowId": "platform-message-stream",
+      "persona": "member",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "## 7. Persona And State Matrix",
+        "### B25 Semantic Interaction Models",
+        "### B25 Card Surface Registry Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-142-platform-message-stream-0",
+        "b25-v4-row-143-platform-message-stream-1",
+        "b25-v4-row-144-platform-message-stream-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B16/screenshots/B16_ext_platform_social_platform-message-stream_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "663f2751f64a621a52b031203c8f5c4807db815e72ade6531db8cdeb6e4c5ac6",
+        "8bab690cfab11dbdeaa6a2eedde654e5074a859eeb8501017cad7e4f85b93fcd",
+        "42d8dad55ed9f88a5f1263b37126f9a0af9d39fe981bb41e62793654b7a8a2ed"
+      ],
+      "visibleTextExcerpt": "Conversation | Sender and recipient | Maya Chen -> Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block remain available. | Community message thread | Read sender, recipient, timestamp, message preview, unread receipt, reply option, mute, and archive controls. | Conversation actions | Reply keeps the thread member-scoped and preserves read/unread receipt. | Archive thread | Send message | Member tools | Useful actions for this community. | Member Social Space | Conversation | Sender and recipient | Maya Chen -> Jordan Lee, members of the same community. | Message body | Can you bring the sign-in sheets before the meetup? | Timestamp | Today 9:12 AM, unread until opened. | Actions | Reply, mute, archive, or block remain available. | Thr...",
+      "requiredFix": "Implementation/evidence remediation: show a persistent message-thread result such as sent/received/read state, reply history, archive or mute state, and recipient/thread continuation state, then recapture the workflow screenshots.",
+      "ticketMode": "implementation-remediation"
+    }
+  ],
+  "finalDecision": "fail"
+}

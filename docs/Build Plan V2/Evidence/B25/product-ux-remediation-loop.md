@@ -465,3 +465,43 @@ findings were resolved in pass 9.
   redesign or exclude platform/harness rows from production product review scope before another full
   B12-B20 recapture.
 - Evidence/tooling commit: `562a424`.
+
+### Iteration 26 / `b25-v4-pass-29`
+
+- Status: failed, but the pass produced a complete evidence-backed backlog for the next remediation
+  loop.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-29.md`, moved the shared action surface away from
+  one generic checklist renderer by adding distinct event, form, payment, export, communication,
+  roster, club, media-review, ad/no-fill, and fallback action consoles in the Demo App. The pass also
+  reduced persona-picker testing language and added more concrete photo critique and ad/no-fill
+  evidence surfaces.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests using direct WSL invocation. `b25_capture_coverage_gate.dart` passed as
+  commit-eligible. The B25 collector generated `195` schema v4 screen rows; workflow/persona coverage
+  passed `68 / 68`; visual inspection passed `195 / 195`; and the LLM review freshness gate passed
+  for `b25-v4-pass-29`.
+- Product-doc reconciliation: failed with `5` major findings. The reconciliation found fewer Product
+  Docs drift issues than pass 28, but still identified surface mismatch and lifecycle proof gaps for
+  export redaction, RSVP result state, donor visibility, book voting, and platform message-thread
+  result state.
+- LLM Vision UX review: failed with `1` blocker and `4` major findings. The review found that many
+  action/review states still read as a shared action checklist, some non-payment workflows route
+  through payment-style summary panels, export surfaces remain too generic, persona handoff evidence is
+  not yet production-grade, and repeated card visual fatigue remains across the app.
+- Workflow interaction model: failed `4 / 68` lifecycle scorecards. The remaining gaps are persistent
+  result states for donor visibility, book vote, photo walk RSVP, and platform message stream.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-29.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-29.md` records
+  `B25 can pass=false`, `1` blocker, `10` unresolved major findings, `0` resolved blocker/major
+  findings, and `11` newly introduced blocker/major findings under the stricter fresh LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-30.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 30 must replace the remaining generic action/review checklist
+  surfaces with domain-specific product screens, route non-payment workflows away from payment-style
+  panels, build a true export/portability workspace, make persona handoffs product-grade, reduce
+  repeated-card visual fatigue, and add durable result states for the four failing lifecycle rows
+  before another full B12-B20 recapture.
+- Evidence/tooling commit: `TBD`.

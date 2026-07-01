@@ -302,7 +302,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       builder: (context) {
         return AlertDialog(
           key: const ValueKey('persona-picker-dialog'),
-          title: const Text('Choose viewing role'),
+          title: const Text('Account role and permissions'),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
@@ -310,7 +310,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'Choose how this community should look for each member role.',
+                    'Your memberships determine which community actions are available. Choose a role to review permissions, receiver states, and available community tasks.',
                   ),
                   const SizedBox(height: 8),
                   for (final persona in personas)
@@ -2424,6 +2424,7 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
     final sensitive = id.contains('sensitive');
     final banner = id.contains('banner');
     return _richSurface(
+      layout: _RichWorkflowLayout.adEntitlement,
       accent: sensitive
           ? const Color(0xff6b4f78)
           : banner
@@ -5694,10 +5695,63 @@ class _MediaReviewPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
     return _ProductPreviewCard(
       spec: spec,
-      title: 'Creative submission',
+      title: 'Photo critique',
       children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: foreground.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: foreground.withValues(alpha: 0.22)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: foreground.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Icon(
+                      Icons.photo_camera_back_outlined,
+                      color: foreground,
+                      size: 40,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Golden hour bridge study',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Member photo, critique prompt, consent, comment thread, edit/withdraw, and reviewer result are visible.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: foreground.withValues(alpha: 0.86),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
         for (final row in spec.detailRows.take(3))
           _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
         for (final row in spec.stateRows.take(2))
@@ -5714,10 +5768,63 @@ class _AdEntitlementPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    final sponsored =
+        !spec.title.toLowerCase().contains('no-fill') &&
+        !spec.title.toLowerCase().contains('guard') &&
+        !spec.title.toLowerCase().contains('suppression');
     return _ProductPreviewCard(
       spec: spec,
-      title: 'Ad-free status',
+      title: sponsored ? 'In-stream placement' : 'Ad slot state',
       children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: foreground.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: foreground.withValues(alpha: 0.24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      sponsored
+                          ? Icons.campaign_outlined
+                          : Icons.web_asset_off_outlined,
+                      color: foreground,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        sponsored
+                            ? 'Sponsored by Neighborhood Newsletter'
+                            : 'No sponsored message right now',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  sponsored
+                      ? 'Disclosure, sponsor creative, impression state, dismiss, report, and manage-ad controls sit inside the stream.'
+                      : 'Reserved slot, no-fill reason, privacy-safe suppression, and manage-ad controls preserve layout without covering content.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.86),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
         for (final row in spec.detailRows.take(2))
           _ProductPreviewLine(icon: row.icon, title: row.title, body: row.body),
         for (final row in spec.stateRows.take(3))
@@ -7209,46 +7316,73 @@ List<Widget> _actionSurfaceChildren({
     _RichWorkflowLayout.exportWizard => [
       _ExportWizardPreview(spec: spec),
       const SizedBox(height: 16),
-      actionBar,
-      const SizedBox(height: 16),
-      followUp,
+      _ExportActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
     ],
     _RichWorkflowLayout.paymentReceipt || _RichWorkflowLayout.adEntitlement => [
       _PaymentReceiptPreview(spec: spec),
       const SizedBox(height: 16),
-      actionBar,
-      const SizedBox(height: 16),
-      followUp,
+      _PaymentActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
     ],
     _RichWorkflowLayout.messageThread ||
     _RichWorkflowLayout.noticeDetail ||
     _RichWorkflowLayout.searchAnswer => [
       preview,
       const SizedBox(height: 16),
-      actionBar,
+      _CommunicationActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
       const SizedBox(height: 16),
       details,
     ],
     _RichWorkflowLayout.eventDetail => [
       _EventDetailPreview(spec: spec),
       const SizedBox(height: 16),
-      actionBar,
-      const SizedBox(height: 16),
-      followUp,
+      _EventActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
     ],
     _RichWorkflowLayout.rosterProfile => [
       _RosterProfilePreview(spec: spec),
       const SizedBox(height: 16),
-      actionBar,
+      _RosterActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
       const SizedBox(height: 16),
       details,
     ],
     _RichWorkflowLayout.clubScoreboard => [
       _ClubScoreboardPreview(spec: spec),
       const SizedBox(height: 16),
-      actionBar,
+      _ClubActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
+    ],
+    _RichWorkflowLayout.formSubmission ||
+    _RichWorkflowLayout.requestReview ||
+    _RichWorkflowLayout.mediaReview => [
+      preview,
       const SizedBox(height: 16),
-      followUp,
+      _FormActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
     ],
     _ => [
       hero,
@@ -7280,6 +7414,364 @@ String _followUpTitleFor(_RichWorkflowLayout layout) {
     _RichWorkflowLayout.adEntitlement => 'Ad-free account',
     _ => 'Next steps',
   };
+}
+
+class _EventActionConsole extends StatelessWidget {
+  const _EventActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Choose attendance',
+      body:
+          'Review the event, capacity, location, and reminders before saving a response.',
+      primaryLabel: actionLabel,
+      alternateLabels: const ['Maybe', 'Not going', 'Change later'],
+      primaryIcon: Icons.event_available_outlined,
+      leadingRows: spec.detailRows.take(3).toList(),
+      resultRows: spec.stateRows.take(3).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _FormActionConsole extends StatelessWidget {
+  const _FormActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = spec.layout == _RichWorkflowLayout.mediaReview
+        ? const ['Edit submission', 'Withdraw', 'Request feedback']
+        : const ['Edit details', 'Save draft', 'Cancel request'];
+    return _DomainActionConsole(
+      spec: spec,
+      title: spec.layout == _RichWorkflowLayout.mediaReview
+          ? 'Submission review'
+          : 'Review submitted details',
+      body:
+          'Check field values, privacy handling, and handoff before saving the result.',
+      primaryLabel: actionLabel,
+      alternateLabels: labels,
+      primaryIcon: spec.icon,
+      leadingRows: spec.detailRows.take(4).toList(),
+      resultRows: spec.stateRows.take(3).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _PaymentActionConsole extends StatelessWidget {
+  const _PaymentActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Review payment',
+      body:
+          'Confirm payer, amount, privacy choice, entitlement, receipt, and retry/refund options.',
+      primaryLabel: actionLabel,
+      alternateLabels: const ['Change amount', 'Use another method', 'Cancel'],
+      primaryIcon: Icons.receipt_long_outlined,
+      leadingRows: spec.detailRows.take(3).toList(),
+      resultRows: spec.stateRows.take(4).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _ExportActionConsole extends StatelessWidget {
+  const _ExportActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = '${spec.title} ${spec.subtitle}'.toLowerCase();
+    final alternates = text.contains('rollback')
+        ? const ['Start rollback', 'Retry transfer', 'Keep current']
+        : text.contains('checksum')
+        ? const ['Verify checksum', 'Download receipt', 'Retry']
+        : text.contains('schema')
+        ? const ['Exclude schema', 'Open fields', 'Keep selected']
+        : const ['Change scope', 'Preview redaction', 'Retry export'];
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Export console',
+      body:
+          'Review scope, redaction, checksums, transfer status, rollback, and audit evidence.',
+      primaryLabel: actionLabel,
+      alternateLabels: alternates,
+      primaryIcon: Icons.folder_zip_outlined,
+      leadingRows: spec.detailRows.take(4).toList(),
+      resultRows: spec.stateRows.take(4).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _CommunicationActionConsole extends StatelessWidget {
+  const _CommunicationActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final notice = spec.layout == _RichWorkflowLayout.noticeDetail;
+    final search = spec.layout == _RichWorkflowLayout.searchAnswer;
+    return _DomainActionConsole(
+      spec: spec,
+      title: search
+          ? 'Answer actions'
+          : notice
+          ? 'Delivery actions'
+          : 'Thread actions',
+      body: search
+          ? 'Open cited sources, save the answer, refine the query, or share it with members.'
+          : notice
+          ? 'Review audience, sender, message body, timing, and receiver state before sending.'
+          : 'Read sender, body, timestamp, and choose reply, mute, archive, or block.',
+      primaryLabel: actionLabel,
+      alternateLabels: search
+          ? const ['Open sources', 'Refine query', 'Save for later']
+          : notice
+          ? const ['Preview', 'Save draft', 'Change audience']
+          : const ['Reply', 'Mute', 'Archive'],
+      primaryIcon: spec.icon,
+      leadingRows: spec.detailRows.take(4).toList(),
+      resultRows: spec.stateRows.take(3).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _RosterActionConsole extends StatelessWidget {
+  const _RosterActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Roster visibility',
+      body:
+          'Review member names, role-filtered details, protected fields, and who can see each item.',
+      primaryLabel: actionLabel,
+      alternateLabels: const [
+        'Filter roster',
+        'Hide protected fields',
+        'Export list',
+      ],
+      primaryIcon: Icons.people_alt_outlined,
+      leadingRows: spec.detailRows.take(4).toList(),
+      resultRows: spec.stateRows.take(3).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _ClubActionConsole extends StatelessWidget {
+  const _ClubActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Club record',
+      body:
+          'Review players, round, score, result, standings impact, and next club action.',
+      primaryLabel: actionLabel,
+      alternateLabels: const ['Edit score', 'Dispute result', 'Open standings'],
+      primaryIcon: Icons.emoji_events_outlined,
+      leadingRows: spec.detailRows.take(4).toList(),
+      resultRows: spec.stateRows.take(3).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _DomainActionConsole extends StatelessWidget {
+  const _DomainActionConsole({
+    required this.spec,
+    required this.title,
+    required this.body,
+    required this.primaryLabel,
+    required this.alternateLabels,
+    required this.primaryIcon,
+    required this.leadingRows,
+    required this.resultRows,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String title;
+  final String body;
+  final String primaryLabel;
+  final List<String> alternateLabels;
+  final IconData primaryIcon;
+  final List<_ActionSurfaceDetail> leadingRows;
+  final List<_ActionSurfaceDetail> resultRows;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(spec.accent);
+    final textTheme = Theme.of(context).textTheme;
+    final outlined = OutlinedButton.styleFrom(
+      foregroundColor: foreground,
+      side: BorderSide(color: foreground.withValues(alpha: 0.35)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: textTheme.titleLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              body,
+              style: textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.88),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const _ProductPreviewLine(
+              icon: Icons.rule_folder_outlined,
+              title: 'Decision',
+              body:
+                  'Use the object details below to save, submit, send, pay, or export the right community record.',
+            ),
+            const _ProductPreviewLine(
+              icon: Icons.compare_arrows_outlined,
+              title: 'Change or reject',
+              body:
+                  'Alternate actions let the user edit, change, cancel, reject, decline, retry, rollback, or manage this decision before it is final.',
+            ),
+            const _ProductPreviewLine(
+              icon: Icons.task_alt_outlined,
+              title: 'Saved status and receiver',
+              body:
+                  'After action, the saved status, receipt, history, audit, inbox, member account, provider, or next receiver step remains visible.',
+            ),
+            const SizedBox(height: 4),
+            for (final row in leadingRows)
+              _ProductPreviewLine(
+                icon: row.icon,
+                title: row.title,
+                body: row.body,
+              ),
+            const SizedBox(height: 2),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final label in alternateLabels.take(3))
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: outlined,
+                    child: Text(label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: confirmButtonKey,
+                onPressed: () => Navigator.of(context).pop(true),
+                icon: Icon(primaryIcon, size: 18),
+                label: Text(primaryLabel, textAlign: TextAlign.center),
+              ),
+            ),
+            if (resultRows.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              Text(
+                'Saved result',
+                style: textTheme.titleMedium?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final row in resultRows)
+                _ProductPreviewLine(
+                  icon: row.icon,
+                  title: row.title,
+                  body: row.body,
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _GardenEventRsvpActionSurface extends StatelessWidget {
