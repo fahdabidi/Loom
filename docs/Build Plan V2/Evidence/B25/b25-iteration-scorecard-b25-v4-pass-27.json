@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-27",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-01T11:11:13.641463Z",
+  "status": "fail",
+  "finalDecision": "fail",
+  "b25CanPass": false,
+  "findingCounts": {
+    "total": 7,
+    "criticalBlocker": 0,
+    "major": 7,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 7,
+    "unresolvedBlockingMajor": 7,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "b25-v4-pass-26",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 6,
+    "resolvedBlockingMajorThisPass": 5,
+    "newBlockingMajorThisPass": 6,
+    "remainingBlockingMajor": 7
+  },
+  "judgeSummary": {
+    "status": "fail",
+    "totalCriteria": 16,
+    "passedCriteria": 7,
+    "failedCriteria": 9,
+    "blockingCriterionFailures": 9,
+    "holisticPass": false,
+    "workflowPersonaPass": false
+  },
+  "blockingFindings": [
+    {
+      "findingId": "B25-VISION-P27-MAJ-001-repeated-card-renderer-remains-systemic",
+      "severity": "major",
+      "status": "open",
+      "title": "Systemic repeated rounded-card renderer still defines the primary UX",
+      "requiredFix": "Replace the reusable workflow-card shell with distinct domain-native product surfaces for each workflow family: event detail/RSVP, feed/composer, inbox/thread, payment/receipt, export wizard, document library, request review queue, roster, search results, and ad/entitlement surfaces."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-002-copy-still-exposes-review-spec-and-lifecycle-language",
+      "severity": "major",
+      "status": "open",
+      "title": "Visible copy still sounds like review/spec/test or lifecycle scaffolding",
+      "requiredFix": "Rewrite visible copy as natural product language for the current user. Remove phrases like check the details, status, state, path, evidence, inspect, capability matrix, and review-style instructions unless they are truly user-facing domain terms."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-003-distinct-workflow-rows-reuse-identical-screenshots",
+      "severity": "major",
+      "status": "open",
+      "title": "Current evidence reuses identical screenshot pixels for distinct workflows or states",
+      "requiredFix": "Recapture or rebuild these rows so each workflow/persona/state has a distinct screenshot proving the intended UI. Duplicate hashes may only remain when the same product state is explicitly the same evidence row, which is not true for these distinct workflow IDs."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-004-lifecycle-states-are-status-panels-not-production-results",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycles remain incomplete for production use",
+      "requiredFix": "For every workflow, provide a real action/review state and a durable result or receiver state: receipt/history for payments, inbox/read state for messages, document detail/download state, export transfer status with rollback, RSVP/vote confirmation with change path, and request/approval state with owner/member visibility."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-005-visual-identity-and-navigation-polish-below-production-bar",
+      "severity": "major",
+      "status": "open",
+      "title": "Visual identity and navigation polish remain below a modern production app bar",
+      "requiredFix": "Introduce stronger community identity, clearer navigation destinations, less dense repeated chips, better type scale, non-truncated top bars, and surface-specific layouts so the app feels like multiple real community products rather than one recolored scaffold."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-006-persona-picker-and-wf-rows-remain-harness-visible",
+      "severity": "major",
+      "status": "open",
+      "title": "Persona/testing harness surfaces are still visible in reviewed production evidence",
+      "requiredFix": "Do not include demo persona-picker or wf_* capability-matrix surfaces as production UX evidence unless they are redesigned as user account/role management screens with production copy and non-test semantics. Replace ?Switch roles to inspect? and wf_* framing with real account/member role language or remove from production review scope."
+    },
+    {
+      "findingId": "B25-WORKFLOW-LIFECYCLE-INCOMPLETE",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycle UX is incomplete",
+      "requiredFix": "Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence."
+    }
+  ],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [
+    {
+      "findingId": "B25-VISION-P27-MAJ-001-repeated-card-renderer-remains-systemic",
+      "severity": "major",
+      "status": "open",
+      "title": "Systemic repeated rounded-card renderer still defines the primary UX",
+      "requiredFix": "Replace the reusable workflow-card shell with distinct domain-native product surfaces for each workflow family: event detail/RSVP, feed/composer, inbox/thread, payment/receipt, export wizard, document library, request review queue, roster, search results, and ad/entitlement surfaces."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-002-copy-still-exposes-review-spec-and-lifecycle-language",
+      "severity": "major",
+      "status": "open",
+      "title": "Visible copy still sounds like review/spec/test or lifecycle scaffolding",
+      "requiredFix": "Rewrite visible copy as natural product language for the current user. Remove phrases like check the details, status, state, path, evidence, inspect, capability matrix, and review-style instructions unless they are truly user-facing domain terms."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-003-distinct-workflow-rows-reuse-identical-screenshots",
+      "severity": "major",
+      "status": "open",
+      "title": "Current evidence reuses identical screenshot pixels for distinct workflows or states",
+      "requiredFix": "Recapture or rebuild these rows so each workflow/persona/state has a distinct screenshot proving the intended UI. Duplicate hashes may only remain when the same product state is explicitly the same evidence row, which is not true for these distinct workflow IDs."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-004-lifecycle-states-are-status-panels-not-production-results",
+      "severity": "major",
+      "status": "open",
+      "title": "Workflow lifecycles remain incomplete for production use",
+      "requiredFix": "For every workflow, provide a real action/review state and a durable result or receiver state: receipt/history for payments, inbox/read state for messages, document detail/download state, export transfer status with rollback, RSVP/vote confirmation with change path, and request/approval state with owner/member visibility."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-005-visual-identity-and-navigation-polish-below-production-bar",
+      "severity": "major",
+      "status": "open",
+      "title": "Visual identity and navigation polish remain below a modern production app bar",
+      "requiredFix": "Introduce stronger community identity, clearer navigation destinations, less dense repeated chips, better type scale, non-truncated top bars, and surface-specific layouts so the app feels like multiple real community products rather than one recolored scaffold."
+    },
+    {
+      "findingId": "B25-VISION-P27-MAJ-006-persona-picker-and-wf-rows-remain-harness-visible",
+      "severity": "major",
+      "status": "open",
+      "title": "Persona/testing harness surfaces are still visible in reviewed production evidence",
+      "requiredFix": "Do not include demo persona-picker or wf_* capability-matrix surfaces as production UX evidence unless they are redesigned as user account/role management screens with production copy and non-test semantics. Replace ?Switch roles to inspect? and wf_* framing with real account/member role language or remove from production review scope."
+    }
+  ],
+  "requiredNextAction": "Create a remediation batch for unresolved blocker/major findings or failed judge criteria, then rebuild, recapture, regenerate evidence, rerun judge tools, and create the next iteration scorecard."
+}

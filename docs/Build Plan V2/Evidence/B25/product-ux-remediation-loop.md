@@ -384,3 +384,43 @@ findings were resolved in pass 9.
   product-specific screen structures, eliminate remaining review/spec copy, repair duplicate evidence
   states, and close the 22 failing lifecycle rows with fresh full B12-B20 screenshots.
 - Evidence/tooling commit: `83efed7`.
+
+### Iteration 24 / `b25-v4-pass-27`
+
+- Status: failed, but the pass produced a complete evidence-backed backlog for the next remediation
+  loop.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-27.md`, refactored the Demo App's rich workflow
+  renderer so product surfaces render a distinct header, product preview, status panel, and
+  action/result section instead of one monolithic generic card, and removed additional visible
+  review/spec/lifecycle phrasing from primary surfaces.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests using direct WSL invocation. `b25_capture_coverage_gate.dart` passed as
+  commit-eligible. The B25 collector generated `195` schema v4 screen rows; workflow/persona coverage
+  passed `68 / 68`; visual inspection passed `195 / 195`; and the LLM review freshness gate passed
+  for `b25-v4-pass-27`.
+- Product-doc reconciliation: failed with `32` major findings. The reconciliation found that all B25
+  evidence is screenshot-backed, but many documented community product experience rows still do not
+  have visible proof of required content, lifecycle state, or semantic interaction-model elements.
+- LLM Vision UX review: failed with `6` major findings: systemic repeated card rendering, remaining
+  review/spec/lifecycle copy, duplicate screenshots for distinct workflow rows, lifecycle states that
+  still look like status panels rather than production result screens, visual identity/navigation polish
+  below the production bar, and persona-picker/wf_* harness surfaces remaining in reviewed product
+  evidence.
+- Workflow interaction model: failed `22 / 68` lifecycle scorecards. The remaining gaps include primary
+  semantic action, alternate/change/reject affordance, concrete object/context, persistent result state,
+  receiver/continuation state, and explicit semantic interaction-model proof in after screenshots.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-27.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-27.md` records
+  `B25 can pass=false`, `0` blockers, `7` unresolved major finding groups, `5` resolved
+  blocker/major findings, and `6` newly introduced blocker/major findings under the fresh LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-28.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 28 must move beyond renderer restructuring: it must produce
+  genuinely distinct product screens for the highest-impact surface families, eliminate the remaining
+  framework/review/lifecycle copy, repair duplicate evidence states, close lifecycle proof gaps, and
+  either redesign the persona-picker/wf_* rows as production account/role surfaces or remove them from
+  B25 production review scope before another full B12-B20 recapture.
+- Evidence/tooling commit: `TBD`.

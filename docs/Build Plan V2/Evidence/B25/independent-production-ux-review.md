@@ -1,6 +1,6 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-26`
+Review run: `b25-v4-pass-27`
 
 Status: `llm-vision-review-fail`
 
@@ -8,7 +8,7 @@ Final decision: `fail`
 
 Screen rows collected: 195
 
-Holistic direct-question answers: 7
+Holistic direct-question answers: 6
 
 Workflow/persona scorecards: 68 (68 blocking)
 
@@ -21,11 +21,12 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `B25-WORKFLOW-PERSONA-UX-FAILED` | major | open | Use the failed scorecards to remediate exact workflow/persona screens and recapture evidence. |
 | `B25-WORKFLOW-LIFECYCLE-INCOMPLETE` | major | open | Use the failed lifecycle scorecards to add concrete objects, decision information, semantic primary and alternate actions, persistent result state, and receiver/continuation state before recapturing evidence. |
 | `B25-HOLISTIC-UX-FAILED` | major | open | Resolve coverage, screen critique, IA, and visual quality issues before rerunning holistic review. |
-| `B25-VISION-P26-MAJ-001-repeated-workflow-card-renderer` | major | open | Replace the repeated card renderer with domain-native product surfaces per community: event detail/RSVP, feed/inbox/thread, donation/payment checkout, receipt/history, protected care request form, admin review queue, social connection guard, export/import wizard, and transfer status screens with visibly distinct layouts and content density. |
-| `B25-VISION-P26-MAJ-002-product-copy-still-sounds-like-review-spec-or-harness-language` | major | open | Rewrite user-facing copy as domain product language. Remove review/spec/test phrasing and local package or persona-preview copy from production-facing screens. Put implementation metadata behind diagnostics, not in the primary community experience. |
-| `B25-VISION-P26-MAJ-003-distinct-workflow-rows-reuse-identical-screenshot-pixels` | major | open | Recapture or redesign the affected workflows so every distinct workflow/persona/state has visibly distinct content, state, and lifecycle proof. If two rows intentionally share a surface, merge the evidence rather than claiming separate production states. |
-| `B25-VISION-P26-MAJ-004-workflow-lifecycles-remain-incomplete-or-wrong-for-production` | major | open | For each affected workflow/persona pair, capture entry, decision, primary action, alternate/change/reject path, persistent result, receipt/history/status, and receiver/continuation states in visible UI. The member/receiver state must not reuse actor/composer copy. |
-| `B25-VISION-P26-MAJ-005-visual-polish-below-production-bar` | major | open | Improve production visual hierarchy: shorter responsive app-bar titles or branded headers, more varied domain components, less oversized card stacking, clearer section density, and layouts that make primary decisions visible without excessive scroll. |
+| `B25-VISION-P27-MAJ-001-repeated-card-renderer-remains-systemic` | major | open | Replace the reusable workflow-card shell with distinct domain-native product surfaces for each workflow family: event detail/RSVP, feed/composer, inbox/thread, payment/receipt, export wizard, document library, request review queue, roster, search results, and ad/entitlement surfaces. |
+| `B25-VISION-P27-MAJ-002-copy-still-exposes-review-spec-and-lifecycle-language` | major | open | Rewrite visible copy as natural product language for the current user. Remove phrases like check the details, status, state, path, evidence, inspect, capability matrix, and review-style instructions unless they are truly user-facing domain terms. |
+| `B25-VISION-P27-MAJ-003-distinct-workflow-rows-reuse-identical-screenshots` | major | open | Recapture or rebuild these rows so each workflow/persona/state has a distinct screenshot proving the intended UI. Duplicate hashes may only remain when the same product state is explicitly the same evidence row, which is not true for these distinct workflow IDs. |
+| `B25-VISION-P27-MAJ-004-lifecycle-states-are-status-panels-not-production-results` | major | open | For every workflow, provide a real action/review state and a durable result or receiver state: receipt/history for payments, inbox/read state for messages, document detail/download state, export transfer status with rollback, RSVP/vote confirmation with change path, and request/approval state with owner/member visibility. |
+| `B25-VISION-P27-MAJ-005-visual-identity-and-navigation-polish-below-production-bar` | major | open | Introduce stronger community identity, clearer navigation destinations, less dense repeated chips, better type scale, non-truncated top bars, and surface-specific layouts so the app feels like multiple real community products rather than one recolored scaffold. |
+| `B25-VISION-P27-MAJ-006-persona-picker-and-wf-rows-remain-harness-visible` | major | open | Do not include demo persona-picker or wf_* capability-matrix surfaces as production UX evidence unless they are redesigned as user account/role management screens with production copy and non-test semantics. Replace ?Switch roles to inspect? and wf_* framing with real account/member role language or remove from production review scope. |
 
 ## Community Product Experience Docs
 
@@ -47,13 +48,12 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | `fail` | 30 | The screenshots show a repeated workflow-card renderer across unrelated communities and several rows still read as review/status evidence rather than real production product surfaces. | Replace repeated workflow cards with distinct domain-native surfaces and recapture the affected workflows. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `fail` | 40 | The UI is readable and uses icons, but the dominant experience is oversized stacked cards, dense explanatory copy, one-note palettes, and repeated layout structure that makes navigation and task differentiation weak. | Introduce surface-specific product layouts and reduce dense status-card repetition. |
-| Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `fail` | 45 | The screenshots contain domain labels such as events, donations, care, ballots, and exports, but the IA is still mostly a vertical list of task cards rather than feeds, inboxes, dashboards, detail pages, forms, and histories that match each community job. | Rebuild top-level community IA and workflow entry states around real content sections and job-specific surfaces. |
-| Does the copy sound like product language rather than workflow/spec/test language? | `fail` | 35 | Visible copy repeatedly uses phrases like review the details, final review, wizard progress, checkout review, local package details, and preview the community experience for each member role. | Rewrite copy as user-facing product language and hide diagnostics/harness text. |
-| Are title truncation, clipping, crowding, repeated-card fatigue, over-prominent platform banners, one-note palettes, and default-scaffold cues absent? | `fail` | 35 | Long app-bar titles truncate, lower content is clipped below the viewport on many cards, community palettes are largely one hue, and the same card shell repeats across nearly all evidence rows. | Fix responsive title treatment, reduce oversized cards, vary component structure, and recapture evidence. |
-| Does the screen set provide concrete content and lifecycle actions a real user needs? | `fail` | 30 | Nine workflow/persona scorecards and twenty-two lifecycle scorecards remain failing in the supplied evidence, and screenshot review confirms member receiver, payment, ad-off, export, and social/ad states are still incomplete or generic. | Complete domain lifecycle states and prove them with fresh screenshots. |
-| Can B25 pass from the visible screenshots reviewed in this run? | `fail` | 0 | There are unresolved major screenshot-backed findings. B25 cannot pass until blocker and major findings are zero. | Remediate major findings, rebuild, recapture, and rerun the B25 evidence and judge sequence. |
+| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target personas? | `fail` | 42 | The screenshots are readable and use consistent spacing, but the whole app is dominated by the same stacked rounded-card renderer, generic circular icons, dense chips, and narrow action panels across Garden Club, Book Club, Soccer, HOA, Masjid, Platform Social, Ad-Free, and Data Portability screens. |  |
+| Is the information architecture centered on real user jobs and community content rather than workflow machinery? | `fail` | 46 | Rows show domain labels such as events, donations, exports, messages, and documents, but most screens still expose lifecycle/status panels and interchangeable task cards instead of real feeds, detail pages, inboxes, payment flows, document libraries, or export wizards. |  |
+| Does the copy sound like product language rather than workflow, spec, review, or test language? | `fail` | 22 | At least 187 of 195 rows include visible phrases like 'Check the details', 'status', 'state', 'path', 'review', 'evidence', or the persona-picker instruction 'Switch roles to inspect member-facing views.' That reads as test/spec scaffolding, not production copy. |  |
+| Are visual hierarchy, spacing, typography, color, and component variety shippable? | `fail` | 40 | Hierarchy is consistent but too uniform: nearly every surface uses the same hero card, secondary card, numbered/checklist panel, pills, and bottom action. The community color changes do not create enough product identity or surface variety. |  |
+| Are title truncation, clipping, crowding, repeated-card fatigue, over-prominent platform banners, and one-note palettes absent? | `fail` | 24 | Repeated-card fatigue is visible across the overview. Several top bars truncate long community names such as Neighborhood Book Club, Riverside Youth Soccer, Data Portability Community, and Member Social Space. Many screens are dense with similar chips and panels. |  |
+| Does each screen provide the concrete content and lifecycle actions a real user needs? | `fail` | 44 | The screenshots include some concrete content, but action and completion states often remain generic confirmation/status cards. Receipts, inboxes, exports, documents, RSVPs, votes, approvals, ads, and care requests need distinct durable product states instead of small saved/posted/received blocks. |  |
 
 ## Workflow/Persona Scorecards
 
@@ -140,7 +140,7 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `b25-wp-006-soccer-team-roster-community-youth-soccer-coach-lifecycle` | `fail` | primary semantic action; alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `soccer-team-roster` / `coach`: primary semantic action, alternate/change/reject affordance, semantic interaction model. |
 | `b25-wp-007-soccer-reminder-notification-community-youth-soccer-guardian-lifecycle` | `pass` |  | Workflow lifecycle review passed for `soccer-reminder-notification` / `guardian`. |
 | `b25-wp-008-hoa-facility-reservation-community-hoa-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-facility-reservation` / `member`. |
-| `b25-wp-009-hoa-export-evidence-community-hoa-owner-lifecycle` | `fail` | receiver/continuation state | Workflow lifecycle review failed for `hoa-export-evidence` / `owner`: receiver/continuation state. |
+| `b25-wp-009-hoa-export-evidence-community-hoa-owner-lifecycle` | `pass` |  | Workflow lifecycle review passed for `hoa-export-evidence` / `owner`. |
 | `b25-wp-010-mosque-donor-visibility-community-mosque-donor-lifecycle` | `pass` |  | Workflow lifecycle review passed for `mosque-donor-visibility` / `donor`. |
 | `b25-wp-011-mosque-search-ai-citation-community-mosque-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `mosque-search-ai-citation` / `member`: alternate/change/reject affordance, semantic interaction model. |
 | `b25-wp-012-book-vote-community-book-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `book-vote` / `member`. |
@@ -170,7 +170,7 @@ Workflow lifecycle scorecards: 68 (22 blocking)
 | `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `fail` | persistent result state | Workflow lifecycle review failed for `photo-walk-rsvp` / `member`: persistent result state. |
 | `b25-wp-037-critique-submission-community-camera-club-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `critique-submission` / `member`. |
 | `b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `gear-loan-request` / `member`: alternate/change/reject affordance, semantic interaction model. |
-| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `platform-messages-entry` / `member`. |
+| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `fail` | persistent result state | Workflow lifecycle review failed for `platform-messages-entry` / `member`: persistent result state. |
 | `b25-wp-040-platform-blocked-target-community-platform-social-member-lifecycle` | `fail` | alternate/change/reject affordance; semantic interaction model | Workflow lifecycle review failed for `platform-blocked-target` / `member`: alternate/change/reject affordance, semantic interaction model. |
 | `b25-wp-041-platform-top-banner-no-fill-community-platform-social-member-lifecycle` | `fail` | primary semantic action; semantic interaction model | Workflow lifecycle review failed for `platform-top-banner-no-fill` / `member`: primary semantic action, semantic interaction model. |
 | `b25-wp-042-ad-off-community-checkout-community-ad-off-member-lifecycle` | `pass` |  | Workflow lifecycle review passed for `ad-off-community-checkout` / `member`. |
