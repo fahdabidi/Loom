@@ -275,3 +275,36 @@ findings were resolved in pass 9.
   evidence, rerun fresh Product Docs reconciliation and Vision UX review, and regenerate
   tickets/scorecards.
 - Evidence/tooling commit: `a3f0db9`.
+
+### Iteration 21 / `b25-v4-pass-24`
+
+- Status: failed, but the review remains evidence-backed.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-24.md`, added richer Book Club AI digest and
+  export metadata surfaces, diversified Data Portability import/export/redaction/checksum/rollback
+  surfaces, added HOA owner-notification sender/recipient/timing proof, and strengthened Member Social
+  Space message/invite/block-state content in the Demo App.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots and `66` workflows; capture
+  coverage passed; the B25 collector generated `195` schema v4 screen rows; workflow/persona coverage
+  passed `68 / 68`; visual inspection passed `195 / 195`.
+- Product-doc reconciliation: failed with `8` major findings. The LLM reconciliation agent found
+  semantic lifecycle evidence gaps and shell/product-doc evidence scoping gaps that must be resolved
+  before B25 can close.
+- LLM Vision UX review: failed with `1` critical/blocker and `3` major findings. The review found that
+  the suite still reads as a repeated workflow-card scaffold, still exposes contract-style copy such as
+  "Decide..." / "Ready to...", still lacks concrete object/result/continuation proof in several
+  workflows, and still exposes persona-picker or role-inventory harness surfaces as reviewed product UI.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-24.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-latest.md` records
+  `B25 can pass=false`, `1` unresolved critical/blocker finding, `6` unresolved major findings,
+  `0` resolved blocker/major findings, and `4` newly introduced blocker/major findings under the fresh
+  LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-25.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 25 must move beyond enriching shared workflow tiles: it needs
+  domain-native screen structures for primary workflow families, remove workflow-contract language from
+  visible UI, repair lifecycle proof for the named workflows, and exclude or reclassify test-harness
+  persona surfaces before recapturing full B12-B20 evidence.
+- Evidence/tooling commit: `TBD`.

@@ -1,0 +1,1610 @@
+{
+    "schemaVersion":  1,
+    "reviewerType":  "llm-product-doc-workflow-reconciliation",
+    "runId":  "b25-v4-pass-24",
+    "currentReviewRunId":  "b25-v4-pass-24",
+    "freshReview":  true,
+    "status":  "fail",
+    "finalDecision":  "fail",
+    "appCommitSha":  "afc8425",
+    "reviewedProductDocPaths":  [
+                                    "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                                    "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md"
+                                ],
+    "reviewedEvidencePaths":  [
+                                  "docs/Build Plan V2/Tools/b25-product-doc-workflow-reconciliation-llm-gate.md",
+                                  "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+                                  "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+                                  "docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md"
+                              ],
+    "reviewedScreenRowIds":  [
+                                 "b25-v4-row-001-garden-event-rsvp-0",
+                                 "b25-v4-row-002-garden-event-rsvp-1",
+                                 "b25-v4-row-003-garden-event-rsvp-2",
+                                 "b25-v4-row-004-plant-exchange-submission-0",
+                                 "b25-v4-row-005-plant-exchange-submission-1",
+                                 "b25-v4-row-006-plant-exchange-submission-2",
+                                 "b25-v4-row-007-garden-export-custom-schemas-0",
+                                 "b25-v4-row-008-garden-export-custom-schemas-1",
+                                 "b25-v4-row-009-garden-export-custom-schemas-2",
+                                 "b25-v4-row-010-book-nomination-0",
+                                 "b25-v4-row-011-book-nomination-1",
+                                 "b25-v4-row-012-book-nomination-2",
+                                 "b25-v4-row-013-book-selection-publish-0",
+                                 "b25-v4-row-014-book-selection-publish-1",
+                                 "b25-v4-row-015-book-selection-publish-2",
+                                 "b25-v4-row-016-soccer-team-roster-0",
+                                 "b25-v4-row-017-soccer-team-roster-1",
+                                 "b25-v4-row-018-soccer-team-roster-2",
+                                 "b25-v4-row-019-soccer-reminder-notification-0",
+                                 "b25-v4-row-020-soccer-reminder-notification-1",
+                                 "b25-v4-row-021-soccer-reminder-notification-2",
+                                 "b25-v4-row-022-hoa-facility-reservation-0",
+                                 "b25-v4-row-023-hoa-facility-reservation-1",
+                                 "b25-v4-row-024-hoa-facility-reservation-2",
+                                 "b25-v4-row-025-hoa-export-evidence-0",
+                                 "b25-v4-row-026-hoa-export-evidence-1",
+                                 "b25-v4-row-027-hoa-export-evidence-2",
+                                 "b25-v4-row-028-mosque-donor-visibility-0",
+                                 "b25-v4-row-029-mosque-donor-visibility-1",
+                                 "b25-v4-row-030-mosque-donor-visibility-2",
+                                 "b25-v4-row-031-mosque-search-ai-citation-0",
+                                 "b25-v4-row-032-mosque-search-ai-citation-1",
+                                 "b25-v4-row-033-mosque-search-ai-citation-2",
+                                 "b25-v4-row-034-book-vote-0",
+                                 "b25-v4-row-035-book-vote-1",
+                                 "b25-v4-row-036-book-vote-2",
+                                 "b25-v4-row-037-book-search-ai-digest-0",
+                                 "b25-v4-row-038-book-search-ai-digest-1",
+                                 "b25-v4-row-039-book-search-ai-digest-2",
+                                 "b25-v4-row-040-soccer-minor-redaction-0",
+                                 "b25-v4-row-041-soccer-minor-redaction-1",
+                                 "b25-v4-row-042-soccer-minor-redaction-2",
+                                 "b25-v4-row-043-soccer-export-metadata-0",
+                                 "b25-v4-row-044-soccer-export-metadata-1",
+                                 "b25-v4-row-045-soccer-export-metadata-2",
+                                 "b25-v4-row-046-hoa-architectural-request-0",
+                                 "b25-v4-row-047-hoa-architectural-request-1",
+                                 "b25-v4-row-048-hoa-architectural-request-2",
+                                 "b25-v4-row-049-mosque-announcement-0",
+                                 "b25-v4-row-050-mosque-announcement-1",
+                                 "b25-v4-row-051-mosque-announcement-2",
+                                 "b25-v4-row-052-mosque-donation-payment-0",
+                                 "b25-v4-row-053-mosque-donation-payment-1",
+                                 "b25-v4-row-054-mosque-donation-payment-2",
+                                 "b25-v4-row-055-book-meeting-rsvp-0",
+                                 "b25-v4-row-056-book-meeting-rsvp-1",
+                                 "b25-v4-row-057-book-meeting-rsvp-2",
+                                 "b25-v4-row-058-book-export-metadata-0",
+                                 "b25-v4-row-059-book-export-metadata-1",
+                                 "b25-v4-row-060-book-export-metadata-2",
+                                 "b25-v4-row-061-soccer-registration-payment-0",
+                                 "b25-v4-row-062-soccer-registration-payment-1",
+                                 "b25-v4-row-063-soccer-registration-payment-2",
+                                 "b25-v4-row-064-hoa-dues-payment-0",
+                                 "b25-v4-row-065-hoa-dues-payment-1",
+                                 "b25-v4-row-066-hoa-dues-payment-2",
+                                 "b25-v4-row-067-hoa-committee-decision-0",
+                                 "b25-v4-row-068-hoa-committee-decision-1",
+                                 "b25-v4-row-069-hoa-committee-decision-2",
+                                 "b25-v4-row-070-mosque-event-rsvp-0",
+                                 "b25-v4-row-071-mosque-event-rsvp-1",
+                                 "b25-v4-row-072-mosque-event-rsvp-2",
+                                 "b25-v4-row-073-mosque-care-request-0",
+                                 "b25-v4-row-074-mosque-care-request-1",
+                                 "b25-v4-row-075-mosque-care-request-2",
+                                 "b25-v4-row-076-book-discussion-message-0",
+                                 "b25-v4-row-077-book-discussion-message-1",
+                                 "b25-v4-row-078-book-discussion-message-2",
+                                 "b25-v4-row-079-soccer-guardian-join-approval-0",
+                                 "b25-v4-row-080-soccer-guardian-join-approval-1",
+                                 "b25-v4-row-081-soccer-guardian-join-approval-2",
+                                 "b25-v4-row-082-soccer-practice-schedule-0",
+                                 "b25-v4-row-083-soccer-practice-schedule-1",
+                                 "b25-v4-row-084-soccer-practice-schedule-2",
+                                 "b25-v4-row-085-hoa-member-document-0",
+                                 "b25-v4-row-086-hoa-member-document-1",
+                                 "b25-v4-row-087-hoa-member-document-2",
+                                 "b25-v4-row-088-hoa-owner-notification-0",
+                                 "b25-v4-row-089-hoa-owner-notification-1",
+                                 "b25-v4-row-090-hoa-owner-notification-2",
+                                 "b25-v4-row-091-mosque-volunteer-signup-0",
+                                 "b25-v4-row-092-mosque-volunteer-signup-1",
+                                 "b25-v4-row-093-mosque-volunteer-signup-2",
+                                 "b25-v4-row-094-mosque-neutral-notification-0",
+                                 "b25-v4-row-095-mosque-neutral-notification-1",
+                                 "b25-v4-row-096-mosque-neutral-notification-2",
+                                 "b25-v4-row-097-chess-local-install-open-0",
+                                 "b25-v4-row-098-chess-local-install-open-1",
+                                 "b25-v4-row-099-chess-local-install-open-2",
+                                 "b25-v4-row-100-chess-route-home-0",
+                                 "b25-v4-row-101-chess-route-home-1",
+                                 "b25-v4-row-102-chess-route-home-2",
+                                 "b25-v4-row-103-chess-match-result-0",
+                                 "b25-v4-row-104-chess-match-result-1",
+                                 "b25-v4-row-105-chess-match-result-2",
+                                 "b25-v4-row-106-photo-walk-rsvp-0",
+                                 "b25-v4-row-107-photo-walk-rsvp-1",
+                                 "b25-v4-row-108-photo-walk-rsvp-2",
+                                 "b25-v4-row-109-critique-submission-0",
+                                 "b25-v4-row-110-critique-submission-1",
+                                 "b25-v4-row-111-critique-submission-2",
+                                 "b25-v4-row-112-gear-loan-request-0",
+                                 "b25-v4-row-113-gear-loan-request-1",
+                                 "b25-v4-row-114-gear-loan-request-2",
+                                 "b25-v4-row-115-platform-messages-entry-0",
+                                 "b25-v4-row-116-platform-messages-entry-1",
+                                 "b25-v4-row-117-platform-messages-entry-2",
+                                 "b25-v4-row-118-platform-blocked-target-0",
+                                 "b25-v4-row-119-platform-blocked-target-1",
+                                 "b25-v4-row-120-platform-blocked-target-2",
+                                 "b25-v4-row-121-platform-top-banner-no-fill-0",
+                                 "b25-v4-row-122-platform-top-banner-no-fill-1",
+                                 "b25-v4-row-123-platform-top-banner-no-fill-2",
+                                 "b25-v4-row-124-ad-off-community-checkout-0",
+                                 "b25-v4-row-125-ad-off-community-checkout-1",
+                                 "b25-v4-row-126-ad-off-community-checkout-2",
+                                 "b25-v4-row-127-ad-off-ad-suppression-0",
+                                 "b25-v4-row-128-ad-off-ad-suppression-1",
+                                 "b25-v4-row-129-ad-off-ad-suppression-2",
+                                 "b25-v4-row-130-export-import-replay-0",
+                                 "b25-v4-row-131-export-import-replay-1",
+                                 "b25-v4-row-132-export-import-replay-2",
+                                 "b25-v4-row-133-export-full-bundle-0",
+                                 "b25-v4-row-134-export-full-bundle-1",
+                                 "b25-v4-row-135-export-full-bundle-2",
+                                 "b25-v4-row-136-export-transfer-verification-0",
+                                 "b25-v4-row-137-export-transfer-verification-1",
+                                 "b25-v4-row-138-export-transfer-verification-2",
+                                 "b25-v4-row-139-platform-connections-entry-0",
+                                 "b25-v4-row-140-platform-connections-entry-1",
+                                 "b25-v4-row-141-platform-connections-entry-2",
+                                 "b25-v4-row-142-platform-message-stream-0",
+                                 "b25-v4-row-143-platform-message-stream-1",
+                                 "b25-v4-row-144-platform-message-stream-2",
+                                 "b25-v4-row-145-platform-sensitive-no-fill-0",
+                                 "b25-v4-row-146-platform-sensitive-no-fill-1",
+                                 "b25-v4-row-147-platform-sensitive-no-fill-2",
+                                 "b25-v4-row-148-ad-off-entitlement-status-0",
+                                 "b25-v4-row-149-ad-off-entitlement-status-1",
+                                 "b25-v4-row-150-ad-off-entitlement-status-2",
+                                 "b25-v4-row-151-ad-off-settlement-utility-0",
+                                 "b25-v4-row-152-ad-off-settlement-utility-1",
+                                 "b25-v4-row-153-ad-off-settlement-utility-2",
+                                 "b25-v4-row-154-export-protected-redaction-0",
+                                 "b25-v4-row-155-export-protected-redaction-1",
+                                 "b25-v4-row-156-export-protected-redaction-2",
+                                 "b25-v4-row-157-export-redacted-bundle-0",
+                                 "b25-v4-row-158-export-redacted-bundle-1",
+                                 "b25-v4-row-159-export-redacted-bundle-2",
+                                 "b25-v4-row-160-export-transfer-rollback-0",
+                                 "b25-v4-row-161-export-transfer-rollback-1",
+                                 "b25-v4-row-162-export-transfer-rollback-2",
+                                 "b25-v4-row-163-platform-connection-invite-0",
+                                 "b25-v4-row-164-platform-connection-invite-1",
+                                 "b25-v4-row-165-platform-connection-invite-2",
+                                 "b25-v4-row-166-platform-in-stream-ad-0",
+                                 "b25-v4-row-167-platform-in-stream-ad-1",
+                                 "b25-v4-row-168-platform-in-stream-ad-2",
+                                 "b25-v4-row-169-ad-off-member-checkout-0",
+                                 "b25-v4-row-170-ad-off-member-checkout-1",
+                                 "b25-v4-row-171-ad-off-member-checkout-2",
+                                 "b25-v4-row-172-ad-off-receipt-evidence-0",
+                                 "b25-v4-row-173-ad-off-receipt-evidence-1",
+                                 "b25-v4-row-174-ad-off-receipt-evidence-2",
+                                 "b25-v4-row-175-export-import-preview-0",
+                                 "b25-v4-row-176-export-import-preview-1",
+                                 "b25-v4-row-177-export-import-preview-2",
+                                 "b25-v4-row-178-export-schema-listing-0",
+                                 "b25-v4-row-179-export-schema-listing-1",
+                                 "b25-v4-row-180-export-schema-listing-2",
+                                 "b25-v4-row-181-export-checksum-evidence-0",
+                                 "b25-v4-row-182-export-checksum-evidence-1",
+                                 "b25-v4-row-183-export-checksum-evidence-2",
+                                 "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+                                 "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+                                 "b25-v4-row-186-wf-demo-app-persona-picker-0",
+                                 "b25-v4-row-187-wf-demo-app-persona-picker-1",
+                                 "b25-v4-row-188-wf-community-persona-aware-ux-0",
+                                 "b25-v4-row-189-wf-community-persona-aware-ux-1",
+                                 "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+                                 "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+                                 "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+                                 "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+                                 "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+                                 "b25-v4-row-195-wf-multi-persona-workflow-evidence-5"
+                             ],
+    "reviewedScreenshotHashes":  [
+                                     "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+                                     "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+                                     "e7687ecc5dacf53f5ae8ab79ce1cac56f25253a97bdd648a276590c4c747e5be",
+                                     "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+                                     "ac5774f2f60e07a0f84001c855e8ea6f7c512cf158a957f38a7f935181bffc12",
+                                     "f4979c0c174b3a0a83fafa0e81197e31268049787fbc02e42f2a229449b73061",
+                                     "9edcafd8dd3dd74ed63e2fbe40d9a10d7b5d3660ee710e2e283c929fcc0859ff",
+                                     "4cf06f950761d05c121c138c57cb1234f6d2ca345b5f6ca2cdd4ac8646fead5a",
+                                     "bc2a12b44bf5bf49df6ed6f868ce7e43541a69db23080cb4d6664694decb00d9",
+                                     "c65ba95f0649a72ce49c2f89c0990b098272bedb0ad187d2fb13f2f92b32a32c",
+                                     "f1914e49d633a8946433997a98040445871be96c21ead42cca14c7234529f923",
+                                     "5b2484a138f4f91d2e19c33e3adfa0f1dbf64733626de618974f6573e9e4ee8a",
+                                     "7b9eae93720ed58bb4b1269e94bd8cc864b22ca0c99000ff32b375b64d3a4f29",
+                                     "dca592021e42fc1a1a2eb143500e3922594003ba7fd9d673c2d7de33a015ee1d",
+                                     "e13e2c1ca6939f13b26a1169c2a7224b6470f53a1d46bad97409eff0a97eadd3",
+                                     "6b7711e9bfdc6304053f1271aee7049bddd4326429f664c0f7efa703a22e1690",
+                                     "1de9dc1a056cf3ce113a7ffba26b5ce072c26d0e860155492048396bd06b48aa",
+                                     "5b51f18a47de2d4c932a7cb1bca00fe099a8645f6515c112a4d80870e7e23680",
+                                     "1d64c3c4a03ff00a8ff6f6b3215ba37f31f2a506856668b32f20b3b02d4fafd1",
+                                     "d6d5b4d44cd5399eab9b4928a33e1ed6608a8b2e70112084465f5cbfe0d364c3",
+                                     "0e5180b5cd471016b8b04d77861d63c690c771222fde546f9d48beccfff8b90a",
+                                     "2507d0667227cd159a52c29d26ae98141f8aa30fa33d7f6f0be2c4849559b1c3",
+                                     "cc864c29a710aaf84ffa69c8b25ae16da1e971db5b1a0412d41f2521b0478c37",
+                                     "1dbb789c28db296f8edf1b262e15bf26e321ff1a84e0857174041419a75c3444",
+                                     "11e928b1dd954652d5c6de171cc5b185f431958bed9dc30cec83d4fad244d5e7",
+                                     "f8e613506592d1ce7406d9b0694ee50f68337f838006e9293ef0a6302fd4d554",
+                                     "3515c0a57c58ff809cc19720e4bcc164ef562acc8b81e64d14035cbc7268e316",
+                                     "5a0e462bbf719eaeb2a255a8803361c1381aa6755f8b3b12b484a8631c2b3c0d",
+                                     "58678c1f2a8e2691e550b74373a5ec7fd932352a7cdfb06158c9cafb6c97ea28",
+                                     "5e5c914c871f853cd399d2f9026dd967674ab8a95438bd5c4caf6b04959686e7",
+                                     "aa72a012a566b11ddc22292302ae9fde821370d51a6c1130a5b260b087e75d5d",
+                                     "741d6b07aff1427dc39a0043937a79a9f82a7062a08f86ae517c0a37fb3d3b55",
+                                     "6e42a57ef3f0c704d2b1a06c2b4493bba075798fd2d34f08425c44e60e317ee8",
+                                     "a3bc4eaf4b6a848e6b7f27362766737bbb2a5bd592da423aec4459a8d63481e8",
+                                     "3831acd30980811e39e405d216a7243a62d29f5eb2f6d1eb78e1030dfc7a4b75",
+                                     "b34ade472c497983c0364fa51fa2c3d9f8d838765e97c793f5160cf9e8b56219",
+                                     "084b20dbc594ada5e2a9360ee07e114af6546deba194234abcc25f19bd6e2c74",
+                                     "ee8f007e32b4e3ee9f0c35a82ec0af67bab604a2ffcc9930f761bbbfc843ce0f",
+                                     "a2a76009ad38d331bf3f4b4f8e114514be09f6287e39efd4fed6df68a7d88daf",
+                                     "8e39870f70841e1c0c78372784bb10a10e3701191a6450197eae216c5c2495d2",
+                                     "f2a134c8a49431d67d5db68df216ba8f3f9dec16dae150b7953cd3064bda4ac6",
+                                     "d9daa97fd02391567082f731e8c0faddcb78608729c49f2418d6048b95706491",
+                                     "d30bf7084011545d635d2af7c22921ae0567e1262f9d0ca10b8df4af8e1dfaa7",
+                                     "e5b685fb6b6c09be30ffbc7fd01896bc000e9bc9f2c283038a9299027f629c6f",
+                                     "50481eb3bb40f5b113774aef95d8a66fa6109d052897051c95362e5f1dd0def3",
+                                     "53df5342da717c269672b75bb8d8f4fa2b08cf8c7166046f6859a7228621b2b0",
+                                     "1eb4cbe30c48ef6407ec1236076df929e2f960dd8ff05e43994d3047f19480b9",
+                                     "165bbd1660e490ef934e9d7eac595161f6e967e6c1af9c5c238a978784988ea1",
+                                     "f21b1aa9cbb2985e21f76fe8589f0dc3684fedd2abd776d254e08f5eb0ce504c",
+                                     "fd807709fad78da964df6f726473bb6e6131d5b1a13bdea3b01a657c3c0b451c",
+                                     "15d491fa89ffc18bd2b0cd40bdb88bbebccfad7a8fd3c977c166bcf3d0d662ac",
+                                     "4bbd5d7802f58cc68026e793d92802d22da8708ffa47fcb1700f0ff4b29d5f9e",
+                                     "db47838024f14fa0023de0bdc7be1364a879f97ba2e7de99afe69735f71b804c",
+                                     "10432c49d970566636bc21418b6b8991d7937fec36202807e45106161cbea1a2",
+                                     "4652f3036f1888997e4ecafed1e8ab75cad7b3af09568b4675e93e996ab2b9ee",
+                                     "c62fca2d3806dac898a819ac562b98921cec26633e36d172f5b654fd70b466d5",
+                                     "6c3de2de2d3b67812840ee334437ae4969c34fd6d7fd9b03845a956adf224bd7",
+                                     "42cc7847c33b798402275fcf088663ded3b84d4c79095f94b19a1aeebe71c285",
+                                     "8bb12d496502428e4b21a60cddfcdac1d52da289a011e449b7f5491eb924f30b",
+                                     "dd83ed3d6d1c8cbd4d4555b90818cf6794cb848bbf797154f2e3d71448e229ad",
+                                     "3bffd8367c04539a5b97c8b8adc5797ff2afbb3ddd27926f958151556a94e657",
+                                     "7aec59cfad7253f141951227dd92f73823ccc41668bca743dd3134003bb7beec",
+                                     "305d4887bd614f2bbfb23b426be36ba6c2143fae2500a01391cfa097763b80a3",
+                                     "3c5496d3e8cc13bf343427097f072682b8bbab66d893ad98f2162d541e868adf",
+                                     "622b1c395c75abadaf130e9316178628106b3f2d7cffc02ed2d96791287b57f1",
+                                     "a8f11e67af724454537ed4426f9fd5a546f267c946a3bc437d6361ce5723a486",
+                                     "31bdb5606fd09965ecbfd7fe8bf3f79be1e517fed7895acbbf30424be2970576",
+                                     "3eca98ce5b46e3113f7f684fe5bcf4ef71bd47dce4c2fd2558f1e0cdfc13c281",
+                                     "e5e2c2c2a79f4deacecd24f5b5186b8e9e527e20f1f124a602fc8b54c56b6a03",
+                                     "f52aeb8730af1dd9695f9446eeea768b3bfd052e4b5100aea93c18d7777a8352",
+                                     "8b2b8f51f113c722bb7aa47f8ab714ac8780ada514cb97e12d5c1e24f4159ece",
+                                     "437bba9288a253e40cfc440b46d06b07bb6bd118802d14675d21af255bea6d87",
+                                     "180cb8c1f608a1cec1b02779e47e51013739260dba96fd6e1158d307f7e02255",
+                                     "db2d3f1b9e156bafb6a03c377fe28119835a344b0b39e9a3b7894592feb9edcc",
+                                     "36db08dad2433e53417d1169724111a313015bd7c572cc40ee882877a30dd25f",
+                                     "decdc0ec14ca4cce596bbf98be238c433610ff21c0a97c3fa2b9aa6733d5d53e",
+                                     "35586959b7d6a9cb33ebd3fa137433d435d405d3cb9e0cbe892d62abc003c3e8",
+                                     "051ea4a3423c0c65c6e99533ffe93ca01e1416e9e1201c580462322a9b50952c",
+                                     "f8ac3c24f26c223e208958e18e871e02d1d2ae955c71f46b47eeff2a3d9e6042",
+                                     "2ee95285b987334fe3558899ac837d8ebe0628589c5329e6ceb88681e8c8f730",
+                                     "805ba9fcb26eeb721feefd883e7176bc08de158d409153799eb6a879b2846b17",
+                                     "c24b30647eaec3c6e01223ee7754a6b720dcaa43916cb13c65cf022edca10b9c",
+                                     "6452c9b52ffd2da02b7671f792e2fd5fd465474fe3fb1441b59fab2541b6b5a9",
+                                     "5870f64732ba6880eabaae0d5887806aed56d612f28655f0e29ea4b9975c8d63",
+                                     "299eea084150f2ab39f49a537975c9830c9ea7bbe7cc4f9172237789eadaf6f0",
+                                     "c5f930b8d7075e5c0fd7aee5a7165d75f0dbbadc14d7b0db4a92818c715e2726",
+                                     "de7ccd4380ef4f9e03a978e17dde37b3407496f56e50bb7e83e4c96d8466b235",
+                                     "76e3f623980abc71cd9691b5be1bea67aca4f70b5f2590b1bd33f3efebdbe4c9",
+                                     "fb1f41cd434a6387406a76fa7f7dfa03b69e1f5a4d6970cd2b35363b63cdbe48",
+                                     "8c91c548ee250c47aff31015426b3ce59021868824bb87ad15f93a346704d114",
+                                     "4f82bcc686df00baae5fd1afcefb7f42c43a98af41bc28d349c4084388fd8461",
+                                     "7c6622c55c3e93f88c04a93d743717e5d5a81ebcfac1f561d3262b47008894e5",
+                                     "ffdfe81de3d0b5a007a323db7d1dd4075616d5dbd5fb9de523eefc7ed33f4e25",
+                                     "3ef493ff142559cc5dc5cb56596e20dada2729debb2afed2db148a65c9ee831f",
+                                     "ce2f3483def5dc210aeafbbbfbc382ce80f7f74baa3c6be719890bd113142068",
+                                     "989ceab7dc84ec64de0cc39a4249a54be8cc0886eb8073ad855297103759a590",
+                                     "09ea49b9e56fd3ceb256d8f0edf0292d6befd4d6742f8dbf2ccdfc28bda9cd1b",
+                                     "dfb96e036cc57dc6b6916bde48af0d4316c08edcc03ccda9cb1517404e26872c",
+                                     "f233c0011759931390a36b3292bce67053df047ac2e879d8c62cb10eb8143069",
+                                     "e45d956a9a2c2c8ea3a0aee7aa4170e89c44989e5b805a93b7acef1d2420cea9",
+                                     "13f82b65e79b0debc3ec0938f041ab0a6850a137363e8075e559eb9a84f1f733",
+                                     "957e96856642a1d3013b72adfffe3c76a0ee414ab292df2fc2d81e5689bed1c3",
+                                     "a5d3f186e39236144c64a9dde48b6ce6c0ddddf9c622477ff732e1a44f57850a",
+                                     "2ea72ffd40d6624235fc8c0d6f106beb8f46beb0aa4453368e11cf8d4733db8b",
+                                     "b5db1f09dd7ddd26aa52630590824b8e312f2741387b52fb76211e454cf7580d",
+                                     "d100f421025b393dfb192378f6d487d39aa72a2a41db99c3e3370a182799e3d0",
+                                     "6a442b17f0583ac088a3b932c76d3e147bd42c62f76f5ef3629dcac3b60b0244",
+                                     "8a8c5f58f7e266b1b7455c03d44445e957038666acbe43ef693a8b79b548c7f7",
+                                     "7f39786c7b117f0a862d4b47bcfc3db0113667edef66450d4a68fda4e5f87d26",
+                                     "e6bf4d2bba829785ccf3689e5a04e6f382b8dba6b45fd17e94fab7ea4e3ea499",
+                                     "00dab14c12f7b96613ee3179a8d0b36db4ac40906323f67ba4c90fcfcf41c458",
+                                     "2675e92b2d955076b52d12c3d6fedbe17eaba0b6a87f4e8653421ecb01402a5b",
+                                     "b13ff1b421ace875b9e5c064a97e737e7f110f7941876c0f44709a51b0117f87",
+                                     "8dc4aeef3213bf0a18e723405be598d4fc3ad8fd65ae706a3e912334e30562a3",
+                                     "99ccbc020cc33e61e28186080afe0ffe3ccff0495634f345adc6a3cfd7045e55",
+                                     "87ae065ef3a38a51600dfffdbb0ca03463ef3d990325bff2dcde8547f4b3aef3",
+                                     "dd9c8111b4446c34e9b73e8c2541f363314455c5352496e417e73131ac34b9f9",
+                                     "74cf50d84a026a8423c0f844f3e66bc5ab6a91c219f5418c5a26d7d740a005d2",
+                                     "684470c5eae378d6b80ef5ba776f7ddd6af49837c45d303d8df61ee407cf60a3",
+                                     "d1e28d04e97819c3a310e958ca028e5efde2e9ee16e6bf914478d2d4a5046308",
+                                     "b7f063b9944f1158b6a4ebbbc154164e3e5a274b45a66f4970d8c1df992b6a7c",
+                                     "5e47e90ffb87845b248e7e7f077864089f74a0046a67924357ccb283a0d64f39",
+                                     "ab2103cc39a7fee71c94e6c2caaa34884477c469ae5a4d96cbe233539d9f6bc7",
+                                     "60170b6f40837a19e5c673d204f0248065072055b79b508fbba21e01118b641a",
+                                     "ee1d82eb88a77fd9d76a10816964eac1faef0c0405d5bb4056c36902f58fa165",
+                                     "f7ce5f539679478b9ff3092fca08611a3a848a82a97fedc387510e5251ef5444",
+                                     "afe6e216da9042e0a97bc3e6041c516e54ba854db01ef7caa70a36241f7f639e",
+                                     "08ba5b0dc0fa84d4b5950974e6539f92720edd9e3e39a00bb647903ae6ceff4c",
+                                     "1f031f14addb25673082fcc5bb24a24fcaa2ca5a11f935e3f1878c553045aad4",
+                                     "cfb3479724b6e553f7f9b35805c2a1b0f24e51c0ff05465ed11c62b3c8ea850c",
+                                     "09d3f1fdb9c14be522a4d8a1d82ae6f008336bd7646a524ea726776fa2efaef3",
+                                     "12b0c191925031dcf0cb9e2c8293dd3770ba9bfe08d2f4252a0ff3ba66d7cb0a",
+                                     "4a91dfa7fab4d009cf9a29b6fb91698f208889efa4f6b9f716077a05c82bc086",
+                                     "c2b9b4580a8667a7daadba5e8f3ae683da6a45a7ffaf70acdd9cd0c59a45974a",
+                                     "3fcffc4ac25ba4354a645635e357ebcff9f696f7ec9565622deba979dd53bb7d",
+                                     "04447ca7a92ccd2cb0bcd7e4167c8e594baa1a738f48cb9adf4c1fc4d195afb4",
+                                     "a70c73e8ea8d060b09002165db9d206c63ad1d281549d777b7a0c78286061188",
+                                     "6133afce09ec993399a1ee57862f928676267b81371b1c0977205164c4b338a4",
+                                     "839b0ecd68f0ff5620fb1a193e05f03964b91f604c7e0483a74e1fe3286edfa9",
+                                     "88e7ac636614483e84e2ac98832b7306e5627255cac1d832e1949eb4fbda59e1",
+                                     "d6d96560aca7807891fcd9cb99da1b5d104c8c0f0268abdfb3c49861c331fa80",
+                                     "5320010683e65ceb76f9002cee21ebeff5b4b7007568b5a245b29a6b325f3cfd",
+                                     "e9103f5b07d7fcb2f3c788d346718cb67f266b0301149a00c304811c10048c65",
+                                     "6a55caa65b82e72a74f4c927faf7be29b6920cd8aafff18c9f905546f44e88f3",
+                                     "77c7db9c2709cac2b4fc011add763060341cbf1760e218666133359ed1bd3ae0",
+                                     "533421047fe3a7053c6bab1afb7bfe917c63ade960b17c75492b35a69b208abf",
+                                     "cbf95d67dfe39bb64669ddf856559728d8915f03ba070d4c430f55cac1be5f8a",
+                                     "9d06e0ed71f67af67073878bf7b0cc1059ea2cf8ab1d1a026c3a5ddf1d6e63db",
+                                     "292b7e67589765844fc8c18e8d43125a7b43e2913958ade05085a2840dd05060",
+                                     "c0fc01a627f15fb2ac2833a64095ac5b6edde547984662e2ae216b2c349a26ca",
+                                     "c978dd92bfeeb35d98ad5191907fb44d089f856349c227a0952883868c140ef6",
+                                     "87a92a866735f922bac0df052979e8cf3c8389c45980e6618d285aaef1f0d64a",
+                                     "1ff172b5624e66a693cc8bce352d12489ea9f97fe2df118a5dbac469e1d83bf5",
+                                     "babcd77ed4901779e4cd3a62b19317a9c8ade5dfdfc231cd07280a1bf6a54c80",
+                                     "63f3984f48fe3886a3bb2a263f2f23f59744efca6fe3ee1accab5e96660718d1",
+                                     "40abf53fc1cdb413a86a3f709bc418b2017475b0785952262324d8b6a44cdbff",
+                                     "cfb1c81f07115ad308b4d5c1c563729670bafefc471ae0722370a405fa76625c",
+                                     "0013d63c526639324655625fcebf4e824bac6248283e783a3f6ac2c7e6760151",
+                                     "6aead32cf6e01e77e2b07dd0b19dc566fa7d062f864df273e1b0b5b41ef7c9e8",
+                                     "89f543a586392de4514975d67cdb42ad5298b576b4a90fefcfe9567b99b8831b",
+                                     "d5f11d213492e4e2ede1e1c054c4ba226bffd487f9e028d4279e79208d4aaf81",
+                                     "965868b2d156de2709e0a51ec4f3f7c803e70282f4429ee0d571b1bdf9a2f6fa",
+                                     "9a4f70dbae2c4799f03d186eedac75f2ecceea1a73f072653f1bc085e5b6cef0",
+                                     "534a0380c9a4eb69fc63b8562435b1d94551c93e06ed1a8110508765a0b862c7",
+                                     "23dcbba6d50458d9e45be21f1dd33987b23a8efef5013ca3287f3f77da147654",
+                                     "c9f35f01e46fb517f49816d382dbd5cefba29b330459259c001fd871816695ff",
+                                     "1a79a9597e2271f1dea6d071e9c15166fe178a8da47c0d222fd1f14b95d314e4",
+                                     "daf1a7bcc5a7197408d6dcd0a67275c668bb31b934ee9833eca33b1198b4e3eb",
+                                     "36838a9a0c53c17ee17630287459d4c5b60ca17c0b4a2a02dc1ca5adebb1aa16",
+                                     "32c7998bd4433c7928ad72f69cf043812ff80ced12e8fb4578e24ce1baea9356",
+                                     "a2f337755d7260ad143e8179e7d5a46b8ffd618dbb245ce158d0e8679cfc8974",
+                                     "12701bfcc27ca2c23d7bedb12e6163e84b872cf8c88753a29374ad13038c0051",
+                                     "de406f8b4d6c864a700a33802d04a2359849706d15b469562317f97e8e04fb42",
+                                     "cd89f9f2a8f1f415e37af319be0758a70108b3439cd58a4f248baf4a79cfe0b6",
+                                     "df0d5f66fef7e685a4b30812bdf85f2821aa71fbe544007f74b8b21e193a43df",
+                                     "6cccec55ce8ff06b6c8c5c009c738d96b06bef578ca201db0763de78e3cbeeed",
+                                     "087d2c73fd5f10d377e3ee97a377146cabc7a9fa0a7b118ee4581137411e29c3",
+                                     "868ba6fbc608d19f4fe7d60f65356ed3e98222f8feeade6796034d1223398f3a",
+                                     "74bef7553c05d62eff7fe18dda68e3f1395a2d35a1f69085be92d8ed98dc9e2a"
+                                 ],
+    "summary":  "Reviewed 12 community example product docs, 69 Section 6 workflow rows, 195 B25 screen rows, and 179 unique screenshot hashes for b25-v4-pass-24. The 68 B25-covered workflow/persona rows have screenshot coverage, but current pass-24 evidence has 7 major semantic lifecycle failures, and the Loom shell product doc is not reconcilable by current B25 evidence because it has no B25 semantic model or B25 coverage row.",
+    "communityResults":  [
+                             {
+                                 "communityName":  "Ad-Free Community",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "ad-off-member-checkout",
+                                                             "ad-off-community-checkout",
+                                                             "ad-off-entitlement-status",
+                                                             "ad-off-receipt-evidence",
+                                                             "ad-off-ad-suppression",
+                                                             "ad-off-settlement-utility"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "ad-off-member-checkout",
+                                                                "ad-off-community-checkout",
+                                                                "ad-off-entitlement-status",
+                                                                "ad-off-receipt-evidence",
+                                                                "ad-off-ad-suppression",
+                                                                "ad-off-settlement-utility"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "ad-off-member-checkout",
+                                                              "ad-off-community-checkout",
+                                                              "ad-off-entitlement-status",
+                                                              "ad-off-receipt-evidence",
+                                                              "ad-off-ad-suppression",
+                                                              "ad-off-settlement-utility"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "ad-off-member-checkout",
+                                                              "ad-off-community-checkout",
+                                                              "ad-off-entitlement-status",
+                                                              "ad-off-receipt-evidence",
+                                                              "ad-off-ad-suppression",
+                                                              "ad-off-settlement-utility"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "ad-off-member-checkout",
+                                                                         "ad-off-community-checkout",
+                                                                         "ad-off-entitlement-status",
+                                                                         "ad-off-receipt-evidence",
+                                                                         "ad-off-ad-suppression",
+                                                                         "ad-off-settlement-utility"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "ad-off-member-checkout",
+                                                                      "rowId":  "b25-v4-row-169-ad-off-member-checkout-0",
+                                                                      "screenshotHash":  "965868b2d156de2709e0a51ec4f3f7c803e70282f4429ee0d571b1bdf9a2f6fa",
+                                                                      "visibleTextExcerpt":  "Member ad-off checkout | 4.99 USD monthly member ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before checkout."
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "ad-off-community-checkout",
+                                                                      "rowId":  "b25-v4-row-124-ad-off-community-checkout-0",
+                                                                      "screenshotHash":  "ab2103cc39a7fee71c94e6c2caaa34884477c469ae5a4d96cbe233539d9f6bc7",
+                                                                      "visibleTextExcerpt":  "Community ad-off checkout | 120.00 USD monthly community ad-free plan. | Review payer, amount, entitlement scope, payment method, renewal, receipt, and restore/manage path before c"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "ad-off-entitlement-status",
+                                                                      "rowId":  "b25-v4-row-148-ad-off-entitlement-status-0",
+                                                                      "screenshotHash":  "6a55caa65b82e72a74f4c927faf7be29b6920cd8aafff18c9f905546f44e88f3",
+                                                                      "visibleTextExcerpt":  "Ad-off entitlement status | Active member entitlement through Aug 30. | Inspect entitlement scope, expiration, subscription state, restore path, receipt link, and ad-free receiver "
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Camera Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "photo-walk-rsvp",
+                                                             "critique-submission",
+                                                             "gear-loan-request"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "photo-walk-rsvp",
+                                                                "critique-submission",
+                                                                "gear-loan-request"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "photo-walk-rsvp",
+                                                              "critique-submission",
+                                                              "gear-loan-request"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "photo-walk-rsvp",
+                                                              "critique-submission",
+                                                              "gear-loan-request"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "photo-walk-rsvp",
+                                                                         "critique-submission",
+                                                                         "gear-loan-request"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "photo-walk-rsvp",
+                                                                      "rowId":  "b25-v4-row-106-photo-walk-rsvp-0",
+                                                                      "screenshotHash":  "b5db1f09dd7ddd26aa52630590824b8e312f2741387b52fb76211e454cf7580d",
+                                                                      "visibleTextExcerpt":  "Downtown photo walk RSVP | Sat 4:30 PM - Dock 4 to the riverfront pier. | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "critique-submission",
+                                                                      "rowId":  "b25-v4-row-109-critique-submission-0",
+                                                                      "screenshotHash":  "8a8c5f58f7e266b1b7455c03d44445e957038666acbe43ef693a8b79b548c7f7",
+                                                                      "visibleTextExcerpt":  "Street portrait critique | Evening Reflection - consent note and reviewer queue. | Submit a photo for critique with title, prompt, visibility, reviewer, edit path, and comment resu"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "gear-loan-request",
+                                                                      "rowId":  "b25-v4-row-112-gear-loan-request-0",
+                                                                      "screenshotHash":  "00dab14c12f7b96613ee3179a8d0b36db4ac40906323f67ba4c90fcfcf41c458",
+                                                                      "visibleTextExcerpt":  "35mm prime lens loan | Sam lends the lens Friday; return due Sunday evening. | Request shared gear with owner, pickup time, borrower count, contact privacy, waitlist, and return st"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Cedar Commons HOA",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "hoa-dues-payment",
+                                                             "hoa-member-document",
+                                                             "hoa-facility-reservation",
+                                                             "hoa-architectural-request",
+                                                             "hoa-committee-decision",
+                                                             "hoa-owner-notification",
+                                                             "hoa-export-evidence"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "hoa-dues-payment",
+                                                                "hoa-member-document",
+                                                                "hoa-facility-reservation",
+                                                                "hoa-architectural-request",
+                                                                "hoa-committee-decision",
+                                                                "hoa-owner-notification",
+                                                                "hoa-export-evidence"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "hoa-dues-payment",
+                                                              "hoa-member-document",
+                                                              "hoa-facility-reservation",
+                                                              "hoa-architectural-request",
+                                                              "hoa-committee-decision",
+                                                              "hoa-owner-notification",
+                                                              "hoa-export-evidence"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "hoa-owner-notification"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "hoa-dues-payment",
+                                                              "hoa-member-document",
+                                                              "hoa-facility-reservation",
+                                                              "hoa-architectural-request",
+                                                              "hoa-committee-decision",
+                                                              "hoa-owner-notification",
+                                                              "hoa-export-evidence"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "hoa-dues-payment",
+                                                                         "hoa-member-document",
+                                                                         "hoa-facility-reservation",
+                                                                         "hoa-architectural-request",
+                                                                         "hoa-committee-decision",
+                                                                         "hoa-owner-notification",
+                                                                         "hoa-export-evidence"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "hoa-dues-payment",
+                                                                      "rowId":  "b25-v4-row-064-hoa-dues-payment-0",
+                                                                      "screenshotHash":  "3c5496d3e8cc13bf343427097f072682b8bbab66d893ad98f2162d541e868adf",
+                                                                      "visibleTextExcerpt":  "Quarterly HOA dues | 450.00 USD due Jul 1, receipt to homeowner ledger. | Review amount, owner, reservation or dues object, receipt destination, retry path, and status before confi"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "hoa-member-document",
+                                                                      "rowId":  "b25-v4-row-085-hoa-member-document-0",
+                                                                      "screenshotHash":  "299eea084150f2ab39f49a537975c9830c9ea7bbe7cc4f9172237789eadaf6f0",
+                                                                      "visibleTextExcerpt":  "Community Rules document | Version 2026.3, members can open and acknowledge. | Open the governing document with version, access state, acknowledgement, and download history. | Ceda"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "hoa-facility-reservation",
+                                                                      "rowId":  "b25-v4-row-022-hoa-facility-reservation-0",
+                                                                      "screenshotHash":  "2507d0667227cd159a52c29d26ae98141f8aa30fa33d7f6f0be2c4849559b1c3",
+                                                                      "visibleTextExcerpt":  "Clubhouse Room A reservation | Room A, Saturday 2-5 PM, reservation fee attached. | Review amount, owner, reservation or dues object, receipt destination, retry path, and status be"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Chess Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "chess-local-install-open",
+                                                             "chess-route-home",
+                                                             "chess-match-result"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "chess-local-install-open",
+                                                                "chess-route-home",
+                                                                "chess-match-result"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "chess-local-install-open",
+                                                              "chess-route-home",
+                                                              "chess-match-result"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "chess-local-install-open",
+                                                              "chess-route-home",
+                                                              "chess-match-result"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "chess-local-install-open",
+                                                                         "chess-route-home",
+                                                                         "chess-match-result"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "chess-local-install-open",
+                                                                      "rowId":  "b25-v4-row-097-chess-local-install-open-0",
+                                                                      "screenshotHash":  "09ea49b9e56fd3ceb256d8f0edf0292d6befd4d6742f8dbf2ccdfc28bda9cd1b",
+                                                                      "visibleTextExcerpt":  "Chess Club home | Tonight ladder, pairings, standings, and next match. | Open a real club home with upcoming matches, active ladder, and member standings. | Board 1 | Round 3 | 12 "
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "chess-route-home",
+                                                                      "rowId":  "b25-v4-row-100-chess-route-home-0",
+                                                                      "screenshotHash":  "e45d956a9a2c2c8ea3a0aee7aa4170e89c44989e5b805a93b7acef1d2420cea9",
+                                                                      "visibleTextExcerpt":  "Chess Club home | Tonight ladder, pairings, standings, and next match. | Open a real club home with upcoming matches, active ladder, and member standings. | Board 1 | Round 3 | 12 "
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "chess-match-result",
+                                                                      "rowId":  "b25-v4-row-103-chess-match-result-0",
+                                                                      "screenshotHash":  "957e96856642a1d3013b72adfffe3c76a0ee414ab292df2fc2d81e5689bed1c3",
+                                                                      "visibleTextExcerpt":  "Chess Club home | Tonight ladder, pairings, standings, and next match. | Chess Club shows board, players, result, correction path, standings impact, and next pairing. | Board 1 | R"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Data Portability Community",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "export-import-preview",
+                                                             "export-import-replay",
+                                                             "export-protected-redaction",
+                                                             "export-schema-listing",
+                                                             "export-full-bundle",
+                                                             "export-redacted-bundle",
+                                                             "export-checksum-evidence",
+                                                             "export-transfer-verification",
+                                                             "export-transfer-rollback"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "export-import-preview",
+                                                                "export-import-replay",
+                                                                "export-protected-redaction",
+                                                                "export-schema-listing",
+                                                                "export-full-bundle",
+                                                                "export-redacted-bundle",
+                                                                "export-checksum-evidence",
+                                                                "export-transfer-verification",
+                                                                "export-transfer-rollback"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "export-import-preview",
+                                                              "export-import-replay",
+                                                              "export-protected-redaction",
+                                                              "export-schema-listing",
+                                                              "export-full-bundle",
+                                                              "export-redacted-bundle",
+                                                              "export-checksum-evidence",
+                                                              "export-transfer-verification",
+                                                              "export-transfer-rollback"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "export-import-replay",
+                                                              "export-protected-redaction",
+                                                              "export-import-preview"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "export-import-preview",
+                                                              "export-import-replay",
+                                                              "export-protected-redaction",
+                                                              "export-schema-listing",
+                                                              "export-full-bundle",
+                                                              "export-redacted-bundle",
+                                                              "export-checksum-evidence",
+                                                              "export-transfer-verification",
+                                                              "export-transfer-rollback"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "export-import-preview",
+                                                                         "export-import-replay",
+                                                                         "export-protected-redaction",
+                                                                         "export-schema-listing",
+                                                                         "export-full-bundle",
+                                                                         "export-redacted-bundle",
+                                                                         "export-checksum-evidence",
+                                                                         "export-transfer-verification",
+                                                                         "export-transfer-rollback"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "export-import-preview",
+                                                                      "rowId":  "b25-v4-row-175-export-import-preview-0",
+                                                                      "screenshotHash":  "1f031f14addb25673082fcc5bb24a24fcaa2ca5a11f935e3f1878c553045aad4",
+                                                                      "visibleTextExcerpt":  "Legacy import preview | Preview rows, conflicts, replay checkpoint, and rollback marker. | Inspect imported member, document, and receipt rows; resolve duplicates; and confirm repl"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "export-import-replay",
+                                                                      "rowId":  "b25-v4-row-130-export-import-replay-0",
+                                                                      "screenshotHash":  "1f031f14addb25673082fcc5bb24a24fcaa2ca5a11f935e3f1878c553045aad4",
+                                                                      "visibleTextExcerpt":  "Legacy import preview | Preview rows, conflicts, replay checkpoint, and rollback marker. | Inspect imported member, document, and receipt rows; resolve duplicates; and confirm repl"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "export-protected-redaction",
+                                                                      "rowId":  "b25-v4-row-154-export-protected-redaction-0",
+                                                                      "screenshotHash":  "c0fc01a627f15fb2ac2833a64095ac5b6edde547984662e2ae216b2c349a26ca",
+                                                                      "visibleTextExcerpt":  "Protected redaction preview | Mask protected fields with policy reasons before export. | Review masked phone, care, vault, and payment fields with policy reasons and reveal permiss"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Garden Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "garden-event-rsvp",
+                                                             "plant-exchange-submission",
+                                                             "garden-export-custom-schemas"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "garden-event-rsvp",
+                                                                "plant-exchange-submission",
+                                                                "garden-export-custom-schemas"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "garden-event-rsvp",
+                                                              "plant-exchange-submission",
+                                                              "garden-export-custom-schemas"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "garden-event-rsvp",
+                                                              "plant-exchange-submission",
+                                                              "garden-export-custom-schemas"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "garden-event-rsvp",
+                                                                         "plant-exchange-submission",
+                                                                         "garden-export-custom-schemas"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "garden-event-rsvp",
+                                                                      "rowId":  "b25-v4-row-001-garden-event-rsvp-0",
+                                                                      "screenshotHash":  "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+                                                                      "visibleTextExcerpt":  "Spring Planting Workshop | Hands-on bed prep, seedling swap, and seasonal planning with Garden Club members. | Sat, Apr 18 | 10:00 AM | Riverside Greenhouse | 18 of 24 spots | Your"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "plant-exchange-submission",
+                                                                      "rowId":  "b25-v4-row-004-plant-exchange-submission-0",
+                                                                      "screenshotHash":  "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+                                                                      "visibleTextExcerpt":  "Basil seedlings offer | Offer six Sweet Genovese starter pots, choose pickup details, and control what contact info is shared. | Sweet Genovese basil | 6 starter pots | Pickup Sat "
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "garden-export-custom-schemas",
+                                                                      "rowId":  "b25-v4-row-007-garden-export-custom-schemas-0",
+                                                                      "screenshotHash":  "9edcafd8dd3dd74ed63e2fbe40d9a10d7b5d3660ee710e2e283c929fcc0859ff",
+                                                                      "visibleTextExcerpt":  "Garden data export package | Review event and plant-exchange data before download. | Export scope includes garden_event and plant_exchange schemas with protected contact fields red"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Loom Communities shell",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "local-build-download-sideload-install"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "local-build-download-sideload-install"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+                                                             "local-build-download-sideload-install"
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "local-build-download-sideload-install"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "local-build-download-sideload-install"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Masjid Nur",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "mosque-announcement",
+                                                             "mosque-event-rsvp",
+                                                             "mosque-volunteer-signup",
+                                                             "mosque-donor-visibility",
+                                                             "mosque-donation-payment",
+                                                             "mosque-care-request",
+                                                             "mosque-neutral-notification",
+                                                             "mosque-search-ai-citation",
+                                                             "wf_demo-app-persona-picker",
+                                                             "wf_community-persona-aware-ux",
+                                                             "wf_multi-persona-workflow-evidence"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "mosque-announcement",
+                                                                "mosque-event-rsvp",
+                                                                "mosque-volunteer-signup",
+                                                                "mosque-donor-visibility",
+                                                                "mosque-donation-payment",
+                                                                "mosque-care-request",
+                                                                "mosque-neutral-notification",
+                                                                "mosque-search-ai-citation",
+                                                                "wf_demo-app-persona-picker",
+                                                                "wf_community-persona-aware-ux",
+                                                                "wf_multi-persona-workflow-evidence"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "mosque-announcement",
+                                                              "mosque-event-rsvp",
+                                                              "mosque-volunteer-signup",
+                                                              "mosque-donor-visibility",
+                                                              "mosque-donation-payment",
+                                                              "mosque-care-request",
+                                                              "mosque-neutral-notification",
+                                                              "mosque-search-ai-citation",
+                                                              "wf_demo-app-persona-picker",
+                                                              "wf_community-persona-aware-ux",
+                                                              "wf_community-persona-aware-ux",
+                                                              "wf_multi-persona-workflow-evidence",
+                                                              "wf_multi-persona-workflow-evidence"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "mosque-announcement",
+                                                              "mosque-event-rsvp",
+                                                              "mosque-volunteer-signup",
+                                                              "mosque-donor-visibility",
+                                                              "mosque-donation-payment",
+                                                              "mosque-care-request",
+                                                              "mosque-neutral-notification",
+                                                              "mosque-search-ai-citation",
+                                                              "wf_demo-app-persona-picker",
+                                                              "wf_community-persona-aware-ux",
+                                                              "wf_community-persona-aware-ux",
+                                                              "wf_multi-persona-workflow-evidence",
+                                                              "wf_multi-persona-workflow-evidence"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "mosque-announcement",
+                                                                         "mosque-event-rsvp",
+                                                                         "mosque-volunteer-signup",
+                                                                         "mosque-donor-visibility",
+                                                                         "mosque-donation-payment",
+                                                                         "mosque-care-request",
+                                                                         "mosque-neutral-notification",
+                                                                         "mosque-search-ai-citation",
+                                                                         "wf_demo-app-persona-picker",
+                                                                         "wf_community-persona-aware-ux",
+                                                                         "wf_multi-persona-workflow-evidence"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "mosque-announcement",
+                                                                      "rowId":  "b25-v4-row-049-mosque-announcement-0",
+                                                                      "screenshotHash":  "f21b1aa9cbb2985e21f76fe8589f0dc3684fedd2abd776d254e08f5eb0ce504c",
+                                                                      "visibleTextExcerpt":  "Ramadan community night | Announcement composer for Masjid Nur members. | Review the message body, selected audience, sender, delivery timing, and member inbox state before publish"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "mosque-event-rsvp",
+                                                                      "rowId":  "b25-v4-row-070-mosque-event-rsvp-0",
+                                                                      "screenshotHash":  "f52aeb8730af1dd9695f9446eeea768b3bfd052e4b5100aea93c18d7777a8352",
+                                                                      "visibleTextExcerpt":  "Community iftar RSVP | Fri, Mar 14 at 6:45 PM - Fellowship hall. | Reserve a seat and review event time, location, host, capacity, and reminder state. | Fri, Mar 14 | 6:45 PM | Fel"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "mosque-volunteer-signup",
+                                                                      "rowId":  "b25-v4-row-091-mosque-volunteer-signup-0",
+                                                                      "screenshotHash":  "4f82bcc686df00baae5fd1afcefb7f42c43a98af41bc28d349c4084388fd8461",
+                                                                      "visibleTextExcerpt":  "Iftar setup shift | Friday 4:30 PM - tables, check-in, and meal handoff. | Choose the role, review shift time, protect contact details, and confirm coordinator follow-up. | Setup r"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Neighborhood Book Club",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "book-nomination",
+                                                             "book-vote",
+                                                             "book-meeting-rsvp",
+                                                             "book-discussion-message",
+                                                             "book-selection-publish",
+                                                             "book-search-ai-digest",
+                                                             "book-export-metadata"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "book-nomination",
+                                                                "book-vote",
+                                                                "book-meeting-rsvp",
+                                                                "book-discussion-message",
+                                                                "book-selection-publish",
+                                                                "book-search-ai-digest",
+                                                                "book-export-metadata"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "book-nomination",
+                                                              "book-vote",
+                                                              "book-meeting-rsvp",
+                                                              "book-discussion-message",
+                                                              "book-selection-publish",
+                                                              "book-search-ai-digest",
+                                                              "book-export-metadata"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "book-search-ai-digest"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "book-nomination",
+                                                              "book-vote",
+                                                              "book-meeting-rsvp",
+                                                              "book-discussion-message",
+                                                              "book-selection-publish",
+                                                              "book-search-ai-digest",
+                                                              "book-export-metadata"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "book-nomination",
+                                                                         "book-vote",
+                                                                         "book-meeting-rsvp",
+                                                                         "book-discussion-message",
+                                                                         "book-selection-publish",
+                                                                         "book-search-ai-digest",
+                                                                         "book-export-metadata"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "book-nomination",
+                                                                      "rowId":  "b25-v4-row-010-book-nomination-0",
+                                                                      "screenshotHash":  "c65ba95f0649a72ce49c2f89c0990b098272bedb0ad187d2fb13f2f92b32a32c",
+                                                                      "visibleTextExcerpt":  "Nominate Parable of the Sower | Octavia E. Butler - February reading cycle. | Share why this title belongs on the ballot and how it fits the upcoming discussion. | Book title enter"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "book-vote",
+                                                                      "rowId":  "b25-v4-row-034-book-vote-0",
+                                                                      "screenshotHash":  "a3bc4eaf4b6a848e6b7f27362766737bbb2a5bd592da423aec4459a8d63481e8",
+                                                                      "visibleTextExcerpt":  "Nominate Parable of the Sower | Octavia E. Butler - February reading cycle. | Share why this title belongs on the ballot and how it fits the upcoming discussion. | Book title enter"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "book-meeting-rsvp",
+                                                                      "rowId":  "b25-v4-row-055-book-meeting-rsvp-0",
+                                                                      "screenshotHash":  "4652f3036f1888997e4ecafed1e8ab75cad7b3af09568b4675e93e996ab2b9ee",
+                                                                      "visibleTextExcerpt":  "Parable discussion night | Thu, Feb 15 at 7:00 PM - Maya\u0027s living room. | Reserve a seat for the discussion and see host, location, capacity, and reminder status. | Thu, Feb 15 | 7"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "persona-role-inventory",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "wf_persona-role-inventory-capability-matrix"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "wf_persona-role-inventory-capability-matrix"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "wf_persona-role-inventory-capability-matrix",
+                                                              "wf_persona-role-inventory-capability-matrix"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "wf_persona-role-inventory-capability-matrix",
+                                                              "wf_persona-role-inventory-capability-matrix"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "wf_persona-role-inventory-capability-matrix"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "wf_persona-role-inventory-capability-matrix",
+                                                                      "rowId":  "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+                                                                      "screenshotHash":  "cd89f9f2a8f1f415e37af319be0758a70108b3439cd58a4f248baf4a79cfe0b6",
+                                                                      "visibleTextExcerpt":  "No sponsored message right now. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Masjid Admin | Admin - Publishes announcements and sends neutral no"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Member Social Space",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                                 "status":  "fail",
+                                 "declaredWorkflowIds":  [
+                                                             "platform-messages-entry",
+                                                             "platform-connections-entry",
+                                                             "platform-connection-invite",
+                                                             "platform-blocked-target",
+                                                             "platform-message-stream",
+                                                             "platform-in-stream-ad",
+                                                             "platform-top-banner-no-fill",
+                                                             "platform-sensitive-no-fill"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "platform-messages-entry",
+                                                                "platform-connections-entry",
+                                                                "platform-connection-invite",
+                                                                "platform-blocked-target",
+                                                                "platform-message-stream",
+                                                                "platform-in-stream-ad",
+                                                                "platform-top-banner-no-fill",
+                                                                "platform-sensitive-no-fill"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "platform-messages-entry",
+                                                              "platform-connections-entry",
+                                                              "platform-connection-invite",
+                                                              "platform-blocked-target",
+                                                              "platform-message-stream",
+                                                              "platform-in-stream-ad",
+                                                              "platform-top-banner-no-fill",
+                                                              "platform-sensitive-no-fill"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+                                                              "platform-messages-entry",
+                                                              "platform-message-stream"
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "platform-messages-entry",
+                                                              "platform-connections-entry",
+                                                              "platform-connection-invite",
+                                                              "platform-blocked-target",
+                                                              "platform-message-stream",
+                                                              "platform-in-stream-ad",
+                                                              "platform-top-banner-no-fill",
+                                                              "platform-sensitive-no-fill"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "platform-messages-entry",
+                                                                         "platform-connections-entry",
+                                                                         "platform-connection-invite",
+                                                                         "platform-blocked-target",
+                                                                         "platform-message-stream",
+                                                                         "platform-in-stream-ad",
+                                                                         "platform-top-banner-no-fill",
+                                                                         "platform-sensitive-no-fill"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "platform-messages-entry",
+                                                                      "rowId":  "b25-v4-row-115-platform-messages-entry-0",
+                                                                      "screenshotHash":  "8dc4aeef3213bf0a18e723405be598d4fc3ad8fd65ae706a3e912334e30562a3",
+                                                                      "visibleTextExcerpt":  "Community message thread | Maya Chen to Jordan Lee - unread member thread. | Read sender, recipient, timestamp, message preview, unread state, reply path, mute, and archive control"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "platform-connections-entry",
+                                                                      "rowId":  "b25-v4-row-139-platform-connections-entry-0",
+                                                                      "screenshotHash":  "6133afce09ec993399a1ee57862f928676267b81371b1c0977205164c4b338a4",
+                                                                      "visibleTextExcerpt":  "Connections inbox | Pending invite from Maya, accepted contacts, and blocked-state summary. | Review connection requests with sender, message body, timestamp, mutual community, acc"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "platform-connection-invite",
+                                                                      "rowId":  "b25-v4-row-163-platform-connection-invite-0",
+                                                                      "screenshotHash":  "40abf53fc1cdb413a86a3f709bc418b2017475b0785952262324d8b6a44cdbff",
+                                                                      "visibleTextExcerpt":  "Member connection invite | Maya invites Jordan with accept/decline, cancel, and block paths. | Send or review a connection invite with sender, recipient, invite message body, times"
+                                                                  }
+                                                              ]
+                             },
+                             {
+                                 "communityName":  "Riverside Youth Soccer",
+                                 "productDocPath":  "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md",
+                                 "status":  "pass",
+                                 "declaredWorkflowIds":  [
+                                                             "soccer-guardian-join-approval",
+                                                             "soccer-team-roster",
+                                                             "soccer-minor-redaction",
+                                                             "soccer-registration-payment",
+                                                             "soccer-practice-schedule",
+                                                             "soccer-reminder-notification",
+                                                             "soccer-export-metadata"
+                                                         ],
+                                 "implementedWorkflowIds":  [
+                                                                "soccer-guardian-join-approval",
+                                                                "soccer-team-roster",
+                                                                "soccer-minor-redaction",
+                                                                "soccer-registration-payment",
+                                                                "soccer-practice-schedule",
+                                                                "soccer-reminder-notification",
+                                                                "soccer-export-metadata"
+                                                            ],
+                                 "section6RowsReviewed":  [
+                                                              "soccer-guardian-join-approval",
+                                                              "soccer-team-roster",
+                                                              "soccer-minor-redaction",
+                                                              "soccer-registration-payment",
+                                                              "soccer-practice-schedule",
+                                                              "soccer-reminder-notification",
+                                                              "soccer-export-metadata"
+                                                          ],
+                                 "missingFromProductDoc":  [
+
+                                                           ],
+                                 "missingFromEvidence":  [
+
+                                                         ],
+                                 "visibleProofGaps":  [
+
+                                                      ],
+                                 "personaStateGaps":  [
+
+                                                      ],
+                                 "interactionModelGaps":  [
+
+                                                          ],
+                                 "surfaceMappingGaps":  [
+
+                                                        ],
+                                 "semanticRowsReviewed":  [
+                                                              "soccer-guardian-join-approval",
+                                                              "soccer-team-roster",
+                                                              "soccer-minor-redaction",
+                                                              "soccer-registration-payment",
+                                                              "soccer-practice-schedule",
+                                                              "soccer-reminder-notification",
+                                                              "soccer-export-metadata"
+                                                          ],
+                                 "cardSurfaceRegistryRowsReviewed":  [
+                                                                         "soccer-guardian-join-approval",
+                                                                         "soccer-team-roster",
+                                                                         "soccer-minor-redaction",
+                                                                         "soccer-registration-payment",
+                                                                         "soccer-practice-schedule",
+                                                                         "soccer-reminder-notification",
+                                                                         "soccer-export-metadata"
+                                                                     ],
+                                 "screenshotBackedExamples":  [
+                                                                  {
+                                                                      "workflowId":  "soccer-guardian-join-approval",
+                                                                      "rowId":  "b25-v4-row-079-soccer-guardian-join-approval-0",
+                                                                      "screenshotHash":  "f8ac3c24f26c223e208958e18e871e02d1d2ae955c71f46b47eeff2a3d9e6042",
+                                                                      "visibleTextExcerpt":  "Guardian approval desk | Mia Rivera requests access for U10 Falcons. | Review guardian identity, player connection, emergency-contact status, and approval notes before activating m"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "soccer-team-roster",
+                                                                      "rowId":  "b25-v4-row-016-soccer-team-roster-0",
+                                                                      "screenshotHash":  "6b7711e9bfdc6304053f1271aee7049bddd4326429f664c0f7efa703a22e1690",
+                                                                      "visibleTextExcerpt":  "U10 Falcons roster | 12 players, 9 guardians, 2 missing waivers. | Inspect player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive det"
+                                                                  },
+                                                                  {
+                                                                      "workflowId":  "soccer-minor-redaction",
+                                                                      "rowId":  "b25-v4-row-040-soccer-minor-redaction-0",
+                                                                      "screenshotHash":  "8e39870f70841e1c0c78372784bb10a10e3701191a6450197eae216c5c2495d2",
+                                                                      "visibleTextExcerpt":  "Youth privacy record | Roster and registration data with minor protection. | Show protected minor data, redaction, saved result state, export scope, and permission boundaries for c"
+                                                                  }
+                                                              ]
+                             }
+                         ],
+    "findings":  [
+                     {
+                         "id":  "LLM-B25-WR-001",
+                         "findingId":  "LLM-B25-WR-001",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for book-search-ai-digest",
+                         "community":  "Neighborhood Book Club",
+                         "communityName":  "Neighborhood Book Club",
+                         "workflowId":  "book-search-ai-digest",
+                         "personaId":  "community-book-club-member",
+                         "persona":  "member",
+                         "screenRowIds":  [
+                                              "b25-v4-row-037-book-search-ai-digest-0",
+                                              "b25-v4-row-038-book-search-ai-digest-1",
+                                              "b25-v4-row-039-book-search-ai-digest-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "084b20dbc594ada5e2a9360ee07e114af6546deba194234abcc25f19bd6e2c74",
+                                                  "ee8f007e32b4e3ee9f0c35a82ec0af67bab604a2ffcc9930f761bbbfc843ce0f",
+                                                  "a2a76009ad38d331bf3f4b4f8e114514be09f6287e39efd4fed6df68a7d88daf"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): concrete object/context.",
+                         "requiredFix":  "Add visible domain data before the action: title/name, relevant dates/timing/amounts/audience/status/content, and the actor/receiver context needed for this workflow.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-002",
+                         "findingId":  "LLM-B25-WR-002",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for hoa-owner-notification",
+                         "community":  "Cedar Commons HOA",
+                         "communityName":  "Cedar Commons HOA",
+                         "workflowId":  "hoa-owner-notification",
+                         "personaId":  "community-hoa-owner",
+                         "persona":  "owner",
+                         "screenRowIds":  [
+                                              "b25-v4-row-088-hoa-owner-notification-0",
+                                              "b25-v4-row-089-hoa-owner-notification-1",
+                                              "b25-v4-row-090-hoa-owner-notification-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "76e3f623980abc71cd9691b5be1bea67aca4f70b5f2590b1bd33f3efebdbe4c9",
+                                                  "fb1f41cd434a6387406a76fa7f7dfa03b69e1f5a4d6970cd2b35363b63cdbe48",
+                                                  "8c91c548ee250c47aff31015426b3ce59021868824bb87ad15f93a346704d114"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): concrete object/context.",
+                         "requiredFix":  "Add visible domain data before the action: title/name, relevant dates/timing/amounts/audience/status/content, and the actor/receiver context needed for this workflow.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-003",
+                         "findingId":  "LLM-B25-WR-003",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for platform-messages-entry",
+                         "community":  "Member Social Space",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-messages-entry",
+                         "personaId":  "community-platform-social-member",
+                         "persona":  "member",
+                         "screenRowIds":  [
+                                              "b25-v4-row-115-platform-messages-entry-0",
+                                              "b25-v4-row-116-platform-messages-entry-1",
+                                              "b25-v4-row-117-platform-messages-entry-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "8dc4aeef3213bf0a18e723405be598d4fc3ad8fd65ae706a3e912334e30562a3",
+                                                  "99ccbc020cc33e61e28186080afe0ffe3ccff0495634f345adc6a3cfd7045e55",
+                                                  "87ae065ef3a38a51600dfffdbb0ca03463ef3d990325bff2dcde8547f4b3aef3"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): persistent result state.",
+                         "requiredFix":  "Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-004",
+                         "findingId":  "LLM-B25-WR-004",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for export-import-replay",
+                         "community":  "Data Portability Community",
+                         "communityName":  "Data Portability Community",
+                         "workflowId":  "export-import-replay",
+                         "personaId":  "community-export-migration-owner",
+                         "persona":  "owner",
+                         "screenRowIds":  [
+                                              "b25-v4-row-130-export-import-replay-0",
+                                              "b25-v4-row-131-export-import-replay-1",
+                                              "b25-v4-row-132-export-import-replay-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "1f031f14addb25673082fcc5bb24a24fcaa2ca5a11f935e3f1878c553045aad4",
+                                                  "cfb3479724b6e553f7f9b35805c2a1b0f24e51c0ff05465ed11c62b3c8ea850c",
+                                                  "09d3f1fdb9c14be522a4d8a1d82ae6f008336bd7646a524ea726776fa2efaef3"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): persistent result state.",
+                         "requiredFix":  "Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-005",
+                         "findingId":  "LLM-B25-WR-005",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for platform-message-stream",
+                         "community":  "Member Social Space",
+                         "communityName":  "Member Social Space",
+                         "workflowId":  "platform-message-stream",
+                         "personaId":  "community-platform-social-member",
+                         "persona":  "member",
+                         "screenRowIds":  [
+                                              "b25-v4-row-142-platform-message-stream-0",
+                                              "b25-v4-row-143-platform-message-stream-1",
+                                              "b25-v4-row-144-platform-message-stream-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "8dc4aeef3213bf0a18e723405be598d4fc3ad8fd65ae706a3e912334e30562a3",
+                                                  "99ccbc020cc33e61e28186080afe0ffe3ccff0495634f345adc6a3cfd7045e55",
+                                                  "87ae065ef3a38a51600dfffdbb0ca03463ef3d990325bff2dcde8547f4b3aef3"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): persistent result state.",
+                         "requiredFix":  "Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-006",
+                         "findingId":  "LLM-B25-WR-006",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for export-protected-redaction",
+                         "community":  "Data Portability Community",
+                         "communityName":  "Data Portability Community",
+                         "workflowId":  "export-protected-redaction",
+                         "personaId":  "community-export-migration-owner",
+                         "persona":  "owner",
+                         "screenRowIds":  [
+                                              "b25-v4-row-154-export-protected-redaction-0",
+                                              "b25-v4-row-155-export-protected-redaction-1",
+                                              "b25-v4-row-156-export-protected-redaction-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "c0fc01a627f15fb2ac2833a64095ac5b6edde547984662e2ae216b2c349a26ca",
+                                                  "c978dd92bfeeb35d98ad5191907fb44d089f856349c227a0952883868c140ef6",
+                                                  "87a92a866735f922bac0df052979e8cf3c8389c45980e6618d285aaef1f0d64a"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): persistent result state. The workflow/persona scorecard also fails for this same workflow/persona pair.",
+                         "requiredFix":  "Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-007",
+                         "findingId":  "LLM-B25-WR-007",
+                         "severity":  "major",
+                         "title":  "Documented semantic lifecycle is not proven for export-import-preview",
+                         "community":  "Data Portability Community",
+                         "communityName":  "Data Portability Community",
+                         "workflowId":  "export-import-preview",
+                         "personaId":  "community-export-migration-owner",
+                         "persona":  "owner",
+                         "screenRowIds":  [
+                                              "b25-v4-row-175-export-import-preview-0",
+                                              "b25-v4-row-176-export-import-preview-1",
+                                              "b25-v4-row-177-export-import-preview-2"
+                                          ],
+                         "screenshotHashes":  [
+                                                  "1f031f14addb25673082fcc5bb24a24fcaa2ca5a11f935e3f1878c553045aad4",
+                                                  "cfb3479724b6e553f7f9b35805c2a1b0f24e51c0ff05465ed11c62b3c8ea850c",
+                                                  "09d3f1fdb9c14be522a4d8a1d82ae6f008336bd7646a524ea726776fa2efaef3"
+                                              ],
+                         "gapType":  "implementation-semantic-lifecycle-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "## 7. Persona And State Matrix",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The product doc declares this workflow/persona as a B25 workflow and the semantic model requires a complete production lifecycle. Current pass-24 lifecycle evidence fails for missing group(s): persistent result state.",
+                         "requiredFix":  "Add completion/result/receipt/history state and, for multi-persona or broadcast workflows, the receiver/read/continuation state visible to the next persona.",
+                         "ticketMode":  "implementation-remediation"
+                     },
+                     {
+                         "id":  "LLM-B25-WR-008",
+                         "findingId":  "LLM-B25-WR-008",
+                         "severity":  "major",
+                         "title":  "Loom shell product doc is not reconcilable by current B25 evidence",
+                         "community":  "Loom Communities shell",
+                         "communityName":  "Loom Communities shell",
+                         "workflowId":  "local-build-download-sideload-install",
+                         "personaId":  "owner-tester",
+                         "persona":  "Owner/tester",
+                         "screenRowIds":  [
+
+                                          ],
+                         "screenshotHashes":  [
+
+                                              ],
+                         "gapType":  "product-doc-interaction-gap",
+                         "affectedProductDocPath":  "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+                         "affectedProductDocSections":  [
+                                                            "## 6. Workflow-To-Surface Mapping",
+                                                            "### B25 Semantic Interaction Models",
+                                                            "### B25 Card Surface Registry Mapping"
+                                                        ],
+                         "why":  "The shell product doc has a Section 6 workflow and a B25 card-surface registry row, but the current B25 review JSON has no productDocCoverage entry, screen row, workflow/persona coverage row, or lifecycle scorecard for that workflow. The doc also has no `### B25 Semantic Interaction Models` table to reconcile. Its Section 6 row says it is explicitly scoped out of B25 community screenshot reconciliation, but this pass-24 gate was asked to compare every community example doc.",
+                         "requiredFix":  "Either add an explicit B25 semantic interaction model and B25 evidence/productDocCoverage rows for the shell workflow, or move the shell workflow to a clearly non-B25-scoped artifact and update the reconciliation gate inputs so every included community doc is reconcilable.",
+                         "ticketMode":  "product-doc-update"
+                     }
+                 ]
+}

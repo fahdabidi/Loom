@@ -1231,6 +1231,139 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
             'The member inbox shows the selected book, meeting date, and discussion prompt.',
         completeLabel: 'Published',
       );
+    case 'book-search-ai-digest':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff3f5f8f),
+        icon: Icons.manage_search_outlined,
+        title: 'Reading guide answer',
+        subtitle: 'Query: "What should we discuss before chapter 6?"',
+        body:
+            'Review the AI answer, quoted source snippets, citation list, and follow-up prompts before saving it to the club digest.',
+        facts: [
+          _RichFact(icon: Icons.search_outlined, label: 'Question asked'),
+          _RichFact(icon: Icons.auto_awesome_outlined, label: 'AI summary'),
+          _RichFact(icon: Icons.format_quote_outlined, label: '3 citations'),
+          _RichFact(icon: Icons.bookmark_border_outlined, label: 'Save digest'),
+        ],
+        actionSurfaceTitle: 'Reading guide answer',
+        actionHeroSubtitle:
+            'Parable of the Sower reading guide with cited sources',
+        actionHeroBody:
+            'Check the query, answer summary, citation snippets, source titles, and follow-up action before saving the digest.',
+        actionPanelTitle: 'Ready to save guide',
+        actionPanelBody:
+            'The digest will save the answer, source citations, and suggested discussion prompts for members.',
+        alternateActionLabel: 'Ask follow-up',
+        detailTitle: 'Answer and citations',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.auto_awesome_outlined,
+            title: 'Answer summary',
+            body:
+                'Focus the chapter 6 discussion on mutual aid, scarcity, and Lauren\'s journal voice.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.format_quote_outlined,
+            title: 'Source snippets',
+            body:
+                'Cites member notes, the February nomination rationale, and the March discussion prompt.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.library_books_outlined,
+            title: 'Citation detail',
+            body:
+                'Each citation shows source title, author or member, and why it is visible to this member.',
+          ),
+        ],
+        stateTitle: 'Digest state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.bookmark_border_outlined,
+            title: 'Saved guide',
+            body:
+                'Members can reopen the cited answer, share it to the discussion, or ask a follow-up.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.verified_outlined,
+            title: 'Source visibility',
+            body:
+                'Private member notes stay hidden; visible citations show permission-safe source labels.',
+          ),
+        ],
+        completeTitle: 'Guide saved',
+        completeBody:
+            'The reading guide now shows query, answer, citations, source visibility, save state, and follow-up prompts.',
+        receivedTitle: 'Guide ready',
+        receivedBody:
+            'Members can read the AI summary, inspect citations, and open the discussion prompt.',
+        completeLabel: 'Saved',
+      );
+    case 'book-export-metadata':
+      return const _RichWorkflowSpec(
+        accent: Color(0xff536878),
+        icon: Icons.folder_zip_outlined,
+        title: 'Book club export package',
+        subtitle: 'Nominations, votes, RSVPs, threads, and reading schedule.',
+        body:
+            'Preview book-club data, member-message redaction, checksum, download, and audit history before exporting.',
+        facts: [
+          _RichFact(icon: Icons.menu_book_outlined, label: 'Books + ballots'),
+          _RichFact(icon: Icons.forum_outlined, label: 'Threads redacted'),
+          _RichFact(icon: Icons.verified_outlined, label: 'Checksum BC-042'),
+          _RichFact(icon: Icons.download_outlined, label: 'Download ready'),
+        ],
+        actionSurfaceTitle: 'Book club export review',
+        actionHeroSubtitle: 'Portable reading-club archive',
+        actionHeroBody:
+            'Confirm nominations, ballots, meeting RSVPs, discussion threads, redaction preview, checksum, and download destination.',
+        actionPanelTitle: 'Ready to generate archive',
+        actionPanelBody:
+            'The archive includes book nominations, vote history, meeting RSVPs, reading schedule, discussion messages, and redacted member contact fields.',
+        alternateActionLabel: 'Change export scope',
+        detailTitle: 'Archive contents',
+        detailRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.menu_book_outlined,
+            title: 'Reading data',
+            body:
+                'Nominations, selected books, ballot counts, reading schedule, and meeting RSVP records.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.visibility_off_outlined,
+            title: 'Redaction preview',
+            body:
+                'Member email, phone, and private thread metadata are redacted unless the owner has consent.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.verified_outlined,
+            title: 'Checksum and audit',
+            body:
+                'Checksum BC-042 and export timestamp are written to the owner audit history.',
+          ),
+        ],
+        stateTitle: 'Archive state',
+        stateRows: [
+          _ActionSurfaceDetail(
+            icon: Icons.file_download_outlined,
+            title: 'Download',
+            body:
+                'Owner can download the archive after checksum verification succeeds.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.undo_outlined,
+            title: 'Rollback',
+            body:
+                'Change scope or cancel before export generation; previous exports stay in audit history.',
+          ),
+        ],
+        completeTitle: 'Book archive generated',
+        completeBody:
+            'Book club export shows reading data, redaction preview, checksum BC-042, download status, and audit trail.',
+        receivedTitle: 'Export archive ready',
+        receivedBody:
+            'Owner can inspect the archive contents, checksum, and redaction evidence.',
+        completeLabel: 'Exported',
+      );
     case 'mosque-announcement':
       return const _RichWorkflowSpec(
         accent: Color(0xff2d6a4f),
@@ -1755,6 +1888,72 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
       id.contains('architectural') ||
       id.contains('committee') ||
       id.contains('notification');
+  if (id.contains('notification')) {
+    return _richSurface(
+      accent: const Color(0xff3e6b8f),
+      icon: Icons.mark_email_read_outlined,
+      title: 'Owner decision notice',
+      subtitle: 'Lot 42 fence request - approved with conditions.',
+      body:
+          'Send the owner notice with board sender, decision summary, required paint condition, delivery time, and owner inbox state.',
+      facts: const [
+        _RichFact(icon: Icons.home_outlined, label: 'Lot 42'),
+        _RichFact(icon: Icons.person_outline, label: 'From HOA Board'),
+        _RichFact(icon: Icons.schedule_outlined, label: 'Today 4:15 PM'),
+        _RichFact(icon: Icons.inbox_outlined, label: 'Owner inbox'),
+      ],
+      actionSurfaceTitle: 'Send owner notice',
+      actionHeroSubtitle: 'Avery Brooks - architectural decision',
+      actionHeroBody:
+          'Review sender, recipient, decision body, condition, timestamp, and owner receiver state before sending.',
+      actionPanelTitle: 'Ready to notify owner',
+      actionPanelBody:
+          'The owner receives the board decision, condition, appeal/reopen path, and message timestamp in their inbox.',
+      alternateActionLabel: 'Edit notice',
+      detailTitle: 'Notice message',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Sender and recipient',
+          body:
+              'From Cedar Commons HOA Board to Avery Brooks, homeowner for Lot 42.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.message_outlined,
+          title: 'Message body',
+          body:
+              'Your slate gray fence repaint is approved if trim remains cedar and work starts within 30 days.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.schedule_outlined,
+          title: 'Delivery',
+          body: 'Send today at 4:15 PM to owner inbox and email receipt.',
+        ),
+      ],
+      stateTitle: 'Owner receiver state',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.inbox_outlined,
+          title: 'Owner inbox',
+          body:
+              'Owner sees decision, sender, message body, timestamp, condition, and appeal path.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.undo_outlined,
+          title: 'Follow-up',
+          body:
+              'Owner can appeal, request clarification, or reopen with a revised color sample.',
+        ),
+      ],
+      completeTitle: 'Owner notified',
+      completeBody:
+          'Owner notice shows sender, recipient, body, timestamp, decision condition, inbox receipt, and follow-up path.',
+      receivedTitle: 'Decision notice received',
+      receivedBody:
+          'The homeowner inbox shows the board sender, decision body, timestamp, condition, and appeal path.',
+      completeLabel: 'Notice sent',
+    );
+  }
   return _richSurface(
     accent: const Color(0xff3e6b8f),
     icon: isPayment
@@ -2404,44 +2603,53 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
       accent: const Color(0xff7a4e4e),
       icon: Icons.block_outlined,
       title: 'Blocked connection guard',
-      subtitle: 'Invite prevented with safety explanation and audit state.',
+      subtitle: 'Maya cannot send an invite to blocked member Jordan.',
       body:
-          'Show the community safety record, attempted connection, blocked relationship, disabled send path, appeal/unblock option, and safe receiver state.',
+          'Show sender, protected recipient, attempted invite body, disabled send path, safety reason, appeal/unblock option, and audit timestamp.',
       facts: const [
         _RichFact(icon: Icons.block_outlined, label: 'Blocked'),
-        _RichFact(icon: Icons.article_outlined, label: 'Safety record'),
-        _RichFact(icon: Icons.person_outline, label: 'Target hidden'),
+        _RichFact(icon: Icons.person_outline, label: 'Maya -> Jordan'),
+        _RichFact(icon: Icons.message_outlined, label: 'Invite blocked'),
         _RichFact(icon: Icons.security_outlined, label: 'Safety audit'),
       ],
       actionSurfaceTitle: 'Connection safety guard',
-      actionHeroSubtitle: 'Blocked invite prevented',
+      actionHeroSubtitle: 'Invite body blocked before delivery',
       actionHeroBody:
-          'Review the block reason, target visibility, disabled invite path, and unblock/appeal option.',
+          'Review sender Maya, protected recipient Jordan, attempted invite text, block reason, disabled delivery, and unblock/appeal path.',
       actionPanelTitle: 'Ready to review safety state',
       actionPanelBody:
-          'The member cannot send the invite while the block is active; audit state remains visible.',
+          'The member cannot send the invite while the block is active; the attempted message body stays in audit, not in Jordan\'s inbox.',
       alternateActionLabel: 'Review block',
       detailTitle: 'Safety details',
       detailRows: const [
         _ActionSurfaceDetail(
-          icon: Icons.person_off_outlined,
-          title: 'Target',
-          body: 'Blocked member details are hidden from the sender.',
+          icon: Icons.person_outline,
+          title: 'Sender and protected recipient',
+          body:
+              'Maya Chen attempted to invite Jordan Lee; Jordan remains protected by an active block.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.message_outlined,
+          title: 'Attempted invite body',
+          body:
+              'Invite text: "Join my community circle for Saturday event planning."',
         ),
         _ActionSurfaceDetail(
           icon: Icons.article_outlined,
           title: 'Community safety record',
-          body: 'Record details explain why this connection remains blocked.',
+          body: 'Safety note from moderator Alex, updated today at 10:30 AM.',
         ),
         _ActionSurfaceDetail(
           icon: Icons.block_outlined,
           title: 'Disabled action',
-          body: 'Send invite is blocked until safety state changes.',
+          body:
+              'Send invite is disabled; unblock or appeal is required before contact.',
         ),
         _ActionSurfaceDetail(
           icon: Icons.history_outlined,
           title: 'Audit',
-          body: 'Moderator action and appeal path are recorded.',
+          body:
+              'Audit records sender, blocked target, attempted body, timestamp, and moderator action.',
         ),
       ],
       stateTitle: 'After review',
@@ -2459,30 +2667,46 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
       ],
       completeTitle: 'Blocked state confirmed',
       completeBody:
-          'The community safety record shows blocked target, disabled action, audit, and appeal/unblock path.',
+          'The community safety record shows sender, protected recipient, attempted body, disabled action, audit timestamp, and appeal/unblock path.',
       receivedTitle: 'Prevention received',
       receivedBody:
-          'The member sees a safe explanation without exposing protected details.',
+          'The member sees a safe explanation, no unsafe invite is delivered, and unblock/appeal path remains visible.',
       completeLabel: 'Blocked',
     );
   }
+  final isConnectionsEntry = id.contains('connections-entry');
   return _richSurface(
     accent: const Color(0xff315c8a),
-    icon: Icons.people_outline,
-    title: 'Member connection invite',
-    subtitle:
-        'Invite, accept/decline, recipient state, and relationship history.',
-    body:
-        'Send or review a connection invite with sender, recipient, relationship context, accept/decline path, and inbox state.',
+    icon: isConnectionsEntry
+        ? Icons.people_alt_outlined
+        : Icons.person_add_alt_outlined,
+    title: isConnectionsEntry
+        ? 'Connections inbox'
+        : 'Member connection invite',
+    subtitle: isConnectionsEntry
+        ? 'Pending invite from Maya, accepted contacts, and blocked-state summary.'
+        : 'Maya invites Jordan with accept/decline, cancel, and block paths.',
+    body: isConnectionsEntry
+        ? 'Review connection requests with sender, message body, timestamp, mutual community, accept/decline choices, and blocked-contact status.'
+        : 'Send or review a connection invite with sender, recipient, invite message body, timestamp, accept/decline path, and inbox state.',
     facts: const [
-      _RichFact(icon: Icons.person_outline, label: 'Member scoped'),
-      _RichFact(icon: Icons.person_add_alt_outlined, label: 'Invite pending'),
+      _RichFact(icon: Icons.person_outline, label: 'Maya -> Jordan'),
+      _RichFact(icon: Icons.message_outlined, label: 'Invite message'),
       _RichFact(icon: Icons.check_circle_outline, label: 'Accept/decline'),
-      _RichFact(icon: Icons.inbox_outlined, label: 'Inbox state'),
+      _RichFact(icon: Icons.schedule_outlined, label: 'Today 9:12 AM'),
     ],
+    actionSurfaceTitle: isConnectionsEntry
+        ? 'Connections inbox'
+        : 'Connection invite',
+    actionHeroSubtitle: isConnectionsEntry
+        ? 'Pending and active community connections'
+        : 'Invite Jordan to connect',
+    actionHeroBody: isConnectionsEntry
+        ? 'Inspect sender, invite body, timestamp, accept/decline buttons, active contacts, and blocked state.'
+        : 'Review recipient Jordan, sender Maya, invite body, timestamp, and the recipient inbox state before sending.',
     actionPanelTitle: 'Ready to send invite',
     actionPanelBody:
-        'Recipient receives the invite with accept, decline, cancel, block, and thread-continuation options.',
+        'Recipient sees the invite text, sender, timestamp, mutual community, accept, decline, block, and thread-continuation options.',
     alternateActionLabel: 'Cancel invite',
     detailTitle: 'Invite details',
     detailRows: const [
@@ -2490,6 +2714,17 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
         icon: Icons.person_outline,
         title: 'Sender and recipient',
         body: 'Maya Chen invites Jordan Lee to connect inside the community.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.message_outlined,
+        title: 'Invite body',
+        body:
+            'Message: "Want to coordinate the Saturday welcome table together?"',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.schedule_outlined,
+        title: 'Timestamp',
+        body: 'Today 9:12 AM, expires in 7 days if unanswered.',
       ),
       _ActionSurfaceDetail(
         icon: Icons.person_add_alt_outlined,
@@ -2517,10 +2752,10 @@ _RichWorkflowSpec _platformRichSpecFor(String id) {
     ],
     completeTitle: 'Connection invite sent',
     completeBody:
-        'The invite shows sender, recipient, accept/decline state, cancel path, and inbox continuation.',
+        'The invite shows sender, recipient, message body, timestamp, accept/decline state, cancel path, and inbox continuation.',
     receivedTitle: 'Connection invite ready',
     receivedBody:
-        'The receiver can accept, decline, block, or open the related thread.',
+        'The receiver sees sender, invite body, timestamp, mutual community, and can accept, decline, block, or open the related thread.',
     completeLabel: 'Invite sent',
   );
 }
@@ -2863,73 +3098,375 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
 }
 
 _RichWorkflowSpec _exportRichSpecFor(String id) {
+  final isImport =
+      id.contains('import-preview') || id.contains('import-replay');
+  final isTransfer = id.contains('transfer-verification');
+  final isRedaction = id.contains('protected-redaction');
+  final isRollback = id.contains('transfer-rollback');
+  final isSchema = id.contains('schema-listing');
+  final isChecksum = id.contains('checksum');
+  final title = isImport
+      ? 'Legacy import preview'
+      : isRedaction
+      ? 'Protected redaction preview'
+      : isSchema
+      ? 'Exportable schema catalog'
+      : isChecksum
+      ? 'Checksum evidence record'
+      : isRollback
+      ? 'Provider rollback plan'
+      : isTransfer
+      ? 'Provider transfer verification'
+      : 'Full export bundle';
+  final subtitle = isImport
+      ? 'Preview rows, conflicts, replay checkpoint, and rollback marker.'
+      : isRedaction
+      ? 'Mask protected fields with policy reasons before export.'
+      : isSchema
+      ? 'List schemas, field classes, custom records, and history.'
+      : isChecksum
+      ? 'Verify digest, file count, byte size, and integrity receipt.'
+      : isRollback
+      ? 'Recover from provider mismatch using the last good snapshot.'
+      : isTransfer
+      ? 'Verify destination provider, handshake, receipt, and audit trail.'
+      : 'Generate a downloadable package with scope, redaction, and checksum.';
+  final body = isImport
+      ? 'Inspect imported member, document, and receipt rows; resolve duplicates; and confirm replay checkpoint before importing.'
+      : isRedaction
+      ? 'Review masked phone, care, vault, and payment fields with policy reasons and reveal permissions.'
+      : isSchema
+      ? 'Inspect every exportable table, field classification, custom schema, version history, and include/exclude decision.'
+      : isChecksum
+      ? 'Compare source checksum, package checksum, byte size, and integrity receipt before marking the export verified.'
+      : isRollback
+      ? 'Choose retry, cancel, or rollback after a destination mismatch and keep the recovery audit visible.'
+      : isTransfer
+      ? 'Confirm source hash, destination hash, provider ID, transfer timestamp, and receipt before closing transfer.'
+      : 'Generate the full export bundle with selected records, redaction preview, checksum, download state, and audit trail.';
+  final actionPanelTitle = isImport
+      ? 'Ready to replay import'
+      : isRedaction
+      ? 'Ready to apply redaction'
+      : isSchema
+      ? 'Ready to confirm schema scope'
+      : isChecksum
+      ? 'Ready to verify checksum'
+      : isRollback
+      ? 'Ready to roll back transfer'
+      : isTransfer
+      ? 'Ready to verify transfer'
+      : 'Ready to generate bundle';
+  final actionPanelBody = isImport
+      ? 'Resolve duplicate rows, confirm checkpoint I-118, then replay the import with retry and rollback available.'
+      : isRedaction
+      ? 'Apply the protected-field mask and keep before/after preview, policy reason, and reveal permission visible.'
+      : isSchema
+      ? 'Confirm which schemas are included and whether custom records need version history.'
+      : isChecksum
+      ? 'Run verification, compare digests, and store the integrity receipt with export scope.'
+      : isRollback
+      ? 'Restore the last good snapshot or retry destination transfer after reviewing mismatch details.'
+      : isTransfer
+      ? 'Compare destination provider receipt with source package hash before confirming transfer.'
+      : 'Generate the package after confirming scope, redaction preview, destination, and audit history.';
+  final alternateLabel = isImport
+      ? 'Skip duplicate'
+      : isRedaction
+      ? 'Reveal field'
+      : isSchema
+      ? 'Exclude schema'
+      : isChecksum
+      ? 'Verify again'
+      : isRollback
+      ? 'Retry transfer'
+      : isTransfer
+      ? 'Hold transfer'
+      : 'Change scope';
+  final detailRows = isImport
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.preview_outlined,
+            title: 'Rows preview',
+            body:
+                '48 members, 22 documents, 12 receipts, and three duplicate records are visible.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.warning_amber_outlined,
+            title: 'Conflict choices',
+            body:
+                'Duplicates can be accepted, skipped, or held for owner review.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.history_outlined,
+            title: 'Replay checkpoint',
+            body:
+                'Checkpoint I-118 lets the owner retry or roll back the import.',
+          ),
+        ]
+      : isRedaction
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.visibility_off_outlined,
+            title: 'Protected values',
+            body: 'Phone, care, vault, payment, and private notes are masked.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.rule_outlined,
+            title: 'Policy reason',
+            body:
+                'Each masked field shows the policy and persona allowed to reveal it.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.preview_outlined,
+            title: 'Before/after',
+            body:
+                'Owner compares source label, exported safe value, and redaction count.',
+          ),
+        ]
+      : isSchema
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.schema_outlined,
+            title: 'Schema list',
+            body:
+                'community, member, receipt, document, message, task, event, and custom tables.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.key_outlined,
+            title: 'Field classes',
+            body:
+                'Public, member, protected, payment, audit, and custom field classes are shown.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.history_outlined,
+            title: 'Version history',
+            body:
+                'Each schema row includes version, owner, and last export status.',
+          ),
+        ]
+      : isChecksum
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.verified_outlined,
+            title: 'Digest',
+            body:
+                'Checksum 9A7F-PORT, file count 84, size 18.4 MB, SHA-256 verified.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.compare_arrows_outlined,
+            title: 'Comparison',
+            body:
+                'Source package hash and destination package hash must match.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.receipt_long_outlined,
+            title: 'Integrity receipt',
+            body:
+                'Receipt links checksum, scope, timestamp, and verifier identity.',
+          ),
+        ]
+      : isRollback
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.error_outline,
+            title: 'Mismatch',
+            body:
+                'Destination provider hash differs from source package checksum.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.undo_outlined,
+            title: 'Rollback checkpoint',
+            body: 'Snapshot E-204 is the last good state and can be restored.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.history_outlined,
+            title: 'Recovery audit',
+            body:
+                'Audit logs who started rollback, time, scope, and restored status.',
+          ),
+        ]
+      : isTransfer
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.cloud_sync_outlined,
+            title: 'Destination',
+            body: 'Provider Cloud HOA receives bundle E-204 after handshake.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.verified_outlined,
+            title: 'Hash match',
+            body:
+                'Source hash and provider receipt hash match before closeout.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.receipt_long_outlined,
+            title: 'Receipt',
+            body: 'Transfer receipt shows provider ID, timestamp, and status.',
+          ),
+        ]
+      : const [
+          _ActionSurfaceDetail(
+            icon: Icons.folder_zip_outlined,
+            title: 'Bundle contents',
+            body:
+                'Members, receipts, documents, messages, custom records, and export metadata.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.visibility_off_outlined,
+            title: 'Redaction',
+            body: 'Protected fields are counted and masked before download.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.file_download_outlined,
+            title: 'Download',
+            body:
+                'Owner sees file size, checksum, download status, and next transfer step.',
+          ),
+        ];
+  final stateRows = isImport
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.playlist_add_check_outlined,
+            title: 'Import state',
+            body:
+                'Replay status, duplicate decisions, and rollback marker remain visible.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.undo_outlined,
+            title: 'Undo path',
+            body: 'Owner can stop replay or roll back to checkpoint I-118.',
+          ),
+        ]
+      : isRollback
+      ? const [
+          _ActionSurfaceDetail(
+            icon: Icons.restore_outlined,
+            title: 'Restored state',
+            body:
+                'Records return to snapshot E-204 and destination status is marked rolled back.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.refresh_outlined,
+            title: 'Retry path',
+            body:
+                'Owner can retry transfer after provider mismatch is resolved.',
+          ),
+        ]
+      : const [
+          _ActionSurfaceDetail(
+            icon: Icons.file_download_outlined,
+            title: 'Owner artifact',
+            body:
+                'Owner can download or transfer only after required verification succeeds.',
+          ),
+          _ActionSurfaceDetail(
+            icon: Icons.history_outlined,
+            title: 'Audit trail',
+            body:
+                'Scope, decision, timestamp, checksum, and actor are preserved.',
+          ),
+        ];
   return _richSurface(
     accent: const Color(0xff536878),
-    icon: Icons.folder_zip_outlined,
-    title: id.contains('import')
-        ? 'Legacy import preview'
-        : id.contains('redaction')
-        ? 'Protected redaction preview'
-        : id.contains('schema')
-        ? 'Exportable schema list'
-        : id.contains('checksum')
-        ? 'Checksum verification'
-        : id.contains('rollback')
-        ? 'Provider rollback'
-        : id.contains('transfer')
-        ? 'Provider transfer verification'
-        : 'Full export bundle',
-    subtitle: 'Scope, redaction, checksum, destination, and audit trail.',
-    body:
-        'Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status.',
-    facts: const [
-      _RichFact(icon: Icons.dataset_outlined, label: 'Scope selected'),
-      _RichFact(icon: Icons.visibility_off_outlined, label: 'Redacted preview'),
-      _RichFact(icon: Icons.verified_outlined, label: 'Checksum'),
-      _RichFact(icon: Icons.person_outline, label: 'Guardian/coach visibility'),
-    ],
-    actionPanelTitle: 'Ready for portability action',
-    actionPanelBody:
-        'Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence.',
-    alternateActionLabel: 'Change scope',
-    detailTitle: 'Package details',
-    detailRows: const [
-      _ActionSurfaceDetail(
-        icon: Icons.dataset_outlined,
-        title: 'Scope',
-        body:
-            'Documents, receipts, custom schemas, protected youth or member rows, import rows, and transfer metadata.',
+    icon: isImport
+        ? Icons.preview_outlined
+        : isRedaction
+        ? Icons.visibility_off_outlined
+        : isSchema
+        ? Icons.schema_outlined
+        : isChecksum
+        ? Icons.verified_outlined
+        : isRollback
+        ? Icons.undo_outlined
+        : isTransfer
+        ? Icons.cloud_sync_outlined
+        : Icons.folder_zip_outlined,
+    title: title,
+    subtitle: subtitle,
+    body: body,
+    facts: [
+      _RichFact(
+        icon: isSchema ? Icons.schema_outlined : Icons.dataset_outlined,
+        label: isSchema ? '8 schemas listed' : 'Scope selected',
       ),
-      _ActionSurfaceDetail(
-        icon: Icons.visibility_off_outlined,
-        title: 'Redaction',
-        body:
-            'Phone numbers, minor profile fields, and protected vault values are redacted before export.',
+      _RichFact(
+        icon: isRedaction
+            ? Icons.visibility_off_outlined
+            : isImport
+            ? Icons.warning_amber_outlined
+            : Icons.verified_outlined,
+        label: isRedaction
+            ? 'Policy masks'
+            : isImport
+            ? '3 conflicts'
+            : 'Verified',
       ),
-      _ActionSurfaceDetail(
-        icon: Icons.verified_outlined,
-        title: 'Checksum',
-        body: 'Checksum and audit trail prove package integrity.',
+      _RichFact(
+        icon: isRollback ? Icons.restore_outlined : Icons.receipt_long_outlined,
+        label: isRollback ? 'Checkpoint E-204' : 'Audit receipt',
+      ),
+      _RichFact(
+        icon: isTransfer
+            ? Icons.cloud_done_outlined
+            : Icons.file_download_outlined,
+        label: isTransfer ? 'Provider receipt' : 'Owner artifact',
       ),
     ],
-    stateTitle: 'Transfer state',
-    stateRows: const [
-      _ActionSurfaceDetail(
-        icon: Icons.file_download_outlined,
-        title: 'Download',
-        body: 'Owner can download package and inspect status.',
-      ),
-      _ActionSurfaceDetail(
-        icon: Icons.undo_outlined,
-        title: 'Rollback',
-        body:
-            'Provider mismatch can trigger retry or rollback with audit history.',
-      ),
-    ],
-    completeTitle: 'Portability state saved',
-    completeBody:
-        'The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status.',
-    completeLabel: 'Ready',
+    actionPanelTitle: actionPanelTitle,
+    actionPanelBody: actionPanelBody,
+    alternateActionLabel: alternateLabel,
+    detailTitle: isSchema
+        ? 'Schema details'
+        : isImport
+        ? 'Import details'
+        : isRollback
+        ? 'Recovery details'
+        : isTransfer
+        ? 'Transfer details'
+        : 'Package details',
+    detailRows: detailRows,
+    stateTitle: isRollback
+        ? 'Recovery state'
+        : isImport
+        ? 'Replay state'
+        : 'Verification state',
+    stateRows: stateRows,
+    completeTitle: isImport
+        ? 'Import replay ready'
+        : isRedaction
+        ? 'Redaction applied'
+        : isSchema
+        ? 'Schema scope saved'
+        : isChecksum
+        ? 'Checksum verified'
+        : isRollback
+        ? 'Rollback planned'
+        : isTransfer
+        ? 'Transfer verified'
+        : 'Export bundle generated',
+    completeBody: isImport
+        ? 'Import preview shows row counts, duplicate decisions, checkpoint, retry, and rollback state.'
+        : isRedaction
+        ? 'Protected redaction shows masked fields, policy reasons, before/after preview, and audit evidence.'
+        : isSchema
+        ? 'Schema catalog shows exportable tables, field classes, history, and include/exclude scope.'
+        : isChecksum
+        ? 'Checksum evidence shows digest, file count, byte size, verification status, and integrity receipt.'
+        : isRollback
+        ? 'Rollback plan shows mismatch reason, checkpoint, restore action, retry path, and recovery audit.'
+        : isTransfer
+        ? 'Transfer verification shows provider, hash match, receipt, timestamp, and closeout state.'
+        : 'Full export bundle shows contents, redaction, checksum, file size, download status, and audit trail.',
+    completeLabel: isRollback
+        ? 'Rollback ready'
+        : isTransfer
+        ? 'Verified'
+        : isChecksum
+        ? 'Verified'
+        : isImport
+        ? 'Previewed'
+        : 'Ready',
   );
 }
 
@@ -2991,6 +3528,59 @@ Widget? _domainPreviewPanelFor(
   required Color accent,
   required Color foreground,
 }) {
+  if (workflowId == 'book-search-ai-digest') {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'AI answer with citations',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.search_outlined,
+          title: 'Query',
+          body: 'What should we discuss before chapter 6?',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.auto_awesome_outlined,
+          title: 'Answer summary',
+          body:
+              'Mutual aid, scarcity, and Lauren\'s journal voice are the strongest discussion threads.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.format_quote_outlined,
+          title: 'Cited sources',
+          body:
+              'Member notes, nomination rationale, and March prompt show source labels and visibility.',
+        ),
+      ],
+    );
+  }
+  if (workflowId == 'book-export-metadata') {
+    return _DomainPreviewPanel(
+      accent: accent,
+      foreground: foreground,
+      title: 'Book club archive',
+      rows: const [
+        _DomainPreviewRow(
+          icon: Icons.menu_book_outlined,
+          title: 'Reading records',
+          body:
+              'Nominations, ballots, selected books, meeting RSVPs, and reading schedule are included.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.forum_outlined,
+          title: 'Discussion redaction',
+          body:
+              'Private thread metadata and member contact fields are redacted before download.',
+        ),
+        _DomainPreviewRow(
+          icon: Icons.verified_outlined,
+          title: 'Checksum BC-042',
+          body:
+              'Owner sees checksum, export timestamp, download status, and audit history.',
+        ),
+      ],
+    );
+  }
   if (workflowId.contains('photo-walk')) {
     return _DomainPreviewPanel(
       accent: accent,
@@ -3100,21 +3690,21 @@ Widget? _domainPreviewPanelFor(
         ] else ...const [
           _DomainPreviewRow(
             icon: Icons.person_outline,
-            title: 'Maya Chen → Jordan Lee',
+            title: 'Maya Chen -> Jordan Lee',
             body:
-                'Thread preview includes sender, recipient, timestamp, and read state.',
+                'Visible sender, recipient, Today 9:12 AM timestamp, and community relationship.',
           ),
           _DomainPreviewRow(
-            icon: Icons.mark_email_unread_outlined,
-            title: 'Invite pending',
+            icon: Icons.message_outlined,
+            title: 'Message body',
             body:
-                'Accept, decline, mute, archive, or block are visible alternatives.',
+                'Invite says: "Want to coordinate the Saturday welcome table together?"',
           ),
           _DomainPreviewRow(
             icon: Icons.block_outlined,
-            title: 'Block respected',
+            title: 'Decision and safety paths',
             body:
-                'Blocked members cannot send; unblock and safety state remain clear.',
+                'Accept, decline, cancel, mute, archive, block, or unblock remain visible where allowed.',
           ),
         ],
       ],
@@ -3243,30 +3833,175 @@ Widget? _domainPreviewPanelFor(
     );
   }
   if (workflowId.startsWith('export-')) {
+    final title =
+        workflowId.contains('import-preview') ||
+            workflowId.contains('import-replay')
+        ? 'Legacy import preview'
+        : workflowId.contains('full-bundle') ||
+              workflowId.contains('redacted-bundle')
+        ? 'Downloadable export bundle'
+        : workflowId.contains('transfer-verification')
+        ? 'Provider transfer verification'
+        : workflowId.contains('protected-redaction')
+        ? 'Protected-field redaction'
+        : workflowId.contains('transfer-rollback')
+        ? 'Rollback and recovery'
+        : workflowId.contains('schema-listing')
+        ? 'Exportable schema catalog'
+        : workflowId.contains('checksum')
+        ? 'Checksum evidence'
+        : 'Portability task';
+    final rows =
+        workflowId.contains('import-preview') ||
+            workflowId.contains('import-replay')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.preview_outlined,
+              title: 'Import rows',
+              body:
+                  'Preview 48 member rows, 22 documents, and 12 receipts before replay.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.warning_amber_outlined,
+              title: 'Conflict check',
+              body:
+                  'Three duplicate records are flagged with accept/skip choices.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.history_outlined,
+              title: 'Replay log',
+              body:
+                  'Owner sees import checkpoint, retry path, and rollback marker.',
+            ),
+          ]
+        : workflowId.contains('transfer-verification')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.cloud_sync_outlined,
+              title: 'Destination provider',
+              body:
+                  'Provider receives bundle E-204 after checksum and scope match.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.verified_outlined,
+              title: 'Handshake',
+              body:
+                  'Source hash, destination hash, and received timestamp must match.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.receipt_long_outlined,
+              title: 'Transfer receipt',
+              body:
+                  'Owner gets receipt, provider ID, audit log, and next action.',
+            ),
+          ]
+        : workflowId.contains('protected-redaction')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.visibility_off_outlined,
+              title: 'Protected fields',
+              body:
+                  'Care notes, phone numbers, and private vault values are masked.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.rule_outlined,
+              title: 'Policy reason',
+              body:
+                  'Each redaction lists the policy and the persona allowed to reveal it.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.preview_outlined,
+              title: 'Before/after preview',
+              body:
+                  'Owner compares raw labels with exported safe values before download.',
+            ),
+          ]
+        : workflowId.contains('transfer-rollback')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.undo_outlined,
+              title: 'Rollback checkpoint',
+              body:
+                  'Last good snapshot is retained until destination provider confirms.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.error_outline,
+              title: 'Mismatch reason',
+              body:
+                  'Destination checksum mismatch triggers retry, cancel, or rollback.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.history_outlined,
+              title: 'Recovery audit',
+              body:
+                  'Owner sees who started rollback, timestamp, and restored scope.',
+            ),
+          ]
+        : workflowId.contains('schema-listing')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.schema_outlined,
+              title: 'Schema catalog',
+              body:
+                  'community, member, receipt, document, message, and custom tables are listed.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.key_outlined,
+              title: 'Field classes',
+              body:
+                  'Each schema shows public, member, protected, payment, and audit fields.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.download_outlined,
+              title: 'Export coverage',
+              body:
+                  'Owner can include, exclude, or inspect schema history before export.',
+            ),
+          ]
+        : workflowId.contains('checksum')
+        ? const [
+            _DomainPreviewRow(
+              icon: Icons.verified_outlined,
+              title: 'Checksum 9A7F-PORT',
+              body:
+                  'SHA-256 digest, file count, and byte size are visible before delivery.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.compare_arrows_outlined,
+              title: 'Verify again',
+              body: 'Owner can rerun verification after transfer or download.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.receipt_long_outlined,
+              title: 'Integrity receipt',
+              body: 'Checksum receipt links to export scope and audit history.',
+            ),
+          ]
+        : const [
+            _DomainPreviewRow(
+              icon: Icons.folder_zip_outlined,
+              title: 'Bundle contents',
+              body:
+                  'Members, receipts, documents, messages, and custom records are packaged.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.visibility_off_outlined,
+              title: 'Redaction preview',
+              body:
+                  'Protected fields are masked and counted before bundle generation.',
+            ),
+            _DomainPreviewRow(
+              icon: Icons.file_download_outlined,
+              title: 'Download state',
+              body:
+                  'Owner sees size, checksum, download status, and next transfer step.',
+            ),
+          ];
     return _DomainPreviewPanel(
       accent: accent,
       foreground: foreground,
-      title: 'Portability wizard',
-      rows: const [
-        _DomainPreviewRow(
-          icon: Icons.fact_check_outlined,
-          title: 'Scope and redaction',
-          body:
-              'Members, receipts, documents, and protected fields are previewed before export.',
-        ),
-        _DomainPreviewRow(
-          icon: Icons.verified_outlined,
-          title: 'Checksum 9A7F-PORT',
-          body:
-              'Verification must pass before transfer or download is marked complete.',
-        ),
-        _DomainPreviewRow(
-          icon: Icons.undo_outlined,
-          title: 'Transfer rollback available',
-          body:
-              'Owner can cancel, retry, roll back, or inspect provider status.',
-        ),
-      ],
+      title: title,
+      rows: rows,
     );
   }
   return null;
