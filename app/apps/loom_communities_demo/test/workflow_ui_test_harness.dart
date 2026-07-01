@@ -83,22 +83,10 @@ Future<void> selectWorkflowTab(
     await tester.pumpAndSettle();
   }
   if (tabFinder.evaluate().isEmpty) {
-    final homeTab = find.byKey(const ValueKey('community-tab-home'));
-    await tester.ensureVisible(homeTab);
-    await tester.pumpAndSettle();
-    await tester.tap(homeTab);
-    await tester.pumpAndSettle();
     return;
   }
   await tester.tap(tabFinder, warnIfMissed: false);
   await tester.pumpAndSettle();
-  if (find
-      .byKey(ValueKey('selected-tab-${targetTab.tabId}'))
-      .evaluate()
-      .isEmpty) {
-    await tester.tap(find.byKey(const ValueKey('community-tab-home')));
-    await tester.pumpAndSettle();
-  }
 }
 
 Future<void> scrollToWorkflowCard(
