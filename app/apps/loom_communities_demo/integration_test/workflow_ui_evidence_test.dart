@@ -477,6 +477,13 @@ void main() {
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
       await capture('B20_announcement_member_received');
+      await _selectCommunityTab(tester, 'calendar');
+      await capture('B20_member_calendar_tab_pinned_event');
+      await _selectCommunityTab(tester, 'messages');
+      await capture('B20_member_messages_tab');
+      await selectPersona(tester, 'mosque-admin');
+      await _selectCommunityTab(tester, 'admin');
+      await capture('B20_admin_custom_tab_pinned_surface');
       entries.add({
         'phase': 'B20',
         'appId': mosqueTarget.extensionId,
@@ -495,6 +502,9 @@ void main() {
           'B20_announcement_member_ready',
           'B20_announcement_member_action',
           'B20_announcement_member_received',
+          'B20_member_calendar_tab_pinned_event',
+          'B20_member_messages_tab',
+          'B20_admin_custom_tab_pinned_surface',
         ],
         'status': 'pass',
       });
@@ -656,6 +666,19 @@ Future<void> _scrollToWorkflow(
     }
   }
   fail('Could not find workflow card ${workflow.workflowId}');
+}
+
+Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
+  final tab = find.byKey(ValueKey('community-tab-$tabId'));
+  await tester.scrollUntilVisible(
+    tab,
+    120,
+    scrollable: find.byKey(const ValueKey('community-bottom-tabs')),
+    maxScrolls: 16,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(tab, warnIfMissed: false);
+  await tester.pumpAndSettle();
 }
 
 int _personaMatrixRowCount() {

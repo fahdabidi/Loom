@@ -7027,6 +7027,10 @@ Color _screenBackgroundFor(Color accent) {
   return Color.alphaBlend(accent.withValues(alpha: 0.42), Colors.black);
 }
 
+Color _actionScreenBackgroundFor(Color accent) {
+  return Color.alphaBlend(accent.withValues(alpha: 0.08), Colors.white);
+}
+
 class _InteractionModelSummary extends StatelessWidget {
   const _InteractionModelSummary({
     required this.contract,
@@ -7627,7 +7631,7 @@ class _WorkflowActionSurface extends StatelessWidget {
         : contract.screenTitle;
 
     return Scaffold(
-      backgroundColor: _screenBackgroundFor(accent),
+      backgroundColor: _actionScreenBackgroundFor(accent),
       appBar: AppBar(
         title: Text(title),
         backgroundColor: accent,
@@ -7779,7 +7783,7 @@ class _RichWorkflowActionSurface extends StatelessWidget {
       );
     }
     return Scaffold(
-      backgroundColor: _screenBackgroundFor(spec.accent),
+      backgroundColor: _actionScreenBackgroundFor(spec.accent),
       appBar: AppBar(
         title: Text(
           isReceiverSurface ? spec.receivedTitle : spec.actionSurfaceTitle,
@@ -7858,7 +7862,7 @@ class _RichProductActionSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(spec.accent);
     return Scaffold(
-      backgroundColor: _screenBackgroundFor(spec.accent),
+      backgroundColor: _actionScreenBackgroundFor(spec.accent),
       appBar: AppBar(
         title: Text(
           isReceiverSurface ? spec.receivedTitle : spec.actionSurfaceTitle,
@@ -8622,7 +8626,7 @@ class _GardenEventRsvpActionSurface extends StatelessWidget {
     final accent = const Color(0xff2f6f9f);
     final foreground = _foregroundFor(accent);
     return Scaffold(
-      backgroundColor: _screenBackgroundFor(accent),
+      backgroundColor: _actionScreenBackgroundFor(accent),
       appBar: AppBar(
         title: Text(isReceiverSurface ? 'Event update' : 'Spring Workshop'),
         backgroundColor: accent,
@@ -8722,7 +8726,7 @@ class _GardenPlantExchangeActionSurface extends StatelessWidget {
     final accent = const Color(0xff3f7f4c);
     final foreground = _foregroundFor(accent);
     return Scaffold(
-      backgroundColor: _screenBackgroundFor(accent),
+      backgroundColor: _actionScreenBackgroundFor(accent),
       appBar: AppBar(
         title: Text(isReceiverSurface ? 'Plant offer' : 'Offer a plant'),
         backgroundColor: accent,
@@ -10154,59 +10158,76 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       requiredPermission: 'community.surface.navigation.read',
     ),
     if (_hasAnySection(experience, const ['Upcoming events']))
-      const LoomAppShellTabSpec(
+      LoomAppShellTabSpec(
         tabId: 'calendar',
         label: 'Calendar',
         icon: Icons.calendar_month_outlined,
         description: 'Events, schedules, capacity, and reminders.',
-        sectionTitles: ['Upcoming events'],
-        cardSurfaceFamilies: ['event-rsvp', 'calendar'],
+        sectionTitles: const ['Upcoming events'],
+        cardSurfaceFamilies: const ['event-rsvp', 'calendar'],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSections(experience, const [
+          'Upcoming events',
+        ]),
         requiredPermission: 'community.surface.calendar.read',
       ),
     if (_hasAnySection(experience, const ['Documents and data']))
-      const LoomAppShellTabSpec(
+      LoomAppShellTabSpec(
         tabId: 'documents',
         label: 'Documents',
         icon: Icons.folder_open_outlined,
         description: 'Documents, exports, transfers, and audit records.',
-        sectionTitles: ['Documents and data'],
-        cardSurfaceFamilies: [
+        sectionTitles: const ['Documents and data'],
+        cardSurfaceFamilies: const [
           'documents',
           'external-document-link',
           'operations',
           'portability',
           'workflow-status',
         ],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSections(experience, const [
+          'Documents and data',
+        ]),
         requiredPermission: 'community.surface.documents.read',
       ),
     if (_hasAnySurfaceFamily(experience, const ['exchange', 'equipment-loan']))
-      const LoomAppShellTabSpec(
+      LoomAppShellTabSpec(
         tabId: 'marketplace',
         label: 'Marketplace',
         icon: Icons.storefront_outlined,
         description: 'Shared items, offers, claims, loans, and giveaways.',
-        sectionTitles: ['Care and volunteers', 'Member tools'],
-        cardSurfaceFamilies: ['exchange', 'equipment-loan'],
+        sectionTitles: const ['Care and volunteers', 'Member tools'],
+        cardSurfaceFamilies: const ['exchange', 'equipment-loan'],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
+          experience,
+          const ['exchange', 'equipment-loan'],
+        ),
         requiredPermission: 'community.surface.marketplace.read',
       ),
     if (_hasAnySection(experience, const ['Giving']))
-      const LoomAppShellTabSpec(
+      LoomAppShellTabSpec(
         tabId: 'giving',
         label: 'Giving',
         icon: Icons.payments_outlined,
         description: 'Payments, dues, donations, receipts, and ad-off state.',
-        sectionTitles: ['Giving'],
-        cardSurfaceFamilies: ['payment', 'ad-off-entitlement'],
+        sectionTitles: const ['Giving'],
+        cardSurfaceFamilies: const ['payment', 'ad-off-entitlement'],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSections(experience, const [
+          'Giving',
+        ]),
         requiredPermission: 'community.surface.payments.read',
       ),
     if (_hasAnySurfaceFamily(experience, const ['volunteer', 'care-request']))
-      const LoomAppShellTabSpec(
+      LoomAppShellTabSpec(
         tabId: 'care',
         label: 'Care',
         icon: Icons.volunteer_activism_outlined,
         description: 'Care requests, volunteer shifts, and member support.',
-        sectionTitles: ['Care and volunteers'],
-        cardSurfaceFamilies: ['volunteer', 'care-request'],
+        sectionTitles: const ['Care and volunteers'],
+        cardSurfaceFamilies: const ['volunteer', 'care-request'],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
+          experience,
+          const ['volunteer', 'care-request'],
+        ),
         requiredPermission: 'community.surface.care.read',
       ),
     if (_personaCanAdministerAnyWorkflow(experience, personaId))
@@ -10226,6 +10247,10 @@ List<LoomAppShellTabSpec> appShellTabsFor({
           'ad',
           'workflow-status',
         ],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
+          experience,
+          const ['announcement', 'approval', 'ad', 'workflow-status'],
+        ),
         visiblePersonaIds: [personaId],
         requiredPermission: 'community.surface.navigation.configure',
       ),
@@ -10341,6 +10366,33 @@ LoomWorkflowCardSurfaceRegistryEntry cardSurfaceRegistryEntryFor({
     ),
     fakeBackendSupport: base.fakeBackendSupport,
   );
+}
+
+List<String> _pinnedWorkflowIdsForSections(
+  LoomExperienceDefinition experience,
+  List<String> sectionTitles,
+) {
+  return [
+    for (final workflow in experience.workflows)
+      if (sectionTitles.contains(_sectionTitleFor(workflow)))
+        workflow.workflowId,
+  ].take(1).toList(growable: false);
+}
+
+List<String> _pinnedWorkflowIdsForSurfaceFamilies(
+  LoomExperienceDefinition experience,
+  List<String> surfaceFamilies,
+) {
+  return [
+    for (final workflow in experience.workflows)
+      if (surfaceFamilies.contains(
+        cardSurfaceRegistryEntryFor(
+          extensionId: experience.extensionId,
+          workflow: workflow,
+        ).cardSurfaceFamily,
+      ))
+        workflow.workflowId,
+  ].take(1).toList(growable: false);
 }
 
 LoomProductionWorkflowContract productionWorkflowContractFor({
