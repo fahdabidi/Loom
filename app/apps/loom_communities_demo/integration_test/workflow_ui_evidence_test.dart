@@ -159,11 +159,19 @@ void main() {
           (candidate) => candidate.workflowId == prerequisiteWorkflowId,
         );
         await ensurePrerequisiteChain(prerequisite);
-        await completeWorkflowAsActor(
+        final prerequisitePolicy = personaPolicyForWorkflow(
+          target.extensionId,
+          prerequisite.workflowId,
+        );
+        final prerequisitePersonaId = prerequisitePolicy.actorPersonaIds.first;
+        await selectPersona(tester, prerequisitePersonaId);
+        await selectWorkflowTab(
           tester,
-          extensionId: target.extensionId,
+          experience: experience,
+          personaId: prerequisitePersonaId,
           workflow: prerequisite,
         );
+        await completeWorkflow(tester, prerequisite);
         completedSetupWorkflowIds.add(prerequisiteWorkflowId);
       }
 
