@@ -1,4 +1,4 @@
-# B25 Product UX Remediation Loop
+﻿# B25 Product UX Remediation Loop
 
 Status: reopened under the hardened fresh-LLM B25 review rule. `b25-v4-pass-19` recaptured fresh
 phase-split B12-B20 screenshot evidence and reran the full B25 judge chain, but failed with 3
@@ -233,4 +233,4 @@ findings were resolved in pass 9.
 - Result: B25 remains reopened, but the interaction-model gate is converging. Pass 23 must first fix
   product-doc reconciliation, then close the remaining Camera gear-loan, Platform blocked-target, and
   Ad-Free lifecycle/surface gaps with fresh full B12-B20 screenshots.
-- Evidence/tooling commit: `TBD-pass-22`.
+- Evidence/tooling commit: `45264e1`.
