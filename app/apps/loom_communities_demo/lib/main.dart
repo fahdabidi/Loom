@@ -3209,7 +3209,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       title: 'Ad suppression proof',
       subtitle: 'Sponsored slots suppressed by active ad-off entitlement.',
       body:
-          'Verify which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision.',
+          'Verify the 4.99 USD monthly ad-free plan, which ad slots are suppressed, why no ad rendered, what entitlement applies, and how to restore or audit the decision.',
       facts: const [
         _RichFact(icon: Icons.visibility_off_outlined, label: 'Ads hidden'),
         _RichFact(icon: Icons.verified_user_outlined, label: 'Entitled'),
@@ -3219,17 +3219,18 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       actionSurfaceTitle: 'Suppression decision',
       actionHeroSubtitle: 'No sponsored message due to ad-off',
       actionHeroBody:
-          'Confirm entitlement, slot list, no-fill reason, restoration option, and settlement utility audit.',
+          'Confirm the 4.99 USD entitlement, slot list, no-fill reason, restoration option, and settlement utility audit.',
       actionPanelTitle: 'Suppression proof',
       actionPanelBody:
-          'Confirm ad suppression status, each eligible slot, no impression, and the entitlement that caused it.',
+          'Confirm ad suppression status, 4.99 USD plan amount, each eligible slot, no impression, and the entitlement that caused it.',
       alternateActionLabel: 'Restore ads',
       detailTitle: 'Suppressed slots',
       detailRows: const [
         _ActionSurfaceDetail(
           icon: Icons.web_asset_outlined,
           title: 'Top banner',
-          body: 'Suppressed: member ad-off entitlement active.',
+          body:
+              'Suppressed: member ad-off entitlement active on the 4.99 USD monthly plan.',
         ),
         _ActionSurfaceDetail(
           icon: Icons.dynamic_feed_outlined,
@@ -3333,7 +3334,7 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       title: 'Ad-off entitlement record',
       subtitle: 'Active member entitlement through Aug 30.',
       body:
-          'Open entitlement scope, expiration, subscription state, restore option, receipt link, and ad-free member view.',
+          'Open entitlement scope, 4.99 USD monthly amount, expiration, subscription state, restore option, receipt link, and ad-free member view.',
       facts: const [
         _RichFact(icon: Icons.verified_user_outlined, label: 'Active'),
         _RichFact(icon: Icons.calendar_today_outlined, label: 'Aug 30'),
@@ -3343,17 +3344,18 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       actionSurfaceTitle: 'Entitlement record',
       actionHeroSubtitle: 'Member ad-free entitlement',
       actionHeroBody:
-          'Confirm scope, expiration, renewal, restore, receipt, and ad-slot member view.',
+          'Confirm scope, 4.99 USD renewal amount, expiration, restore, receipt, and ad-slot member view.',
       actionPanelTitle: 'Entitlement details',
       actionPanelBody:
-          'Confirm subscription record, manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
+          'Confirm subscription record, 4.99 USD plan amount, manage subscription, restore purchase, open receipt, or verify suppressed ad slots.',
       alternateActionLabel: 'Manage plan',
       detailTitle: 'Entitlement details',
       detailRows: const [
         _ActionSurfaceDetail(
           icon: Icons.person_outline,
           title: 'Scope',
-          body: 'Member-level ad-off for current account and communities.',
+          body:
+              'Member-level ad-off for current account and communities at 4.99 USD monthly.',
         ),
         _ActionSurfaceDetail(
           icon: Icons.calendar_today_outlined,
@@ -3508,7 +3510,7 @@ _RichWorkflowSpec _exportRichSpecFor(String id) {
   final body = isImport
       ? 'Open imported member, document, and receipt rows; resolve duplicates; and confirm replay checkpoint before importing.'
       : isRedaction
-      ? 'Open masked phone, care, vault, and payment fields with policy reasons and reveal permissions.'
+      ? 'Open protected youth roster fields, guardian-visible profile details, coach-only notes, masked phone, care, vault, and payment fields with policy reasons and reveal permissions.'
       : isSchema
       ? 'Open every exportable table, field classification, custom schema, version history, and include/exclude decision.'
       : isChecksum
@@ -3583,13 +3585,14 @@ _RichWorkflowSpec _exportRichSpecFor(String id) {
           _ActionSurfaceDetail(
             icon: Icons.visibility_off_outlined,
             title: 'Protected values',
-            body: 'Phone, care, vault, payment, and private notes are masked.',
+            body:
+                'Protected youth profile, minor roster phone, care, vault, payment, and private notes are masked.',
           ),
           _ActionSurfaceDetail(
             icon: Icons.rule_outlined,
             title: 'Policy reason',
             body:
-                'Each masked field shows the policy and persona allowed to reveal it.',
+                'Each masked field shows guardian or coach visibility policy and the persona allowed to reveal it.',
           ),
           _ActionSurfaceDetail(
             icon: Icons.preview_outlined,
@@ -3823,7 +3826,7 @@ _RichWorkflowSpec _exportRichSpecFor(String id) {
     completeBody: isImport
         ? 'Import preview shows row counts, duplicate decisions, checkpoint, retry, and rollback state.'
         : isRedaction
-        ? 'Protected redaction shows masked fields, policy reasons, before/after preview, and audit evidence.'
+        ? 'Protected redaction shows youth profile and roster details, guardian or coach visibility, masked fields, policy reasons, before/after preview, and audit evidence.'
         : isSchema
         ? 'Schema catalog shows exportable tables, field classes, history, and include/exclude scope.'
         : isChecksum
