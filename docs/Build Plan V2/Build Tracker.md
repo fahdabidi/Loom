@@ -2048,6 +2048,7 @@ Closeout rule for reopened phases:
   tickets and `3` remediation batches. The loop is still converging because the unresolved major count
   dropped from pass 31's `20` groups to `9`, but B25 remains reopened.
 - **Implementation commit, v4 pass 32:** `613fde3`.
+- **Evidence/tooling commit, v4 pass 32:** `9ffb789`.
 
 ## Gate Evidence Template
 

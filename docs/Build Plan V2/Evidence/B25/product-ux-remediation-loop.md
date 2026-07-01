@@ -623,3 +623,4 @@ findings were resolved in pass 9.
   and replace the remaining repeated utility/status panels with task-specific product surfaces rather
   than continue copy-only changes.
 - Implementation commit: `613fde3`.
+- Evidence/tooling commit: `9ffb789`.
