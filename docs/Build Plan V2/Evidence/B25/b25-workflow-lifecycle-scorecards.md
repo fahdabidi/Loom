@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Status | `fail` |
+| Status | `pass` |
 | Scorecards | 68 |
-| Failing scorecards | 6 |
-| Missing lifecycle groups | persistent result state |
+| Failing scorecards | 0 |
+| Missing lifecycle groups |  |
 
 | Scorecard | Status | Community | Workflow | Persona | Missing lifecycle groups | Target surface |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -18,9 +18,9 @@
 | `b25-wp-007-soccer-reminder-notification-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-reminder-notification` | guardian |  | notification inbox/detail surface with sender, audience, timestamp, message body, and receiver state |
 | `b25-wp-008-hoa-facility-reservation-community-hoa-member-lifecycle` | `pass` | Cedar Commons HOA | `hoa-facility-reservation` | member |  | facility detail/reservation flow with availability, payment/status, and confirmation |
 | `b25-wp-009-hoa-export-evidence-community-hoa-owner-lifecycle` | `pass` | Cedar Commons HOA | `hoa-export-evidence` | owner |  | export/import wizard with preview, redaction, checksum, transfer status, and rollback state |
-| `b25-wp-010-mosque-donor-visibility-community-mosque-donor-lifecycle` | `fail` | Masjid Nur | `mosque-donor-visibility` | donor | persistent result state | donor privacy preference surface with visibility choice, donation context, confirmation, and receipt visibility state |
+| `b25-wp-010-mosque-donor-visibility-community-mosque-donor-lifecycle` | `pass` | Masjid Nur | `mosque-donor-visibility` | donor |  | donor privacy preference surface with visibility choice, donation context, confirmation, and receipt visibility state |
 | `b25-wp-011-mosque-search-ai-citation-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-search-ai-citation` | member |  | search/AI answer surface with query, result, citation, source, and follow-up action |
-| `b25-wp-012-book-vote-community-book-club-member-lifecycle` | `fail` | Neighborhood Book Club | `book-vote` | member | persistent result state | book club reading/voting surface with nominations, vote state, selected book, meeting context, and discussion |
+| `b25-wp-012-book-vote-community-book-club-member-lifecycle` | `pass` | Neighborhood Book Club | `book-vote` | member |  | book club reading/voting surface with nominations, vote state, selected book, meeting context, and discussion |
 | `b25-wp-013-book-search-ai-digest-community-book-club-member-lifecycle` | `pass` | Neighborhood Book Club | `book-search-ai-digest` | member |  | search/AI answer surface with query, result, citation, source, and follow-up action |
 | `b25-wp-014-soccer-minor-redaction-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-minor-redaction` | guardian |  | protected youth roster/profile surface with minor-data redaction, guardian visibility, and coach-only detail state |
 | `b25-wp-015-soccer-export-metadata-community-youth-soccer-owner-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-export-metadata` | owner |  | export/import wizard with preview, redaction, checksum, transfer status, and rollback state |
@@ -37,17 +37,17 @@
 | `b25-wp-026-book-discussion-message-community-book-club-member-lifecycle` | `pass` | Neighborhood Book Club | `book-discussion-message` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-027-soccer-guardian-join-approval-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-guardian-join-approval` | guardian |  | request detail and admin review queue with submitted data, decision action, status, and notification |
 | `b25-wp-028-soccer-practice-schedule-community-youth-soccer-guardian-lifecycle` | `pass` | Riverside Youth Soccer | `soccer-practice-schedule` | guardian |  | event detail with schedule, location, capacity/status, RSVP action, and result state |
-| `b25-wp-029-hoa-member-document-community-hoa-member-lifecycle` | `fail` | Cedar Commons HOA | `hoa-member-document` | member | persistent result state | document library/detail surface with title, audience, file metadata, and access state |
+| `b25-wp-029-hoa-member-document-community-hoa-member-lifecycle` | `pass` | Cedar Commons HOA | `hoa-member-document` | member |  | document library/detail surface with title, audience, file metadata, and access state |
 | `b25-wp-030-hoa-owner-notification-community-hoa-owner-lifecycle` | `pass` | Cedar Commons HOA | `hoa-owner-notification` | owner |  | notification inbox/detail surface with sender, audience, timestamp, message body, and receiver state |
 | `b25-wp-031-mosque-volunteer-signup-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-volunteer-signup` | member |  | volunteer signup surface with role, time, protected contact fields, and confirmation |
 | `b25-wp-032-mosque-neutral-notification-community-mosque-member-lifecycle` | `pass` | Masjid Nur | `mosque-neutral-notification` | member |  | notification inbox/detail surface with sender, audience, timestamp, message body, and receiver state |
 | `b25-wp-033-chess-local-install-open-community-chess-club-member-lifecycle` | `pass` | Chess Club | `chess-local-install-open` | member |  | match schedule/result surface with players, round, outcome, and next action |
 | `b25-wp-034-chess-route-home-community-chess-club-member-lifecycle` | `pass` | Chess Club | `chess-route-home` | member |  | match schedule/result surface with players, round, outcome, and next action |
 | `b25-wp-035-chess-match-result-community-chess-club-member-lifecycle` | `pass` | Chess Club | `chess-match-result` | member |  | match schedule/result surface with players, round, outcome, and next action |
-| `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `fail` | Camera Club | `photo-walk-rsvp` | member | persistent result state | event detail with schedule, location, capacity/status, RSVP action, and result state |
+| `b25-wp-036-photo-walk-rsvp-community-camera-club-member-lifecycle` | `pass` | Camera Club | `photo-walk-rsvp` | member |  | event detail with schedule, location, capacity/status, RSVP action, and result state |
 | `b25-wp-037-critique-submission-community-camera-club-member-lifecycle` | `pass` | Camera Club | `critique-submission` | member |  | critique submission/review surface with image/work title, comments, reviewer state, and result |
 | `b25-wp-038-gear-loan-request-community-camera-club-member-lifecycle` | `pass` | Camera Club | `gear-loan-request` | member |  | request detail and admin review queue with submitted data, decision action, status, and notification |
-| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-messages-entry` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-039-platform-messages-entry-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-messages-entry` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-040-platform-blocked-target-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-blocked-target` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-041-platform-top-banner-no-fill-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-top-banner-no-fill` | member |  | App Shell top banner ad slot no-fill surface with preserved layout, disclosure/reserved space, and no content overlap |
 | `b25-wp-042-ad-off-community-checkout-community-ad-off-member-lifecycle` | `pass` | Ad-Free Community | `ad-off-community-checkout` | member |  | payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail |
@@ -56,7 +56,7 @@
 | `b25-wp-045-export-full-bundle-community-export-migration-owner-lifecycle` | `pass` | Data Portability Community | `export-full-bundle` | owner |  | export/import wizard with preview, redaction, checksum, transfer status, and rollback state |
 | `b25-wp-046-export-transfer-verification-community-export-migration-owner-lifecycle` | `pass` | Data Portability Community | `export-transfer-verification` | owner |  | export/import wizard with preview, redaction, checksum, transfer status, and rollback state |
 | `b25-wp-047-platform-connections-entry-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-connections-entry` | member |  | inbox, message thread, connection card, invite, or block-state surface |
-| `b25-wp-048-platform-message-stream-community-platform-social-member-lifecycle` | `fail` | Member Social Space | `platform-message-stream` | member | persistent result state | inbox, message thread, connection card, invite, or block-state surface |
+| `b25-wp-048-platform-message-stream-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-message-stream` | member |  | inbox, message thread, connection card, invite, or block-state surface |
 | `b25-wp-049-platform-sensitive-no-fill-community-platform-social-member-lifecycle` | `pass` | Member Social Space | `platform-sensitive-no-fill` | member |  | sensitive-context ad suppression surface with protected content visible and ad slot safely no-filled |
 | `b25-wp-050-ad-off-entitlement-status-community-ad-off-member-lifecycle` | `pass` | Ad-Free Community | `ad-off-entitlement-status` | member |  | payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail |
 | `b25-wp-051-ad-off-settlement-utility-community-ad-off-member-lifecycle` | `pass` | Ad-Free Community | `ad-off-settlement-utility` | member |  | payment or donation flow with amount, payer context, receipt, entitlement/status, and audit trail |
