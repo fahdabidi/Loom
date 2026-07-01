@@ -1421,7 +1421,930 @@ _RichWorkflowSpec? _richWorkflowSpecFor(String workflowId) {
         completeLabel: 'Signed up',
       );
   }
-  return null;
+  return _fallbackRichWorkflowSpecFor(workflowId);
+}
+
+_RichWorkflowSpec _fallbackRichWorkflowSpecFor(String workflowId) {
+  final id = workflowId.toLowerCase();
+  if (id.startsWith('soccer-')) {
+    return _soccerRichSpecFor(id);
+  }
+  if (id.startsWith('hoa-')) {
+    return _hoaRichSpecFor(id);
+  }
+  if (id.startsWith('mosque-')) {
+    return _mosqueRichSpecFor(id);
+  }
+  if (id.startsWith('book-') && id.contains('export')) {
+    return _exportRichSpecFor(id);
+  }
+  if (id.startsWith('chess-')) {
+    return _chessRichSpecFor(id);
+  }
+  if (id.startsWith('photo-') ||
+      id.startsWith('critique-') ||
+      id.startsWith('gear-')) {
+    return _cameraRichSpecFor(id);
+  }
+  if (id.startsWith('platform-')) {
+    return _platformRichSpecFor(id);
+  }
+  if (id.startsWith('ad-off-')) {
+    return _adOffRichSpecFor(id);
+  }
+  if (id.startsWith('export-')) {
+    return _exportRichSpecFor(id);
+  }
+  return _richSurface(
+    accent: const Color(0xff246b62),
+    icon: Icons.apps_outlined,
+    title: 'Community activity',
+    subtitle: 'Member task with visible state and next steps.',
+    body:
+        'Review the community object, decision details, available changes, and final status before saving.',
+    facts: const [
+      _RichFact(icon: Icons.assignment_outlined, label: 'Details ready'),
+      _RichFact(icon: Icons.edit_note_outlined, label: 'Editable'),
+      _RichFact(icon: Icons.verified_outlined, label: 'State saved'),
+    ],
+    detailTitle: 'Activity details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.assignment_outlined,
+        title: 'Context',
+        body: 'The member sees the object, owner, status, and current values.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.edit_note_outlined,
+        title: 'Change path',
+        body: 'The member can save, edit, cancel, or return later.',
+      ),
+    ],
+    stateTitle: 'Saved state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.task_alt_outlined,
+        title: 'Result',
+        body: 'The saved state remains visible with next steps.',
+      ),
+    ],
+  );
+}
+
+_RichWorkflowSpec _soccerRichSpecFor(String id) {
+  if (id.contains('guardian-join')) {
+    return _richSurface(
+      accent: const Color(0xff1f7a5c),
+      icon: Icons.family_restroom_outlined,
+      title: 'Guardian approval desk',
+      subtitle: 'Mia Rivera requests access for U10 Falcons.',
+      body:
+          'Review guardian identity, player connection, emergency-contact status, and approval notes before activating membership.',
+      facts: const [
+        _RichFact(icon: Icons.person_outline, label: 'Mia Rivera'),
+        _RichFact(icon: Icons.sports_soccer_outlined, label: 'U10 Falcons'),
+        _RichFact(
+          icon: Icons.health_and_safety_outlined,
+          label: 'Emergency contact',
+        ),
+        _RichFact(icon: Icons.task_alt_outlined, label: 'Approve or reject'),
+      ],
+      actionPanelTitle: 'Ready for coach approval',
+      actionPanelBody:
+          'Approve guardian access, request changes, or reject with a private note that the guardian can read.',
+      alternateActionLabel: 'Request changes',
+      detailTitle: 'Guardian request',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Guardian',
+          body:
+              'Mia Rivera, parent of Leo Rivera, requested U10 Falcons access today.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.shield_outlined,
+          title: 'Safety info',
+          body:
+              'Emergency contact and pickup authorization are present for coach review.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.comment_outlined,
+          title: 'Decision note',
+          body:
+              'Coach can approve, reject, or ask for a missing waiver before activation.',
+        ),
+      ],
+      stateTitle: 'After decision',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.verified_user_outlined,
+          title: 'Membership state',
+          body:
+              'Approved guardians see team schedule, roster, fees, and reminders.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.history_outlined,
+          title: 'Status history',
+          body: 'The request keeps reviewer, timestamp, and decision history.',
+        ),
+      ],
+      completeTitle: 'Guardian approved',
+      completeBody:
+          'Mia Rivera is active for U10 Falcons with player link, emergency-contact status, and decision history visible.',
+      completeLabel: 'Approved',
+    );
+  }
+  if (id.contains('team-roster')) {
+    return _richSurface(
+      accent: const Color(0xff276f8f),
+      icon: Icons.groups_outlined,
+      title: 'U10 Falcons roster',
+      subtitle: '12 players, 9 guardians, 2 missing waivers.',
+      body:
+          'Inspect player names, guardian visibility, protected minor fields, and coach notes without exposing sensitive details.',
+      facts: const [
+        _RichFact(icon: Icons.group_outlined, label: '12 players'),
+        _RichFact(icon: Icons.assignment_late_outlined, label: '2 waivers due'),
+        _RichFact(
+          icon: Icons.visibility_off_outlined,
+          label: 'Birthdates protected',
+        ),
+        _RichFact(icon: Icons.mail_outline, label: 'Guardian contacts'),
+      ],
+      actionPanelTitle: 'Roster ready to review',
+      actionPanelBody:
+          'Open roster details, update team notes, message guardians, or export a protected team sheet.',
+      alternateActionLabel: 'Message guardians',
+      detailTitle: 'Roster details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.person_outline,
+          title: 'Featured player',
+          body:
+              'Leo Rivera, jersey 14, guardian Mia Rivera, waiver due before Saturday.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.lock_outline,
+          title: 'Protected fields',
+          body:
+              'Birthdates and medical notes are redacted unless the coach has permission.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.sports_soccer_outlined,
+          title: 'Team context',
+          body: 'U10 Falcons practice Saturday at Riverside Field 3.',
+        ),
+      ],
+      stateTitle: 'Coach actions',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.edit_note_outlined,
+          title: 'Update roster',
+          body:
+              'Coach can add notes, track missing waivers, and export a protected roster.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.notifications_outlined,
+          title: 'Guardian follow-up',
+          body: 'Message only guardians with incomplete forms.',
+        ),
+      ],
+      completeTitle: 'Roster opened',
+      completeBody:
+          'The U10 Falcons roster shows players, guardians, waiver status, and protected-field handling.',
+      completeLabel: 'Opened',
+    );
+  }
+  if (id.contains('payment')) {
+    return _richSurface(
+      accent: const Color(0xff6d4aa2),
+      icon: Icons.receipt_long_outlined,
+      title: 'Season registration fee',
+      subtitle: '125.00 USD for Leo Rivera - U10 Falcons.',
+      body:
+          'Confirm payer, player, season fee, receipt destination, retry path, and scholarship note before payment.',
+      facts: const [
+        _RichFact(icon: Icons.attach_money, label: '125.00 USD'),
+        _RichFact(icon: Icons.person_outline, label: 'Leo Rivera'),
+        _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt saved'),
+        _RichFact(icon: Icons.privacy_tip_outlined, label: 'Private payer'),
+      ],
+      actionPanelTitle: 'Ready for checkout',
+      actionPanelBody:
+          'Pay dues, change payer details, retry a failed payment, or open the receipt after confirmation.',
+      alternateActionLabel: 'Change payer',
+      detailTitle: 'Payment details',
+      detailRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.sports_soccer_outlined,
+          title: 'Registration',
+          body: 'U10 Falcons spring season registration for Leo Rivera.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.receipt_long_outlined,
+          title: 'Receipt',
+          body:
+              'Receipt goes to guardian account and appears in payment history.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.help_outline,
+          title: 'Support',
+          body: 'Scholarship note can be reviewed before checkout.',
+        ),
+      ],
+      stateTitle: 'After payment',
+      stateRows: const [
+        _ActionSurfaceDetail(
+          icon: Icons.check_circle_outline,
+          title: 'Entitlement',
+          body: 'Player registration status changes to paid and active.',
+        ),
+        _ActionSurfaceDetail(
+          icon: Icons.refresh_outlined,
+          title: 'Retry path',
+          body: 'Failed payments can be retried without losing form state.',
+        ),
+      ],
+      completeTitle: 'Registration paid',
+      completeBody:
+          'Leo Rivera registration is paid with receipt, payer, season, and status visible.',
+      completeLabel: 'Paid',
+    );
+  }
+  return _richSurface(
+    accent: const Color(0xff1f7a5c),
+    icon: id.contains('schedule') || id.contains('reminder')
+        ? Icons.event_available_outlined
+        : Icons.privacy_tip_outlined,
+    title: id.contains('schedule')
+        ? 'Saturday practice schedule'
+        : id.contains('reminder')
+        ? 'Guardian practice reminder'
+        : id.contains('export')
+        ? 'Protected soccer export'
+        : 'Youth privacy record',
+    subtitle: id.contains('schedule')
+        ? 'Sat 9:00 AM - Riverside Field 3, U10 Falcons.'
+        : id.contains('reminder')
+        ? 'Practice starts at 9:00 AM, field and gear note included.'
+        : 'Roster and registration data with minor protection.',
+    body: id.contains('schedule')
+        ? 'Publish team schedule details with time, field, capacity, RSVP available state, guardian receiver state, and confirmed attendance result.'
+        : id.contains('reminder')
+        ? 'Send the reminder message body with sender, guardian audience, timestamp, inbox channel, and receiver state.'
+        : id.contains('export')
+        ? 'Show protected roster scope, redaction preview, checksum verification, transfer status, and guardian or coach visibility.'
+        : 'Show protected minor data, redaction, saved result state, export scope, and permission boundaries for coaches and guardians.',
+    facts: const [
+      _RichFact(icon: Icons.schedule_outlined, label: 'Saturday 9 AM'),
+      _RichFact(icon: Icons.place_outlined, label: 'Field 3'),
+      _RichFact(icon: Icons.event_available_outlined, label: 'RSVP available'),
+      _RichFact(icon: Icons.visibility_off_outlined, label: 'Protected data'),
+      _RichFact(icon: Icons.verified_outlined, label: 'Checksum verified'),
+    ],
+    actionPanelTitle: 'Ready to publish',
+    actionPanelBody:
+        'Review time, field, recipient guardians, protected details, and receiver state before saving.',
+    alternateActionLabel: 'Edit details',
+    detailTitle: 'Team details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.sports_soccer_outlined,
+        title: 'Team',
+        body: 'U10 Falcons, coach Jordan Patel, 12-player roster.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.schedule_outlined,
+        title: 'Schedule',
+        body:
+            'Saturday practice at 9:00 AM on Riverside Field 3 with RSVP and attendance result visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.visibility_off_outlined,
+        title: 'Privacy',
+        body:
+            'Minor profile fields are redacted for guardians and visible to coaches only where permitted.',
+      ),
+    ],
+    stateTitle: 'Receiver state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.notifications_outlined,
+        title: 'Guardian update',
+        body:
+            'Guardians receive schedule, roster-safe details, reminder message body, timestamp, and inbox channel.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.file_download_outlined,
+        title: 'Export state',
+        body:
+            'Protected export includes roster metadata, redaction preview, checksum verification, and transfer status.',
+      ),
+    ],
+    completeTitle: 'Team update saved',
+    completeBody:
+        'The soccer update shows RSVP status, reminder body, checksum or saved result state, receiver state, and protected data handling.',
+    completeLabel: 'Saved',
+  );
+}
+
+_RichWorkflowSpec _hoaRichSpecFor(String id) {
+  final isPayment = id.contains('dues') || id.contains('facility');
+  final isDocument = id.contains('document');
+  final isApproval =
+      id.contains('architectural') ||
+      id.contains('committee') ||
+      id.contains('notification');
+  return _richSurface(
+    accent: const Color(0xff3e6b8f),
+    icon: isPayment
+        ? Icons.receipt_long_outlined
+        : isDocument
+        ? Icons.description_outlined
+        : isApproval
+        ? Icons.fact_check_outlined
+        : Icons.folder_zip_outlined,
+    title: id.contains('dues')
+        ? 'Quarterly HOA dues'
+        : id.contains('facility')
+        ? 'Clubhouse Room A reservation'
+        : id.contains('document')
+        ? 'Community Rules document'
+        : id.contains('architectural')
+        ? 'Fence color request'
+        : id.contains('committee')
+        ? 'Architectural committee decision'
+        : id.contains('notification')
+        ? 'Owner decision notice'
+        : 'HOA records export',
+    subtitle: id.contains('dues')
+        ? '450.00 USD due Jul 1, receipt to homeowner ledger.'
+        : id.contains('facility')
+        ? 'Room A, Saturday 2-5 PM, reservation fee attached.'
+        : id.contains('document')
+        ? 'Version 2026.3, members can open and acknowledge.'
+        : id.contains('architectural')
+        ? 'Lot 42 fence repaint, slate gray, review due Friday.'
+        : id.contains('committee')
+        ? 'Board decision, conditions, comments, and owner follow-up.'
+        : id.contains('notification')
+        ? 'Approved with conditions, sent to owner inbox.'
+        : 'Documents, receipts, facilities, and case history.',
+    body: id.contains('dues') || id.contains('facility')
+        ? 'Review amount, owner, reservation or dues object, receipt destination, retry path, and status before confirming.'
+        : id.contains('document')
+        ? 'Open the governing document with version, access state, acknowledgement, and download history.'
+        : isApproval
+        ? 'Review request materials, committee note, approve/reject/request changes, and owner receiver state.'
+        : 'Prepare HOA records with documents, cases, receipts, redaction, checksum, and transfer status.',
+    facts: const [
+      _RichFact(icon: Icons.home_outlined, label: 'Cedar Commons'),
+      _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt/audit'),
+      _RichFact(icon: Icons.description_outlined, label: 'Documents'),
+      _RichFact(icon: Icons.event_available_outlined, label: 'Availability'),
+      _RichFact(icon: Icons.task_alt_outlined, label: 'Status history'),
+    ],
+    actionPanelTitle: isApproval
+        ? 'Ready for committee review'
+        : isDocument
+        ? 'Ready to open'
+        : 'Ready to confirm',
+    actionPanelBody: isApproval
+        ? 'Approve, reject, request changes, comment, or reopen with a visible owner notification state.'
+        : isDocument
+        ? 'Open, download, acknowledge, request access, or view version history.'
+        : 'Confirm the amount or scope, change details, retry if needed, and keep the receipt or export status visible.',
+    alternateActionLabel: isApproval
+        ? 'Request changes'
+        : isDocument
+        ? 'Download PDF'
+        : 'Change details',
+    detailTitle: isApproval
+        ? 'Request details'
+        : isDocument
+        ? 'Document details'
+        : 'HOA details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.home_outlined,
+        title: 'Property',
+        body:
+            'Lot 42, homeowner Avery Brooks, Cedar Commons HOA; sender is the HOA board.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.description_outlined,
+        title: 'Record',
+        body:
+            'Community Rules, Room A reservation, dues receipt, or architectural case.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.history_outlined,
+        title: 'History',
+        body:
+            'Status, reviewer, receipt, version, timestamp, availability, and notification history remain visible.',
+      ),
+    ],
+    stateTitle: 'Member state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.inbox_outlined,
+        title: 'Owner inbox',
+        body:
+            'Homeowner sees receipt, decision, document, reservation availability, sender, timestamp, and status.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.undo_outlined,
+        title: 'Change path',
+        body:
+            'Cancel reservation, request changes, retry payment, or reopen where policy allows.',
+      ),
+    ],
+    completeTitle: isApproval
+        ? 'Decision saved'
+        : isDocument
+        ? 'Document opened'
+        : 'HOA record saved',
+    completeBody:
+        'The HOA surface shows the record, owner, amount or decision, status history, and member receiver state.',
+    completeLabel: isApproval
+        ? 'Decided'
+        : isDocument
+        ? 'Opened'
+        : 'Saved',
+  );
+}
+
+_RichWorkflowSpec _mosqueRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff2d6a4f),
+    icon: id.contains('donation') || id.contains('donor')
+        ? Icons.receipt_long_outlined
+        : id.contains('care')
+        ? Icons.volunteer_activism_outlined
+        : Icons.search_outlined,
+    title: id.contains('donor')
+        ? 'Anonymous donor preference'
+        : id.contains('donation')
+        ? 'Sadaqah donation receipt'
+        : id.contains('care')
+        ? 'Private care request'
+        : id.contains('notification')
+        ? 'Neutral care receipt'
+        : 'Iftar announcement answer',
+    subtitle: id.contains('donation')
+        ? '50.00 USD, anonymous option, receipt saved.'
+        : id.contains('care')
+        ? 'Meal support request with public summary and protected details.'
+        : 'Member-safe update with respectful language and privacy boundaries.',
+    body: id.contains('care')
+        ? 'Submit or review care support without exposing sensitive details in notifications or public views.'
+        : id.contains('donation') || id.contains('donor')
+        ? 'Confirm amount, donor visibility, receipt destination, and giving history before saving.'
+        : 'Search public announcement content with citations, sender, delivery timing, and member receiver state.',
+    facts: const [
+      _RichFact(icon: Icons.favorite_outline, label: 'Community care'),
+      _RichFact(icon: Icons.privacy_tip_outlined, label: 'Privacy checked'),
+      _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt/status'),
+      _RichFact(icon: Icons.inbox_outlined, label: 'Member inbox'),
+    ],
+    actionPanelTitle: 'Ready to save',
+    actionPanelBody:
+        'Review member-visible summary, protected details, receipt or citation, and receiver state before sending.',
+    alternateActionLabel: 'Update privacy',
+    detailTitle: 'Masjid details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.message_outlined,
+        title: 'Public summary',
+        body:
+            'Member-facing text stays neutral and does not reveal sensitive care details.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.lock_outline,
+        title: 'Protected details',
+        body:
+            'Private notes are visible only to the care team or donor account owner.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.receipt_long_outlined,
+        title: 'Record',
+        body:
+            'Donation receipt, care status, or citation evidence remains available.',
+      ),
+    ],
+    stateTitle: 'Receiver state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.mark_email_read_outlined,
+        title: 'Member update',
+        body:
+            'Members see the safe notification, receipt, or cited answer in context.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.edit_note_outlined,
+        title: 'Change path',
+        body:
+            'Update privacy, edit request, withdraw, or open receipt where allowed.',
+      ),
+    ],
+    completeTitle: 'Masjid record saved',
+    completeBody:
+        'The Masjid surface shows privacy-safe content, receipt or citation, receiver state, and next steps.',
+    completeLabel: 'Saved',
+  );
+}
+
+_RichWorkflowSpec _chessRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff58432f),
+    icon: Icons.grid_4x4_outlined,
+    title: id.contains('match') ? 'Board 1 match result' : 'Chess Club home',
+    subtitle: id.contains('match')
+        ? 'Ava 1-0 Liam, Round 3 ladder match.'
+        : 'Tonight ladder, pairings, standings, and next match.',
+    body: id.contains('match')
+        ? 'Record opponent, board, result, correction path, standings impact, and next pairing.'
+        : 'Open a real club home with upcoming matches, active ladder, and member standings.',
+    facts: const [
+      _RichFact(icon: Icons.grid_4x4_outlined, label: 'Board 1'),
+      _RichFact(icon: Icons.emoji_events_outlined, label: 'Round 3'),
+      _RichFact(icon: Icons.group_outlined, label: '12 players'),
+      _RichFact(icon: Icons.edit_note_outlined, label: 'Correction path'),
+    ],
+    actionPanelTitle: id.contains('match')
+        ? 'Ready to record score'
+        : 'Ready to open club home',
+    actionPanelBody:
+        'Review player names, round, board, result, edit path, and standings update before saving.',
+    alternateActionLabel: 'Edit score',
+    detailTitle: 'Match context',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.person_outline,
+        title: 'Players',
+        body: 'Ava vs Liam, Board 1, friendly ladder night.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.emoji_events_outlined,
+        title: 'Result',
+        body: 'Ava wins 1-0; standings and next pairing will update.',
+      ),
+    ],
+    stateTitle: 'Club state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.leaderboard_outlined,
+        title: 'Standings',
+        body: 'Players can see updated ladder position and next match.',
+      ),
+    ],
+    completeTitle: 'Chess result saved',
+    completeBody:
+        'Chess Club shows board, players, result, correction path, standings impact, and next pairing.',
+    completeLabel: 'Saved',
+  );
+}
+
+_RichWorkflowSpec _cameraRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff465c7b),
+    icon: id.contains('gear')
+        ? Icons.camera_alt_outlined
+        : id.contains('critique')
+        ? Icons.rate_review_outlined
+        : Icons.photo_camera_outlined,
+    title: id.contains('gear')
+        ? '35mm prime lens loan'
+        : id.contains('critique')
+        ? 'Street portrait critique'
+        : 'Downtown photo walk',
+    subtitle: id.contains('gear')
+        ? 'Friday pickup, two borrowers waiting, return Sunday.'
+        : id.contains('critique')
+        ? 'Image, prompt, consent note, and reviewer queue.'
+        : 'Sat 4:30 PM, riverfront route, golden-hour meetup.',
+    body: id.contains('gear')
+        ? 'Request or approve shared gear with owner, pickup, borrower count, privacy, and return state.'
+        : id.contains('critique')
+        ? 'Submit an image for critique with prompt, visibility, edit path, comments, and reviewer state.'
+        : 'RSVP to a photo walk with route, date, capacity, equipment notes, and reminder state.',
+    facts: const [
+      _RichFact(icon: Icons.photo_camera_outlined, label: 'Camera club'),
+      _RichFact(icon: Icons.schedule_outlined, label: 'This weekend'),
+      _RichFact(icon: Icons.task_alt_outlined, label: 'Result visible'),
+      _RichFact(icon: Icons.group_outlined, label: 'Member roster'),
+      _RichFact(icon: Icons.notifications_outlined, label: 'Status notice'),
+    ],
+    actionPanelTitle: 'Ready for member action',
+    actionPanelBody:
+        'Review date, image, gear, owner, visibility, borrower or attendee state, and change path before saving.',
+    alternateActionLabel: id.contains('gear') ? 'Return item' : 'Edit response',
+    detailTitle: 'Camera details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.place_outlined,
+        title: 'Location or item',
+        body:
+            'Downtown route, street portrait submission result, or 35mm prime lens loan status.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.group_outlined,
+        title: 'People',
+        body:
+            'Host, reviewer, lender, borrower, attendee state, and notification status are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.privacy_tip_outlined,
+        title: 'Privacy',
+        body:
+            'Contact and image visibility stay scoped to the selected audience.',
+      ),
+    ],
+    stateTitle: 'After save',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.task_alt_outlined,
+        title: 'Result',
+        body:
+            'RSVP, critique result, loan status, and member notification remain visible with next steps.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.swap_horiz_outlined,
+        title: 'Change path',
+        body:
+            'Change RSVP, edit critique, return gear, cancel loan, or notify the borrower as needed.',
+      ),
+    ],
+    completeTitle: 'Camera action saved',
+    completeBody:
+        'The Camera Club surface shows route/image/gear details, people, privacy, and next steps.',
+    completeLabel: 'Saved',
+  );
+}
+
+_RichWorkflowSpec _platformRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff315c8a),
+    icon: id.contains('ad')
+        ? Icons.campaign_outlined
+        : id.contains('message')
+        ? Icons.chat_bubble_outline
+        : Icons.people_outline,
+    title: id.contains('ad')
+        ? 'Sponsored message placement'
+        : id.contains('message')
+        ? 'Community message thread'
+        : id.contains('blocked')
+        ? 'Blocked connection guard'
+        : 'Member connection invite',
+    subtitle: id.contains('ad')
+        ? 'Disclosure, no-fill reason, and content spacing are visible.'
+        : id.contains('blocked')
+        ? 'Invite is prevented with a safe explanation.'
+        : 'Member relationship state, inbox, and action history.',
+    body:
+        'Review sender, recipient, relationship, invite status, block state, sponsored disclosure, and member-safe next steps.',
+    facts: const [
+      _RichFact(icon: Icons.person_outline, label: 'Member scoped'),
+      _RichFact(icon: Icons.chat_bubble_outline, label: 'Thread state'),
+      _RichFact(icon: Icons.block_outlined, label: 'Block respected'),
+      _RichFact(icon: Icons.campaign_outlined, label: 'Ad disclosure'),
+    ],
+    actionPanelTitle: 'Ready to review channel state',
+    actionPanelBody:
+        'Open thread, accept or decline invite, block or unblock, mute/archive, or verify sponsored/no-fill state.',
+    alternateActionLabel: 'Mute or decline',
+    detailTitle: 'Channel details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.person_outline,
+        title: 'Relationship',
+        body:
+            'Sender, recipient, connection status, and block state are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.chat_bubble_outline,
+        title: 'Conversation',
+        body: 'Thread shows unread/read state, reply path, mute, and archive.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.campaign_outlined,
+        title: 'Ad handling',
+        body:
+            'Sponsored messages show disclosure or no-fill reason without crowding content.',
+      ),
+    ],
+    stateTitle: 'Member state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.inbox_outlined,
+        title: 'Inbox',
+        body: 'Member sees connection or message state in the community inbox.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.security_outlined,
+        title: 'Safety',
+        body:
+            'Blocked relationships and sensitive contexts prevent unsafe delivery.',
+      ),
+    ],
+    completeTitle: 'Channel state saved',
+    completeBody:
+        'The platform surface shows relationship, message, ad disclosure/no-fill, and safety state.',
+    completeLabel: 'Saved',
+  );
+}
+
+_RichWorkflowSpec _adOffRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff5b5f97),
+    icon: Icons.workspace_premium_outlined,
+    title: id.contains('receipt')
+        ? 'Ad-off receipt'
+        : id.contains('suppression')
+        ? 'Ad suppression proof'
+        : id.contains('settlement')
+        ? 'Settlement allocation'
+        : id.contains('entitlement')
+        ? 'Ad-off entitlement'
+        : 'Ad-off checkout',
+    subtitle: 'Member and community ad-free options with receipt evidence.',
+    body:
+        'Confirm payer, entitlement scope, ad restoration path, receipt, settlement state, and visible ad suppression.',
+    facts: const [
+      _RichFact(icon: Icons.credit_card_outlined, label: '4.99 USD'),
+      _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt'),
+      _RichFact(icon: Icons.visibility_off_outlined, label: 'Ads suppressed'),
+      _RichFact(icon: Icons.restore_outlined, label: 'Restore path'),
+    ],
+    actionPanelTitle: 'Ready to manage ad-off',
+    actionPanelBody:
+        'Purchase, restore, open receipt, inspect entitlement, or review settlement evidence.',
+    alternateActionLabel: 'Open receipt',
+    detailTitle: 'Ad-off details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.person_outline,
+        title: 'Scope',
+        body:
+            'Member-level ad-off is 4.99 USD/month; community-level ad-off is 120.00 USD/month.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.receipt_long_outlined,
+        title: 'Receipt',
+        body:
+            'Receipt ID, amount, payer, payment state, settlement allocation, and restore path.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.visibility_off_outlined,
+        title: 'Suppression',
+        body:
+            'Sponsored placements show entitlement suppression or no-fill state.',
+      ),
+    ],
+    stateTitle: 'Entitlement state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.verified_outlined,
+        title: 'Active',
+        body:
+            'Ad-free entitlement is active, amount is recorded, and member receipt remains available.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.restore_outlined,
+        title: 'Restore',
+        body: 'Member can restore purchases or reopen receipt history.',
+      ),
+    ],
+    completeTitle: 'Ad-off state saved',
+    completeBody:
+        'The ad-off surface shows entitlement, receipt, ad suppression, settlement, and restore path.',
+    completeLabel: 'Active',
+  );
+}
+
+_RichWorkflowSpec _exportRichSpecFor(String id) {
+  return _richSurface(
+    accent: const Color(0xff536878),
+    icon: Icons.folder_zip_outlined,
+    title: id.contains('import')
+        ? 'Legacy import preview'
+        : id.contains('redaction')
+        ? 'Protected redaction preview'
+        : id.contains('schema')
+        ? 'Exportable schema list'
+        : id.contains('checksum')
+        ? 'Checksum verification'
+        : id.contains('rollback')
+        ? 'Provider rollback'
+        : id.contains('transfer')
+        ? 'Provider transfer verification'
+        : 'Full export bundle',
+    subtitle: 'Scope, redaction, checksum, destination, and audit trail.',
+    body:
+        'Inspect source records, protected member or minor profile fields, guardian or coach visibility, redaction preview, idempotency, checksum, provider transfer, rollback, and download status.',
+    facts: const [
+      _RichFact(icon: Icons.dataset_outlined, label: 'Scope selected'),
+      _RichFact(icon: Icons.visibility_off_outlined, label: 'Redacted preview'),
+      _RichFact(icon: Icons.verified_outlined, label: 'Checksum'),
+      _RichFact(icon: Icons.person_outline, label: 'Guardian/coach visibility'),
+    ],
+    actionPanelTitle: 'Ready for portability action',
+    actionPanelBody:
+        'Preview, generate, download, verify, retry, roll back, or change scope while preserving audit evidence.',
+    alternateActionLabel: 'Change scope',
+    detailTitle: 'Package details',
+    detailRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.dataset_outlined,
+        title: 'Scope',
+        body:
+            'Documents, receipts, custom schemas, protected youth or member rows, import rows, and transfer metadata.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.visibility_off_outlined,
+        title: 'Redaction',
+        body:
+            'Phone numbers, minor profile fields, and protected vault values are redacted before export.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.verified_outlined,
+        title: 'Checksum',
+        body: 'Checksum and audit trail prove package integrity.',
+      ),
+    ],
+    stateTitle: 'Transfer state',
+    stateRows: const [
+      _ActionSurfaceDetail(
+        icon: Icons.file_download_outlined,
+        title: 'Download',
+        body: 'Owner can download package and inspect status.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.undo_outlined,
+        title: 'Rollback',
+        body:
+            'Provider mismatch can trigger retry or rollback with audit history.',
+      ),
+    ],
+    completeTitle: 'Portability state saved',
+    completeBody:
+        'The portability surface shows scope, redaction, checksum, transfer, rollback, and audit status.',
+    completeLabel: 'Ready',
+  );
+}
+
+_RichWorkflowSpec _richSurface({
+  required Color accent,
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required String body,
+  required List<_RichFact> facts,
+  required String detailTitle,
+  required List<_ActionSurfaceDetail> detailRows,
+  required String stateTitle,
+  required List<_ActionSurfaceDetail> stateRows,
+  String? actionSurfaceTitle,
+  String? actionHeroSubtitle,
+  String? actionHeroBody,
+  String? actionPanelTitle,
+  String? actionPanelBody,
+  String? alternateActionLabel,
+  String? completeTitle,
+  String? completeBody,
+  String? receivedTitle,
+  String? receivedBody,
+  String? completeLabel,
+}) {
+  return _RichWorkflowSpec(
+    accent: accent,
+    icon: icon,
+    title: title,
+    subtitle: subtitle,
+    body: body,
+    facts: facts,
+    actionSurfaceTitle: actionSurfaceTitle ?? title,
+    actionHeroSubtitle: actionHeroSubtitle ?? subtitle,
+    actionHeroBody: actionHeroBody ?? body,
+    actionPanelTitle: actionPanelTitle ?? 'Ready to review',
+    actionPanelBody:
+        actionPanelBody ??
+        'Confirm details, choose the right action, keep the alternate path available, and preserve the result state.',
+    alternateActionLabel: alternateActionLabel ?? 'Edit details',
+    detailTitle: detailTitle,
+    detailRows: detailRows,
+    stateTitle: stateTitle,
+    stateRows: stateRows,
+    completeTitle: completeTitle ?? 'Saved',
+    completeBody:
+        completeBody ?? '$title is saved with visible result and next steps.',
+    receivedTitle: receivedTitle ?? '$title ready',
+    receivedBody:
+        receivedBody ??
+        'The receiving persona can inspect the saved state, context, and next steps.',
+    completeLabel: completeLabel ?? 'Saved',
+  );
 }
 
 class _WorkflowTile extends StatelessWidget {
@@ -4419,10 +5342,7 @@ List<LoomWorkflowCardSurfaceRegistryEntry> cardSurfaceRegistryForExtensionId(
   final experience = experienceForExtensionId(extensionId);
   return [
     for (final workflow in experience.workflows)
-      cardSurfaceRegistryEntryFor(
-        extensionId: extensionId,
-        workflow: workflow,
-      ),
+      cardSurfaceRegistryEntryFor(extensionId: extensionId, workflow: workflow),
   ];
 }
 
@@ -4514,12 +5434,7 @@ LoomWorkflowCardSurfaceRegistryEntry _cardSurfaceRegistryEntryForWorkflowId(
         'readReceipts',
         'revisionHistory',
       ],
-      primaryActions: const [
-        'Save draft',
-        'Preview',
-        'Publish',
-        'Schedule',
-      ],
+      primaryActions: const ['Save draft', 'Preview', 'Publish', 'Schedule'],
       alternateActions: const ['Edit published update', 'Unpublish'],
     );
   }

@@ -1,0 +1,423 @@
+{
+  "schemaVersion": 1,
+  "reviewerType": "llm-product-doc-workflow-reconciliation",
+  "currentReviewRunId": "b25-v4-pass-20",
+  "freshReview": true,
+  "appCommitSha": "207131d",
+  "reviewedProductDocPaths": [
+    "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+    "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/cedar-commons-hoa-product-experience.md",
+    "docs/Product Docs V2/Community Examples/chess-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+    "docs/Product Docs V2/Community Examples/garden-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/loom-communities-shell-product-experience.md",
+    "docs/Product Docs V2/Community Examples/masjid-nur-product-experience.md",
+    "docs/Product Docs V2/Community Examples/neighborhood-book-club-product-experience.md",
+    "docs/Product Docs V2/Community Examples/persona-role-inventory-product-experience.md",
+    "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+    "docs/Product Docs V2/Community Examples/riverside-youth-soccer-product-experience.md"
+  ],
+  "reviewedEvidencePaths": [
+    "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+    "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+    "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md",
+    "docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md"
+  ],
+  "reviewedScreenRowIds": [
+    "b25-v4-row-001-garden-event-rsvp-0",
+    "b25-v4-row-002-garden-event-rsvp-1",
+    "b25-v4-row-003-garden-event-rsvp-2",
+    "b25-v4-row-004-plant-exchange-submission-0",
+    "b25-v4-row-005-plant-exchange-submission-1",
+    "b25-v4-row-006-plant-exchange-submission-2",
+    "b25-v4-row-007-garden-export-custom-schemas-0",
+    "b25-v4-row-008-garden-export-custom-schemas-1",
+    "b25-v4-row-009-garden-export-custom-schemas-2",
+    "b25-v4-row-010-book-nomination-0",
+    "b25-v4-row-011-book-nomination-1",
+    "b25-v4-row-012-book-nomination-2",
+    "b25-v4-row-013-book-vote-0",
+    "b25-v4-row-014-book-vote-1",
+    "b25-v4-row-015-book-vote-2",
+    "b25-v4-row-016-book-meeting-rsvp-0",
+    "b25-v4-row-017-book-meeting-rsvp-1",
+    "b25-v4-row-018-book-meeting-rsvp-2",
+    "b25-v4-row-019-book-discussion-message-0",
+    "b25-v4-row-020-book-discussion-message-1",
+    "b25-v4-row-021-book-discussion-message-2",
+    "b25-v4-row-022-book-selection-publish-0",
+    "b25-v4-row-023-book-selection-publish-1",
+    "b25-v4-row-024-book-selection-publish-2",
+    "b25-v4-row-025-book-search-ai-digest-0",
+    "b25-v4-row-026-book-search-ai-digest-1",
+    "b25-v4-row-027-book-search-ai-digest-2",
+    "b25-v4-row-028-book-export-metadata-0",
+    "b25-v4-row-029-book-export-metadata-1",
+    "b25-v4-row-030-book-export-metadata-2",
+    "b25-v4-row-031-soccer-guardian-join-approval-0",
+    "b25-v4-row-032-soccer-guardian-join-approval-1",
+    "b25-v4-row-033-soccer-guardian-join-approval-2",
+    "b25-v4-row-034-soccer-team-roster-0",
+    "b25-v4-row-035-soccer-team-roster-1",
+    "b25-v4-row-036-soccer-team-roster-2",
+    "b25-v4-row-037-soccer-minor-redaction-0",
+    "b25-v4-row-038-soccer-minor-redaction-1",
+    "b25-v4-row-039-soccer-minor-redaction-2",
+    "b25-v4-row-040-soccer-registration-payment-0"
+  ],
+  "reviewedScreenshotHashes": [
+    "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+    "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+    "e7687ecc5dacf53f5ae8ab79ce1cac56f25253a97bdd648a276590c4c747e5be",
+    "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+    "ac5774f2f60e07a0f84001c855e8ea6f7c512cf158a957f38a7f935181bffc12",
+    "f4979c0c174b3a0a83fafa0e81197e31268049787fbc02e42f2a229449b73061",
+    "f00b3445a923af241e3484b5f219f7af39275afb8068e297e81f9f3c1d990772",
+    "abf549e14825c37b26b832c645e739604652a13e4439e3bfc64641f32cde4400",
+    "7f287d54c07e961f9713c24bf8ee34e2ff00c783240cd06ebbcf024bd7cb12c2",
+    "3fdf1f17acdf1fb54f246b2a68cbb77f878d19a821e171c69983b36045d72a9a",
+    "ef86066af7ba86af728e5eaa385d858d90682acb29067488be5fea3e602aa855",
+    "f11b66bc5564b79957e6d500201fb9fa208100cd3b13371a5e7cb5ec45246b5c",
+    "10e793ea50aed7817c79b1bde32411ef44028d591caca250f67817b31b142474",
+    "c718462caddedb4c82e0647297094e7d98e11d0334d0549fcf2b27d9e96bff2c",
+    "382ed68621a50c495a93b2f765a26e2fe10cef55fa45f38c0c4dcccf6f391208",
+    "e6b0ed0425f5187ccee9f4816b4e0e7276c0f2ded3279d59bb39d98a81b72b69",
+    "0cdd71091fdb60e446c7f33dc8f653aaa7cc230413cb1dd754582c97f2ba221b",
+    "991f384bf80d12ca41eb0f511113566dc55c8443cfb735051d117c6ecc1a6f6a",
+    "9111792f85fe50b91c9bb4a08d590d6f95961702e0e80fff851ede03089eb9fe",
+    "59204eb2e6008869a83598a7876a2d70763deb8f08c5b7a4dde46c86437a8732",
+    "41930c0ee37292097394360c2f11e28302897e26fe7196b69dfa9f25dfa62d79",
+    "acdf4c4e943c0b919751a4398afd7b640270d971e41226d6ad4e94c7891b87fc",
+    "891ac025e84331058e56a22949ebfa07fbeaf8f7bb4005f69725fb0755aa8a34",
+    "887fab08416795477fb6799379078aace610bdb567d653ab4b3ac5d5ff60f3ad",
+    "926570a84753d3b1d10481818ec7c701d2b792052c3f07f248e7ca0090b6f5c0",
+    "3a310f9c473aaa1dfa4ab36b13679cf91cf74b6dc9d320c5fbb577987d0d17a7",
+    "1d4fa40f988f8d908a843c6e65dbd00c92017b9917a9df793f4f749a214f5efa",
+    "f559e12bfb717ff45f7d8d47727d87ef36799d2ad056144402141415339175a2",
+    "f5e05dc1e439bbe8510e4a2d5a03240aab2853da596d3e812a5c983aaba97194",
+    "70982cd02538a25e54a63e516c9007f41d487e9bb3c344504c37f7732465b998",
+    "7d813de9bedf633acb0a8a9f87024903abecd1526e91c665426980d12b4a61af",
+    "223292b18f96f24da29533543599d3c3d5aa4d5a963a2a14b71146177b34f04d",
+    "1b87f5f65a23bab1b8c07145ff118b78f51337d4cd1460d05119593812daade8",
+    "90b3b4b1c14ca61c6a62ac82732c6ce5cebf09449b1b26d9972b2d34edbe3a0c",
+    "5799d768eec7ca40287b29ae4fc8fda04efc1df3d5cc92f814d132dcf6d19c8f",
+    "eed540774740b386d41fa0561e57b4abcf50ae11f0ed2f16782d71e31beef3f7",
+    "9d04b7885cfc431c9dd2d211ce1472ac9766bd05c2b447160c43943426d06bc8",
+    "df7437cd5d8d06d4ab182ad70bb90120e61b694245fc28f318ed055c4d342621",
+    "5eb47ef59a2e1ee12d2abd288927209843069e5d061cccb4d4aec9525f67ee1c",
+    "a4970e0dec65ce6ac978d036164444f098b3401d79679b023d18062021646029"
+  ],
+  "communityResults": [
+    {
+      "communityName": "Ad-Free Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/ad-off-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "member-ad-off-purchase",
+        "owner-ad-off-funding"
+      ],
+      "implementedWorkflowIds": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "missingFromProductDoc": [
+        "ad-off-member-checkout",
+        "ad-off-community-checkout",
+        "ad-off-entitlement-status",
+        "ad-off-receipt-evidence",
+        "ad-off-ad-suppression",
+        "ad-off-settlement-utility"
+      ],
+      "missingFromEvidence": [
+        "member-ad-off-purchase",
+        "owner-ad-off-funding"
+      ],
+      "visibleProofGaps": [
+        "All six current ad-off workflow/persona lifecycle scorecards fail persistent result or receiver/continuation proof."
+      ],
+      "personaStateGaps": [
+        "Section 7 only has an umbrella ad-off purchase row."
+      ],
+      "interactionModelGaps": [
+        "Section 6/card registry use umbrella IDs while semantic/evidence rows use six concrete IDs."
+      ],
+      "surfaceMappingGaps": [
+        "Card registry does not map current evidence IDs."
+      ],
+      "screenshotBackedExamples": [
+        "b25-v4-row-151-ad-off-ad-suppression-0"
+      ]
+    },
+    {
+      "communityName": "Camera Club",
+      "productDocPath": "docs/Product Docs V2/Community Examples/camera-club-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "skill-prompt-build-validate-complete",
+        "camera-photo-walk",
+        "camera-critique-submission"
+      ],
+      "implementedWorkflowIds": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "missingFromProductDoc": [
+        "photo-walk-rsvp",
+        "critique-submission",
+        "gear-loan-request"
+      ],
+      "missingFromEvidence": [
+        "skill-prompt-build-validate-complete",
+        "camera-photo-walk",
+        "camera-critique-submission"
+      ],
+      "visibleProofGaps": [
+        "All three current Camera workflow IDs fail at least one lifecycle group."
+      ],
+      "personaStateGaps": [
+        "Section 7 does not define all exact current workflow/persona states."
+      ],
+      "interactionModelGaps": [
+        "B25 semantic rows use current IDs; Section 6/card registry use old IDs."
+      ],
+      "surfaceMappingGaps": [
+        "Card registry omits gear-loan-request and current IDs."
+      ],
+      "screenshotBackedExamples": [
+        "b25-v4-row-109-critique-submission-0"
+      ]
+    },
+    {
+      "communityName": "Data Portability Community",
+      "productDocPath": "docs/Product Docs V2/Community Examples/export-and-migration-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "export-migration"
+      ],
+      "implementedWorkflowIds": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "missingFromProductDoc": [
+        "export-import-preview",
+        "export-import-replay",
+        "export-protected-redaction",
+        "export-schema-listing",
+        "export-full-bundle",
+        "export-redacted-bundle",
+        "export-checksum-evidence",
+        "export-transfer-verification",
+        "export-transfer-rollback"
+      ],
+      "missingFromEvidence": [
+        "export-migration"
+      ],
+      "visibleProofGaps": [
+        "Section 6 has one umbrella workflow while screenshots prove nine separate flows."
+      ],
+      "personaStateGaps": [
+        "Section 7 has one export/migration row."
+      ],
+      "interactionModelGaps": [
+        "Semantic table covers only five current export flows and omits four screenshot-visible flows."
+      ],
+      "surfaceMappingGaps": [
+        "Card registry has only export-migration."
+      ],
+      "screenshotBackedExamples": [
+        "b25-v4-row-175-export-checksum-evidence-0"
+      ]
+    },
+    {
+      "communityName": "Member Social Space",
+      "productDocPath": "docs/Product Docs V2/Community Examples/platform-social-product-experience.md",
+      "status": "fail",
+      "declaredWorkflowIds": [
+        "messaging-thread",
+        "connections-invite-block",
+        "in-stream-ad"
+      ],
+      "implementedWorkflowIds": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "missingFromProductDoc": [
+        "platform-messages-entry",
+        "platform-connections-entry",
+        "platform-connection-invite",
+        "platform-blocked-target",
+        "platform-message-stream",
+        "platform-in-stream-ad",
+        "platform-top-banner-no-fill",
+        "platform-sensitive-no-fill"
+      ],
+      "missingFromEvidence": [
+        "messaging-thread",
+        "connections-invite-block",
+        "in-stream-ad"
+      ],
+      "visibleProofGaps": [
+        "All eight Member Social lifecycle rows fail persistent result or alternate/semantic model proof."
+      ],
+      "personaStateGaps": [
+        "Section 7 has one connections row, not eight current workflow/persona states."
+      ],
+      "interactionModelGaps": [
+        "Semantic table omits platform-top-banner-no-fill and Section 6 uses umbrella IDs."
+      ],
+      "surfaceMappingGaps": [
+        "Card registry omits current platform evidence IDs."
+      ],
+      "screenshotBackedExamples": [
+        "b25-v4-row-124-platform-blocked-target-0"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "LLM-B25-WR-001",
+      "severity": "major",
+      "gapType": "product-doc-missing-workflow",
+      "communityName": "multiple",
+      "workflowId": "multiple current B25 evidence workflow IDs",
+      "persona": "multiple",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/*-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-073-mosque-announcement-0",
+        "b25-v4-row-175-export-checksum-evidence-0",
+        "b25-v4-row-124-platform-blocked-target-0"
+      ],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [
+        "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+        "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+        "e7687ecc5dacf53f5ae8ab79ce1cac56f25253a97bdd648a276590c4c747e5be"
+      ],
+      "visibleTextExcerpt": "Current B25 evidence exposes exact workflow IDs absent from multiple Section 6 tables.",
+      "requiredFix": "Update affected Section 6 tables to list every screenshot-visible workflow by exact current workflow ID.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-003",
+      "severity": "major",
+      "gapType": "persona-state-gap",
+      "communityName": "multiple",
+      "workflowId": "multiple",
+      "persona": "multiple",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/*-product-experience.md",
+      "affectedProductDocSections": [
+        "## 7. Persona And State Matrix"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-019-book-discussion-message-0",
+        "b25-v4-row-049-soccer-export-metadata-0"
+      ],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [
+        "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+        "ac5774f2f60e07a0f84001c855e8ea6f7c512cf158a957f38a7f935181bffc12",
+        "f4979c0c174b3a0a83fafa0e81197e31268049787fbc02e42f2a229449b73061"
+      ],
+      "visibleTextExcerpt": "The current workflow/persona coverage matrix has 68 rows, but Section 7 is sparse or non-exact in every reviewed product doc.",
+      "requiredFix": "Add exact actor, receiver, read-only, disabled/hidden, and unauthorized state rows for every current workflow/persona pair.",
+      "ticketMode": "product-doc-update"
+    },
+    {
+      "findingId": "LLM-B25-WR-005",
+      "severity": "major",
+      "gapType": "visible-proof-gap",
+      "communityName": "multiple",
+      "workflowId": "26 failing workflow/persona lifecycle scorecards",
+      "persona": "multiple",
+      "affectedProductDocPath": "docs/Product Docs V2/Community Examples/*-product-experience.md",
+      "affectedProductDocSections": [
+        "## 6. Workflow-To-Surface Mapping",
+        "### B25 Semantic Interaction Models"
+      ],
+      "affectedScreenRowIds": [
+        "b25-v4-row-034-soccer-team-roster-0",
+        "b25-v4-row-040-soccer-registration-payment-0",
+        "b25-v4-row-043-soccer-practice-schedule-0",
+        "b25-v4-row-049-soccer-export-metadata-0",
+        "b25-v4-row-052-hoa-dues-payment-0",
+        "b25-v4-row-082-mosque-donor-visibility-0",
+        "b25-v4-row-085-mosque-donation-payment-0",
+        "b25-v4-row-088-mosque-care-request-0",
+        "b25-v4-row-091-mosque-neutral-notification-0",
+        "b25-v4-row-106-photo-walk-rsvp-0",
+        "b25-v4-row-109-critique-submission-0",
+        "b25-v4-row-112-gear-loan-request-0",
+        "b25-v4-row-115-platform-messages-entry-0",
+        "b25-v4-row-118-platform-connections-entry-0",
+        "b25-v4-row-121-platform-connection-invite-0",
+        "b25-v4-row-124-platform-blocked-target-0",
+        "b25-v4-row-127-platform-message-stream-0",
+        "b25-v4-row-130-platform-in-stream-ad-0",
+        "b25-v4-row-133-platform-top-banner-no-fill-0",
+        "b25-v4-row-136-platform-sensitive-no-fill-0",
+        "b25-v4-row-139-ad-off-member-checkout-0",
+        "b25-v4-row-142-ad-off-community-checkout-0",
+        "b25-v4-row-145-ad-off-entitlement-status-0",
+        "b25-v4-row-148-ad-off-receipt-evidence-0",
+        "b25-v4-row-151-ad-off-ad-suppression-0",
+        "b25-v4-row-154-ad-off-settlement-utility-0"
+      ],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [
+        "85f3a6f572561de9ed21d5f6352f68a1c0d15fba6b4fe46ac2d8f51e82ee6da3",
+        "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+        "e7687ecc5dacf53f5ae8ab79ce1cac56f25253a97bdd648a276590c4c747e5be",
+        "1bea769c312eb70f42baff225cb9aa4fd10e71aecce68d4a1d681afdd27687db",
+        "ac5774f2f60e07a0f84001c855e8ea6f7c512cf158a957f38a7f935181bffc12",
+        "f4979c0c174b3a0a83fafa0e81197e31268049787fbc02e42f2a229449b73061",
+        "f00b3445a923af241e3484b5f219f7af39275afb8068e297e81f9f3c1d990772",
+        "abf549e14825c37b26b832c645e739604652a13e4439e3bfc64641f32cde4400",
+        "7f287d54c07e961f9713c24bf8ee34e2ff00c783240cd06ebbcf024bd7cb12c2",
+        "3fdf1f17acdf1fb54f246b2a68cbb77f878d19a821e171c69983b36045d72a9a",
+        "ef86066af7ba86af728e5eaa385d858d90682acb29067488be5fea3e602aa855",
+        "f11b66bc5564b79957e6d500201fb9fa208100cd3b13371a5e7cb5ec45246b5c",
+        "10e793ea50aed7817c79b1bde32411ef44028d591caca250f67817b31b142474",
+        "c718462caddedb4c82e0647297094e7d98e11d0334d0549fcf2b27d9e96bff2c",
+        "382ed68621a50c495a93b2f765a26e2fe10cef55fa45f38c0c4dcccf6f391208",
+        "e6b0ed0425f5187ccee9f4816b4e0e7276c0f2ded3279d59bb39d98a81b72b69",
+        "0cdd71091fdb60e446c7f33dc8f653aaa7cc230413cb1dd754582c97f2ba221b",
+        "991f384bf80d12ca41eb0f511113566dc55c8443cfb735051d117c6ecc1a6f6a",
+        "9111792f85fe50b91c9bb4a08d590d6f95961702e0e80fff851ede03089eb9fe",
+        "59204eb2e6008869a83598a7876a2d70763deb8f08c5b7a4dde46c86437a8732",
+        "41930c0ee37292097394360c2f11e28302897e26fe7196b69dfa9f25dfa62d79",
+        "acdf4c4e943c0b919751a4398afd7b640270d971e41226d6ad4e94c7891b87fc",
+        "891ac025e84331058e56a22949ebfa07fbeaf8f7bb4005f69725fb0755aa8a34",
+        "887fab08416795477fb6799379078aace610bdb567d653ab4b3ac5d5ff60f3ad",
+        "926570a84753d3b1d10481818ec7c701d2b792052c3f07f248e7ca0090b6f5c0",
+        "3a310f9c473aaa1dfa4ab36b13679cf91cf74b6dc9d320c5fbb577987d0d17a7"
+      ],
+      "visibleTextExcerpt": "independent-production-ux-review.json reports B25-WORKFLOW-LIFECYCLE-INCOMPLETE: 26 workflow/persona lifecycle scorecards failed.",
+      "requiredFix": "Update UI/content/seed data/tests for each failed lifecycle scorecard, recapture full B25 screenshots, then rerun workflow interaction-model and production UX judges.",
+      "ticketMode": "implementation-remediation"
+    }
+  ],
+  "finalDecision": "fail"
+}
