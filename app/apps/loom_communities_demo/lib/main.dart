@@ -1702,7 +1702,7 @@ _RichWorkflowSpec _soccerRichSpecFor(String id) {
         ),
         _ActionSurfaceDetail(
           icon: Icons.history_outlined,
-          title: 'Decision history',
+          title: 'Outcome history',
           body: 'The request keeps reviewer, timestamp, and decision history.',
         ),
       ],
@@ -2016,24 +2016,24 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
         ? 'Approved with conditions, sent to owner inbox.'
         : 'Documents, receipts, facilities, and case history.',
     body: id.contains('dues') || id.contains('facility')
-        ? 'Confirm amount, owner, reservation or dues item, receipt destination, retry option, and status before confirming.'
+        ? 'Amount, owner, reservation or dues item, receipt destination, retry option, and status are visible.'
         : id.contains('document')
         ? 'Open the governing document with version, access state, acknowledgement, and download history.'
         : isApproval
-        ? 'Confirm request materials, committee note, approve/reject/request changes, and homeowner notification.'
+        ? 'Request materials, committee note, approve/reject/request changes, and homeowner notification are visible.'
         : 'Prepare HOA records with documents, cases, receipts, redaction, checksum, and transfer progress.',
     facts: const [
       _RichFact(icon: Icons.home_outlined, label: 'Cedar Commons'),
       _RichFact(icon: Icons.receipt_long_outlined, label: 'Receipt/audit'),
       _RichFact(icon: Icons.description_outlined, label: 'Documents'),
       _RichFact(icon: Icons.event_available_outlined, label: 'Availability'),
-      _RichFact(icon: Icons.task_alt_outlined, label: 'Decision history'),
+      _RichFact(icon: Icons.task_alt_outlined, label: 'Outcome history'),
     ],
     actionPanelTitle: isApproval
         ? 'Committee decision'
         : isDocument
         ? 'Document access'
-        : 'Confirmation details',
+        : 'Reservation details',
     actionPanelBody: isApproval
         ? 'Approve, reject, request changes, comment, or reopen with a visible owner notification state.'
         : isDocument
@@ -2085,14 +2085,14 @@ _RichWorkflowSpec _hoaRichSpecFor(String id) {
       ),
     ],
     completeTitle: isApproval
-        ? 'Decision saved'
+        ? 'Request outcome saved'
         : isDocument
         ? 'Document opened'
         : 'HOA record saved',
     completeBody:
         'The homeowner record now shows owner, amount or decision, status history, and member next steps.',
     completeLabel: isApproval
-        ? 'Decision recorded'
+        ? 'Outcome recorded'
         : isDocument
         ? 'Opened'
         : 'Saved',
@@ -2124,7 +2124,7 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
     body: id.contains('care')
         ? 'Submit or update care support without exposing sensitive details in notifications or public views.'
         : id.contains('donation') || id.contains('donor')
-        ? 'Confirm amount, donor visibility, receipt destination, and giving history before saving.'
+        ? 'Amount, donor visibility, receipt destination, and giving history are visible before saving.'
         : 'Search public announcement content with citations, sender, delivery timing, and member inbox preview.',
     facts: const [
       _RichFact(icon: Icons.favorite_outline, label: 'Community care'),
@@ -2134,7 +2134,7 @@ _RichWorkflowSpec _mosqueRichSpecFor(String id) {
     ],
     actionPanelTitle: 'Save details',
     actionPanelBody:
-        'Confirm member-visible summary, protected details, receipt or citation, and recipient preview before sending.',
+        'Member-visible summary, protected details, receipt or citation, and recipient preview stay visible before sending.',
     alternateActionLabel: 'Update privacy',
     detailTitle: 'Masjid details',
     detailRows: const [
@@ -2814,10 +2814,10 @@ _RichWorkflowSpec _adOffRichSpecFor(String id) {
       actionSurfaceTitle: 'Receipt evidence',
       actionHeroSubtitle: 'Member ad-off receipt',
       actionHeroBody:
-          'Confirm amount, payer, scope, payment progress, refund/retry option, and audit metadata before sharing or exporting.',
+          'Amount, payer, scope, payment progress, refund/retry option, and audit metadata are visible before sharing or exporting.',
       actionPanelTitle: 'Receipt details',
       actionPanelBody:
-          'Confirm receipt record, history, support, export, refund questions, and entitlement restore.',
+          'Receipt record, history, support, export, refund questions, and entitlement restore stay visible.',
       alternateActionLabel: 'Export receipt',
       detailTitle: 'Receipt details',
       detailRows: const [
@@ -3537,10 +3537,10 @@ _RichWorkflowSpec _richSurface({
     actionSurfaceTitle: actionSurfaceTitle ?? title,
     actionHeroSubtitle: actionHeroSubtitle ?? subtitle,
     actionHeroBody: actionHeroBody ?? body,
-    actionPanelTitle: actionPanelTitle ?? 'Details to confirm',
+    actionPanelTitle: actionPanelTitle ?? 'Task details',
     actionPanelBody:
         actionPanelBody ??
-        'Confirm the details, make changes if needed, then save the result with a clear receipt and next step.',
+        'Key fields, status, available edits, and the next visible outcome stay together on this community surface.',
     alternateActionLabel: alternateActionLabel ?? 'Edit details',
     detailTitle: detailTitle,
     detailRows: detailRows,
@@ -3593,6 +3593,8 @@ _RichWorkflowLayout _inferredRichWorkflowLayout(
   if (text.contains('rsvp') ||
       text.contains('event') ||
       text.contains('schedule') ||
+      text.contains('reservation') ||
+      text.contains('facility') ||
       text.contains('practice') ||
       text.contains('meeting') ||
       text.contains('walk')) {
@@ -5427,7 +5429,7 @@ String _surfaceStatusTitleFor(_RichWorkflowLayout layout) {
     _RichWorkflowLayout.formSubmission => 'Submission handoff',
     _RichWorkflowLayout.paymentReceipt => 'Receipt and next steps',
     _RichWorkflowLayout.rosterProfile => 'Roster visibility',
-    _RichWorkflowLayout.requestReview => 'Decision queue',
+    _RichWorkflowLayout.requestReview => 'Request queue',
     _RichWorkflowLayout.searchAnswer => 'Reading guide',
     _RichWorkflowLayout.exportWizard => 'Package progress',
     _RichWorkflowLayout.messageThread => 'Conversation actions',
@@ -7322,7 +7324,16 @@ List<Widget> _actionSurfaceChildren({
         confirmButtonKey: confirmButtonKey,
       ),
     ],
-    _RichWorkflowLayout.paymentReceipt || _RichWorkflowLayout.adEntitlement => [
+    _RichWorkflowLayout.adEntitlement => [
+      _AdEntitlementPreview(spec: spec),
+      const SizedBox(height: 16),
+      _AdEntitlementActionConsole(
+        spec: spec,
+        actionLabel: actionLabel,
+        confirmButtonKey: confirmButtonKey,
+      ),
+    ],
+    _RichWorkflowLayout.paymentReceipt => [
       _PaymentReceiptPreview(spec: spec),
       const SizedBox(height: 16),
       _PaymentActionConsole(
@@ -7404,7 +7415,7 @@ String _followUpTitleFor(_RichWorkflowLayout layout) {
     _RichWorkflowLayout.formSubmission => 'After submission',
     _RichWorkflowLayout.paymentReceipt => 'Receipt and account',
     _RichWorkflowLayout.rosterProfile => 'Role visibility',
-    _RichWorkflowLayout.requestReview => 'Decision recorded',
+    _RichWorkflowLayout.requestReview => 'Request outcome',
     _RichWorkflowLayout.searchAnswer => 'Saved answer',
     _RichWorkflowLayout.exportWizard => 'After export',
     _RichWorkflowLayout.messageThread => 'After message',
@@ -7413,6 +7424,185 @@ String _followUpTitleFor(_RichWorkflowLayout layout) {
     _RichWorkflowLayout.mediaReview => 'After critique',
     _RichWorkflowLayout.adEntitlement => 'Ad-free account',
     _ => 'Next steps',
+  };
+}
+
+String _resultTitleFor(_RichWorkflowLayout layout) {
+  return switch (layout) {
+    _RichWorkflowLayout.eventDetail => 'Attendance saved',
+    _RichWorkflowLayout.formSubmission => 'Submitted request',
+    _RichWorkflowLayout.paymentReceipt => 'Receipt saved',
+    _RichWorkflowLayout.rosterProfile => 'Visibility updated',
+    _RichWorkflowLayout.requestReview => 'Request updated',
+    _RichWorkflowLayout.searchAnswer => 'Answer saved',
+    _RichWorkflowLayout.exportWizard => 'Export progress',
+    _RichWorkflowLayout.messageThread => 'Thread updated',
+    _RichWorkflowLayout.noticeDetail => 'Message delivered',
+    _RichWorkflowLayout.clubScoreboard => 'Club result saved',
+    _RichWorkflowLayout.mediaReview => 'Critique state',
+    _RichWorkflowLayout.adEntitlement => 'Ad setting saved',
+    _ => 'Result and next step',
+  };
+}
+
+List<_ActionSurfaceDetail> _actionProofRowsFor(_RichWorkflowLayout layout) {
+  return switch (layout) {
+    _RichWorkflowLayout.eventDetail => const [
+      _ActionSurfaceDetail(
+        icon: Icons.event_outlined,
+        title: 'Event details',
+        body:
+            'Title, date, time, location, host, capacity, and current attendance are visible before responding.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.how_to_reg_outlined,
+        title: 'Attendance options',
+        body:
+            'Going, Maybe, Not going, and Change response remain available while the event is open.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.notifications_active_outlined,
+        title: 'Member reminder',
+        body:
+            'The saved response keeps calendar, reminder, and capacity status visible.',
+      ),
+    ],
+    _RichWorkflowLayout.paymentReceipt => const [
+      _ActionSurfaceDetail(
+        icon: Icons.payments_outlined,
+        title: 'Payment context',
+        body:
+            'Amount, payer, recipient, method, visibility, and retry/refund path are visible before checkout.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.receipt_long_outlined,
+        title: 'Receipt',
+        body:
+            'Receipt destination, payment status, entitlement, and history are kept after payment.',
+      ),
+    ],
+    _RichWorkflowLayout.exportWizard => const [
+      _ActionSurfaceDetail(
+        icon: Icons.inventory_2_outlined,
+        title: 'Export scope',
+        body:
+            'Selected records, redaction choices, destination, file size, and checksum are shown as export steps.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.verified_outlined,
+        title: 'Verification and recovery',
+        body:
+            'Download, retry, cancel, rollback, and audit status stay visible after the export action.',
+      ),
+    ],
+    _RichWorkflowLayout.messageThread ||
+    _RichWorkflowLayout.noticeDetail => const [
+      _ActionSurfaceDetail(
+        icon: Icons.person_outline,
+        title: 'Sender and receiver',
+        body:
+            'Sender, recipient or audience, timestamp, body, and delivery channel are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.forum_outlined,
+        title: 'Conversation state',
+        body:
+            'Reply, read/unread, archive, mute, block, draft, or resend actions match the message state.',
+      ),
+    ],
+    _RichWorkflowLayout.searchAnswer => const [
+      _ActionSurfaceDetail(
+        icon: Icons.search_outlined,
+        title: 'Query and answer',
+        body:
+            'The user sees the query, answer, citations, source visibility, and follow-up options.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.bookmark_border_outlined,
+        title: 'Saved citation state',
+        body:
+            'Save, share, refine, and stale-source handling are visible after opening the result.',
+      ),
+    ],
+    _RichWorkflowLayout.adEntitlement => const [
+      _ActionSurfaceDetail(
+        icon: Icons.campaign_outlined,
+        title: 'Ad placement',
+        body:
+            'Reserved slot, sponsor or no-fill reason, disclosure, and report/dismiss actions are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.block_outlined,
+        title: 'Ad-free entitlement',
+        body:
+            'Suppression status, receipt, restore/manage option, and fallback no-fill state remain visible.',
+      ),
+    ],
+    _RichWorkflowLayout.rosterProfile => const [
+      _ActionSurfaceDetail(
+        icon: Icons.groups_outlined,
+        title: 'Roster records',
+        body:
+            'Member names, roles, counts, status, and protected fields are visible according to persona.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.privacy_tip_outlined,
+        title: 'Protected visibility',
+        body:
+            'Hidden, redacted, filter, message, and export actions follow the role policy.',
+      ),
+    ],
+    _RichWorkflowLayout.clubScoreboard => const [
+      _ActionSurfaceDetail(
+        icon: Icons.how_to_vote_outlined,
+        title: 'Choice and standing',
+        body:
+            'Nominations, ballot options, selected title, match result, or standings are visible before saving.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.timeline_outlined,
+        title: 'Open result',
+        body:
+            'Change vote, dispute score, view results, and next meeting or round stay available.',
+      ),
+    ],
+    _RichWorkflowLayout.mediaReview => const [
+      _ActionSurfaceDetail(
+        icon: Icons.image_outlined,
+        title: 'Submission artifact',
+        body:
+            'Image, caption, consent, prompt, reviewer, and comment status are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.rate_review_outlined,
+        title: 'Critique path',
+        body:
+            'Edit, withdraw, request feedback, and reviewer result remain attached to the image.',
+      ),
+    ],
+    _RichWorkflowLayout.formSubmission ||
+    _RichWorkflowLayout.requestReview => const [
+      _ActionSurfaceDetail(
+        icon: Icons.edit_note_outlined,
+        title: 'Submitted fields',
+        body:
+            'Labeled fields, privacy indicators, attachments, assignee, and status are visible.',
+      ),
+      _ActionSurfaceDetail(
+        icon: Icons.rule_outlined,
+        title: 'Review path',
+        body:
+            'Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state.',
+      ),
+    ],
+    _ => const [
+      _ActionSurfaceDetail(
+        icon: Icons.info_outline,
+        title: 'Task context',
+        body:
+            'The screen shows the object, useful details, available actions, and saved result for this community task.',
+      ),
+    ],
   };
 }
 
@@ -7433,7 +7623,7 @@ class _EventActionConsole extends StatelessWidget {
       spec: spec,
       title: 'Choose attendance',
       body:
-          'Review the event, capacity, location, and reminders before saving a response.',
+          'Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going.',
       primaryLabel: actionLabel,
       alternateLabels: const ['Maybe', 'Not going', 'Change later'],
       primaryIcon: Icons.event_available_outlined,
@@ -7464,9 +7654,9 @@ class _FormActionConsole extends StatelessWidget {
       spec: spec,
       title: spec.layout == _RichWorkflowLayout.mediaReview
           ? 'Submission review'
-          : 'Review submitted details',
+          : 'Submitted request',
       body:
-          'Check field values, privacy handling, and handoff before saving the result.',
+          'Labeled fields, privacy handling, assignee, and status are visible before submitting or editing.',
       primaryLabel: actionLabel,
       alternateLabels: labels,
       primaryIcon: spec.icon,
@@ -7492,13 +7682,45 @@ class _PaymentActionConsole extends StatelessWidget {
   Widget build(BuildContext context) {
     return _DomainActionConsole(
       spec: spec,
-      title: 'Review payment',
+      title: 'Checkout and receipt',
       body:
-          'Confirm payer, amount, privacy choice, entitlement, receipt, and retry/refund options.',
+          'Payer, amount, privacy choice, entitlement, receipt destination, and retry/refund options are visible.',
       primaryLabel: actionLabel,
       alternateLabels: const ['Change amount', 'Use another method', 'Cancel'],
       primaryIcon: Icons.receipt_long_outlined,
       leadingRows: spec.detailRows.take(3).toList(),
+      resultRows: spec.stateRows.take(4).toList(),
+      confirmButtonKey: confirmButtonKey,
+    );
+  }
+}
+
+class _AdEntitlementActionConsole extends StatelessWidget {
+  const _AdEntitlementActionConsole({
+    required this.spec,
+    required this.actionLabel,
+    required this.confirmButtonKey,
+  });
+
+  final _RichWorkflowSpec spec;
+  final String actionLabel;
+  final Key confirmButtonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DomainActionConsole(
+      spec: spec,
+      title: 'Sponsored-message controls',
+      body:
+          'Review reserved slot behavior, disclosure, no-fill reason, entitlement, receipt, and restore option.',
+      primaryLabel: actionLabel,
+      alternateLabels: const [
+        'Manage entitlement',
+        'Report ad issue',
+        'Restore receipt',
+      ],
+      primaryIcon: Icons.block_outlined,
+      leadingRows: spec.detailRows.take(4).toList(),
       resultRows: spec.stateRows.take(4).toList(),
       confirmButtonKey: confirmButtonKey,
     );
@@ -7528,9 +7750,9 @@ class _ExportActionConsole extends StatelessWidget {
         : const ['Change scope', 'Preview redaction', 'Retry export'];
     return _DomainActionConsole(
       spec: spec,
-      title: 'Export console',
+      title: 'Export workspace',
       body:
-          'Review scope, redaction, checksums, transfer status, rollback, and audit evidence.',
+          'Scope, redaction, checksum, destination, transfer status, rollback, and audit evidence are visible.',
       primaryLabel: actionLabel,
       alternateLabels: alternates,
       primaryIcon: Icons.folder_zip_outlined,
@@ -7669,6 +7891,7 @@ class _DomainActionConsole extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(spec.accent);
     final textTheme = Theme.of(context).textTheme;
+    final proofRows = _actionProofRowsFor(spec.layout);
     final outlined = OutlinedButton.styleFrom(
       foregroundColor: foreground,
       side: BorderSide(color: foreground.withValues(alpha: 0.35)),
@@ -7700,24 +7923,12 @@ class _DomainActionConsole extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const _ProductPreviewLine(
-              icon: Icons.rule_folder_outlined,
-              title: 'Decision',
-              body:
-                  'Use the object details below to save, submit, send, pay, or export the right community record.',
-            ),
-            const _ProductPreviewLine(
-              icon: Icons.compare_arrows_outlined,
-              title: 'Change or reject',
-              body:
-                  'Alternate actions let the user edit, change, cancel, reject, decline, retry, rollback, or manage this decision before it is final.',
-            ),
-            const _ProductPreviewLine(
-              icon: Icons.task_alt_outlined,
-              title: 'Saved status and receiver',
-              body:
-                  'After action, the saved status, receipt, history, audit, inbox, member account, provider, or next receiver step remains visible.',
-            ),
+            for (final row in proofRows)
+              _ProductPreviewLine(
+                icon: row.icon,
+                title: row.title,
+                body: row.body,
+              ),
             const SizedBox(height: 4),
             for (final row in leadingRows)
               _ProductPreviewLine(
@@ -7753,7 +7964,7 @@ class _DomainActionConsole extends StatelessWidget {
               const Divider(height: 1),
               const SizedBox(height: 12),
               Text(
-                'Saved result',
+                _resultTitleFor(spec.layout),
                 style: textTheme.titleMedium?.copyWith(
                   color: foreground,
                   fontWeight: FontWeight.w800,
@@ -10278,55 +10489,55 @@ String _alternateActionLabelFor(LoomWorkflowDefinition workflow) {
 String _decisionSummaryFor(String category, LoomWorkflowDefinition workflow) {
   final id = workflow.workflowId;
   if (id.contains('announcement') || id.contains('publish')) {
-    return 'Confirm the message body, audience, delivery timing, preview, and draft option before publishing.';
+    return 'Message body, audience, delivery timing, preview, and draft option stay visible before publishing.';
   }
   if (id.contains('rsvp') ||
       id.contains('event') ||
       id.contains('practice') ||
       id.contains('photo-walk')) {
-    return 'Confirm the event date, time, location, capacity, and going/maybe/not-going response options.';
+    return 'Event date, time, location, capacity, and Going/Maybe/Not going options are visible.';
   }
   if (id.contains('payment') ||
       id.contains('dues') ||
       id.contains('donation') ||
       id.contains('checkout') ||
       id.contains('ad-off')) {
-    return 'Confirm amount, payer context, visibility, receipt destination, retry, refund, and manage-payment options.';
+    return 'Amount, payer context, visibility, receipt destination, retry, refund, and manage-payment options are visible.';
   }
   if (id.contains('document')) {
-    return 'Confirm document access, version, download, save, share, and access-request options.';
+    return 'Document access, version, download, save, share, and access-request options are visible.';
   }
   if (id.contains('architectural') ||
       id.contains('approval') ||
       id.contains('request')) {
-    return 'Confirm request details, approval, rejection, revision request, comments, and status history.';
+    return 'Request details, approval, rejection, revision request, comments, and status history are visible.';
   }
   if (id.contains('care')) {
-    return 'Confirm care details, recipient visibility, privacy settings, protected fields, and follow-up option.';
+    return 'Care details, recipient visibility, privacy settings, protected fields, and follow-up option are visible.';
   }
   if (id.contains('gear')) {
-    return 'Confirm owner, pickup, due date, borrower queue, claim, decline, change, and return options.';
+    return 'Owner, pickup, due date, borrower queue, claim, decline, change, and return options are visible.';
   }
   if (id.contains('plant-exchange')) {
-    return 'Confirm variety, pickup, protected contact, claim, offer, edit, and cancel options.';
+    return 'Variety, pickup, protected contact, claim, offer, edit, and cancel options are visible.';
   }
   if (id.contains('critique')) {
-    return 'Confirm image, prompt, consent note, comments, submit, edit, withdraw, and resubmit options.';
+    return 'Image, prompt, consent note, comments, submit, edit, withdraw, and resubmit options are visible.';
   }
   if (id.contains('match') || id.contains('chess')) {
-    return 'Confirm opponent, round, score, standings impact, save, edit, correct, and dispute options.';
+    return 'Opponent, round, score, standings impact, save, edit, correct, and dispute options are visible.';
   }
   if (id.contains('message') ||
       id.contains('connection') ||
       id.contains('invite')) {
-    return 'Confirm sender, recipient, message body, timestamp, reply, send, accept, decline, mute, archive, and block options.';
+    return 'Sender, recipient, message body, timestamp, reply, send, accept, decline, mute, archive, and block options are visible.';
   }
   if (id.contains('export') ||
       id.contains('transfer') ||
       id.contains('import')) {
-    return 'Confirm scope, redaction, checksum, destination, retry, rollback, and change-scope options.';
+    return 'Scope, redaction, checksum, destination, retry, rollback, and change-scope options are visible.';
   }
-  return 'Confirm the details, editable fields, final progress, and next step before saving.';
+  return 'This view shows editable details, current progress, and the next step before saving.';
 }
 
 String _receiverStateSummaryFor(
@@ -10602,7 +10813,7 @@ String _successTitleFor(String category, LoomWorkflowDefinition workflow) {
     case 'Publishing':
       return 'Update sent';
     case 'Approval':
-      return 'Decision saved';
+      return 'Request outcome saved';
     case 'Portability':
       return 'Data package ready';
     case 'Platform':
@@ -10644,7 +10855,7 @@ String _successBodyFor(String category, LoomWorkflowDefinition workflow) {
     case 'Publishing':
       return 'The update is available to the selected audience.';
     case 'Approval':
-      return 'The decision is saved and ready for member follow-up.';
+      return 'The request outcome is saved and ready for member follow-up.';
     case 'Portability':
       return 'The data package is ready with protected fields handled.';
     case 'Platform':
@@ -10662,7 +10873,7 @@ String _receiverTitleFor(String category, String objectLabel) {
     case 'Publishing':
       return 'Update ready';
     case 'Approval':
-      return 'Decision ready';
+      return 'Request update ready';
     case 'Portability':
       return 'Data package ready';
     case 'Platform':

@@ -505,3 +505,43 @@ findings were resolved in pass 9.
   repeated-card visual fatigue, and add durable result states for the four failing lifecycle rows
   before another full B12-B20 recapture.
 - Evidence/tooling commit: `00b0339`.
+
+### Iteration 27 / `b25-v4-pass-30`
+
+- Status: failed. The blocker from pass 29 was removed, but the pass did not converge overall because
+  the major finding count increased.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-30.md`, removed remaining generic action-console
+  rows such as `Decision`, `Change or reject`, and `Saved status and receiver`, split ad/no-fill
+  actions away from payment checkout actions, routed facility/reservation language away from generic
+  payment inference, and replaced additional framework-like `confirm/review/surface` copy with
+  product-state language.
+- Capture/evidence: full B12-B20 capture passed with `198` screenshots, `66` workflows, and `9`
+  workflow manifests using direct WSL invocation. The first capture attempt timed out at the shell
+  limit and left stale progress at B16; the second full capture completed and
+  `b25_capture_coverage_gate.dart` passed as commit-eligible. The B25 collector generated `195`
+  schema v4 screen rows; workflow/persona coverage passed `68 / 68`; visual inspection passed
+  `195 / 195`; and the LLM review freshness gate passed for `b25-v4-pass-30`.
+- Product-doc reconciliation: failed with `9` major findings and `1` minor finding. The reconciliation
+  found new or remaining mismatch between product docs and evidence for roster management, donor
+  visibility, book voting, knowledge search, HOA notice, ad/no-fill, ad-off entitlement, settlement,
+  and export redaction scoring.
+- LLM Vision UX review: failed with `6` major findings and no blockers. The review found the global
+  repeated-card scaffold still dominates too many flows, ad-off checkout still mixes sponsored-message
+  context into payment/entitlement flows, protected redaction lacks the expected proof, persona-picker
+  copy still exposes harness language, workflow lifecycle gaps remain, and some action content is
+  presented with low contrast in dimmed states.
+- Workflow interaction model: failed `11 / 68` lifecycle scorecards, up from `4 / 68` in pass 29.
+- Production UX judge: failed `9 / 16` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-30.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-30.md` records
+  `B25 can pass=false`, `0` blockers, `16` unresolved major findings, `0` resolved blocker/major
+  findings, and `16` new blocker/major findings under the fresh LLM review.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-31.md` with `9` tickets and
+  `3` remediation batches.
+- Result: B25 remains reopened and is not yet converging. Pass 31 should not continue with small copy
+  edits alone; it should either make a deeper product-surface architecture change that replaces the
+  repeated-card scaffold for the failing families, or pause for a planning reset if the next pass does
+  not reduce blocker/major counts materially.
+- Evidence/tooling commit: `TBD`.
