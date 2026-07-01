@@ -660,4 +660,4 @@ findings were resolved in pass 9.
 - Result: B25 remains reopened and continues to converge. Pass 34 should focus on full-bright durable
   action/review screens, specialized utility/product layouts, explicit tab/pinned/expanded evidence,
   and domain-specific lifecycle controls.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `a2f0628`.
