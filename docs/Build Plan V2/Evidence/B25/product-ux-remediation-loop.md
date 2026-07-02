@@ -1,4 +1,4 @@
-﻿# B25 Product UX Remediation Loop
+# B25 Product UX Remediation Loop
 
 Status: reopened under the hardened fresh-LLM B25 review rule. `b25-v4-pass-19` recaptured fresh
 phase-split B12-B20 screenshot evidence and reran the full B25 judge chain, but failed with 3
@@ -700,4 +700,4 @@ findings were resolved in pass 9.
   update the affected community product docs first where needed, implement the seven lifecycle UI
   remediations, recapture full B12-B20 evidence, rerun the fresh Product Docs reconciliation and LLM
   Vision review, and verify that the lifecycle and production UX gates converge to zero major issues.
-- Evidence/tooling commit: `PENDING-PASS-38`.
+- Evidence/tooling commit: `f6c2aa4`.
