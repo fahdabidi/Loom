@@ -43,12 +43,36 @@ Future<void> openEvidenceTarget(
       '(${target.communityId}) from the community list.',
     );
   }
-  await tester.tap(card, warnIfMissed: false);
-  await tester.pumpAndSettle();
-  expect(
-    find.byKey(ValueKey('local-extension-${target.extensionId}')),
-    findsOneWidget,
+  final detail = find.byKey(ValueKey('local-extension-${target.extensionId}'));
+  final identity = find.byKey(
+    ValueKey('community-card-identity-${target.communityId}'),
   );
+  for (final tapTarget in [identity, card]) {
+    if (tapTarget.evaluate().isEmpty) {
+      continue;
+    }
+    await tester.tap(tapTarget, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    if (detail.evaluate().isNotEmpty) {
+      return;
+    }
+    await _returnToCommunityList(tester);
+    await tester.scrollUntilVisible(
+      card,
+      160,
+      scrollable: find.byType(Scrollable).last,
+      maxScrolls: 40,
+    );
+  }
+  final cardRect = tester.getRect(card);
+  await tester.tapAt(Offset(cardRect.left + 48, cardRect.top + 36));
+  await tester.pumpAndSettle();
+  if (detail.evaluate().isEmpty) {
+    fail(
+      'Tapped evidence target ${target.communityName} '
+      '(${target.communityId}) but ${target.extensionId} did not open.',
+    );
+  }
 }
 
 Future<void> _returnToCommunityList(WidgetTester tester) async {
