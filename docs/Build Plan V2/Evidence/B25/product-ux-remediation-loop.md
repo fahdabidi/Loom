@@ -701,3 +701,35 @@ findings were resolved in pass 9.
   remediations, recapture full B12-B20 evidence, rerun the fresh Product Docs reconciliation and LLM
   Vision review, and verify that the lifecycle and production UX gates converge to zero major issues.
 - Evidence/tooling commit: `f6c2aa4`.
+
+### Iteration 32 / `b25-v4-pass-39`
+
+- Status: passed. Pass 39 closes the B25 v4 production UX review with zero blocker or major findings.
+- Scope: consumed `b25-remediation-plan-b25-v4-pass-39.md`, remediated the remaining lifecycle gaps
+  by keeping action/result screenshots focused on the acted workflow, adding missing semantic models
+  for search/digest, ad/no-fill, and blocked-target flows, and hardening the judge so `metadata`
+  workflows are not misclassified as ad surfaces. The visible emulator was refreshed with the latest
+  app build for manual inspection.
+- Capture/evidence: full B12-B20 capture passed with `207` screenshots, `67` workflows, and `9`
+  workflow manifests on `emulator-5554`. `b25_capture_coverage_gate.dart` passed as commit-eligible.
+  The B25 collector generated `204` schema v4 screen rows for `b25-v4-pass-39`; workflow/persona
+  coverage passed `69 / 69`; visual inspection passed `204 / 204`; and the LLM review freshness gate
+  passed for the fresh pass-39 artifact.
+- Product-doc reconciliation: passed. The reconciliation reviewed current Product Docs V2 community
+  examples, workflow-to-surface mappings, semantic interaction rows, card-surface registry context,
+  and `appShellCapabilityReview.status=pass`. Pinning is judged as an explicit and appropriate
+  per-tab policy; screenshot proof is required only where the product spec declares a pinned surface.
+- LLM Vision UX review: passed. The fresh screenshot review imported `204` screen reviews and no
+  unresolved blocker or major findings.
+- Workflow interaction model: passed `69 / 69` lifecycle scorecards.
+- Production UX judge: passed `17 / 17` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-39.md` with `0` tickets.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-39.md` records
+  `B25 can pass=true`, `0` blockers, `0` unresolved major findings, and `0` new
+  blocker/major findings.
+- Result: B25 is complete under the current v4 production UX bar. Any later change to the App Shell,
+  product-doc mapping, card-surface registry, or example-community UI should reopen B25 and rerun the
+  full capture/review sequence.
+- Implementation/tooling commit: `b3c7991`.
+- Evidence/tooling commit: `TBD`.

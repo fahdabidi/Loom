@@ -3766,7 +3766,7 @@ JsonMap _expectedSemanticInteractionModel(String id, String persona) {
       ],
     );
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return _interactionModel(
       decision:
           'Member reviews a sponsored or no-fill ad state with sponsor/no-fill reason, layout preservation, disclosure, and dismiss/report/manage paths.',
@@ -3952,6 +3952,16 @@ JsonMap _expectedSemanticInteractionModel(String id, String persona) {
   );
 }
 
+bool _isAdSurfaceWorkflow(String id) {
+  final lower = id.toLowerCase();
+  return lower.contains('no-fill') ||
+      lower.contains('banner') ||
+      lower.contains('sponsor') ||
+      lower.contains('in-stream-ad') ||
+      lower.contains('-ad-') ||
+      lower.endsWith('-ad');
+}
+
 JsonMap _interactionModel({
   required String decision,
   required List<String> primary,
@@ -4027,7 +4037,7 @@ List<String> _lifecycleContextTerms(String id) {
   if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
     return <String>['query', 'answer', 'citation', 'source', 'digest'];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>['ad', 'banner', 'sponsor', 'slot', 'no-fill'];
   }
   if (id.contains('architectural') ||
@@ -4104,7 +4114,7 @@ List<String> _lifecycleDecisionTerms(String id) {
   if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
     return <String>['query', 'summary', 'citation', 'source', 'visible'];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>[
       'sponsor',
       'disclosure',
@@ -4166,7 +4176,7 @@ List<String> _lifecyclePrimaryActionTerms(String id) {
   if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
     return <String>['save', 'open sources', 'share', 'ask follow-up'];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>['review', 'open sponsor', 'inspect', 'reserve'];
   }
   if (id.contains('request') || id.contains('approval')) {
@@ -4234,7 +4244,7 @@ List<String> _lifecycleAlternateActionTerms(String id) {
       'share answer',
     ];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>[
       'dismiss',
       'report',
@@ -4299,7 +4309,7 @@ List<String> _lifecycleResultTerms(String id) {
   if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
     return <String>['saved', 'shared', 'visible', 'citation', 'follow-up'];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>[
       'recorded',
       'no fill',
@@ -4352,7 +4362,7 @@ List<String> _lifecycleReceiverStateTerms(String id) {
   if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
     return <String>['member', 'discussion', 'source', 'citation', 'share'];
   }
-  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+  if (_isAdSurfaceWorkflow(id)) {
     return <String>[
       'member',
       'layout',
@@ -9412,7 +9422,7 @@ JsonMap _b25CardSurfaceRegistryEntryForWorkflowId(String workflowId) {
       alternateActions: const ['Decline', 'Block', 'Mute'],
     );
   }
-  if (id.contains('ad') || id.contains('sponsor')) {
+  if (_isAdSurfaceWorkflow(id) || id.contains('sponsor')) {
     return _b25SurfaceSpec(
       workflowId: workflowId,
       cardSurfaceFamily: 'ad',
@@ -10792,9 +10802,14 @@ _DerivedFailure? _failOnDirectQuestionAnswers(
     final answerValue = _asString(answer['answer'] ?? answer['verdict']);
     final score = _asInt(answer['score']);
     final blocksPass = answer['blocksPass'] == true;
-    final visibleEvidence = _asString(
-      answer['visibleEvidence'] ?? answer['evidence'] ?? answer['visibleText'],
-    );
+    final visibleEvidenceList = _asStringList(answer['visibleEvidence']);
+    final visibleEvidence = visibleEvidenceList.isNotEmpty
+        ? visibleEvidenceList.join(' ')
+        : _asString(
+            answer['visibleEvidence'] ??
+                answer['evidence'] ??
+                answer['visibleText'],
+          );
     final question = _asString(answer['question']);
     final critique = _asString(
       answer['why'] ?? answer['whyItFails'] ?? answer['critique'],

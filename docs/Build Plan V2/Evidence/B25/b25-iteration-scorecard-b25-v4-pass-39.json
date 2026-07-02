@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "scorecardType": "b25-iteration",
+  "reviewRunId": "b25-v4-pass-39",
+  "reviewStandardVersion": "b25-production-ux-v4",
+  "generatedAt": "2026-07-02T04:44:23.435234Z",
+  "status": "pass",
+  "finalDecision": "pass",
+  "b25CanPass": true,
+  "findingCounts": {
+    "total": 0,
+    "criticalBlocker": 0,
+    "major": 0,
+    "minor": 0,
+    "polish": 0,
+    "unresolvedCriticalBlocker": 0,
+    "unresolvedMajor": 0,
+    "unresolvedBlockingMajor": 0,
+    "resolvedCriticalBlocker": 0,
+    "resolvedMajor": 0,
+    "resolvedBlockingMajor": 0
+  },
+  "convergence": {
+    "previousReviewRunId": "",
+    "resolvedCriticalBlockerThisPass": 0,
+    "resolvedMajorThisPass": 0,
+    "newCriticalBlockerThisPass": 0,
+    "newMajorThisPass": 0,
+    "resolvedBlockingMajorThisPass": 0,
+    "newBlockingMajorThisPass": 0,
+    "remainingBlockingMajor": 0
+  },
+  "judgeSummary": {
+    "status": "pass",
+    "totalCriteria": 17,
+    "passedCriteria": 17,
+    "failedCriteria": 0,
+    "blockingCriterionFailures": 0,
+    "holisticPass": true,
+    "workflowPersonaPass": true
+  },
+  "blockingFindings": [],
+  "resolvedBlockingFindingsThisPass": [],
+  "newBlockingFindingsThisPass": [],
+  "requiredNextAction": "B25 can close after required gates pass and tracker/manifest are stamped."
+}

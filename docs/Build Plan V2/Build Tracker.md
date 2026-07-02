@@ -136,7 +136,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | Reopened - failed pass 38 | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review closes only when fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 38 refreshed full B12-B20 evidence with `207` screenshots and `67` workflows, passed capture coverage, generated `204` schema v4 rows, passed workflow/persona coverage `69 / 69`, passed visual inspection `204 / 204`, passed fresh Product Docs reconciliation including the App Shell capability review, but failed the fresh LLM Vision review and production judge with `8` unresolved major findings, `9` remediation tickets, and `7` workflow/persona lifecycle gaps. | Historical v3 implementation `ccc3f40`; pass 35 evidence `940bc2a`; pass 38 evidence `f6c2aa4`; next remediation plan `b25-remediation-plan-b25-v4-pass-39.md`. |
+| B25 | Complete - pass 39 | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review closes only when fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 39 refreshed full B12-B20 evidence with `207` screenshots and `67` workflows, passed capture coverage, generated `204` schema v4 rows, passed workflow/persona coverage `69 / 69`, passed visual inspection `204 / 204`, passed fresh Product Docs reconciliation including the App Shell capability review, passed the fresh LLM Vision review, passed `69 / 69` workflow lifecycle scorecards, and passed `17 / 17` production UX criteria with `0` remediation tickets. | Historical v3 implementation `ccc3f40`; pass 35 evidence `940bc2a`; pass 38 evidence `f6c2aa4`; pass 39 implementation/tooling `b3c7991`; pass 39 evidence `TBD`. |
 
 ## Phase Outcome Summary
 
@@ -446,7 +446,7 @@ new method and the affected regressions pass again.
 | B12-B16 | None | Complete | Completed R20 UX Decisions for each UI evidence phase, including reference sources, extracted patterns, workflow walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B17-B20 | None | Complete | Completed R20 UX Decisions for persona/role phases, including role inventory, persona picker UX, actor/receiver/read-only/disabled workflow policy, multi-persona walkthroughs, screenshot acceptance criteria, and open tradeoffs. |
 | B21-B24 | None | Complete | Production workflow contracts, semantic workflow action coverage, persona-specific recipient states, screenshot evidence, and generic harness-copy rejection are complete. |
-| B25 | `f6c2aa4` | Reopened - failed pass 38 | Pass 38 hardened App Shell capability review so pinning is judged as explicit and appropriate policy, not blanket pinned-surface existence. It passed full capture, coverage, visual audit, Product Docs reconciliation, and App Shell capability review, but failed fresh LLM Vision, lifecycle, and production UX gates with `8` unresolved major findings and `9` remediation tickets. |
+| B25 | `TBD` | Complete - pass 39 | Pass 39 consumed the pass-38 tickets, loaded the latest app on the visible emulator, refreshed full B12-B20 evidence, passed Product Docs reconciliation, App Shell capability review, fresh LLM Vision review, `69 / 69` workflow lifecycle scorecards, and `17 / 17` production UX criteria with `0` open tickets. |
 
 Closeout rule for reopened phases:
 
@@ -1752,15 +1752,15 @@ Closeout rule for reopened phases:
   `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`,
   `docs/Build Plan V2/Evidence/B25/product-ux-remediation-loop.md`,
   `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.md`, and
-  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`. These artifacts must be
-  superseded by a v4 run before B25 can close again.
-- **Gate evidence:** Historical v3 checks passed:
-  `flutter test apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`;
-  `flutter test apps/loom_communities_demo/test/a6_loom_communities_demo_test.dart`; full
-  `flutter test apps/loom_communities_demo/test`; Android `flutter drive` workflow evidence sweep;
-  `flutter analyze apps/loom_communities_demo`; manifest gate, B25 phase gate, boundary lint, and
-  diff check passed. Required v4 direct-question, evidence freshness, and production UX judge checks are
-  pending.
+  `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`. These artifacts were
+  superseded by the current `b25-v4-pass-39` run before B25 closeout.
+- **Gate evidence:** `b25-v4-pass-39` passed the required v4 gate chain: full B12-B20 capture
+  (`207` screenshots, `67` workflows, `9` manifests), `b25_capture_coverage_gate.dart`,
+  `b25_evidence_collector.dart` (`204` schema v4 rows), workflow/persona coverage (`69 / 69`),
+  visual inspection (`204 / 204`), fresh Product Docs to Evidence reconciliation with
+  `appShellCapabilityReview.status=pass`, fresh LLM Vision review freshness/import, workflow
+  interaction-model judge (`69 / 69`), production UX judge (`17 / 17` criteria), and iteration
+  scorecard with `B25 can pass=true` and `0` remaining blocker/major findings.
 - **Prior v4 pass:** `b25-v4-pass-12` closed the semantic-closure, product-doc, and semantic
   interaction-model bar added after review of the Masjid Nur screens. It added visible sender/author,
   notification content, RSVP result, document file metadata, no-fill disclosure, and protected
@@ -1773,7 +1773,7 @@ Closeout rule for reopened phases:
   iteration scorecard `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-12.md`
   records `B25 can pass=true`, 0 blockers, 0 unresolved major findings, and 0 newly introduced
   blocker/major findings. Manifest gate, B25 phase gate, boundary lint, and `git diff --check` passed.
-- **Current v4 pass:** `b25-v4-pass-20` consumed the pass-19 remediation plan and added richer
+- **Prior v4 pass:** `b25-v4-pass-20` consumed the pass-19 remediation plan and added richer
   product-surface fallback content for the communities that were still falling through to generic
   workflow surfaces. Code gates passed (`dart format`, `flutter analyze apps/loom_communities_demo`,
   and `flutter test apps/loom_communities_demo/test/b21_b25_production_ux_test.dart`). Full B12-B20
