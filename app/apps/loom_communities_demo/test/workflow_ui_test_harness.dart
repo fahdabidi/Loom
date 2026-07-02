@@ -39,6 +39,7 @@ Future<void> openEvidenceTarget(
       '(${target.communityId}) from the community list.',
     );
   }
+  await _centerCardInList(tester, card);
   final detail = find.byKey(ValueKey('local-extension-${target.extensionId}'));
   final identity = find.byKey(
     ValueKey('community-card-identity-${target.communityId}'),
@@ -55,9 +56,10 @@ Future<void> openEvidenceTarget(
     await _returnToCommunityList(tester);
     _expectCommunityListReady(tester);
     await _scrollToCardIfNeeded(tester, card);
+    await _centerCardInList(tester, card);
   }
   final cardRect = tester.getRect(card);
-  await tester.tapAt(Offset(cardRect.left + 48, cardRect.top + 36));
+  await tester.tapAt(cardRect.center);
   await tester.pumpAndSettle();
   if (detail.evaluate().isEmpty) {
     fail(
@@ -113,6 +115,18 @@ Future<void> _scrollToCardIfNeeded(WidgetTester tester, Finder card) async {
     scrollable: _communityListScrollable(),
     maxScrolls: 40,
   );
+}
+
+Future<void> _centerCardInList(WidgetTester tester, Finder card) async {
+  if (card.evaluate().isEmpty) {
+    return;
+  }
+  await Scrollable.ensureVisible(
+    tester.element(card),
+    alignment: 0.35,
+    duration: Duration.zero,
+  );
+  await tester.pumpAndSettle();
 }
 
 void _expectCommunityListReady(WidgetTester tester) {
