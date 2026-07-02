@@ -3745,6 +3745,50 @@ JsonMap _expectedSemanticInteractionModel(String id, String persona) {
       ],
     );
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return _interactionModel(
+      decision:
+          'Member reviews a concrete search or AI digest answer with query, summary, source citations, visibility, and follow-up/save/share paths.',
+      primary: <String>[
+        'save',
+        'save digest',
+        'save answer',
+        'open sources',
+        'share answer',
+        'ask follow-up',
+      ],
+      alternate: <String>[
+        'ask follow-up',
+        'refine query',
+        'change query',
+        'open sources',
+        'share answer',
+      ],
+    );
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return _interactionModel(
+      decision:
+          'Member reviews a sponsored or no-fill ad state with sponsor/no-fill reason, layout preservation, disclosure, and dismiss/report/manage paths.',
+      primary: <String>[
+        'review',
+        'inspect',
+        'review ad state',
+        'review banner state',
+        'review protected no-fill',
+        'open sponsor',
+        'review reserved slot',
+      ],
+      alternate: <String>[
+        'dismiss',
+        'report',
+        'manage ads',
+        'refresh slot',
+        'inspect no-fill reason',
+        'hide explanation',
+      ],
+    );
+  }
   if (id.contains('architectural') ||
       id.contains('approval') ||
       id.contains('request')) {
@@ -3824,6 +3868,25 @@ JsonMap _expectedSemanticInteractionModel(String id, String persona) {
       ],
     );
   }
+  if (id.contains('blocked')) {
+    return _interactionModel(
+      decision:
+          'Member or moderator reviews a blocked contact state with sender/recipient context, safety reason, disabled delivery, and unblock/appeal/keep-blocked paths.',
+      primary: <String>[
+        'review block',
+        'confirm block',
+        'confirm blocked state',
+        'keep blocked',
+      ],
+      alternate: <String>[
+        'unblock',
+        'appeal',
+        'cancel invite',
+        'block',
+        'archive',
+      ],
+    );
+  }
   if (id.contains('match') || id.contains('chess')) {
     return _interactionModel(
       decision:
@@ -3839,7 +3902,8 @@ JsonMap _expectedSemanticInteractionModel(String id, String persona) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return _interactionModel(
       decision:
           'Member evaluates a concrete message, connection, or invite with sender/recipient context and accept/decline/block paths.',
@@ -3960,6 +4024,12 @@ List<String> _lifecycleContextTerms(String id) {
   if (id.contains('document')) {
     return <String>['document', 'file', 'pdf', 'packet'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>['query', 'answer', 'citation', 'source', 'digest'];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>['ad', 'banner', 'sponsor', 'slot', 'no-fill'];
+  }
   if (id.contains('architectural') ||
       id.contains('approval') ||
       id.contains('request') ||
@@ -3980,7 +4050,8 @@ List<String> _lifecycleContextTerms(String id) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['message', 'thread', 'connection', 'invite'];
   }
   if (id.contains('export') ||
@@ -4030,6 +4101,19 @@ List<String> _lifecycleDecisionTerms(String id) {
   if (id.contains('document')) {
     return <String>['title', 'file', 'updated', 'access', 'members', 'pdf'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>['query', 'summary', 'citation', 'source', 'visible'];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>[
+      'sponsor',
+      'disclosure',
+      'reason',
+      'reserved',
+      'no fill',
+      'no-fill',
+    ];
+  }
   if (id.contains('architectural') ||
       id.contains('approval') ||
       id.contains('request')) {
@@ -4052,7 +4136,8 @@ List<String> _lifecycleDecisionTerms(String id) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['from', 'to', 'recipient', 'message', 'note'];
   }
   if (id.contains('export') ||
@@ -4078,6 +4163,12 @@ List<String> _lifecyclePrimaryActionTerms(String id) {
   if (id.contains('document')) {
     return <String>['open', 'download', 'read', 'acknowledge'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>['save', 'open sources', 'share', 'ask follow-up'];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>['review', 'open sponsor', 'inspect', 'reserve'];
+  }
   if (id.contains('request') || id.contains('approval')) {
     return <String>['submit', 'approve', 'review', 'send'];
   }
@@ -4087,12 +4178,16 @@ List<String> _lifecyclePrimaryActionTerms(String id) {
   if (id.contains('critique')) {
     return <String>['submit', 'review', 'comment'];
   }
+  if (id.contains('blocked')) {
+    return <String>['review', 'confirm', 'block', 'keep blocked'];
+  }
   if (id.contains('match') || id.contains('chess')) {
     return <String>['record', 'submit', 'save'];
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['send', 'reply', 'accept', 'invite'];
   }
   if (id.contains('export') ||
@@ -4130,6 +4225,25 @@ List<String> _lifecycleAlternateActionTerms(String id) {
   if (id.contains('document')) {
     return <String>['share', 'save', 'download', 'close', 'back'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>[
+      'ask follow-up',
+      'refine query',
+      'change query',
+      'open sources',
+      'share answer',
+    ];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>[
+      'dismiss',
+      'report',
+      'manage',
+      'refresh slot',
+      'no-fill reason',
+      'hide explanation',
+    ];
+  }
   if (id.contains('architectural') ||
       id.contains('approval') ||
       id.contains('request')) {
@@ -4147,12 +4261,16 @@ List<String> _lifecycleAlternateActionTerms(String id) {
   if (id.contains('critique')) {
     return <String>['edit', 'withdraw', 'resubmit', 'request changes'];
   }
+  if (id.contains('blocked')) {
+    return <String>['unblock', 'appeal', 'cancel invite', 'archive'];
+  }
   if (id.contains('match') || id.contains('chess')) {
     return <String>['edit', 'undo', 'correct', 'dispute'];
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['decline', 'block', 'mute', 'archive', 'cancel'];
   }
   if (id.contains('export') ||
@@ -4178,6 +4296,18 @@ List<String> _lifecycleResultTerms(String id) {
   if (id.contains('document')) {
     return <String>['read', 'downloaded', 'acknowledged', 'viewed'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>['saved', 'shared', 'visible', 'citation', 'follow-up'];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>[
+      'recorded',
+      'no fill',
+      'no-fill',
+      'impression',
+      'suppressed',
+    ];
+  }
   if (id.contains('request') || id.contains('approval')) {
     return <String>['approved', 'rejected', 'submitted', 'pending', 'status'];
   }
@@ -4192,7 +4322,8 @@ List<String> _lifecycleResultTerms(String id) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['sent', 'received', 'accepted', 'blocked', 'connected'];
   }
   if (id.contains('export') ||
@@ -4218,6 +4349,19 @@ List<String> _lifecycleReceiverStateTerms(String id) {
   if (id.contains('document')) {
     return <String>['members', 'access', 'read-only', 'viewer', 'download'];
   }
+  if (id.contains('search') || id.contains('digest') || id.contains('answer')) {
+    return <String>['member', 'discussion', 'source', 'citation', 'share'];
+  }
+  if (id.contains('ad') || id.contains('banner') || id.contains('no-fill')) {
+    return <String>[
+      'member',
+      'layout',
+      'slot',
+      'audit',
+      'disclosure',
+      'suppression',
+    ];
+  }
   if (id.contains('request') || id.contains('approval')) {
     return <String>['notification', 'owner', 'reviewer', 'committee', 'status'];
   }
@@ -4232,7 +4376,8 @@ List<String> _lifecycleReceiverStateTerms(String id) {
   }
   if (id.contains('message') ||
       id.contains('connection') ||
-      id.contains('invite')) {
+      id.contains('invite') ||
+      id.contains('blocked')) {
     return <String>['recipient', 'thread', 'inbox', 'connection'];
   }
   if (id.contains('export') ||

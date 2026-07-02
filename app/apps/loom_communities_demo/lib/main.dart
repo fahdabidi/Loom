@@ -458,9 +458,10 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     if (!confirmed) {
       return;
     }
-    setState(() {
-      _completedWorkflowIds.add(workflow.workflowId);
-    });
+    _focusWorkflowAfterAction(
+      workflow,
+      mutateState: () => _completedWorkflowIds.add(workflow.workflowId),
+    );
   }
 
   Future<void> _receiveWorkflow({
@@ -495,12 +496,66 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     if (!confirmed) {
       return;
     }
-    setState(() {
-      _receivedWorkflowPersonaKeys.add(
+    _focusWorkflowAfterAction(
+      workflow,
+      mutateState: () => _receivedWorkflowPersonaKeys.add(
         workflowPersonaReceiptKey(
           workflowId: workflow.workflowId,
           personaId: persona.personaId,
         ),
+      ),
+    );
+  }
+
+  void _focusWorkflowAfterAction(
+    LoomWorkflowDefinition workflow, {
+    required VoidCallback mutateState,
+  }) {
+    final experience = experienceForExtensionId(
+      community.extensionId,
+      displayName: community.displayName,
+    );
+    final activePersona = _activePersona(experience);
+    final tabSpecs = appShellTabsFor(
+      experience: experience,
+      personaId: activePersona.personaId,
+    );
+    final targetTab = tabSpecs.firstWhere(
+      (tab) => tab.matchesWorkflow(
+        extensionId: experience.extensionId,
+        workflow: workflow,
+      ),
+      orElse: () => tabSpecs.first,
+    );
+    final sections = _communitySectionsForTab(
+      experience: experience,
+      tab: targetTab,
+    );
+    final workflowIds = [
+      for (final section in sections)
+        for (final visibleWorkflow in section.workflows)
+          visibleWorkflow.workflowId,
+    ];
+    final focusKey = '${activePersona.personaId}:${targetTab.tabId}';
+    final workflowIndex = workflowIds.indexOf(workflow.workflowId);
+    setState(() {
+      mutateState();
+      _selectedTabIdByPersonaId[activePersona.personaId] = targetTab.tabId;
+      _focusedWorkflowIdByPersonaTab[focusKey] = workflow.workflowId;
+      _expandedWorkflowId = workflow.workflowId;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_surfaceScrollController.hasClients || workflowIndex < 0) {
+        return;
+      }
+      final targetOffset = (220 + workflowIndex * 260).toDouble();
+      _surfaceScrollController.animateTo(
+        targetOffset.clamp(
+          0.0,
+          _surfaceScrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
       );
     });
   }
