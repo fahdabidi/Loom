@@ -57,7 +57,7 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     marketplace/loan/giveaway surfaces instead of folding those workflows into generic cards. The
     extension product doc must also declare the persona-specific app-shell navigation model: required
     Home and Messages/Communication tabs, custom tabs, tab labels/icons/order, persona visibility,
-    surface-to-tab assignments, pinned surfaces, minimized/medium/expanded defaults, and safe
+    surface-to-tab assignments, per-tab pinning policy, minimized/medium/expanded defaults, and safe
     theme/customization knobs for community cards, tabs, typography, buttons, edit fields, badges,
     density, spacing, and colors. For any
     book/DVD/game/tool/gear/library/giveaway sharing use case, require browse/search, list/modify/
@@ -277,9 +277,14 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     standalone Skill runs, keep the same mapping in the local extension product doc. This registry is
     required review context for remediation, but it is not yet a standalone card-surface/API coverage
     gate. App Shell capability utilization is a hard B25 gate: the evidence must include a passing
-    `appShellCapabilityReview` proving persona tabs, pinned surfaces, minimized/medium/expanded states,
+    `appShellCapabilityReview` proving persona tabs, explicit and appropriate per-tab pinning policy,
+    minimized/medium/expanded states,
     tap-to-expand behavior, community-list card states, renderer selection, and theme/customization
-    tokens where the product doc or App Shell component guide requires them.
+    tokens where the product doc or App Shell component guide requires them. A tab may declare
+    `pinnedSurfaces: none` when the product doc gives a job-to-be-done rationale; screenshots are
+    required only for surfaces declared as pinned. Full B25 capture must include
+    `wf_app-shell-capability-evidence` screenshots for the main community list, workflow presentation
+    states, any declared pinned surface, and renderer-selection proof.
 66. B25 must run a distinct LLM Product Docs to Evidence Workflow Reconciliation gate before the final
     product-quality judgment. Use
     [../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md](../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md).

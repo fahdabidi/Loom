@@ -48,7 +48,7 @@ The community product docs currently use this Section 6 table shape:
 
 Use these companion sections to validate Section 6:
 
-- Section 3.1 must define persona-specific tabs, pinned surfaces, required Home and
+- Section 3.1 must define persona-specific tabs, pinning policy, required Home and
   Messages/Communication, custom labels/icons/order/visibility, hidden/disabled rules, surface-to-tab
   assignment, presentation defaults, and customization knobs.
 - Section 7 must define actor, receiver, read-only, disabled/hidden, and unauthorized behavior.
@@ -72,8 +72,9 @@ For each community product doc, perform these checks:
    in the product doc.
 3. **Persona navigation coverage.** Cross-check Section 3.1 against screenshots and evidence. Fail if
    Home or Messages/Communication is missing, a persona lacks the documented custom tabs, a restricted
-   tab leaks to an unauthorized persona, a documented pinned surface is absent, or a long generic home
-   list remains where Section 3.1 calls for a tabbed information architecture.
+   tab leaks to an unauthorized persona, a declared pinned surface is absent, the pinning policy is
+   ambiguous, or a long generic home list remains where Section 3.1 calls for a tabbed information
+   architecture.
 4. **Customization proof.** Fail if the product doc declares a community-card, tab, typography,
    density, icon, color, or surface presentation customization that is not visible in screenshots, or
    if screenshots show customization not reflected in Section 3.1.
@@ -107,7 +108,8 @@ Evaluate these capabilities from screenshots, not source-code intent:
 
 - persona-specific tabs, including required Home and Messages/Communication tabs;
 - community-defined custom tab labels, icons, ordering, and persona visibility;
-- pinned surface placement inside the relevant tab;
+- explicit persona/tab pinning policy: either `pinnedSurfaces: none` with rationale or declared pinned
+  surfaces with screenshot proof inside the relevant tab;
 - minimized, medium/in-focus, and expanded/maximized surface states;
 - scroll-driven focus where the first/visible card becomes medium and off-focus cards become minimized;
 - tap-to-expand behavior that opens a richer product surface rather than merely running a workflow;
@@ -115,6 +117,16 @@ Evaluate these capabilities from screenshots, not source-code intent:
 - renderer selection by card-surface family;
 - community theme, typography, density, color, button, badge, edit-field, and tab customization tokens;
 - tab overflow behavior with no clipping or inaccessible tabs.
+
+The B25 evidence collector must include `wf_app-shell-capability-evidence` screenshots from B20.
+Use those rows as the first place to verify shell capabilities:
+
+- `B20_app_shell_main_community_list_states` for main community launch-card states;
+- `B20_app_shell_garden_home_medium_minimized_stack` and
+  `B20_app_shell_garden_home_expanded_surface` for minimized/medium/expanded workflow presentation;
+- `B20_app_shell_hoa_documents_pinning_policy` for an explicit Documents-tab pinning policy;
+- `B20_app_shell_soccer_roster_renderer_medium` and
+  `B20_app_shell_soccer_roster_renderer_expanded` for card-surface renderer selection proof.
 
 Fail this sub-review if any documented capability is not visible in fresh screenshots, if the reviewer
 cannot tie a capability to affected screen rows and screenshot hashes, or if a screenshot shows generic
@@ -126,8 +138,8 @@ Ask these questions for each community:
 
 - Does `## 3.1 Persona Tabs, Pins, And Customization` define the tab/navigation/customization model
   needed for every persona visible in the current evidence?
-- Do screenshots prove the documented tabs, pinned surfaces, Home/Messages requirements, persona
-  visibility, and customization knobs?
+- Do screenshots prove the documented tabs, explicit pinning policy, Home/Messages requirements,
+  persona visibility, and customization knobs?
 - Does `## 6. Workflow-To-Surface Mapping` list every workflow visible in the current screenshots and
   review rows?
 - Does every Section 6 workflow have fresh screenshot evidence for the named persona and product
@@ -140,13 +152,15 @@ Ask these questions for each community:
   receiver states shown or required by the UI?
 - Does the card-surface registry define the API contract and interactions needed by the visible
   surface?
-- Do current screenshots prove persona tabs, pinned surfaces, minimized/medium/expanded states,
+- Do current screenshots prove persona tabs, explicit and appropriate pinning policy,
+  minimized/medium/expanded states,
   tap-to-expand behavior, community-list card states, renderer selection, and theme/customization tokens
   where Product Docs or the App Shell component guide require them?
 - For each persona, does the visible tab model match Section 3.1 exactly, including Home,
   Messages/Communication, custom tabs, labels/icons/order, and tab visibility?
-- Are documented pinned surfaces actually visible in the correct tab and not buried in a long generic
-  workflow list?
+- For each persona/tab, is the pinning policy explicit and appropriate? If the policy declares no pinned
+  surfaces, is the rationale sound for that tab's job-to-be-done? If it declares pinned surfaces, are
+  those surfaces visible in the correct tab and not buried in a long generic workflow list?
 - Do reviewed screenshots include enough before/after or entry/focus/expanded states to prove the
   presentation-state model is implemented, not just declared?
 - Are there screenshots showing extra screens, interactions, states, or flows that the product doc must
@@ -199,6 +213,11 @@ Use this shape:
         "communityName": "<name>",
         "persona": "<persona>",
         "tabsPass": true,
+        "pinningPolicy": "none|declared-pinned-surfaces|ambiguous",
+        "pinningPolicyRationale": "<why pinning is or is not appropriate for this persona/tab>",
+        "pinningPolicyPass": true,
+        "pinnedSurfacesExpected": false,
+        "declaredPinnedSurfaceIds": [],
         "pinnedSurfacesPass": true,
         "presentationStatesPass": true,
         "mainCommunityCardStatesPass": true,

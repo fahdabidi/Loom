@@ -91,6 +91,15 @@ void main() {
       await openEvidenceTarget(tester, target);
     }
 
+    Future<void> returnToCommunityList() async {
+      if (find.text('Loom Communities').evaluate().isNotEmpty) {
+        return;
+      }
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Loom Communities'), findsOneWidget);
+    }
+
     if (_includePhase('B12')) {
       emitProgress(
         'workflow-start',
@@ -276,6 +285,29 @@ void main() {
     );
     final careRequest = mosqueExperience.workflows.firstWhere(
       (workflow) => workflow.workflowId == 'mosque-care-request',
+    );
+    final gardenTarget = loomEvidenceTargets.firstWhere(
+      (target) => target.extensionId == 'ext_garden_club',
+    );
+    final gardenExperience = experienceForExtensionId(
+      gardenTarget.extensionId,
+      displayName: gardenTarget.communityName,
+    );
+    final gardenRsvp = gardenExperience.workflows.firstWhere(
+      (workflow) => workflow.workflowId == 'garden-event-rsvp',
+    );
+    final hoaTarget = loomEvidenceTargets.firstWhere(
+      (target) => target.extensionId == 'ext_hoa',
+    );
+    final soccerTarget = loomEvidenceTargets.firstWhere(
+      (target) => target.extensionId == 'ext_youth_soccer',
+    );
+    final soccerExperience = experienceForExtensionId(
+      soccerTarget.extensionId,
+      displayName: soccerTarget.communityName,
+    );
+    final soccerRoster = soccerExperience.workflows.firstWhere(
+      (workflow) => workflow.workflowId == 'soccer-team-roster',
     );
 
     if (_includePhase('B17')) {
@@ -514,6 +546,84 @@ void main() {
         workflowId: 'wf_multi-persona-workflow-evidence',
         communityName: mosqueTarget.communityName,
       );
+
+      emitProgress(
+        'workflow-start',
+        phase: 'B20',
+        workflowId: 'wf_app-shell-capability-evidence',
+        communityName: 'Loom Communities',
+      );
+      final capabilityScreenshots = <String>[];
+
+      await returnToCommunityList();
+      await capture('B20_app_shell_main_community_list_states');
+      capabilityScreenshots.add('B20_app_shell_main_community_list_states');
+
+      await ensureTargetOpen(gardenTarget);
+      await selectPersona(tester, 'garden-member');
+      await _selectCommunityTab(tester, 'home');
+      await _scrollToWorkflow(tester, gardenRsvp);
+      await capture('B20_app_shell_garden_home_medium_minimized_stack');
+      capabilityScreenshots.add(
+        'B20_app_shell_garden_home_medium_minimized_stack',
+      );
+      final gardenExpandButton = find.byKey(
+        ValueKey('workflow-expand-${gardenRsvp.workflowId}'),
+      );
+      await tester.ensureVisible(gardenExpandButton);
+      await tester.pumpAndSettle();
+      await tester.tap(gardenExpandButton, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      await capture('B20_app_shell_garden_home_expanded_surface');
+      capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
+
+      await ensureTargetOpen(hoaTarget);
+      await selectPersona(tester, 'hoa-homeowner');
+      await _selectCommunityTab(tester, 'documents');
+      await capture('B20_app_shell_hoa_documents_pinning_policy');
+      capabilityScreenshots.add(
+        'B20_app_shell_hoa_documents_pinning_policy',
+      );
+
+      await ensureTargetOpen(soccerTarget);
+      await selectPersona(tester, 'soccer-coach');
+      await _selectCommunityTab(tester, 'home');
+      await _scrollToWorkflow(tester, soccerRoster);
+      await capture('B20_app_shell_soccer_roster_renderer_medium');
+      capabilityScreenshots.add('B20_app_shell_soccer_roster_renderer_medium');
+      final soccerExpandButton = find.byKey(
+        ValueKey('workflow-expand-${soccerRoster.workflowId}'),
+      );
+      await tester.ensureVisible(soccerExpandButton);
+      await tester.pumpAndSettle();
+      await tester.tap(soccerExpandButton, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      await capture('B20_app_shell_soccer_roster_renderer_expanded');
+      capabilityScreenshots.add(
+        'B20_app_shell_soccer_roster_renderer_expanded',
+      );
+
+      entries.add({
+        'phase': 'B20',
+        'appId': 'app-shell-capability-evidence',
+        'workflowId': 'wf_app-shell-capability-evidence',
+        'communityId': 'loom-communities',
+        'communityName': 'Loom Communities',
+        'expectedAssertions': [
+          'main community list shows themed launch cards with medium and minimized states',
+          'Garden Club Home tab proves medium/minimized workflow surfaces and tap-to-expanded behavior',
+          'HOA Documents tab proves an explicit pin-first-critical-surface policy with a pinned document/status surface',
+          'Riverside Youth Soccer roster proves renderer selection by card-surface family in medium and expanded states',
+        ],
+        'screenshotNames': capabilityScreenshots,
+        'status': 'pass',
+      });
+      emitProgress(
+        'workflow-complete',
+        phase: 'B20',
+        workflowId: 'wf_app-shell-capability-evidence',
+        communityName: 'Loom Communities',
+      );
     }
 
     if (find
@@ -609,7 +719,7 @@ int _workflowEvidenceEntryCount() {
     total += 1;
   }
   if (_includePhase('B20')) {
-    total += 1;
+    total += 2;
   }
   return total;
 }

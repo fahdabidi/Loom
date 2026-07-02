@@ -438,13 +438,13 @@ final specs = <String, JudgeSpec>{
         id: 'b25-c16-app-shell-capability-utilization',
         title: 'App Shell capabilities are used where documented',
         question:
-            'Do current screenshots prove persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?',
+            'Do current screenshots prove persona tabs, explicit and appropriate pinning policy, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?',
         scope: 'app-shell-capability',
         requiredEvidenceFields: <String>['appShellCapabilityReview'],
         failureMessage:
             'The evidence does not include a passing App Shell capability utilization review, or it shows missing shell customization/presentation proof.',
         requiredFix:
-            'Update Product Docs and UI so app shell tabs, pins, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven; rerun B25 and regenerate tickets.',
+            'Update Product Docs and UI so app shell tabs, explicit per-tab pinning policy, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven where required; rerun B25 and regenerate tickets.',
       ),
       CriterionDefinition(
         id: 'b25-c08-visible-text-specific-critique',
@@ -7033,6 +7033,17 @@ List<JsonMap> _b25RemediationTickets(
   final tickets = <JsonMap>[];
   var index = 1;
   for (final criterion in criteria.where((criterion) => criterion.blocksPass)) {
+    if (criterion.id == 'b25-c16-app-shell-capability-utilization') {
+      final appShellTickets = _b25AppShellCapabilityTickets(
+        evidence: evidence,
+        criterion: criterion,
+        allBlockingFindingIds: allBlockingFindingIds,
+        startIndex: index,
+      );
+      tickets.addAll(appShellTickets);
+      index += appShellTickets.length;
+      continue;
+    }
     final relatedFindings = _relatedB25FindingIds(
       criterion,
       allBlockingFindingIds,
@@ -7107,6 +7118,351 @@ List<JsonMap> _b25RemediationTickets(
     index += 1;
   }
   return tickets;
+}
+
+List<JsonMap> _b25AppShellCapabilityTickets({
+  required JsonMap evidence,
+  required CriterionResult criterion,
+  required List<String> allBlockingFindingIds,
+  required int startIndex,
+}) {
+  final review =
+      (evidence['appShellCapabilityReview'] as JsonMap?) ??
+      ((evidence['productDocWorkflowReconciliation']
+              as JsonMap?)?['appShellCapabilityReview']
+          as JsonMap?) ??
+      const <String, Object?>{};
+  final findings = _asMapList(review['findings'])
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .toList();
+  final relatedFindings = findings
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  final ids = relatedFindings.isEmpty
+      ? _relatedB25FindingIds(criterion, allBlockingFindingIds)
+      : relatedFindings;
+  final ticketFindingRows = findings.isEmpty
+      ? <JsonMap>[
+          <String, Object?>{
+            'findingId': 'B25-APP-SHELL-CAPABILITY-REVIEW',
+            'gapType': 'app-shell-capability-gap',
+            'title': criterion.title,
+            'summary': criterion.why,
+            'requiredFix': criterion.requiredFix,
+          },
+        ]
+      : findings;
+  final tickets = <JsonMap>[];
+  var index = startIndex;
+  for (final finding in ticketFindingRows) {
+    final findingId = _findingId(finding).isEmpty
+        ? _asString(finding['findingId'], fallback: 'B25-APP-SHELL')
+        : _findingId(finding);
+    final related = ids.contains(findingId) ? <String>[findingId] : ids;
+    final ticketContext = _b25TicketContext(evidence, criterion, related);
+    final remediationMode = _b25RemediationMode(criterion, ticketContext);
+    final gapType = _asString(
+      finding['gapType'],
+      fallback: 'app-shell-capability-gap',
+    );
+    final ticketId =
+        'B25-RT-${index.toString().padLeft(3, '0')}-${_slug(gapType)}';
+    tickets.add(<String, Object?>{
+      'ticketId': ticketId,
+      'ticketSchemaVersion': 4,
+      'phase': 'B25',
+      'reviewRunId': _asString(
+        evidence['currentReviewRunId'],
+        fallback: 'unknown-review-run',
+      ),
+      'status': 'open',
+      'severity': _asString(finding['severity'], fallback: 'major'),
+      'priority': 'P1',
+      'sourceCriterionId': criterion.id,
+      'sourceCapability': gapType,
+      'sourceFindingIds': related,
+      'title': _appShellCapabilityTicketTitle(finding, criterion),
+      'directQuestion': _appShellCapabilityDirectQuestion(gapType),
+      'whyItFailed': _asString(finding['summary'], fallback: criterion.why),
+      'requiredOutcome': _asString(
+        finding['requiredFix'],
+        fallback: criterion.requiredFix,
+      ),
+      'remediationMode': remediationMode['mode'],
+      'workerReadiness': remediationMode['workerReadiness'],
+      'firstRequiredStep': remediationMode['firstRequiredStep'],
+      'implementationBlockedBy': remediationMode['implementationBlockedBy'],
+      'affectedScope': ticketContext['affectedScope'],
+      'affectedCoverageRowIds': ticketContext['affectedCoverageRowIds'],
+      'affectedProductDocIds': ticketContext['affectedProductDocIds'],
+      'affectedScreenRowIds': ticketContext['affectedScreenRowIds'],
+      'affectedLifecycleScorecardIds':
+          ticketContext['affectedLifecycleScorecardIds'],
+      'affectedCoverageRows': ticketContext['affectedCoverageRows'],
+      'affectedProductDocs': ticketContext['affectedProductDocs'],
+      'affectedScreenRows': ticketContext['affectedScreenRows'],
+      'failingWorkflowPersonaScorecards':
+          ticketContext['failingWorkflowPersonaScorecards'],
+      'failingWorkflowLifecycleScorecards':
+          ticketContext['failingWorkflowLifecycleScorecards'],
+      'failingDirectQuestions': ticketContext['failingDirectQuestions'],
+      'evidenceRepairWorkItems': ticketContext['evidenceRepairWorkItems'],
+      'productDocRepairWorkItems': ticketContext['productDocRepairWorkItems'],
+      'uiRemediationWorkItems': ticketContext['uiRemediationWorkItems'],
+      'likelyFilesOrWidgets': ticketContext['likelyFilesOrWidgets'],
+      'uxReferencePatterns': ticketContext['uxReferencePatterns'],
+      'referenceResearchQueries': ticketContext['referenceResearchQueries'],
+      'sourceResearchRequirement':
+          'The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.',
+      'concreteAcceptanceCriteria': <String>[
+        ..._appShellCapabilityAcceptanceChecks(gapType),
+        ..._asStringList(ticketContext['concreteAcceptanceCriteria']),
+      ],
+      'problemStatement': _appShellCapabilityProblemStatement(
+        finding,
+        criterion,
+      ),
+      'rootCauseHypothesis': _rootCauseForB25Criterion(criterion.id),
+      'targetExperience': _appShellCapabilityTargetExperience(gapType),
+      'uxPrinciples': _uxPrinciplesForB25Criterion(criterion.id),
+      'concreteImprovements': _appShellCapabilityImprovements(gapType),
+      'implementationGuidance': _appShellCapabilityImplementationGuidance(
+        gapType,
+      ),
+      'contentGuidance': _contentGuidanceForB25Criterion(criterion.id),
+      'visualGuidance': _visualGuidanceForB25Criterion(criterion.id),
+      'affectedEvidence': _affectedEvidenceForB25Criterion(criterion.id),
+      'evidenceToCollect': _evidenceToCollectForB25Criterion(criterion.id),
+      'acceptanceChecks': <String>[
+        ..._appShellCapabilityAcceptanceChecks(gapType),
+        ..._acceptanceChecksForB25Criterion(criterion.id),
+      ],
+      'rerunCommands': _b25RerunCommands(),
+      'nonGoals': _nonGoalsForB25Criterion(criterion.id),
+      'commitBoundary':
+          'Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop.',
+    });
+    index += 1;
+  }
+  return tickets;
+}
+
+String _appShellCapabilityTicketTitle(
+  JsonMap finding,
+  CriterionResult criterion,
+) {
+  final title = _asString(finding['title']);
+  if (title.isNotEmpty) {
+    return title;
+  }
+  final gapType = _asString(finding['gapType']);
+  return '${criterion.title}: ${_appShellCapabilityLabel(gapType)}';
+}
+
+String _appShellCapabilityLabel(String gapType) {
+  switch (gapType) {
+    case 'app-shell-tabs-gap':
+      return 'persona tab model';
+    case 'app-shell-pinning-gap':
+      return 'persona/tab pinning policy';
+    case 'app-shell-presentation-state-gap':
+      return 'surface presentation states';
+    case 'app-shell-community-card-state-gap':
+      return 'main community-list card states';
+    case 'app-shell-customization-gap':
+      return 'theme and customization tokens';
+    case 'app-shell-renderer-selection-gap':
+      return 'renderer selection by card-surface family';
+    default:
+      return 'app shell capability';
+  }
+}
+
+String _appShellCapabilityDirectQuestion(String gapType) {
+  switch (gapType) {
+    case 'app-shell-tabs-gap':
+      return 'Do screenshots prove the persona sees the right Home, Messages/Communication, and custom tabs for their job-to-be-done?';
+    case 'app-shell-pinning-gap':
+      return 'Is the pinning policy explicit and appropriate for this persona/tab, with screenshots proving pinned surfaces only where the spec declares them?';
+    case 'app-shell-presentation-state-gap':
+      return 'Do screenshots prove minimized off-focus surfaces, the medium in-focus surface, and tap-to-expand behavior for the same workflow/persona?';
+    case 'app-shell-community-card-state-gap':
+      return 'Does the main Loom Communities list show modern community launch cards with minimized/medium states, theme customization, and tap-to-open behavior?';
+    case 'app-shell-customization-gap':
+      return 'Do screenshots prove the community theme, typography, color, density, and component customization tokens are applied consistently?';
+    case 'app-shell-renderer-selection-gap':
+      return 'Does the visible screen prove the App Shell selected the correct domain renderer for the card-surface family instead of a generic fallback?';
+    default:
+      return 'Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the persona/task?';
+  }
+}
+
+String _appShellCapabilityProblemStatement(
+  JsonMap finding,
+  CriterionResult criterion,
+) {
+  final summary = _asString(finding['summary']);
+  if (summary.isNotEmpty) {
+    return summary;
+  }
+  return _problemStatementForB25Criterion(criterion.id);
+}
+
+String _appShellCapabilityTargetExperience(String gapType) {
+  switch (gapType) {
+    case 'app-shell-tabs-gap':
+      return 'Each persona sees a tab model that matches their community jobs. Home and Messages/Communication are always available, and optional tabs are named, ordered, and scoped to the persona.';
+    case 'app-shell-pinning-gap':
+      return 'Every persona/tab has an explicit pinning policy. Tabs that need persistent context keep the declared surface visible; tabs that do not need pins explicitly declare none with rationale.';
+    case 'app-shell-presentation-state-gap':
+      return 'Cards behave like a modern focused surface stack: the first visible item is medium, off-focus items are minimized, and tapping expands the selected product surface.';
+    case 'app-shell-community-card-state-gap':
+      return 'The main community picker uses branded launch cards with clear hierarchy, minimized/medium focus states, and tap-to-open behavior instead of a flat generic list.';
+    case 'app-shell-customization-gap':
+      return 'Community theme, typography, density, colors, and component treatments are applied consistently without sacrificing readability or touch targets.';
+    case 'app-shell-renderer-selection-gap':
+      return 'Each workflow uses the renderer that matches its card-surface family and product task, with visible UI differences that prove it is not a generic fallback.';
+    default:
+      return _targetExperienceForB25Criterion(
+        'b25-c16-app-shell-capability-utilization',
+      );
+  }
+}
+
+List<String> _appShellCapabilityImprovements(String gapType) {
+  switch (gapType) {
+    case 'app-shell-pinning-gap':
+      return <String>[
+        'Update the community product experience doc Section 3.1 with a per-persona/per-tab pinning policy.',
+        'Use `pinnedSurfaces: none` with a rationale where no pinned surface makes sense; do not add pins just to satisfy the gate.',
+        'When a tab declares pinned surfaces, implement and screenshot-proof that the declared surface remains visible while other tab surfaces scroll or change focus.',
+        'Remove or revise any pin that is irrelevant to the tab job-to-be-done.',
+      ];
+    case 'app-shell-presentation-state-gap':
+      return <String>[
+        'Implement or expose minimized, medium/in-focus, and expanded states for the affected surface.',
+        'Capture before/after screenshots that show the same workflow/persona in minimized, medium, and expanded states.',
+        'Ensure the expanded state is a richer product surface, not only a larger copy of the same generic card.',
+      ];
+    case 'app-shell-community-card-state-gap':
+      return <String>[
+        'Add main community selection evidence to B25 coverage.',
+        'Show one in-focus medium community launch card and off-focus minimized community cards.',
+        'Apply community-specific theme/typography tokens to launch cards while preserving readability and tap targets.',
+      ];
+    case 'app-shell-renderer-selection-gap':
+      return <String>[
+        'Map the workflow to the correct card-surface family and renderer target.',
+        'Replace any generic fallback renderer with the domain renderer or screenshot-visible renderer evidence.',
+        'Update the product doc and B25 evidence so the reviewer can see why the renderer matches the task.',
+      ];
+    case 'app-shell-tabs-gap':
+      return <String>[
+        'Declare persona-specific tabs in the community product experience doc.',
+        'Keep Home and Messages/Communication available for every persona.',
+        'Recapture screenshots showing tab labels, order, persona visibility, selected state, and destination content.',
+      ];
+    case 'app-shell-customization-gap':
+      return <String>[
+        'Declare theme, typography, density, color, button, badge, and field customization tokens.',
+        'Apply those tokens through the central App Shell model instead of one-off widget styling.',
+        'Recapture screenshots proving the community-specific styling is visible and usable.',
+      ];
+    default:
+      return _improvementsForB25Criterion(
+        'b25-c16-app-shell-capability-utilization',
+      );
+  }
+}
+
+List<String> _appShellCapabilityImplementationGuidance(String gapType) {
+  final shared = <String>[
+    'Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.',
+    'Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.',
+    'Recapture screenshots after implementation; source code alone cannot close this ticket.',
+  ];
+  switch (gapType) {
+    case 'app-shell-pinning-gap':
+      return <String>[
+        ...shared,
+        'Treat pinning as policy-driven: require proof only for persona/tabs that declare pinned surfaces.',
+        'For tabs with no useful pinned surface, document `pinnedSurfaces: none` and the rationale in the community product doc.',
+        'Do not fail a Home tab simply because it has no pinned surface when the product spec explains that Home is a broad overview.',
+      ];
+    case 'app-shell-presentation-state-gap':
+      return <String>[
+        ...shared,
+        'Verify scroll-driven focus sets the active surface to medium and off-focus surfaces to minimized.',
+        'Verify tapping a medium or minimized surface expands it and tapping collapse returns it to the focused stack.',
+      ];
+    case 'app-shell-community-card-state-gap':
+      return <String>[
+        ...shared,
+        'Extend B25 evidence to include the main Loom Communities selection screen.',
+        'Prove community card focus states and tap-to-open behavior from screenshots, not only widget tests.',
+      ];
+    case 'app-shell-renderer-selection-gap':
+      return <String>[
+        ...shared,
+        'Make renderer selection inspectable through card-surface family, renderer target, visible domain layout, and B25 evidence rows.',
+        'If a renderer is intentionally shared, the screenshot must still prove the domain-specific content and layout for that card-surface family.',
+      ];
+    default:
+      return <String>[
+        ...shared,
+        ..._implementationGuidanceForB25Criterion(
+          'b25-c16-app-shell-capability-utilization',
+        ),
+      ];
+  }
+}
+
+List<String> _appShellCapabilityAcceptanceChecks(String gapType) {
+  switch (gapType) {
+    case 'app-shell-pinning-gap':
+      return <String>[
+        'Every reviewed persona/tab has `pinningPolicy` recorded as either `none` with rationale or a concrete list of pinned surface IDs.',
+        'Tabs with `pinningPolicy=none` pass without pinned screenshots when the rationale matches the tab job-to-be-done.',
+        'Tabs with declared pinned surfaces have after-screenshots proving the pinned surface remains visible and relevant.',
+        '`appShellCapabilityReview.communityResults[]` does not fail pinning merely because a tab appropriately declares no pinned surface.',
+      ];
+    case 'app-shell-presentation-state-gap':
+      return <String>[
+        'After-screenshots show minimized, medium/in-focus, and expanded states for the affected workflow/persona.',
+        'The expanded screenshot shows a richer product surface or action detail than the minimized state.',
+        'The affected `appShellCapabilityReview.communityResults[]` row has `presentationStatesPass=true`.',
+      ];
+    case 'app-shell-community-card-state-gap':
+      return <String>[
+        'B25 evidence includes the main Loom Communities selection screen.',
+        'Screenshots prove a medium in-focus launch card, minimized off-focus cards, and tap-to-open behavior.',
+        'Community launch cards visibly use community theme/typography tokens.',
+      ];
+    case 'app-shell-renderer-selection-gap':
+      return <String>[
+        'The affected workflow has a documented card-surface family and renderer target.',
+        'After-screenshots show the domain renderer output, not a generic fallback card.',
+        '`appShellCapabilityReview.communityResults[]` has `rendererSelectionPass=true` for the affected row.',
+      ];
+    case 'app-shell-tabs-gap':
+      return <String>[
+        'Screenshots prove Home and Messages/Communication tabs are available.',
+        'Custom persona tabs are visible only where appropriate and route to relevant content.',
+        '`appShellCapabilityReview.communityResults[]` has `tabsPass=true`.',
+      ];
+    case 'app-shell-customization-gap':
+      return <String>[
+        'Screenshots prove community color, typography, density, and component tokens are applied consistently.',
+        'Customization does not introduce clipping, low contrast, crowding, or touch-target regressions.',
+        '`appShellCapabilityReview.communityResults[]` has `themeCustomizationPass=true`.',
+      ];
+    default:
+      return <String>[
+        '`appShellCapabilityReview.status` is `pass`.',
+        '`appShellCapabilityReview.missingCapabilities` is empty.',
+      ];
+  }
 }
 
 JsonMap _b25TicketContext(
@@ -9756,8 +10112,9 @@ List<String> _improvementsForB25Criterion(String criterionId) {
     case 'b25-c16-app-shell-capability-utilization':
       return <String>[
         'Do not close the ticket from source-code intent alone; require after-screenshots proving the App Shell capability is actually visible and usable.',
-        'Do not treat bottom tabs, pins, or minimized cards as present unless the relevant persona/workflow screenshot shows them.',
-        'Do not accept a generic card list when Product Docs or the App Shell component doc require tabs, pinned surfaces, presentation states, renderer selection, or theme/customization proof.',
+        'Do not treat bottom tabs, pinning policy, or minimized cards as present unless the relevant persona/workflow screenshot or product doc proves them.',
+        'Do not require pinned surfaces for every tab; require an explicit `none` policy with rationale when pinning is not useful.',
+        'Do not accept a generic card list when Product Docs or the App Shell component doc require tabs, declared pinned surfaces, presentation states, renderer selection, or theme/customization proof.',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -9894,9 +10251,9 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
     case 'b25-c16-app-shell-capability-utilization':
       return <String>[
         'Inspect `apps/loom_communities_demo/lib/main.dart` for `CommunityAppShellCustomizationSpec`, persona tab specs, pinned surface specs, presentation-state routing, renderer selection, and theme/typography/density tokens.',
-        'Update the community product experience doc Section 3.1 when the intended tab/pin/presentation/customization model is missing or vague.',
+        'Update the community product experience doc Section 3.1 when the intended tab/pinning/presentation/customization model is missing or vague.',
         'Implement the missing App Shell capability in the central shell model, not as a one-off workflow hack.',
-        'Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
+        'Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, declared pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
       ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
@@ -10067,7 +10424,7 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
       return <String>[
         '`appShellCapabilityReview.status` is `pass`.',
         '`appShellCapabilityReview.missingCapabilities` is empty.',
-        'Every `appShellCapabilityReview.communityResults[]` row has passing tabs, pinned surfaces, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.',
+        'Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.',
         'After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.',
         ...shared,
       ];
@@ -10165,18 +10522,7 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
   final communityResults = _asMapList(review['communityResults']);
   final failingCommunities = <String>[];
   for (final row in communityResults) {
-    final checks = <String, Object?>{
-      'tabsPass': row['tabsPass'],
-      'pinnedSurfacesPass': row['pinnedSurfacesPass'],
-      'presentationStatesPass': row['presentationStatesPass'],
-      'mainCommunityCardStatesPass': row['mainCommunityCardStatesPass'],
-      'themeCustomizationPass': row['themeCustomizationPass'],
-      'rendererSelectionPass': row['rendererSelectionPass'],
-    };
-    final failedChecks = checks.entries
-        .where((entry) => entry.value != true)
-        .map((entry) => entry.key)
-        .toList();
+    final failedChecks = _failedAppShellCapabilityChecks(row);
     if (_asString(row['status']) == 'fail' || failedChecks.isNotEmpty) {
       final community = _asString(row['communityName'], fallback: 'community');
       final persona = _asString(row['persona']);
@@ -10208,6 +10554,62 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
     );
   }
   return null;
+}
+
+List<String> _failedAppShellCapabilityChecks(JsonMap row) {
+  final failed = <String>[];
+  if (row['tabsPass'] != true) {
+    failed.add('tabsPass');
+  }
+  if (_pinningPolicyFails(row)) {
+    failed.add('pinningPolicyPass');
+  }
+  if (row['presentationStatesPass'] != true) {
+    failed.add('presentationStatesPass');
+  }
+  if (row['mainCommunityCardStatesPass'] != true) {
+    failed.add('mainCommunityCardStatesPass');
+  }
+  if (row['themeCustomizationPass'] != true) {
+    failed.add('themeCustomizationPass');
+  }
+  if (row['rendererSelectionPass'] != true) {
+    failed.add('rendererSelectionPass');
+  }
+  return failed;
+}
+
+bool _pinningPolicyFails(JsonMap row) {
+  if (row['pinningPolicyPass'] == false) {
+    return true;
+  }
+  final policy = _asString(row['pinningPolicy']);
+  final rationale = _asString(row['pinningPolicyRationale']);
+  final declaredPinnedIds = <String>{
+    ..._asStringList(row['declaredPinnedSurfaceIds']),
+    ..._asStringList(row['pinnedSurfaceIds']),
+    ..._asStringList(row['pinnedWorkflowIds']),
+  };
+  final expectsPinned =
+      row['pinnedSurfacesExpected'] == true ||
+      row['pinnedSurfacesRequired'] == true ||
+      declaredPinnedIds.isNotEmpty;
+  if (expectsPinned) {
+    return row['pinnedSurfacesPass'] != true;
+  }
+  final explicitlyNone =
+      policy == 'none' ||
+      policy == 'none-declared' ||
+      policy == 'none-declared-for-tab' ||
+      policy == 'none-declared-for-home' ||
+      policy == 'none-with-rationale';
+  if (explicitlyNone) {
+    return rationale.trim().length < 12;
+  }
+  if (policy.isEmpty && row['pinnedSurfacesPass'] != true) {
+    return true;
+  }
+  return false;
 }
 
 _DerivedFailure? _failOnDirectQuestionAnswers(

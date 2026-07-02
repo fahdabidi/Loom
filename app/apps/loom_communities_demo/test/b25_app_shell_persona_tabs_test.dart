@@ -21,6 +21,19 @@ void main() {
     expect(adminTabs.last.tabId, 'messages');
     expect(memberTabs.map((tab) => tab.tabId), isNot(contains('admin')));
     expect(memberTabs.map((tab) => tab.tabId), containsAll(['home', 'messages']));
+
+    for (final tab in [...adminTabs, ...memberTabs]) {
+      expect(tab.hasExplicitPinningPolicy, isTrue, reason: tab.tabId);
+      if (tab.pinnedWorkflowIds.isEmpty) {
+        expect(tab.pinningPolicy, startsWith('none'), reason: tab.tabId);
+      } else {
+        expect(
+          tab.pinningPolicy,
+          'pin-first-critical-surface',
+          reason: tab.tabId,
+        );
+      }
+    }
   });
 
   testWidgets('wf_app-shell-persona-tabs-customization', (tester) async {

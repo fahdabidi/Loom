@@ -10342,6 +10342,9 @@ class LoomAppShellTabSpec {
     required this.label,
     required this.icon,
     required this.description,
+    this.pinningPolicy = 'none',
+    this.pinningPolicyRationale =
+        'No pinned surface is needed for this tab; users should scan the tab content in order.',
     this.sectionTitles = const [],
     this.cardSurfaceFamilies = const [],
     this.pinnedWorkflowIds = const [],
@@ -10353,6 +10356,8 @@ class LoomAppShellTabSpec {
   final String label;
   final IconData icon;
   final String description;
+  final String pinningPolicy;
+  final String pinningPolicyRationale;
   final List<String> sectionTitles;
   final List<String> cardSurfaceFamilies;
   final List<String> pinnedWorkflowIds;
@@ -10393,6 +10398,12 @@ class LoomAppShellTabSpec {
     }
     return '$description Tuned for ${persona.label}.';
   }
+
+  bool get declaresPinnedSurfaces => pinnedWorkflowIds.isNotEmpty;
+
+  bool get hasExplicitPinningPolicy =>
+      pinningPolicy.trim().isNotEmpty &&
+      pinningPolicyRationale.trim().length >= 12;
 }
 
 class CommunityAppShellCustomizationSpec {
@@ -10783,6 +10794,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       label: 'Home',
       icon: Icons.home_outlined,
       description: 'Pinned and unassigned community surfaces.',
+      pinningPolicy: 'none-declared-for-home',
+      pinningPolicyRationale:
+          'Home intentionally keeps the first visible surface in focus instead of pinning one workflow across every community.',
       requiredPermission: 'community.surface.navigation.read',
     ),
     if (_hasAnySection(experience, const ['Upcoming events']))
@@ -10791,6 +10805,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Calendar',
         icon: Icons.calendar_month_outlined,
         description: 'Events, schedules, capacity, and reminders.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Calendar tabs pin the next dated event so members can act on the most time-sensitive schedule item first.',
         sectionTitles: const ['Upcoming events'],
         cardSurfaceFamilies: const ['event-rsvp', 'calendar'],
         pinnedWorkflowIds: _pinnedWorkflowIdsForSections(experience, const [
@@ -10804,6 +10821,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Documents',
         icon: Icons.folder_open_outlined,
         description: 'Documents, exports, transfers, and audit records.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Document tabs pin the most important document or status surface so owners see the current record before browsing history.',
         sectionTitles: const ['Documents and data'],
         cardSurfaceFamilies: const [
           'documents',
@@ -10823,6 +10843,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Marketplace',
         icon: Icons.storefront_outlined,
         description: 'Shared items, offers, claims, loans, and giveaways.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Marketplace tabs pin the most immediately actionable listing so members can browse, claim, or update availability quickly.',
         sectionTitles: const ['Care and volunteers', 'Member tools'],
         cardSurfaceFamilies: const ['exchange', 'equipment-loan'],
         pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
@@ -10837,6 +10860,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Giving',
         icon: Icons.payments_outlined,
         description: 'Payments, dues, donations, receipts, and ad-off state.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Giving tabs pin the current payment or receipt state because members need the amount, status, and next action first.',
         sectionTitles: const ['Giving'],
         cardSurfaceFamilies: const ['payment', 'ad-off-entitlement'],
         pinnedWorkflowIds: _pinnedWorkflowIdsForSections(experience, const [
@@ -10850,6 +10876,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Care',
         icon: Icons.volunteer_activism_outlined,
         description: 'Care requests, volunteer shifts, and member support.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Care tabs pin the most urgent request or volunteer shift so the support workflow remains immediately visible.',
         sectionTitles: const ['Care and volunteers'],
         cardSurfaceFamilies: const ['volunteer', 'care-request'],
         pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
@@ -10864,6 +10893,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: _adminTabLabelFor(experience.extensionId),
         icon: Icons.admin_panel_settings_outlined,
         description: 'Role-specific publishing, approvals, and operations.',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Admin tabs pin the first pending approval or publishing task so administrators see the queue item that needs action.',
         sectionTitles: const [
           'Announcements',
           'Requests and approvals',
@@ -10887,6 +10919,9 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       label: 'Messages',
       icon: Icons.forum_outlined,
       description: 'Shell-owned communication and connections.',
+      pinningPolicy: 'none-declared-for-messages',
+      pinningPolicyRationale:
+          'Messages uses a conversation surface rather than a pinned workflow card, so no pinned card surface is appropriate.',
       requiredPermission: 'community.surface.messages.read',
     ),
   ];

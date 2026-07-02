@@ -60,14 +60,18 @@ The advisory card-surface registry records `workflow -> cardSurfaceFamily -> API
 interactions/actions -> renderer/fake-backend support` in the community product docs and B25 evidence
 JSON. B25 uses this as remediation context only; do not treat it as a standalone card-surface/API
 coverage gate until a later phase explicitly enables that gate.
-The app-shell navigation registry records `persona -> tabs -> pinned surfaces -> customization knobs`
+The app-shell navigation registry records `persona -> tabs -> pinning policy -> customization knobs`
 in the community product docs and B25 evidence. Home and Messages/Communication are mandatory;
-custom tabs, tab labels/icons/order, persona visibility, surface assignment, pinned state,
+custom tabs, tab labels/icons/order, persona visibility, surface assignment, explicit pinning policy,
 minimized/medium/expanded defaults, and theme/typography/color/density customization are now a hard
 App Shell capability utilization gate. B25 cannot close unless `appShellCapabilityReview` passes from
-fresh screenshots and proves the documented tabs, pinned surfaces, minimized/medium/expanded states,
+fresh screenshots and proves the documented tabs, appropriate per-tab pinning policy,
+minimized/medium/expanded states,
 tap-to-expand behavior, community-list card states, renderer selection, and customization tokens where
-the product docs or App Shell component guide require them.
+the product docs or App Shell component guide require them. A tab may explicitly declare no pinned
+surfaces when the product doc explains why pinning would not help that tab's job-to-be-done.
+B25 full capture must include `wf_app-shell-capability-evidence` screenshots for the main community
+list, workflow presentation states, any declared pinned surface, and renderer-selection proof.
 Native Loom repo runs write community product experience docs under
 `docs/Product Docs V2/Community Examples/<community>-product-experience.md`. Standalone Skill runs treat
 the fetched Loom Product Docs V2 as read-only and write the same product contract locally under

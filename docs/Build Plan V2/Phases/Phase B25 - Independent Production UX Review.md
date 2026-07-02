@@ -33,11 +33,12 @@ a real user would expect.
   remediation context only in B25; it must not be treated as a standalone card-surface/API coverage
   pass/fail gate until a later phase explicitly enables that gate.
 - Persona-specific app-shell navigation context for every community. Each community product
-  experience doc must define `persona -> tabs -> pinned surfaces -> customization knobs`, including
+  experience doc must define `persona -> tabs -> pinning policy -> customization knobs`, including
   mandatory Home and Messages/Communication tabs, custom labels/icons/order, persona visibility,
   hidden/disabled rules, surface-to-tab assignments, minimized/medium/expanded defaults, and safe
   theme/typography/color/density customization. B25 treats App Shell capability utilization as a hard
-  pass/fail gate: screenshots must prove the documented tabs, pinned surfaces, minimized/medium/
+  pass/fail gate: screenshots must prove the documented tabs, explicit and appropriate pinning policy,
+  minimized/medium/
   expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and
   theme/customization tokens where required.
 - LLM Product Docs to Evidence Workflow Reconciliation report at
@@ -607,8 +608,13 @@ visible, or when the doc/screenshot pair maps a primary user job to a generic wo
 a domain-native surface. Write
 `llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`, then carry blocker/major findings
 into remediation tickets. The same LLM gate must also write `appShellCapabilityReview` and fail when
-current screenshots do not prove the documented App Shell tabs, pins, presentation states,
-tap-to-expand behavior, community-list states, renderer selection, or theme/customization tokens.
+current screenshots do not prove the documented App Shell tabs, explicit per-tab pinning policy,
+presentation states, tap-to-expand behavior, community-list states, renderer selection, or
+theme/customization tokens. Pinning is policy-driven: a tab may declare no pinned surfaces when the
+product doc explains why that is right for the tab's job-to-be-done; screenshot proof is required only
+for surfaces the product doc declares as pinned. Full B25 capture must include the
+`wf_app-shell-capability-evidence` row with screenshots for the main community list, presentation
+states, declared pinned surfaces, and renderer-selection proof.
 
 For every screen inventory row, perform a critique at the same level of depth as a product review, not
 a checklist. Answer:
