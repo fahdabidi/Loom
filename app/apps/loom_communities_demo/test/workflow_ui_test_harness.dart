@@ -109,12 +109,16 @@ Future<void> _scrollToCardIfNeeded(WidgetTester tester, Finder card) async {
       'community card.',
     );
   }
-  await tester.scrollUntilVisible(
-    card,
-    160,
-    scrollable: _communityListScrollable(),
-    maxScrolls: 40,
-  );
+  final scrollable = _communityListScrollable();
+  for (final offset in const [Offset(0, 260), Offset(0, -260)]) {
+    for (var attempt = 0; attempt < 40; attempt += 1) {
+      await tester.drag(scrollable, offset, warnIfMissed: false);
+      await tester.pumpAndSettle();
+      if (card.evaluate().isNotEmpty) {
+        return;
+      }
+    }
+  }
 }
 
 Future<void> _centerCardInList(WidgetTester tester, Finder card) async {
