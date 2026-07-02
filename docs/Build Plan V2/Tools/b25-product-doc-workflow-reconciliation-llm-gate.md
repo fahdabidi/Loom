@@ -24,6 +24,8 @@ Provide the LLM reviewer only evidence and product artifacts, not worker impleme
 - The same product doc's `### B25 Semantic Interaction Models`.
 - The same product doc's `### B25 Card Surface Registry Mapping`.
 - Current `docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md`.
+- The App Shell component guide at
+  `docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md`.
 - Current `docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json`.
 - Current `docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md`.
 - Current `docs/Build Plan V2/Evidence/B25/workflow-persona-coverage-matrix.md`.
@@ -95,6 +97,29 @@ For each community product doc, perform these checks:
    or lifecycle actions than the screenshot provides, create an implementation remediation finding
    rather than weakening the doc.
 
+## Hard App Shell Capability Utilization Gate
+
+This is a required sub-review. It is not advisory. The reviewer must inspect current screenshots,
+screen rows, Product Docs V2 Section 3.1, and the App Shell component guide, then decide whether the
+implementation actually uses the central App Shell capabilities where the product docs require them.
+
+Evaluate these capabilities from screenshots, not source-code intent:
+
+- persona-specific tabs, including required Home and Messages/Communication tabs;
+- community-defined custom tab labels, icons, ordering, and persona visibility;
+- pinned surface placement inside the relevant tab;
+- minimized, medium/in-focus, and expanded/maximized surface states;
+- scroll-driven focus where the first/visible card becomes medium and off-focus cards become minimized;
+- tap-to-expand behavior that opens a richer product surface rather than merely running a workflow;
+- community-list card presentation states on the main Loom Communities screen;
+- renderer selection by card-surface family;
+- community theme, typography, density, color, button, badge, edit-field, and tab customization tokens;
+- tab overflow behavior with no clipping or inaccessible tabs.
+
+Fail this sub-review if any documented capability is not visible in fresh screenshots, if the reviewer
+cannot tie a capability to affected screen rows and screenshot hashes, or if a screenshot shows generic
+card-list behavior where the product doc requires App Shell customization.
+
 ## Required Direct Questions
 
 Ask these questions for each community:
@@ -115,6 +140,15 @@ Ask these questions for each community:
   receiver states shown or required by the UI?
 - Does the card-surface registry define the API contract and interactions needed by the visible
   surface?
+- Do current screenshots prove persona tabs, pinned surfaces, minimized/medium/expanded states,
+  tap-to-expand behavior, community-list card states, renderer selection, and theme/customization tokens
+  where Product Docs or the App Shell component guide require them?
+- For each persona, does the visible tab model match Section 3.1 exactly, including Home,
+  Messages/Communication, custom tabs, labels/icons/order, and tab visibility?
+- Are documented pinned surfaces actually visible in the correct tab and not buried in a long generic
+  workflow list?
+- Do reviewed screenshots include enough before/after or entry/focus/expanded states to prove the
+  presentation-state model is implemented, not just declared?
 - Are there screenshots showing extra screens, interactions, states, or flows that the product doc must
   add before the implementation can be judged complete?
 - Are there product-doc workflows that are missing, unreachable, generic, or insufficiently implemented
@@ -156,11 +190,34 @@ Use this shape:
       "screenshotBackedExamples": []
     }
   ],
+  "appShellCapabilityReview": {
+    "status": "pass|fail",
+    "reviewedCapabilities": [],
+    "missingCapabilities": [],
+    "communityResults": [
+      {
+        "communityName": "<name>",
+        "persona": "<persona>",
+        "tabsPass": true,
+        "pinnedSurfacesPass": true,
+        "presentationStatesPass": true,
+        "mainCommunityCardStatesPass": true,
+        "themeCustomizationPass": true,
+        "rendererSelectionPass": true,
+        "affectedScreenRowIds": [],
+        "affectedScreenshotPaths": [],
+        "affectedScreenshotHashes": [],
+        "visibleTextExcerpt": "<visible text used by the reviewer>",
+        "requiredFix": "<specific App Shell/product-doc/UI fix>"
+      }
+    ],
+    "findings": []
+  },
   "findings": [
     {
       "findingId": "LLM-B25-WR-001",
       "severity": "blocker|major|minor|polish",
-      "gapType": "product-doc-missing-workflow|implementation-missing-workflow|product-doc-interaction-gap|surface-mismatch|evidence-extra-undocumented-flow|visible-proof-gap|persona-state-gap",
+      "gapType": "product-doc-missing-workflow|implementation-missing-workflow|product-doc-interaction-gap|surface-mismatch|evidence-extra-undocumented-flow|visible-proof-gap|persona-state-gap|app-shell-tabs-gap|app-shell-pinning-gap|app-shell-presentation-state-gap|app-shell-community-card-state-gap|app-shell-customization-gap|app-shell-renderer-selection-gap",
       "communityName": "<name>",
       "workflowId": "<workflow-id>",
       "persona": "<persona>",
@@ -191,14 +248,17 @@ Include:
 - product doc rows missing evidence;
 - evidence rows missing product doc coverage;
 - product-doc sections that must be updated before UI remediation;
+- App Shell capability utilization status, missing capabilities, affected communities/personas/screens,
+  and screenshot-backed required fixes;
 - UI/implementation gaps where the product doc is clear but screenshots fail to implement it;
 - ticket-ready finding list with affected product doc path, workflow, persona, screen rows,
   screenshots, visible text, and required fix.
 
 ## Pass/Fail Rule
 
-B25 cannot close with unresolved blocker or major reconciliation findings. These findings must be
-converted into B25 remediation tickets. Product-doc findings must update the relevant product doc before
-the Worker Agent changes UI. Implementation findings must update UI/content/seed data/tests and then
-recapture screenshots. Evidence findings must recapture or repair screenshot evidence before the next
-judge pass.
+B25 cannot close with unresolved blocker or major reconciliation findings or with a failing
+`appShellCapabilityReview`. These findings must be converted into B25 remediation tickets. Product-doc
+findings must update the relevant product doc before the Worker Agent changes UI. App Shell findings
+must be routed through the central app-shell model and then proven with fresh screenshots.
+Implementation findings must update UI/content/seed data/tests and then recapture screenshots. Evidence
+findings must recapture or repair screenshot evidence before the next judge pass.

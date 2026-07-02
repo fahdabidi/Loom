@@ -36,10 +36,10 @@ a real user would expect.
   experience doc must define `persona -> tabs -> pinned surfaces -> customization knobs`, including
   mandatory Home and Messages/Communication tabs, custom labels/icons/order, persona visibility,
   hidden/disabled rules, surface-to-tab assignments, minimized/medium/expanded defaults, and safe
-  theme/typography/color/density customization. B25 uses this as remediation context and must open
-  tickets when screenshots show long generic surface lists, missing persona tabs, missing Messages
-  access, wrong persona visibility, or customization gaps that keep the UI from feeling like a
-  production app.
+  theme/typography/color/density customization. B25 treats App Shell capability utilization as a hard
+  pass/fail gate: screenshots must prove the documented tabs, pinned surfaces, minimized/medium/
+  expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and
+  theme/customization tokens where required.
 - LLM Product Docs to Evidence Workflow Reconciliation report at
   `docs/Build Plan V2/Evidence/B25/llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`.
   The reviewer must inspect every relevant Product Docs V2 community example doc, especially
@@ -606,7 +606,9 @@ show a workflow or UI interaction missing from the product doc, when required vi
 visible, or when the doc/screenshot pair maps a primary user job to a generic workflow card instead of
 a domain-native surface. Write
 `llm-product-doc-workflow-reconciliation-<run-id>.json` and `.md`, then carry blocker/major findings
-into remediation tickets.
+into remediation tickets. The same LLM gate must also write `appShellCapabilityReview` and fail when
+current screenshots do not prove the documented App Shell tabs, pins, presentation states,
+tap-to-expand behavior, community-list states, renderer selection, or theme/customization tokens.
 
 For every screen inventory row, perform a critique at the same level of depth as a product review, not
 a checklist. Answer:

@@ -143,6 +143,8 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(workflowCard, findsOneWidget);
+    await tester.ensureVisible(workflowCard);
+    await tester.pumpAndSettle();
     expect(find.text('Receive announcement'), findsOneWidget);
     final receiveButton = find.byKey(
       ValueKey('workflow-receive-button-${workflow.workflowId}'),

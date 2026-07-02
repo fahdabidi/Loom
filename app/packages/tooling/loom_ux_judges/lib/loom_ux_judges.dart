@@ -435,6 +435,18 @@ final specs = <String, JudgeSpec>{
             'Run b25_capture_workflow_screenshots.dart in --mode full-b25, run b25_capture_coverage_gate.dart, then regenerate B25 evidence and judges from that full capture.',
       ),
       CriterionDefinition(
+        id: 'b25-c16-app-shell-capability-utilization',
+        title: 'App Shell capabilities are used where documented',
+        question:
+            'Do current screenshots prove persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?',
+        scope: 'app-shell-capability',
+        requiredEvidenceFields: <String>['appShellCapabilityReview'],
+        failureMessage:
+            'The evidence does not include a passing App Shell capability utilization review, or it shows missing shell customization/presentation proof.',
+        requiredFix:
+            'Update Product Docs and UI so app shell tabs, pins, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven; rerun B25 and regenerate tickets.',
+      ),
+      CriterionDefinition(
         id: 'b25-c08-visible-text-specific-critique',
         title: 'Every row has visible text and screen-specific critique',
         question:
@@ -5538,6 +5550,8 @@ _DerivedFailure? _derivedFailure(
       return _failOnScreenshotIntegrity(screenRows, basePath);
     case 'b25-c15-full-b25-capture-coverage':
       return _failOnFullB25CaptureCoverage(evidence);
+    case 'b25-c16-app-shell-capability-utilization':
+      return _failOnAppShellCapabilityReview(evidence);
     case 'b24-c02-visible-text-and-copy-audit':
     case 'b25-c08-visible-text-specific-critique':
       return _failOnVisibleTextOrBoilerplate(screenRows) ??
@@ -9633,6 +9647,18 @@ List<String> _relatedB25FindingIds(
       return fullCoverageFindings.isEmpty
           ? allBlockingFindingIds
           : fullCoverageFindings;
+    case 'b25-c16-app-shell-capability-utilization':
+      final appShellFindings = allBlockingFindingIds
+          .where(
+            (id) =>
+                id.startsWith('B25-APP-SHELL-') ||
+                id.startsWith('LLM-B25-APP-SHELL-') ||
+                id.startsWith('LLM-B25-WR-APP-SHELL-'),
+          )
+          .toList();
+      return appShellFindings.isEmpty
+          ? allBlockingFindingIds
+          : appShellFindings;
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
     case 'b25-c05-community-content-ia':
@@ -9727,6 +9753,12 @@ List<String> _improvementsForB25Criterion(String criterionId) {
         'Run `b25_capture_coverage_gate.dart` and keep its report with the pass evidence.',
         'Do not commit a B25 pass based on `--mode targeted-precheck` output; rerun the collector and judges from the full aggregate.',
       ];
+    case 'b25-c16-app-shell-capability-utilization':
+      return <String>[
+        'Do not close the ticket from source-code intent alone; require after-screenshots proving the App Shell capability is actually visible and usable.',
+        'Do not treat bottom tabs, pins, or minimized cards as present unless the relevant persona/workflow screenshot shows them.',
+        'Do not accept a generic card list when Product Docs or the App Shell component doc require tabs, pinned surfaces, presentation states, renderer selection, or theme/customization proof.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Extract visible text for every reviewed screenshot row.',
@@ -9794,6 +9826,15 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
         'independent-production-ux-review.json reviewInputEvidence.captureCoverage',
         'production-ux-criteria-scorecard.json/.md',
       ];
+    case 'b25-c16-app-shell-capability-utilization':
+      return <String>[
+        'independent-production-ux-review.json appShellCapabilityReview',
+        'llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview',
+        'docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1',
+        'docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md',
+        'product-ux-screen-review-matrix.md affected screen rows and screenshots',
+        'production-ux-criteria-scorecard.json/.md',
+      ];
     case 'b25-c01-no-blocker-major':
       return <String>[
         'independent-production-ux-review.json findings',
@@ -9850,6 +9891,13 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
         'Use `--mode targeted-precheck` only for local diagnostics during a pass; it must not rewrite `B20/all-workflow-ui-evidence.json`.',
         'Before the iteration commit, rerun the full capture and ensure `reviewInputEvidence.fullB25Coverage=true` and `commitEligible=true`.',
       ];
+    case 'b25-c16-app-shell-capability-utilization':
+      return <String>[
+        'Inspect `apps/loom_communities_demo/lib/main.dart` for `CommunityAppShellCustomizationSpec`, persona tab specs, pinned surface specs, presentation-state routing, renderer selection, and theme/typography/density tokens.',
+        'Update the community product experience doc Section 3.1 when the intended tab/pin/presentation/customization model is missing or vague.',
+        'Implement the missing App Shell capability in the central shell model, not as a one-off workflow hack.',
+        'Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Update the B25 judge/review artifact, not only app UI code.',
@@ -9876,6 +9924,7 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
     case 'b25-c06-domain-native-primary-surfaces':
     case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c14-llm-vision-ux-review':
+    case 'b25-c16-app-shell-capability-utilization':
       return <String>[
         'Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.',
         'Each primary surface should include the domain data a user needs to decide and act.',
@@ -10014,6 +10063,14 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
         '`reviewInputEvidence.capturedPhases` is exactly B12,B13,B14,B15,B16,B17,B18,B19,B20.',
         '`reviewInputEvidence.screenshotCount` is at least $fullB25MinimumScreenshotRows and generated from the current app commit.',
       ];
+    case 'b25-c16-app-shell-capability-utilization':
+      return <String>[
+        '`appShellCapabilityReview.status` is `pass`.',
+        '`appShellCapabilityReview.missingCapabilities` is empty.',
+        'Every `appShellCapabilityReview.communityResults[]` row has passing tabs, pinned surfaces, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.',
+        'After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.',
+        ...shared,
+      ];
     default:
       return shared;
   }
@@ -10084,6 +10141,70 @@ _DerivedFailure? _failOnProductDocCoverage(JsonMap evidence) {
           .map((row) => _asString(row['productDocId']))
           .where((id) => id.isNotEmpty)
           .toList(),
+    );
+  }
+  return null;
+}
+
+_DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
+  final review =
+      (evidence['appShellCapabilityReview'] as JsonMap?) ??
+      ((evidence['productDocWorkflowReconciliation']
+              as JsonMap?)?['appShellCapabilityReview']
+          as JsonMap?);
+  if (review == null || review.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'No appShellCapabilityReview was supplied. B25 cannot prove the UI uses persona tabs, pinned surfaces, minimized/medium/expanded states, tap-to-expand behavior, community-card presentation states, renderer selection, or theme/customization tokens.',
+    );
+  }
+  final status = _asString(review['status']);
+  final missingCapabilities = _asStringList(review['missingCapabilities']);
+  final findings = _asMapList(review['findings']);
+  final communityResults = _asMapList(review['communityResults']);
+  final failingCommunities = <String>[];
+  for (final row in communityResults) {
+    final checks = <String, Object?>{
+      'tabsPass': row['tabsPass'],
+      'pinnedSurfacesPass': row['pinnedSurfacesPass'],
+      'presentationStatesPass': row['presentationStatesPass'],
+      'mainCommunityCardStatesPass': row['mainCommunityCardStatesPass'],
+      'themeCustomizationPass': row['themeCustomizationPass'],
+      'rendererSelectionPass': row['rendererSelectionPass'],
+    };
+    final failedChecks = checks.entries
+        .where((entry) => entry.value != true)
+        .map((entry) => entry.key)
+        .toList();
+    if (_asString(row['status']) == 'fail' || failedChecks.isNotEmpty) {
+      final community = _asString(row['communityName'], fallback: 'community');
+      final persona = _asString(row['persona']);
+      failingCommunities.add(
+        persona.isEmpty
+            ? '$community (${failedChecks.join(',')})'
+            : '$community/$persona (${failedChecks.join(',')})',
+      );
+    }
+  }
+  final blockingFindings = findings
+      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
+      .map(_findingId)
+      .where((id) => id.isNotEmpty)
+      .toList();
+  if (status != 'pass' ||
+      missingCapabilities.isNotEmpty ||
+      blockingFindings.isNotEmpty ||
+      failingCommunities.isNotEmpty) {
+    return _DerivedFailure(
+      score: 35,
+      message:
+          'App Shell capability utilization review failed. missingCapabilities=${missingCapabilities.join(', ')} failingCommunities=${failingCommunities.join('; ')} blockingFindings=${blockingFindings.join(', ')}.',
+      evidenceUsed: <String>[
+        ...missingCapabilities,
+        ...failingCommunities,
+        ...blockingFindings,
+      ],
     );
   }
   return null;

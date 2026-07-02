@@ -37,11 +37,15 @@ class LoomCommunitiesHome extends StatefulWidget {
 class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
   late final LocalInAppBackend _backend;
   late final Map<String, List<String>> _importedSeedFilesByCommunityId;
+  late final ScrollController _communityScrollController;
   String? _lastLocalImportMessage;
+  String? _focusedCommunityId;
 
   @override
   void initState() {
     super.initState();
+    _communityScrollController = ScrollController()
+      ..addListener(_updateFocusedCommunityFromScroll);
     _backend = LocalInAppBackend(
       snapshot: _preloadExampleCommunities
           ? _preloadedExampleCommunitiesSnapshot()
@@ -53,6 +57,31 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     _lastLocalImportMessage = _preloadExampleCommunities
         ? 'Loaded ${loomEvidenceTargets.length} example communities'
         : null;
+  }
+
+  @override
+  void dispose() {
+    _communityScrollController
+      ..removeListener(_updateFocusedCommunityFromScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _updateFocusedCommunityFromScroll() {
+    if (!_communityScrollController.hasClients) {
+      return;
+    }
+    final communities = _backend.listCommunities();
+    if (communities.isEmpty) {
+      return;
+    }
+    final estimatedIndex = (_communityScrollController.offset / 132)
+        .round()
+        .clamp(0, communities.length - 1);
+    final nextFocused = communities[estimatedIndex].communityId;
+    if (nextFocused != _focusedCommunityId && mounted) {
+      setState(() => _focusedCommunityId = nextFocused);
+    }
   }
 
   Future<void> _showLocalPackageLoader() async {
@@ -91,6 +120,9 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
   @override
   Widget build(BuildContext context) {
     final communities = _backend.listCommunities();
+    final focusedCommunityId =
+        _focusedCommunityId ??
+        (communities.isNotEmpty ? communities.first.communityId : null);
     return Scaffold(
       appBar: AppBar(title: const Text('Loom Communities')),
       floatingActionButton: FloatingActionButton.extended(
@@ -126,49 +158,41 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
                 Expanded(
                   child: ListView.separated(
                     key: const ValueKey('community-list'),
+                    controller: _communityScrollController,
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 128),
                     itemCount: communities.length,
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final community = communities[index];
                       final experience = experienceForExtensionId(
                         community.extensionId,
                         displayName: community.displayName,
                       );
-                      return Card(
-                        child: ListTile(
-                          key: ValueKey(
-                            'community-card-${community.communityId}',
-                          ),
-                          title: Text(community.displayName),
-                          subtitle: Text(experience.tagline),
-                          leading: CircleAvatar(
-                            key: ValueKey(
-                              'community-card-identity-${community.communityId}',
-                            ),
-                            backgroundColor: Color(
-                              experience.accentColor,
-                            ).withValues(alpha: 0.18),
-                            child: Icon(
-                              _communityIconFor(experience.extensionId),
-                              color: Color(experience.accentColor),
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.of(context).push<void>(
-                              MaterialPageRoute<void>(
-                                builder: (context) => _LocalExtensionScreen(
-                                  community: community,
-                                  seedDataFiles:
-                                      _importedSeedFilesByCommunityId[community
-                                          .communityId] ??
-                                      const [],
-                                ),
-                              ),
-                            );
-                          },
+                      final presentationState =
+                          community.communityId == focusedCommunityId
+                          ? _SurfacePresentationState.medium
+                          : _SurfacePresentationState.minimized;
+                      return _CommunityLaunchCard(
+                        key: ValueKey(
+                          'community-card-${community.communityId}',
                         ),
+                        community: community,
+                        experience: experience,
+                        state: presentationState,
+                        onTap: () {
+                          Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(
+                              builder: (context) => _LocalExtensionScreen(
+                                community: community,
+                                seedDataFiles:
+                                    _importedSeedFilesByCommunityId[community
+                                        .communityId] ??
+                                    const [],
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -182,6 +206,136 @@ class _LoomCommunitiesHomeState extends State<LoomCommunitiesHome> {
     return created
         ? 'Installed $communityName from local packages'
         : 'Updated $communityName from local packages';
+  }
+}
+
+enum _SurfacePresentationState { minimized, medium, expanded }
+
+class _CommunityLaunchCard extends StatelessWidget {
+  const _CommunityLaunchCard({
+    super.key,
+    required this.community,
+    required this.experience,
+    required this.state,
+    required this.onTap,
+  });
+
+  final LocalInstalledCommunity community;
+  final LoomExperienceDefinition experience;
+  final _SurfacePresentationState state;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = Color(experience.accentColor);
+    final textTheme = Theme.of(context).textTheme;
+    final isFocused = state == _SurfacePresentationState.medium;
+    final background = isFocused
+        ? Color.alphaBlend(accent.withValues(alpha: 0.10), Colors.white)
+        : Color.alphaBlend(accent.withValues(alpha: 0.05), Colors.white);
+    final logoRadius = isFocused ? 34.0 : 26.0;
+
+    return Semantics(
+      button: true,
+      selected: isFocused,
+      label: '${community.displayName} community card',
+      child: Card(
+        elevation: isFocused ? 3 : 1,
+        margin: EdgeInsets.zero,
+        color: background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(isFocused ? 18 : 14),
+          side: BorderSide(
+            color: accent.withValues(alpha: isFocused ? 0.18 : 0.08),
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(isFocused ? 18 : 14),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsets.fromLTRB(
+              isFocused ? 18 : 14,
+              isFocused ? 18 : 12,
+              isFocused ? 18 : 14,
+              isFocused ? 18 : 12,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  key: ValueKey(
+                    'community-card-identity-${community.communityId}',
+                  ),
+                  radius: logoRadius,
+                  backgroundColor: accent.withValues(alpha: 0.18),
+                  child: Icon(
+                    _communityIconFor(experience.extensionId),
+                    size: isFocused ? 34 : 25,
+                    color: accent,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        community.displayName,
+                        maxLines: isFocused ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            (isFocused
+                                    ? textTheme.headlineSmall
+                                    : textTheme.titleLarge)
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xff172421),
+                                ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        experience.tagline,
+                        maxLines: isFocused ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: const Color(0xff43534f),
+                          height: 1.28,
+                        ),
+                      ),
+                      if (isFocused) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _SurfaceFactPill(
+                              icon: Icons.home_outlined,
+                              label: 'Open community',
+                              foreground: accent,
+                            ),
+                            _SurfaceFactPill(
+                              icon: Icons.palette_outlined,
+                              label: 'Theme applied',
+                              foreground: accent,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (isFocused) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.chevron_right, color: accent, size: 30),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -202,11 +356,69 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
   final Set<String> _completedWorkflowIds = {};
   final Set<String> _receivedWorkflowPersonaKeys = {};
   final Map<String, String> _selectedTabIdByPersonaId = {};
+  final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
+  late final ScrollController _surfaceScrollController;
+  List<String> _visibleWorkflowIds = const [];
+  String? _activeSurfaceFocusKey;
+  String? _expandedWorkflowId;
   String? _selectedPersonaId;
 
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
+
+  @override
+  void initState() {
+    super.initState();
+    _surfaceScrollController = ScrollController()
+      ..addListener(_updateFocusedSurfaceFromScroll);
+  }
+
+  @override
+  void dispose() {
+    _surfaceScrollController
+      ..removeListener(_updateFocusedSurfaceFromScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _updateFocusedSurfaceFromScroll() {
+    final focusKey = _activeSurfaceFocusKey;
+    if (focusKey == null ||
+        _visibleWorkflowIds.isEmpty ||
+        !_surfaceScrollController.hasClients) {
+      return;
+    }
+    final estimatedIndex = ((_surfaceScrollController.offset - 260) / 260)
+        .round()
+        .clamp(0, _visibleWorkflowIds.length - 1);
+    final nextFocused = _visibleWorkflowIds[estimatedIndex];
+    if (_focusedWorkflowIdByPersonaTab[focusKey] != nextFocused && mounted) {
+      setState(() {
+        _focusedWorkflowIdByPersonaTab[focusKey] = nextFocused;
+        if (_expandedWorkflowId != null &&
+            !_visibleWorkflowIds.contains(_expandedWorkflowId)) {
+          _expandedWorkflowId = null;
+        }
+      });
+    }
+  }
+
+  void _expandWorkflowSurface({
+    required String workflowId,
+    required String focusKey,
+  }) {
+    setState(() {
+      _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
+      _expandedWorkflowId = workflowId;
+    });
+  }
+
+  void _collapseWorkflowSurface(String workflowId) {
+    if (_expandedWorkflowId == workflowId) {
+      setState(() => _expandedWorkflowId = null);
+    }
+  }
 
   LoomPersonaDefinition _activePersona(LoomExperienceDefinition experience) {
     final personas = personasForExtensionId(experience.extensionId);
@@ -373,9 +585,28 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       experience: experience,
       tab: selectedTab,
     );
+    final visibleWorkflowIds = [
+      for (final section in selectedSections)
+        for (final workflow in section.workflows) workflow.workflowId,
+    ];
+    final shellSpec = CommunityAppShellCustomizationSpec.fromSelection(
+      experience: experience,
+      persona: activePersona,
+      tabs: tabSpecs,
+      selectedTab: selectedTab,
+      visibleWorkflowIds: visibleWorkflowIds,
+      focusedWorkflowId:
+          _focusedWorkflowIdByPersonaTab['${activePersona.personaId}:${selectedTab.tabId}'] ??
+          (visibleWorkflowIds.isNotEmpty ? visibleWorkflowIds.first : null),
+      expandedWorkflowId: _expandedWorkflowId,
+    );
+    final focusKey = shellSpec.focusKey;
+    _activeSurfaceFocusKey = focusKey;
+    _visibleWorkflowIds = shellSpec.visibleWorkflowIds;
+    final focusedWorkflowId = shellSpec.focusedWorkflowId;
     final textTheme = Theme.of(context).textTheme;
-    final accent = Color(experience.accentColor);
-    final background = _screenBackgroundFor(accent);
+    final accent = shellSpec.theme.accent;
+    final background = shellSpec.theme.background;
     return Scaffold(
       backgroundColor: background,
       appBar: AppBar(
@@ -404,170 +635,198 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
           ),
         ],
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         key: ValueKey('local-extension-${community.extensionId}'),
+        controller: _surfaceScrollController,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const Icon(Icons.campaign_outlined, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'No sponsored message right now.',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: accent,
-              borderRadius: BorderRadius.circular(6),
-              boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.24),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CircleAvatar(
-                        key: ValueKey(
-                          'opened-community-identity-${community.communityId}',
-                        ),
-                        radius: 32,
-                        backgroundColor: Colors.white.withValues(alpha: 0.18),
-                        child: Icon(
-                          _communityIconFor(experience.extensionId),
-                          size: 34,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.campaign_outlined, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'No sponsored message right now.',
+                        style: textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              community.displayName,
-                              key: ValueKey(
-                                'opened-community-${community.communityId}',
-                              ),
-                              style: textTheme.headlineSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              experience.tagline,
-                              key: ValueKey(
-                                'experience-tagline-${community.extensionId}',
-                              ),
-                              style: textTheme.bodyLarge?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.92),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  _PersonaStatusStrip(
-                    persona: activePersona,
-                    personaCount: personasForExtensionId(
-                      experience.extensionId,
-                    ).length,
-                    foreground: Colors.white,
-                  ),
-                  Offstage(
-                    child: Text(
-                      _route,
-                      key: ValueKey('opened-route-${community.extensionId}'),
                     ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.24),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          _SelectedTabHeader(
-            tab: selectedTab,
-            accent: accent,
-            persona: activePersona,
-          ),
-          const SizedBox(height: 10),
-          if (selectedTab.tabId == 'messages')
-            _MessagesTabSurface(
-              experience: experience,
-              persona: activePersona,
-              accent: accent,
-            )
-          else
-            for (final section in selectedSections) ...[
-              _CommunitySectionHeader(
-                title: section.title,
-                subtitle: section.subtitle,
-                icon: section.icon,
-                accent: accent,
-              ),
-              const SizedBox(height: 8),
-              for (final workflow in section.workflows)
-                Builder(
-                  builder: (context) {
-                    final policy = personaPolicyForWorkflow(
-                      experience.extensionId,
-                      workflow.workflowId,
-                    );
-                    final view = personaWorkflowViewFor(
-                      extensionId: experience.extensionId,
-                      workflow: workflow,
-                      personaId: activePersona.personaId,
-                      completedWorkflowIds: _completedWorkflowIds,
-                      receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
-                    );
-                    return _WorkflowTile(
-                      extensionId: experience.extensionId,
-                      workflow: workflow,
-                      view: view,
-                      onPressed: () => _confirmWorkflow(workflow),
-                      onReceivePressed: () => _receiveWorkflow(
-                        workflow: workflow,
-                        persona: activePersona,
-                        policy: policy,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          key: ValueKey(
+                            'opened-community-identity-${community.communityId}',
+                          ),
+                          radius: 32,
+                          backgroundColor: Colors.white.withValues(alpha: 0.18),
+                          child: Icon(
+                            _communityIconFor(experience.extensionId),
+                            size: 34,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                community.displayName,
+                                key: ValueKey(
+                                  'opened-community-${community.communityId}',
+                                ),
+                                style: textTheme.headlineSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                experience.tagline,
+                                key: ValueKey(
+                                  'experience-tagline-${community.extensionId}',
+                                ),
+                                style: textTheme.bodyLarge?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    _PersonaStatusStrip(
+                      persona: activePersona,
+                      personaCount: personasForExtensionId(
+                        experience.extensionId,
+                      ).length,
+                      foreground: Colors.white,
+                    ),
+                    Offstage(
+                      child: Text(
+                        _route,
+                        key: ValueKey('opened-route-${community.extensionId}'),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              const SizedBox(height: 20),
-            ],
-          if (selectedTab.tabId == 'home') ...[
+              ),
+            ),
+            const SizedBox(height: 22),
+            _SelectedTabHeader(
+              tab: selectedTab,
+              accent: accent,
+              persona: activePersona,
+            ),
+            const SizedBox(height: 10),
+            if (selectedTab.tabId == 'messages')
+              _MessagesTabSurface(
+                experience: experience,
+                persona: activePersona,
+                accent: accent,
+              )
+            else
+              for (final section in selectedSections) ...[
+                _CommunitySectionHeader(
+                  title: section.title,
+                  subtitle: section.subtitle,
+                  icon: section.icon,
+                  accent: accent,
+                ),
+                const SizedBox(height: 8),
+                for (final workflow in section.workflows)
+                  Builder(
+                    builder: (context) {
+                      final policy = personaPolicyForWorkflow(
+                        experience.extensionId,
+                        workflow.workflowId,
+                      );
+                      final view = personaWorkflowViewFor(
+                        extensionId: experience.extensionId,
+                        workflow: workflow,
+                        personaId: activePersona.personaId,
+                        completedWorkflowIds: _completedWorkflowIds,
+                        receivedWorkflowPersonaKeys:
+                            _receivedWorkflowPersonaKeys,
+                      );
+                      final state = _expandedWorkflowId == workflow.workflowId
+                          ? _SurfacePresentationState.expanded
+                          : workflow.workflowId == focusedWorkflowId
+                          ? _SurfacePresentationState.medium
+                          : _SurfacePresentationState.minimized;
+                      final workflowTile = _WorkflowTile(
+                        extensionId: experience.extensionId,
+                        workflow: workflow,
+                        view: view,
+                        onPressed: () => _confirmWorkflow(workflow),
+                        onReceivePressed: () => _receiveWorkflow(
+                          workflow: workflow,
+                          persona: activePersona,
+                          policy: policy,
+                        ),
+                      );
+                      return _WorkflowSurfacePresenter(
+                        extensionId: experience.extensionId,
+                        workflow: workflow,
+                        view: view,
+                        state: state,
+                        accent: accent,
+                        child: workflowTile,
+                        onPressed: () => _confirmWorkflow(workflow),
+                        onReceivePressed: () => _receiveWorkflow(
+                          workflow: workflow,
+                          persona: activePersona,
+                          policy: policy,
+                        ),
+                        onExpand: () => _expandWorkflowSurface(
+                          workflowId: workflow.workflowId,
+                          focusKey: focusKey,
+                        ),
+                        onCollapse: () =>
+                            _collapseWorkflowSurface(workflow.workflowId),
+                      );
+                    },
+                  ),
+                const SizedBox(height: 20),
+              ],
             const SizedBox(height: 24),
             ExpansionTile(
-              title: const Text('Community setup files'),
+              title: const Text('Local package details'),
               leading: const Icon(Icons.inventory_2_outlined),
               collapsedTextColor: Colors.white,
               collapsedIconColor: Colors.white,
@@ -605,7 +864,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
               ],
             ),
           ],
-        ],
+        ),
       ),
       bottomNavigationBar: _CommunityBottomTabBar(
         tabs: tabSpecs,
@@ -4564,6 +4823,294 @@ class _DomainPreviewPanel extends StatelessWidget {
               if (row != rows.last) const SizedBox(height: 10),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkflowSurfacePresenter extends StatelessWidget {
+  const _WorkflowSurfacePresenter({
+    required this.extensionId,
+    required this.workflow,
+    required this.view,
+    required this.state,
+    required this.accent,
+    required this.child,
+    required this.onPressed,
+    required this.onReceivePressed,
+    required this.onExpand,
+    required this.onCollapse,
+  });
+
+  final String extensionId;
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final _SurfacePresentationState state;
+  final Color accent;
+  final Widget child;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+  final VoidCallback onExpand;
+  final VoidCallback onCollapse;
+
+  @override
+  Widget build(BuildContext context) {
+    final contract = productionWorkflowContractFor(
+      extensionId: extensionId,
+      workflow: workflow,
+    );
+    final foreground = _foregroundFor(accent);
+    final isExpanded = state == _SurfacePresentationState.expanded;
+    final isMedium = state == _SurfacePresentationState.medium;
+    final radius = isExpanded ? 18.0 : 12.0;
+
+    if (state == _SurfacePresentationState.minimized) {
+      return _MinimizedWorkflowSurface(
+        key: ValueKey('workflow-${workflow.workflowId}'),
+        workflow: workflow,
+        view: view,
+        contract: contract,
+        accent: accent,
+        onExpand: onExpand,
+        onPressed: onPressed,
+        onReceivePressed: onReceivePressed,
+      );
+    }
+
+    return Semantics(
+      selected: isMedium,
+      expanded: isExpanded,
+      label:
+          '${_displayTitleFor(workflow)} ${isExpanded ? 'expanded' : 'in focus'} surface',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: foreground.withValues(alpha: isExpanded ? 0.34 : 0.18),
+            width: isExpanded ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withValues(alpha: isExpanded ? 0.26 : 0.16),
+              blurRadius: isExpanded ? 26 : 14,
+              offset: Offset(0, isExpanded ? 12 : 7),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Material(
+                color: Color.alphaBlend(
+                  foreground.withValues(alpha: 0.08),
+                  accent,
+                ),
+                child: InkWell(
+                  key: ValueKey('workflow-expand-${workflow.workflowId}'),
+                  onTap: isExpanded ? onCollapse : onExpand,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isExpanded
+                              ? Icons.fullscreen_exit_outlined
+                              : Icons.center_focus_strong_outlined,
+                          color: foreground,
+                          size: 19,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            isExpanded
+                                ? 'Expanded product surface'
+                                : 'In-focus product surface',
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                        Text(
+                          isExpanded ? 'Collapse' : 'Expand',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: foreground,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MinimizedWorkflowSurface extends StatelessWidget {
+  const _MinimizedWorkflowSurface({
+    super.key,
+    required this.workflow,
+    required this.view,
+    required this.contract,
+    required this.accent,
+    required this.onExpand,
+    required this.onPressed,
+    required this.onReceivePressed,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final LoomPersonaWorkflowView view;
+  final LoomProductionWorkflowContract contract;
+  final Color accent;
+  final VoidCallback onExpand;
+  final VoidCallback onPressed;
+  final VoidCallback onReceivePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    final textTheme = Theme.of(context).textTheme;
+    final complete = view.completed || view.received;
+    return Semantics(
+      button: true,
+      label: '${_displayTitleFor(workflow)} minimized surface',
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: Color.alphaBlend(
+          accent.withValues(alpha: 0.84),
+          Colors.black.withValues(alpha: 0.08),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: foreground.withValues(alpha: 0.16)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(contract.icon, color: foreground, size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _displayTitleFor(workflow),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: foreground,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          complete
+                              ? view.completed
+                                    ? contract.successTitle
+                                    : contract.receiverSurfaceTitle
+                              : _domainSummaryFor(
+                                  contract.category,
+                                  workflow,
+                                  view,
+                                ),
+                          key: complete
+                              ? ValueKey(
+                                  view.completed
+                                      ? 'workflow-result-${workflow.workflowId}'
+                                      : 'workflow-received-result-${workflow.workflowId}',
+                                )
+                              : null,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: foreground.withValues(alpha: 0.90),
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StateBadge(
+                    key: complete
+                        ? ValueKey(
+                            view.completed
+                                ? 'workflow-complete-${workflow.workflowId}'
+                                : 'workflow-received-${workflow.workflowId}',
+                          )
+                        : null,
+                    icon: complete
+                        ? Icons.done
+                        : Icons.center_focus_strong_outlined,
+                    label: complete ? contract.successChipLabel : 'Minimized',
+                    foreground: foreground,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _SurfaceFactPill(
+                    icon: Icons.unfold_more_outlined,
+                    label: 'Tap for expanded view',
+                    foreground: foreground,
+                  ),
+                  _SurfaceFactPill(
+                    icon: Icons.layers_outlined,
+                    label: _surfaceLabelFor(contract.category),
+                    foreground: foreground,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: onExpand,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: foreground,
+                      side: BorderSide(
+                        color: foreground.withValues(alpha: 0.34),
+                      ),
+                    ),
+                    icon: const Icon(Icons.open_in_full_outlined, size: 18),
+                    label: const Text('Expand'),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _WorkflowAction(
+                      contract: contract,
+                      workflow: workflow,
+                      view: view,
+                      onPressed: onPressed,
+                      onReceivePressed: onReceivePressed,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -9846,6 +10393,80 @@ class LoomAppShellTabSpec {
     }
     return '$description Tuned for ${persona.label}.';
   }
+}
+
+class CommunityAppShellCustomizationSpec {
+  const CommunityAppShellCustomizationSpec({
+    required this.experience,
+    required this.persona,
+    required this.tabs,
+    required this.selectedTab,
+    required this.visibleWorkflowIds,
+    required this.focusKey,
+    required this.focusedWorkflowId,
+    required this.presentationStatesByWorkflowId,
+    required this.theme,
+  });
+
+  factory CommunityAppShellCustomizationSpec.fromSelection({
+    required LoomExperienceDefinition experience,
+    required LoomPersonaDefinition persona,
+    required List<LoomAppShellTabSpec> tabs,
+    required LoomAppShellTabSpec selectedTab,
+    required List<String> visibleWorkflowIds,
+    required String? focusedWorkflowId,
+    required String? expandedWorkflowId,
+  }) {
+    final states = <String, String>{};
+    for (final workflowId in visibleWorkflowIds) {
+      states[workflowId] = expandedWorkflowId == workflowId
+          ? 'expanded'
+          : focusedWorkflowId == workflowId
+          ? 'medium'
+          : 'minimized';
+    }
+    final accent = Color(experience.accentColor);
+    return CommunityAppShellCustomizationSpec(
+      experience: experience,
+      persona: persona,
+      tabs: List.unmodifiable(tabs),
+      selectedTab: selectedTab,
+      visibleWorkflowIds: List.unmodifiable(visibleWorkflowIds),
+      focusKey: '${persona.personaId}:${selectedTab.tabId}',
+      focusedWorkflowId: focusedWorkflowId,
+      presentationStatesByWorkflowId: Map.unmodifiable(states),
+      theme: LoomThemeCustomizationTokens(
+        accent: accent,
+        background: _screenBackgroundFor(accent),
+        foreground: _foregroundFor(accent),
+        density: 'comfortable-mobile',
+      ),
+    );
+  }
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final List<LoomAppShellTabSpec> tabs;
+  final LoomAppShellTabSpec selectedTab;
+  final List<String> visibleWorkflowIds;
+  final String focusKey;
+  final String? focusedWorkflowId;
+  final Map<String, String> presentationStatesByWorkflowId;
+  final LoomThemeCustomizationTokens theme;
+}
+
+class LoomThemeCustomizationTokens {
+  const LoomThemeCustomizationTokens({
+    required this.accent,
+    required this.background,
+    required this.foreground,
+    required this.density,
+  });
+
+  final Color accent;
+  final Color background;
+  final Color foreground;
+  final String density;
 }
 
 class LoomExperienceDefinition {

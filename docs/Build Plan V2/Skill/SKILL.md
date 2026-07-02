@@ -254,7 +254,8 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     screenshot-grounded, or contains unresolved blocker/major findings; when `holisticQuestionAnswers`,
     `workflowPersonaScorecards` are missing, partial, unsupported by visible evidence, below threshold,
     contradicted by screenshots, missing passing `semanticSurfaceProof` for any primary
-    workflow/persona row, or missing passing semantic interaction-model `workflowLifecycleScorecards`.
+    workflow/persona row, missing passing semantic interaction-model `workflowLifecycleScorecards`, or
+    missing/failing `appShellCapabilityReview` proof for documented App Shell capabilities.
     A pass cannot be based only on absence of known defects.
 64. After every B25 review/remediation pass, run `b25_iteration_scorecard.dart` and commit the JSON and
     Markdown scorecard with the pass evidence. The scorecard must show pass/fail, current
@@ -275,7 +276,10 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     support`. In native Loom repo runs, keep that mapping in the community Product Docs V2 file. In
     standalone Skill runs, keep the same mapping in the local extension product doc. This registry is
     required review context for remediation, but it is not yet a standalone card-surface/API coverage
-    gate.
+    gate. App Shell capability utilization is a hard B25 gate: the evidence must include a passing
+    `appShellCapabilityReview` proving persona tabs, pinned surfaces, minimized/medium/expanded states,
+    tap-to-expand behavior, community-list card states, renderer selection, and theme/customization
+    tokens where the product doc or App Shell component guide requires them.
 66. B25 must run a distinct LLM Product Docs to Evidence Workflow Reconciliation gate before the final
     product-quality judgment. Use
     [../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md](../Tools/b25-product-doc-workflow-reconciliation-llm-gate.md).
@@ -283,10 +287,12 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     `docs/product/community-product-experience.md`, to current screenshot evidence. It must inspect
     `## 6. Workflow-To-Surface Mapping`, `## 7. Persona And State Matrix`, `## 8. Content And Seed
     Data Requirements`, `## 9. Visual And Interaction Standard`, `### B25 Semantic Interaction
-    Models`, and `### B25 Card Surface Registry Mapping`. It must find documented workflows missing
-    from screenshots, screenshot-visible workflows/interactions missing from product docs, missing
-    required visible proof, persona/state drift, incomplete lifecycle actions, and generic or wrong
-    surface mappings. Unresolved blocker/major findings become remediation tickets and block B25.
+    Models`, `### B25 Card Surface Registry Mapping`, and `## 3.1 Persona Tabs, Pins, And
+    Customization`. It must find documented workflows missing from screenshots, screenshot-visible
+    workflows/interactions missing from product docs, missing required visible proof, persona/state
+    drift, incomplete lifecycle actions, generic or wrong surface mappings, and missing App Shell
+    capability utilization. Unresolved blocker/major findings or a failing `appShellCapabilityReview`
+    become remediation tickets and block B25.
 67. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
     only the community product experience doc, evidence artifacts, screenshots, blueprint,
     workflow/persona coverage matrix, and pass criteria, then writes
