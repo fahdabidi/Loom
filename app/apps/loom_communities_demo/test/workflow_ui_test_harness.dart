@@ -30,13 +30,9 @@ Future<void> openEvidenceTarget(
   LoomEvidenceTarget target,
 ) async {
   await _returnToCommunityList(tester);
+  _expectCommunityListReady(tester);
   final card = find.byKey(ValueKey('community-card-${target.communityId}'));
-  await tester.scrollUntilVisible(
-    card,
-    160,
-    scrollable: find.byType(Scrollable).last,
-    maxScrolls: 40,
-  );
+  await _scrollToCardIfNeeded(tester, card);
   if (card.evaluate().isEmpty) {
     fail(
       'Could not find evidence target ${target.communityName} '
@@ -57,12 +53,8 @@ Future<void> openEvidenceTarget(
       return;
     }
     await _returnToCommunityList(tester);
-    await tester.scrollUntilVisible(
-      card,
-      160,
-      scrollable: find.byType(Scrollable).last,
-      maxScrolls: 40,
-    );
+    _expectCommunityListReady(tester);
+    await _scrollToCardIfNeeded(tester, card);
   }
   final cardRect = tester.getRect(card);
   await tester.tapAt(Offset(cardRect.left + 48, cardRect.top + 36));
@@ -76,11 +68,9 @@ Future<void> openEvidenceTarget(
 }
 
 Future<void> _returnToCommunityList(WidgetTester tester) async {
-  for (var attempt = 0; attempt < 6; attempt += 1) {
-    if (find
-        .byKey(const ValueKey('add-community-button'))
-        .evaluate()
-        .isNotEmpty) {
+  for (var attempt = 0; attempt < 8; attempt += 1) {
+    await tester.pumpAndSettle();
+    if (_communityListIsReady()) {
       return;
     }
     final backButton = find.byTooltip('Back');
@@ -90,6 +80,49 @@ Future<void> _returnToCommunityList(WidgetTester tester) async {
       await tester.pageBack();
     }
     await tester.pumpAndSettle();
+  }
+  _expectCommunityListReady(tester);
+}
+
+bool _communityListIsReady() {
+  return find
+          .byKey(const ValueKey('add-community-button'))
+          .evaluate()
+          .isNotEmpty &&
+      find.byKey(const ValueKey('community-list')).evaluate().isNotEmpty &&
+      find.byType(Scrollable).evaluate().isNotEmpty;
+}
+
+Finder _communityListScrollable() {
+  return find.byType(Scrollable).last;
+}
+
+Future<void> _scrollToCardIfNeeded(WidgetTester tester, Finder card) async {
+  if (card.evaluate().isNotEmpty) {
+    return;
+  }
+  if (find.byType(Scrollable).evaluate().isEmpty) {
+    fail(
+      'Community list scrollable was not available while opening a '
+      'community card.',
+    );
+  }
+  await tester.scrollUntilVisible(
+    card,
+    160,
+    scrollable: _communityListScrollable(),
+    maxScrolls: 40,
+  );
+}
+
+void _expectCommunityListReady(WidgetTester tester) {
+  if (!_communityListIsReady()) {
+    fail(
+      'Community list was not ready. '
+      'addButton=${find.byKey(const ValueKey('add-community-button')).evaluate().length}, '
+      'communityList=${find.byKey(const ValueKey('community-list')).evaluate().length}, '
+      'scrollables=${find.byType(Scrollable).evaluate().length}',
+    );
   }
 }
 

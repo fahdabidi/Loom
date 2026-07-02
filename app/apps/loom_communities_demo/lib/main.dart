@@ -4998,118 +4998,123 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: foreground.withValues(alpha: 0.16)),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(contract.icon, color: foreground, size: 24),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _displayTitleFor(workflow),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.titleMedium?.copyWith(
-                            color: foreground,
-                            fontWeight: FontWeight.w800,
+        child: InkWell(
+          onTap: onExpand,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(contract.icon, color: foreground, size: 24),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _displayTitleFor(workflow),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.titleMedium?.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          complete
-                              ? view.completed
-                                    ? contract.successTitle
-                                    : contract.receiverSurfaceTitle
-                              : _domainSummaryFor(
-                                  contract.category,
-                                  workflow,
-                                  view,
-                                ),
-                          key: complete
-                              ? ValueKey(
-                                  view.completed
-                                      ? 'workflow-result-${workflow.workflowId}'
-                                      : 'workflow-received-result-${workflow.workflowId}',
-                                )
-                              : null,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: foreground.withValues(alpha: 0.90),
-                            height: 1.25,
+                          const SizedBox(height: 3),
+                          Text(
+                            complete
+                                ? view.completed
+                                      ? contract.successTitle
+                                      : contract.receiverSurfaceTitle
+                                : _domainSummaryFor(
+                                    contract.category,
+                                    workflow,
+                                    view,
+                                  ),
+                            key: complete
+                                ? ValueKey(
+                                    view.completed
+                                        ? 'workflow-result-${workflow.workflowId}'
+                                        : 'workflow-received-result-${workflow.workflowId}',
+                                  )
+                                : null,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: foreground.withValues(alpha: 0.90),
+                              height: 1.25,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _StateBadge(
-                    key: complete
-                        ? ValueKey(
-                            view.completed
-                                ? 'workflow-complete-${workflow.workflowId}'
-                                : 'workflow-received-${workflow.workflowId}',
-                          )
-                        : null,
-                    icon: complete
-                        ? Icons.done
-                        : Icons.center_focus_strong_outlined,
-                    label: complete ? contract.successChipLabel : 'Minimized',
-                    foreground: foreground,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _SurfaceFactPill(
-                    icon: Icons.unfold_more_outlined,
-                    label: 'Tap for expanded view',
-                    foreground: foreground,
-                  ),
-                  _SurfaceFactPill(
-                    icon: Icons.layers_outlined,
-                    label: _surfaceLabelFor(contract.category),
-                    foreground: foreground,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: onExpand,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: foreground,
-                      side: BorderSide(
-                        color: foreground.withValues(alpha: 0.34),
+                        ],
                       ),
                     ),
-                    icon: const Icon(Icons.open_in_full_outlined, size: 18),
-                    label: const Text('Expand'),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _WorkflowAction(
-                      contract: contract,
-                      workflow: workflow,
-                      view: view,
-                      onPressed: onPressed,
-                      onReceivePressed: onReceivePressed,
+                    const SizedBox(width: 8),
+                    _StateBadge(
+                      key: complete
+                          ? ValueKey(
+                              view.completed
+                                  ? 'workflow-complete-${workflow.workflowId}'
+                                  : 'workflow-received-${workflow.workflowId}',
+                            )
+                          : null,
+                      icon: complete
+                          ? Icons.done
+                          : Icons.center_focus_strong_outlined,
+                      label: complete ? contract.successChipLabel : 'Minimized',
+                      foreground: foreground,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _SurfaceFactPill(
+                      icon: Icons.unfold_more_outlined,
+                      label: 'Tap for expanded view',
+                      foreground: foreground,
+                    ),
+                    _SurfaceFactPill(
+                      icon: Icons.layers_outlined,
+                      label: _surfaceLabelFor(contract.category),
+                      foreground: foreground,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      key: ValueKey('workflow-expand-${workflow.workflowId}'),
+                      onPressed: onExpand,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: foreground,
+                        side: BorderSide(
+                          color: foreground.withValues(alpha: 0.34),
+                        ),
+                      ),
+                      icon: const Icon(Icons.open_in_full_outlined, size: 18),
+                      label: const Text('Expand'),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _WorkflowAction(
+                        contract: contract,
+                        workflow: workflow,
+                        view: view,
+                        onPressed: onPressed,
+                        onReceivePressed: onReceivePressed,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

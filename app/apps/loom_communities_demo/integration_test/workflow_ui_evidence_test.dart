@@ -81,6 +81,37 @@ void main() {
       installedExtensionIds.add(target.extensionId);
     }
 
+    bool _communityListReady() {
+      return find
+              .byKey(const ValueKey('add-community-button'))
+              .evaluate()
+              .isNotEmpty &&
+          find.byKey(const ValueKey('community-list')).evaluate().isNotEmpty &&
+          find.byType(Scrollable).evaluate().isNotEmpty;
+    }
+
+    Future<void> returnToCommunityList() async {
+      for (var attempt = 0; attempt < 8; attempt += 1) {
+        await tester.pumpAndSettle();
+        if (_communityListReady()) {
+          return;
+        }
+        final backButton = find.byTooltip('Back');
+        if (backButton.evaluate().isNotEmpty) {
+          await tester.tap(backButton.first, warnIfMissed: false);
+        } else {
+          await tester.pageBack();
+        }
+        await tester.pumpAndSettle();
+      }
+      expect(
+        find.byKey(const ValueKey('add-community-button')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('community-list')), findsOneWidget);
+      expect(find.byType(Scrollable), findsWidgets);
+    }
+
     Future<void> ensureTargetOpen(LoomEvidenceTarget target) async {
       if (find
           .byKey(ValueKey('local-extension-${target.extensionId}'))
@@ -88,21 +119,9 @@ void main() {
           .isNotEmpty) {
         return;
       }
-      if (find.text('Loom Communities').evaluate().isEmpty) {
-        await tester.pageBack();
-        await tester.pumpAndSettle();
-      }
+      await returnToCommunityList();
       await ensureTargetInstalled(target);
       await openEvidenceTarget(tester, target);
-    }
-
-    Future<void> returnToCommunityList() async {
-      if (find.text('Loom Communities').evaluate().isNotEmpty) {
-        return;
-      }
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      expect(find.text('Loom Communities'), findsOneWidget);
     }
 
     if (_includePhase('B12')) {
@@ -572,13 +591,7 @@ void main() {
       capabilityScreenshots.add(
         'B20_app_shell_garden_home_medium_minimized_stack',
       );
-      final gardenExpandButton = find.byKey(
-        ValueKey('workflow-expand-${gardenRsvp.workflowId}'),
-      );
-      await tester.ensureVisible(gardenExpandButton);
-      await tester.pumpAndSettle();
-      await tester.tap(gardenExpandButton, warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await _expandCapabilityWorkflowSurface(tester, gardenRsvp);
       await capture('B20_app_shell_garden_home_expanded_surface');
       capabilityScreenshots.add('B20_app_shell_garden_home_expanded_surface');
 
@@ -594,13 +607,7 @@ void main() {
       await _scrollToWorkflow(tester, soccerRoster);
       await capture('B20_app_shell_soccer_roster_renderer_medium');
       capabilityScreenshots.add('B20_app_shell_soccer_roster_renderer_medium');
-      final soccerExpandButton = find.byKey(
-        ValueKey('workflow-expand-${soccerRoster.workflowId}'),
-      );
-      await tester.ensureVisible(soccerExpandButton);
-      await tester.pumpAndSettle();
-      await tester.tap(soccerExpandButton, warnIfMissed: false);
-      await tester.pumpAndSettle();
+      await _expandCapabilityWorkflowSurface(tester, soccerRoster);
       await capture('B20_app_shell_soccer_roster_renderer_expanded');
       capabilityScreenshots.add(
         'B20_app_shell_soccer_roster_renderer_expanded',
@@ -779,6 +786,33 @@ Future<void> _scrollToWorkflow(
     }
   }
   fail('Could not find workflow card ${workflow.workflowId}');
+}
+
+Future<void> _expandCapabilityWorkflowSurface(
+  WidgetTester tester,
+  LoomWorkflowDefinition workflow,
+) async {
+  await _scrollToWorkflow(tester, workflow);
+  final expandButton = find.byKey(
+    ValueKey('workflow-expand-${workflow.workflowId}'),
+  );
+  if (expandButton.evaluate().isNotEmpty) {
+    await tester.tap(expandButton.first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    return;
+  }
+  final workflowCard = find.byKey(ValueKey('workflow-${workflow.workflowId}'));
+  if (workflowCard.evaluate().isEmpty) {
+    fail('Could not find workflow surface ${workflow.workflowId} to expand.');
+  }
+  await tester.tap(workflowCard.first, warnIfMissed: false);
+  await tester.pumpAndSettle();
+  if (expandButton.evaluate().isEmpty) {
+    fail(
+      'Workflow surface ${workflow.workflowId} did not expose an expanded '
+      'surface affordance after tap.',
+    );
+  }
 }
 
 Future<void> _selectCommunityTab(WidgetTester tester, String tabId) async {
