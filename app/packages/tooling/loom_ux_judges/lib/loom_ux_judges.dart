@@ -7301,15 +7301,7 @@ List<JsonMap> _b25AppShellCapabilityTickets({
   required List<String> allBlockingFindingIds,
   required int startIndex,
 }) {
-  final review =
-      (evidence['appShellCapabilityReview'] as JsonMap?) ??
-      ((evidence['productDocWorkflowReconciliation']
-              as JsonMap?)?['appShellCapabilityReview']
-          as JsonMap?) ??
-      const <String, Object?>{};
-  final findings = _asMapList(review['findings'])
-      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
-      .toList();
+  final findings = _appShellCapabilityBlockingFindings(evidence);
   final relatedFindings = findings
       .map(_findingId)
       .where((id) => id.isNotEmpty)
@@ -7356,6 +7348,39 @@ List<JsonMap> _b25AppShellCapabilityTickets({
       'priority': 'P1',
       'sourceCriterionId': criterion.id,
       'sourceCapability': gapType,
+      'tabId': _asString(finding['tabId']),
+      'tabLabel': _asString(finding['tabLabel']),
+      'rendererContractId': _asString(finding['rendererContractId']),
+      'targetRendererContract': _asString(finding['rendererContractId']),
+      'cardSurfaceFamily': _asString(finding['cardSurfaceFamily']),
+      'missingTabNativeEvidence':
+          gapType == 'app-shell-tab-renderer-contract-gap'
+          ? <String>[
+              'Missing screenshot-backed direct-question review for `${_asString(finding['rendererContractId'])}`.',
+              'Missing proof that the tab looks and behaves like `${_asString(finding['tabLabel'])}` rather than a generic workflow-card list.',
+            ]
+          : <String>[],
+      'interactionEvidenceRequired':
+          gapType == 'app-shell-interaction-transition-gap'
+          ? <String>[
+              'Capture before/tap/after screenshots with distinct hashes.',
+              'Record visible state changes and the resulting status, receipt, undo/change, or receiver state.',
+              'Do not close from source code or worker claims alone.',
+            ]
+          : <String>[],
+      'llmReviewDefect': gapType == 'app-shell-review-depth-gap'
+          ? 'The review has pass flags but lacks screenshot-specific visible text, critique, hashes, or direct answers.'
+          : '',
+      'requiredScreenshotsToRecapture': _asStringList(
+        finding['affectedScreenRowIds'],
+      ),
+      'affectedScreenshotPaths': _asStringList(
+        finding['affectedScreenshotPaths'],
+      ),
+      'affectedScreenshotHashes': _asStringList(
+        finding['affectedScreenshotHashes'],
+      ),
+      'visibleTextExcerpt': _asString(finding['visibleTextExcerpt']),
       'sourceFindingIds': related,
       'title': _appShellCapabilityTicketTitle(finding, criterion),
       'directQuestion': _appShellCapabilityDirectQuestion(gapType),
@@ -7449,6 +7474,12 @@ String _appShellCapabilityLabel(String gapType) {
       return 'theme and customization tokens';
     case 'app-shell-renderer-selection-gap':
       return 'renderer selection by card-surface family';
+    case 'app-shell-tab-renderer-contract-gap':
+      return 'tab-native renderer contract proof';
+    case 'app-shell-interaction-transition-gap':
+      return 'button and interaction transition proof';
+    case 'app-shell-review-depth-gap':
+      return 'screenshot-specific app shell critique depth';
     default:
       return 'app shell capability';
   }
@@ -7468,6 +7499,12 @@ String _appShellCapabilityDirectQuestion(String gapType) {
       return 'Do screenshots prove the community theme, typography, color, density, and component customization tokens are applied consistently?';
     case 'app-shell-renderer-selection-gap':
       return 'Does the visible screen prove the App Shell selected the correct domain renderer for the card-surface family instead of a generic fallback?';
+    case 'app-shell-tab-renderer-contract-gap':
+      return 'Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?';
+    case 'app-shell-interaction-transition-gap':
+      return 'Do screenshots prove actionable controls were tapped and caused the correct visible state transition, including change/undo/result states where the workflow requires them?';
+    case 'app-shell-review-depth-gap':
+      return 'Does the App Shell capability review cite visible screenshot text, screenshot hashes, tab/renderer-specific critique, and direct answers rather than pass flags alone?';
     default:
       return 'Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the persona/task?';
   }
@@ -7498,6 +7535,12 @@ String _appShellCapabilityTargetExperience(String gapType) {
       return 'Community theme, typography, density, colors, and component treatments are applied consistently without sacrificing readability or touch targets.';
     case 'app-shell-renderer-selection-gap':
       return 'Each workflow uses the renderer that matches its card-surface family and product task, with visible UI differences that prove it is not a generic fallback.';
+    case 'app-shell-tab-renderer-contract-gap':
+      return 'Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.';
+    case 'app-shell-interaction-transition-gap':
+      return 'Every important button and action proves a real interaction: the before screenshot, tapped/review state, and after screenshot show a changed status, result, receipt, or editable/undoable continuation.';
+    case 'app-shell-review-depth-gap':
+      return 'The App Shell review is a real visual critique: it cites screenshot-visible evidence, answers direct questions per tab/renderer, and fails weak or generic UI even when source flags say a feature exists.';
     default:
       return _targetExperienceForB25Criterion(
         'b25-c16-app-shell-capability-utilization',
@@ -7537,6 +7580,27 @@ List<String> _appShellCapabilityImprovements(String gapType) {
         'Declare persona-specific tabs in the community product experience doc.',
         'Keep Home and Messages/Communication available for every persona.',
         'Recapture screenshots showing tab labels, order, persona visibility, selected state, and destination content.',
+      ];
+    case 'app-shell-tab-renderer-contract-gap':
+      return <String>[
+        'Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.',
+        'For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.',
+        'For Messages, show inbox/thread/composer/unread or invite state, not an informational card.',
+        'For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.',
+        'For Documents, show library/category/detail plus embedded or external-open state.',
+        'For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface.',
+      ];
+    case 'app-shell-interaction-transition-gap':
+      return <String>[
+        'Extend capture automation to tap every important primary and alternate action in the reviewed workflows.',
+        'Record before, action/review, and after screenshots with distinct hashes and visible state changes.',
+        'For change/undo/edit paths, capture the later state proving the user can revise the prior response.',
+      ];
+    case 'app-shell-review-depth-gap':
+      return <String>[
+        'Replace pass-flag-only App Shell review rows with screenshot-specific critique.',
+        'Each row must quote visible text, cite screenshot hashes, name the tab/renderer contract, and answer whether the UI behaves like that product surface.',
+        'Do not reuse a generic rationale across unrelated tabs or communities.',
       ];
     case 'app-shell-customization-gap':
       return <String>[
@@ -7583,6 +7647,24 @@ List<String> _appShellCapabilityImplementationGuidance(String gapType) {
         'Make renderer selection inspectable through card-surface family, renderer target, visible domain layout, and B25 evidence rows.',
         'If a renderer is intentionally shared, the screenshot must still prove the domain-specific content and layout for that card-surface family.',
       ];
+    case 'app-shell-tab-renderer-contract-gap':
+      return <String>[
+        ...shared,
+        'Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.',
+        'Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI.',
+      ];
+    case 'app-shell-interaction-transition-gap':
+      return <String>[
+        ...shared,
+        'Update workflow capture helpers so important buttons are actually tapped and the resulting UI state is captured.',
+        'Do not make UI conform to old test keys; update the evidence automation to follow the production interaction model.',
+      ];
+    case 'app-shell-review-depth-gap':
+      return <String>[
+        ...shared,
+        'Regenerate the App Shell review from screenshots and visible text, not from implementation declarations.',
+        'Make weak LLM reviews fail by leaving `status=fail` until visual critique is screen-specific.',
+      ];
     default:
       return <String>[
         ...shared,
@@ -7625,6 +7707,24 @@ List<String> _appShellCapabilityAcceptanceChecks(String gapType) {
         'Screenshots prove Home and Messages/Communication tabs are available.',
         'Custom persona tabs are visible only where appropriate and route to relevant content.',
         '`appShellCapabilityReview.communityResults[]` has `tabsPass=true`.',
+      ];
+    case 'app-shell-tab-renderer-contract-gap':
+      return <String>[
+        '`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.',
+        'Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.',
+        'The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.',
+      ];
+    case 'app-shell-interaction-transition-gap':
+      return <String>[
+        'Every important primary/alternate action has before/tap/after or entry/action/result screenshots with distinct hashes.',
+        'The after screenshot visibly proves a changed state, status, receipt, result, undo/change path, or receiver state.',
+        '`appShellCapabilityReview.interactionTransitionResults[]` or lifecycle scorecards pass without missing transition evidence.',
+      ];
+    case 'app-shell-review-depth-gap':
+      return <String>[
+        'Every App Shell review row includes visible text excerpts and screenshot hashes.',
+        'Every App Shell review row has non-boilerplate critique naming the tab, renderer, visible UI, and product-quality decision.',
+        'A pass verdict is not based only on feature flags, source-code declarations, or absence of deterministic pixel findings.',
       ];
     case 'app-shell-customization-gap':
       return <String>[
@@ -10693,7 +10793,7 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
   }
   final status = _asString(review['status']);
   final missingCapabilities = _asStringList(review['missingCapabilities']);
-  final findings = _asMapList(review['findings']);
+  final findings = _appShellCapabilityBlockingFindings(evidence);
   final communityResults = _asMapList(review['communityResults']);
   final failingCommunities = <String>[];
   for (final row in communityResults) {
@@ -10709,7 +10809,6 @@ _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
     }
   }
   final blockingFindings = findings
-      .where((finding) => _isBlockingSeverity(finding) && !_isResolved(finding))
       .map(_findingId)
       .where((id) => id.isNotEmpty)
       .toList();
@@ -10911,7 +11010,555 @@ _DerivedFailure? _failOnLlmVisionReview(JsonMap evidence) {
           'The LLM vision UX review is missing holistic answers or screen reviews.',
     );
   }
+  final qualityProblems = _llmVisionReviewQualityProblems(
+    llmReview: review,
+    evidence: evidence,
+  );
+  if (qualityProblems.isNotEmpty) {
+    return _DerivedFailure(
+      score: 20,
+      message:
+          'The LLM vision UX review is too shallow to prove production UX quality: ${qualityProblems.take(80).join('; ')}.',
+      evidenceUsed: qualityProblems.take(80).toList(),
+    );
+  }
   return null;
+}
+
+List<JsonMap> _appShellCapabilityBlockingFindings(JsonMap evidence) {
+  final review =
+      (evidence['appShellCapabilityReview'] as JsonMap?) ??
+      ((evidence['productDocWorkflowReconciliation']
+              as JsonMap?)?['appShellCapabilityReview']
+          as JsonMap?) ??
+      const <String, Object?>{};
+  if (review.isEmpty) {
+    return <JsonMap>[];
+  }
+  final findings = <JsonMap>[
+    for (final finding in _asMapList(review['findings']))
+      if (_isBlockingSeverity(finding) && !_isResolved(finding))
+        JsonMap.of(finding),
+  ];
+
+  final communityResults = _asMapList(review['communityResults']);
+  if (communityResults.isEmpty) {
+    findings.add(
+      _appShellCapabilityFinding(
+        gapType: 'app-shell-tabs-gap',
+        findingId: 'B25-APP-SHELL-NO-COMMUNITY-RESULTS',
+        title: 'App Shell review has no community/persona results',
+        summary:
+            'The App Shell capability review did not include community/persona rows, so B25 cannot prove tabs, pinning, presentation states, renderer selection, or customization from screenshots.',
+        requiredFix:
+            'Regenerate the App Shell capability review with one row per reviewed community/persona or per tab-renderer contract, including screenshot rows and hashes.',
+      ),
+    );
+  }
+
+  for (final row in communityResults) {
+    final failed = _failedAppShellCapabilityChecks(row);
+    if (failed.isEmpty && _asString(row['status']) != 'fail') {
+      continue;
+    }
+    for (final check in failed.isEmpty ? <String>['status'] : failed) {
+      findings.add(
+        _appShellCapabilityFinding(
+          gapType: _gapTypeForAppShellCheck(check),
+          findingId:
+              'B25-APP-SHELL-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['persona'], fallback: 'persona'))}-${_slug(check)}',
+          title: 'App Shell capability failed: $check',
+          summary:
+              'Community `${_asString(row['communityName'], fallback: 'community')}` persona `${_asString(row['persona'], fallback: 'persona')}` does not prove `$check` from screenshot evidence.',
+          requiredFix:
+              'Update the product doc or UI, recapture after-screenshots, and regenerate appShellCapabilityReview so `$check` passes from visible evidence.',
+          row: row,
+        ),
+      );
+    }
+  }
+
+  findings.addAll(_missingTabRendererContractFindings(evidence, review));
+  findings.addAll(_missingInteractionTransitionFindings(evidence, review));
+  findings.addAll(_weakAppShellReviewEvidenceFindings(review));
+  return findings;
+}
+
+String _gapTypeForAppShellCheck(String check) {
+  switch (check) {
+    case 'tabsPass':
+      return 'app-shell-tabs-gap';
+    case 'pinningPolicyPass':
+      return 'app-shell-pinning-gap';
+    case 'presentationStatesPass':
+      return 'app-shell-presentation-state-gap';
+    case 'mainCommunityCardStatesPass':
+      return 'app-shell-community-card-state-gap';
+    case 'themeCustomizationPass':
+      return 'app-shell-customization-gap';
+    case 'rendererSelectionPass':
+      return 'app-shell-renderer-selection-gap';
+    default:
+      return 'app-shell-capability-gap';
+  }
+}
+
+JsonMap _appShellCapabilityFinding({
+  required String gapType,
+  required String findingId,
+  required String title,
+  required String summary,
+  required String requiredFix,
+  JsonMap? row,
+  String? rendererContractId,
+  String? tabId,
+  String? tabLabel,
+  String? cardSurfaceFamily,
+  List<JsonMap> screenRows = const <JsonMap>[],
+}) {
+  final affectedRows = screenRows.isEmpty && row != null
+      ? _asStringList(row['affectedScreenRowIds'])
+      : screenRows.map(_rowId).where((id) => id.isNotEmpty).toList();
+  return <String, Object?>{
+    'findingId': findingId,
+    'source': 'b25-app-shell-capability-review',
+    'severity': 'major',
+    'status': 'open',
+    'resolved': false,
+    'blocksPass': true,
+    'gapType': gapType,
+    'title': title,
+    'summary': summary,
+    'requiredFix': requiredFix,
+    'communityName': _asString(row?['communityName']),
+    'persona': _asString(row?['persona']),
+    'tabId': tabId ?? _asString(row?['tabId']),
+    'tabLabel': tabLabel ?? _asString(row?['tabLabel']),
+    'rendererContractId':
+        rendererContractId ?? _asString(row?['rendererContractId']),
+    'cardSurfaceFamily':
+        cardSurfaceFamily ?? _asString(row?['cardSurfaceFamily']),
+    'affectedScreenRowIds': affectedRows,
+    'affectedScreenshotPaths': screenRows.isEmpty && row != null
+        ? _asStringList(row['affectedScreenshotPaths'])
+        : [
+            for (final screenRow in screenRows)
+              _asString(screenRow['screenshotPath']),
+          ].where((path) => path.isNotEmpty).toList(),
+    'affectedScreenshotHashes': screenRows.isEmpty && row != null
+        ? _asStringList(row['affectedScreenshotHashes'])
+        : [
+            for (final screenRow in screenRows)
+              _asString(screenRow['screenshotHash']),
+          ].where((hash) => hash.isNotEmpty).toList(),
+    'visibleTextExcerpt': screenRows.isEmpty
+        ? _asString(row?['visibleTextExcerpt'])
+        : _truncate(
+            screenRows
+                .map((screenRow) => _asString(screenRow['visibleTextExtract']))
+                .where((text) => text.isNotEmpty)
+                .join(' | '),
+            420,
+          ),
+  };
+}
+
+List<JsonMap> _missingTabRendererContractFindings(
+  JsonMap evidence,
+  JsonMap review,
+) {
+  final rendererRows = _asMapList(
+    review['tabRendererResults'] ??
+        review['rendererContractResults'] ??
+        review['tabNativeRendererResults'],
+  );
+  final byContract = <String, JsonMap>{
+    for (final row in rendererRows)
+      _asString(
+        row['rendererContractId'] ?? row['contractId'] ?? row['renderer'],
+      ): row,
+  }..remove('');
+  final findings = <JsonMap>[];
+  for (final contract in _requiredTabRendererContracts) {
+    final row = byContract[contract];
+    final relatedRows = _screenRowsForRendererContract(evidence, contract);
+    final hasScreenshotProof =
+        row != null &&
+        (_asStringList(row['affectedScreenRowIds']).isNotEmpty ||
+            _asStringList(row['screenshotHashes']).isNotEmpty ||
+            _asStringList(row['affectedScreenshotHashes']).isNotEmpty);
+    final statusPass =
+        row != null &&
+        _asString(row['status'], fallback: _asString(row['verdict'])) ==
+            'pass' &&
+        row['blocksPass'] != true;
+    final visibleProof = _visibleEvidenceText(row ?? const <String, Object?>{});
+    if (!statusPass || !hasScreenshotProof || visibleProof.length < 24) {
+      findings.add(
+        _appShellCapabilityFinding(
+          gapType: 'app-shell-tab-renderer-contract-gap',
+          findingId: 'B25-APP-SHELL-${_slug(contract)}-MISSING-PROOF',
+          title: '$contract is not proven by screenshot-backed review',
+          summary:
+              '$contract must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.',
+          requiredFix:
+              'Add a tabRendererResults row for `$contract` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.',
+          row: row,
+          rendererContractId: contract,
+          tabId: _tabIdForRendererContract(contract),
+          tabLabel: _tabLabelForRendererContract(contract),
+          cardSurfaceFamily: _cardSurfaceFamilyForRendererContract(contract),
+          screenRows: relatedRows,
+        ),
+      );
+    }
+  }
+  return findings;
+}
+
+List<JsonMap> _missingInteractionTransitionFindings(
+  JsonMap evidence,
+  JsonMap review,
+) {
+  final interactionRows = _asMapList(
+    review['interactionTransitionResults'] ??
+        review['buttonInteractionResults'] ??
+        review['interactionEvidenceResults'],
+  );
+  if (interactionRows.isNotEmpty) {
+    return [
+      for (final row in interactionRows)
+        if (_asString(row['status'], fallback: _asString(row['verdict'])) !=
+                'pass' ||
+            row['blocksPass'] == true ||
+            _asStringList(row['beforeScreenRowIds']).isEmpty ||
+            _asStringList(row['afterScreenRowIds']).isEmpty)
+          _appShellCapabilityFinding(
+            gapType: 'app-shell-interaction-transition-gap',
+            findingId:
+                'B25-APP-SHELL-INTERACTION-${_slug(_asString(row['interactionId'], fallback: _rowId(row)))}',
+            title: 'Interaction transition evidence failed',
+            summary:
+                'Interaction `${_asString(row['interactionId'], fallback: _rowId(row))}` does not prove a tapped control caused the expected visible state transition.',
+            requiredFix:
+                'Capture before/tap/after screenshots for this interaction and record the visible state change, including the user-facing result and undo/change path when applicable.',
+            row: row,
+          ),
+    ];
+  }
+  final scorecards = _asMapList(evidence['workflowLifecycleScorecards']);
+  final screenRowsById = <String, JsonMap>{
+    for (final row in _asMapList(evidence['screenRows'])) _rowId(row): row,
+  }..remove('');
+  final failing = <JsonMap>[];
+  for (final scorecard in scorecards) {
+    final rowIds = _asStringList(scorecard['screenRowIds']);
+    final rows = [
+      for (final id in rowIds)
+        if (screenRowsById[id] != null) screenRowsById[id]!,
+    ];
+    final screenTypes = rows
+        .map((row) => _asString(row['screenType'] ?? row['screenOrState']))
+        .join(' ')
+        .toLowerCase();
+    final hashes = <String>{
+      for (final row in rows) _asString(row['screenshotHash']),
+    }..remove('');
+    final hasEntry =
+        screenTypes.contains('entry') || screenTypes.contains('start');
+    final hasAction =
+        screenTypes.contains('action') ||
+        screenTypes.contains('review') ||
+        screenTypes.contains('tap');
+    final hasResult =
+        screenTypes.contains('result') ||
+        screenTypes.contains('complete') ||
+        screenTypes.contains('receiver');
+    if (!hasEntry || !hasAction || !hasResult || hashes.length < 2) {
+      failing.add(scorecard);
+    }
+  }
+  if (failing.isEmpty) {
+    return <JsonMap>[];
+  }
+  return <JsonMap>[
+    _appShellCapabilityFinding(
+      gapType: 'app-shell-interaction-transition-gap',
+      findingId: 'B25-APP-SHELL-INTERACTION-TRANSITIONS-MISSING',
+      title: 'Interaction transitions are not fully screenshot-proven',
+      summary:
+          '${failing.length} workflow lifecycle scorecards do not prove entry, tapped/review action, and changed result states from distinct screenshots.',
+      requiredFix:
+          'Extend B25 capture so each actionable control has before/tap/after or entry/action/result evidence with distinct screenshot hashes and visible state changes; rerun the interaction-model judge and LLM vision review.',
+    ),
+  ];
+}
+
+List<JsonMap> _weakAppShellReviewEvidenceFindings(JsonMap review) {
+  final findings = <JsonMap>[];
+  for (final row in _asMapList(review['communityResults'])) {
+    final visible = _visibleEvidenceText(row);
+    final screenshotRows = _asStringList(row['affectedScreenRowIds']);
+    final screenshotHashes = <String>{
+      ..._asStringList(row['affectedScreenshotHashes']),
+      ..._asStringList(row['screenshotHashes']),
+    }..remove('');
+    if (visible.length < 24 ||
+        screenshotRows.isEmpty ||
+        screenshotHashes.isEmpty) {
+      findings.add(
+        _appShellCapabilityFinding(
+          gapType: 'app-shell-review-depth-gap',
+          findingId:
+              'B25-APP-SHELL-REVIEW-DEPTH-${_slug(_asString(row['communityName'], fallback: 'community'))}-${_slug(_asString(row['persona'], fallback: 'persona'))}',
+          title:
+              'App Shell capability review lacks visible screenshot critique',
+          summary:
+              'The App Shell review row has pass flags, but lacks enough visible text, screenshot hashes, or screen-specific critique to prove the shell capabilities were visually inspected.',
+          requiredFix:
+              'Regenerate the App Shell capability review with visible text excerpts, screenshot hashes, tab/renderer-specific critiques, and direct answers for the reviewed community/persona.',
+          row: row,
+        ),
+      );
+    }
+  }
+  return findings;
+}
+
+const List<String> _requiredTabRendererContracts = <String>[
+  'CalendarTabSurface',
+  'MessagesTabSurface',
+  'MarketplaceTabSurface',
+  'DocumentsTabSurface',
+  'WorkflowStatusSurface',
+];
+
+String _tabIdForRendererContract(String contract) {
+  switch (contract) {
+    case 'CalendarTabSurface':
+      return 'calendar';
+    case 'MessagesTabSurface':
+      return 'messages';
+    case 'MarketplaceTabSurface':
+      return 'marketplace';
+    case 'DocumentsTabSurface':
+      return 'documents';
+    case 'WorkflowStatusSurface':
+      return 'workflow-status';
+    default:
+      return _slug(contract);
+  }
+}
+
+String _tabLabelForRendererContract(String contract) {
+  switch (contract) {
+    case 'CalendarTabSurface':
+      return 'Calendar';
+    case 'MessagesTabSurface':
+      return 'Messages';
+    case 'MarketplaceTabSurface':
+      return 'Marketplace';
+    case 'DocumentsTabSurface':
+      return 'Documents';
+    case 'WorkflowStatusSurface':
+      return 'Status';
+    default:
+      return contract;
+  }
+}
+
+String _cardSurfaceFamilyForRendererContract(String contract) {
+  switch (contract) {
+    case 'CalendarTabSurface':
+      return 'calendar,event-rsvp,member-meetup';
+    case 'MessagesTabSurface':
+      return 'discussion-message,messaging-connections,notification-inbox';
+    case 'MarketplaceTabSurface':
+      return 'equipment-loan,plant-exchange';
+    case 'DocumentsTabSurface':
+      return 'documents,external-document-link,portability';
+    case 'WorkflowStatusSurface':
+      return 'workflow-status,approval-request,custom-form-submission';
+    default:
+      return '';
+  }
+}
+
+List<JsonMap> _screenRowsForRendererContract(
+  JsonMap evidence,
+  String contract,
+) {
+  final rows = _asMapList(evidence['screenRows']);
+  bool matches(JsonMap row) {
+    final text = _asString(row['visibleTextExtract']).toLowerCase();
+    final family = _asString(row['cardSurfaceFamily']).toLowerCase();
+    final workflow = _asString(row['workflowId']).toLowerCase();
+    switch (contract) {
+      case 'CalendarTabSurface':
+        return text.contains('calendar') ||
+            family.contains('event') ||
+            workflow.contains('event') ||
+            workflow.contains('rsvp') ||
+            workflow.contains('schedule');
+      case 'MessagesTabSurface':
+        return text.contains('messages') ||
+            text.contains('thread') ||
+            text.contains('inbox') ||
+            family.contains('thread') ||
+            family.contains('social') ||
+            workflow.contains('message') ||
+            workflow.contains('connection');
+      case 'MarketplaceTabSurface':
+        return text.contains('marketplace') ||
+            text.contains('loan') ||
+            text.contains('borrow') ||
+            text.contains('giveaway') ||
+            family.contains('equipment') ||
+            family.contains('exchange') ||
+            workflow.contains('gear') ||
+            workflow.contains('plant');
+      case 'DocumentsTabSurface':
+        return text.contains('documents') ||
+            text.contains('receipt') ||
+            text.contains('export') ||
+            family.contains('operations') ||
+            family.contains('portability') ||
+            workflow.contains('document') ||
+            workflow.contains('export');
+      case 'WorkflowStatusSurface':
+        return text.contains('status') ||
+            text.contains('review') ||
+            text.contains('approval') ||
+            text.contains('request changes') ||
+            family.contains('approval') ||
+            workflow.contains('approval') ||
+            workflow.contains('request') ||
+            workflow.contains('form');
+      default:
+        return false;
+    }
+  }
+
+  return rows.where(matches).take(24).toList();
+}
+
+List<String> _llmVisionReviewQualityProblems({
+  required JsonMap llmReview,
+  required JsonMap evidence,
+}) {
+  final problems = <String>[];
+  final currentRows = _asMapList(evidence['screenRows']);
+  final currentRowIds = <String>{for (final row in currentRows) _rowId(row)}
+    ..remove('');
+  final screenReviews = _asMapList(llmReview['screenReviews']);
+  final reviewedRows = <String>{
+    for (final review in screenReviews)
+      ..._asStringList(review['affectedScreenRowIds']),
+    for (final review in screenReviews) _asString(review['screenRowId']),
+  }..remove('');
+  final unreviewedRows = currentRowIds.difference(reviewedRows);
+  if (unreviewedRows.isNotEmpty) {
+    problems.add(
+      'screenReviews do not cover ${unreviewedRows.length} current screen rows (${unreviewedRows.take(8).join(', ')})',
+    );
+  }
+
+  final holisticAnswers = _asMapList(
+    llmReview['holisticQuestionAnswers'] ??
+        llmReview['holisticDirectQuestionAnswers'],
+  );
+  if (holisticAnswers.isEmpty) {
+    problems.add('holistic direct-question answers are missing');
+  }
+  for (final answer in holisticAnswers) {
+    final questionId = _asString(
+      answer['questionId'],
+      fallback: _rowId(answer),
+    );
+    final critique = _asString(
+      answer['critique'] ?? answer['why'] ?? answer['rationale'],
+    );
+    final visible = _visibleEvidenceText(answer);
+    if (visible.length < 24) {
+      problems.add('$questionId has no concrete visible screenshot evidence');
+    }
+    if (_isWeakLlmCritique(critique)) {
+      problems.add('$questionId has boilerplate or non-visual rationale');
+    }
+  }
+
+  for (final review in screenReviews) {
+    final rowId = _asString(review['screenRowId'], fallback: _rowId(review));
+    final critique = _asString(review['critique'] ?? review['why']);
+    final visible = _visibleEvidenceText(review);
+    final directQuestions = _asMapList(
+      review['directQuestionAnswers'] ??
+          review['directQuestions'] ??
+          review['questions'],
+    );
+    if (visible.length < 24) {
+      problems.add('$rowId has empty or weak visibleEvidence');
+    }
+    if (_isWeakLlmCritique(critique)) {
+      problems.add('$rowId has boilerplate critique');
+    }
+    if (directQuestions.isEmpty) {
+      problems.add('$rowId has no screen-level direct-question answers');
+    } else {
+      final weakQuestions = directQuestions.where((question) {
+        final q = _asString(question['question']);
+        final qVisible = _visibleEvidenceText(question);
+        final qWhy = _asString(
+          question['why'] ?? question['critique'] ?? question['rationale'],
+        );
+        return q.isEmpty || qVisible.length < 16 || _isWeakLlmCritique(qWhy);
+      }).length;
+      if (weakQuestions > 0) {
+        problems.add('$rowId has $weakQuestions weak direct-question answers');
+      }
+    }
+  }
+  return problems;
+}
+
+String _visibleEvidenceText(JsonMap row) {
+  final values = <String>[
+    ..._asStringList(row['visibleEvidence']),
+    ..._asStringList(row['visibleObservations']),
+    _asString(row['visibleText']),
+    _asString(row['visibleTextExcerpt']),
+    _asString(row['evidence']),
+  ];
+  return values
+      .where((value) => value.trim().isNotEmpty)
+      .join(' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
+bool _isWeakLlmCritique(String value) {
+  final critique = value.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+  if (critique.length < 80) {
+    return true;
+  }
+  final weakPhrases = <String>[
+    'no imported blocking visual finding',
+    'passing lifecycle/product-surface scaffold',
+    'fresh screenshot row',
+    'was reviewed for',
+    'visible text includes: .',
+    'no deterministic pixel/layout blocker',
+    'acceptable for b25 because',
+    'scorecards are green',
+    'no row-level coverage or critique failures were found',
+  ];
+  final weakPhraseCount = weakPhrases
+      .where((phrase) => critique.contains(phrase))
+      .length;
+  if (weakPhraseCount >= 2) {
+    return true;
+  }
+  return false;
 }
 
 _DerivedFailure? _failOnWorkflowPersonaScorecards(JsonMap evidence) {

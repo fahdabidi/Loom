@@ -62,6 +62,7 @@ void main() {
       expect(plan.accentColor, '#3A7D44');
       expect(plan.logoAssetId, 'asset_logo_garden');
       expect(plan.heroImageAssetId, 'asset_hero_garden');
+      expect(plan.appShellConfiguration['tabs'], isA<List<Object?>>());
     });
 
     test('vt_fake-backend_import-arbitrary-package-pair', () {
@@ -81,6 +82,10 @@ void main() {
       expect(report.community.logoAssetId, 'asset_logo_garden');
       expect(report.community.heroImageAssetId, 'asset_hero_garden');
       expect(report.community.accentColor, '#3A7D44');
+      expect(
+        report.community.appShellConfiguration['tabs'],
+        isA<List<Object?>>(),
+      );
       expect(backend.isExtensionLoaded('ext_garden_club'), isTrue);
       expect(report.importedSeedFiles, contains('seed/events.json'));
     });
@@ -127,7 +132,10 @@ void main() {
       backend.importInitializationPackage(_initialization());
       final reloaded = LocalInAppBackend(snapshot: backend.snapshot());
 
-      expect(reloaded.listCommunities().single.communityId, 'community_book_club');
+      expect(
+        reloaded.listCommunities().single.communityId,
+        'community_book_club',
+      );
       expect(reloaded.isExtensionLoaded('ext_book_club'), isTrue);
     });
 
@@ -327,6 +335,20 @@ _PackagePairFixture _writeArbitraryPackagePair() {
       'logoAssetId': 'asset_logo_garden',
       'heroImageAssetId': 'asset_hero_garden',
       'accentColor': '#3A7D44',
+      'appShell': {
+        'tabs': [
+          {
+            'tabId': 'calendar',
+            'label': 'Garden calendar',
+            'icon': 'calendar',
+            'rendererContractId': 'calendar-agenda-event-detail',
+            'sectionTitles': ['Upcoming events'],
+            'pinningPolicy': 'pin-first-critical-surface',
+            'pinningPolicyRationale':
+                'The next garden event is the most time-sensitive item.',
+          },
+        ],
+      },
     }),
   );
   return _PackagePairFixture(

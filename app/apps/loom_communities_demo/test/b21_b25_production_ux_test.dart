@@ -97,7 +97,7 @@ void main() {
     final workflowButton = find.byKey(
       ValueKey('workflow-button-${workflow.workflowId}'),
     );
-    await tester.ensureVisible(workflowButton);
+    await scrollFinderIntoViewport(tester, workflowButton);
     await tester.pumpAndSettle();
     await tester.tap(workflowButton);
     await tester.pumpAndSettle();

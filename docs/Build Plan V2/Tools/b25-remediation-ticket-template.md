@@ -28,6 +28,13 @@ or a generic pass/fail summary.
 | `affectedCoverageRowIds` | Machine-readable workflow/persona coverage row IDs affected by this ticket. |
 | `affectedScreenRowIds` | Machine-readable screen row IDs affected by this ticket. |
 | `affectedLifecycleScorecardIds` | Machine-readable workflow interaction-model scorecard IDs affected by this ticket. |
+| `tabId` | App Shell tab affected by the issue, such as `home`, `calendar`, `messages`, `marketplace`, `documents`, or a community-defined custom tab. |
+| `tabLabel` | Visible tab label shown in the app. |
+| `rendererContractId` | Required tab-native renderer contract, such as `CalendarTabSurface`, `MessagesTabSurface`, `MarketplaceTabSurface`, `DocumentsTabSurface`, or `WorkflowStatusSurface`. |
+| `targetRendererContract` | Renderer contract the fix must satisfy before the ticket can close. |
+| `cardSurfaceFamily` | Card surface family or families expected inside the tab or affected screen. |
+| `missingTabNativeEvidence` | The exact missing tab-native proof: calendar/agenda UI, inbox/thread/composer UI, marketplace browse/list/detail UI, document library/detail/open UI, or workflow status/timeline UI. |
+| `interactionEvidenceRequired` | Before/action/after screenshots and visible state changes required to prove a button/control works. |
 | `affectedCoverageRows` | Concrete workflow/persona coverage rows, including coverage row ID, community, workflow, persona/personaId, missing evidence, screen row IDs, screenshot paths, and target production surface. |
 | `affectedScreenRows` | Concrete screen rows, including screen row ID, community, workflow, persona, screen/state, screenshot path/hash/timestamp, app commit SHA, visible text excerpt, current classification, exact UX failure, target production surface, likely files/widgets, and row-level acceptance criteria. |
 | `failingWorkflowPersonaScorecards` | Failing workflow/persona scorecards, including failed direct questions, screen row IDs, screenshot paths, and required fixes. |
@@ -42,6 +49,8 @@ or a generic pass/fail summary.
 | `concreteAcceptanceCriteria` | Screen/workflow/persona-specific checks the remediation must satisfy before rerun. |
 | `semanticInteractionModel` | Expected user decision, required primary actions, required alternate/change/reject actions, disallowed generic substitutes, visible actions, missing actions, and wrong substitutes for the affected workflow/persona. |
 | `visualClosureRequirement` | Statement that the ticket can only close from fresh after screenshots and screenshot-derived visible text proving the target surface and interaction model, not from source diffs, implementation notes, or ticket responses. |
+| `requiredScreenshotsToRecapture` | Named screenshots or states to capture after remediation, including tab-native renderer rows and before/action/after interaction rows. |
+| `llmReviewDefect` | If applicable, the reason the prior LLM review itself was insufficient, such as missing visible evidence, boilerplate critique, or missing screen-level direct questions. |
 | `problemStatement` | Plain-language user-facing problem, not implementation jargon. |
 | `rootCauseHypothesis` | Likely UX/design root cause behind the failure. |
 | `targetExperience` | What the user should see, understand, and be able to do after the fix. |
@@ -90,8 +99,21 @@ Evidence-grounded explanation.
 - Communities:
 - Personas:
 - Workflows:
+- Tab:
+- Renderer contract:
+- Card surface family:
 - Screen rows:
 - Screenshots:
+
+### App Shell / Tab Renderer Proof Required
+
+| Field | Value |
+| --- | --- |
+| Tab | `calendar` / `messages` / `marketplace` / `documents` / custom tab |
+| Renderer contract | `CalendarTabSurface` / `MessagesTabSurface` / `MarketplaceTabSurface` / `DocumentsTabSurface` / `WorkflowStatusSurface` |
+| Missing tab-native evidence | What is missing from screenshots. |
+| Interaction evidence required | Before/action/after rows and visible state change required. |
+| Required recapture | Exact screens/states to recapture after remediation. |
 
 ### Affected Workflow/Persona Coverage
 

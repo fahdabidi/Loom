@@ -357,6 +357,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
   final Set<String> _receivedWorkflowPersonaKeys = {};
   final Map<String, String> _selectedTabIdByPersonaId = {};
   final Map<String, String> _focusedWorkflowIdByPersonaTab = {};
+  final Map<String, GlobalKey> _workflowSurfaceKeysById = {};
   late final ScrollController _surfaceScrollController;
   List<String> _visibleWorkflowIds = const [];
   String? _activeSurfaceFocusKey;
@@ -366,6 +367,31 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
   LocalInstalledCommunity get community => widget.community;
   List<String> get seedDataFiles => widget.seedDataFiles;
   String get _route => 'local:${community.extensionId}@latest';
+
+  String _routeForSelectedSurface({
+    required LoomExperienceDefinition experience,
+    required LoomAppShellTabSpec selectedTab,
+    required String? focusedWorkflowId,
+  }) {
+    if (focusedWorkflowId == null) {
+      return '$_route/tabs/${selectedTab.tabId}';
+    }
+    LoomWorkflowDefinition? workflow;
+    for (final candidate in experience.workflows) {
+      if (candidate.workflowId == focusedWorkflowId) {
+        workflow = candidate;
+        break;
+      }
+    }
+    if (workflow == null) {
+      return '$_route/tabs/${selectedTab.tabId}';
+    }
+    final registry = cardSurfaceRegistryEntryFor(
+      extensionId: experience.extensionId,
+      workflow: workflow,
+    );
+    return '$_route${registry.routeTemplate.replaceAll(':workflowId', workflow.workflowId)}';
+  }
 
   @override
   void initState() {
@@ -389,10 +415,35 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
         !_surfaceScrollController.hasClients) {
       return;
     }
-    final estimatedIndex = ((_surfaceScrollController.offset - 260) / 260)
-        .round()
-        .clamp(0, _visibleWorkflowIds.length - 1);
-    final nextFocused = _visibleWorkflowIds[estimatedIndex];
+    final viewportHeight = MediaQuery.maybeOf(context)?.size.height ?? 0;
+    final topBound = MediaQuery.maybeOf(context)?.padding.top ?? 0;
+    final bottomBound =
+        viewportHeight -
+        (MediaQuery.maybeOf(context)?.padding.bottom ?? 0) -
+        96;
+    var nextFocused = _visibleWorkflowIds.first;
+    var largestVisibleExtent = -1.0;
+    for (final workflowId in _visibleWorkflowIds) {
+      final key = _workflowSurfaceKeysById[workflowId];
+      final keyContext = key?.currentContext;
+      if (keyContext == null) {
+        continue;
+      }
+      final renderObject = keyContext.findRenderObject();
+      if (renderObject is! RenderBox || !renderObject.hasSize) {
+        continue;
+      }
+      final topLeft = renderObject.localToGlobal(Offset.zero);
+      final top = topLeft.dy;
+      final bottom = top + renderObject.size.height;
+      final visibleExtent =
+          bottom.clamp(topBound, bottomBound) -
+          top.clamp(topBound, bottomBound);
+      if (visibleExtent > largestVisibleExtent) {
+        largestVisibleExtent = visibleExtent;
+        nextFocused = workflowId;
+      }
+    }
     if (_focusedWorkflowIdByPersonaTab[focusKey] != nextFocused && mounted) {
       setState(() {
         _focusedWorkflowIdByPersonaTab[focusKey] = nextFocused;
@@ -402,6 +453,10 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
         }
       });
     }
+  }
+
+  GlobalKey _surfaceKeyForWorkflow(String workflowId) {
+    return _workflowSurfaceKeysById.putIfAbsent(workflowId, GlobalKey.new);
   }
 
   void _expandWorkflowSurface({
@@ -519,6 +574,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
+      appShellConfiguration: community.appShellConfiguration,
     );
     final targetTab = tabSpecs.firstWhere(
       (tab) => tab.matchesWorkflow(
@@ -527,17 +583,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       ),
       orElse: () => tabSpecs.first,
     );
-    final sections = _communitySectionsForTab(
-      experience: experience,
-      tab: targetTab,
-    );
-    final workflowIds = [
-      for (final section in sections)
-        for (final visibleWorkflow in section.workflows)
-          visibleWorkflow.workflowId,
-    ];
     final focusKey = '${activePersona.personaId}:${targetTab.tabId}';
-    final workflowIndex = workflowIds.indexOf(workflow.workflowId);
     setState(() {
       mutateState();
       _selectedTabIdByPersonaId[activePersona.personaId] = targetTab.tabId;
@@ -545,16 +591,16 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       _expandedWorkflowId = workflow.workflowId;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_surfaceScrollController.hasClients || workflowIndex < 0) {
+      final surfaceContext = _surfaceKeyForWorkflow(
+        workflow.workflowId,
+      ).currentContext;
+      if (surfaceContext == null) {
         return;
       }
-      final targetOffset = (220 + workflowIndex * 260).toDouble();
-      _surfaceScrollController.animateTo(
-        targetOffset.clamp(
-          0.0,
-          _surfaceScrollController.position.maxScrollExtent,
-        ),
-        duration: const Duration(milliseconds: 240),
+      Scrollable.ensureVisible(
+        surfaceContext,
+        alignment: 0.16,
+        duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
       );
     });
@@ -618,6 +664,60 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     });
   }
 
+  Widget _workflowPresenterFor({
+    required LoomExperienceDefinition experience,
+    required LoomPersonaDefinition activePersona,
+    required LoomWorkflowDefinition workflow,
+    required _SurfacePresentationState state,
+    required Color accent,
+    required String focusKey,
+  }) {
+    final policy = personaPolicyForWorkflow(
+      experience.extensionId,
+      workflow.workflowId,
+    );
+    final view = personaWorkflowViewFor(
+      extensionId: experience.extensionId,
+      workflow: workflow,
+      personaId: activePersona.personaId,
+      completedWorkflowIds: _completedWorkflowIds,
+      receivedWorkflowPersonaKeys: _receivedWorkflowPersonaKeys,
+    );
+    final workflowTile = _WorkflowTile(
+      extensionId: experience.extensionId,
+      workflow: workflow,
+      view: view,
+      onPressed: () => _confirmWorkflow(workflow),
+      onReceivePressed: () => _receiveWorkflow(
+        workflow: workflow,
+        persona: activePersona,
+        policy: policy,
+      ),
+    );
+    return KeyedSubtree(
+      key: _surfaceKeyForWorkflow(workflow.workflowId),
+      child: _WorkflowSurfacePresenter(
+        extensionId: experience.extensionId,
+        workflow: workflow,
+        view: view,
+        state: state,
+        accent: accent,
+        child: workflowTile,
+        onPressed: () => _confirmWorkflow(workflow),
+        onReceivePressed: () => _receiveWorkflow(
+          workflow: workflow,
+          persona: activePersona,
+          policy: policy,
+        ),
+        onExpand: () => _expandWorkflowSurface(
+          workflowId: workflow.workflowId,
+          focusKey: focusKey,
+        ),
+        onCollapse: () => _collapseWorkflowSurface(workflow.workflowId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final experience = experienceForExtensionId(
@@ -628,6 +728,7 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     final tabSpecs = appShellTabsFor(
       experience: experience,
       personaId: activePersona.personaId,
+      appShellConfiguration: community.appShellConfiguration,
     );
     final selectedTabId = _selectedTabIdFor(
       personaId: activePersona.personaId,
@@ -659,6 +760,11 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
     _activeSurfaceFocusKey = focusKey;
     _visibleWorkflowIds = shellSpec.visibleWorkflowIds;
     final focusedWorkflowId = shellSpec.focusedWorkflowId;
+    final currentRoute = _routeForSelectedSurface(
+      experience: experience,
+      selectedTab: selectedTab,
+      focusedWorkflowId: focusedWorkflowId,
+    );
     final textTheme = Theme.of(context).textTheme;
     final accent = shellSpec.theme.accent;
     final background = shellSpec.theme.background;
@@ -693,7 +799,12 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
       body: SingleChildScrollView(
         key: ValueKey('local-extension-${community.extensionId}'),
         controller: _surfaceScrollController,
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          shellSpec.theme.tabHeight + 48,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -795,6 +906,14 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
                     Offstage(
                       child: Text(
                         _route,
+                        key: ValueKey(
+                          'opened-base-route-${community.extensionId}',
+                        ),
+                      ),
+                    ),
+                    Offstage(
+                      child: Text(
+                        currentRoute,
                         key: ValueKey('opened-route-${community.extensionId}'),
                       ),
                     ),
@@ -809,76 +928,24 @@ class _LocalExtensionScreenState extends State<_LocalExtensionScreen> {
               persona: activePersona,
             ),
             const SizedBox(height: 10),
-            if (selectedTab.tabId == 'messages')
-              _MessagesTabSurface(
+            _TabNativeRenderer(
+              experience: experience,
+              persona: activePersona,
+              selectedTab: selectedTab,
+              sections: selectedSections,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: _expandedWorkflowId,
+              accent: accent,
+              theme: shellSpec.theme,
+              workflowBuilder: (workflow, state) => _workflowPresenterFor(
                 experience: experience,
-                persona: activePersona,
+                activePersona: activePersona,
+                workflow: workflow,
+                state: state,
                 accent: accent,
-              )
-            else
-              for (final section in selectedSections) ...[
-                _CommunitySectionHeader(
-                  title: section.title,
-                  subtitle: section.subtitle,
-                  icon: section.icon,
-                  accent: accent,
-                ),
-                const SizedBox(height: 8),
-                for (final workflow in section.workflows)
-                  Builder(
-                    builder: (context) {
-                      final policy = personaPolicyForWorkflow(
-                        experience.extensionId,
-                        workflow.workflowId,
-                      );
-                      final view = personaWorkflowViewFor(
-                        extensionId: experience.extensionId,
-                        workflow: workflow,
-                        personaId: activePersona.personaId,
-                        completedWorkflowIds: _completedWorkflowIds,
-                        receivedWorkflowPersonaKeys:
-                            _receivedWorkflowPersonaKeys,
-                      );
-                      final state = _expandedWorkflowId == workflow.workflowId
-                          ? _SurfacePresentationState.expanded
-                          : workflow.workflowId == focusedWorkflowId
-                          ? _SurfacePresentationState.medium
-                          : _SurfacePresentationState.minimized;
-                      final workflowTile = _WorkflowTile(
-                        extensionId: experience.extensionId,
-                        workflow: workflow,
-                        view: view,
-                        onPressed: () => _confirmWorkflow(workflow),
-                        onReceivePressed: () => _receiveWorkflow(
-                          workflow: workflow,
-                          persona: activePersona,
-                          policy: policy,
-                        ),
-                      );
-                      return _WorkflowSurfacePresenter(
-                        extensionId: experience.extensionId,
-                        workflow: workflow,
-                        view: view,
-                        state: state,
-                        accent: accent,
-                        child: workflowTile,
-                        onPressed: () => _confirmWorkflow(workflow),
-                        onReceivePressed: () => _receiveWorkflow(
-                          workflow: workflow,
-                          persona: activePersona,
-                          policy: policy,
-                        ),
-                        onExpand: () => _expandWorkflowSurface(
-                          workflowId: workflow.workflowId,
-                          focusKey: focusKey,
-                        ),
-                        onCollapse: () =>
-                            _collapseWorkflowSurface(workflow.workflowId),
-                      );
-                    },
-                  ),
-                const SizedBox(height: 20),
-              ],
+                focusKey: focusKey,
+              ),
+            ),
             const SizedBox(height: 24),
             ExpansionTile(
               title: const Text('Local package details'),
@@ -1099,15 +1166,27 @@ class _MessagesTabSurface extends StatelessWidget {
     required this.experience,
     required this.persona,
     required this.accent,
+    this.sections = const [],
+    this.workflowBuilder,
+    this.focusedWorkflowId,
+    this.expandedWorkflowId,
   });
 
   final LoomExperienceDefinition experience;
   final LoomPersonaDefinition persona;
   final Color accent;
+  final List<_CommunityWorkflowSection> sections;
+  final _WorkflowSurfaceBuilder? workflowBuilder;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
 
   @override
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(accent);
+    final messageWorkflows = [
+      for (final section in sections)
+        for (final workflow in section.workflows) workflow,
+    ];
     return DecoratedBox(
       key: const ValueKey('messages-tab-surface'),
       decoration: BoxDecoration(
@@ -1136,7 +1215,7 @@ class _MessagesTabSurface extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '${persona.label} can continue community threads, member messages, and connection invites from this shell-owned communication tab.',
+              '${persona.label} can continue community threads, member messages, and connection invites for ${experience.displayName}.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: foreground.withValues(alpha: 0.92),
               ),
@@ -1163,6 +1242,949 @@ class _MessagesTabSurface extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            _InboxPreviewCard(
+              accent: accent,
+              title: '${experience.displayName} coordination',
+              sender: persona.label,
+              preview:
+                  'Unread updates, replies, invites, and action follow-up stay in one conversation surface.',
+              timestamp: 'Today',
+            ),
+            const SizedBox(height: 12),
+            _ThreadComposerPreview(accent: accent),
+            if (messageWorkflows.isNotEmpty && workflowBuilder != null) ...[
+              const SizedBox(height: 14),
+              for (final workflow in messageWorkflows)
+                workflowBuilder!(
+                  workflow,
+                  _presentationStateForWorkflow(
+                    workflowId: workflow.workflowId,
+                    focusedWorkflowId: focusedWorkflowId,
+                    expandedWorkflowId: expandedWorkflowId,
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+typedef _WorkflowSurfaceBuilder =
+    Widget Function(
+      LoomWorkflowDefinition workflow,
+      _SurfacePresentationState state,
+    );
+
+class _TabNativeRenderer extends StatelessWidget {
+  const _TabNativeRenderer({
+    required this.experience,
+    required this.persona,
+    required this.selectedTab,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.theme,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final LoomAppShellTabSpec selectedTab;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final LoomThemeCustomizationTokens theme;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final rendererId = selectedTab.rendererContract.rendererId;
+    switch (rendererId) {
+      case 'CalendarTabSurface':
+        return _CalendarTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'MessagesTabSurface':
+        return _MessagesTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'MarketplaceTabSurface':
+        return _MarketplaceTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'DocumentsTabSurface':
+        return _DocumentsTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'WorkflowStatusSurface':
+        return _WorkflowStatusTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'PaymentGivingTabSurface':
+        return _PaymentGivingTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'CareVolunteerTabSurface':
+        return _CareVolunteerTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+      case 'AdminReviewComposeTabSurface':
+        return _AdminReviewComposeTabSurface(
+          experience: experience,
+          sections: sections,
+          focusedWorkflowId: focusedWorkflowId,
+          expandedWorkflowId: expandedWorkflowId,
+          accent: accent,
+          workflowBuilder: workflowBuilder,
+        );
+    }
+    return _HomeTabSurfaceStack(
+      experience: experience,
+      sections: sections,
+      focusedWorkflowId: focusedWorkflowId,
+      expandedWorkflowId: expandedWorkflowId,
+      accent: accent,
+      theme: theme,
+      workflowBuilder: workflowBuilder,
+    );
+  }
+}
+
+_SurfacePresentationState _presentationStateForWorkflow({
+  required String workflowId,
+  required String? focusedWorkflowId,
+  required String? expandedWorkflowId,
+}) {
+  if (expandedWorkflowId == workflowId) {
+    return _SurfacePresentationState.expanded;
+  }
+  if (focusedWorkflowId == workflowId) {
+    return _SurfacePresentationState.medium;
+  }
+  return _SurfacePresentationState.minimized;
+}
+
+List<LoomWorkflowDefinition> _workflowsFromSections(
+  List<_CommunityWorkflowSection> sections,
+) {
+  return [
+    for (final section in sections)
+      for (final workflow in section.workflows) workflow,
+  ];
+}
+
+class _HomeTabSurfaceStack extends StatelessWidget {
+  const _HomeTabSurfaceStack({
+    required this.experience,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.theme,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final LoomThemeCustomizationTokens theme;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sections.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.home_outlined,
+        title: 'Nothing is pinned yet',
+        body:
+            '${experience.displayName} does not have Home surfaces assigned yet.',
+        accent: accent,
+      );
+    }
+    return Column(
+      key: const ValueKey('home-tab-surface-stack'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _TabNativeSummary(
+          icon: Icons.home_outlined,
+          title: '${experience.displayName} home',
+          body:
+              'A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation.',
+          accent: accent,
+          facts: [
+            '${sections.length} sections',
+            theme.imageTreatment,
+            theme.density,
+          ],
+        ),
+        const SizedBox(height: 12),
+        for (final section in sections) ...[
+          _CommunitySectionHeader(
+            title: section.title,
+            subtitle: section.subtitle,
+            icon: section.icon,
+            accent: accent,
+          ),
+          const SizedBox(height: 8),
+          for (final workflow in section.workflows)
+            workflowBuilder(
+              workflow,
+              _presentationStateForWorkflow(
+                workflowId: workflow.workflowId,
+                focusedWorkflowId: focusedWorkflowId,
+                expandedWorkflowId: expandedWorkflowId,
+              ),
+            ),
+          const SizedBox(height: 20),
+        ],
+      ],
+    );
+  }
+}
+
+class _CalendarTabSurface extends StatelessWidget {
+  const _CalendarTabSurface({
+    required this.experience,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final workflows = _workflowsFromSections(sections);
+    if (workflows.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.calendar_month_outlined,
+        title: 'No upcoming dates',
+        body:
+            '${experience.displayName} has no visible calendar items for this persona.',
+        accent: accent,
+      );
+    }
+    final selected = workflows.firstWhere(
+      (workflow) => workflow.workflowId == focusedWorkflowId,
+      orElse: () => workflows.first,
+    );
+    return Column(
+      key: const ValueKey('calendar-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeekDateStrip(accent: accent),
+        const SizedBox(height: 12),
+        _TabNativeSummary(
+          icon: Icons.event_available_outlined,
+          title: _displayTitleFor(selected),
+          body:
+              'Agenda detail includes date, time, location, host, capacity, response choices, reminders, and linked workflow state.',
+          accent: accent,
+          facts: const ['Week view', 'Agenda', 'Event detail', 'Reminder'],
+        ),
+        const SizedBox(height: 12),
+        for (final workflow in workflows)
+          workflowBuilder(
+            workflow,
+            _presentationStateForWorkflow(
+              workflowId: workflow.workflowId,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: expandedWorkflowId,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MarketplaceTabSurface extends StatelessWidget {
+  const _MarketplaceTabSurface({
+    required this.experience,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final workflows = _workflowsFromSections(sections);
+    if (workflows.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.storefront_outlined,
+        title: 'No listings yet',
+        body:
+            'Listings, loans, queues, and giveaways for ${experience.displayName} will appear here.',
+        accent: accent,
+      );
+    }
+    return Column(
+      key: const ValueKey('marketplace-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _MarketplaceSearchHeader(accent: accent),
+        const SizedBox(height: 12),
+        _TabNativeSummary(
+          icon: Icons.inventory_2_outlined,
+          title: '${experience.displayName} marketplace',
+          body:
+              'Browse available items, inspect listing details, join a queue, see current-holder state, or list an item.',
+          accent: accent,
+          facts: const ['Browse', 'Search', 'List item', 'Queue', 'Holder'],
+        ),
+        const SizedBox(height: 12),
+        for (final workflow in workflows)
+          workflowBuilder(
+            workflow,
+            _presentationStateForWorkflow(
+              workflowId: workflow.workflowId,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: expandedWorkflowId,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _DocumentsTabSurface extends StatelessWidget {
+  const _DocumentsTabSurface({
+    required this.experience,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final workflows = _workflowsFromSections(sections);
+    if (workflows.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.folder_open_outlined,
+        title: 'No documents visible',
+        body:
+            'Documents, external links, versions, and access requests for ${experience.displayName} will appear here.',
+        accent: accent,
+      );
+    }
+    return Column(
+      key: const ValueKey('documents-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DocumentLibraryHeader(accent: accent),
+        const SizedBox(height: 12),
+        _TabNativeSummary(
+          icon: Icons.description_outlined,
+          title: '${experience.displayName} document library',
+          body:
+              'Library categories, document details, embedded open, external open, versions, and access state are grouped here.',
+          accent: accent,
+          facts: const [
+            'Library',
+            'Embedded open',
+            'External open',
+            'Versions',
+          ],
+        ),
+        const SizedBox(height: 12),
+        for (final workflow in workflows)
+          workflowBuilder(
+            workflow,
+            _presentationStateForWorkflow(
+              workflowId: workflow.workflowId,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: expandedWorkflowId,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _WorkflowStatusTabSurface extends StatelessWidget {
+  const _WorkflowStatusTabSurface({
+    required this.experience,
+    required this.sections,
+    required this.focusedWorkflowId,
+    required this.expandedWorkflowId,
+    required this.accent,
+    required this.workflowBuilder,
+  });
+
+  final LoomExperienceDefinition experience;
+  final List<_CommunityWorkflowSection> sections;
+  final String? focusedWorkflowId;
+  final String? expandedWorkflowId;
+  final Color accent;
+  final _WorkflowSurfaceBuilder workflowBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final workflows = _workflowsFromSections(sections);
+    if (workflows.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.timeline_outlined,
+        title: 'No active requests',
+        body:
+            'Submitted, under-review, feedback-needed, payment-needed, and completed requests will appear here.',
+        accent: accent,
+      );
+    }
+    return Column(
+      key: const ValueKey('workflow-status-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _StatusTimelinePreview(accent: accent),
+        const SizedBox(height: 12),
+        for (final workflow in workflows)
+          workflowBuilder(
+            workflow,
+            _presentationStateForWorkflow(
+              workflowId: workflow.workflowId,
+              focusedWorkflowId: focusedWorkflowId,
+              expandedWorkflowId: expandedWorkflowId,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _PaymentGivingTabSurface extends _WorkflowStatusTabSurface {
+  const _PaymentGivingTabSurface({
+    required super.experience,
+    required super.sections,
+    required super.focusedWorkflowId,
+    required super.expandedWorkflowId,
+    required super.accent,
+    required super.workflowBuilder,
+  });
+}
+
+class _CareVolunteerTabSurface extends _WorkflowStatusTabSurface {
+  const _CareVolunteerTabSurface({
+    required super.experience,
+    required super.sections,
+    required super.focusedWorkflowId,
+    required super.expandedWorkflowId,
+    required super.accent,
+    required super.workflowBuilder,
+  });
+}
+
+class _AdminReviewComposeTabSurface extends _WorkflowStatusTabSurface {
+  const _AdminReviewComposeTabSurface({
+    required super.experience,
+    required super.sections,
+    required super.focusedWorkflowId,
+    required super.expandedWorkflowId,
+    required super.accent,
+    required super.workflowBuilder,
+  });
+}
+
+class _TabNativeSummary extends StatelessWidget {
+  const _TabNativeSummary({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.accent,
+    required this.facts,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final Color accent;
+  final List<String> facts;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Color.alphaBlend(foreground.withValues(alpha: 0.08), accent),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: foreground.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: foreground, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        body,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.90),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final fact in facts)
+                  _SurfaceFactPill(
+                    icon: Icons.check_circle_outline,
+                    label: fact,
+                    foreground: foreground,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TabEmptyState extends StatelessWidget {
+  const _TabEmptyState({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.accent,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: foreground.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: foreground, size: 30),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    body,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground.withValues(alpha: 0.90),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeekDateStrip extends StatelessWidget {
+  const _WeekDateStrip({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return SizedBox(
+      key: const ValueKey('calendar-week-strip'),
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: days.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final selected = index == 5;
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: selected ? accent : Colors.white.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: accent.withValues(alpha: 0.22)),
+            ),
+            child: SizedBox(
+              width: 64,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    days[index],
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: selected ? foreground : accent,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${12 + index}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: selected ? foreground : accent,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MarketplaceSearchHeader extends StatelessWidget {
+  const _MarketplaceSearchHeader({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      key: const ValueKey('marketplace-browse-search'),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            TextField(
+              readOnly: true,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search, color: accent),
+                hintText: 'Search available items',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Available',
+                  foreground: accent,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.schedule_outlined,
+                  label: 'Queue',
+                  foreground: accent,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.person_pin_circle_outlined,
+                  label: 'Current holder',
+                  foreground: accent,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.add_box_outlined,
+                  label: 'List item',
+                  foreground: foreground,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DocumentLibraryHeader extends StatelessWidget {
+  const _DocumentLibraryHeader({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      key: const ValueKey('documents-library-header'),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _SurfaceFactPill(
+              icon: Icons.folder_outlined,
+              label: 'Library',
+              foreground: accent,
+            ),
+            _SurfaceFactPill(
+              icon: Icons.open_in_browser_outlined,
+              label: 'Embedded open',
+              foreground: accent,
+            ),
+            _SurfaceFactPill(
+              icon: Icons.open_in_new_outlined,
+              label: 'External app',
+              foreground: accent,
+            ),
+            _SurfaceFactPill(
+              icon: Icons.history_outlined,
+              label: 'Versions',
+              foreground: accent,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusTimelinePreview extends StatelessWidget {
+  const _StatusTimelinePreview({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    const steps = ['Submitted', 'Review', 'Changes', 'Approved'];
+    return DecoratedBox(
+      key: const ValueKey('workflow-status-timeline-preview'),
+      decoration: BoxDecoration(
+        color: accent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Status timeline',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 12),
+            for (var i = 0; i < steps.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      i < 2
+                          ? Icons.check_circle_outline
+                          : Icons.radio_button_unchecked,
+                      color: foreground,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        steps[i],
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: foreground.withValues(alpha: 0.92),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InboxPreviewCard extends StatelessWidget {
+  const _InboxPreviewCard({
+    required this.accent,
+    required this.title,
+    required this.sender,
+    required this.preview,
+    required this.timestamp,
+  });
+
+  final Color accent;
+  final String title;
+  final String sender;
+  final String preview;
+  final String timestamp;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      key: const ValueKey('messages-inbox-preview'),
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: foreground.withValues(alpha: 0.14),
+          child: Icon(Icons.mark_chat_unread_outlined, color: foreground),
+        ),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          '$sender - $preview',
+          style: TextStyle(color: foreground.withValues(alpha: 0.90)),
+        ),
+        trailing: Text(
+          timestamp,
+          style: TextStyle(color: foreground.withValues(alpha: 0.82)),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThreadComposerPreview extends StatelessWidget {
+  const _ThreadComposerPreview({required this.accent});
+
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = _foregroundFor(accent);
+    return DecoratedBox(
+      key: const ValueKey('messages-thread-composer-preview'),
+      decoration: BoxDecoration(
+        color: foreground.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Write a reply or start a thread',
+                style: TextStyle(color: foreground.withValues(alpha: 0.84)),
+              ),
+            ),
+            Icon(Icons.attach_file_outlined, color: foreground),
+            const SizedBox(width: 12),
+            Icon(Icons.send_outlined, color: foreground),
           ],
         ),
       ),
@@ -7438,9 +8460,15 @@ class _GardenEventRsvpTile extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: _StateBadge(
-                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
-                  icon: Icons.done,
-                  label: 'Going',
+                  key: ValueKey(
+                    view.completed
+                        ? 'workflow-complete-${workflow.workflowId}'
+                        : 'workflow-received-${workflow.workflowId}',
+                  ),
+                  icon: view.completed
+                      ? Icons.done
+                      : Icons.mark_email_read_outlined,
+                  label: view.completed ? 'Going' : 'Received',
                   foreground: foreground,
                 ),
               ),
@@ -7603,9 +8631,15 @@ class _GardenPlantExchangeTile extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: _StateBadge(
-                  key: ValueKey('workflow-complete-${workflow.workflowId}'),
-                  icon: Icons.done,
-                  label: 'Posted',
+                  key: ValueKey(
+                    view.completed
+                        ? 'workflow-complete-${workflow.workflowId}'
+                        : 'workflow-received-${workflow.workflowId}',
+                  ),
+                  icon: view.completed
+                      ? Icons.done
+                      : Icons.mark_email_read_outlined,
+                  label: view.completed ? 'Posted' : 'Received',
                   foreground: foreground,
                 ),
               ),
@@ -10384,6 +11418,7 @@ class LoomWorkflowCardSurfaceRegistryEntry {
     required this.alternateActions,
     required this.rendererTarget,
     required this.fakeBackendSupport,
+    this.routeTemplate = '/workflows/:workflowId',
   });
 
   final String workflowId;
@@ -10394,6 +11429,35 @@ class LoomWorkflowCardSurfaceRegistryEntry {
   final List<String> alternateActions;
   final String rendererTarget;
   final String fakeBackendSupport;
+  final String routeTemplate;
+}
+
+class LoomTabRendererContract {
+  const LoomTabRendererContract({
+    required this.rendererId,
+    required this.label,
+    required this.tabIds,
+    required this.surfaceFamilies,
+    required this.requiredAnatomy,
+    required this.requiredInteractions,
+    required this.requiredStates,
+    required this.evidenceRequirements,
+    required this.fallbackPolicy,
+  });
+
+  final String rendererId;
+  final String label;
+  final List<String> tabIds;
+  final List<String> surfaceFamilies;
+  final List<String> requiredAnatomy;
+  final List<String> requiredInteractions;
+  final List<String> requiredStates;
+  final List<String> evidenceRequirements;
+  final String fallbackPolicy;
+
+  bool supportsSurfaceFamily(String family) {
+    return surfaceFamilies.contains(family);
+  }
 }
 
 class LoomAppShellTabSpec {
@@ -10402,6 +11466,7 @@ class LoomAppShellTabSpec {
     required this.label,
     required this.icon,
     required this.description,
+    this.rendererContractId = 'home-surface-stack',
     this.pinningPolicy = 'none',
     this.pinningPolicyRationale =
         'No pinned surface is needed for this tab; users should scan the tab content in order.',
@@ -10416,6 +11481,7 @@ class LoomAppShellTabSpec {
   final String label;
   final IconData icon;
   final String description;
+  final String rendererContractId;
   final String pinningPolicy;
   final String pinningPolicyRationale;
   final List<String> sectionTitles;
@@ -10464,6 +11530,57 @@ class LoomAppShellTabSpec {
   bool get hasExplicitPinningPolicy =>
       pinningPolicy.trim().isNotEmpty &&
       pinningPolicyRationale.trim().length >= 12;
+
+  LoomTabRendererContract get rendererContract =>
+      tabRendererContractFor(rendererContractId);
+}
+
+class LoomDeclarativeTabSpec {
+  const LoomDeclarativeTabSpec({
+    required this.tabId,
+    required this.label,
+    required this.iconKey,
+    required this.description,
+    required this.rendererContractId,
+    this.pinningPolicy = 'none',
+    this.pinningPolicyRationale =
+        'This tab uses ordered content rather than a pinned surface.',
+    this.sectionTitles = const [],
+    this.cardSurfaceFamilies = const [],
+    this.pinnedWorkflowIds = const [],
+    this.visiblePersonaIds = const [],
+    this.requiredPermission = 'community.surface.navigation.read',
+  });
+
+  final String tabId;
+  final String label;
+  final String iconKey;
+  final String description;
+  final String rendererContractId;
+  final String pinningPolicy;
+  final String pinningPolicyRationale;
+  final List<String> sectionTitles;
+  final List<String> cardSurfaceFamilies;
+  final List<String> pinnedWorkflowIds;
+  final List<String> visiblePersonaIds;
+  final String requiredPermission;
+
+  LoomAppShellTabSpec toTabSpec() {
+    return LoomAppShellTabSpec(
+      tabId: tabId,
+      label: label,
+      icon: _tabIconForKey(iconKey),
+      description: description,
+      rendererContractId: rendererContractId,
+      pinningPolicy: pinningPolicy,
+      pinningPolicyRationale: pinningPolicyRationale,
+      sectionTitles: sectionTitles,
+      cardSurfaceFamilies: cardSurfaceFamilies,
+      pinnedWorkflowIds: pinnedWorkflowIds,
+      visiblePersonaIds: visiblePersonaIds,
+      requiredPermission: requiredPermission,
+    );
+  }
 }
 
 class CommunityAppShellCustomizationSpec {
@@ -10511,6 +11628,16 @@ class CommunityAppShellCustomizationSpec {
         background: _screenBackgroundFor(accent),
         foreground: _foregroundFor(accent),
         density: 'comfortable-mobile',
+        communityTitleScale: 1.06,
+        surfaceTitleScale: 1.04,
+        bodyScale: 1.0,
+        metadataScale: 0.94,
+        cardRadius: 16,
+        surfaceSpacing: 16,
+        elevation: 3,
+        imageTreatment: 'community-icon-badge',
+        buttonShape: 'rounded-pill',
+        tabHeight: 76,
       ),
     );
   }
@@ -10524,6 +11651,12 @@ class CommunityAppShellCustomizationSpec {
   final String? focusedWorkflowId;
   final Map<String, String> presentationStatesByWorkflowId;
   final LoomThemeCustomizationTokens theme;
+
+  Map<String, LoomTabRendererContract> get rendererContractsByTabId {
+    return Map.unmodifiable({
+      for (final tab in tabs) tab.tabId: tab.rendererContract,
+    });
+  }
 }
 
 class LoomThemeCustomizationTokens {
@@ -10532,12 +11665,425 @@ class LoomThemeCustomizationTokens {
     required this.background,
     required this.foreground,
     required this.density,
+    this.communityTitleScale = 1.0,
+    this.surfaceTitleScale = 1.0,
+    this.bodyScale = 1.0,
+    this.metadataScale = 1.0,
+    this.cardRadius = 16,
+    this.surfaceSpacing = 16,
+    this.elevation = 2,
+    this.imageTreatment = 'icon-badge',
+    this.buttonShape = 'pill',
+    this.tabHeight = 76,
   });
 
   final Color accent;
   final Color background;
   final Color foreground;
   final String density;
+  final double communityTitleScale;
+  final double surfaceTitleScale;
+  final double bodyScale;
+  final double metadataScale;
+  final double cardRadius;
+  final double surfaceSpacing;
+  final double elevation;
+  final String imageTreatment;
+  final String buttonShape;
+  final double tabHeight;
+}
+
+const _tabRendererContractsById = <String, LoomTabRendererContract>{
+  'home-surface-stack': LoomTabRendererContract(
+    rendererId: 'HomeTabSurfaceStack',
+    label: 'Home surface stack',
+    tabIds: ['home'],
+    surfaceFamilies: [
+      'community-home',
+      'announcement',
+      'event-rsvp',
+      'calendar',
+      'volunteer',
+      'care-request',
+      'approval',
+      'workflow-status',
+      'payment',
+      'exchange',
+      'equipment-loan',
+      'documents',
+      'external-document-link',
+      'operations',
+      'thread',
+      'social',
+      'form',
+    ],
+    requiredAnatomy: [
+      'community identity header',
+      'pinned or in-focus surface region',
+      'minimized surface stack',
+      'medium in-focus surface',
+      'tap-to-expanded detail state',
+    ],
+    requiredInteractions: [
+      'resolveCommunityTheme',
+      'resolvePersonaTabs',
+      'getPersonaSurfacePresentationState',
+      'updatePersonaSurfacePresentationState',
+      'previewNavigationConfiguration',
+    ],
+    requiredStates: ['minimized', 'medium', 'expanded', 'pinned or no-pin'],
+    evidenceRequirements: [
+      'community list minimized/medium card screenshots',
+      'in-community minimized, medium, and expanded surface screenshots',
+      'theme token proof',
+      'explicit pinning policy proof',
+    ],
+    fallbackPolicy:
+        'May host unassigned surfaces, but primary workflows should move to a tab-native renderer when a dedicated tab exists.',
+  ),
+  'calendar-agenda-event-detail': LoomTabRendererContract(
+    rendererId: 'CalendarTabSurface',
+    label: 'Calendar month/week/agenda and event detail',
+    tabIds: ['calendar'],
+    surfaceFamilies: ['calendar', 'event-rsvp', 'member-meetup'],
+    requiredAnatomy: [
+      'month or week/date strip',
+      'agenda list grouped by date',
+      'event detail with title, time, location, capacity, host, and reminders',
+      'RSVP or meetup action state',
+    ],
+    requiredInteractions: [
+      'listCalendarItems',
+      'getCalendarItem',
+      'openLinkedSurface',
+      'respondGoingMaybeNo',
+      'changeRsvp',
+      'cancelRsvp',
+      'joinWaitlist',
+      'setReminder',
+    ],
+    requiredStates: [
+      'empty schedule',
+      'upcoming item',
+      'selected detail',
+      'responded',
+      'waitlisted or full',
+      'cancelled or rescheduled',
+    ],
+    evidenceRequirements: [
+      'calendar tab screenshot',
+      'selected event detail screenshot',
+      'RSVP/change response screenshot',
+      'receiver or reminder state screenshot',
+    ],
+    fallbackPolicy:
+        'Event workflows may appear on Home as summaries, but Calendar owns dated browsing and event detail rendering.',
+  ),
+  'messages-inbox-thread-composer': LoomTabRendererContract(
+    rendererId: 'MessagesTabSurface',
+    label: 'Messages inbox, thread, composer, unread, and invites',
+    tabIds: ['messages'],
+    surfaceFamilies: ['thread', 'social', 'inbox'],
+    requiredAnatomy: [
+      'conversation or inbox list',
+      'unread badges',
+      'thread detail',
+      'message composer',
+      'connection invite/accept/decline state',
+    ],
+    requiredInteractions: [
+      'createThread',
+      'reply',
+      'markRead',
+      'listUnread',
+      'muteThread',
+      'archiveThread',
+      'sendInvite',
+      'acceptInvite',
+      'declineInvite',
+      'connectionStatus',
+    ],
+    requiredStates: [
+      'empty inbox',
+      'unread',
+      'thread open',
+      'sending',
+      'sent/read',
+      'muted/archived',
+      'invite pending',
+    ],
+    evidenceRequirements: [
+      'messages tab inbox screenshot',
+      'thread detail screenshot',
+      'composer/action screenshot',
+      'connection invite or state screenshot',
+    ],
+    fallbackPolicy:
+        'Messages must not render as a generic workflow list; it needs a chat/thread information architecture.',
+  ),
+  'marketplace-browse-listing-detail': LoomTabRendererContract(
+    rendererId: 'MarketplaceTabSurface',
+    label: 'Marketplace browse, search, listing, detail, custody, and queue',
+    tabIds: ['marketplace'],
+    surfaceFamilies: ['equipment-loan', 'exchange'],
+    requiredAnatomy: [
+      'browse/search/filter header',
+      'listing grid or list',
+      'listing detail with owner, availability, custody, queue, condition, and pickup',
+      'list your item action',
+      'loan/giveaway action state',
+    ],
+    requiredInteractions: [
+      'browseEquipment',
+      'searchEquipment',
+      'listEquipmentListing',
+      'updateEquipmentListing',
+      'removeEquipmentListing',
+      'requestLoan',
+      'joinLoanQueue',
+      'getCurrentHolder',
+      'listCustodyHistory',
+      'returnItem',
+      'claimGiveaway',
+      'transferGiveawayOwnership',
+    ],
+    requiredStates: [
+      'available',
+      'reserved',
+      'checked out/current holder',
+      'queued',
+      'returned',
+      'giveaway claimed',
+      'delisted',
+    ],
+    evidenceRequirements: [
+      'marketplace browse screenshot',
+      'listing detail screenshot',
+      'loan/giveaway action screenshot',
+      'current holder or queue screenshot',
+    ],
+    fallbackPolicy:
+        'Marketplace surfaces require browse and listing affordances; a single workflow card is not sufficient.',
+  ),
+  'documents-library-detail': LoomTabRendererContract(
+    rendererId: 'DocumentsTabSurface',
+    label: 'Documents library, detail, embedded, and external open',
+    tabIds: ['documents'],
+    surfaceFamilies: [
+      'documents',
+      'external-document-link',
+      'operations',
+      'portability',
+      'workflow-status',
+    ],
+    requiredAnatomy: [
+      'document library categories',
+      'document detail with metadata and permissions',
+      'embedded open affordance',
+      'external app/link open affordance',
+      'version/access/acknowledgement state',
+    ],
+    requiredInteractions: [
+      'listDocuments',
+      'getDocumentDetail',
+      'openEmbeddedDocument',
+      'openExternalDocument',
+      'downloadDocument',
+      'acknowledgeDocument',
+      'requestDocumentAccess',
+      'listDocumentVersions',
+      'documentAuditTrail',
+    ],
+    requiredStates: [
+      'available',
+      'restricted',
+      'access requested',
+      'opened embedded',
+      'opened external',
+      'acknowledged',
+      'retired/versioned',
+    ],
+    evidenceRequirements: [
+      'documents tab library screenshot',
+      'document detail screenshot',
+      'embedded open screenshot or handoff proof',
+      'external open screenshot or handoff proof',
+    ],
+    fallbackPolicy:
+        'Document and portability workflows may summarize on Home, but Documents owns library/detail/open rendering.',
+  ),
+  'workflow-status-timeline-actions': LoomTabRendererContract(
+    rendererId: 'WorkflowStatusSurface',
+    label: 'Workflow status timeline and actions',
+    tabIds: ['home', 'admin', 'documents'],
+    surfaceFamilies: ['workflow-status', 'approval', 'form', 'operations'],
+    requiredAnatomy: [
+      'status timeline',
+      'current step and owner',
+      'submitted details',
+      'comments/documents/payment needed',
+      'next actions and alternate/reopen paths',
+    ],
+    requiredInteractions: [
+      'createWorkflowInstance',
+      'getWorkflowStatus',
+      'listWorkflowSteps',
+      'transitionWorkflowStep',
+      'requestWorkflowChanges',
+      'approveWorkflowStep',
+      'rejectWorkflowStep',
+      'addWorkflowComment',
+      'attachWorkflowDocument',
+      'reopenWorkflow',
+    ],
+    requiredStates: [
+      'submitted',
+      'under review',
+      'feedback needed',
+      'payment needed',
+      'approved/rejected',
+      'reopened',
+      'cancelled',
+    ],
+    evidenceRequirements: [
+      'timeline screenshot',
+      'current step screenshot',
+      'action/result screenshot',
+      'receiver/notification state screenshot',
+    ],
+    fallbackPolicy:
+        'Use this renderer for arbitrary multi-step requests instead of fixed approval cards when the workflow has variable steps.',
+  ),
+  'payment-giving-ledger': LoomTabRendererContract(
+    rendererId: 'PaymentGivingTabSurface',
+    label: 'Giving, payment, receipt, and entitlement ledger',
+    tabIds: ['giving'],
+    surfaceFamilies: ['payment', 'ad-off-entitlement', 'ad-off-settlement'],
+    requiredAnatomy: [
+      'amount and purpose summary',
+      'checkout or payment intent',
+      'receipt and audit state',
+      'subscription/entitlement management',
+    ],
+    requiredInteractions: [
+      'createPaymentIntent',
+      'confirmPayment',
+      'retryPayment',
+      'refund',
+      'manageRecurringPlan',
+      'getReceipt',
+      'getEntitlement',
+      'settlementStatus',
+    ],
+    requiredStates: [
+      'due',
+      'checkout',
+      'paid',
+      'failed/retry',
+      'refunded',
+      'recurring',
+      'entitled',
+    ],
+    evidenceRequirements: [
+      'giving tab screenshot',
+      'payment detail screenshot',
+      'receipt/entitlement screenshot',
+    ],
+    fallbackPolicy:
+        'Payment summaries may appear elsewhere, but Giving owns checkout, receipt, and entitlement depth.',
+  ),
+  'care-volunteer-request-queue': LoomTabRendererContract(
+    rendererId: 'CareVolunteerTabSurface',
+    label: 'Care requests, volunteer shifts, roster, and privacy',
+    tabIds: ['care'],
+    surfaceFamilies: ['care-request', 'volunteer'],
+    requiredAnatomy: [
+      'request or shift queue',
+      'protected/public data split',
+      'roster or volunteer count',
+      'assignment/check-in state',
+      'neutral notification state',
+    ],
+    requiredInteractions: [
+      'createRequest',
+      'assignCareTeam',
+      'reviewRequest',
+      'resolveRequest',
+      'listShifts',
+      'signup',
+      'listVolunteers',
+      'protectedContactReveal',
+      'checkIn',
+    ],
+    requiredStates: [
+      'open request',
+      'assigned',
+      'resolved',
+      'shift open',
+      'signed up',
+      'checked in',
+      'protected',
+    ],
+    evidenceRequirements: [
+      'care tab queue screenshot',
+      'request/detail screenshot',
+      'volunteer roster/count screenshot',
+      'protected contact handling screenshot',
+    ],
+    fallbackPolicy:
+        'Care and volunteer tasks need privacy-aware queues/details, not generic action cards.',
+  ),
+  'admin-review-compose-queue': LoomTabRendererContract(
+    rendererId: 'AdminReviewComposeTabSurface',
+    label: 'Admin compose, approval queue, sponsorship, and moderation',
+    tabIds: ['admin'],
+    surfaceFamilies: ['announcement', 'approval', 'ad', 'workflow-status'],
+    requiredAnatomy: [
+      'role-specific task queue',
+      'composer or reviewer detail',
+      'preview/status/audit summary',
+      'approve/reject/request changes actions',
+    ],
+    requiredInteractions: [
+      'createDraft',
+      'previewAnnouncement',
+      'publishAnnouncement',
+      'assignReviewer',
+      'approve',
+      'reject',
+      'requestChanges',
+      'comment',
+      'recordImpression',
+      'getDisclosure',
+    ],
+    requiredStates: [
+      'draft',
+      'preview',
+      'published',
+      'pending review',
+      'approved',
+      'rejected',
+      'changes requested',
+      'disclosed',
+    ],
+    evidenceRequirements: [
+      'admin tab queue screenshot',
+      'compose/detail screenshot',
+      'decision/action screenshot',
+      'result/audit screenshot',
+    ],
+    fallbackPolicy:
+        'Admin tasks need queues and compose/review surfaces; do not expose them as undifferentiated workflow cards.',
+  ),
+};
+
+LoomTabRendererContract tabRendererContractFor(String rendererContractId) {
+  return _tabRendererContractsById[rendererContractId] ??
+      _tabRendererContractsById['home-surface-stack']!;
+}
+
+List<LoomTabRendererContract> allTabRendererContracts() {
+  return List.unmodifiable(_tabRendererContractsById.values);
 }
 
 class LoomExperienceDefinition {
@@ -10847,6 +12393,7 @@ List<LoomWorkflowDependency> workflowDependenciesForExtensionId(
 List<LoomAppShellTabSpec> appShellTabsFor({
   required LoomExperienceDefinition experience,
   required String personaId,
+  Map<String, Object?> appShellConfiguration = const {},
 }) {
   final generatedTabs = <LoomAppShellTabSpec>[
     const LoomAppShellTabSpec(
@@ -10854,6 +12401,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       label: 'Home',
       icon: Icons.home_outlined,
       description: 'Pinned and unassigned community surfaces.',
+      rendererContractId: 'home-surface-stack',
       pinningPolicy: 'none-declared-for-home',
       pinningPolicyRationale:
           'Home intentionally keeps the first visible surface in focus instead of pinning one workflow across every community.',
@@ -10865,6 +12413,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Calendar',
         icon: Icons.calendar_month_outlined,
         description: 'Events, schedules, capacity, and reminders.',
+        rendererContractId: 'calendar-agenda-event-detail',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Calendar tabs pin the next dated event so members can act on the most time-sensitive schedule item first.',
@@ -10881,6 +12430,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Documents',
         icon: Icons.folder_open_outlined,
         description: 'Documents, exports, transfers, and audit records.',
+        rendererContractId: 'documents-library-detail',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Document tabs pin the most important document or status surface so owners see the current record before browsing history.',
@@ -10903,6 +12453,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Marketplace',
         icon: Icons.storefront_outlined,
         description: 'Shared items, offers, claims, loans, and giveaways.',
+        rendererContractId: 'marketplace-browse-listing-detail',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Marketplace tabs pin the most immediately actionable listing so members can browse, claim, or update availability quickly.',
@@ -10920,6 +12471,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Giving',
         icon: Icons.payments_outlined,
         description: 'Payments, dues, donations, receipts, and ad-off state.',
+        rendererContractId: 'payment-giving-ledger',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Giving tabs pin the current payment or receipt state because members need the amount, status, and next action first.',
@@ -10936,6 +12488,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: 'Care',
         icon: Icons.volunteer_activism_outlined,
         description: 'Care requests, volunteer shifts, and member support.',
+        rendererContractId: 'care-volunteer-request-queue',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Care tabs pin the most urgent request or volunteer shift so the support workflow remains immediately visible.',
@@ -10953,6 +12506,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         label: _adminTabLabelFor(experience.extensionId),
         icon: Icons.admin_panel_settings_outlined,
         description: 'Role-specific publishing, approvals, and operations.',
+        rendererContractId: 'admin-review-compose-queue',
         pinningPolicy: 'pin-first-critical-surface',
         pinningPolicyRationale:
             'Admin tabs pin the first pending approval or publishing task so administrators see the queue item that needs action.',
@@ -10979,6 +12533,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
       label: 'Messages',
       icon: Icons.forum_outlined,
       description: 'Shell-owned communication and connections.',
+      rendererContractId: 'messages-inbox-thread-composer',
       pinningPolicy: 'none-declared-for-messages',
       pinningPolicyRationale:
           'Messages uses a conversation surface rather than a pinned workflow card, so no pinned card surface is appropriate.',
@@ -10986,10 +12541,280 @@ List<LoomAppShellTabSpec> appShellTabsFor({
     ),
   ];
   return [
-    for (final tab in generatedTabs)
+    for (final tab in _mergeDeclarativeTabSpecs(
+      experience: experience,
+      personaId: personaId,
+      generatedTabs: generatedTabs,
+      appShellConfiguration: appShellConfiguration,
+    ))
       if (tab.isVisibleFor(personaId)) tab,
   ];
 }
+
+List<LoomAppShellTabSpec> _mergeDeclarativeTabSpecs({
+  required LoomExperienceDefinition experience,
+  required String personaId,
+  required List<LoomAppShellTabSpec> generatedTabs,
+  required Map<String, Object?> appShellConfiguration,
+}) {
+  final overrides = _declarativeTabSpecsFor(
+    extensionId: experience.extensionId,
+    personaId: personaId,
+    appShellConfiguration: appShellConfiguration,
+  );
+  if (overrides.isEmpty) {
+    return generatedTabs;
+  }
+  final mergedById = <String, LoomAppShellTabSpec>{
+    for (final tab in generatedTabs) tab.tabId: tab,
+  };
+  for (final override in overrides) {
+    mergedById[override.tabId] = override.toTabSpec();
+  }
+  final orderedIds = <String>[
+    'home',
+    ...overrides
+        .map((override) => override.tabId)
+        .where((tabId) => tabId != 'home' && tabId != 'messages'),
+    for (final tab in generatedTabs)
+      if (!overrides.any((override) => override.tabId == tab.tabId) &&
+          tab.tabId != 'home' &&
+          tab.tabId != 'messages')
+        tab.tabId,
+    'messages',
+  ];
+  return [
+    for (final tabId in orderedIds)
+      if (mergedById[tabId] != null) mergedById[tabId]!,
+  ];
+}
+
+List<LoomDeclarativeTabSpec> _declarativeTabSpecsFor({
+  required String extensionId,
+  required String personaId,
+  Map<String, Object?> appShellConfiguration = const {},
+}) {
+  final packageGlobal = _declarativeTabSpecsFromConfiguration(
+    appShellConfiguration['tabs'],
+  );
+  final packagePersona = _declarativeTabSpecsFromPersonaConfiguration(
+    appShellConfiguration['personaTabs'],
+    personaId: personaId,
+  );
+  final global = _declarativeTabSpecsByExtensionId[extensionId] ?? const [];
+  final persona =
+      _declarativeTabSpecsByExtensionAndPersona['$extensionId::$personaId'] ??
+      const [];
+  return [...global, ...persona, ...packageGlobal, ...packagePersona];
+}
+
+List<LoomDeclarativeTabSpec> _declarativeTabSpecsFromPersonaConfiguration(
+  Object? value, {
+  required String personaId,
+}) {
+  if (value is! Map<String, Object?>) {
+    return const [];
+  }
+  return _declarativeTabSpecsFromConfiguration(value[personaId]);
+}
+
+List<LoomDeclarativeTabSpec> _declarativeTabSpecsFromConfiguration(
+  Object? value,
+) {
+  if (value is! List<Object?>) {
+    return const [];
+  }
+  return [
+    for (final item in value)
+      if (_declarativeTabSpecFromMap(item) case final spec?) spec,
+  ];
+}
+
+LoomDeclarativeTabSpec? _declarativeTabSpecFromMap(Object? value) {
+  if (value is! Map<String, Object?>) {
+    return null;
+  }
+  final tabId = _readShellString(value, const ['tabId', 'id']);
+  final label = _readShellString(value, const ['label', 'title']);
+  final iconKey = _readShellString(value, const ['iconKey', 'icon']) ?? 'home';
+  final rendererContractId = _readShellString(value, const [
+    'rendererContractId',
+    'renderer',
+    'rendererId',
+  ]);
+  if (tabId == null || label == null || rendererContractId == null) {
+    return null;
+  }
+  return LoomDeclarativeTabSpec(
+    tabId: tabId,
+    label: label,
+    iconKey: iconKey,
+    description:
+        _readShellString(value, const ['description', 'subtitle']) ??
+        '$label surfaces for this community.',
+    rendererContractId: rendererContractId,
+    pinningPolicy: _readShellString(value, const ['pinningPolicy']) ?? 'none',
+    pinningPolicyRationale:
+        _readShellString(value, const ['pinningPolicyRationale']) ??
+        'This package declares the tab pinning policy explicitly.',
+    sectionTitles: _readShellStringList(value, const [
+      'sectionTitles',
+      'sections',
+    ]),
+    cardSurfaceFamilies: _readShellStringList(value, const [
+      'cardSurfaceFamilies',
+      'surfaceFamilies',
+      'cardSurfaces',
+    ]),
+    pinnedWorkflowIds: _readShellStringList(value, const [
+      'pinnedWorkflowIds',
+      'pinnedSurfaces',
+      'pinnedWorkflowIds',
+    ]),
+    visiblePersonaIds: _readShellStringList(value, const [
+      'visiblePersonaIds',
+      'personas',
+    ]),
+    requiredPermission:
+        _readShellString(value, const ['requiredPermission', 'permission']) ??
+        'community.surface.navigation.read',
+  );
+}
+
+String? _readShellString(Map<String, Object?> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.trim().isNotEmpty) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+List<String> _readShellStringList(Map<String, Object?> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is List<Object?>) {
+      return value
+          .whereType<String>()
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList(growable: false);
+    }
+  }
+  return const [];
+}
+
+IconData _tabIconForKey(String iconKey) {
+  switch (iconKey) {
+    case 'home':
+      return Icons.home_outlined;
+    case 'calendar':
+      return Icons.calendar_month_outlined;
+    case 'documents':
+      return Icons.folder_open_outlined;
+    case 'marketplace':
+      return Icons.storefront_outlined;
+    case 'gear':
+      return Icons.photo_camera_back_outlined;
+    case 'messages':
+      return Icons.forum_outlined;
+    case 'giving':
+      return Icons.payments_outlined;
+    case 'care':
+      return Icons.volunteer_activism_outlined;
+    case 'admin':
+      return Icons.admin_panel_settings_outlined;
+    case 'board':
+      return Icons.fact_check_outlined;
+  }
+  return Icons.apps_outlined;
+}
+
+const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>{
+  'ext_camera_club': [
+    LoomDeclarativeTabSpec(
+      tabId: 'calendar',
+      label: 'Walks',
+      iconKey: 'calendar',
+      description: 'Photo walks, critique deadlines, reminders, and RSVPs.',
+      rendererContractId: 'calendar-agenda-event-detail',
+      pinningPolicy: 'pin-next-photo-walk',
+      pinningPolicyRationale:
+          'Camera Club pins the next walk because members need the route, time, capacity, and gear reminder first.',
+      sectionTitles: ['Upcoming events'],
+      cardSurfaceFamilies: ['event-rsvp', 'calendar'],
+      pinnedWorkflowIds: ['photo-walk-rsvp'],
+      requiredPermission: 'community.surface.calendar.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'marketplace',
+      label: 'Gear',
+      iconKey: 'gear',
+      description: 'Browse, request, loan, queue for, and return shared gear.',
+      rendererContractId: 'marketplace-browse-listing-detail',
+      pinningPolicy: 'pin-featured-available-listing',
+      pinningPolicyRationale:
+          'Gear tabs pin the featured available item so members can see availability and current-holder state immediately.',
+      cardSurfaceFamilies: ['equipment-loan'],
+      pinnedWorkflowIds: ['gear-loan-request'],
+      requiredPermission: 'community.surface.marketplace.read',
+    ),
+    LoomDeclarativeTabSpec(
+      tabId: 'messages',
+      label: 'Club chat',
+      iconKey: 'messages',
+      description:
+          'Threads, critique follow-up, walk coordination, and invites.',
+      rendererContractId: 'messages-inbox-thread-composer',
+      pinningPolicy: 'none-declared-for-messages',
+      pinningPolicyRationale:
+          'Club chat uses inbox and thread surfaces, so no pinned workflow card is appropriate.',
+      requiredPermission: 'community.surface.messages.read',
+    ),
+  ],
+  'ext_garden_club': [
+    LoomDeclarativeTabSpec(
+      tabId: 'marketplace',
+      label: 'Exchange',
+      iconKey: 'marketplace',
+      description:
+          'Browse offers, plant claims, pickup windows, and handoff state.',
+      rendererContractId: 'marketplace-browse-listing-detail',
+      pinningPolicy: 'pin-featured-available-listing',
+      pinningPolicyRationale:
+          'Garden exchange pins the most actionable offer so members can see variety, pickup, claim, and privacy state first.',
+      cardSurfaceFamilies: ['exchange', 'equipment-loan'],
+      pinnedWorkflowIds: ['plant-exchange-submission'],
+      requiredPermission: 'community.surface.marketplace.read',
+    ),
+  ],
+  'ext_hoa': [
+    LoomDeclarativeTabSpec(
+      tabId: 'admin',
+      label: 'Board',
+      iconKey: 'board',
+      description:
+          'Architectural decisions, dues, documents, and owner follow-up.',
+      rendererContractId: 'admin-review-compose-queue',
+      pinningPolicy: 'pin-first-critical-surface',
+      pinningPolicyRationale:
+          'Board tabs pin the first review or payment item that needs a decision.',
+      sectionTitles: ['Requests and approvals', 'Giving', 'Documents and data'],
+      cardSurfaceFamilies: [
+        'approval',
+        'payment',
+        'operations',
+        'workflow-status',
+      ],
+      visiblePersonaIds: ['hoa-board'],
+      requiredPermission: 'community.surface.navigation.configure',
+    ),
+  ],
+};
+
+const _declarativeTabSpecsByExtensionAndPersona =
+    <String, List<LoomDeclarativeTabSpec>>{};
 
 bool _hasAnySection(
   LoomExperienceDefinition experience,
@@ -11088,6 +12913,7 @@ LoomWorkflowCardSurfaceRegistryEntry cardSurfaceRegistryEntryFor({
       workflowId: workflow.workflowId,
     ),
     fakeBackendSupport: base.fakeBackendSupport,
+    routeTemplate: _routeTemplateForSurfaceFamily(base.cardSurfaceFamily),
   );
 }
 
@@ -11619,21 +13445,150 @@ LoomWorkflowCardSurfaceRegistryEntry _registryEntry({
   );
 }
 
+String _routeTemplateForSurfaceFamily(String cardSurfaceFamily) {
+  switch (cardSurfaceFamily) {
+    case 'calendar':
+    case 'event-rsvp':
+    case 'member-meetup':
+      return '/calendar/:workflowId';
+    case 'thread':
+    case 'social':
+    case 'inbox':
+      return '/messages/:workflowId';
+    case 'equipment-loan':
+    case 'exchange':
+      return '/marketplace/:workflowId';
+    case 'documents':
+    case 'external-document-link':
+    case 'operations':
+    case 'portability':
+      return '/documents/:workflowId';
+    case 'workflow-status':
+    case 'approval':
+    case 'form':
+      return '/workflows/:workflowId';
+    case 'payment':
+    case 'ad-off-entitlement':
+    case 'ad-off-settlement':
+      return '/giving/:workflowId';
+    case 'care-request':
+    case 'volunteer':
+      return '/care/:workflowId';
+    case 'announcement':
+    case 'ad':
+      return '/admin/:workflowId';
+  }
+  return '/workflows/:workflowId';
+}
+
 String _rendererTargetForWorkflow({
   required String extensionId,
   required String workflowId,
 }) {
-  if (extensionId == 'ext_garden' && workflowId == 'garden-event-rsvp') {
-    return '_GardenEventRsvpTile + _GardenEventRsvpActionSurface';
+  final entry = _cardSurfaceRegistryEntryForWorkflowId(workflowId);
+  final rendererContract = tabRendererContractFor(
+    _rendererContractIdForSurfaceFamily(entry.cardSurfaceFamily),
+  );
+  final surfaceRenderer = _surfaceRendererNameForSurfaceFamily(
+    entry.cardSurfaceFamily,
+  );
+  if (extensionId == 'ext_garden_club' && workflowId == 'garden-event-rsvp') {
+    return '${rendererContract.rendererId}/$surfaceRenderer + _GardenEventRsvpActionSurface';
   }
-  if (extensionId == 'ext_garden' &&
+  if (extensionId == 'ext_garden_club' &&
       workflowId == 'plant-exchange-submission') {
-    return '_GardenPlantExchangeTile + _GardenPlantExchangeActionSurface';
+    return '${rendererContract.rendererId}/$surfaceRenderer + _GardenPlantExchangeActionSurface';
   }
   if (_richWorkflowSpecFor(workflowId) != null) {
-    return '_RichWorkflowTile + _RichWorkflowActionSurface';
+    return '${rendererContract.rendererId}/$surfaceRenderer + _RichWorkflowActionSurface';
   }
-  return '_WorkflowTile + _WorkflowActionSurface';
+  return '${rendererContract.rendererId}/$surfaceRenderer + _WorkflowActionSurface';
+}
+
+String _rendererContractIdForSurfaceFamily(String cardSurfaceFamily) {
+  switch (cardSurfaceFamily) {
+    case 'calendar':
+    case 'event-rsvp':
+    case 'member-meetup':
+      return 'calendar-agenda-event-detail';
+    case 'thread':
+    case 'social':
+    case 'inbox':
+      return 'messages-inbox-thread-composer';
+    case 'equipment-loan':
+    case 'exchange':
+      return 'marketplace-browse-listing-detail';
+    case 'documents':
+    case 'external-document-link':
+    case 'operations':
+    case 'portability':
+      return 'documents-library-detail';
+    case 'workflow-status':
+    case 'approval':
+    case 'form':
+      return 'workflow-status-timeline-actions';
+    case 'payment':
+    case 'ad-off-entitlement':
+    case 'ad-off-settlement':
+      return 'payment-giving-ledger';
+    case 'care-request':
+    case 'volunteer':
+      return 'care-volunteer-request-queue';
+    case 'announcement':
+    case 'ad':
+      return 'admin-review-compose-queue';
+  }
+  return 'home-surface-stack';
+}
+
+String _surfaceRendererNameForSurfaceFamily(String cardSurfaceFamily) {
+  switch (cardSurfaceFamily) {
+    case 'calendar':
+      return 'CalendarItemRenderer';
+    case 'event-rsvp':
+      return 'EventRsvpDetailRenderer';
+    case 'member-meetup':
+      return 'MeetupDetailRenderer';
+    case 'thread':
+      return 'ThreadPreviewRenderer';
+    case 'social':
+      return 'ConnectionInviteRenderer';
+    case 'inbox':
+      return 'InboxItemRenderer';
+    case 'equipment-loan':
+      return 'MarketplaceListingDetailRenderer';
+    case 'exchange':
+      return 'ExchangeOfferRenderer';
+    case 'documents':
+      return 'DocumentDetailRenderer';
+    case 'external-document-link':
+      return 'ExternalDocumentRenderer';
+    case 'operations':
+      return 'OperationsRecordRenderer';
+    case 'portability':
+      return 'PortabilityStatusRenderer';
+    case 'workflow-status':
+      return 'WorkflowStatusTimelineRenderer';
+    case 'approval':
+      return 'ApprovalRequestTimelineRenderer';
+    case 'form':
+      return 'FormSubmissionStatusRenderer';
+    case 'payment':
+      return 'PaymentReceiptRenderer';
+    case 'ad-off-entitlement':
+      return 'AdOffEntitlementRenderer';
+    case 'ad-off-settlement':
+      return 'AdOffSettlementRenderer';
+    case 'care-request':
+      return 'CareRequestDetailRenderer';
+    case 'volunteer':
+      return 'VolunteerShiftRenderer';
+    case 'announcement':
+      return 'AnnouncementComposerRenderer';
+    case 'ad':
+      return 'SponsoredPlacementRenderer';
+  }
+  return 'SurfaceStackRenderer';
 }
 
 List<String> productionUxGenericCopyViolations() {

@@ -128,6 +128,35 @@ Use those rows as the first place to verify shell capabilities:
 - `B20_app_shell_soccer_roster_renderer_medium` and
   `B20_app_shell_soccer_roster_renderer_expanded` for card-surface renderer selection proof.
 
+The reviewer must also write structured App Shell proof rows. Prose such as "tabs look good" is not
+enough for B25. `appShellCapabilityReview.tabRendererResults[]` must contain one row for each required
+tab-native renderer contract:
+
+- `CalendarTabSurface`: Does the tab look and behave like a calendar, agenda, and event-detail
+  experience with dates, times, capacity/attendance, RSVP/change response, and event state?
+- `MessagesTabSurface`: Does the tab look and behave like inbox/thread/chat/composer UI with unread
+  state, connection/invite affordances, sender/receiver context, and message actions?
+- `MarketplaceTabSurface`: Does the tab look and behave like browse/search/filter/listing/detail UI
+  with current holder, queue/hold, loan/giveaway/list-item actions, and listing lifecycle state?
+- `DocumentsTabSurface`: Does the tab look and behave like a document library/detail surface with
+  access state, version/receipt metadata, embedded open, and external open affordances?
+- `WorkflowStatusSurface`: Does the tab or surface look and behave like a multi-step request/status
+  timeline with current step, owner/reviewer/receiver state, comments, attached docs, payment-needed
+  state, and approve/reject/request-change/reopen actions where the community workflow requires them?
+
+Every `tabRendererResults[]` row must include `rendererContractId`, `tabId`, `tabLabel`,
+`cardSurfaceFamily`, `status`, `directQuestionAnswers`, `affectedScreenRowIds`,
+`affectedScreenshotPaths`, `affectedScreenshotHashes`, `visibleEvidence`, `visibleTextExcerpt`,
+`critique`, and `requiredFix`. If a community does not use one of the tab families, the row must state
+why the contract is not applicable and identify which reviewed community/tab proves the platform can
+render that contract elsewhere. Missing rows are a major App Shell capability gap.
+
+The reviewer must also write `appShellCapabilityReview.interactionTransitionResults[]` for important
+interactive controls. Each row must name the interaction, tab/surface/workflow/persona, before screen
+rows, tap/action evidence, after/result screen rows, visible state change, undo/change/reject path when
+required, verdict, and required fix. A screenshot of a button is not enough: B25 needs evidence that
+the button works, changes visible state, and still looks like a modern product UI after the transition.
+
 Fail this sub-review if any documented capability is not visible in fresh screenshots, if the reviewer
 cannot tie a capability to affected screen rows and screenshot hashes, or if a screenshot shows generic
 card-list behavior where the product doc requires App Shell customization.
@@ -163,6 +192,12 @@ Ask these questions for each community:
   those surfaces visible in the correct tab and not buried in a long generic workflow list?
 - Do reviewed screenshots include enough before/after or entry/focus/expanded states to prove the
   presentation-state model is implemented, not just declared?
+- For every Calendar, Messages, Marketplace, Documents, and Workflow Status tab renderer used or
+  required by the product docs, does the screenshot evidence prove the tab-native product pattern rather
+  than a generic workflow list?
+- For every important button or control, do before/action/after screenshots prove that tapping it
+  changes the visible UI state, preserves a natural edit/change/undo/reject path where required, and
+  still looks modern after the transition?
 - Are there screenshots showing extra screens, interactions, states, or flows that the product doc must
   add before the implementation can be judged complete?
 - Are there product-doc workflows that are missing, unreachable, generic, or insufficiently implemented
@@ -230,13 +265,61 @@ Use this shape:
         "requiredFix": "<specific App Shell/product-doc/UI fix>"
       }
     ],
+    "tabRendererResults": [
+      {
+        "rendererContractId": "CalendarTabSurface|MessagesTabSurface|MarketplaceTabSurface|DocumentsTabSurface|WorkflowStatusSurface",
+        "tabId": "<tab-id>",
+        "tabLabel": "<visible label>",
+        "cardSurfaceFamily": "<card-surface-family-or-families>",
+        "communityName": "<name>",
+        "persona": "<persona>",
+        "status": "pass|fail|not-applicable",
+        "directQuestionAnswers": [
+          {
+            "question": "<direct tab-native renderer question>",
+            "answer": "yes|no|partial",
+            "why": "<visible screenshot-backed reasoning>",
+            "visibleEvidence": ["<visible screenshot detail>"],
+            "requiredFix": "<fix if answer is no or partial>"
+          }
+        ],
+        "affectedScreenRowIds": [],
+        "affectedScreenshotPaths": [],
+        "affectedScreenshotHashes": [],
+        "visibleEvidence": [],
+        "visibleTextExcerpt": "<visible text used by the reviewer>",
+        "critique": "<screen-specific critique that could not be reused for another tab>",
+        "requiredFix": "<specific tab renderer/product-doc/UI fix>"
+      }
+    ],
+    "interactionTransitionResults": [
+      {
+        "interactionId": "<stable interaction id>",
+        "communityName": "<name>",
+        "workflowId": "<workflow-id>",
+        "persona": "<persona>",
+        "tabId": "<tab-id>",
+        "surfaceId": "<surface-id>",
+        "controlLabel": "<visible button/control>",
+        "status": "pass|fail",
+        "beforeScreenRowIds": [],
+        "actionScreenRowIds": [],
+        "afterScreenRowIds": [],
+        "affectedScreenshotPaths": [],
+        "affectedScreenshotHashes": [],
+        "visibleStateChange": "<what visibly changed after the action>",
+        "undoOrChangePath": "<visible edit/change/reject/undo path, or why not required>",
+        "critique": "<interaction-specific visual/product critique>",
+        "requiredFix": "<specific interaction fix>"
+      }
+    ],
     "findings": []
   },
   "findings": [
     {
       "findingId": "LLM-B25-WR-001",
       "severity": "blocker|major|minor|polish",
-      "gapType": "product-doc-missing-workflow|implementation-missing-workflow|product-doc-interaction-gap|surface-mismatch|evidence-extra-undocumented-flow|visible-proof-gap|persona-state-gap|app-shell-tabs-gap|app-shell-pinning-gap|app-shell-presentation-state-gap|app-shell-community-card-state-gap|app-shell-customization-gap|app-shell-renderer-selection-gap",
+      "gapType": "product-doc-missing-workflow|implementation-missing-workflow|product-doc-interaction-gap|surface-mismatch|evidence-extra-undocumented-flow|visible-proof-gap|persona-state-gap|app-shell-tabs-gap|app-shell-pinning-gap|app-shell-presentation-state-gap|app-shell-community-card-state-gap|app-shell-customization-gap|app-shell-renderer-selection-gap|app-shell-tab-renderer-contract-gap|app-shell-interaction-transition-gap|app-shell-review-depth-gap",
       "communityName": "<name>",
       "workflowId": "<workflow-id>",
       "persona": "<persona>",

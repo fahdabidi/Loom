@@ -12,14 +12,18 @@ support requirements.
 
 1. Identify the community job-to-be-done.
 2. Select the closest card surface family.
-3. Configure domain copy, fields, actions, icons, imagery, and role/persona rules.
-4. Map every interaction to the API contracts in [../API/CardSurfaces/README.md](../API/CardSurfaces/README.md).
-5. Verify that selected interactions exist in the executable
+3. Select the tab renderer contract from
+   [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) so the workflow renders inside a
+   domain-native Calendar, Messages, Marketplace, Documents, Workflow Status, Giving, Care, Admin, or
+   Home surface instead of a generic workflow list.
+4. Configure domain copy, fields, actions, icons, imagery, and role/persona rules.
+5. Map every interaction to the API contracts in [../API/CardSurfaces/README.md](../API/CardSurfaces/README.md).
+6. Verify that selected interactions exist in the executable
    [Community Card Surfaces OpenAPI](../API/OpenAPI/community-surfaces/community-card-surfaces-api.openapi.yaml)
    and the Product Docs V2
    [workflow/user-story coverage map](../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md).
-6. Add seed data and fake backend fixtures for entry, action, result, receiver, read-only, disabled, and unauthorized states.
-7. Capture B25 screenshot evidence for every persona/state before claiming production UX readiness.
+7. Add seed data and fake backend fixtures for entry, action, result, receiver, read-only, disabled, and unauthorized states.
+8. Capture B25 screenshot evidence for every persona/state before claiming production UX readiness.
 
 ## Surface Families
 
@@ -27,6 +31,7 @@ support requirements.
 | --- | --- |
 | [Community Card and Home](./community-card-home.md) | Installed community identity, entry, pinned state, next action. |
 | [App Shell Navigation, Tabs, Pinning, and Theming](./app-shell-navigation-theming.md) | Persona-specific community tabs, pinned surfaces, card expansion states, theme tokens, and customization knobs. |
+| [Per-Tab Renderer Contracts](./tab-renderer-contracts.md) | Calendar, Messages, Marketplace, Documents, Workflow Status, Giving, Care, Admin, and Home renderer contracts that prevent dedicated tabs from falling back to generic cards. |
 | [Announcement and Publish](./announcement-publish.md) | Compose, preview, schedule, publish, read, and revise announcements. |
 | [Calendar](./calendar.md) | Agenda, schedule, recurring events, reminders, feeds, imports, exports, and conflicts. |
 | [Event RSVP](./event-rsvp.md) | Events, classes, practices, meetings, services, and capacity-based attendance. |

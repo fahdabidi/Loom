@@ -34,6 +34,7 @@ class LocalInstalledCommunity {
     required this.cardImageAssetId,
     required this.heroImageAssetId,
     required this.accentColor,
+    this.appShellConfiguration = const {},
   });
 
   final String communityId;
@@ -43,6 +44,7 @@ class LocalInstalledCommunity {
   final String? cardImageAssetId;
   final String? heroImageAssetId;
   final String accentColor;
+  final Map<String, Object?> appShellConfiguration;
 }
 
 class LocalBackendImportReport {
@@ -82,6 +84,7 @@ class LocalPackagePairInstallPlan {
     required this.accentColor,
     required this.logoAssetId,
     required this.heroImageAssetId,
+    required this.appShellConfiguration,
   });
 
   final LoomExtensionPackageSummary extensionPackage;
@@ -89,6 +92,7 @@ class LocalPackagePairInstallPlan {
   final String accentColor;
   final String? logoAssetId;
   final String? heroImageAssetId;
+  final Map<String, Object?> appShellConfiguration;
 }
 
 class LocalInAppBackend {
@@ -131,8 +135,7 @@ class LocalInAppBackend {
       errors.add('Choose an initialization package.');
     } else if (!initializationPath.endsWith('.loom-init.zip')) {
       errors.add('Initialization package must end with .loom-init.zip.');
-    } else if (requireReadableFiles &&
-        !File(initializationPath).existsSync()) {
+    } else if (requireReadableFiles && !File(initializationPath).existsSync()) {
       errors.add('Initialization package file was not found.');
     }
     return LocalPackagePairValidation(errors: errors);
@@ -203,6 +206,11 @@ class LocalInAppBackend {
           _optionalString(initialization['heroImageAssetId']) ??
           _optionalString(branding?['heroImageAssetId']) ??
           _optionalString(branding?['heroImage']),
+      appShellConfiguration:
+          _objectMap(initialization['appShell']) ??
+          _objectMap(initialization['appShellCustomization']) ??
+          _objectMap(extension['appShell']) ??
+          const {},
     );
   }
 
@@ -220,6 +228,7 @@ class LocalInAppBackend {
       accentColor: plan.accentColor,
       logoAssetId: plan.logoAssetId,
       heroImageAssetId: plan.heroImageAssetId,
+      appShellConfiguration: plan.appShellConfiguration,
     );
   }
 
@@ -232,6 +241,7 @@ class LocalInAppBackend {
     String accentColor = '#246B62',
     String? logoAssetId,
     String? heroImageAssetId,
+    Map<String, Object?> appShellConfiguration = const {},
   }) {
     final existing = _communities[package.communityId];
     if (existing != null) {
@@ -249,6 +259,7 @@ class LocalInAppBackend {
       cardImageAssetId: package.cardAssetId,
       heroImageAssetId: heroImageAssetId,
       accentColor: accentColor,
+      appShellConfiguration: appShellConfiguration,
     );
     _communities[community.communityId] = community;
     return LocalBackendImportReport(

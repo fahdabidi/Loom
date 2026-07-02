@@ -71,7 +71,7 @@ tags:
   - name: Notification Inbox Surface
     description: Notification inbox interactions implemented by CommunityInboxSurfaceApi.
   - name: App Shell Navigation Surface
-    description: Persona-aware App Shell tabs, pinning, presentation, theme, customization knobs, and messages-tab interactions implemented by CommunityAppShellNavigationApi.
+    description: Persona-aware App Shell tabs, pinning, presentation, theme, customization knobs, tab renderer contracts, and messages-tab interactions implemented by CommunityAppShellNavigationApi.
   - name: Calendar Surface
     description: Calendar, schedule, recurrence, reminder, import/export, and linked-surface interactions implemented by CommunityCalendarSurfaceApi.
   - name: Workflow Status Surface
@@ -11752,6 +11752,194 @@ paths:
               $ref: '#/components/schemas/SurfaceActionRequest'
       responses:
         '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/list-tab-renderer-contracts:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_listTabRendererContracts
+      summary: Read available per-tab renderer contracts.
+      description: List tab-native renderer contracts for Home, Calendar, Messages, Marketplace, Documents, Workflow Status, Giving, Care, and Admin tabs.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: listTabRendererContracts
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/resolve-tab-renderer-contract:
+    get:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_resolveTabRendererContract
+      summary: Read the effective renderer contract for a persona tab.
+      description: Resolve the tab renderer contract after persona visibility, surface assignment, pinning policy, and permissions are applied.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: resolveTabRendererContract
+      x-loom-permission-scope: community.surface.app-shell-navigation.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/validate-tab-renderer-contract:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_validateTabRendererContract
+      summary: Execute validation for a persona tab renderer contract.
+      description: Validate that a tab renderer has the anatomy, interactions, states, and evidence plan required for its assigned card surfaces.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: validateTabRendererContract
+      x-loom-permission-scope: community.surface.app-shell-navigation.admin
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/preview-tab-renderer-contract:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_previewTabRendererContract
+      summary: Execute a preview of a persona tab renderer contract.
+      description: Preview the tab-native layout before publishing configuration so dedicated tabs do not degrade to generic workflow cards.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: previewTabRendererContract
+      x-loom-permission-scope: community.surface.app-shell-navigation.configure
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/app-shell-navigation/record-tab-renderer-evidence:
+    post:
+      tags:
+        - App Shell Navigation Surface
+      operationId: CommunityAppShellNavigationApi_recordTabRendererEvidence
+      summary: Execute evidence recording for a tab renderer contract.
+      description: Record screenshot and workflow evidence links proving that a tab rendered its contract-specific anatomy, state model, and assigned card surfaces.
+      x-loom-surface-family: app-shell-navigation
+      x-loom-api-contract: CommunityAppShellNavigationApi
+      x-loom-contract-operation: recordTabRendererEvidence
+      x-loom-permission-scope: community.surface.app-shell-navigation.review
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurfaceActionRequest'
+      responses:
+        '201':
           description: Card-surface operation completed.
           content:
             application/json:

@@ -70,6 +70,11 @@ Models`, and `### B25 Card Surface Registry Mapping` against the current screen 
 visible text, workflow/persona coverage, and review JSON. Its blocker/major findings must be carried
 into the remediation tickets.
 
+That same LLM artifact must include `appShellCapabilityReview.tabRendererResults[]` for every required
+tab-native renderer contract and `appShellCapabilityReview.interactionTransitionResults[]` for
+important controls. The production judge treats missing, stale, generic, or prose-only App Shell proof
+as a major finding even when the top-level reconciliation status says `pass`.
+
 ```powershell
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\ Plan\ V2/Evidence'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\ Plan\ V2/Evidence --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-capture-coverage-report.json'
@@ -235,6 +240,16 @@ B25 evidence must include:
   artifact, or linked evidence path, proving that Product Docs V2 `## 6. Workflow-To-Surface Mapping`
   rows and companion state/content/semantic/card-surface sections match current screenshot evidence.
   Unresolved blocker/major product-doc, implementation, evidence, or mapping findings block B25.
+- `appShellCapabilityReview.tabRendererResults`: screenshot-backed LLM rows for
+  `CalendarTabSurface`, `MessagesTabSurface`, `MarketplaceTabSurface`, `DocumentsTabSurface`, and
+  `WorkflowStatusSurface`. Each row must answer direct product questions for that tab renderer, include
+  affected screen rows, screenshot paths/hashes, visible evidence, critique, and required fix. B25 fails
+  if a required tab-native renderer row is missing, pass-shaped but unsupported by screenshots, or
+  merely proves a generic workflow-card list.
+- `appShellCapabilityReview.interactionTransitionResults`: screenshot-backed rows proving that important
+  controls and buttons work. Each row must include before/action/after screen rows, visible state
+  change, required edit/change/reject/undo path where applicable, critique, verdict, and required fix.
+  B25 fails when screenshots only show a button without proving the interaction transition.
 - `llmVisionReview`: the imported LLM Vision UX Judge artifact, including status, summary,
   holistic answers, screen reviews, findings, screenshot-backed visible evidence, and affected row IDs.
   A missing or failing `llmVisionReview` blocks B25. The raw artifact must first pass
@@ -253,6 +268,10 @@ B25 cannot pass from an average score. One unresolved blocker/major criterion fa
 The judge also fails if either direct-question evidence block is missing, weak, partial, or contradicted
 by screenshot evidence. A row with only `manual-visible-text-review` is not enough for B25 pass; visible
 text must come from screenshot-derived OCR/extraction, not prior expected assertions.
+The judge also fails if the App Shell capability review lacks tab-native renderer proof or interaction
+transition proof. A row that says `status=pass` without visible screenshot details, tab-specific direct
+answers, affected screenshot hashes, and non-boilerplate critique is treated as a major finding and
+converted into a remediation ticket.
 
 The iteration scorecard does not replace the judge. It records whether the loop is converging:
 

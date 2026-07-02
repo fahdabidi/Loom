@@ -338,9 +338,11 @@ Future<void> receiveWorkflow(
   LoomWorkflowDefinition workflow,
 ) async {
   await scrollToWorkflowCard(tester, workflow);
-  await tester.tap(
-    find.byKey(ValueKey('workflow-receive-button-${workflow.workflowId}')),
+  final receiveButton = find.byKey(
+    ValueKey('workflow-receive-button-${workflow.workflowId}'),
   );
+  await scrollFinderIntoViewport(tester, receiveButton);
+  await tester.tap(receiveButton);
   await tester.pumpAndSettle();
   expect(
     find.byKey(ValueKey('workflow-receive-surface-${workflow.workflowId}')),

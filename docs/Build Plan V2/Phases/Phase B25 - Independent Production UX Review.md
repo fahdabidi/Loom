@@ -616,6 +616,18 @@ for surfaces the product doc declares as pinned. Full B25 capture must include t
 `wf_app-shell-capability-evidence` row with screenshots for the main community list, presentation
 states, declared pinned surfaces, and renderer-selection proof.
 
+The App Shell capability review must not be a single top-level pass flag. It must include
+`appShellCapabilityReview.tabRendererResults[]` with one screenshot-backed row for each required
+renderer contract: `CalendarTabSurface`, `MessagesTabSurface`, `MarketplaceTabSurface`,
+`DocumentsTabSurface`, and `WorkflowStatusSurface`. Each row must answer direct questions about whether
+the tab looks and behaves like its expected product surface, name affected screen rows and screenshot
+hashes, include visible evidence and screen-specific critique, and state the required fix when the tab
+still behaves like a generic workflow-card list. It must also include
+`appShellCapabilityReview.interactionTransitionResults[]` for important controls, with before/action/
+after screen rows and visible state-change evidence. A screenshot that only shows a button, tab, or
+card title is insufficient; the review must prove the control works and that the resulting UI remains
+modern and domain-native.
+
 For every screen inventory row, perform a critique at the same level of depth as a product review, not
 a checklist. Answer:
 - Does this feel like a real production product screen for the target user?

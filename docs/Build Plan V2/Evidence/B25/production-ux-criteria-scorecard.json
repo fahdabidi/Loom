@@ -1,6 +1,6 @@
 {
   "toolId": "production-ux-judge",
-  "status": "pass",
+  "status": "fail",
   "criteria": [
     {
       "criterionId": "b25-c01-no-blocker-major",
@@ -55,12 +55,93 @@
       "title": "LLM vision UX judge has inspected screenshots semantically",
       "question": "Has a fresh LLM vision UX Judge inspected the actual screenshots as product UI, answered direct UX questions from visible evidence, and found no blocker or major product-quality issues?",
       "scope": "llm-vision",
-      "score": 100,
-      "verdict": "pass",
-      "blocksPass": false,
-      "why": "Required evidence is present and no blocking derived failures were found.",
-      "requiredFix": "None.",
-      "evidenceUsed": []
+      "score": 20,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "The LLM vision UX review is too shallow to prove production UX quality: llm-holistic-modern-community-product-ui has boilerplate or non-visual rationale; b25-v4-row-001-garden-event-rsvp-0 has empty or weak visibleEvidence; b25-v4-row-001-garden-event-rsvp-0 has boilerplate critique; b25-v4-row-001-garden-event-rsvp-0 has no screen-level direct-question answers; b25-v4-row-002-garden-event-rsvp-1 has empty or weak visibleEvidence; b25-v4-row-002-garden-event-rsvp-1 has boilerplate critique; b25-v4-row-002-garden-event-rsvp-1 has no screen-level direct-question answers; b25-v4-row-003-garden-event-rsvp-2 has empty or weak visibleEvidence; b25-v4-row-003-garden-event-rsvp-2 has boilerplate critique; b25-v4-row-003-garden-event-rsvp-2 has no screen-level direct-question answers; b25-v4-row-004-plant-exchange-submission-0 has empty or weak visibleEvidence; b25-v4-row-004-plant-exchange-submission-0 has boilerplate critique; b25-v4-row-004-plant-exchange-submission-0 has no screen-level direct-question answers; b25-v4-row-005-plant-exchange-submission-1 has empty or weak visibleEvidence; b25-v4-row-005-plant-exchange-submission-1 has boilerplate critique; b25-v4-row-005-plant-exchange-submission-1 has no screen-level direct-question answers; b25-v4-row-006-plant-exchange-submission-2 has empty or weak visibleEvidence; b25-v4-row-006-plant-exchange-submission-2 has boilerplate critique; b25-v4-row-006-plant-exchange-submission-2 has no screen-level direct-question answers; b25-v4-row-007-garden-export-custom-schemas-0 has empty or weak visibleEvidence; b25-v4-row-007-garden-export-custom-schemas-0 has boilerplate critique; b25-v4-row-007-garden-export-custom-schemas-0 has no screen-level direct-question answers; b25-v4-row-008-garden-export-custom-schemas-1 has empty or weak visibleEvidence; b25-v4-row-008-garden-export-custom-schemas-1 has boilerplate critique; b25-v4-row-008-garden-export-custom-schemas-1 has no screen-level direct-question answers; b25-v4-row-009-garden-export-custom-schemas-2 has empty or weak visibleEvidence; b25-v4-row-009-garden-export-custom-schemas-2 has boilerplate critique; b25-v4-row-009-garden-export-custom-schemas-2 has no screen-level direct-question answers; b25-v4-row-010-book-nomination-0 has empty or weak visibleEvidence; b25-v4-row-010-book-nomination-0 has boilerplate critique; b25-v4-row-010-book-nomination-0 has no screen-level direct-question answers; b25-v4-row-011-book-nomination-1 has empty or weak visibleEvidence; b25-v4-row-011-book-nomination-1 has boilerplate critique; b25-v4-row-011-book-nomination-1 has no screen-level direct-question answers; b25-v4-row-012-book-nomination-2 has empty or weak visibleEvidence; b25-v4-row-012-book-nomination-2 has boilerplate critique; b25-v4-row-012-book-nomination-2 has no screen-level direct-question answers; b25-v4-row-013-book-selection-publish-0 has empty or weak visibleEvidence; b25-v4-row-013-book-selection-publish-0 has boilerplate critique; b25-v4-row-013-book-selection-publish-0 has no screen-level direct-question answers; b25-v4-row-014-book-selection-publish-1 has empty or weak visibleEvidence; b25-v4-row-014-book-selection-publish-1 has boilerplate critique; b25-v4-row-014-book-selection-publish-1 has no screen-level direct-question answers; b25-v4-row-015-book-selection-publish-2 has empty or weak visibleEvidence; b25-v4-row-015-book-selection-publish-2 has boilerplate critique; b25-v4-row-015-book-selection-publish-2 has no screen-level direct-question answers; b25-v4-row-016-soccer-team-roster-0 has empty or weak visibleEvidence; b25-v4-row-016-soccer-team-roster-0 has boilerplate critique; b25-v4-row-016-soccer-team-roster-0 has no screen-level direct-question answers; b25-v4-row-017-soccer-team-roster-1 has empty or weak visibleEvidence; b25-v4-row-017-soccer-team-roster-1 has boilerplate critique; b25-v4-row-017-soccer-team-roster-1 has no screen-level direct-question answers; b25-v4-row-018-soccer-team-roster-2 has empty or weak visibleEvidence; b25-v4-row-018-soccer-team-roster-2 has boilerplate critique; b25-v4-row-018-soccer-team-roster-2 has no screen-level direct-question answers; b25-v4-row-019-soccer-reminder-notification-0 has empty or weak visibleEvidence; b25-v4-row-019-soccer-reminder-notification-0 has boilerplate critique; b25-v4-row-019-soccer-reminder-notification-0 has no screen-level direct-question answers; b25-v4-row-020-soccer-reminder-notification-1 has empty or weak visibleEvidence; b25-v4-row-020-soccer-reminder-notification-1 has boilerplate critique; b25-v4-row-020-soccer-reminder-notification-1 has no screen-level direct-question answers; b25-v4-row-021-soccer-reminder-notification-2 has empty or weak visibleEvidence; b25-v4-row-021-soccer-reminder-notification-2 has boilerplate critique; b25-v4-row-021-soccer-reminder-notification-2 has no screen-level direct-question answers; b25-v4-row-022-hoa-facility-reservation-0 has empty or weak visibleEvidence; b25-v4-row-022-hoa-facility-reservation-0 has boilerplate critique; b25-v4-row-022-hoa-facility-reservation-0 has no screen-level direct-question answers; b25-v4-row-023-hoa-facility-reservation-1 has empty or weak visibleEvidence; b25-v4-row-023-hoa-facility-reservation-1 has boilerplate critique; b25-v4-row-023-hoa-facility-reservation-1 has no screen-level direct-question answers; b25-v4-row-024-hoa-facility-reservation-2 has empty or weak visibleEvidence; b25-v4-row-024-hoa-facility-reservation-2 has boilerplate critique; b25-v4-row-024-hoa-facility-reservation-2 has no screen-level direct-question answers; b25-v4-row-025-hoa-export-evidence-0 has empty or weak visibleEvidence; b25-v4-row-025-hoa-export-evidence-0 has boilerplate critique; b25-v4-row-025-hoa-export-evidence-0 has no screen-level direct-question answers; b25-v4-row-026-hoa-export-evidence-1 has empty or weak visibleEvidence; b25-v4-row-026-hoa-export-evidence-1 has boilerplate critique; b25-v4-row-026-hoa-export-evidence-1 has no screen-level direct-question answers; b25-v4-row-027-hoa-export-evidence-2 has empty or weak visibleEvidence.",
+      "requiredFix": "Run the B25 LLM Vision UX Judge Agent on the screenshot evidence, import its structured review, fix all blocker/major findings, and rerun B25.",
+      "evidenceUsed": [
+        "llm-holistic-modern-community-product-ui has boilerplate or non-visual rationale",
+        "b25-v4-row-001-garden-event-rsvp-0 has empty or weak visibleEvidence",
+        "b25-v4-row-001-garden-event-rsvp-0 has boilerplate critique",
+        "b25-v4-row-001-garden-event-rsvp-0 has no screen-level direct-question answers",
+        "b25-v4-row-002-garden-event-rsvp-1 has empty or weak visibleEvidence",
+        "b25-v4-row-002-garden-event-rsvp-1 has boilerplate critique",
+        "b25-v4-row-002-garden-event-rsvp-1 has no screen-level direct-question answers",
+        "b25-v4-row-003-garden-event-rsvp-2 has empty or weak visibleEvidence",
+        "b25-v4-row-003-garden-event-rsvp-2 has boilerplate critique",
+        "b25-v4-row-003-garden-event-rsvp-2 has no screen-level direct-question answers",
+        "b25-v4-row-004-plant-exchange-submission-0 has empty or weak visibleEvidence",
+        "b25-v4-row-004-plant-exchange-submission-0 has boilerplate critique",
+        "b25-v4-row-004-plant-exchange-submission-0 has no screen-level direct-question answers",
+        "b25-v4-row-005-plant-exchange-submission-1 has empty or weak visibleEvidence",
+        "b25-v4-row-005-plant-exchange-submission-1 has boilerplate critique",
+        "b25-v4-row-005-plant-exchange-submission-1 has no screen-level direct-question answers",
+        "b25-v4-row-006-plant-exchange-submission-2 has empty or weak visibleEvidence",
+        "b25-v4-row-006-plant-exchange-submission-2 has boilerplate critique",
+        "b25-v4-row-006-plant-exchange-submission-2 has no screen-level direct-question answers",
+        "b25-v4-row-007-garden-export-custom-schemas-0 has empty or weak visibleEvidence",
+        "b25-v4-row-007-garden-export-custom-schemas-0 has boilerplate critique",
+        "b25-v4-row-007-garden-export-custom-schemas-0 has no screen-level direct-question answers",
+        "b25-v4-row-008-garden-export-custom-schemas-1 has empty or weak visibleEvidence",
+        "b25-v4-row-008-garden-export-custom-schemas-1 has boilerplate critique",
+        "b25-v4-row-008-garden-export-custom-schemas-1 has no screen-level direct-question answers",
+        "b25-v4-row-009-garden-export-custom-schemas-2 has empty or weak visibleEvidence",
+        "b25-v4-row-009-garden-export-custom-schemas-2 has boilerplate critique",
+        "b25-v4-row-009-garden-export-custom-schemas-2 has no screen-level direct-question answers",
+        "b25-v4-row-010-book-nomination-0 has empty or weak visibleEvidence",
+        "b25-v4-row-010-book-nomination-0 has boilerplate critique",
+        "b25-v4-row-010-book-nomination-0 has no screen-level direct-question answers",
+        "b25-v4-row-011-book-nomination-1 has empty or weak visibleEvidence",
+        "b25-v4-row-011-book-nomination-1 has boilerplate critique",
+        "b25-v4-row-011-book-nomination-1 has no screen-level direct-question answers",
+        "b25-v4-row-012-book-nomination-2 has empty or weak visibleEvidence",
+        "b25-v4-row-012-book-nomination-2 has boilerplate critique",
+        "b25-v4-row-012-book-nomination-2 has no screen-level direct-question answers",
+        "b25-v4-row-013-book-selection-publish-0 has empty or weak visibleEvidence",
+        "b25-v4-row-013-book-selection-publish-0 has boilerplate critique",
+        "b25-v4-row-013-book-selection-publish-0 has no screen-level direct-question answers",
+        "b25-v4-row-014-book-selection-publish-1 has empty or weak visibleEvidence",
+        "b25-v4-row-014-book-selection-publish-1 has boilerplate critique",
+        "b25-v4-row-014-book-selection-publish-1 has no screen-level direct-question answers",
+        "b25-v4-row-015-book-selection-publish-2 has empty or weak visibleEvidence",
+        "b25-v4-row-015-book-selection-publish-2 has boilerplate critique",
+        "b25-v4-row-015-book-selection-publish-2 has no screen-level direct-question answers",
+        "b25-v4-row-016-soccer-team-roster-0 has empty or weak visibleEvidence",
+        "b25-v4-row-016-soccer-team-roster-0 has boilerplate critique",
+        "b25-v4-row-016-soccer-team-roster-0 has no screen-level direct-question answers",
+        "b25-v4-row-017-soccer-team-roster-1 has empty or weak visibleEvidence",
+        "b25-v4-row-017-soccer-team-roster-1 has boilerplate critique",
+        "b25-v4-row-017-soccer-team-roster-1 has no screen-level direct-question answers",
+        "b25-v4-row-018-soccer-team-roster-2 has empty or weak visibleEvidence",
+        "b25-v4-row-018-soccer-team-roster-2 has boilerplate critique",
+        "b25-v4-row-018-soccer-team-roster-2 has no screen-level direct-question answers",
+        "b25-v4-row-019-soccer-reminder-notification-0 has empty or weak visibleEvidence",
+        "b25-v4-row-019-soccer-reminder-notification-0 has boilerplate critique",
+        "b25-v4-row-019-soccer-reminder-notification-0 has no screen-level direct-question answers",
+        "b25-v4-row-020-soccer-reminder-notification-1 has empty or weak visibleEvidence",
+        "b25-v4-row-020-soccer-reminder-notification-1 has boilerplate critique",
+        "b25-v4-row-020-soccer-reminder-notification-1 has no screen-level direct-question answers",
+        "b25-v4-row-021-soccer-reminder-notification-2 has empty or weak visibleEvidence",
+        "b25-v4-row-021-soccer-reminder-notification-2 has boilerplate critique",
+        "b25-v4-row-021-soccer-reminder-notification-2 has no screen-level direct-question answers",
+        "b25-v4-row-022-hoa-facility-reservation-0 has empty or weak visibleEvidence",
+        "b25-v4-row-022-hoa-facility-reservation-0 has boilerplate critique",
+        "b25-v4-row-022-hoa-facility-reservation-0 has no screen-level direct-question answers",
+        "b25-v4-row-023-hoa-facility-reservation-1 has empty or weak visibleEvidence",
+        "b25-v4-row-023-hoa-facility-reservation-1 has boilerplate critique",
+        "b25-v4-row-023-hoa-facility-reservation-1 has no screen-level direct-question answers",
+        "b25-v4-row-024-hoa-facility-reservation-2 has empty or weak visibleEvidence",
+        "b25-v4-row-024-hoa-facility-reservation-2 has boilerplate critique",
+        "b25-v4-row-024-hoa-facility-reservation-2 has no screen-level direct-question answers",
+        "b25-v4-row-025-hoa-export-evidence-0 has empty or weak visibleEvidence",
+        "b25-v4-row-025-hoa-export-evidence-0 has boilerplate critique",
+        "b25-v4-row-025-hoa-export-evidence-0 has no screen-level direct-question answers",
+        "b25-v4-row-026-hoa-export-evidence-1 has empty or weak visibleEvidence",
+        "b25-v4-row-026-hoa-export-evidence-1 has boilerplate critique",
+        "b25-v4-row-026-hoa-export-evidence-1 has no screen-level direct-question answers",
+        "b25-v4-row-027-hoa-export-evidence-2 has empty or weak visibleEvidence"
+      ]
     },
     {
       "criterionId": "b25-c04-modern-intentional-ui",
@@ -139,12 +220,20 @@
       "title": "App Shell capabilities are used where documented",
       "question": "Do current screenshots prove persona tabs, explicit and appropriate pinning policy, minimized/medium/expanded states, tap-to-expand behavior, community-list presentation states, renderer selection, and theme/customization tokens are used correctly where Product Docs or App Shell component docs require them?",
       "scope": "app-shell-capability",
-      "score": 100,
-      "verdict": "pass",
-      "blocksPass": false,
-      "why": "Required evidence is present and no blocking derived failures were found.",
-      "requiredFix": "None.",
-      "evidenceUsed": []
+      "score": 35,
+      "verdict": "fail",
+      "blocksPass": true,
+      "why": "App Shell capability utilization review failed. missingCapabilities= failingCommunities= blockingFindings=B25-APP-SHELL-calendartabsurface-MISSING-PROOF, B25-APP-SHELL-messagestabsurface-MISSING-PROOF, B25-APP-SHELL-marketplacetabsurface-MISSING-PROOF, B25-APP-SHELL-documentstabsurface-MISSING-PROOF, B25-APP-SHELL-workflowstatussurface-MISSING-PROOF, B25-APP-SHELL-INTERACTION-TRANSITIONS-MISSING, B25-APP-SHELL-REVIEW-DEPTH-loom-communities-shell-member.",
+      "requiredFix": "Update Product Docs and UI so app shell tabs, explicit per-tab pinning policy, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven where required; rerun B25 and regenerate tickets.",
+      "evidenceUsed": [
+        "B25-APP-SHELL-calendartabsurface-MISSING-PROOF",
+        "B25-APP-SHELL-messagestabsurface-MISSING-PROOF",
+        "B25-APP-SHELL-marketplacetabsurface-MISSING-PROOF",
+        "B25-APP-SHELL-documentstabsurface-MISSING-PROOF",
+        "B25-APP-SHELL-workflowstatussurface-MISSING-PROOF",
+        "B25-APP-SHELL-INTERACTION-TRANSITIONS-MISSING",
+        "B25-APP-SHELL-REVIEW-DEPTH-loom-communities-shell-member"
+      ]
     },
     {
       "criterionId": "b25-c08-visible-text-specific-critique",
@@ -207,7 +296,10 @@
       "evidenceUsed": []
     }
   ],
-  "errors": [],
+  "errors": [
+    "b25-c14-llm-vision-ux-review: The LLM vision UX review is too shallow to prove production UX quality: llm-holistic-modern-community-product-ui has boilerplate or non-visual rationale; b25-v4-row-001-garden-event-rsvp-0 has empty or weak visibleEvidence; b25-v4-row-001-garden-event-rsvp-0 has boilerplate critique; b25-v4-row-001-garden-event-rsvp-0 has no screen-level direct-question answers; b25-v4-row-002-garden-event-rsvp-1 has empty or weak visibleEvidence; b25-v4-row-002-garden-event-rsvp-1 has boilerplate critique; b25-v4-row-002-garden-event-rsvp-1 has no screen-level direct-question answers; b25-v4-row-003-garden-event-rsvp-2 has empty or weak visibleEvidence; b25-v4-row-003-garden-event-rsvp-2 has boilerplate critique; b25-v4-row-003-garden-event-rsvp-2 has no screen-level direct-question answers; b25-v4-row-004-plant-exchange-submission-0 has empty or weak visibleEvidence; b25-v4-row-004-plant-exchange-submission-0 has boilerplate critique; b25-v4-row-004-plant-exchange-submission-0 has no screen-level direct-question answers; b25-v4-row-005-plant-exchange-submission-1 has empty or weak visibleEvidence; b25-v4-row-005-plant-exchange-submission-1 has boilerplate critique; b25-v4-row-005-plant-exchange-submission-1 has no screen-level direct-question answers; b25-v4-row-006-plant-exchange-submission-2 has empty or weak visibleEvidence; b25-v4-row-006-plant-exchange-submission-2 has boilerplate critique; b25-v4-row-006-plant-exchange-submission-2 has no screen-level direct-question answers; b25-v4-row-007-garden-export-custom-schemas-0 has empty or weak visibleEvidence; b25-v4-row-007-garden-export-custom-schemas-0 has boilerplate critique; b25-v4-row-007-garden-export-custom-schemas-0 has no screen-level direct-question answers; b25-v4-row-008-garden-export-custom-schemas-1 has empty or weak visibleEvidence; b25-v4-row-008-garden-export-custom-schemas-1 has boilerplate critique; b25-v4-row-008-garden-export-custom-schemas-1 has no screen-level direct-question answers; b25-v4-row-009-garden-export-custom-schemas-2 has empty or weak visibleEvidence; b25-v4-row-009-garden-export-custom-schemas-2 has boilerplate critique; b25-v4-row-009-garden-export-custom-schemas-2 has no screen-level direct-question answers; b25-v4-row-010-book-nomination-0 has empty or weak visibleEvidence; b25-v4-row-010-book-nomination-0 has boilerplate critique; b25-v4-row-010-book-nomination-0 has no screen-level direct-question answers; b25-v4-row-011-book-nomination-1 has empty or weak visibleEvidence; b25-v4-row-011-book-nomination-1 has boilerplate critique; b25-v4-row-011-book-nomination-1 has no screen-level direct-question answers; b25-v4-row-012-book-nomination-2 has empty or weak visibleEvidence; b25-v4-row-012-book-nomination-2 has boilerplate critique; b25-v4-row-012-book-nomination-2 has no screen-level direct-question answers; b25-v4-row-013-book-selection-publish-0 has empty or weak visibleEvidence; b25-v4-row-013-book-selection-publish-0 has boilerplate critique; b25-v4-row-013-book-selection-publish-0 has no screen-level direct-question answers; b25-v4-row-014-book-selection-publish-1 has empty or weak visibleEvidence; b25-v4-row-014-book-selection-publish-1 has boilerplate critique; b25-v4-row-014-book-selection-publish-1 has no screen-level direct-question answers; b25-v4-row-015-book-selection-publish-2 has empty or weak visibleEvidence; b25-v4-row-015-book-selection-publish-2 has boilerplate critique; b25-v4-row-015-book-selection-publish-2 has no screen-level direct-question answers; b25-v4-row-016-soccer-team-roster-0 has empty or weak visibleEvidence; b25-v4-row-016-soccer-team-roster-0 has boilerplate critique; b25-v4-row-016-soccer-team-roster-0 has no screen-level direct-question answers; b25-v4-row-017-soccer-team-roster-1 has empty or weak visibleEvidence; b25-v4-row-017-soccer-team-roster-1 has boilerplate critique; b25-v4-row-017-soccer-team-roster-1 has no screen-level direct-question answers; b25-v4-row-018-soccer-team-roster-2 has empty or weak visibleEvidence; b25-v4-row-018-soccer-team-roster-2 has boilerplate critique; b25-v4-row-018-soccer-team-roster-2 has no screen-level direct-question answers; b25-v4-row-019-soccer-reminder-notification-0 has empty or weak visibleEvidence; b25-v4-row-019-soccer-reminder-notification-0 has boilerplate critique; b25-v4-row-019-soccer-reminder-notification-0 has no screen-level direct-question answers; b25-v4-row-020-soccer-reminder-notification-1 has empty or weak visibleEvidence; b25-v4-row-020-soccer-reminder-notification-1 has boilerplate critique; b25-v4-row-020-soccer-reminder-notification-1 has no screen-level direct-question answers; b25-v4-row-021-soccer-reminder-notification-2 has empty or weak visibleEvidence; b25-v4-row-021-soccer-reminder-notification-2 has boilerplate critique; b25-v4-row-021-soccer-reminder-notification-2 has no screen-level direct-question answers; b25-v4-row-022-hoa-facility-reservation-0 has empty or weak visibleEvidence; b25-v4-row-022-hoa-facility-reservation-0 has boilerplate critique; b25-v4-row-022-hoa-facility-reservation-0 has no screen-level direct-question answers; b25-v4-row-023-hoa-facility-reservation-1 has empty or weak visibleEvidence; b25-v4-row-023-hoa-facility-reservation-1 has boilerplate critique; b25-v4-row-023-hoa-facility-reservation-1 has no screen-level direct-question answers; b25-v4-row-024-hoa-facility-reservation-2 has empty or weak visibleEvidence; b25-v4-row-024-hoa-facility-reservation-2 has boilerplate critique; b25-v4-row-024-hoa-facility-reservation-2 has no screen-level direct-question answers; b25-v4-row-025-hoa-export-evidence-0 has empty or weak visibleEvidence; b25-v4-row-025-hoa-export-evidence-0 has boilerplate critique; b25-v4-row-025-hoa-export-evidence-0 has no screen-level direct-question answers; b25-v4-row-026-hoa-export-evidence-1 has empty or weak visibleEvidence; b25-v4-row-026-hoa-export-evidence-1 has boilerplate critique; b25-v4-row-026-hoa-export-evidence-1 has no screen-level direct-question answers; b25-v4-row-027-hoa-export-evidence-2 has empty or weak visibleEvidence.",
+    "b25-c16-app-shell-capability-utilization: App Shell capability utilization review failed. missingCapabilities= failingCommunities= blockingFindings=B25-APP-SHELL-calendartabsurface-MISSING-PROOF, B25-APP-SHELL-messagestabsurface-MISSING-PROOF, B25-APP-SHELL-marketplacetabsurface-MISSING-PROOF, B25-APP-SHELL-documentstabsurface-MISSING-PROOF, B25-APP-SHELL-workflowstatussurface-MISSING-PROOF, B25-APP-SHELL-INTERACTION-TRANSITIONS-MISSING, B25-APP-SHELL-REVIEW-DEPTH-loom-communities-shell-member."
+  ],
   "warnings": [],
   "holisticProductScorecard": {
     "questions": [
@@ -51838,5 +51930,1957 @@
       "evidenceUsed": []
     }
   ],
-  "remediationTickets": []
+  "remediationTickets": [
+    {
+      "ticketId": "B25-RT-001-b25-c14-llm-vision-ux-review",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c14-llm-vision-ux-review",
+      "sourceFindingIds": [],
+      "title": "LLM vision UX judge has inspected screenshots semantically",
+      "directQuestion": "Has a fresh LLM vision UX Judge inspected the actual screenshots as product UI, answered direct UX questions from visible evidence, and found no blocker or major product-quality issues?",
+      "whyItFailed": "The LLM vision UX review is too shallow to prove production UX quality: llm-holistic-modern-community-product-ui has boilerplate or non-visual rationale; b25-v4-row-001-garden-event-rsvp-0 has empty or weak visibleEvidence; b25-v4-row-001-garden-event-rsvp-0 has boilerplate critique; b25-v4-row-001-garden-event-rsvp-0 has no screen-level direct-question answers; b25-v4-row-002-garden-event-rsvp-1 has empty or weak visibleEvidence; b25-v4-row-002-garden-event-rsvp-1 has boilerplate critique; b25-v4-row-002-garden-event-rsvp-1 has no screen-level direct-question answers; b25-v4-row-003-garden-event-rsvp-2 has empty or weak visibleEvidence; b25-v4-row-003-garden-event-rsvp-2 has boilerplate critique; b25-v4-row-003-garden-event-rsvp-2 has no screen-level direct-question answers; b25-v4-row-004-plant-exchange-submission-0 has empty or weak visibleEvidence; b25-v4-row-004-plant-exchange-submission-0 has boilerplate critique; b25-v4-row-004-plant-exchange-submission-0 has no screen-level direct-question answers; b25-v4-row-005-plant-exchange-submission-1 has empty or weak visibleEvidence; b25-v4-row-005-plant-exchange-submission-1 has boilerplate critique; b25-v4-row-005-plant-exchange-submission-1 has no screen-level direct-question answers; b25-v4-row-006-plant-exchange-submission-2 has empty or weak visibleEvidence; b25-v4-row-006-plant-exchange-submission-2 has boilerplate critique; b25-v4-row-006-plant-exchange-submission-2 has no screen-level direct-question answers; b25-v4-row-007-garden-export-custom-schemas-0 has empty or weak visibleEvidence; b25-v4-row-007-garden-export-custom-schemas-0 has boilerplate critique; b25-v4-row-007-garden-export-custom-schemas-0 has no screen-level direct-question answers; b25-v4-row-008-garden-export-custom-schemas-1 has empty or weak visibleEvidence; b25-v4-row-008-garden-export-custom-schemas-1 has boilerplate critique; b25-v4-row-008-garden-export-custom-schemas-1 has no screen-level direct-question answers; b25-v4-row-009-garden-export-custom-schemas-2 has empty or weak visibleEvidence; b25-v4-row-009-garden-export-custom-schemas-2 has boilerplate critique; b25-v4-row-009-garden-export-custom-schemas-2 has no screen-level direct-question answers; b25-v4-row-010-book-nomination-0 has empty or weak visibleEvidence; b25-v4-row-010-book-nomination-0 has boilerplate critique; b25-v4-row-010-book-nomination-0 has no screen-level direct-question answers; b25-v4-row-011-book-nomination-1 has empty or weak visibleEvidence; b25-v4-row-011-book-nomination-1 has boilerplate critique; b25-v4-row-011-book-nomination-1 has no screen-level direct-question answers; b25-v4-row-012-book-nomination-2 has empty or weak visibleEvidence; b25-v4-row-012-book-nomination-2 has boilerplate critique; b25-v4-row-012-book-nomination-2 has no screen-level direct-question answers; b25-v4-row-013-book-selection-publish-0 has empty or weak visibleEvidence; b25-v4-row-013-book-selection-publish-0 has boilerplate critique; b25-v4-row-013-book-selection-publish-0 has no screen-level direct-question answers; b25-v4-row-014-book-selection-publish-1 has empty or weak visibleEvidence; b25-v4-row-014-book-selection-publish-1 has boilerplate critique; b25-v4-row-014-book-selection-publish-1 has no screen-level direct-question answers; b25-v4-row-015-book-selection-publish-2 has empty or weak visibleEvidence; b25-v4-row-015-book-selection-publish-2 has boilerplate critique; b25-v4-row-015-book-selection-publish-2 has no screen-level direct-question answers; b25-v4-row-016-soccer-team-roster-0 has empty or weak visibleEvidence; b25-v4-row-016-soccer-team-roster-0 has boilerplate critique; b25-v4-row-016-soccer-team-roster-0 has no screen-level direct-question answers; b25-v4-row-017-soccer-team-roster-1 has empty or weak visibleEvidence; b25-v4-row-017-soccer-team-roster-1 has boilerplate critique; b25-v4-row-017-soccer-team-roster-1 has no screen-level direct-question answers; b25-v4-row-018-soccer-team-roster-2 has empty or weak visibleEvidence; b25-v4-row-018-soccer-team-roster-2 has boilerplate critique; b25-v4-row-018-soccer-team-roster-2 has no screen-level direct-question answers; b25-v4-row-019-soccer-reminder-notification-0 has empty or weak visibleEvidence; b25-v4-row-019-soccer-reminder-notification-0 has boilerplate critique; b25-v4-row-019-soccer-reminder-notification-0 has no screen-level direct-question answers; b25-v4-row-020-soccer-reminder-notification-1 has empty or weak visibleEvidence; b25-v4-row-020-soccer-reminder-notification-1 has boilerplate critique; b25-v4-row-020-soccer-reminder-notification-1 has no screen-level direct-question answers; b25-v4-row-021-soccer-reminder-notification-2 has empty or weak visibleEvidence; b25-v4-row-021-soccer-reminder-notification-2 has boilerplate critique; b25-v4-row-021-soccer-reminder-notification-2 has no screen-level direct-question answers; b25-v4-row-022-hoa-facility-reservation-0 has empty or weak visibleEvidence; b25-v4-row-022-hoa-facility-reservation-0 has boilerplate critique; b25-v4-row-022-hoa-facility-reservation-0 has no screen-level direct-question answers; b25-v4-row-023-hoa-facility-reservation-1 has empty or weak visibleEvidence; b25-v4-row-023-hoa-facility-reservation-1 has boilerplate critique; b25-v4-row-023-hoa-facility-reservation-1 has no screen-level direct-question answers; b25-v4-row-024-hoa-facility-reservation-2 has empty or weak visibleEvidence; b25-v4-row-024-hoa-facility-reservation-2 has boilerplate critique; b25-v4-row-024-hoa-facility-reservation-2 has no screen-level direct-question answers; b25-v4-row-025-hoa-export-evidence-0 has empty or weak visibleEvidence; b25-v4-row-025-hoa-export-evidence-0 has boilerplate critique; b25-v4-row-025-hoa-export-evidence-0 has no screen-level direct-question answers; b25-v4-row-026-hoa-export-evidence-1 has empty or weak visibleEvidence; b25-v4-row-026-hoa-export-evidence-1 has boilerplate critique; b25-v4-row-026-hoa-export-evidence-1 has no screen-level direct-question answers; b25-v4-row-027-hoa-export-evidence-2 has empty or weak visibleEvidence.",
+      "requiredOutcome": "Run the B25 LLM Vision UX Judge Agent on the screenshot evidence, import its structured review, fix all blocker/major findings, and rerun B25.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "llm-vision",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "The current B25 pass lacks a passing fresh-context LLM vision UX judgment, or that judgment found major product-quality issues in the screenshots.",
+      "rootCauseHypothesis": "The previous B25 gate let deterministic absence-of-known-defects stand in for semantic visual/product review. The visible screenshots still need a fresh LLM judge to inspect pixels, layout, content, and product fit.",
+      "targetExperience": "A fresh LLM vision UX judge should be able to inspect the screenshots and state, from visible UI evidence, that the experience is modern, domain-native, and production-grade with no unresolved blocker or major findings.",
+      "uxPrinciples": [
+        "Semantic product-quality judgment must come from screenshot inspection, not deterministic keyword absence",
+        "A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target persona",
+        "LLM reviewer findings are blocking inputs to the normal B25 ticket and remediation loop"
+      ],
+      "concreteImprovements": [
+        "Use the LLM vision judge screen reviews as the source of truth for what visually failed.",
+        "Replace any screenshot-identified workflow/test-harness surfaces with domain-native product surfaces.",
+        "Fix all LLM-UX blocker/major findings, recapture screenshots, import a new LLM review artifact, and rerun the production judge."
+      ],
+      "implementationGuidance": [
+        "Treat the imported LLM vision review as the independent semantic critique.",
+        "Prioritize screen rows and workflows named in `llmVisionReview.findings` and `llmVisionReview.screenReviews`.",
+        "Do not close the ticket until a fresh LLM vision review over after-screenshots passes."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.",
+        "Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.",
+        "Use consistent component styling and avoid default scaffold or test-harness appearance."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json llmVisionReview",
+        "independent-production-ux-review.json findings from source=llm-vision-ux-judge",
+        "product-ux-screen-review-matrix.md affected screen rows",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+        "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+        "`llmVisionReview` imported from a fresh LLM vision UX judge run against the after screenshots.",
+        "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+      ],
+      "acceptanceChecks": [
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-002-app-shell-tab-renderer-contract-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-tab-renderer-contract-gap",
+      "tabId": "calendar",
+      "tabLabel": "Calendar",
+      "rendererContractId": "CalendarTabSurface",
+      "targetRendererContract": "CalendarTabSurface",
+      "cardSurfaceFamily": "calendar,event-rsvp,member-meetup",
+      "missingTabNativeEvidence": [
+        "Missing screenshot-backed direct-question review for `CalendarTabSurface`.",
+        "Missing proof that the tab looks and behaves like `Calendar` rather than a generic workflow-card list."
+      ],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-003-garden-event-rsvp-2",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-006-plant-exchange-submission-2",
+        "b25-v4-row-007-garden-export-custom-schemas-0",
+        "b25-v4-row-009-garden-export-custom-schemas-2",
+        "b25-v4-row-010-book-nomination-0",
+        "b25-v4-row-012-book-nomination-2",
+        "b25-v4-row-013-book-selection-publish-0",
+        "b25-v4-row-015-book-selection-publish-2",
+        "b25-v4-row-016-soccer-team-roster-0",
+        "b25-v4-row-018-soccer-team-roster-2",
+        "b25-v4-row-020-soccer-reminder-notification-1",
+        "b25-v4-row-021-soccer-reminder-notification-2",
+        "b25-v4-row-023-hoa-facility-reservation-1",
+        "b25-v4-row-024-hoa-facility-reservation-2",
+        "b25-v4-row-028-mosque-donor-visibility-0",
+        "b25-v4-row-030-mosque-donor-visibility-2",
+        "b25-v4-row-031-mosque-search-ai-citation-0",
+        "b25-v4-row-034-book-vote-0",
+        "b25-v4-row-036-book-vote-2",
+        "b25-v4-row-037-book-search-ai-digest-0",
+        "b25-v4-row-040-soccer-minor-redaction-0"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-minor-redaction_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "5647f9baa2f063f86920e2ff19f5782fa1ec0cd16bbc4deda57ba2879d50584b",
+        "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+        "234a9a921c751e8a2b973480499fe11af0684166618823fa2ffe5607736faefb",
+        "7f6b7293658fcc7f803196cd54fa583c2629c5c8d38729460d2b521b094b7bba",
+        "f038e0d17e0f9198a3ae07d28e5f1e75c5aabff998a28bddeb1170d0e219eda6",
+        "a2bc515b43e6fe8fd05ce78abbda2b865e9453f3e19bcc5b5337c17bad15ee80",
+        "bc0cb33beb2d8f5262c5f4e833de3c03e5938e0b1448097690010a6644a7aea5",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "ebf54132ac72f770ad13df96231f802bb9230a0db910387d53224156dbba2325",
+        "95c6dbe052fdb615b4a489a89ce42c72f5819702ec2aee75e8b1830346bac294",
+        "fd867236b27c4c31349579977981c87cba485daba43290f965634208836eacb8",
+        "d020b508fb329740c4798d09a187fa302b3b9604ddeacb88a1f1a365a82f8688",
+        "457a31fb4b5fe8115220730dad77c55e0ea2b911725c2c1a9ecdb75750adb7fc",
+        "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425",
+        "ac95467844071f801b0cd72576332d0a11bbb9efbaa913eafea2bd476bb0042a",
+        "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0",
+        "e7f2e1829feeb2868360ffba3bb21aa6f34693009a3218d28baf5fcec0010d63",
+        "c27b1d0c3e590e2af29aff66580ec973c3dace74ec5afd5f49817f01a2fb7cbe",
+        "855a705c10c3db474bfb8d92d65dc528e5c38abc6f11c558ecf10474d18c1b6a",
+        "e9fff085ea496d18f2837170c6acef7c55a43af7eb21a401b2ba436ed88e6e00",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "f76c0868dd4a0270ff433267f1595d28c36eea178d2f187b177bebb297d3ea28",
+        "9918329b1df3491027386199acf017b7cf61fb91f05405c785eff80f570cfed2",
+        "08bfa280c1770e9c3a6a3e684d1405a964e4d6eeb1e23e17f34c60b21cd218db"
+      ],
+      "visibleTextExcerpt": "No sponsored message right now. | Garden Club | Coordinate garden events and plant exchange requests. | Garden Member | Member - RSVPs to garden events and submits exchange offers. | 2 roles | Home | Pinned and unassigned community surfaces. | Upcoming events | Dates, capacity, and attendance actions. | Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | Minimi...",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-calendartabsurface-MISSING-PROOF"
+      ],
+      "title": "CalendarTabSurface is not proven by screenshot-backed review",
+      "directQuestion": "Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?",
+      "whyItFailed": "CalendarTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "requiredOutcome": "Add a tabRendererResults row for `CalendarTabSurface` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "CalendarTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.",
+        "For Messages, show inbox/thread/composer/unread or invite state, not an informational card.",
+        "For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.",
+        "For Documents, show library/category/detail plus embedded or external-open state.",
+        "For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.",
+        "Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-003-app-shell-tab-renderer-contract-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-tab-renderer-contract-gap",
+      "tabId": "messages",
+      "tabLabel": "Messages",
+      "rendererContractId": "MessagesTabSurface",
+      "targetRendererContract": "MessagesTabSurface",
+      "cardSurfaceFamily": "discussion-message,messaging-connections,notification-inbox",
+      "missingTabNativeEvidence": [
+        "Missing screenshot-backed direct-question review for `MessagesTabSurface`.",
+        "Missing proof that the tab looks and behaves like `Messages` rather than a generic workflow-card list."
+      ],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-002-garden-event-rsvp-1",
+        "b25-v4-row-010-book-nomination-0",
+        "b25-v4-row-012-book-nomination-2",
+        "b25-v4-row-013-book-selection-publish-0",
+        "b25-v4-row-014-book-selection-publish-1",
+        "b25-v4-row-015-book-selection-publish-2",
+        "b25-v4-row-016-soccer-team-roster-0",
+        "b25-v4-row-018-soccer-team-roster-2",
+        "b25-v4-row-019-soccer-reminder-notification-0",
+        "b25-v4-row-020-soccer-reminder-notification-1",
+        "b25-v4-row-021-soccer-reminder-notification-2",
+        "b25-v4-row-023-hoa-facility-reservation-1",
+        "b25-v4-row-024-hoa-facility-reservation-2",
+        "b25-v4-row-025-hoa-export-evidence-0",
+        "b25-v4-row-026-hoa-export-evidence-1",
+        "b25-v4-row-027-hoa-export-evidence-2",
+        "b25-v4-row-028-mosque-donor-visibility-0",
+        "b25-v4-row-029-mosque-donor-visibility-1",
+        "b25-v4-row-030-mosque-donor-visibility-2",
+        "b25-v4-row-031-mosque-search-ai-citation-0",
+        "b25-v4-row-033-mosque-search-ai-citation-2",
+        "b25-v4-row-034-book-vote-0",
+        "b25-v4-row-036-book-vote-2",
+        "b25-v4-row-037-book-search-ai-digest-0"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-search-ai-citation_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-vote_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-search-ai-digest_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "ebf54132ac72f770ad13df96231f802bb9230a0db910387d53224156dbba2325",
+        "95c6dbe052fdb615b4a489a89ce42c72f5819702ec2aee75e8b1830346bac294",
+        "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524",
+        "fd867236b27c4c31349579977981c87cba485daba43290f965634208836eacb8",
+        "d020b508fb329740c4798d09a187fa302b3b9604ddeacb88a1f1a365a82f8688",
+        "457a31fb4b5fe8115220730dad77c55e0ea2b911725c2c1a9ecdb75750adb7fc",
+        "d78946fbbf41805acfb1285c7882b48dccbda7b904c3ecdae3e0bb4f3578631e",
+        "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425",
+        "ac95467844071f801b0cd72576332d0a11bbb9efbaa913eafea2bd476bb0042a",
+        "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0",
+        "e7f2e1829feeb2868360ffba3bb21aa6f34693009a3218d28baf5fcec0010d63",
+        "0e279d4ba71bf64af2557c3ae56c453c157d36efe5d17ddcc6b0cef8d460fe36",
+        "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c",
+        "7bbc78963398c495745fe21518e4b806adc70e04069a41703ef54db090b534d6",
+        "c27b1d0c3e590e2af29aff66580ec973c3dace74ec5afd5f49817f01a2fb7cbe",
+        "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447",
+        "855a705c10c3db474bfb8d92d65dc528e5c38abc6f11c558ecf10474d18c1b6a",
+        "e9fff085ea496d18f2837170c6acef7c55a43af7eb21a401b2ba436ed88e6e00",
+        "2d22ed165dea9e1c94e9a1de4d0fdd75b5e5068db8799aaee383f1cb81da9318",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "f76c0868dd4a0270ff433267f1595d28c36eea178d2f187b177bebb297d3ea28",
+        "9918329b1df3491027386199acf017b7cf61fb91f05405c785eff80f570cfed2"
+      ],
+      "visibleTextExcerpt": "Spring Planting Workshop | Saturday, Apr 18 at 10:00 AM - Riverside Greenhouse | Join the club for bed prep, seedling setup, and a shared planning session before the spring exchange opens. | Choose your response | Your RSVP updates the attendee count and leaves a reminder in your community inbox. | 18 going | 6 spots left | RSVP open | Going | Maybe | Not going | Maybe later | RSVP to event | Event details | Host ...",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-messagestabsurface-MISSING-PROOF"
+      ],
+      "title": "MessagesTabSurface is not proven by screenshot-backed review",
+      "directQuestion": "Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?",
+      "whyItFailed": "MessagesTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "requiredOutcome": "Add a tabRendererResults row for `MessagesTabSurface` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "MessagesTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.",
+        "For Messages, show inbox/thread/composer/unread or invite state, not an informational card.",
+        "For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.",
+        "For Documents, show library/category/detail plus embedded or external-open state.",
+        "For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.",
+        "Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-004-app-shell-tab-renderer-contract-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-tab-renderer-contract-gap",
+      "tabId": "marketplace",
+      "tabLabel": "Marketplace",
+      "rendererContractId": "MarketplaceTabSurface",
+      "targetRendererContract": "MarketplaceTabSurface",
+      "cardSurfaceFamily": "equipment-loan,plant-exchange",
+      "missingTabNativeEvidence": [
+        "Missing screenshot-backed direct-question review for `MarketplaceTabSurface`.",
+        "Missing proof that the tab looks and behaves like `Marketplace` rather than a generic workflow-card list."
+      ],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-003-garden-event-rsvp-2",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1",
+        "b25-v4-row-006-plant-exchange-submission-2",
+        "b25-v4-row-007-garden-export-custom-schemas-0",
+        "b25-v4-row-009-garden-export-custom-schemas-2",
+        "b25-v4-row-106-photo-walk-rsvp-0",
+        "b25-v4-row-108-photo-walk-rsvp-2",
+        "b25-v4-row-109-critique-submission-0",
+        "b25-v4-row-111-critique-submission-2",
+        "b25-v4-row-112-gear-loan-request-0",
+        "b25-v4-row-113-gear-loan-request-1",
+        "b25-v4-row-114-gear-loan-request-2",
+        "b25-v4-row-199-wf-app-shell-capability-evidence-0",
+        "b25-v4-row-200-wf-app-shell-capability-evidence-1",
+        "b25-v4-row-201-wf-app-shell-capability-evidence-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_critique-submission_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/screenshots/B15_ext_camera_club_gear-loan-request_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_main_community_list_states.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_garden_home_medium_minimized_stack.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_garden_home_expanded_surface.png"
+      ],
+      "affectedScreenshotHashes": [
+        "5647f9baa2f063f86920e2ff19f5782fa1ec0cd16bbc4deda57ba2879d50584b",
+        "234a9a921c751e8a2b973480499fe11af0684166618823fa2ffe5607736faefb",
+        "7f6b7293658fcc7f803196cd54fa583c2629c5c8d38729460d2b521b094b7bba",
+        "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1",
+        "f038e0d17e0f9198a3ae07d28e5f1e75c5aabff998a28bddeb1170d0e219eda6",
+        "a2bc515b43e6fe8fd05ce78abbda2b865e9453f3e19bcc5b5337c17bad15ee80",
+        "bc0cb33beb2d8f5262c5f4e833de3c03e5938e0b1448097690010a6644a7aea5",
+        "f0bf51ab7aa9e5cad1581917c17b7c4199a6231c028b4053cfa9b252eae03bec",
+        "d62171db563fdc53ca0e30db7b89911a815248ad90cabbd9fbfca23afe3884eb",
+        "6b78f435672dcb52e664ca4889a1905cf4a96edd3ff603c1e9b20825c245c9c3",
+        "888891fdb16247ea856ae4d3816ee8f5af6ffe7786f8cdf2a81704c1bd34377a",
+        "3c655b2ea5019e55f0619d48ceea9bc3044acbda170272f0aba59a9393fc7888",
+        "98ab205d41eadf7ec620bf052eb19298776144236b9cf5bda120a00e97605075",
+        "dece09035bf3bbc4473055b915d638ad862fcfa0e3b00b45aefb029595addb6d",
+        "e03196dc175f1e0beea80dbf5488dee1646e6c07d87545deaafc7ead243f7db5",
+        "03ab8acc48c5c43a0f6974951e53520a6ee59b36f5395bf376c5fe47d5d19ecb",
+        "79301d164b188752ba2898c54ff0b67280bca8f72d13b241457dc3c59dbc111f"
+      ],
+      "visibleTextExcerpt": "No sponsored message right now. | Garden Club | Coordinate garden events and plant exchange requests. | Garden Member | Member - RSVPs to garden events and submits exchange offers. | 2 roles | Home | Pinned and unassigned community surfaces. | Upcoming events | Dates, capacity, and attendance actions. | Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | Minimi...",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-marketplacetabsurface-MISSING-PROOF"
+      ],
+      "title": "MarketplaceTabSurface is not proven by screenshot-backed review",
+      "directQuestion": "Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?",
+      "whyItFailed": "MarketplaceTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "requiredOutcome": "Add a tabRendererResults row for `MarketplaceTabSurface` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "MarketplaceTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.",
+        "For Messages, show inbox/thread/composer/unread or invite state, not an informational card.",
+        "For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.",
+        "For Documents, show library/category/detail plus embedded or external-open state.",
+        "For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.",
+        "Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-005-app-shell-tab-renderer-contract-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-tab-renderer-contract-gap",
+      "tabId": "documents",
+      "tabLabel": "Documents",
+      "rendererContractId": "DocumentsTabSurface",
+      "targetRendererContract": "DocumentsTabSurface",
+      "cardSurfaceFamily": "documents,external-document-link,portability",
+      "missingTabNativeEvidence": [
+        "Missing screenshot-backed direct-question review for `DocumentsTabSurface`.",
+        "Missing proof that the tab looks and behaves like `Documents` rather than a generic workflow-card list."
+      ],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-001-garden-event-rsvp-0",
+        "b25-v4-row-003-garden-event-rsvp-2",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-006-plant-exchange-submission-2",
+        "b25-v4-row-007-garden-export-custom-schemas-0",
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-009-garden-export-custom-schemas-2",
+        "b25-v4-row-010-book-nomination-0",
+        "b25-v4-row-012-book-nomination-2",
+        "b25-v4-row-013-book-selection-publish-0",
+        "b25-v4-row-015-book-selection-publish-2",
+        "b25-v4-row-016-soccer-team-roster-0",
+        "b25-v4-row-017-soccer-team-roster-1",
+        "b25-v4-row-018-soccer-team-roster-2",
+        "b25-v4-row-019-soccer-reminder-notification-0",
+        "b25-v4-row-020-soccer-reminder-notification-1",
+        "b25-v4-row-021-soccer-reminder-notification-2",
+        "b25-v4-row-022-hoa-facility-reservation-0",
+        "b25-v4-row-023-hoa-facility-reservation-1",
+        "b25-v4-row-024-hoa-facility-reservation-2",
+        "b25-v4-row-025-hoa-export-evidence-0",
+        "b25-v4-row-026-hoa-export-evidence-1",
+        "b25-v4-row-027-hoa-export-evidence-2",
+        "b25-v4-row-028-mosque-donor-visibility-0"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_mosque_mosque-donor-visibility_start.png"
+      ],
+      "affectedScreenshotHashes": [
+        "5647f9baa2f063f86920e2ff19f5782fa1ec0cd16bbc4deda57ba2879d50584b",
+        "234a9a921c751e8a2b973480499fe11af0684166618823fa2ffe5607736faefb",
+        "7f6b7293658fcc7f803196cd54fa583c2629c5c8d38729460d2b521b094b7bba",
+        "f038e0d17e0f9198a3ae07d28e5f1e75c5aabff998a28bddeb1170d0e219eda6",
+        "a2bc515b43e6fe8fd05ce78abbda2b865e9453f3e19bcc5b5337c17bad15ee80",
+        "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143",
+        "bc0cb33beb2d8f5262c5f4e833de3c03e5938e0b1448097690010a6644a7aea5",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "ebf54132ac72f770ad13df96231f802bb9230a0db910387d53224156dbba2325",
+        "95c6dbe052fdb615b4a489a89ce42c72f5819702ec2aee75e8b1830346bac294",
+        "fd867236b27c4c31349579977981c87cba485daba43290f965634208836eacb8",
+        "d020b508fb329740c4798d09a187fa302b3b9604ddeacb88a1f1a365a82f8688",
+        "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3",
+        "457a31fb4b5fe8115220730dad77c55e0ea2b911725c2c1a9ecdb75750adb7fc",
+        "d78946fbbf41805acfb1285c7882b48dccbda7b904c3ecdae3e0bb4f3578631e",
+        "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425",
+        "ac95467844071f801b0cd72576332d0a11bbb9efbaa913eafea2bd476bb0042a",
+        "74c844ea4e7eb080792633659a2171f97b59e7aa37cca3f56845014f3449c5d8",
+        "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0",
+        "e7f2e1829feeb2868360ffba3bb21aa6f34693009a3218d28baf5fcec0010d63",
+        "0e279d4ba71bf64af2557c3ae56c453c157d36efe5d17ddcc6b0cef8d460fe36",
+        "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c",
+        "7bbc78963398c495745fe21518e4b806adc70e04069a41703ef54db090b534d6",
+        "c27b1d0c3e590e2af29aff66580ec973c3dace74ec5afd5f49817f01a2fb7cbe"
+      ],
+      "visibleTextExcerpt": "No sponsored message right now. | Garden Club | Coordinate garden events and plant exchange requests. | Garden Member | Member - RSVPs to garden events and submits exchange offers. | 2 roles | Home | Pinned and unassigned community surfaces. | Upcoming events | Dates, capacity, and attendance actions. | Garden event RSVP | Event details include date, location, capacity, RSVP action, and attendance result. | Minimi...",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-documentstabsurface-MISSING-PROOF"
+      ],
+      "title": "DocumentsTabSurface is not proven by screenshot-backed review",
+      "directQuestion": "Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?",
+      "whyItFailed": "DocumentsTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "requiredOutcome": "Add a tabRendererResults row for `DocumentsTabSurface` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "DocumentsTabSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.",
+        "For Messages, show inbox/thread/composer/unread or invite state, not an informational card.",
+        "For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.",
+        "For Documents, show library/category/detail plus embedded or external-open state.",
+        "For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.",
+        "Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-006-app-shell-tab-renderer-contract-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-tab-renderer-contract-gap",
+      "tabId": "workflow-status",
+      "tabLabel": "Status",
+      "rendererContractId": "WorkflowStatusSurface",
+      "targetRendererContract": "WorkflowStatusSurface",
+      "cardSurfaceFamily": "workflow-status,approval-request,custom-form-submission",
+      "missingTabNativeEvidence": [
+        "Missing screenshot-backed direct-question review for `WorkflowStatusSurface`.",
+        "Missing proof that the tab looks and behaves like `Status` rather than a generic workflow-card list."
+      ],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-003-garden-event-rsvp-2",
+        "b25-v4-row-004-plant-exchange-submission-0",
+        "b25-v4-row-005-plant-exchange-submission-1",
+        "b25-v4-row-006-plant-exchange-submission-2",
+        "b25-v4-row-007-garden-export-custom-schemas-0",
+        "b25-v4-row-008-garden-export-custom-schemas-1",
+        "b25-v4-row-009-garden-export-custom-schemas-2",
+        "b25-v4-row-010-book-nomination-0",
+        "b25-v4-row-012-book-nomination-2",
+        "b25-v4-row-013-book-selection-publish-0",
+        "b25-v4-row-014-book-selection-publish-1",
+        "b25-v4-row-015-book-selection-publish-2",
+        "b25-v4-row-016-soccer-team-roster-0",
+        "b25-v4-row-017-soccer-team-roster-1",
+        "b25-v4-row-018-soccer-team-roster-2",
+        "b25-v4-row-019-soccer-reminder-notification-0",
+        "b25-v4-row-020-soccer-reminder-notification-1",
+        "b25-v4-row-021-soccer-reminder-notification-2",
+        "b25-v4-row-022-hoa-facility-reservation-0",
+        "b25-v4-row-023-hoa-facility-reservation-1",
+        "b25-v4-row-024-hoa-facility-reservation-2",
+        "b25-v4-row-025-hoa-export-evidence-0",
+        "b25-v4-row-026-hoa-export-evidence-1",
+        "b25-v4-row-027-hoa-export-evidence-2"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-event-rsvp_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_plant-exchange-submission_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B13/screenshots/B13_ext_garden_club_garden-export-custom-schemas_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-nomination_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_book_club_book-selection-publish_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-team-roster_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_youth_soccer_soccer-reminder-notification_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-facility-reservation_complete.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B14/screenshots/B14_ext_hoa_hoa-export-evidence_complete.png"
+      ],
+      "affectedScreenshotHashes": [
+        "234a9a921c751e8a2b973480499fe11af0684166618823fa2ffe5607736faefb",
+        "7f6b7293658fcc7f803196cd54fa583c2629c5c8d38729460d2b521b094b7bba",
+        "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1",
+        "f038e0d17e0f9198a3ae07d28e5f1e75c5aabff998a28bddeb1170d0e219eda6",
+        "a2bc515b43e6fe8fd05ce78abbda2b865e9453f3e19bcc5b5337c17bad15ee80",
+        "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143",
+        "bc0cb33beb2d8f5262c5f4e833de3c03e5938e0b1448097690010a6644a7aea5",
+        "e83101a926d532f40932557396113e95b2c4540ee57106b3960e45f02b65ab83",
+        "ebf54132ac72f770ad13df96231f802bb9230a0db910387d53224156dbba2325",
+        "95c6dbe052fdb615b4a489a89ce42c72f5819702ec2aee75e8b1830346bac294",
+        "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524",
+        "fd867236b27c4c31349579977981c87cba485daba43290f965634208836eacb8",
+        "d020b508fb329740c4798d09a187fa302b3b9604ddeacb88a1f1a365a82f8688",
+        "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3",
+        "457a31fb4b5fe8115220730dad77c55e0ea2b911725c2c1a9ecdb75750adb7fc",
+        "d78946fbbf41805acfb1285c7882b48dccbda7b904c3ecdae3e0bb4f3578631e",
+        "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425",
+        "ac95467844071f801b0cd72576332d0a11bbb9efbaa913eafea2bd476bb0042a",
+        "74c844ea4e7eb080792633659a2171f97b59e7aa37cca3f56845014f3449c5d8",
+        "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0",
+        "e7f2e1829feeb2868360ffba3bb21aa6f34693009a3218d28baf5fcec0010d63",
+        "0e279d4ba71bf64af2557c3ae56c453c157d36efe5d17ddcc6b0cef8d460fe36",
+        "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c",
+        "7bbc78963398c495745fe21518e4b806adc70e04069a41703ef54db090b534d6"
+      ],
+      "visibleTextExcerpt": "No sponsored message right now. | Garden Club | Coordinate garden events and plant exchange requests. | Garden Member | Member - RSVPs to garden events and submits exchange offers. | 2 roles | Home | Pinned and unassigned community surfaces. | Upcoming events | Dates, capacity, and attendance actions. | Expanded product surface | Collapse | Spring Planting Workshop | Hands-on bed prep, seedling swap, and seasonal ...",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-workflowstatussurface-MISSING-PROOF"
+      ],
+      "title": "WorkflowStatusSurface is not proven by screenshot-backed review",
+      "directQuestion": "Does each dedicated tab visibly use its tab-native renderer contract, such as calendar/agenda, inbox/thread, marketplace browse/listing, documents library/detail, or workflow-status timeline?",
+      "whyItFailed": "WorkflowStatusSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "requiredOutcome": "Add a tabRendererResults row for `WorkflowStatusSurface` with status=pass only after screenshots prove the tab-native UI, visible content, interaction states, and direct-question critique. If it fails, keep this as an implementation ticket.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "WorkflowStatusSurface must be reviewed as a tab-native renderer from current screenshots. The review must answer whether the tab looks and behaves like the expected product surface, not a generic workflow-card list.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Calendar, Messages, Marketplace, Documents, and Workflow Status tabs each render a recognizably native product interface for their category instead of reusing a generic card stack.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Create or update `tabRendererResults[]` in the B25 review for each required renderer contract: CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "For Calendar, show a date strip/week/month or agenda plus event detail and RSVP/change-response state.",
+        "For Messages, show inbox/thread/composer/unread or invite state, not an informational card.",
+        "For Marketplace, show browse/search/filter/listing/detail/current-holder/queue or list-item actions.",
+        "For Documents, show library/category/detail plus embedded or external-open state.",
+        "For Workflow Status, show a timeline/current step/reviewer/comment/document/payment/action surface."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Represent tab-native renderer proof as data in `appShellCapabilityReview.tabRendererResults[]` so the production judge can validate it without trusting prose.",
+        "Use the renderer contracts in `docs/CardSurfaces/tab-renderer-contracts.md` and the mirrored Skill doc when choosing the target UI."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.tabRendererResults[]` contains passing rows for CalendarTabSurface, MessagesTabSurface, MarketplaceTabSurface, DocumentsTabSurface, and WorkflowStatusSurface.",
+        "Each renderer row has screenshot row IDs, screenshot hashes, visible text, direct-question answers, and a screen-specific critique.",
+        "The screenshots visibly match the renderer contract and do not rely on generic workflow-card fallback UI.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-007-app-shell-interaction-transition-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-interaction-transition-gap",
+      "tabId": "",
+      "tabLabel": "",
+      "rendererContractId": "",
+      "targetRendererContract": "",
+      "cardSurfaceFamily": "",
+      "missingTabNativeEvidence": [],
+      "interactionEvidenceRequired": [
+        "Capture before/tap/after screenshots with distinct hashes.",
+        "Record visible state changes and the resulting status, receipt, undo/change, or receiver state.",
+        "Do not close from source code or worker claims alone."
+      ],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [],
+      "visibleTextExcerpt": "",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-INTERACTION-TRANSITIONS-MISSING"
+      ],
+      "title": "Interaction transitions are not fully screenshot-proven",
+      "directQuestion": "Do screenshots prove actionable controls were tapped and caused the correct visible state transition, including change/undo/result states where the workflow requires them?",
+      "whyItFailed": "9 workflow lifecycle scorecards do not prove entry, tapped/review action, and changed result states from distinct screenshots.",
+      "requiredOutcome": "Extend B25 capture so each actionable control has before/tap/after or entry/action/result evidence with distinct screenshot hashes and visible state changes; rerun the interaction-model judge and LLM vision review.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "Every important primary/alternate action has before/tap/after or entry/action/result screenshots with distinct hashes.",
+        "The after screenshot visibly proves a changed state, status, receipt, result, undo/change path, or receiver state.",
+        "`appShellCapabilityReview.interactionTransitionResults[]` or lifecycle scorecards pass without missing transition evidence.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "9 workflow lifecycle scorecards do not prove entry, tapped/review action, and changed result states from distinct screenshots.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "Every important button and action proves a real interaction: the before screenshot, tapped/review state, and after screenshot show a changed status, result, receipt, or editable/undoable continuation.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Extend capture automation to tap every important primary and alternate action in the reviewed workflows.",
+        "Record before, action/review, and after screenshots with distinct hashes and visible state changes.",
+        "For change/undo/edit paths, capture the later state proving the user can revise the prior response."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Update workflow capture helpers so important buttons are actually tapped and the resulting UI state is captured.",
+        "Do not make UI conform to old test keys; update the evidence automation to follow the production interaction model."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "Every important primary/alternate action has before/tap/after or entry/action/result screenshots with distinct hashes.",
+        "The after screenshot visibly proves a changed state, status, receipt, result, undo/change path, or receiver state.",
+        "`appShellCapabilityReview.interactionTransitionResults[]` or lifecycle scorecards pass without missing transition evidence.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-008-app-shell-review-depth-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-39",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-review-depth-gap",
+      "tabId": "",
+      "tabLabel": "",
+      "rendererContractId": "",
+      "targetRendererContract": "",
+      "cardSurfaceFamily": "",
+      "missingTabNativeEvidence": [],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "The review has pass flags but lacks screenshot-specific visible text, critique, hashes, or direct answers.",
+      "requiredScreenshotsToRecapture": [
+        "b25-v4-row-199-wf-app-shell-capability-evidence-0",
+        "b25-v4-row-200-wf-app-shell-capability-evidence-1",
+        "b25-v4-row-201-wf-app-shell-capability-evidence-2",
+        "b25-v4-row-202-wf-app-shell-capability-evidence-3",
+        "b25-v4-row-203-wf-app-shell-capability-evidence-4",
+        "b25-v4-row-204-wf-app-shell-capability-evidence-5"
+      ],
+      "affectedScreenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_main_community_list_states.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_garden_home_medium_minimized_stack.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_garden_home_expanded_surface.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_hoa_documents_pinning_policy.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_soccer_roster_renderer_medium.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/screenshots/B20_app_shell_soccer_roster_renderer_expanded.png"
+      ],
+      "affectedScreenshotHashes": [
+        "e03196dc175f1e0beea80dbf5488dee1646e6c07d87545deaafc7ead243f7db5",
+        "03ab8acc48c5c43a0f6974951e53520a6ee59b36f5395bf376c5fe47d5d19ecb",
+        "79301d164b188752ba2898c54ff0b67280bca8f72d13b241457dc3c59dbc111f",
+        "8bb5e1dba3a29b9308aaeb22c91b6545a0648881663bcc9fab7075a5dad3527d",
+        "f1aa2e472d8450642bc789c7b5371855ed6ab25e316f5a7e2facced5cf7d63d2",
+        "aee0e48ce3710cde43db4ba105e1aa7efa1a630288abd30bb149bfb04a38e8e0"
+      ],
+      "visibleTextExcerpt": " |  |  |  |  | ",
+      "sourceFindingIds": [
+        "B25-APP-SHELL-REVIEW-DEPTH-loom-communities-shell-member"
+      ],
+      "title": "App Shell capability review lacks visible screenshot critique",
+      "directQuestion": "Does the App Shell capability review cite visible screenshot text, screenshot hashes, tab/renderer-specific critique, and direct answers rather than pass flags alone?",
+      "whyItFailed": "The App Shell review row has pass flags, but lacks enough visible text, screenshot hashes, or screen-specific critique to prove the shell capabilities were visually inspected.",
+      "requiredOutcome": "Regenerate the App Shell capability review with visible text excerpts, screenshot hashes, tab/renderer-specific critiques, and direct answers for the reviewed community/persona.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "Every App Shell review row includes visible text excerpts and screenshot hashes.",
+        "Every App Shell review row has non-boilerplate critique naming the tab, renderer, visible UI, and product-quality decision.",
+        "A pass verdict is not based only on feature flags, source-code declarations, or absence of deterministic pixel findings.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "The App Shell review row has pass flags, but lacks enough visible text, screenshot hashes, or screen-specific critique to prove the shell capabilities were visually inspected.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "The App Shell review is a real visual critique: it cites screenshot-visible evidence, answers direct questions per tab/renderer, and fails weak or generic UI even when source flags say a feature exists.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Replace pass-flag-only App Shell review rows with screenshot-specific critique.",
+        "Each row must quote visible text, cite screenshot hashes, name the tab/renderer contract, and answer whether the UI behaves like that product surface.",
+        "Do not reuse a generic rationale across unrelated tabs or communities."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Regenerate the App Shell review from screenshots and visible text, not from implementation declarations.",
+        "Make weak LLM reviews fail by leaving `status=fail` until visual critique is screen-specific."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "Every App Shell review row includes visible text excerpts and screenshot hashes.",
+        "Every App Shell review row has non-boilerplate critique naming the tab, renderer, visible UI, and product-quality decision.",
+        "A pass verdict is not based only on feature flags, source-code declarations, or absence of deterministic pixel findings.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    }
+  ]
 }
