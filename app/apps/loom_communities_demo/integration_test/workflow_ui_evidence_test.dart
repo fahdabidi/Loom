@@ -243,9 +243,8 @@ void main() {
         final workflowButton = find.byKey(
           ValueKey('workflow-button-${workflow.workflowId}'),
         );
-        await tester.ensureVisible(workflowButton);
-        await tester.pumpAndSettle();
-        await tester.tap(workflowButton);
+        await scrollFinderIntoViewport(tester, workflowButton);
+        await tester.tap(workflowButton, warnIfMissed: false);
         await tester.pumpAndSettle();
         expect(
           find.byKey(
@@ -258,14 +257,8 @@ void main() {
         final submitButton = find.byKey(
           ValueKey('workflow-action-submit-${workflow.workflowId}'),
         );
-        await tester.scrollUntilVisible(
-          submitButton,
-          180,
-          scrollable: verticalScrollableFinder().last,
-          maxScrolls: 30,
-        );
-        await tester.pumpAndSettle();
-        await tester.tap(submitButton);
+        await scrollFinderIntoViewport(tester, submitButton);
+        await tester.tap(submitButton, warnIfMissed: false);
         await tester.pumpAndSettle();
         await scrollToWorkflowCard(tester, workflow);
         expect(
@@ -467,13 +460,7 @@ void main() {
       final announcementActionButton = find.byKey(
         ValueKey('workflow-button-${announcement.workflowId}'),
       );
-      await tester.scrollUntilVisible(
-        announcementActionButton,
-        180,
-        scrollable: verticalScrollableFinder().last,
-        maxScrolls: 30,
-      );
-      await tester.pumpAndSettle();
+      await scrollFinderIntoViewport(tester, announcementActionButton);
       await tester.tap(announcementActionButton, warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(
@@ -486,13 +473,7 @@ void main() {
       final announcementSubmitButton = find.byKey(
         ValueKey('workflow-action-submit-${announcement.workflowId}'),
       );
-      await tester.scrollUntilVisible(
-        announcementSubmitButton,
-        180,
-        scrollable: verticalScrollableFinder().last,
-        maxScrolls: 30,
-      );
-      await tester.pumpAndSettle();
+      await scrollFinderIntoViewport(tester, announcementSubmitButton);
       await tester.tap(announcementSubmitButton);
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);
@@ -503,13 +484,7 @@ void main() {
       final announcementReceiveButton = find.byKey(
         ValueKey('workflow-receive-button-${announcement.workflowId}'),
       );
-      await tester.scrollUntilVisible(
-        announcementReceiveButton,
-        180,
-        scrollable: verticalScrollableFinder().last,
-        maxScrolls: 30,
-      );
-      await tester.pumpAndSettle();
+      await scrollFinderIntoViewport(tester, announcementReceiveButton);
       await tester.tap(announcementReceiveButton, warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(
@@ -522,13 +497,7 @@ void main() {
       final announcementReceiveSubmitButton = find.byKey(
         ValueKey('workflow-receive-submit-${announcement.workflowId}'),
       );
-      await tester.scrollUntilVisible(
-        announcementReceiveSubmitButton,
-        180,
-        scrollable: verticalScrollableFinder().last,
-        maxScrolls: 30,
-      );
-      await tester.pumpAndSettle();
+      await scrollFinderIntoViewport(tester, announcementReceiveSubmitButton);
       await tester.tap(announcementReceiveSubmitButton);
       await tester.pumpAndSettle();
       await _scrollToWorkflow(tester, announcement);

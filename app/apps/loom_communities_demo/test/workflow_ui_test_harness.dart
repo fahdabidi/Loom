@@ -351,13 +351,7 @@ Future<void> receiveWorkflow(
   final receiveSubmitButton = find.byKey(
     ValueKey('workflow-receive-submit-${workflow.workflowId}'),
   );
-  await tester.scrollUntilVisible(
-    receiveSubmitButton,
-    180,
-    scrollable: verticalScrollableFinder().last,
-    maxScrolls: 30,
-  );
-  await tester.pumpAndSettle();
+  await scrollFinderIntoViewport(tester, receiveSubmitButton);
   await tester.tap(receiveSubmitButton);
   await tester.pumpAndSettle();
   await scrollToWorkflowCard(tester, workflow);

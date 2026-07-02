@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "toolId": "production-ux-judge",
+  "status": "fail",
+  "generatedAt": "2026-07-02T13:41:38.554340Z",
+  "tickets": [
+    {
+      "ticketId": "B25-RT-001-b25-c14-llm-vision-ux-review",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-41",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c14-llm-vision-ux-review",
+      "sourceFindingIds": [],
+      "title": "LLM vision UX judge has inspected screenshots semantically",
+      "directQuestion": "Has a fresh LLM vision UX Judge inspected the actual screenshots as product UI, answered direct UX questions from visible evidence, and found no blocker or major product-quality issues?",
+      "whyItFailed": "The evidence does not include a passing LLM vision UX review artifact grounded in screenshots. Missing evidence fields: llmVisionReview.",
+      "requiredOutcome": "Run the B25 LLM Vision UX Judge Agent on the screenshot evidence, import its structured review, fix all blocker/major findings, and rerun B25.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "llm-vision",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "The current B25 pass lacks a passing fresh-context LLM vision UX judgment, or that judgment found major product-quality issues in the screenshots.",
+      "rootCauseHypothesis": "The previous B25 gate let deterministic absence-of-known-defects stand in for semantic visual/product review. The visible screenshots still need a fresh LLM judge to inspect pixels, layout, content, and product fit.",
+      "targetExperience": "A fresh LLM vision UX judge should be able to inspect the screenshots and state, from visible UI evidence, that the experience is modern, domain-native, and production-grade with no unresolved blocker or major findings.",
+      "uxPrinciples": [
+        "Semantic product-quality judgment must come from screenshot inspection, not deterministic keyword absence",
+        "A production UX pass needs visible proof that screens feel modern, domain-native, and useful to the target persona",
+        "LLM reviewer findings are blocking inputs to the normal B25 ticket and remediation loop"
+      ],
+      "concreteImprovements": [
+        "Use the LLM vision judge screen reviews as the source of truth for what visually failed.",
+        "Replace any screenshot-identified workflow/test-harness surfaces with domain-native product surfaces.",
+        "Fix all LLM-UX blocker/major findings, recapture screenshots, import a new LLM review artifact, and rerun the production judge."
+      ],
+      "implementationGuidance": [
+        "Treat the imported LLM vision review as the independent semantic critique.",
+        "Prioritize screen rows and workflows named in `llmVisionReview.findings` and `llmVisionReview.screenReviews`.",
+        "Do not close the ticket until a fresh LLM vision review over after-screenshots passes."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Check hierarchy: page title, section headings, primary actions, secondary metadata, and result states should be visually distinct.",
+        "Check spacing and density on mobile: avoid crowded repeated cards, clipped text, overlapping controls, and weak touch targets.",
+        "Use consistent component styling and avoid default scaffold or test-harness appearance."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json llmVisionReview",
+        "independent-production-ux-review.json findings from source=llm-vision-ux-judge",
+        "product-ux-screen-review-matrix.md affected screen rows",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Fresh holistic screenshots for primary homes, navigation, representative detail surfaces, and representative completion/result states.",
+        "`holisticQuestionAnswers` with visible evidence, score, pass/fail answer, and specific rationale.",
+        "`llmVisionReview` imported from a fresh LLM vision UX judge run against the after screenshots.",
+        "Updated `production-ux-criteria-scorecard.json/.md` showing the criterion passes."
+      ],
+      "acceptanceChecks": [
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    },
+    {
+      "ticketId": "B25-RT-002-app-shell-capability-gap",
+      "ticketSchemaVersion": 4,
+      "phase": "B25",
+      "reviewRunId": "b25-v4-pass-41",
+      "status": "open",
+      "severity": "major",
+      "priority": "P1",
+      "sourceCriterionId": "b25-c16-app-shell-capability-utilization",
+      "sourceCapability": "app-shell-capability-gap",
+      "tabId": "",
+      "tabLabel": "",
+      "rendererContractId": "",
+      "targetRendererContract": "",
+      "cardSurfaceFamily": "",
+      "missingTabNativeEvidence": [],
+      "interactionEvidenceRequired": [],
+      "llmReviewDefect": "",
+      "requiredScreenshotsToRecapture": [],
+      "affectedScreenshotPaths": [],
+      "affectedScreenshotHashes": [],
+      "visibleTextExcerpt": "",
+      "sourceFindingIds": [],
+      "title": "App Shell capabilities are used where documented",
+      "directQuestion": "Do current screenshots prove the required App Shell capability is visible, appropriate, and usable for the persona/task?",
+      "whyItFailed": "The evidence does not include a passing App Shell capability utilization review, or it shows missing shell customization/presentation proof. Missing evidence fields: appShellCapabilityReview.",
+      "requiredOutcome": "Update Product Docs and UI so app shell tabs, explicit per-tab pinning policy, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven where required; rerun B25 and regenerate tickets.",
+      "remediationMode": "review-only",
+      "workerReadiness": "no concrete implementation work item was generated; planner must inspect the direct-question failure before assigning a worker",
+      "firstRequiredStep": "Review failing direct questions and add screen/workflow/persona-specific evidence before implementation.",
+      "implementationBlockedBy": [
+        "The ticket lacks row-level implementation evidence."
+      ],
+      "affectedScope": {
+        "scope": "app-shell-capability",
+        "communities": [
+          "all reviewed communities/test apps"
+        ],
+        "personas": [
+          "all reviewed target personas"
+        ],
+        "workflows": [
+          "all primary reviewed workflows"
+        ],
+        "screenRows": [],
+        "coverageRows": [],
+        "scorecards": [],
+        "directQuestions": [],
+        "screenshots": [],
+        "productDocs": []
+      },
+      "affectedCoverageRowIds": [],
+      "affectedProductDocIds": [],
+      "affectedScreenRowIds": [],
+      "affectedLifecycleScorecardIds": [],
+      "affectedCoverageRows": [],
+      "affectedProductDocs": [],
+      "affectedScreenRows": [],
+      "failingWorkflowPersonaScorecards": [],
+      "failingWorkflowLifecycleScorecards": [],
+      "failingDirectQuestions": [],
+      "evidenceRepairWorkItems": [],
+      "productDocRepairWorkItems": [],
+      "uiRemediationWorkItems": [],
+      "likelyFilesOrWidgets": [
+        "app/apps/loom_communities_demo/lib/main.dart",
+        "app/apps/loom_communities_demo/test/b21_b25_production_ux_test.dart",
+        "docs/Build Plan V2/Evidence/B25/production-ux-blueprint.md",
+        "docs/Build Plan V2/Evidence/B25/independent-production-ux-review.json",
+        "docs/Build Plan V2/Evidence/B25/product-ux-screen-review-matrix.md"
+      ],
+      "uxReferencePatterns": [
+        {
+          "referenceId": "material-navigation-ia",
+          "label": "Material navigation and information architecture",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/navigation-drawer/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/navigation-bar/overview"
+          ],
+          "whatToCopy": "Organize screens by user jobs and destinations; keep primary actions visible and avoid exposing implementation taxonomy."
+        },
+        {
+          "referenceId": "apple-hig-navigation-content",
+          "label": "Apple HIG navigation and content organization",
+          "sourceType": "design-system",
+          "sourceName": "Apple Human Interface Guidelines",
+          "url": "https://developer.apple.com/design/human-interface-guidelines/navigation",
+          "alsoSee": [],
+          "whatToCopy": "Make navigation predictable, content-centered, and appropriate for the user’s current task."
+        },
+        {
+          "referenceId": "material-cards-lists",
+          "label": "Material Design cards and lists",
+          "sourceType": "design-system",
+          "sourceName": "Material Design 3",
+          "url": "https://m3.material.io/components/cards/overview",
+          "alsoSee": [
+            "https://m3.material.io/components/lists/overview"
+          ],
+          "whatToCopy": "Use cards/lists only as scannable containers with clear hierarchy, content, metadata, and actions. Do not use repeated cards as the whole primary workflow."
+        },
+        {
+          "referenceId": "flutter-samples-reference",
+          "label": "Flutter sample app implementation patterns",
+          "sourceType": "open-source",
+          "sourceName": "flutter/samples",
+          "url": "https://github.com/flutter/samples",
+          "alsoSee": [],
+          "whatToCopy": "Copy the separation between app shell, route state, domain widgets, and testable UI states rather than hardcoding a single generic renderer."
+        }
+      ],
+      "referenceResearchQueries": [
+        "production mobile UX review screenshot critique examples",
+        "open source Flutter mobile app UX patterns GitHub"
+      ],
+      "sourceResearchRequirement": "The independent UX review must attach internet or open-source pattern references before UI remediation. If live research is unavailable, use the bundled catalog entries and keep the research queries in the ticket so a reviewer can refresh them.",
+      "concreteAcceptanceCriteria": [
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "problemStatement": "The evidence does not include a passing App Shell capability utilization review, or it shows missing shell customization/presentation proof. Missing evidence fields: appShellCapabilityReview.",
+      "rootCauseHypothesis": "The evidence does not yet satisfy the B25 production UX standard.",
+      "targetExperience": "The next B25 pass should show zero unresolved blocker/major findings and a scorecard that can close the phase.",
+      "uxPrinciples": [
+        "Resolve blocking UX evidence before closing B25"
+      ],
+      "concreteImprovements": [
+        "Do not close the ticket from source-code intent alone; require after-screenshots proving the App Shell capability is actually visible and usable.",
+        "Do not treat bottom tabs, pinning policy, or minimized cards as present unless the relevant persona/workflow screenshot or product doc proves them.",
+        "Do not require pinned surfaces for every tab; require an explicit `none` policy with rationale when pinning is not useful.",
+        "Do not accept a generic card list when Product Docs or the App Shell component doc require tabs, declared pinned surfaces, presentation states, renderer selection, or theme/customization proof."
+      ],
+      "implementationGuidance": [
+        "Use `CommunityAppShellCustomizationSpec`, `LoomAppShellTabSpec`, and `LoomThemeCustomizationTokens` in `apps/loom_communities_demo/lib/main.dart`.",
+        "Implement the capability centrally in the App Shell model, not as a one-off workflow widget hack.",
+        "Recapture screenshots after implementation; source code alone cannot close this ticket.",
+        "Inspect `apps/loom_communities_demo/lib/main.dart` for `CommunityAppShellCustomizationSpec`, persona tab specs, pinned surface specs, presentation-state routing, renderer selection, and theme/typography/density tokens.",
+        "Update the community product experience doc Section 3.1 when the intended tab/pinning/presentation/customization model is missing or vague.",
+        "Implement the missing App Shell capability in the central shell model, not as a one-off workflow hack.",
+        "Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, declared pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required."
+      ],
+      "contentGuidance": [
+        "Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.",
+        "Each primary surface should include the domain data a user needs to decide and act.",
+        "Use explicit alternate action copy such as Decline, Request changes, Change response, Edit, Withdraw, Cancel RSVP, Archive, Retry, Roll back, or Manage where the lifecycle requires it.",
+        "Use result copy that persists: Sent, Posted, Confirmed, Paid, Receipt ready, Submitted, Approved, Rejected, Claimed, Returned, Read, or equivalent domain state."
+      ],
+      "visualGuidance": [
+        "Use screenshot evidence to judge visual hierarchy, density, navigation clarity, and polish on the reviewed device."
+      ],
+      "affectedEvidence": [
+        "independent-production-ux-review.json appShellCapabilityReview",
+        "llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview",
+        "docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1",
+        "docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md",
+        "product-ux-screen-review-matrix.md affected screen rows and screenshots",
+        "production-ux-criteria-scorecard.json/.md"
+      ],
+      "evidenceToCollect": [
+        "Updated review JSON, scorecards, screenshots, remediation log, and tracker evidence for the fixed criterion."
+      ],
+      "acceptanceChecks": [
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "`appShellCapabilityReview.status` is `pass`.",
+        "`appShellCapabilityReview.missingCapabilities` is empty.",
+        "Every `appShellCapabilityReview.communityResults[]` row has passing tabs, explicit and appropriate pinning policy, presentation states, community-list states, theme customization, and renderer-selection checks where applicable.",
+        "After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.",
+        "`production_ux_judge.dart` has no blocking failure for this criterion.",
+        "`b25_iteration_scorecard.dart` records the ticket as resolved or no longer blocking.",
+        "Screenshots are refreshed and hashes/timestamps/app commit SHA match the reviewed app version."
+      ],
+      "rerunCommands": [
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_workflow_screenshots.dart --mode full-b25 --device emulator-5554 --evidence-root ../docs/Build\\ Plan\\ V2/Evidence",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-capture-coverage-report.json",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md",
+        "dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md",
+        "dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md"
+      ],
+      "nonGoals": [
+        "Do not close the ticket without fresh evidence and a passing judge rerun."
+      ],
+      "commitBoundary": "Commit this remediation iteration, refreshed evidence, scorecards, tickets, and tracker updates before starting the next UX feedback loop."
+    }
+  ]
+}

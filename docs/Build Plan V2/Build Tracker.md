@@ -136,7 +136,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | B22 | Complete | B21 | [Domain-Specific Workflow Surfaces](./Phases/Phase%20B22%20-%20Domain-Specific%20Workflow%20Surfaces.md) | Generic workflow cards/dialogs are replaced with domain-specific production surfaces for RSVP, payment, forms, announcements, approvals, search/AI, export/migration, social, ads, and portability workflows. | Evidence: domain-specific workflow cards, semantic actions, production review dialogs, result panels, `wf_domain-specific-workflow-surfaces`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B23 | Complete | B22 | [Persona Production UX and Cross-Persona State](./Phases/Phase%20B23%20-%20Persona%20Production%20UX%20and%20Cross-Persona%20State.md) | Each persona sees production-ready actor, receiver, read-only, disabled, or hidden UX, and multi-persona workflows prove the created state appears in the receiving persona's real surface. | Evidence: admin/member Masjid announcement handoff, receiver action states, persona-specific copy, `wf_persona-production-ux-cross-persona-state`, manifest/phase gates. | Consolidated in `4ae3b4a` |
 | B24 | Complete | B23 | [Production UX Evidence and Certification Sweep](./Phases/Phase%20B24%20-%20Production%20UX%20Evidence%20and%20Certification%20Sweep.md) | The full example suite is certified against the production UX bar, and tests fail if generic workflow harness labels or test-only copy reach user-facing workflow surfaces. | Evidence: generic-copy failure gate, Android emulator screenshot sweep, `production-ux-certification.json`, `wf_production-ux-evidence-certification-sweep`, manifest/phase gates. | Consolidated in `4ae3b4a` |
-| B25 | In progress - pass 40 failed hardening gate | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review closes only when fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 40 hardened the B25 gate and invalidated pass 39 evidence: the LLM Vision review was too shallow/non-visual, and App Shell capability proof lacked required `tabRendererResults[]`, `interactionTransitionResults[]`, and visible tab-specific critique. Open tickets: `8` major. Next pass starts from `b25-remediation-plan-b25-v4-pass-41`. | Historical v3 implementation `ccc3f40`; pass 35 evidence `940bc2a`; pass 38 evidence `f6c2aa4`; pass 39 evidence `891de95`; pass 40 hardening/evidence pending commit. |
+| B25 | In progress - pass 41 failed hardening gate | B24 | [Independent Production UX Review](./Phases/Phase%20B25%20-%20Independent%20Production%20UX%20Review.md) | Independent production UX review closes only when fresh full B12-B20 screenshot evidence, Product Docs reconciliation, LLM vision review, workflow lifecycle scorecards, production judge, tickets, and scorecard all pass. | Pass 41 completed a fresh full B12-B20 capture with `207` screenshots and `67` workflows; capture coverage, workflow/persona coverage, visual inspection, deterministic independent scaffold, and interaction-model scorecards passed. Production judge failed because pass 41 intentionally did not reuse stale/shallow LLM artifacts: missing `llmVisionReview` and missing `appShellCapabilityReview`. Open tickets: `2` major. Next pass starts from `b25-remediation-plan-b25-v4-pass-42`. | Historical v3 implementation `ccc3f40`; pass 35 evidence `940bc2a`; pass 38 evidence `f6c2aa4`; pass 39 evidence `891de95`; pass 40 hardening/tooling `9b63069`; pass 41 evidence pending commit. |
 
 ## Phase Outcome Summary
 
@@ -2127,6 +2127,25 @@ Closeout rule for reopened phases:
   passed: `flutter analyze apps/loom_communities_demo`, `manifest_gate`, `phase_gate --phase B25
   --check-env`, boundary lint, and scoped `git diff --check` on staged B25 files.
 - **Evidence/tooling commit, v4 pass 35:** `940bc2a`.
+
+- **Execution record, v4 pass 41:** Consumed
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-41.md` and first repaired the
+  B25 capture harness so offscreen action buttons are scrolled into the viewport before tapping.
+  Targeted B20 precheck passed, then the commit-eligible full B12-B20 capture passed on
+  `emulator-5554` with `207` screenshots, `67` workflows, `9` workflow manifests, and
+  `fullB25Coverage=true`. `b25_capture_coverage_gate.dart` passed; the B25 collector generated
+  `204` schema v4 screen rows for `b25-v4-pass-41`; workflow/persona coverage passed `69 / 69`;
+  visual inspection passed `204 / 204`; the deterministic independent UX scaffold passed with `0`
+  findings and `69 / 69` workflow/persona scorecards; and
+  `b25_workflow_interaction_model_judge.dart` passed `69 / 69` lifecycle scorecards. The production
+  UX judge correctly failed the hardened B25 bar because pass 41 did not reuse stale or shallow LLM
+  artifacts and therefore lacked a fresh `llmVisionReview` and a fresh `appShellCapabilityReview`.
+  It generated `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-41.md` with
+  `2` open major tickets, and
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-42.md` is the next-pass backlog.
+  The loop made evidence/tooling progress but B25 remains open until fresh LLM screenshot review and
+  app-shell capability review artifacts inspect the current screenshots and pass.
+- **Evidence/tooling commit, v4 pass 41:** pending.
 
 ## Gate Evidence Template
 
