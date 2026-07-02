@@ -20,6 +20,9 @@ const _workflowShardCount = int.fromEnvironment(
 const _workflowShardIndex = int.fromEnvironment(
   'LOOM_EVIDENCE_WORKFLOW_SHARD_INDEX',
 );
+const _preloadExampleCommunities = bool.fromEnvironment(
+  'LOOM_PRELOAD_EXAMPLE_COMMUNITIES',
+);
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +31,9 @@ void main() {
     await binding.convertFlutterSurfaceToImage();
     binding.reportData ??= <String, dynamic>{};
     final entries = <Map<String, Object?>>[];
-    final installedExtensionIds = <String>{};
+    final installedExtensionIds = _preloadExampleCommunities
+        ? {for (final target in loomEvidenceTargets) target.extensionId}
+        : <String>{};
     final screenshotVisibleTextByName = <String, String>{};
     final totalWorkflowEvidenceEntries = _workflowEvidenceEntryCount();
     var completedWorkflowEvidenceEntries = 0;
@@ -581,9 +586,7 @@ void main() {
       await selectPersona(tester, 'hoa-homeowner');
       await _selectCommunityTab(tester, 'documents');
       await capture('B20_app_shell_hoa_documents_pinning_policy');
-      capabilityScreenshots.add(
-        'B20_app_shell_hoa_documents_pinning_policy',
-      );
+      capabilityScreenshots.add('B20_app_shell_hoa_documents_pinning_policy');
 
       await ensureTargetOpen(soccerTarget);
       await selectPersona(tester, 'soccer-coach');

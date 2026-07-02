@@ -29,6 +29,7 @@ Future<void> openEvidenceTarget(
   WidgetTester tester,
   LoomEvidenceTarget target,
 ) async {
+  await _returnToCommunityList(tester);
   final card = find.byKey(ValueKey('community-card-${target.communityId}'));
   await tester.scrollUntilVisible(
     card,
@@ -36,14 +37,36 @@ Future<void> openEvidenceTarget(
     scrollable: find.byType(Scrollable).last,
     maxScrolls: 40,
   );
-  await tester.ensureVisible(card);
-  await tester.pumpAndSettle();
+  if (card.evaluate().isEmpty) {
+    fail(
+      'Could not find evidence target ${target.communityName} '
+      '(${target.communityId}) from the community list.',
+    );
+  }
   await tester.tap(card, warnIfMissed: false);
   await tester.pumpAndSettle();
   expect(
     find.byKey(ValueKey('local-extension-${target.extensionId}')),
     findsOneWidget,
   );
+}
+
+Future<void> _returnToCommunityList(WidgetTester tester) async {
+  for (var attempt = 0; attempt < 6; attempt += 1) {
+    if (find
+        .byKey(const ValueKey('add-community-button'))
+        .evaluate()
+        .isNotEmpty) {
+      return;
+    }
+    final backButton = find.byTooltip('Back');
+    if (backButton.evaluate().isNotEmpty) {
+      await tester.tap(backButton.first, warnIfMissed: false);
+    } else {
+      await tester.pageBack();
+    }
+    await tester.pumpAndSettle();
+  }
 }
 
 Future<void> selectPersona(WidgetTester tester, String personaId) async {
