@@ -732,4 +732,4 @@ findings were resolved in pass 9.
   product-doc mapping, card-surface registry, or example-community UI should reopen B25 and rerun the
   full capture/review sequence.
 - Implementation/tooling commit: `b3c7991`.
-- Evidence/tooling commit: `TBD`.
+- Evidence/tooling commit: `891de95`.
