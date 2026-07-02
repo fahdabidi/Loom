@@ -661,3 +661,43 @@ findings were resolved in pass 9.
   action/review screens, specialized utility/product layouts, explicit tab/pinned/expanded evidence,
   and domain-specific lifecycle controls.
 - Evidence/tooling commit: `a2f0628`.
+
+### Iteration 31 / `b25-v4-pass-38`
+
+- Status: failed. The App Shell capability false positives are resolved, but B25 still does not meet
+  the production UX bar because seven workflow/persona rows lack complete, screenshot-proven lifecycle
+  interaction models.
+- Scope: hardened the judge so support/capability rows are reviewed as App Shell capability evidence
+  instead of primary domain-product surfaces, corrected the shell product-doc slug mapping, and judged
+  pinning as "explicit and appropriate policy" rather than "some pinned surface must exist everywhere."
+- Capture/evidence: full B12-B20 capture passed with `207` screenshots, `67` workflows, and `9`
+  workflow manifests on `emulator-5554`. `b25_capture_coverage_gate.dart` passed as commit-eligible.
+  The B25 collector generated `204` schema v4 screen rows for `b25-v4-pass-38`; workflow/persona
+  coverage passed `69 / 69`; visual inspection passed `204 / 204`; and the LLM review freshness gate
+  passed for the fresh pass-38 artifact.
+- Product-doc reconciliation: passed. The reconciliation reviewed all current screen rows and recorded
+  `appShellCapabilityReview.status=pass`; the App Shell capability gate now accepts explicit no-pin
+  policy when the tab's job-to-be-done does not benefit from a pinned surface, and requires screenshot
+  proof only where the product spec declares a pinned surface.
+- LLM Vision UX review: failed with `7` major findings. The fresh screenshot review found lifecycle
+  proof gaps in `book-search-ai-digest`, `mosque-volunteer-signup`, `critique-submission`,
+  `platform-blocked-target`, `platform-top-banner-no-fill`, `platform-sensitive-no-fill`, and
+  `platform-in-stream-ad`.
+- Workflow interaction model: failed `7 / 69` lifecycle scorecards. Missing groups are concentrated in
+  alternate/change/reject affordance, persistent result state, receiver/continuation state, and
+  semantic interaction-model proof.
+- Production UX judge: failed `9 / 17` criteria and generated
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-tickets-b25-v4-pass-38.md`.
+- Iteration scorecard:
+  `docs/Build Plan V2/Evidence/B25/b25-iteration-scorecard-b25-v4-pass-38.md` records
+  `B25 can pass=false`, `0` blockers, `8` unresolved major findings, `0` resolved
+  blocker/major findings, and `8` new blocker/major findings.
+- Next remediation plan:
+  `docs/Build Plan V2/Evidence/B25/b25-remediation-plan-b25-v4-pass-39.md` with `9` tickets,
+  `4` product-spec work items, `7` evidence-repair work items, `7` UI-remediation work items, and
+  `3` remediation batches.
+- Result: B25 remains reopened. Pass 39 should consume the committed tickets and remediation plan,
+  update the affected community product docs first where needed, implement the seven lifecycle UI
+  remediations, recapture full B12-B20 evidence, rerun the fresh Product Docs reconciliation and LLM
+  Vision review, and verify that the lifecycle and production UX gates converge to zero major issues.
+- Evidence/tooling commit: `PENDING-PASS-38`.

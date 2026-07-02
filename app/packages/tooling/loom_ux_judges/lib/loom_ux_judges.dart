@@ -2540,6 +2540,7 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   final persona = _asString(row['persona'], fallback: 'persona-under-review');
   final personaId = _asString(row['personaId']);
   final workflowId = _asString(row['workflowId']);
+  final isSupportSurface = _workflowIsSupportSurface(workflowId);
   final coverageMissing = _asStringList(coverage?['missingEvidence']);
   final classification = _asString(row['uiPatternClassification']);
   final primarySurface = _asString(row['primarySurfaceType']);
@@ -2555,7 +2556,8 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
     if (visibleText.isEmpty) 'B25-VISIBLE-TEXT-MISSING',
     if (source != 'screenshot-visible-text' && source != 'ocr-visible-text')
       'B25-VISIBLE-TEXT-NOT-SCREEN-EXTRACTED',
-    if (_surfaceClassificationIsUnverified(classification, primarySurface))
+    if (!isSupportSurface &&
+        _surfaceClassificationIsUnverified(classification, primarySurface))
       'B25-DOMAIN-SURFACE-UNVERIFIED',
     ...visualFindingIds,
   }.toList();
@@ -2579,9 +2581,14 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
   if (coverageMissing.isNotEmpty) {
     critique.write(' Coverage is incomplete: ${coverageMissing.join(', ')}.');
   }
-  if (_surfaceClassificationIsUnverified(classification, primarySurface)) {
+  if (!isSupportSurface &&
+      _surfaceClassificationIsUnverified(classification, primarySurface)) {
     critique.write(
       ' The row still lacks screenshot-backed proof that the primary surface is domain-native; current classification is `${classification.isEmpty ? 'missing' : classification}` and primary surface is `${primarySurface.isEmpty ? 'missing' : primarySurface}`.',
+    );
+  } else if (isSupportSurface) {
+    critique.write(
+      ' This is support/capability evidence, so it is judged for App Shell capability proof rather than primary workflow domain-surface replacement.',
     );
   }
   final verdict = findingIds.isEmpty ? 'pass' : 'fail';
@@ -2589,12 +2596,14 @@ JsonMap _independentScreenReviewRow(JsonMap row, JsonMap? coverage) {
     ..['screenSpecificCritique'] = critique.toString()
     ..['productUxCritique'] = critique.toString()
     ..['uiPatternClassification'] = findingIds.isEmpty
-        ? 'domain-native-reviewed'
+        ? (isSupportSurface
+              ? 'support-surface-reviewed'
+              : 'domain-native-reviewed')
         : 'coverage-or-review-incomplete'
     ..['primarySurfaceType'] = findingIds.isEmpty
-        ? 'domain-native'
+        ? (isSupportSurface ? 'app-shell-capability-surface' : 'domain-native')
         : 'unverified-primary-surface'
-    ..['primary'] = true
+    ..['primary'] = !isSupportSurface
     ..['targetProductionSurface'] = _targetProductionSurfaceForWorkflow(
       workflowId,
     )
@@ -2980,6 +2989,7 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   final workflowId = _asString(coverage['workflowId']);
   final persona = _asString(coverage['persona']);
   final personaId = _asString(coverage['personaId']);
+  final isSupportSurface = _workflowIsSupportSurface(workflowId);
   final relatedRows = screenRows.where((row) {
     return _asString(row['workflowId']) == workflowId &&
         _asString(row['communityId']) == _asString(coverage['communityId']) &&
@@ -3019,7 +3029,10 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
   final coveragePass = missing.isEmpty;
   final rowPass = rowFailures.isEmpty;
   final domainPass =
-      coveragePass && rowPass && visualFailures.isEmpty && semanticPass;
+      coveragePass &&
+      rowPass &&
+      visualFailures.isEmpty &&
+      (isSupportSurface || semanticPass);
   final questions = <JsonMap>[
     _directAnswer(
       questionId: '$coverageRowId-coverage',
@@ -3039,19 +3052,24 @@ JsonMap _workflowPersonaScorecard(JsonMap coverage, List<JsonMap> screenRows) {
     _directAnswer(
       questionId: '$coverageRowId-domain-surface',
       scope: 'workflow-persona',
-      question:
-          'Is the primary UI for workflow `$workflowId` and persona `$persona` a domain-native product surface instead of a generic card/checklist/metadata screen?',
+      question: isSupportSurface
+          ? 'Does support workflow `$workflowId` prove the required App Shell capability evidence for persona `$persona` without visual blockers?'
+          : 'Is the primary UI for workflow `$workflowId` and persona `$persona` a domain-native product surface instead of a generic card/checklist/metadata screen?',
       pass: domainPass,
       score: domainPass ? 85 : 35,
       evidenceUsed: rowFailures.isEmpty
           ? _asStringList(coverage['screenRowIds'])
           : rowFailures,
       why: domainPass
-          ? 'Screenshot pixel/layout inspection, row critique, and semantic surface proof all support this workflow/persona group.'
+          ? (isSupportSurface
+                ? 'Screenshot evidence and visual inspection support this App Shell capability group.'
+                : 'Screenshot pixel/layout inspection, row critique, and semantic surface proof all support this workflow/persona group.')
           : 'Rows still have unresolved visual/review/coverage/semantic failures: ${_workflowPersonaFailureSummary(missing, rowFailures, semanticProof)}.',
       requiredFix: domainPass
           ? 'None.'
-          : 'Replace or document the exact domain-native surface and recapture the affected workflow/persona rows.',
+          : (isSupportSurface
+                ? 'Recapture the exact App Shell capability screenshots and resolve any visual or coverage blockers for this support workflow.'
+                : 'Replace or document the exact domain-native surface and recapture the affected workflow/persona rows.'),
     ),
     _directAnswer(
       questionId: '$coverageRowId-semantic-surface-proof',
@@ -5909,7 +5927,8 @@ bool _workflowIsSupportSurface(String workflowId) {
   return id.contains('persona-picker') ||
       id.contains('persona-role-inventory') ||
       id.contains('persona-aware-ux') ||
-      id.contains('multi-persona-workflow-evidence');
+      id.contains('multi-persona-workflow-evidence') ||
+      id.contains('app-shell-capability-evidence');
 }
 
 String _screenTypeFromScreenshotName(String name) {
@@ -6074,6 +6093,7 @@ String _communityProductDocSlug(String communityName) {
   return <String, String>{
         'ad-free-community': 'ad-off',
         'data-portability-community': 'export-and-migration',
+        'loom-communities': 'loom-communities-shell',
         'member-social-space': 'platform-social',
         'persona-role-inventory': 'persona-role-inventory',
       }[slug] ??
