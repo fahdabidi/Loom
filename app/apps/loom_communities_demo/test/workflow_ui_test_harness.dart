@@ -195,7 +195,7 @@ Future<void> completeWorkflow(
   final workflowButton = find.byKey(
     ValueKey('workflow-button-${workflow.workflowId}'),
   );
-  await tester.ensureVisible(workflowButton);
+  await scrollFinderIntoViewport(tester, workflowButton);
   await tester.pumpAndSettle();
   await tester.tap(workflowButton);
   await tester.pumpAndSettle();
@@ -206,12 +206,7 @@ Future<void> completeWorkflow(
   final submitButton = find.byKey(
     ValueKey('workflow-action-submit-${workflow.workflowId}'),
   );
-  await tester.scrollUntilVisible(
-    submitButton,
-    180,
-    scrollable: verticalScrollableFinder().last,
-    maxScrolls: 30,
-  );
+  await scrollFinderIntoViewport(tester, submitButton);
   await tester.pumpAndSettle();
   await tester.tap(submitButton);
   await tester.pumpAndSettle();
@@ -224,6 +219,57 @@ Future<void> completeWorkflow(
     find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
     findsOneWidget,
   );
+}
+
+Future<void> scrollFinderIntoViewport(
+  WidgetTester tester,
+  Finder finder,
+) async {
+  final scrollable = verticalScrollableFinder().last;
+  await tester.scrollUntilVisible(
+    finder,
+    180,
+    scrollable: scrollable,
+    maxScrolls: 30,
+  );
+  await tester.pumpAndSettle();
+  await Scrollable.ensureVisible(
+    tester.element(finder),
+    alignment: 0.35,
+    duration: Duration.zero,
+  );
+  await tester.pumpAndSettle();
+
+  for (var attempt = 0; attempt < 16; attempt += 1) {
+    if (finder.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(
+        finder,
+        180,
+        scrollable: scrollable,
+        maxScrolls: 30,
+      );
+      await tester.pumpAndSettle();
+    }
+    await Scrollable.ensureVisible(
+      tester.element(finder),
+      alignment: 0.35,
+      duration: Duration.zero,
+    );
+    await tester.pumpAndSettle();
+    final rect = tester.getRect(finder);
+    final viewportHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    const safeTop = 112.0;
+    final safeBottom = viewportHeight - 96.0;
+    if (rect.top >= safeTop && rect.bottom <= safeBottom) {
+      return;
+    }
+    final dragOffset = rect.top < safeTop
+        ? const Offset(0, 220)
+        : const Offset(0, -220);
+    await tester.drag(scrollable, dragOffset, warnIfMissed: false);
+    await tester.pumpAndSettle();
+  }
 }
 
 Future<void> completeWorkflowAsActor(
