@@ -208,6 +208,16 @@ Evidence:
 - action/result state;
 - receiver/notification state.
 
+## Card Theme Cascade
+
+A renderer contract governs a tab's information architecture (anatomy, states, required
+interactions); it does not govern color. Regardless of which renderer contract a tab uses, its card
+surfaces resolve their visual style (fill, border, heading/body color, button styling) from the
+same community -> tab -> workflow card theme cascade, so a `CalendarTabSurface` tab and a
+`PaymentGivingTabSurface` tab can each declare a distinct accent (via `tabThemes`) while both stay
+visually coherent with the community default. See
+[Card Theme Cascade](./app-shell-navigation-theming.md#card-theme-cascade) for the JSON contract.
+
 ## Renderer Selection Guidance
 
 1. Start with the user job and persona.

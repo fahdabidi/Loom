@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "phases": [
+    "B15"
+  ],
+  "expectedPhases": [
+    "B12",
+    "B13",
+    "B14",
+    "B15",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "missingPhases": [
+    "B12",
+    "B13",
+    "B14",
+    "B16",
+    "B17",
+    "B18",
+    "B19",
+    "B20"
+  ],
+  "workflowCount": 6,
+  "screenshotCount": 18,
+  "workflowEvidenceManifestPaths": [
+    "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B15/workflow-ui-evidence.json"
+  ],
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build Plan V2/Evidence/B20/flutter-drive-workflow-ui-evidence.log",
+  "captureMode": "targeted-precheck",
+  "fullB25Coverage": false,
+  "commitEligible": false
+}

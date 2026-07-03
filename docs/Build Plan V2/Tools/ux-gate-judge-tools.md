@@ -14,7 +14,7 @@ judge failures into fix batches for the next worker iteration.
 | Evidence Collector Tool | Captures screenshots, hashes, visible text, app commit SHA, device metadata, command output. | Running app, emulator, artifact paths. No implementation rationale. | Evidence JSON and screenshot bundle. |
 | Visual Inspection Auditor Tool | Deterministically inspects screenshot pixels/layout for repeated-card shells, checklist modals, weak visual identity, thin content, and missing image evidence. | Screenshot-backed evidence rows only. No implementation rationale. | `visualInspection` per screen row plus visual audit markdown. |
 | Deterministic Review Scaffold | Normalizes schema v4 review evidence and carries deterministic visual audit results into rows. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes. | Review JSON scaffold, matrix, deterministic critiques. |
-| LLM Product Docs To Evidence Reconciliation Agent | Compares product docs to screenshots/review evidence before final UX judgment. | Product docs, especially `## 6. Workflow-To-Surface Mapping`, companion state/content/semantic/card-surface sections, screen matrix, screenshots, visible text, hashes, app commit SHA. No worker implementation notes. | `llm-product-doc-workflow-reconciliation-<run-id>.json/.md` with product-doc, implementation, evidence, and mapping findings. |
+| LLM Product Docs To Evidence Reconciliation Agent | Compares product docs and component contracts to screenshots/review evidence before final UX judgment. | Product docs, especially `## 6. Workflow-To-Surface Mapping`, companion state/content/semantic/card-surface sections, `components/card-surfaces/README.md`, `app-shell-navigation-theming.md`, `tab-renderer-contracts.md`, every referenced `card-surfaces/*.md`, screen matrix, screenshots, visible text, hashes, app commit SHA. No worker implementation notes. | `llm-product-doc-workflow-reconciliation-<run-id>.json/.md` with product-doc, component-contract, implementation, evidence, and mapping findings. |
 | LLM Vision UX Judge Agent | Reviews screenshots and artifacts with fresh context, answers direct UX questions from actual visible UI, and writes screen-specific critique. | Evidence artifacts, screenshots, pass criteria, blueprint/contracts. No worker implementation notes or source-code claims. | `llm-vision-ux-review-<run-id>.json` with holistic answers, screen reviews, and findings. |
 | LLM Freshness Gate Tool | Deterministically rejects carried-forward, copied, stale, or mismatched LLM review artifacts before import. | Raw LLM review JSON plus current B25 evidence. | `b25-llm-review-freshness-gate-<run-id>.json/.md`; fails if the review is not fresh for the current run, app commit, screen rows, and screenshot hashes. |
 | LLM Review Importer Tool | Imports the LLM judge output into schema v4 evidence and resolves affected screen row IDs. | LLM review JSON plus current B25 evidence after the freshness gate passes. | `llmVisionReview` in `independent-production-ux-review.json`. |
@@ -69,6 +69,16 @@ And Seed Data Requirements`, `## 9. Visual And Interaction Standard`, `### B25 S
 Models`, and `### B25 Card Surface Registry Mapping` against the current screen rows, screenshots,
 visible text, workflow/persona coverage, and review JSON. Its blocker/major findings must be carried
 into the remediation tickets.
+It must also load and cite the card-surface component docs that define the expected implementation:
+`components/card-surfaces/README.md`, `components/card-surfaces/app-shell-navigation-theming.md`,
+`components/card-surfaces/tab-renderer-contracts.md`, and every referenced
+`components/card-surfaces/<surface>.md`. The reconciliation JSON must include
+`reviewedComponentDocPaths`; missing component-doc context, mismatched surface contracts, weak tab
+renderer usage, or unsupported customization choices are major findings.
+Generate the current component-doc metadata immediately before invoking that LLM reviewer. The LLM
+must reread the docs every run, copy the generated hashes/git metadata into
+`componentDocReview.docs[]`, and add semantic summaries/implications for every required component doc.
+`production_ux_judge.dart` cross-checks those hashes and git last-commit SHAs against the current repo.
 
 That same LLM artifact must include `appShellCapabilityReview.tabRendererResults[]` for every required
 tab-native renderer contract and `appShellCapabilityReview.interactionTransitionResults[]` for
@@ -82,6 +92,7 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/workflow-persona-coverage-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-visual-inspection-audit.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
+wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_component_doc_context.dart --repo-root .. --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-component-doc-context-<run-id>.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-component-doc-context-<run-id>.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-llm-review-freshness-gate-<run-id>.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --llm-review ../docs/Build\ Plan\ V2/Evidence/B25/llm-vision-ux-review-<run-id>.json --run-id <run-id> --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\ Plan\ V2/Evidence/B25/product-ux-screen-review-matrix.md'
 wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app" && dart run packages/tooling/loom_ux_judges/bin/b25_workflow_interaction_model_judge.dart --input ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\ Plan\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\ Plan\ V2/Evidence/B25/b25-workflow-lifecycle-scorecards.md'
@@ -109,7 +120,8 @@ wsl.exe -d Ubuntu -- bash -lc 'cd "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/ap
 | `b25_workflow_persona_coverage_collector.dart` | B25 | Verify the collected evidence has explicit entry/action/result screenshots for every workflow/persona combination before independent review. |
 | `b25_visual_inspection_auditor.dart` | B25 | Decode screenshots and attach deterministic pixel/layout inspection results for checklist modals, repeated-card shells, weak identity, thin content, and missing images. |
 | `b25_independent_ux_judge.dart` | B25 | Build the deterministic review scaffold and carry visual-inspection outputs into schema v4. It is not the final semantic product-quality judge. |
-| LLM Product Docs to Evidence Reconciliation Agent | B25 | LLM gate, not a CLI. Uses [b25-product-doc-workflow-reconciliation-llm-gate.md](./b25-product-doc-workflow-reconciliation-llm-gate.md) to compare Product Docs V2 workflow-to-surface mappings and companion sections to current screenshot/review evidence. |
+| `b25_component_doc_context.dart` | B25 | Generate current component-doc path, hash, git last-commit, and git status metadata for the LLM Product Docs reconciliation gate. |
+| LLM Product Docs to Evidence Reconciliation Agent | B25 | LLM gate, not a CLI. Uses [b25-product-doc-workflow-reconciliation-llm-gate.md](./b25-product-doc-workflow-reconciliation-llm-gate.md) to compare Product Docs V2 workflow-to-surface mappings, companion sections, App Shell navigation/theming docs, tab renderer contracts, and referenced card-surface component docs to current screenshot/review evidence. |
 | `b25_llm_review_freshness_gate.dart` | B25 | Fails when the LLM Vision UX Judge artifact does not declare `freshReview=true`, does not match the current run/app commit/screenshot hashes, or declares prior-review reuse. |
 | `b25_llm_ux_review_importer.dart` | B25 | Import the fresh LLM Vision UX Judge artifact into `llmVisionReview` and fail/ticket when the LLM review finds blocker or major product UX issues. |
 | `b25_workflow_interaction_model_judge.dart` | B25 | Fail workflow/persona UI that does not prove the right semantic interaction model: concrete object/context, decision information, domain-correct primary action, domain-required alternate/change/reject action, persistent result state, and receiver/continuation state. |
@@ -238,8 +250,14 @@ B25 evidence must include:
   metrics, signals, status, summary, and finding IDs. A missing or failed `visualInspection` blocks B25.
 - `productDocWorkflowReconciliation`: the LLM Product Docs to Evidence Workflow Reconciliation
   artifact, or linked evidence path, proving that Product Docs V2 `## 6. Workflow-To-Surface Mapping`
-  rows and companion state/content/semantic/card-surface sections match current screenshot evidence.
-  Unresolved blocker/major product-doc, implementation, evidence, or mapping findings block B25.
+  rows and companion state/content/semantic/card-surface sections match current screenshot evidence
+  and the loaded component docs. It must include `reviewedComponentDocPaths` covering
+  `card-surfaces/README.md`, `app-shell-navigation-theming.md`, `tab-renderer-contracts.md`, and the
+  relevant `card-surfaces/*.md` files named by the product doc registry. It must also include
+  `componentDocReview.docs[]` with current `sha256`, `gitLastCommitSha`, `gitStatus`,
+  `reviewedThisRun=true`, semantic summaries, and community implications for each required doc.
+  Unresolved blocker/major
+  product-doc, component-contract, implementation, evidence, or mapping findings block B25.
 - `appShellCapabilityReview.tabRendererResults`: screenshot-backed LLM rows for
   `CalendarTabSurface`, `MessagesTabSurface`, `MarketplaceTabSurface`, `DocumentsTabSurface`, and
   `WorkflowStatusSurface`. Each row must answer direct product questions for that tab renderer, include

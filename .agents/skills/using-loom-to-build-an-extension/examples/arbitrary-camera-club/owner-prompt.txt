@@ -1,6 +1,0 @@
-Build a local-demo Loom Communities extension.
-community: Camera Club;
-category: photography;
-tagline: Plan shoots and critique work;
-accent: #465C7B;
-The target workflows are photo walk RSVP, critique submission, and gear loan request.

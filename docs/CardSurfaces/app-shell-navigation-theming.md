@@ -31,7 +31,9 @@ Every community gets Home and Messages/Communication by default. All card surfac
 unless assigned to custom tabs. A community can add tabs such as Calendar, Documents, Teams, Giving,
 Marketplace, Care, or Admin. Pinned surfaces remain visible at the top of a tab. Theme tokens should be
 declared once and applied across the community card, tabs, cards, expanded surfaces, buttons, labels,
-edit text, and dialogs.
+edit text, and dialogs — implemented today as the card theme cascade described below: a community-level
+default, optionally overridden per tab, optionally overridden per card surface (workflow), so no card
+surface has to hardcode its own colors independent of the community it belongs to.
 
 Tabs are resolved per persona. The same community may expose `Home`, `Calendar`, `Marketplace`, and
 `Messages` to a general member, while an admin sees `Home`, `Admin`, `Documents`, `Giving`, and
@@ -112,11 +114,84 @@ Minimal shape:
 persona. Home and Messages remain required shell destinations; custom declarations may rename,
 reorder, or specialize them, but cannot remove the shell-owned navigation invariants.
 
+## Card Theme Cascade
+
+A community's card surfaces (workflow tiles, their chrome frame, and their buttons) resolve their
+visual style from a three-level cascade, each level optional: **community default -> per-tab
+override -> per-workflow override**. Declaring only the fields you want to change at any level is
+enough — unset fields inherit from the level above, and declaring just a new `accent` at a deeper
+level re-derives that level's entire look (border, headings, buttons) from the new accent rather
+than mixing old and new colors.
+
+The community-level default is always available for free from `accentColor` alone: it derives a
+**neutral card surface with the accent used only for highlights** — borders, headings, badges, and
+buttons — rather than filling the whole card in one solid color. This is what keeps a community's
+chrome frame (the "in-focus"/"expanded product surface" bar wrapping every tile) and the tile it
+wraps visually coherent instead of using two unrelated colors.
+
+Every field below is optional in JSON; omitted ones are derived from `accent`:
+
+```json
+{
+  "experience": {
+    "accentColor": "#C4703F",
+    "theme": {
+      "accent": "#C4703F",
+      "fillColor": "#1C2024",
+      "fillOpacity": 1.0,
+      "borderColor": "#C4703F",
+      "borderOpacity": 0.34,
+      "borderWidth": 1,
+      "headingColor": "#FFFFFF",
+      "headingOpacity": 1.0,
+      "headingWeight": "w800",
+      "bodyColor": "#FFFFFF",
+      "bodyOpacity": 0.82,
+      "cornerRadius": 16,
+      "elevation": 3,
+      "shadowOpacity": 0.24,
+      "primaryButton": {
+        "fillColor": "#C4703F", "fillOpacity": 1.0,
+        "foregroundColor": "#FFFFFF", "shape": "pill", "labelWeight": "w700"
+      },
+      "secondaryButton": {
+        "fillColor": "#C4703F", "fillOpacity": 0.12,
+        "borderColor": "#C4703F", "borderOpacity": 0.4,
+        "foregroundColor": "#C4703F", "shape": "pill", "labelWeight": "w600"
+      },
+      "tabThemes": {
+        "giving": { "accent": "#8A5A34" }
+      }
+    },
+    "workflows": [
+      {
+        "workflowId": "pay-quarterly-dues",
+        "theme": { "accent": "#8A5A34" }
+      }
+    ]
+  }
+}
+```
+
+- `theme` (community level, sibling of `accentColor`): the community default. `tabThemes` is a map
+  keyed by `tabId`; declaring an entry re-themes every card surface in that tab.
+- A workflow's own `theme` block is the most specific override, merged on top of its owning tab's
+  theme in turn.
+- `primaryButton`/`secondaryButton` accept the same `fillColor`/`fillOpacity`/`borderColor`/
+  `borderOpacity`/`borderWidth`/`foregroundColor`/`foregroundOpacity`/`shape`
+  (`"pill"`|`"rounded"`|`"square"`)/`labelWeight` (`"w400"` through `"w800"`) shape.
+
+See the worked example at
+[`docs/Build Plan V2/Skill/examples/verify-tabletop-club/`](../Build%20Plan%20V2/Skill/examples/verify-tabletop-club/README.md),
+which gives its Giving tab a deeper accent than the rest of the community, and gives one workflow
+its own accent on top of that, to demonstrate all three cascade levels at once.
+
 ## API Support
 
 Requires `CommunityAppShellNavigationApi`: `getTabConfiguration`, `updateTabConfiguration`,
 `assignSurfaceToTab`, `pinSurface`, `unpinSurface`, `setSurfacePresentationState`,
 `persistSurfaceFocusState`, `resolveCommunityTheme`, `updateCommunityTheme`, `validateThemeContrast`,
+`resolveTabTheme`, `resolveCardTheme`,
 `getMessagesTabState`, `openMessagesTab`, `getPersonaTabConfiguration`,
 `updatePersonaTabConfiguration`, `resolvePersonaTabs`, `assignSurfaceToPersonaTab`,
 `pinSurfaceForPersona`, `unpinSurfaceForPersona`, `getCustomizationKnobs`,

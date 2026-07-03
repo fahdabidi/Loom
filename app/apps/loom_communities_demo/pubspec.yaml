@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   loom_app_shell:
     path: ../../packages/core/loom_app_shell
+  loom_communities_app_shell:
+    path: ../../packages/core/loom_communities_app_shell
   loom_demo_local_backend:
     path: ../../packages/core/loom_demo_local_backend
   loom_extension_package:

@@ -35,6 +35,7 @@ class LocalInstalledCommunity {
     required this.heroImageAssetId,
     required this.accentColor,
     this.appShellConfiguration = const {},
+    this.experienceConfiguration = const {},
   });
 
   final String communityId;
@@ -45,6 +46,12 @@ class LocalInstalledCommunity {
   final String? heroImageAssetId;
   final String accentColor;
   final Map<String, Object?> appShellConfiguration;
+
+  /// Package-declared workflows/personas/persona-policies (from the
+  /// `experience` block in `loom.initialization.json` or
+  /// `loom.extension.json`). Empty when the package did not declare one, in
+  /// which case the App Shell falls back to its hardcoded demo catalog.
+  final Map<String, Object?> experienceConfiguration;
 }
 
 class LocalBackendImportReport {
@@ -85,6 +92,7 @@ class LocalPackagePairInstallPlan {
     required this.logoAssetId,
     required this.heroImageAssetId,
     required this.appShellConfiguration,
+    this.experienceConfiguration = const {},
   });
 
   final LoomExtensionPackageSummary extensionPackage;
@@ -93,6 +101,7 @@ class LocalPackagePairInstallPlan {
   final String? logoAssetId;
   final String? heroImageAssetId;
   final Map<String, Object?> appShellConfiguration;
+  final Map<String, Object?> experienceConfiguration;
 }
 
 class LocalInAppBackend {
@@ -211,6 +220,10 @@ class LocalInAppBackend {
           _objectMap(initialization['appShellCustomization']) ??
           _objectMap(extension['appShell']) ??
           const {},
+      experienceConfiguration:
+          _objectMap(initialization['experience']) ??
+          _objectMap(extension['experience']) ??
+          const {},
     );
   }
 
@@ -229,6 +242,7 @@ class LocalInAppBackend {
       logoAssetId: plan.logoAssetId,
       heroImageAssetId: plan.heroImageAssetId,
       appShellConfiguration: plan.appShellConfiguration,
+      experienceConfiguration: plan.experienceConfiguration,
     );
   }
 
@@ -242,6 +256,7 @@ class LocalInAppBackend {
     String? logoAssetId,
     String? heroImageAssetId,
     Map<String, Object?> appShellConfiguration = const {},
+    Map<String, Object?> experienceConfiguration = const {},
   }) {
     final existing = _communities[package.communityId];
     if (existing != null) {
@@ -260,6 +275,7 @@ class LocalInAppBackend {
       heroImageAssetId: heroImageAssetId,
       accentColor: accentColor,
       appShellConfiguration: appShellConfiguration,
+      experienceConfiguration: experienceConfiguration,
     );
     _communities[community.communityId] = community;
     return LocalBackendImportReport(

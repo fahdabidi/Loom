@@ -305,12 +305,32 @@ tree. Online-only chat surfaces are deferred until Loom has a hosted build and v
     `## 6. Workflow-To-Surface Mapping`, `## 7. Persona And State Matrix`, `## 8. Content And Seed
     Data Requirements`, `## 9. Visual And Interaction Standard`, `### B25 Semantic Interaction
     Models`, `### B25 Card Surface Registry Mapping`, and `## 3.1 Persona Tabs, Pins, And
-    Customization`. It must find documented workflows missing from screenshots, screenshot-visible
+    Customization`. Before judging, it must load and cite the component docs that define the selected
+    surfaces and App Shell capabilities: `components/card-surfaces/README.md`,
+    `components/card-surfaces/app-shell-navigation-theming.md`,
+    `components/card-surfaces/tab-renderer-contracts.md`, and every
+    `components/card-surfaces/<surface>.md` file referenced by the product doc's card-surface
+    registry. In native Loom repo runs, load these from `docs/Build Plan V2/Skill/components`; in
+    standalone Skill runs, load the bundled local Skill equivalents. The output JSON must include
+    `reviewedComponentDocPaths`, per-community `componentDocsReviewed`, and per-tab renderer
+    `componentDocPaths`; missing component-doc review is a major finding. The reviewer must reread
+    these component docs on every B25 run, not only when a file appears changed. Before calling the
+    LLM reviewer, run `b25_component_doc_context.dart` and provide
+    `b25-component-doc-context-<run-id>.json`; the LLM output must include
+    `componentDocReview.docs[]` with each required doc's `path`, `sha256`, `gitLastCommitSha`,
+    `gitStatus`, `reviewedThisRun=true`, `reviewRunId`, `semanticSummary`, and
+    `semanticImplicationsForCommunities`. If the hash or git last-commit changed since the prior pass,
+    the LLM must explain the semantic delta and identify required Product Docs, tab, card-surface,
+    theme/customization, evidence, or implementation updates. `production_ux_judge.dart` cross-checks
+    those hashes and commit fields against the current repo. It must find documented
+    workflows missing from screenshots, screenshot-visible
     workflows/interactions missing from product docs, missing required visible proof, persona/state
     drift, incomplete lifecycle actions, generic or wrong surface mappings, and missing App Shell
-    capability utilization. It must specifically ask whether Calendar, Messages, Marketplace,
+    capability utilization. It must specifically ask whether the selected card surface fits the
+    community job-to-be-done better than available alternatives, whether Calendar, Messages, Marketplace,
     Documents, and Workflow Status tabs look and behave like their tab-native product surfaces rather
-    than generic workflow lists, and whether important controls prove before/action/after state changes.
+    than generic workflow lists, whether community theme/typography/pinning/presentation states follow
+    the App Shell guide, and whether important controls prove before/action/after state changes.
     Unresolved blocker/major findings, weak tab-renderer proof, weak interaction-transition proof, or a
     failing `appShellCapabilityReview` become remediation tickets and block B25.
 67. The B25 semantic product-quality review is a distinct LLM Vision UX Judge Agent step. It consumes
@@ -553,6 +573,7 @@ judge tools and artifacts are:
 - B25 capture coverage gate: `dart run packages/tooling/loom_ux_judges/bin/b25_capture_coverage_gate.dart`
 - B25 visual audit: `dart run packages/tooling/loom_ux_judges/bin/b25_visual_inspection_auditor.dart`
 - B25 review scaffold: `dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart`
+- B25 component-doc context: `dart run packages/tooling/loom_ux_judges/bin/b25_component_doc_context.dart`
 - B25 Product Docs to Evidence Workflow Reconciliation: LLM artifact using `docs/Build Plan V2/Tools/b25-product-doc-workflow-reconciliation-llm-gate.md`
 - B25 LLM freshness gate: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart`
 - B25 LLM review import: `dart run packages/tooling/loom_ux_judges/bin/b25_llm_ux_review_importer.dart`
@@ -574,8 +595,16 @@ Before the LLM Vision UX Judge runs, produce
 `llm-product-doc-workflow-reconciliation-<run-id>.json/.md`. The LLM reviewer must compare every
 community product doc's `## 6. Workflow-To-Surface Mapping` and companion Sections 7-9, B25 semantic
 interaction rows, and card-surface registry rows to the current screenshots, visible text, screen
-matrix, workflow/persona coverage, and review JSON. Its blocker/major product-doc, implementation,
-evidence, or mapping findings must be converted into remediation tickets.
+matrix, workflow/persona coverage, review JSON, and the loaded component docs for tab renderer
+contracts, App Shell navigation/theming, and every referenced card surface. First run
+`b25_component_doc_context.dart` to capture component-doc hashes, git last-commit SHAs, and dirty
+status for the current repo. The LLM must review the docs every run and record
+`reviewedComponentDocPaths`, `componentDocReview.docs[]`, semantic summaries, and semantic
+implications. `production_ux_judge.dart` validates those hashes/commit fields against the current
+files and fails stale or pass-shaped component-doc review. Route component-doc mismatches, missing
+component docs, weak tab-native renderer usage, or unsupported card-surface/customization choices into
+blocker/major remediation tickets. Its blocker/major product-doc, implementation, evidence,
+component-contract, or mapping findings must be converted into remediation tickets.
 For visible manual review or dual-emulator B25 runs, launch emulators with the hardened launcher rather
 than ad hoc `flutter emulators --launch` commands. The reliable concurrent-emulator path starts from a
 clean emulator state and launches both AVDs read-only:

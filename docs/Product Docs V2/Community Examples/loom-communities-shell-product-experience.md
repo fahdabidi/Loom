@@ -95,6 +95,15 @@ such as Calendar/Documents/Teams/Giving/Marketplace, pinned card surfaces within
 medium/in-focus, and expanded surface states, and bounded community theme tokens for community title,
 detail, card-surface title, body, label, button, edit-text, badge, and metadata.
 
+Card-surface theme tokens resolve from a three-level cascade — community default, optional per-tab
+override, optional per-workflow override — so a community can give one tab (e.g. Giving) a distinct
+accent from the rest of its tabs without any card surface hardcoding its own color. The default look
+for any accent is a **neutral card surface with the accent reserved for highlights** (borders,
+headings, badges, buttons) rather than a card fully filled in one color, so a chrome frame (the
+in-focus/expanded surface bar wrapping a tile) and the tile it wraps always share one coherent look
+instead of two unrelated colors. See
+[Card Theme Cascade](../../CardSurfaces/app-shell-navigation-theming.md#card-theme-cascade).
+
 ### B25 Card Surface Registry Mapping
 
 This B25 advisory registry maps each documented community workflow to the canonical card surface family, OpenAPI contract, required interactions/actions, and Demo App renderer/fake-backend support expected by remediation. It is used as implementation context only; B25 does not yet enforce this as a standalone card-surface/API coverage gate.

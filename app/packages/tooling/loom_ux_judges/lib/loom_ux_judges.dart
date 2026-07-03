@@ -447,6 +447,18 @@ final specs = <String, JudgeSpec>{
             'Update Product Docs and UI so app shell tabs, explicit per-tab pinning policy, presentation states, tap-to-expand behavior, community-list states, renderer selection, and theme/typography/density customization are screenshot-proven where required; rerun B25 and regenerate tickets.',
       ),
       CriterionDefinition(
+        id: 'b25-c17-component-doc-freshness',
+        title: 'LLM reread current component docs and recorded hashes',
+        question:
+            'Did the LLM reconciliation gate reread the current App Shell, tab renderer, and card-surface component docs this run, summarize their semantic implications, and record hashes/commit metadata that match the current repo?',
+        scope: 'component-docs',
+        requiredEvidenceFields: <String>['productDocWorkflowReconciliation'],
+        failureMessage:
+            'The evidence does not prove the LLM reread the current component docs or that its component-doc hashes/commit metadata match the current repo.',
+        requiredFix:
+            'Run b25_component_doc_context.dart, give that artifact plus the current component docs to the LLM reconciliation gate, regenerate productDocWorkflowReconciliation with reviewedComponentDocPaths, componentDocReview.docs, sha256 hashes, git last-commit SHAs, git status, reviewedThisRun=true, and semantic implications, then rerun production_ux_judge.dart.',
+      ),
+      CriterionDefinition(
         id: 'b25-c08-visible-text-specific-critique',
         title: 'Every row has visible text and screen-specific critique',
         question:
@@ -657,6 +669,38 @@ void runB25RemediationPlannerCli(List<String> args) {
   stdout.writeln(
     'b25_remediation_planner: batches=${_asMapList(plan['batches']).length} tickets=${_asMapList(plan['sourceTickets']).length}',
   );
+}
+
+void runB25ComponentDocContextCli(List<String> args) {
+  if (args.contains('--help')) {
+    stdout.writeln(_componentDocContextUsage());
+    return;
+  }
+  final repoRootPath = _argValue(args, '--repo-root') ?? Directory.current.path;
+  final outputPath = _argValue(args, '--output');
+  final markdownPath = _argValue(args, '--markdown-output');
+  final extraDocs = _argValues(args, '--extra-doc');
+  final context = buildB25ComponentDocContext(
+    repoRootPath: repoRootPath,
+    extraDocPaths: extraDocs,
+  );
+  final encoded = const JsonEncoder.withIndent('  ').convert(context);
+  if (outputPath == null) {
+    stdout.writeln(encoded);
+  } else {
+    File(outputPath).writeAsStringSync('$encoded\n');
+  }
+  if (markdownPath != null) {
+    File(markdownPath).writeAsStringSync(_componentDocContextMarkdown(context));
+  }
+  final docs = _asMapList(context['docs']);
+  final missing = docs.where((doc) => doc['exists'] != true).length;
+  stdout.writeln(
+    'b25_component_doc_context: docs=${docs.length} missing=$missing output=${outputPath ?? 'stdout'}',
+  );
+  if (missing > 0) {
+    exit(1);
+  }
 }
 
 void runB25WorkflowPersonaCoverageCollectorCli(List<String> args) {
@@ -1069,6 +1113,27 @@ JsonMap _b25CaptureCoverageReportFromAggregate({
     'missingWorkflowEvidenceManifestPaths': missingManifestPaths,
     'commandOutputPath': _asString(manifest['commandOutputPath']),
     'issues': issues,
+  };
+}
+
+JsonMap buildB25ComponentDocContext({
+  required String repoRootPath,
+  List<String> extraDocPaths = const <String>[],
+}) {
+  final paths = <String>{
+    ..._requiredComponentDocPaths,
+    for (final path in extraDocPaths)
+      _normalizeComponentDocPath(repoRootPath, path),
+  }.where((path) => path.trim().isNotEmpty).toList()..sort();
+  return <String, Object?>{
+    'schemaVersion': 1,
+    'toolId': 'b25-component-doc-context',
+    'generatedAt': DateTime.now().toUtc().toIso8601String(),
+    'repoRootPath': _canonicalDirectoryPath(repoRootPath),
+    'appCommitSha': _gitShortSha(repoRootPath),
+    'docs': [
+      for (final path in paths) _componentDocMetadata(repoRootPath, path),
+    ],
   };
 }
 
@@ -5725,6 +5790,8 @@ _DerivedFailure? _derivedFailure(
       return _failOnFullB25CaptureCoverage(evidence);
     case 'b25-c16-app-shell-capability-utilization':
       return _failOnAppShellCapabilityReview(evidence);
+    case 'b25-c17-component-doc-freshness':
+      return _failOnComponentDocFreshnessReview(evidence, basePath);
     case 'b24-c02-visible-text-and-copy-audit':
     case 'b25-c08-visible-text-specific-critique':
       return _failOnVisibleTextOrBoilerplate(screenRows) ??
@@ -5889,6 +5956,47 @@ String _gitShortSha(String repoRootPath) {
   return 'unknown';
 }
 
+String _canonicalDirectoryPath(String path) {
+  final directory = Directory(_hostPath(path));
+  try {
+    return directory.resolveSymbolicLinksSync();
+  } catch (_) {
+    return directory.absolute.path;
+  }
+}
+
+String _gitLastCommitShaForPath(String repoRootPath, String repoRelativePath) {
+  final result = Process.runSync('git', <String>[
+    '-C',
+    _hostPath(repoRootPath),
+    'log',
+    '-1',
+    '--format=%H',
+    '--',
+    repoRelativePath,
+  ], runInShell: true);
+  if (result.exitCode == 0) {
+    return result.stdout.toString().trim();
+  }
+  return 'unknown';
+}
+
+String _gitStatusForPath(String repoRootPath, String repoRelativePath) {
+  final result = Process.runSync('git', <String>[
+    '-C',
+    _hostPath(repoRootPath),
+    'status',
+    '--short',
+    '--',
+    repoRelativePath,
+  ], runInShell: true);
+  if (result.exitCode != 0) {
+    return 'unknown';
+  }
+  final status = result.stdout.toString().trim();
+  return status.isEmpty ? 'clean' : status;
+}
+
 String _fileSha256(String path) {
   final result = Process.runSync('sha256sum', <String>[_hostPath(path)]);
   if (result.exitCode == 0) {
@@ -5911,6 +6019,62 @@ String _fileSha256(String path) {
     }
   }
   return '';
+}
+
+JsonMap _componentDocMetadata(String repoRootPath, String path) {
+  final normalizedPath = _normalizeComponentDocPath(repoRootPath, path);
+  final resolved = _resolveRepoPath(repoRootPath, normalizedPath);
+  final file = File(_hostPath(resolved));
+  final exists = file.existsSync();
+  return <String, Object?>{
+    'path': normalizedPath,
+    'exists': exists,
+    'sha256': exists ? _fileSha256(file.path) : '',
+    'gitLastCommitSha': _gitLastCommitShaForPath(repoRootPath, normalizedPath),
+    'gitStatus': _gitStatusForPath(repoRootPath, normalizedPath),
+    'reviewedThisRunRequired': true,
+    'semanticReviewRequired': true,
+  };
+}
+
+String _resolveRepoPath(String repoRootPath, String path) {
+  final direct = File(_hostPath(path));
+  if (direct.existsSync()) {
+    return direct.path;
+  }
+  return '${_hostPath(repoRootPath)}/$path';
+}
+
+String _normalizeComponentDocPath(String repoRootPath, String path) {
+  var normalized = path.trim().replaceAll(r'\', '/');
+  while (normalized.startsWith('./')) {
+    normalized = normalized.substring(2);
+  }
+  if (normalized.startsWith(
+    '.agents/skills/using-loom-to-build-an-extension/',
+  )) {
+    normalized = normalized.replaceFirst(
+      '.agents/skills/using-loom-to-build-an-extension/',
+      'docs/Build Plan V2/Skill/',
+    );
+  }
+  if (normalized.startsWith('components/card-surfaces/')) {
+    normalized = 'docs/Build Plan V2/Skill/$normalized';
+  }
+  final hostPath = _hostPath(normalized);
+  if (RegExp(r'^/|^[A-Za-z]:[\\/]').hasMatch(hostPath)) {
+    normalized = _relativePath(hostPath, repoRootPath);
+  }
+  return normalized.replaceAll(r'\', '/');
+}
+
+bool _shaMatches(String reviewed, String current) {
+  if (reviewed.isEmpty || current.isEmpty) {
+    return false;
+  }
+  return reviewed == current ||
+      reviewed.startsWith(current) ||
+      current.startsWith(reviewed);
 }
 
 String _personaFromScreenshotName(String name) {
@@ -6818,6 +6982,31 @@ String _b25WorkflowLifecycleMarkdown(JsonMap review) {
   return buffer.toString();
 }
 
+String _componentDocContextMarkdown(JsonMap context) {
+  final docs = _asMapList(context['docs']);
+  final buffer = StringBuffer()
+    ..writeln('# B25 Component Doc Context')
+    ..writeln()
+    ..writeln('| Field | Value |')
+    ..writeln('| --- | --- |')
+    ..writeln(
+      '| Generated at | `${_escape(_asString(context['generatedAt']))}` |',
+    )
+    ..writeln(
+      '| App commit | `${_escape(_asString(context['appCommitSha']))}` |',
+    )
+    ..writeln('| Docs | ${docs.length} |')
+    ..writeln()
+    ..writeln('| Path | Exists | SHA-256 | Git last commit | Git status |')
+    ..writeln('| --- | --- | --- | --- | --- |');
+  for (final doc in docs) {
+    buffer.writeln(
+      '| `${_escape(_asString(doc['path']))}` | `${doc['exists'] == true}` | `${_escape(_asString(doc['sha256']))}` | `${_escape(_asString(doc['gitLastCommitSha']))}` | `${_escape(_asString(doc['gitStatus']))}` |',
+    );
+  }
+  return buffer.toString();
+}
+
 String _coverageCollectorUsage() {
   return '''
 b25_workflow_persona_coverage_collector (B25)
@@ -6885,6 +7074,16 @@ Fails when an LLM Vision UX Judge review is missing current-run freshness proof,
 
 Usage:
   dart run packages/tooling/loom_ux_judges/bin/b25_llm_review_freshness_gate.dart --input <independent-production-ux-review.json> --llm-review <llm-review.json> [--run-id <b25-v4-pass-N>] [--output <b25-llm-review-freshness-gate.json>] [--markdown-output <b25-llm-review-freshness-gate.md>]
+''';
+}
+
+String _componentDocContextUsage() {
+  return '''
+b25_component_doc_context (B25)
+Writes the current component-doc metadata the LLM Product Docs reconciliation gate must review every run: path, SHA-256, git last-commit SHA, git status, and semantic-review requirement flags.
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/b25_component_doc_context.dart --repo-root <repo-root> [--extra-doc <docs/Build Plan V2/Skill/components/card-surfaces/<surface>.md>] [--output <b25-component-doc-context.json>] [--markdown-output <b25-component-doc-context.md>]
 ''';
 }
 
@@ -10462,10 +10661,22 @@ List<String> _affectedEvidenceForB25Criterion(String criterionId) {
       return <String>[
         'independent-production-ux-review.json appShellCapabilityReview',
         'llm-product-doc-workflow-reconciliation-<run-id>.json appShellCapabilityReview',
+        'llm-product-doc-workflow-reconciliation-<run-id>.json reviewedComponentDocPaths and componentDocReview.docs',
         'docs/Product Docs V2/Community Examples/<community>-product-experience.md Section 3.1',
         'docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md',
+        'docs/Build Plan V2/Skill/components/card-surfaces/tab-renderer-contracts.md',
         'product-ux-screen-review-matrix.md affected screen rows and screenshots',
         'production-ux-criteria-scorecard.json/.md',
+      ];
+    case 'b25-c17-component-doc-freshness':
+      return <String>[
+        'b25-component-doc-context-<run-id>.json/.md',
+        'llm-product-doc-workflow-reconciliation-<run-id>.json reviewedComponentDocPaths',
+        'llm-product-doc-workflow-reconciliation-<run-id>.json componentDocReview.docs',
+        'docs/Build Plan V2/Skill/components/card-surfaces/README.md',
+        'docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md',
+        'docs/Build Plan V2/Skill/components/card-surfaces/tab-renderer-contracts.md',
+        'git log -1 --format=%H -- <component-doc-path>',
       ];
     case 'b25-c01-no-blocker-major':
       return <String>[
@@ -10530,6 +10741,13 @@ List<String> _implementationGuidanceForB25Criterion(String criterionId) {
         'Implement the missing App Shell capability in the central shell model, not as a one-off workflow hack.',
         'Recapture screenshots proving Home and Messages/Communication tabs, custom persona tabs, declared pinned surfaces, minimized/medium/expanded states, tap-to-expand, community-list states, renderer selection, and theme/customization tokens where required.',
       ];
+    case 'b25-c17-component-doc-freshness':
+      return <String>[
+        'Run `b25_component_doc_context.dart` before the LLM reconciliation pass and provide its JSON to the LLM.',
+        'Regenerate `productDocWorkflowReconciliation` so `componentDocReview.docs[]` includes path, sha256, gitLastCommitSha, gitStatus, reviewedThisRun=true, semanticSummary, and semanticImplicationsForCommunities for each required component doc.',
+        'If a component doc changed since the prior B25 pass, ensure the LLM explains the semantic delta and records required community/product-doc/UI updates.',
+        'Rerun `production_ux_judge.dart` so the current repo hashes and git metadata are checked against the LLM artifact.',
+      ];
     case 'b25-c08-visible-text-specific-critique':
       return <String>[
         'Update the B25 judge/review artifact, not only app UI code.',
@@ -10557,6 +10775,7 @@ List<String> _contentGuidanceForB25Criterion(String criterionId) {
     case 'b25-c13-workflow-lifecycle-complete':
     case 'b25-c14-llm-vision-ux-review':
     case 'b25-c16-app-shell-capability-utilization':
+    case 'b25-c17-component-doc-freshness':
       return <String>[
         'Write copy that matches the task: RSVP, donate, publish, approve, submit, review, search, export, transfer, invite, or reply.',
         'Each primary surface should include the domain data a user needs to decide and act.',
@@ -10609,6 +10828,12 @@ List<String> _evidenceToCollectForB25Criterion(String criterionId) {
         'Product doc coverage rows for every reviewed community/test app.',
         'Updated Product Docs V2 community experience docs with hashes, paths, required sections, and no placeholders.',
         'B25 review/remediation log entries showing the current screenshots will be judged against each product spec.',
+      ];
+    case 'b25-c17-component-doc-freshness':
+      return <String>[
+        'b25-component-doc-context-<run-id>.json and .md generated from the current repo.',
+        'productDocWorkflowReconciliation.componentDocReview.docs[] with current path/hash/git metadata and semantic review fields.',
+        'If component docs changed, semantic delta and required community/tab/surface updates in the reconciliation markdown.',
       ];
     case 'b25-c03-production-grade-experience':
     case 'b25-c04-modern-intentional-ui':
@@ -10703,6 +10928,13 @@ List<String> _acceptanceChecksForB25Criterion(String criterionId) {
         'After-screenshots prove the shell capability in the affected community/persona/workflow, not only source-code declarations.',
         ...shared,
       ];
+    case 'b25-c17-component-doc-freshness':
+      return <String>[
+        '`b25_component_doc_context.dart` generated current hashes and git metadata for required component docs.',
+        '`productDocWorkflowReconciliation.reviewedComponentDocPaths` includes README, app-shell-navigation-theming, and tab-renderer-contracts.',
+        '`componentDocReview.docs[]` has matching `sha256`, `gitLastCommitSha`, `gitStatus`, `reviewedThisRun=true`, `semanticSummary`, and `semanticImplicationsForCommunities` for each required doc.',
+        '`production_ux_judge.dart` has no blocking failure for b25-c17.',
+      ];
     default:
       return shared;
   }
@@ -10743,6 +10975,7 @@ List<String> _b25RerunCommands() {
     'dart run packages/tooling/loom_ux_judges/bin/b25_evidence_collector.dart --evidence-root ../docs/Build\\ Plan\\ V2/Evidence --repo-root .. --run-id <next-run-id> --prior-review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_workflow_persona_coverage_collector.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/workflow-persona-coverage-matrix.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_independent_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.md --matrix-output ../docs/Build\\ Plan\\ V2/Evidence/B25/product-ux-screen-review-matrix.md',
+    'dart run packages/tooling/loom_ux_judges/bin/b25_component_doc_context.dart --repo-root .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-component-doc-context-<next-run-id>.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-component-doc-context-<next-run-id>.md',
     'dart run packages/tooling/loom_ux_judges/bin/production_ux_judge.dart --input ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --base .. --output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.md --tickets-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.json --tickets-markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-remediation-tickets-<next-run-id>.md',
     'dart run packages/tooling/loom_ux_judges/bin/b25_iteration_scorecard.dart --review ../docs/Build\\ Plan\\ V2/Evidence/B25/independent-production-ux-review.json --judge ../docs/Build\\ Plan\\ V2/Evidence/B25/production-ux-criteria-scorecard.json --previous ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.json --markdown-output ../docs/Build\\ Plan\\ V2/Evidence/B25/b25-iteration-scorecard-latest.md',
   ];
@@ -10776,6 +11009,251 @@ _DerivedFailure? _failOnProductDocCoverage(JsonMap evidence) {
     );
   }
   return null;
+}
+
+const List<String> _requiredComponentDocPaths = <String>[
+  'docs/Build Plan V2/Skill/components/card-surfaces/README.md',
+  'docs/Build Plan V2/Skill/components/card-surfaces/app-shell-navigation-theming.md',
+  'docs/Build Plan V2/Skill/components/card-surfaces/tab-renderer-contracts.md',
+];
+
+_DerivedFailure? _failOnComponentDocFreshnessReview(
+  JsonMap evidence,
+  String basePath,
+) {
+  final reconciliation =
+      evidence['productDocWorkflowReconciliation'] as JsonMap?;
+  if (reconciliation == null || reconciliation.isEmpty) {
+    return _DerivedFailure(
+      score: 0,
+      message:
+          'No productDocWorkflowReconciliation artifact was supplied; B25 cannot prove the LLM reread current component docs.',
+    );
+  }
+  final contextSource =
+      evidence['componentDocContext'] ??
+      reconciliation['componentDocContext'] ??
+      reconciliation['componentDocMetadata'];
+  final contextRows = contextSource is JsonMap
+      ? _asMapList(contextSource['docs'])
+      : _asMapList(contextSource);
+  final reviewRows = _componentDocReviewRows(reconciliation);
+  final reviewedPaths = <String>{
+    for (final path in _asStringList(
+      reconciliation['reviewedComponentDocPaths'],
+    ))
+      _normalizeComponentDocPath(basePath, path),
+    for (final row in reviewRows)
+      _normalizeComponentDocPath(
+        basePath,
+        _asString(row['path'] ?? row['componentDocPath']),
+      ),
+  }..remove('');
+  final reviewByPath = <String, JsonMap>{
+    for (final row in reviewRows)
+      _normalizeComponentDocPath(
+        basePath,
+        _asString(row['path'] ?? row['componentDocPath']),
+      ): row,
+  }..remove('');
+  final contextByPath = <String, JsonMap>{
+    for (final row in contextRows)
+      _normalizeComponentDocPath(
+        basePath,
+        _asString(row['path'] ?? row['componentDocPath']),
+      ): row,
+  }..remove('');
+
+  final failures = <String>[];
+  final evidenceUsed = <String>[];
+  for (final requiredPath in _requiredComponentDocPaths) {
+    final normalizedPath = _normalizeComponentDocPath(basePath, requiredPath);
+    final resolved = _resolveRepoPath(basePath, normalizedPath);
+    final file = File(_hostPath(resolved));
+    if (!file.existsSync()) {
+      failures.add('$normalizedPath is missing from disk.');
+      continue;
+    }
+    final currentHash = _fileSha256(file.path);
+    final currentLastCommit = _gitLastCommitShaForPath(
+      basePath,
+      normalizedPath,
+    );
+    final currentGitStatus = _gitStatusForPath(basePath, normalizedPath);
+    final row = reviewByPath[normalizedPath];
+    final contextRow = contextByPath[normalizedPath];
+    final reviewed = reviewedPaths.contains(normalizedPath);
+    evidenceUsed.add(normalizedPath);
+    if (!reviewed || row == null) {
+      failures.add('$normalizedPath was not reviewed by the LLM this run.');
+      continue;
+    }
+    final reviewedThisRun = row['reviewedThisRun'] == true;
+    if (!reviewedThisRun) {
+      failures.add('$normalizedPath does not declare reviewedThisRun=true.');
+    }
+    final reviewedHash = _asString(
+      row['sha256'] ?? row['contentSha256'] ?? row['fileSha256'] ?? row['hash'],
+    );
+    if (reviewedHash.isEmpty || reviewedHash != currentHash) {
+      failures.add(
+        '$normalizedPath hash mismatch: reviewed=$reviewedHash current=$currentHash.',
+      );
+    }
+    final contextHash = _asString(
+      contextRow?['sha256'] ??
+          contextRow?['contentSha256'] ??
+          contextRow?['fileSha256'] ??
+          contextRow?['hash'],
+    );
+    if (contextRow != null &&
+        contextHash.isNotEmpty &&
+        contextHash != currentHash) {
+      failures.add(
+        '$normalizedPath component context hash mismatch: context=$contextHash current=$currentHash.',
+      );
+    }
+    final reviewedLastCommit = _asString(
+      row['gitLastCommitSha'] ??
+          row['lastCommitSha'] ??
+          row['lastModifiedCommitSha'],
+    );
+    if (!_shaMatches(reviewedLastCommit, currentLastCommit)) {
+      failures.add(
+        '$normalizedPath git last-commit mismatch: reviewed=$reviewedLastCommit current=$currentLastCommit.',
+      );
+    }
+    final contextLastCommit = _asString(
+      contextRow?['gitLastCommitSha'] ??
+          contextRow?['lastCommitSha'] ??
+          contextRow?['lastModifiedCommitSha'],
+    );
+    if (contextRow != null &&
+        contextLastCommit.isNotEmpty &&
+        !_shaMatches(contextLastCommit, currentLastCommit)) {
+      failures.add(
+        '$normalizedPath component context last-commit mismatch: context=$contextLastCommit current=$currentLastCommit.',
+      );
+    }
+    final reviewedStatus = _asString(row['gitStatus']);
+    if (reviewedStatus.isEmpty || reviewedStatus != currentGitStatus) {
+      failures.add(
+        '$normalizedPath git status mismatch: reviewed=$reviewedStatus current=$currentGitStatus.',
+      );
+    }
+    final contextStatus = _asString(contextRow?['gitStatus']);
+    if (contextRow != null &&
+        contextStatus.isNotEmpty &&
+        contextStatus != currentGitStatus) {
+      failures.add(
+        '$normalizedPath component context git status mismatch: context=$contextStatus current=$currentGitStatus.',
+      );
+    }
+    final semanticSummary = _asString(
+      row['semanticSummary'] ??
+          row['semanticReviewSummary'] ??
+          row['whatChangedSemantically'],
+    );
+    final semanticImplications = _asString(
+      row['semanticImplicationsForCommunities'] ??
+          row['semanticImplications'] ??
+          row['communityUpdateImplications'],
+    );
+    if (semanticSummary.trim().length < 24) {
+      failures.add('$normalizedPath lacks a substantive semantic summary.');
+    }
+    if (semanticImplications.trim().length < 24) {
+      failures.add(
+        '$normalizedPath lacks substantive semantic implications for community/tab/surface mapping.',
+      );
+    }
+    final changedSincePriorRun =
+        row['changedSincePriorRun'] == true ||
+        row['hashChangedSincePriorRun'] == true ||
+        row['docChangedSincePriorRun'] == true;
+    if (changedSincePriorRun) {
+      final delta = _asString(
+        row['semanticDeltaSincePriorRun'] ??
+            row['semanticChangeSummary'] ??
+            row['requiredCommunityUpdates'],
+      );
+      if (delta.trim().length < 24) {
+        failures.add(
+          '$normalizedPath changed since the prior run but lacks a semantic delta/update summary.',
+        );
+      }
+    }
+  }
+  final reviewStatus = _asString(
+    reconciliation['componentDocReviewStatus'] ??
+        (reconciliation['componentDocReview'] as JsonMap?)?['status'],
+  );
+  if (reviewStatus.isNotEmpty && reviewStatus != 'pass') {
+    failures.add('componentDocReviewStatus is `$reviewStatus`, not pass.');
+  }
+  if (failures.isNotEmpty) {
+    return _DerivedFailure(
+      score: 20,
+      message:
+          'Component doc freshness/semantic review failed: ${failures.take(20).join(' ')}',
+      evidenceUsed: evidenceUsed,
+    );
+  }
+  return null;
+}
+
+List<JsonMap> _componentDocReviewRows(JsonMap reconciliation) {
+  final rows = <JsonMap>[
+    ..._asMapList(reconciliation['componentDocReviews']),
+    ..._asMapList(reconciliation['reviewedComponentDocs']),
+    ..._asMapList(reconciliation['componentDocReviewRows']),
+  ];
+  final componentDocReview = reconciliation['componentDocReview'];
+  if (componentDocReview is JsonMap) {
+    rows
+      ..addAll(_asMapList(componentDocReview['docs']))
+      ..addAll(_asMapList(componentDocReview['reviewedDocs']))
+      ..addAll(_asMapList(componentDocReview['componentDocs']));
+  }
+  if (rows.isNotEmpty) {
+    return rows;
+  }
+
+  final hashMap = <String, String>{};
+  final hashes = reconciliation['reviewedComponentDocHashes'];
+  if (hashes is JsonMap) {
+    for (final entry in hashes.entries) {
+      hashMap[_asString(entry.key)] = _asString(entry.value);
+    }
+  }
+  final commitMap = <String, String>{};
+  final commits = reconciliation['reviewedComponentDocGitLastCommitShas'];
+  if (commits is JsonMap) {
+    for (final entry in commits.entries) {
+      commitMap[_asString(entry.key)] = _asString(entry.value);
+    }
+  }
+  final statusMap = <String, String>{};
+  final statuses = reconciliation['reviewedComponentDocGitStatuses'];
+  if (statuses is JsonMap) {
+    for (final entry in statuses.entries) {
+      statusMap[_asString(entry.key)] = _asString(entry.value);
+    }
+  }
+  return [
+    for (final path in _asStringList(
+      reconciliation['reviewedComponentDocPaths'],
+    ))
+      <String, Object?>{
+        'path': path,
+        'sha256': hashMap[path],
+        'gitLastCommitSha': commitMap[path],
+        'gitStatus': statusMap[path],
+        'reviewedThisRun': reconciliation['reviewedComponentDocsThisRun'],
+        'semanticSummary': '',
+        'semanticImplicationsForCommunities': '',
+      },
+  ];
 }
 
 _DerivedFailure? _failOnAppShellCapabilityReview(JsonMap evidence) {
@@ -12309,6 +12787,16 @@ String? _argValue(List<String> args, String name) {
     return null;
   }
   return args[index + 1];
+}
+
+List<String> _argValues(List<String> args, String name) {
+  final values = <String>[];
+  for (var i = 0; i < args.length; i += 1) {
+    if (args[i] == name && i + 1 < args.length) {
+      values.add(args[i + 1]);
+    }
+  }
+  return values;
 }
 
 bool _hasUsefulValue(Object? value) {
