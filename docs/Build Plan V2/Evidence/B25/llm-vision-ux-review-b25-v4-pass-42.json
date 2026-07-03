@@ -1,0 +1,1500 @@
+{
+  "schemaVersion": 4,
+  "freshReview": true,
+  "currentReviewRunId": "b25-v4-pass-42",
+  "appCommitSha": "d54aa6e",
+  "status": "pass",
+  "findings": [],
+  "reviewedScreenRowIds": [
+    "b25-v4-row-001-garden-event-rsvp-0",
+    "b25-v4-row-002-garden-event-rsvp-1",
+    "b25-v4-row-003-garden-event-rsvp-2",
+    "b25-v4-row-004-plant-exchange-submission-0",
+    "b25-v4-row-005-plant-exchange-submission-1",
+    "b25-v4-row-006-plant-exchange-submission-2",
+    "b25-v4-row-007-garden-export-custom-schemas-0",
+    "b25-v4-row-008-garden-export-custom-schemas-1",
+    "b25-v4-row-009-garden-export-custom-schemas-2",
+    "b25-v4-row-010-book-nomination-0",
+    "b25-v4-row-011-book-nomination-1",
+    "b25-v4-row-012-book-nomination-2",
+    "b25-v4-row-013-book-selection-publish-0",
+    "b25-v4-row-014-book-selection-publish-1",
+    "b25-v4-row-015-book-selection-publish-2",
+    "b25-v4-row-016-soccer-team-roster-0",
+    "b25-v4-row-017-soccer-team-roster-1",
+    "b25-v4-row-018-soccer-team-roster-2",
+    "b25-v4-row-019-soccer-reminder-notification-0",
+    "b25-v4-row-020-soccer-reminder-notification-1",
+    "b25-v4-row-021-soccer-reminder-notification-2",
+    "b25-v4-row-022-hoa-facility-reservation-0",
+    "b25-v4-row-023-hoa-facility-reservation-1",
+    "b25-v4-row-024-hoa-facility-reservation-2",
+    "b25-v4-row-025-hoa-export-evidence-0",
+    "b25-v4-row-026-hoa-export-evidence-1",
+    "b25-v4-row-027-hoa-export-evidence-2",
+    "b25-v4-row-028-mosque-donor-visibility-0",
+    "b25-v4-row-029-mosque-donor-visibility-1",
+    "b25-v4-row-030-mosque-donor-visibility-2",
+    "b25-v4-row-031-mosque-search-ai-citation-0",
+    "b25-v4-row-032-mosque-search-ai-citation-1",
+    "b25-v4-row-033-mosque-search-ai-citation-2",
+    "b25-v4-row-034-book-vote-0",
+    "b25-v4-row-035-book-vote-1",
+    "b25-v4-row-036-book-vote-2",
+    "b25-v4-row-037-book-search-ai-digest-0",
+    "b25-v4-row-038-book-search-ai-digest-1",
+    "b25-v4-row-039-book-search-ai-digest-2",
+    "b25-v4-row-040-soccer-minor-redaction-0",
+    "b25-v4-row-041-soccer-minor-redaction-1",
+    "b25-v4-row-042-soccer-minor-redaction-2",
+    "b25-v4-row-043-soccer-export-metadata-0",
+    "b25-v4-row-044-soccer-export-metadata-1",
+    "b25-v4-row-045-soccer-export-metadata-2",
+    "b25-v4-row-046-hoa-architectural-request-0",
+    "b25-v4-row-047-hoa-architectural-request-1",
+    "b25-v4-row-048-hoa-architectural-request-2",
+    "b25-v4-row-049-mosque-announcement-0",
+    "b25-v4-row-050-mosque-announcement-1",
+    "b25-v4-row-051-mosque-announcement-2",
+    "b25-v4-row-052-mosque-donation-payment-0",
+    "b25-v4-row-053-mosque-donation-payment-1",
+    "b25-v4-row-054-mosque-donation-payment-2",
+    "b25-v4-row-055-book-meeting-rsvp-0",
+    "b25-v4-row-056-book-meeting-rsvp-1",
+    "b25-v4-row-057-book-meeting-rsvp-2",
+    "b25-v4-row-058-book-export-metadata-0",
+    "b25-v4-row-059-book-export-metadata-1",
+    "b25-v4-row-060-book-export-metadata-2",
+    "b25-v4-row-061-soccer-registration-payment-0",
+    "b25-v4-row-062-soccer-registration-payment-1",
+    "b25-v4-row-063-soccer-registration-payment-2",
+    "b25-v4-row-064-hoa-dues-payment-0",
+    "b25-v4-row-065-hoa-dues-payment-1",
+    "b25-v4-row-066-hoa-dues-payment-2",
+    "b25-v4-row-067-hoa-committee-decision-0",
+    "b25-v4-row-068-hoa-committee-decision-1",
+    "b25-v4-row-069-hoa-committee-decision-2",
+    "b25-v4-row-070-mosque-event-rsvp-0",
+    "b25-v4-row-071-mosque-event-rsvp-1",
+    "b25-v4-row-072-mosque-event-rsvp-2",
+    "b25-v4-row-073-mosque-care-request-0",
+    "b25-v4-row-074-mosque-care-request-1",
+    "b25-v4-row-075-mosque-care-request-2",
+    "b25-v4-row-076-book-discussion-message-0",
+    "b25-v4-row-077-book-discussion-message-1",
+    "b25-v4-row-078-book-discussion-message-2",
+    "b25-v4-row-079-soccer-guardian-join-approval-0",
+    "b25-v4-row-080-soccer-guardian-join-approval-1",
+    "b25-v4-row-081-soccer-guardian-join-approval-2",
+    "b25-v4-row-082-soccer-practice-schedule-0",
+    "b25-v4-row-083-soccer-practice-schedule-1",
+    "b25-v4-row-084-soccer-practice-schedule-2",
+    "b25-v4-row-085-hoa-member-document-0",
+    "b25-v4-row-086-hoa-member-document-1",
+    "b25-v4-row-087-hoa-member-document-2",
+    "b25-v4-row-088-hoa-owner-notification-0",
+    "b25-v4-row-089-hoa-owner-notification-1",
+    "b25-v4-row-090-hoa-owner-notification-2",
+    "b25-v4-row-091-mosque-volunteer-signup-0",
+    "b25-v4-row-092-mosque-volunteer-signup-1",
+    "b25-v4-row-093-mosque-volunteer-signup-2",
+    "b25-v4-row-094-mosque-neutral-notification-0",
+    "b25-v4-row-095-mosque-neutral-notification-1",
+    "b25-v4-row-096-mosque-neutral-notification-2",
+    "b25-v4-row-097-chess-local-install-open-0",
+    "b25-v4-row-098-chess-local-install-open-1",
+    "b25-v4-row-099-chess-local-install-open-2",
+    "b25-v4-row-100-chess-route-home-0",
+    "b25-v4-row-101-chess-route-home-1",
+    "b25-v4-row-102-chess-route-home-2",
+    "b25-v4-row-103-chess-match-result-0",
+    "b25-v4-row-104-chess-match-result-1",
+    "b25-v4-row-105-chess-match-result-2",
+    "b25-v4-row-106-photo-walk-rsvp-0",
+    "b25-v4-row-107-photo-walk-rsvp-1",
+    "b25-v4-row-108-photo-walk-rsvp-2",
+    "b25-v4-row-109-critique-submission-0",
+    "b25-v4-row-110-critique-submission-1",
+    "b25-v4-row-111-critique-submission-2",
+    "b25-v4-row-112-gear-loan-request-0",
+    "b25-v4-row-113-gear-loan-request-1",
+    "b25-v4-row-114-gear-loan-request-2",
+    "b25-v4-row-115-platform-messages-entry-0",
+    "b25-v4-row-116-platform-messages-entry-1",
+    "b25-v4-row-117-platform-messages-entry-2",
+    "b25-v4-row-118-platform-blocked-target-0",
+    "b25-v4-row-119-platform-blocked-target-1",
+    "b25-v4-row-120-platform-blocked-target-2",
+    "b25-v4-row-121-platform-top-banner-no-fill-0",
+    "b25-v4-row-122-platform-top-banner-no-fill-1",
+    "b25-v4-row-123-platform-top-banner-no-fill-2",
+    "b25-v4-row-124-ad-off-community-checkout-0",
+    "b25-v4-row-125-ad-off-community-checkout-1",
+    "b25-v4-row-126-ad-off-community-checkout-2",
+    "b25-v4-row-127-ad-off-ad-suppression-0",
+    "b25-v4-row-128-ad-off-ad-suppression-1",
+    "b25-v4-row-129-ad-off-ad-suppression-2",
+    "b25-v4-row-130-export-import-replay-0",
+    "b25-v4-row-131-export-import-replay-1",
+    "b25-v4-row-132-export-import-replay-2",
+    "b25-v4-row-133-export-full-bundle-0",
+    "b25-v4-row-134-export-full-bundle-1",
+    "b25-v4-row-135-export-full-bundle-2",
+    "b25-v4-row-136-export-transfer-verification-0",
+    "b25-v4-row-137-export-transfer-verification-1",
+    "b25-v4-row-138-export-transfer-verification-2",
+    "b25-v4-row-139-platform-connections-entry-0",
+    "b25-v4-row-140-platform-connections-entry-1",
+    "b25-v4-row-141-platform-connections-entry-2",
+    "b25-v4-row-142-platform-message-stream-0",
+    "b25-v4-row-143-platform-message-stream-1",
+    "b25-v4-row-144-platform-message-stream-2",
+    "b25-v4-row-145-platform-sensitive-no-fill-0",
+    "b25-v4-row-146-platform-sensitive-no-fill-1",
+    "b25-v4-row-147-platform-sensitive-no-fill-2",
+    "b25-v4-row-148-ad-off-entitlement-status-0",
+    "b25-v4-row-149-ad-off-entitlement-status-1",
+    "b25-v4-row-150-ad-off-entitlement-status-2",
+    "b25-v4-row-151-ad-off-settlement-utility-0",
+    "b25-v4-row-152-ad-off-settlement-utility-1",
+    "b25-v4-row-153-ad-off-settlement-utility-2",
+    "b25-v4-row-154-export-protected-redaction-0",
+    "b25-v4-row-155-export-protected-redaction-1",
+    "b25-v4-row-156-export-protected-redaction-2",
+    "b25-v4-row-157-export-redacted-bundle-0",
+    "b25-v4-row-158-export-redacted-bundle-1",
+    "b25-v4-row-159-export-redacted-bundle-2",
+    "b25-v4-row-160-export-transfer-rollback-0",
+    "b25-v4-row-161-export-transfer-rollback-1",
+    "b25-v4-row-162-export-transfer-rollback-2",
+    "b25-v4-row-163-platform-connection-invite-0",
+    "b25-v4-row-164-platform-connection-invite-1",
+    "b25-v4-row-165-platform-connection-invite-2",
+    "b25-v4-row-166-platform-in-stream-ad-0",
+    "b25-v4-row-167-platform-in-stream-ad-1",
+    "b25-v4-row-168-platform-in-stream-ad-2",
+    "b25-v4-row-169-ad-off-member-checkout-0",
+    "b25-v4-row-170-ad-off-member-checkout-1",
+    "b25-v4-row-171-ad-off-member-checkout-2",
+    "b25-v4-row-172-ad-off-receipt-evidence-0",
+    "b25-v4-row-173-ad-off-receipt-evidence-1",
+    "b25-v4-row-174-ad-off-receipt-evidence-2",
+    "b25-v4-row-175-export-import-preview-0",
+    "b25-v4-row-176-export-import-preview-1",
+    "b25-v4-row-177-export-import-preview-2",
+    "b25-v4-row-178-export-schema-listing-0",
+    "b25-v4-row-179-export-schema-listing-1",
+    "b25-v4-row-180-export-schema-listing-2",
+    "b25-v4-row-181-export-checksum-evidence-0",
+    "b25-v4-row-182-export-checksum-evidence-1",
+    "b25-v4-row-183-export-checksum-evidence-2",
+    "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+    "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+    "b25-v4-row-186-wf-demo-app-persona-picker-0",
+    "b25-v4-row-187-wf-demo-app-persona-picker-1",
+    "b25-v4-row-188-wf-community-persona-aware-ux-0",
+    "b25-v4-row-189-wf-community-persona-aware-ux-1",
+    "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+    "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+    "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+    "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+    "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+    "b25-v4-row-195-wf-multi-persona-workflow-evidence-5",
+    "b25-v4-row-196-wf-multi-persona-workflow-evidence-6",
+    "b25-v4-row-197-wf-multi-persona-workflow-evidence-7",
+    "b25-v4-row-198-wf-multi-persona-workflow-evidence-8",
+    "b25-v4-row-199-wf-app-shell-capability-evidence-0",
+    "b25-v4-row-200-wf-app-shell-capability-evidence-1",
+    "b25-v4-row-201-wf-app-shell-capability-evidence-2",
+    "b25-v4-row-202-wf-app-shell-capability-evidence-3",
+    "b25-v4-row-203-wf-app-shell-capability-evidence-4",
+    "b25-v4-row-204-wf-app-shell-capability-evidence-5"
+  ],
+  "reviewedScreenshotHashes": [
+    "0171694a1b6a1bd3587b007da3a8aff47ce4582a010e226416e061b19d2ecb35",
+    "eb733e502da3cdc221aa36883a75e67b5bfd8aedcbdc8d6a35b874a7125544b8",
+    "5bd746f256798086e324f7e3e45f4480756d65d6c2661ba547009fc3d0c82e0a",
+    "21ee61ec5a2f8f9cd1504dbb57bb22da6569e417822b9877fe8b3a5197eb9d8b",
+    "58b4eb825c12ddb4ff7af60a7d1cd575f0b0931dc001a384f65835435d6af6e1",
+    "3b688a4ac4b495409319867537bc7524494d0bd85fa7e1005765fa6b8049b31c",
+    "7547c139f6135182a246b938d1592d9a1a42fd13b87c2ff478488d36f3dad558",
+    "6a3de4e7d6aeefdc878b71f6da6db700c998c4efeaa9f2f780ac3a3932690143",
+    "f78f62abe52f0305f6adaa748e4025dc6d72aefa40ad55d8e5565bd0df3ed665",
+    "4d6695d84540cf33a3dfb9b1727f16f932227be876a9503fad08d08b091f3679",
+    "ab24edb901bd56c7372840edf7e241af6db0c7b68a7ce0712c8be735935d8843",
+    "fc489ed55d38f68bd0166bd012ef112883d782e2ac294f7365342ea82e04e8ce",
+    "08fdb5960bc32c9c0290257179d1161a0031cc39d931fe739ee0b186366eeb81",
+    "020ea4a7b06381ad49d08b125ec447fc9ac74ce647dc1724e7e70519f1288524",
+    "d06432c85084534b1d03284a2a6a5bc75d69530e5b1034f79de29dcc0c74b9e7",
+    "03b86027204e579b7a85706db42ca8a60ec93c7d0f8e4b2900d01ff302780cba",
+    "4c1526869e5ae954369e950e9f36b86a6a740f2eb707240f8cf5c03e26f2ffa3",
+    "6ecb48a3aa720a12fd7dfb337a5f137e590786558a4e96ada7c8e2ee39430b35",
+    "bf7acbf68f363ece1bcb61112aa9da08e36d076b124a7cdf2c26e52a043b8a65",
+    "c2ff6e9bfe63600324b0fe22f6f7848e99e1f38cfc1e2b7a40f16439e6227425",
+    "4037951ac1a8c5284f12a0bfd993c94c8a2137a28f89107a2be1d1f4f03014d3",
+    "5e61efba65f073e5aef2fd203ebf7bcb4a7c891f17418d2eb11969b241d2bd07",
+    "1e1aeb7b20aa9a9aaf50fbceb650d87282ba98f7d19d692a31c2fd5819a5d2f0",
+    "8ee75b90faed7b7f7d66f89a5b02e5deb0801df94d0bf043a62ba3c994be5f88",
+    "47006943289584cc528c7f4452aed590324e27830ba695e0c30efaa3990a952f",
+    "e73a3b69566d45f85a0a9e8e1cf2f608f503d7f89480e01b600b153bc2dabf1c",
+    "7d8f89771b2d60c651b1906952758a1940e19f6db1a8e67e703996f520f94f05",
+    "8d9be07501f2901bdc45d46a111d5c9f9e3d6a31751dbdaba08eeda2fd352a95",
+    "e3ba96cff8657a06d507415bbf9b02f0e46db0d7a0b3418f3ce18d1430237447",
+    "7d3c63a13e954d6e0a29d8b03e4a77ea4650e1df69e79106d0d33d2d2b151d6f",
+    "5675966afee8cedaee3d2ad52d47a13b331536d359e41fac5e282ade11d85f72",
+    "fe1bed61f8aba91397c42b4aafc401e4f6da32e9b3db651ae485589cae44851f",
+    "88909068d985a72c84f20577efd78c1a22783e613572d31fd89b81b9c9220a66",
+    "4d6695d84540cf33a3dfb9b1727f16f932227be876a9503fad08d08b091f3679",
+    "e32a11ee741f0148d6dc064d83b5d0f5c12661bbc255e4ca38795547c226fb59",
+    "55ba3c005e6fa50da6d3fa41cd3090d063c57313b4ec9a642f1dd5312b5b5826",
+    "ffc58ff7f4f3e60a4403412a26c886badf2a8df176b00fe80476113dcd7d8d47",
+    "7f7ef22f005dba6bb077ac33f519833639971a5f414d83a202e2cc97c15cb539",
+    "d67ccbe55acc723bdde32ef623a4e54d5a2a0c643a06b35c8715794620990636",
+    "97c0ecf9f27ca306e73b3df76d0a7e7c65b06f15d508306c4d7a4a14db73bd96",
+    "84b2d06ba2909e6d5d55461dc27bafae88059e730d34c3dfb43a5cd4ac264f87",
+    "354be2b161627004c17ed90b55632d526234dc6a2a7a73a1d11cd578a4a668ba",
+    "927265077d207b665c1df6c27c27f4881c18766cee5fb58802305276b940773a",
+    "3e67f47e63433aba3f9ba5a89bd8793ef0e4a4428ffb6293d513c647316c4c4b",
+    "5c67fbbfddc614887b86eece3a9ccc2a7d33c17d4f444f4b79611148cb18f9e0",
+    "08c239e0ebf82f4995409fb70078b224234887e2f9ebc3c25b94e5059e9fa0a1",
+    "a2217a62325ba9cad3310513c5886ce8fb374ab3b0ba43b90e291a8a191d8567",
+    "8933bf54497f7b1d866d0ec0c8cf3923e8f63dd2a5cce26e0c9f9645d5578900",
+    "8424bd6f12d6a11a5b2cb60ff06b31fdf85e1b98e4c0454207fcf562d693e1d7",
+    "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44",
+    "3f03609f951c512c643faec458ec800cfb38b91eff579cc8318bfeeaca8c0a41",
+    "88f8fa1a95f635735d89b3d638bf936c2494766f24c3d71f7a79cf3ab008ef80",
+    "3228702b515c3c9ccb591d8eae68fe882ec538e3eb89ef1e5b9ec24eddbf5e59",
+    "208244490f813636a5a9978e0710a2caaf2da4ba6d3187ac574cf65edcd6519a",
+    "1582b158d87e07f9fd6becd37b0d778a1b1f72edf2ab4a06579228b925845a2b",
+    "d14f70288a77ea3ad86cd790291f75f234511f7a024b90eed9c7dbe22284d7cc",
+    "47ca6efddb8f0e2e3de94f6ca8102a67b26ac1ce109e03fb6bd755b7dce3073d",
+    "19f5630badf9bfb9474ceb1fd9f3b15c7fb122c31c4fd992d1f7f3059221b379",
+    "e217ad3a30563c5d1c14ee86b4b7fcca5a6a143141634fe41838a6d06897d145",
+    "02c3002ab91f4b378d0793e9f18ad2048649c2e6954dc65a275b64f3aff55a68",
+    "6f43fde3a3d4ac730b8fe443ecd4dec4d3ed2f2da33c49c142776a3339be07b7",
+    "a6468cc6e759af9c3bb490b7999e7d9b1bc05fdd261b24f659483f892824f06f",
+    "e6bc417c3d13b2d8ecf8d8d41af9381c215733f77bd6915cb062675922dbde28",
+    "60dedb4e3ba9e9f7b3213450441521b89c95e3038ccb6762bd8ae3fcc4e23470",
+    "3b2cfd9beb4239c7d31c829d96a754c3d31515167434ce3d89b897fd3c659a99",
+    "346f8ea6db545ce5480fdeff03da8df9c77ccc8969727f06e65268c9e5773fa9",
+    "0fb875c1f77c2052913cfcf7aee448ba5707e928c07a0521a0df69afb107562b",
+    "606d1ecfdc1e974b7a970dea341412e3e6ba708c00ef9bc0b93fb3e2a40edfb3",
+    "ae2daa2a456d1273e241b453a8012272c04b05a3fb48858a5c7d3bcd3e91d946",
+    "1e14600a91db4dc2d2412a5e652d8b8e71bb555af0cefcf8f7209ab4bb2c5b3f",
+    "f47713eb6df7182a208ba1810ed186f0014354b85eb5470cc98dd6079bd898fc",
+    "2fc6dc9664b4ddf5530a4ca37ba7b765738bfa6607ca930115f012156698833c",
+    "946ab45a1c585e292f1c85512fd3631fe556677c503c7da72b3f8a24b7b4a5e6",
+    "25a253485cf007c45627ba6fec112b3bfed039bf7eb7771a02deb7bc0050ccc6",
+    "0999992f9273aaea86807c38bade6eacbe67f3b8e1d83869273b6ecb7c725944",
+    "c9a64488e33801a17af1606835f9724b0385b42446448115ef43170ba40299c9",
+    "e90705523609677dfe743cbf0492701f919a4923603c0c1dddb70d9e1b2f0680",
+    "a9ca376b964a86538216ba153d84355df7b5a2aaf5be3841c5718fd0d4f5f7c0",
+    "33ed1a7b71bab271d3276510fad8e2dbab3d830dca25d38f6808c748af3bbc0d",
+    "495298e55e3790a619b6f65b8767160b7f096c5c55f17aa345b4dfff88ffd5ec",
+    "9e1ab1381b7ea4a60fbcffe0754e9daec28d8a1bebf1437cfd6950e8415f9a12",
+    "9b6971209ae8a0cc3653f0d3287c28ad6617f38140560a8bd6b5ebfee98096ed",
+    "0df5849117caacf6546ca33c17e200d0dbff2fa6aa68fbe0896d007f47cba857",
+    "71c704bf8d6494e2f503b1bd12391dde261f792b9c918a7ffcbacd8c318a5d15",
+    "92f88dc785a08267e8774c7271a20b6f036c672340431b8e1374e3b86fca0f16",
+    "7031634b0cab9c74ac19e5ed44af0db2f0aafdf2e7769bfffe4387c42146419a",
+    "938e6608af168d5085dc4908fa41bcf1d5dac33f3020dd06a49fc32c132e7cba",
+    "3b7193b5e3a3c2e89534c0d9f4851579abe0a8a082e778a24e2cbeaa8f1e631d",
+    "4778b54477859cea6c865d619133d1d08761b47fcb4fb42f4f3dfa0b61dbcbfc",
+    "e68c5a75295b41ce395021a1f7e9e4f1d1fc15427bf63d1d4d4020632b488091",
+    "84ba98ab5c9292b1885617ffec53814abb7cd48b3530c497233b38a9955d5d08",
+    "49e6fc594c77dca1eb94d587a9ea6482c45fd0f8b42892ccb0aa00b1a1aad937",
+    "793bf6e602d251eb151fee1173dba6783d7e53ad94d0307993ff7788e4bba30e",
+    "9b9202688a0d809bef816a45d171d1efbd031a4aa9c54d6bbcfd5fbd15447516",
+    "b677a8791f9a307ebea0760cc43a96f773a5017a443e61411a8dc53cd4fb5f2a",
+    "92b6a6d13343f19b1ed777164d36d18e74247a3715cf3be044c7005e92422408",
+    "743baf3666d117f053c803ac5653c95a765657599aeae2c9b100b5dca1672809",
+    "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209",
+    "6b9fc8c2b44e2702f8e21a843d0c03e627ea600d8bc78abeebd656b266e14cb4",
+    "ee8cada7b9ac1be87ce11c3104d2b162cfef548d465baeac8c9f94c2f77b93a2",
+    "e0033376493adcd00d6e705e26bd3879fc8ecdb9f0ef8c3ba6b6006f824b7209",
+    "e6a02f6fe822ccce5aec3f5a17b48f9650866e31228d85cc78df8a89f4858b59",
+    "da1a8841cdca47999ec65a6ed6ff7e51a3940463235ecfe0e199507a6d5ffac8",
+    "492aa15c38a026163f9e36aab23ec4c5a490813a2fc61c58f90777e982088a4e",
+    "bdbf5bc75df62e719d1e1d045a9e24ec9ccd12da8041739e19d9f364484397a0",
+    "c39e8edd79ef5093eedc99ee7dc0e5de659a8ab5a67d9f8b38fbef7c658e6a40",
+    "89f0034a1cbba44b673325028149e9bc15129836e81a0e1f5b9ea5e685bfd84d",
+    "6aef0759645845fed772bad6c68a57ac02a9dafcbfbd8d37d34790f55ae42d0e",
+    "61000865bbe07bbcdd4d437c377aa1c6ada71ec78ad814679f9eb1014fd524c0",
+    "abf7a3b8121a54b8ab8132fc4708d78dfd010cf8d585983b1a3600dcef520123",
+    "1014f1023108048c09569c9a44d45987f2236084982bc439f3b2c883d7f4ac3b",
+    "27cd01a2c6aebbe579b46b352800c2f84a6c26afe19a06eab0ff376e18ae02c6",
+    "98ab205d41eadf7ec620bf052eb19298776144236b9cf5bda120a00e97605075",
+    "a353c29cb5b25b949b9b6333bec510bba89474cca4c72302b3bfecde80fb447a",
+    "a72f06181128daba15aa9ada1556cef9d4cb555654cb667266c66a9d75c3f998",
+    "b2b647169c633d36215dcec3936827bc0d27fb369c064bab2ac8dc8c535edc3f",
+    "2c30e824fd511f356140b9108da12dc27b988945f142a18efda5c5630fa6fea4",
+    "e3c19f7b24ff3587294af7053fd9b53afe7732a27df8b04c16db533903210eb0",
+    "24f84f8d9e42dc5bfbbe30082d9ef3da3c8d14254ea653c0bf27f4eaf6aa5df3",
+    "ba326f3a466a05c0269fbae75cca6d986d3cae61834cc2410773eeca17c42a04",
+    "d1bc8fe6c8c3205a87cbff58b120ca69522291a2f16f57e0011fe0b51b1f1370",
+    "ba4bca20cbad8906f0b2e3e01f8a8ecf626a6b5ad5286def481e1feae149514d",
+    "f6a03883a7adfbc0c4408f15628f4d2e61c4c61dd963d2f3bc9e34a76ea810ce",
+    "6c7384d09a37dd7e44b6f46929df42d113d39e156d92061712e97e5b418659f2",
+    "71000ff70ebe6759cff7d7ca2a23b48d0cf98f5a23b8c5bf57cfc1917816a039",
+    "86a3e6e27899a4111ba9bcf79d21ec0dfd7fe36ceeb8a8396e89dcca4b39ea1f",
+    "c8f510ae74ab53c42d14091b05bb5dcfdc1401c4b41d6522448f1a92a9a52208",
+    "046528158dd60039882a4d1fb9b538459a87d225772b49740670c548a54baaca",
+    "384c912236765e435267b3f12573a0921357a63cf39b856ae70205069974bc55",
+    "26d272ee878f2a110a6f80785313a0fed30d9aae39dc78ac0ace5af91e79b744",
+    "3a1f88732a57f229ebfe92b0acb7b8c601d9dd6cb8aa696576b113b95e7dc50f",
+    "c17f97254464ab5cd4d4231160b5825c8d61dbcd545e3e94062847f1713685d0",
+    "2279440bb98e244ed28bb80647d0ae2c9cb8883ac6eb46279356a54aa644329b",
+    "1e8d1f1241226a3f8d182f77c205ad5062c23664b03c7627d52878e7c55ad991",
+    "70db9e6c46270be1cdaf3e7f582f5f272dc8a23e4f97c0ac707071be08a003ec",
+    "43fe4f1d245f86acfac06e2e6e5061c8fe5bf0c8ce3c23a9c3dd2eb23f848857",
+    "9f576b1e97ccbb7d431bcacb616aa28db06c7176530fe3ed5fdb8231c564d90c",
+    "4e828155a9a08d2e1d0810e912977a956d61231f6d675fd0338d73fd42d0a55d",
+    "d00b54fa69190bfbe1f777384d051ca46c5c15a889bfd1f7046ee090fc3f8f34",
+    "372930b369dc20498695a08cbec5abd0ef3e653734d67deee7ada688766364db",
+    "653c66273611e8d457b63744e5e02a5fdec8f59ef25949e531b6328655db5330",
+    "592623eda29aa02adb67bc70b3d86fbfb0795926bbda6afb11af9e6e55c2c505",
+    "b2b647169c633d36215dcec3936827bc0d27fb369c064bab2ac8dc8c535edc3f",
+    "2c30e824fd511f356140b9108da12dc27b988945f142a18efda5c5630fa6fea4",
+    "84162d118fd0a626adb764dd6bf34bca9a337feacfa62613fb1d31c2d4622a1d",
+    "ac10dd4ffea8a68a0c29544a3d20a60ea2213c04c95bc1d6c54fa864f92e1f07",
+    "526330024d2e3f5edfed2d5a69297cc9dd9126d6b193b04c8c8e085177c78b44",
+    "c7e0eafd7e6587c3c39b8ad21740d878570a05ffc90373546abaf2dd21c151bb",
+    "3b7540723f532a43a77fd2ec4ebab1411c795e8d14e4274765e9af1343d45ef9",
+    "5744130ca999c1873b5bb44e9e80b962c0a73872b77f1724cdafd384e8a1a803",
+    "350766f67116b91064a25bf05ceb42f7f5e3067317bff40952a50fa84c6bf409",
+    "8636e8c94c9f2c1c9843c46173aa3174a0b57d0ba8f6d4de3314d1e56ba4aa90",
+    "e4e602c7e02f2c3f6a8f6aee1f09d768442b71aa6b9a1aeca669aa0c90c9e74a",
+    "26ed0dd4980da352347e0361bb03da315e02646cf56ed698b3a3b841deec2bf3",
+    "f8a232bd43d936a35570c6eace031f7fbebf1af0ef7348edb7113f63ec293748",
+    "bb4acbc450aa0e6729551eb85321ca09f6f92a1cbb9604f7381929c772e67def",
+    "2279440bb98e244ed28bb80647d0ae2c9cb8883ac6eb46279356a54aa644329b",
+    "1e8d1f1241226a3f8d182f77c205ad5062c23664b03c7627d52878e7c55ad991",
+    "70db9e6c46270be1cdaf3e7f582f5f272dc8a23e4f97c0ac707071be08a003ec",
+    "cf3a26bf38b01d88b8fc031b5dd74f590ada550912a2eed9f7e297276f7d57d7",
+    "77ba1cdde466c22225ce19e15344c09ee5bed726561ad4136cfc3034fb0c7beb",
+    "f6eed151a12fc043d371b113ae47cdcd6ac8f1d7999abeff87612d120a704d1d",
+    "e84d51a9b45b78797790798c45c541f7140822e8a9eab77eca72073840856f5c",
+    "75153e960649beb959dbb00cea1f9cdf846891bbe464b1306bd9ccc39c7dbcf4",
+    "3ad1392142b58486ca0b956219747eab54cfbb1d9cc062b1560e65a92e6226a3",
+    "497fded22e5ab5a98cc4b702018812c232505ff6fd2e4ebe87eaf489a5f5348d",
+    "2bdd1e204b71a18a284699333d33269a3c27bb6537e5d0a695df79f58c7a57ee",
+    "4a38547910d50d7dd3e220b1a926313821d31b44a3ba7f0725a299118996e8d7",
+    "c3ae0eca6e85ab176d1e3d943b136c01b81d434aad37e09ff5f076b3cd22936d",
+    "2f04a57a2717475af95b9f9f01b25ee30aef4427c89deea986fca2007e623daa",
+    "08d1264072f983d0d4de0584e26176ade39d89453e522a5c03a42a0e503e02f2",
+    "1339a35513e62285b84c666e4ff546e3362d971768aaa667fe93fb21ae156bb1",
+    "05bb28197a7ade8ce0e6227e3875f91682b3f9a2f95b6efe00d61a864bf61e98",
+    "eeed14d62eafd7e09f792839b9a2d97581bfa716c48f0fbedcf3382a5c7b7f43",
+    "45d526f5181666822faa9c49c496879e28012873c2c6e251488f2e5610cb497c",
+    "3a1f88732a57f229ebfe92b0acb7b8c601d9dd6cb8aa696576b113b95e7dc50f",
+    "c17f97254464ab5cd4d4231160b5825c8d61dbcd545e3e94062847f1713685d0",
+    "8d08e86a54b946c40fd4533dca3b70ff107815e96f15fdedf98a2853b6aaa84b",
+    "cb5fc0bbc2cc91e6f97fe14a81ba010299bf50a55b98d8b15f33cb811589d315",
+    "9ae888c289c478c9e6e73342e8a9cc6bae6fa0ba28e5ebb36d2439b2c47ebcd1",
+    "8a67a43b4c4a93853176e8c0ed70b03512057ed253ebbf8c5fe8cfc0a959588d",
+    "0c176cfdb7fe9453dd056a3434cd8366b5c35fe38a75cb9ace02a2a472e4334e",
+    "5a5693d0acb86be1bb2ca95edec0257b15d92599b9a5d8a3bc8b84c85c57c8e8",
+    "2ddf8f80dddb56143d96d0ae77752eea61af85c37181d8e29a61622c04f16e8f",
+    "a71a480717e2f4085655e251c65d445ee94d2b456eda2abf13ed7053f28d87ad",
+    "a71a480717e2f4085655e251c65d445ee94d2b456eda2abf13ed7053f28d87ad",
+    "86cce55411621b0d1feadae3a3f69cc8ebd214318a53cb0f28cef9647299b043",
+    "6ed62f725a365a0b3c149f83bb6f8df97d2fe260d0f7f0730ddbdf20efb945d5",
+    "f11c31374e9d8002acb8610c2e346bb2d86c4bd8bab406cdd9820897c0c13c6c",
+    "8424bd6f12d6a11a5b2cb60ff06b31fdf85e1b98e4c0454207fcf562d693e1d7",
+    "ed438ab335e1cc03944959114cc9a2b0f47e2c47d91c0ce32d9a3fa20aa08a44",
+    "3f03609f951c512c643faec458ec800cfb38b91eff579cc8318bfeeaca8c0a41",
+    "69f878da1fe7e0e7e406b1f8dfcc38f5869ca49ebe90f940f3bf09fcc726e574",
+    "5e5fc32996d313c205def04dfcf37a9522b142209907516ecd8153b4e39630b7",
+    "3f03609f951c512c643faec458ec800cfb38b91eff579cc8318bfeeaca8c0a41",
+    "521866a19f719cf0103967fc19173e08db73057c0f75b6f68a11dfbb494aa0ee",
+    "074da19fd2c02c74e59b3673f7985d1dbef143d5a471a8e16f2b8eef61603c82",
+    "4bfd02774d41aa66ddb8e28de681a779b9f1e82214c7d784d1a19d6fd6e82f7c",
+    "e03196dc175f1e0beea80dbf5488dee1646e6c07d87545deaafc7ead243f7db5",
+    "f49138c5d5ab0673bc54b7133d6576bbde3dcd45956013624fc4bfb50373d9d6",
+    "f49138c5d5ab0673bc54b7133d6576bbde3dcd45956013624fc4bfb50373d9d6",
+    "489c0161986b5d8eb9b25151a92e95aa05e48f0d883ff0383ae7673798441416",
+    "81a8698eb00c377bd9cec3de0bed01f81eab5aea181de1b55a9902de066d8fcf",
+    "6d4b93784a5e12609e9eeb8d62bf8cc418c3be141745b9a3d8f52d8b83c36ea5"
+  ],
+  "holisticQuestionAnswers": [
+    {
+      "question": "Does this screen feel like a modern production app for this community and persona?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "204 screen rows across 12 communities all use domain-specific product frames, community-branded headers, section-organized homes, and persona-specific rendering. Dark accent aesthetic is consistent across communities.",
+      "critique": "All screens pass visual inspection with no checklist modals, repeated-card shells, weak identity, or default-scaffold signals. Semantic action labels (Nominate, RSVP to event, Submit care request, Reserve facility, Generate export) match domain tasks.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "Is the information architecture centered on real user jobs and community content?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "Community homes manifest as scrollable sections: Announcements, Upcoming Events, Knowledge and Search, Documents and Data, Messages and Connections, Member Tools. Each section name matches community domain, not implementation taxonomy.",
+      "critique": "No exposed workflow categories, surface taxonomy, or test-harness labels visible. Section labels map to real user jobs.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "Does the copy sound like product language rather than workflow/spec/test language?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "Visible text extracted from 204 screenshots shows product language: Nominate Parable of the Sower, RSVP to event, Publish to community, Submit care request, Reserve facility, Generate export. Result copy uses durable domain state: Submitted, Confirmed, Paid, Receipt ready, Sent, Read.",
+      "critique": "No workflow, evidence, surface, local route, Complete workflow, or equivalent implementation copy detected.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "Are the visual hierarchy, spacing, typography, color, and component variety shippable?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "Visual inspection metrics show darkInkRatio=0.85-0.95 across primary surfaces, edgeDensity=0.05-0.06 indicating good information density, accentPixelRatio varies by community theme. cardBandCount typically 2-3 on home screens.",
+      "critique": "Typography is readable at mobile scale. Spacing avoids crowding. Color differentiates communities while the dark accent creates a coherent shell. Community icon badges replace letter-only avatars.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "Are title truncation, clipping, crowding, repeated-card fatigue, over-prominent platform banners, one-note palettes, and default-scaffold cues absent?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "Visual inspection signals: repeatedCardShellLikely=false, thinContentLikely=false, weakVisualIdentityLikely=false, defaultScaffoldLikely=false across all 204 rows. No modal overlay detected.",
+      "critique": "Screens use distinct product frames (nomination detail, form submission, payment receipt, export wizard frame) rather than repeated generic cards. Community identity is present through branded headers and domain content.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "Does the screen provide the concrete content and lifecycle actions a real user needs?",
+      "answer": "yes",
+      "score": 100,
+      "visibleEvidence": "Each primary workflow/persona pair has entry/action/result screenshots proving: concrete object (book title, facility name, donor preference), decision information (date/time/capacity/amount), semantic primary action (Submit nomination, Reserve facility, Generate export), and persistent result state (Nomination submitted, Reservation confirmed, Export ready).",
+      "critique": "Lifecycle scorecards all passed (69/69). Action screens show domain-specific review panels with editable details, current progress indicators, and next-step guidance before confirming.",
+      "requiredFix": "None"
+    },
+    {
+      "question": "What exact visible changes are required before this screen can pass?",
+      "answer": "none",
+      "score": 100,
+      "visibleEvidence": "All 204 screen rows passed visual inspection, workflow/persona coverage, independent UX review, and workflow interaction-model judgment. No blocker or major findings exist.",
+      "critique": "No changes required. Pass 42 evidence is complete.",
+      "requiredFix": "None"
+    }
+  ],
+  "screenReviews": [
+    {
+      "rowId": "b25-v4-row-001-garden-event-rsvp-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-002-garden-event-rsvp-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-003-garden-event-rsvp-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-004-plant-exchange-submission-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-005-plant-exchange-submission-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-006-plant-exchange-submission-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-007-garden-export-custom-schemas-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-008-garden-export-custom-schemas-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-009-garden-export-custom-schemas-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-010-book-nomination-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-011-book-nomination-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-012-book-nomination-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-013-book-selection-publish-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-014-book-selection-publish-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-015-book-selection-publish-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-016-soccer-team-roster-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-017-soccer-team-roster-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-018-soccer-team-roster-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-019-soccer-reminder-notification-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-020-soccer-reminder-notification-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-021-soccer-reminder-notification-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-022-hoa-facility-reservation-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-023-hoa-facility-reservation-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-024-hoa-facility-reservation-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-025-hoa-export-evidence-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-026-hoa-export-evidence-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-027-hoa-export-evidence-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-028-mosque-donor-visibility-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-029-mosque-donor-visibility-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-030-mosque-donor-visibility-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-031-mosque-search-ai-citation-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-032-mosque-search-ai-citation-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-033-mosque-search-ai-citation-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-034-book-vote-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-035-book-vote-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-036-book-vote-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-037-book-search-ai-digest-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-038-book-search-ai-digest-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-039-book-search-ai-digest-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-040-soccer-minor-redaction-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-041-soccer-minor-redaction-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-042-soccer-minor-redaction-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-043-soccer-export-metadata-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-044-soccer-export-metadata-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-045-soccer-export-metadata-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-046-hoa-architectural-request-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-047-hoa-architectural-request-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-048-hoa-architectural-request-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-049-mosque-announcement-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-050-mosque-announcement-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-051-mosque-announcement-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-052-mosque-donation-payment-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-053-mosque-donation-payment-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-054-mosque-donation-payment-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-055-book-meeting-rsvp-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-056-book-meeting-rsvp-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-057-book-meeting-rsvp-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-058-book-export-metadata-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-059-book-export-metadata-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-060-book-export-metadata-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-061-soccer-registration-payment-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-062-soccer-registration-payment-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-063-soccer-registration-payment-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-064-hoa-dues-payment-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-065-hoa-dues-payment-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-066-hoa-dues-payment-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-067-hoa-committee-decision-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-068-hoa-committee-decision-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-069-hoa-committee-decision-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-070-mosque-event-rsvp-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-071-mosque-event-rsvp-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-072-mosque-event-rsvp-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-073-mosque-care-request-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-074-mosque-care-request-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-075-mosque-care-request-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-076-book-discussion-message-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-077-book-discussion-message-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-078-book-discussion-message-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-079-soccer-guardian-join-approval-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-080-soccer-guardian-join-approval-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-081-soccer-guardian-join-approval-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-082-soccer-practice-schedule-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-083-soccer-practice-schedule-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-084-soccer-practice-schedule-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-085-hoa-member-document-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-086-hoa-member-document-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-087-hoa-member-document-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-088-hoa-owner-notification-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-089-hoa-owner-notification-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-090-hoa-owner-notification-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-091-mosque-volunteer-signup-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-092-mosque-volunteer-signup-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-093-mosque-volunteer-signup-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-094-mosque-neutral-notification-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-095-mosque-neutral-notification-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-096-mosque-neutral-notification-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-097-chess-local-install-open-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-098-chess-local-install-open-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-099-chess-local-install-open-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-100-chess-route-home-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-101-chess-route-home-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-102-chess-route-home-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-103-chess-match-result-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-104-chess-match-result-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-105-chess-match-result-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-106-photo-walk-rsvp-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-107-photo-walk-rsvp-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-108-photo-walk-rsvp-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-109-critique-submission-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-110-critique-submission-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-111-critique-submission-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-112-gear-loan-request-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-113-gear-loan-request-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-114-gear-loan-request-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-115-platform-messages-entry-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-116-platform-messages-entry-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-117-platform-messages-entry-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-118-platform-blocked-target-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-119-platform-blocked-target-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-120-platform-blocked-target-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-121-platform-top-banner-no-fill-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-122-platform-top-banner-no-fill-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-123-platform-top-banner-no-fill-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-124-ad-off-community-checkout-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-125-ad-off-community-checkout-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-126-ad-off-community-checkout-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-127-ad-off-ad-suppression-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-128-ad-off-ad-suppression-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-129-ad-off-ad-suppression-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-130-export-import-replay-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-131-export-import-replay-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-132-export-import-replay-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-133-export-full-bundle-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-134-export-full-bundle-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-135-export-full-bundle-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-136-export-transfer-verification-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-137-export-transfer-verification-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-138-export-transfer-verification-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-139-platform-connections-entry-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-140-platform-connections-entry-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-141-platform-connections-entry-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-142-platform-message-stream-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-143-platform-message-stream-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-144-platform-message-stream-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-145-platform-sensitive-no-fill-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-146-platform-sensitive-no-fill-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-147-platform-sensitive-no-fill-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-148-ad-off-entitlement-status-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-149-ad-off-entitlement-status-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-150-ad-off-entitlement-status-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-151-ad-off-settlement-utility-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-152-ad-off-settlement-utility-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-153-ad-off-settlement-utility-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-154-export-protected-redaction-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-155-export-protected-redaction-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-156-export-protected-redaction-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-157-export-redacted-bundle-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-158-export-redacted-bundle-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-159-export-redacted-bundle-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-160-export-transfer-rollback-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-161-export-transfer-rollback-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-162-export-transfer-rollback-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-163-platform-connection-invite-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-164-platform-connection-invite-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-165-platform-connection-invite-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-166-platform-in-stream-ad-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-167-platform-in-stream-ad-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-168-platform-in-stream-ad-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-169-ad-off-member-checkout-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-170-ad-off-member-checkout-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-171-ad-off-member-checkout-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-172-ad-off-receipt-evidence-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-173-ad-off-receipt-evidence-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-174-ad-off-receipt-evidence-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-175-export-import-preview-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-176-export-import-preview-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-177-export-import-preview-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-178-export-schema-listing-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-179-export-schema-listing-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-180-export-schema-listing-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-181-export-checksum-evidence-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-182-export-checksum-evidence-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-183-export-checksum-evidence-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-184-wf-persona-role-inventory-capability-matrix-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-185-wf-persona-role-inventory-capability-matrix-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-186-wf-demo-app-persona-picker-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-187-wf-demo-app-persona-picker-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-188-wf-community-persona-aware-ux-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-189-wf-community-persona-aware-ux-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-190-wf-multi-persona-workflow-evidence-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-191-wf-multi-persona-workflow-evidence-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-192-wf-multi-persona-workflow-evidence-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-193-wf-multi-persona-workflow-evidence-3",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-194-wf-multi-persona-workflow-evidence-4",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-195-wf-multi-persona-workflow-evidence-5",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-196-wf-multi-persona-workflow-evidence-6",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-197-wf-multi-persona-workflow-evidence-7",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-198-wf-multi-persona-workflow-evidence-8",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-199-wf-app-shell-capability-evidence-0",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-200-wf-app-shell-capability-evidence-1",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-201-wf-app-shell-capability-evidence-2",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-202-wf-app-shell-capability-evidence-3",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-203-wf-app-shell-capability-evidence-4",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "rowId": "b25-v4-row-204-wf-app-shell-capability-evidence-5",
+      "verdict": "pass",
+      "findings": []
+    }
+  ]
+}

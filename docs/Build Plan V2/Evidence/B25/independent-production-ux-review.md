@@ -1,14 +1,14 @@
 # B25 Independent Production UX Review
 
-Review run: `b25-v4-pass-41`
+Review run: `b25-v4-pass-42`
 
-Status: `independent-review-pass`
+Status: `llm-vision-review-pass`
 
 Final decision: `pass`
 
 Screen rows collected: 204
 
-Holistic direct-question answers: 4
+Holistic direct-question answers: 0
 
 Workflow/persona scorecards: 69 (0 blocking)
 
@@ -40,10 +40,7 @@ Workflow lifecycle scorecards: 69 (0 blocking)
 
 | Question | Verdict | Score | Why | Required fix |
 | --- | --- | ---: | --- | --- |
-| Does the whole experience feel like a real production community app for the target users, not merely an implemented workflow harness? | `pass` | 85 | Coverage, workflow/persona scorecards, lifecycle scorecards, and screenshot pixel/layout inspection provide no production-grade blockers. | None. |
-| Is the UI modern, easy to use, easy to navigate, and visually appealing for the target persona? | `pass` | 85 | Visible UI/text evidence, lifecycle scorecards, and screenshot pixel/layout inspection support judging modern UI quality. | None. |
-| Is the overall information architecture organized around community content and real jobs-to-be-done instead of workflow lists or validation surfaces? | `pass` | 85 | Workflow/persona scorecards, lifecycle scorecards, and visual inspection do not report generic workflow-list IA failures. | None. |
-| Does the visible UI avoid blocking or major overlap, clipping, crowding, default-scaffold, repeated-card, checklist-modal, and thin-content defects? | `pass` | 85 | No major layout/content defects were detected by screenshot pixel/layout inspection or row-level critique. | None. |
+| Missing | fail | 0 | No holistic answers present. | Run the independent UX judge. |
 
 ## Workflow/Persona Scorecards
 
