@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "phase": "B12",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 1,
+  "workflows": [
+    {
+      "phase": "B12",
+      "appId": "workflow-ui-evidence-harness",
+      "workflowId": "workflow-ui-evidence-harness",
+      "expectedAssertions": [
+        "empty state is visible",
+        "local package dialog opens",
+        "screenshot callback completes"
+      ],
+      "screenshotNames": [
+        "B12_harness_start",
+        "B12_harness_action",
+        "B12_harness_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B12/screenshots/B12_harness_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B12/screenshots/B12_harness_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B12/screenshots/B12_harness_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Open the club home and record friendly match results. | Loom Communities | Add Community",
+        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Open the club home and record friendly match results. | Loom Communities | Add Community | Add local community | Point to the extension package and initialization package in the emulator file system. | Extension package | .loom-extension.zip | Initialization package | .loom-init.zip | Cancel | Validate and install",
+        "Loaded 10 example communities | Garden Club | Coordinate garden events and plant exchange requests. | Open community | Theme applied | Neighborhood Book Club | Nominate, vote, meet, discuss, and digest club selections. | Riverside Youth Soccer | Manage guardian flows, teams, privacy, payments, and schedules. | Cedar Commons HOA | Run dues, documents, facilities, reviews, and exports. | Masjid Nur | Coordinate announcements, events, volunteers, giving, and care. | Chess Club | Open the club home and record friendly match results. | Loom Communities | Add Community"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

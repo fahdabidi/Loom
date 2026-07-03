@@ -1,0 +1,83 @@
+[loom-emulators 18:16:37] No attached emulator instances to stop.
+[loom-emulators 18:16:37] Launching primary AVD 'PantryVision_API_36' with -read-only
+[loom-emulators 18:16:37] Logs: /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/emulator-primary-20260701-181637.out.log / /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/emulator-primary-20260701-181637.err.log
+[loom-emulators 18:16:37] Launching manual AVD 'PantryVision_Manual_API_36' with -read-only
+[loom-emulators 18:16:37] Logs: /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/emulator-manual-20260701-181637.out.log / /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/emulator-manual-20260701-181637.err.log
+[loom-emulators 18:16:37] Boot progress: 0/2 Android emulator device(s) attached.
+[loom-emulators 18:16:42] Boot progress: 0/2 Android emulator device(s) attached.
+[loom-emulators 18:16:47] Boot progress: 0/2 Android emulator device(s) attached.
+[loom-emulators 18:16:52] Boot progress: 2/2 Android emulator device(s) attached.
+[loom-emulators 18:16:52] Waiting for emulator-5554 to finish Android boot.
+[loom-emulators 18:17:16] emulator-5554 boot completed.
+[loom-emulators 18:17:16] Waiting for emulator-5556 to finish Android boot.
+[loom-emulators 18:17:16] emulator-5556 boot completed.
+[loom-emulators 18:17:16] Attached emulator devices: emulator-5554 emulator-5556
+[loom-emulators 18:17:16] Running Loom Communities Demo App on emulator-5556 from /mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/apps/loom_communities_demo
+[loom-emulators 18:17:16] This command keeps Flutter attached for manual review. Press Ctrl+C to stop.
+Resolving dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analyzer 10.0.1 (14.0.0 available)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dart_style 3.1.7 (3.1.9 available)
+  drift 2.33.0 (2.34.0 available)
+  drift_dev 2.33.0 (2.34.1+1 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.8.0 (4.9.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  melos 7.8.0 (8.0.0 available)
+  meta 1.17.0 (1.18.3 available)
+  mustache_template 2.0.4 (2.0.5 available)
+  native_toolchain_c 0.19.1 (0.19.2 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  sqlite3 3.3.2 (3.3.3 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.4 (0.44.5 available)
+  test 1.30.0 (1.31.2 available)
+  test_api 0.7.10 (0.7.13 available)
+  test_core 0.6.16 (0.6.19 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+  webview_flutter 4.13.1 (4.14.0 available)
+  webview_flutter_android 4.12.0 (4.13.0 available)
+  webview_flutter_wkwebview 3.25.1 (3.26.0 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies in `/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app`!
+30 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on sdk gphone64 x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                             37.6s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...        1,028ms
+D/FlutterJNI( 3788): Beginning load of flutter...
+D/FlutterJNI( 3788): flutter (null) was loaded normally!
+I/flutter ( 3788): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+D/FlutterRenderer( 3788): Width is zero. 0,0
+I/Choreographer( 3788): Skipped 35 frames!  The application may be doing too much work on its main thread.
+I/WindowExtensionsImpl( 3788): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+I/ommunities_demo( 3788): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/FlutterRenderer( 3788): Width is zero. 0,0
+Syncing files to device sdk gphone64 x86 64...                  
+D/FlutterJNI( 3788): Sending viewport metrics to the engine.
+D/FlutterJNI( 3788): Sending viewport metrics to the engine.
+D/WindowLayoutComponentImpl( 3788): Register WindowLayoutInfoListener on Context=com.example.loom_communities_demo.MainActivity@d60bbb3, of which baseContext=android.app.ContextImpl@b7b167a
+D/FlutterJNI( 3788): Sending viewport metrics to the engine.
+Syncing files to device sdk gphone64 x86 64...                     484ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on sdk gphone64 x86 64 is available at: http://127.0.0.1:45353/ETU12_0QWSc=/
+The Flutter DevTools debugger and profiler on sdk gphone64 x86 64 is available at: http://127.0.0.1:45353/ETU12_0QWSc=/devtools/?uri=ws://127.0.0.1:45353/ETU12_0QWSc=/ws
+I/HWUI    ( 3788): Davey! duration=830ms; Flags=1, FrameTimelineVsyncId=6381, IntendedVsync=84642427595, Vsync=84642427595, InputEventId=0, HandleInputStart=84642788807, AnimationStart=84642790220, PerformTraversalsStart=84642790871, DrawStart=84660211891, FrameDeadline=84659094261, FrameStartTime=84642785551, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=84662556820, SyncStart=84670803419, IssueDrawCommandsStart=84671175014, SwapBuffers=84778516207, FrameCompleted=85480819961, DequeueBufferDuration=1592561, QueueBufferDuration=178018, GpuCompleted=85479160001, SwapBuffersCompleted=85480819961, DisplayPresentTime=0, CommandSubmissionCompleted=84778516207, 
+D/ProfileInstaller( 3788): Installing profile for com.example.loom_communities_demo
+Lost connection to device.

@@ -1,0 +1,5 @@
+WARNING: cannnot unmap ptr 0x79f15a6b1000 as it is in the protected range from 0x79f15a6b1000 to 0x79f1da8b1000
+WARNING: cannnot unmap ptr 0x79f1da801000 as it is in the protected range from 0x79f15a6b1000 to 0x79f1da8b1000
+pulseaudio: Wrong context state
+pulseaudio: Reason: Timeout
+pulseaudio: Failed to initialize PA context

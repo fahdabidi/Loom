@@ -14,7 +14,18 @@
       "Bash(wsl -d Ubuntu -- bash -lc 'pip install --user --break-system-packages -q pymupdf 2>&1 | tail -2; python3 -c \"import fitz; print\\(\\\\\"pymupdf\\\\\", fitz.__doc__.split\\(chr\\(10\\)\\)[0] if fitz.__doc__ else \\\\\"ok\\\\\"\\)\" 2>&1 | tail -1; echo \"--- probe AppImage URLs ---\"; for u in \"https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage\" \"https://libreoffice.soluzioniopen.com/daily/full/LibreOffice.full-x86_64.AppImage\"; do code=$\\(curl -s -o /dev/null -L --max-time 25 -w \"%{http_code} %{size_download}\" -r 0-0 \"$u\"\\); echo \"$code  $u\"; done')",
       "Bash(wsl -d *)",
       "Bash(cd \"/mnt/c/Users/fahd_/OneDrive/Documents/Loom\" && echo \"=== data tree ===\" && find data -type d 2>/dev/null | head -50; echo \"=== Search folder files ===\" && find . -path ./node_modules -prune -o -iname \"*semantic*\" -print 2>/dev/null; find . -iname \"*integration changes*\" 2>/dev/null)",
-      "Read(//mnt/c/Users/fahd_/OneDrive/Documents/**)"
+      "Read(//mnt/c/Users/fahd_/OneDrive/Documents/**)",
+      "Bash(cd \"/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/apps/loom_communities_demo/test\")",
+      "Bash(wsl bash *)",
+      "Bash(mkdir -p /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs 2>/dev/null; wsl bash -lc \"adb shell screencap -p /sdcard/loom_verify_1.png && adb pull /sdcard/loom_verify_1.png /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/loom_verify_1.png\")",
+      "Bash(MSYS_NO_PATHCONV=1 wsl bash /mnt/c/Users/fahd_/AppData/Local/Temp/claude/c--Users-fahd--OneDrive-Documents-Loom/4e996380-c77e-47ab-ab07-5055087d21e3/scratchpad/clear_field.sh)",
+      "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell screencap -p /sdcard/loom_verify_4.png && adb pull /sdcard/loom_verify_4.png /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/loom_verify_4.png\")",
+      "Bash(MSYS_NO_PATHCONV=1 wsl bash /mnt/c/Users/fahd_/AppData/Local/Temp/claude/c--Users-fahd--OneDrive-Documents-Loom/4e996380-c77e-47ab-ab07-5055087d21e3/scratchpad/type_ext_path.sh)",
+      "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell input tap 538 1387\")",
+      "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell screencap -p /sdcard/loom_verify_5.png && adb pull /sdcard/loom_verify_5.png /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/loom_verify_5.png\")"
+    ],
+    "additionalDirectories": [
+      "\\mnt\\c\\Users\\fahd_\\OneDrive\\Documents\\Loom"
     ]
   }
 }

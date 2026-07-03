@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "phase": "B15",
+  "status": "pass",
+  "emulatorName": "emulator-5554",
+  "deviceClass": "Android emulator",
+  "apiLevel": "Android 16 API 36",
+  "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+  "workflowCount": 6,
+  "workflows": [
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-local-install-open",
+      "expectedAssertions": [
+        "Chess Club was loaded from arbitrary package contents.",
+        "Confirm parsed branding and local latest route.",
+        "Chess Club arbitrary package opened locally."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-local-install-open_start",
+        "B15_ext_chess_club_chess-local-install-open_action",
+        "B15_ext_chess_club_chess-local-install-open_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-local-install-open_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-local-install-open_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-local-install-open_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Organizer | Organizer - Runs community homes and match records. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | In-focus product surface | Expand | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Confirm player names, round, board, result, edit option, and standings update before saving. | Edit score | Record match result | Member form captures labeled details, privacy choices, and reviewer handoff. | Minimized | Tap for expanded view | Member form | Match result record | Waiting for the member form to be submitted. | Waiting | Local package details | Messages",
+        "Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Club record | Review players, round, score, result, standings impact, and next club action. | Choice and standing | Nominations, ballot options, selected title, match result, or standings are visible before saving. | Open result | Change vote, dispute score, view results, and next meeting or round stay available. | Edit score | Dispute result | Open standings | Record match result | Club result saved | Standings | Players can see updated ladder position and next match. | Chess Club home",
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Organizer | Organizer - Runs community homes and match records. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | Expanded product surface | Collapse | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, players, result, correction option, standings impact, and next pairing. | Club record | The saved result keeps status, history, and change actions visible for this community task. | Standings | Players can see updated ladder position and next match. | Edit result | Dispute | Open standings | Saved | Member form captures labeled details, privacy choices, and reviewer handoff. | Minimized | Tap for expanded view | Member form | Expand | Record match result | Match result record | Waiting for the member form to be submitted. | Waiting | Local package details | Messages"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-route-home",
+      "expectedAssertions": [
+        "Chess Club route renders a domain-specific home.",
+        "Open the Chess Club home.",
+        "Chess Club home route rendered."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-route-home_start",
+        "B15_ext_chess_club_chess-route-home_action",
+        "B15_ext_chess_club_chess-route-home_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-route-home_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-route-home_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-route-home_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Organizer | Organizer - Runs community homes and match records. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | Expanded product surface | Collapse | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, players, result, correction option, standings impact, and next pairing. | Club record | The saved result keeps status, history, and change actions visible for this community task. | Standings | Players can see updated ladder position and next match. | Edit result | Dispute | Open standings | Saved | In-focus product surface | Expand | Confirm player names, round, board, result, edit option, and standings update before saving. | Edit score | Record match result | Match result record | Waiting for the member form to be submitted. | Minimized | Tap for expanded view | Member form | Waiting | Local package details | Messages",
+        "Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Club record | Review players, round, score, result, standings impact, and next club action. | Choice and standing | Nominations, ballot options, selected title, match result, or standings are visible before saving. | Open result | Change vote, dispute score, view results, and next meeting or round stay available. | Edit score | Dispute result | Open standings | Record match result | Club result saved | Standings | Players can see updated ladder position and next match. | Chess Club home",
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Organizer | Organizer - Runs community homes and match records. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | Arbitrary install and open | Record saved | Saved | Tap for expanded view | Member form | Expand | Record match result | Expanded product surface | Collapse | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, players, result, correction option, standings impact, and next pairing. | Club record | The saved result keeps status, history, and change actions visible for this community task. | Standings | Players can see updated ladder position and next match. | Edit result | Dispute | Open standings | Match result record | Waiting for the member form to be submitted. | Minimized | Waiting | Local package details | Messages"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_chess_club",
+      "communityId": "community_chess_club",
+      "communityName": "Chess Club",
+      "workflowId": "chess-match-result",
+      "expectedAssertions": [
+        "Members can record a friendly match result.",
+        "Record a match result for Board 1.",
+        "Chess match result saved for Board 1."
+      ],
+      "screenshotNames": [
+        "B15_ext_chess_club_chess-match-result_start",
+        "B15_ext_chess_club_chess-match-result_action",
+        "B15_ext_chess_club_chess-match-result_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-match-result_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-match-result_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_chess_club_chess-match-result_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Player | Member - Opens club routes and records match results. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | Arbitrary install and open | Record saved | Saved | Tap for expanded view | Member form | Expand | Record match result | Expanded product surface | Collapse | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, players, result, correction option, standings impact, and next pairing. | Club record | The saved result keeps status, history, and change actions visible for this community task. | Standings | Players can see updated ladder position and next match. | Edit result | Dispute | Open standings | Match result record | Member form captures labeled details, privacy choices, and reviewer handoff. | Minimized | Local package details | Messages",
+        "Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Club record | Review players, round, score, result, standings impact, and next club action. | Choice and standing | Nominations, ballot options, selected title, match result, or standings are visible before saving. | Open result | Change vote, dispute score, view results, and next meeting or round stay available. | Edit score | Dispute result | Open standings | Record match result | Club result saved | Standings | Players can see updated ladder position and next match. | Board 1 match result",
+        "No sponsored message right now. | Chess Club | Open the club home and record friendly match results. | Chess Player | Member - Opens club routes and records match results. | 2 roles | Home | Pinned and unassigned community surfaces. | Chess Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 1 sections | community-icon-badge | comfortable-mobile | Member tools | Useful actions for this community. | Arbitrary install and open | Record saved | Saved | Tap for expanded view | Member form | Expand | Record match result | Expanded product surface | Collapse | Board 1 match result | Club board | Board 1 | Round 3 | 12 players | Correction option | Players | Ava vs Liam, Board 1, friendly ladder night. | Result | Ava wins 1-0; standings and next pairing will update. | Chess result saved | Chess Club shows board, players, result, correction option, standings impact, and next pairing. | Club record | The saved result keeps status, history, and change actions visible for this community task. | Standings | Players can see updated ladder position and next match. | Edit result | Dispute | Open standings | Local package details | Messages"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "photo-walk-rsvp",
+      "expectedAssertions": [
+        "Downtown photo walk is accepting member RSVPs.",
+        "RSVP to the next photo walk.",
+        "Photo-walk RSVP recorded."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_photo-walk-rsvp_start",
+        "B15_ext_camera_club_photo-walk-rsvp_action",
+        "B15_ext_camera_club_photo-walk-rsvp_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_photo-walk-rsvp_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | In-focus product surface | Expand | Downtown photo walk RSVP | Choose Going, Maybe, or Not going after checking the route, host, meetup time, capacity, and gear reminder. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Response choices | Going reserves a spot; Maybe keeps the route in your inbox; Not going releases capacity for another member. | Change response | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Minimized | Tap for expanded view | Member form | Submit | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Local package details | Walks | Gear | Admin",
+        "Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Choose attendance | Event date, capacity, location, host note, and reminders are visible before choosing Going, Maybe, or Not going. | Title, date, time, location, host, capacity, and current attendance are visible before responding. | Attendance options | Going, Maybe, Not going, and Change response remain available while the event is open. | Member reminder | The saved response keeps calendar, reminder, and capacity status visible. | Maybe | Not going | Change later | RSVP to event | Attendance saved | Going / maybe / not going | Response can be changed until Saturday noon. | Reminder | Member inbox keeps route, gear note, and weather update. | Photo walk RSVP",
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | Expanded product surface | Collapse | Downtown photo walk RSVP | Your photo walk attendance is confirmed with status, route, host, capacity, reminder, and change-response option visible. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Photo walk RSVP confirmed | After you respond | The saved result keeps status, history, and change actions visible for this community task. | Going / maybe / not going | Response can be changed until Saturday noon. | Reminder | Member inbox keeps route, gear note, and weather update. | Change RSVP | Add to calendar | Invite member | RSVP saved | Care and volunteers | Private requests, volunteer shifts, and member support. | Critique submission | Member form captures labeled details, privacy choices, and reviewer handoff. | Minimized | Tap for expanded view | Member form | Expand | Submit | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Submit request | Local package details | Walks | Gear | Admin"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "critique-submission",
+      "expectedAssertions": [
+        "Critique board accepts new photo submissions.",
+        "Submit a street portrait for critique.",
+        "Critique submission saved."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_critique-submission_start",
+        "B15_ext_camera_club_critique-submission_action",
+        "B15_ext_camera_club_critique-submission_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_critique-submission_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_critique-submission_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_critique-submission_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | Expanded product surface | Collapse | Downtown photo walk RSVP | Your photo walk attendance is confirmed with status, route, host, capacity, reminder, and change-response option visible. | Event details | Route | Dock 4, mural loop, riverfront pier, 75-minute walk. | Host | Avery Kim hosts and shares the rain-plan update. | Capacity | 12 going, 4 spots open, waitlist opens at 16. | Sat, 4:30 PM | Dock 4 meetup | 12 going / 4 open | Photo walk RSVP confirmed | After you respond | The saved result keeps status, history, and change actions visible for this community task. | Going / maybe / not going | Response can be changed until Saturday noon. | Reminder | Member inbox keeps route, gear note, and weather update. | Change RSVP | Add to calendar | Invite member | RSVP saved | Care and volunteers | Private requests, volunteer shifts, and member support. | In-focus product surface | Expand | Street portrait critique | Evening Reflection - consent note and reviewer queue. | Submitted details | Image and title | Evening Reflection, street portrait, uploaded by Mina. | Prompt | Ask for feedback on composition, light, and crop. | Visibility | Visible to camera club members; consent note is attached. | Reviewer queue | Avery receives the image, prompt, and visibility state. | Change option | Edit caption, replace image, withdraw, or resubmit. | Request queue | Submission enters Avery's queue; you can edit caption, replace image, or withdraw before comments. | Edit critique | Submit | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Minimized | Tap for expanded view | Member form | Submit request | Local package details | Walks | Gear | Admin",
+        "Decision queue | 1 | Image and title | Evening Reflection, street portrait, uploaded by Mina. | 2 | Prompt | Ask for feedback on composition, light, and crop. | 3 | Visibility | Visible to camera club members; consent note is attached. | 4 | Reviewer queue | Avery receives the image, prompt, and visibility state. | 5 | Change option | Edit caption, replace image, withdraw, or resubmit. | Submitted request | Labeled fields, privacy handling, assignee, and status are visible before submitting or editing. | Submitted fields | Labeled fields, privacy indicators, attachments, assignee, and status are visible. | Review path | Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state. | Edit details | Save draft | Cancel request | Submit | Request updated | Critique submission",
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | Photo-walk RSVP | RSVP confirmed | Going | Tap for expanded view | Event details | Expand | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Expanded product surface | Collapse | Street portrait critique | Evening Reflection - consent note and reviewer queue. | Submitted details | Image and title | Evening Reflection, street portrait, uploaded by Mina. | Prompt | Ask for feedback on composition, light, and crop. | Visibility | Visible to camera club members; consent note is attached. | Reviewer queue | Avery receives the image, prompt, and visibility state. | Change option | Edit caption, replace image, withdraw, or resubmit. | Critique submitted | The critique shows image, prompt, consent, reviewer queue, edit option, and comment state. | Request outcome | The saved result keeps status, history, and change actions visible for this community task. | Request changes | Reopen | View history | Submitted | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Minimized | Member form | Submit request | Local package details | Walks | Gear | Admin"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    },
+    {
+      "phase": "B15",
+      "appId": "ext_camera_club",
+      "communityId": "community_camera_club",
+      "communityName": "Camera Club",
+      "workflowId": "gear-loan-request",
+      "expectedAssertions": [
+        "Members can request shared gear loans.",
+        "Request the 35mm prime lens loan.",
+        "Gear-loan request created and pending response."
+      ],
+      "screenshotNames": [
+        "B15_ext_camera_club_gear-loan-request_start",
+        "B15_ext_camera_club_gear-loan-request_action",
+        "B15_ext_camera_club_gear-loan-request_complete"
+      ],
+      "status": "pass",
+      "screenshotPaths": [
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_gear-loan-request_start.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_gear-loan-request_action.png",
+        "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B15/screenshots/B15_ext_camera_club_gear-loan-request_complete.png"
+      ],
+      "screenshotVisibleTexts": [
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | Photo-walk RSVP | RSVP confirmed | Going | Tap for expanded view | Event details | Expand | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Expanded product surface | Collapse | Street portrait critique | Evening Reflection - consent note and reviewer queue. | Submitted details | Image and title | Evening Reflection, street portrait, uploaded by Mina. | Prompt | Ask for feedback on composition, light, and crop. | Visibility | Visible to camera club members; consent note is attached. | Reviewer queue | Avery receives the image, prompt, and visibility state. | Change option | Edit caption, replace image, withdraw, or resubmit. | Critique submitted | The critique shows image, prompt, consent, reviewer queue, edit option, and comment state. | Request outcome | The saved result keeps status, history, and change actions visible for this community task. | Request changes | Reopen | View history | Submitted | Requests and approvals | Requests that need a decision or member follow-up. | Gear-loan request | Submitted details are ready for a decision and member follow-up. | Minimized | Member form | Submit request | Local package details | Walks | Gear | Admin",
+        "Submitted details | Item | 35mm prime lens, clean condition, filter included. | Pickup and return | Pickup Friday 5 PM; return Sunday by 6 PM. | Contact | Phone is revealed only after owner approves the loan. | Roster | Borrower list, waitlist position, availability, and owner decision are visible. | Return option | Mark returned, change pickup, or cancel request. | Submitted request | Labeled fields, privacy handling, assignee, and status are visible before submitting or editing. | Submitted fields | Labeled fields, privacy indicators, attachments, assignee, and status are visible. | Review path | Edit, withdraw, approve, reject, request changes, reopen, or appeal actions match the state. | Edit details | Save draft | Cancel request | Submit request | Gear loan request",
+        "No sponsored message right now. | Camera Club | Plan photo walks, critique work, and loan gear. | Camera Member | Member - RSVPs, submits critiques, and requests shared gear. | 2 roles | Home | Pinned and unassigned community surfaces. | Camera Club home | A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation. | 3 sections | community-icon-badge | comfortable-mobile | Upcoming events | Dates, capacity, and attendance actions. | Photo-walk RSVP | RSVP confirmed | Going | Tap for expanded view | Event details | Expand | RSVP to event | Care and volunteers | Private requests, volunteer shifts, and member support. | Critique submission | Record saved | Saved | Member form | Submit | Requests and approvals | Requests that need a decision or member follow-up. | Expanded product surface | Collapse | 35mm prime lens loan | Sam lends the lens Friday; return due Sunday evening. | Submitted details | Item | 35mm prime lens, clean condition, filter included. | Pickup and return | Pickup Friday 5 PM; return Sunday by 6 PM. | Contact | Phone is revealed only after owner approves the loan. | Roster | Borrower list, waitlist position, availability, and owner decision are visible. | Return option | Mark returned, change pickup, or cancel request. | Gear loan requested | The loan request status shows item, owner, borrower queue, pickup, protected contact, and return option. | After submission | The saved result keeps status, history, and change actions visible for this community task. | Edit request | Withdraw | View status | Requested | Local package details | Walks | Gear | Admin"
+      ],
+      "commandOutputPath": "/mnt/c/Users/fahd_/OneDrive/Documents/Loom/app/../docs/Build/B20/flutter-drive-workflow-ui-evidence.log",
+      "emulatorName": "emulator-5554",
+      "deviceClass": "Android emulator",
+      "apiLevel": "Android 16 API 36",
+      "pass": true
+    }
+  ]
+}

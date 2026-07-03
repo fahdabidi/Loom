@@ -1,0 +1,2 @@
+WARNING: cannnot unmap ptr 0x77b4908b1000 as it is in the protected range from 0x77b4908b1000 to 0x77b510ab1000
+WARNING: cannnot unmap ptr 0x77b510a01000 as it is in the protected range from 0x77b4908b1000 to 0x77b510ab1000

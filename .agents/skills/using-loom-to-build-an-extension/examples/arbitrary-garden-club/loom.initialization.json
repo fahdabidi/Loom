@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "packageId": "init_garden_club_1",
+  "communityId": "community_garden_club",
+  "communityHandle": "garden-club",
+  "displayName": "Garden Club",
+  "extensionId": "ext_garden_club",
+  "branding": {
+    "logo": "seed/assets/garden-logo.png",
+    "cardImage": "seed/assets/garden-card.png",
+    "heroImage": "seed/assets/garden-hero.png",
+    "accentColor": "#3A7D44",
+    "altText": "Garden club members around a planting table"
+  },
+  "seedDataFiles": [
+    "seed/community.json",
+    "seed/workflows.json",
+    "seed/events.json"
+  ],
+  "idempotencyKey": "init-garden-club"
+}
