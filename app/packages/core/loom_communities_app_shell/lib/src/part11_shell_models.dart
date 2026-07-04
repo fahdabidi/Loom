@@ -10,6 +10,7 @@ class LoomWorkflowDefinition {
     this.calendarItem,
     this.responseChoices,
     this.theme,
+    this.givingPayment,
   });
 
   final String workflowId;
@@ -17,31 +18,12 @@ class LoomWorkflowDefinition {
   final String entryText;
   final String actionText;
   final String resultText;
-
-  /// Package-declared dated-event data. Null means this workflow either has
-  /// no dated-event aspect, or the community is catalog-driven and has not
-  /// been backfilled with real calendar data yet — callers should fall back
-  /// to the generic (non-dated) rendering path.
   final LoomCalendarItem? calendarItem;
-
-  /// Package-declared action-surface response choices (e.g. Going/Maybe/
-  /// Can't go, or Approve/Reject/Request changes). Null means the caller
-  /// should derive a default choice set from the workflow's category —
-  /// most categories default to a single choice (today's exact behavior);
-  /// see `_defaultResponseChoicesForCategory`.
   final List<LoomWorkflowResponseChoice>? responseChoices;
-
-  /// Package-declared per-workflow theme override, merged on top of the
-  /// owning tab's [LoomCardTheme] (which is itself merged on top of the
-  /// community-level default). Null means this workflow renders with
-  /// whatever its tab resolves to — most workflows should leave this unset.
   final LoomCardTheme? theme;
+  final LoomGivingPayment? givingPayment;
 }
 
-/// One selectable outcome on a workflow's action surface. A workflow with a
-/// single choice renders today's one-button confirm surface; more than one
-/// choice renders a real branching response surface (e.g. Going/Maybe/Can't
-/// go) instead of a generic confirm/cancel pair.
 class LoomWorkflowResponseChoice {
   const LoomWorkflowResponseChoice({
     required this.responseId,
@@ -56,20 +38,224 @@ class LoomWorkflowResponseChoice {
   final bool isDestructive;
 }
 
-/// A real, package-declared dated calendar entry backing an
-/// `event-rsvp`/`calendar` card-surface workflow, used to replace the
-/// Calendar tab's placeholder week strip and prose summary with an actual
-/// date/agenda/detail view.
 class LoomCalendarItem {
   const LoomCalendarItem({
     required this.dateTime,
     this.location,
     this.capacityLabel,
+    this.host,
   });
 
   final DateTime dateTime;
   final String? location;
   final String? capacityLabel;
+  final String? host;
+}
+
+class LoomGivingPayment {
+  const LoomGivingPayment({
+    required this.amountLabel,
+    this.purpose,
+    this.cadence,
+    this.entitlement,
+  });
+
+  final String amountLabel;
+  final String? purpose;
+  final String? cadence;
+  final String? entitlement;
+}
+
+class LoomListingState {
+  const LoomListingState({
+    required this.label,
+    this.tone,
+    this.showsHolder = false,
+    this.showsDue = false,
+    this.showsQueue = false,
+  });
+
+  final String label;
+  final String? tone;
+  final bool showsHolder;
+  final bool showsDue;
+  final bool showsQueue;
+}
+
+class LoomListingTransition {
+  const LoomListingTransition({
+    required this.id,
+    required this.label,
+    required this.fromStates,
+    this.to,
+    this.allowedPersonaIds,
+    this.linkedWorkflowId,
+    this.setsHolderToActor = false,
+    this.clearsHolder = false,
+    this.incrementsQueue = false,
+    this.decrementsQueue = false,
+    this.removesFromList = false,
+  });
+
+  final String id;
+  final String label;
+  final List<String> fromStates;
+  final String? to;
+  final List<String>? allowedPersonaIds;
+  final String? linkedWorkflowId;
+  final bool setsHolderToActor;
+  final bool clearsHolder;
+  final bool incrementsQueue;
+  final bool decrementsQueue;
+  final bool removesFromList;
+}
+
+class LoomListingStateMachine {
+  const LoomListingStateMachine({
+    required this.initialState,
+    required this.states,
+    required this.transitions,
+  });
+
+  final String initialState;
+  final Map<String, LoomListingState> states;
+  final List<LoomListingTransition> transitions;
+
+  List<LoomListingTransition> transitionsFrom(String state) {
+    return transitions.where((t) => t.fromStates.contains(state)).toList();
+  }
+
+  List<LoomListingTransition> availableActions(
+    String currentState,
+    String personaId,
+  ) {
+    return transitionsFrom(currentState)
+        .where(
+          (t) =>
+              t.allowedPersonaIds == null ||
+              t.allowedPersonaIds!.isEmpty ||
+              t.allowedPersonaIds!.contains(personaId),
+        )
+        .toList();
+  }
+}
+
+class LoomMarketplaceListing {
+  const LoomMarketplaceListing({
+    required this.listingId,
+    required this.title,
+    this.category,
+    this.iconKey,
+    this.condition,
+    this.availability = 'available',
+    this.currentHolderLabel,
+    this.queueLength = 0,
+    this.dueLabel,
+    this.description,
+    this.linkedWorkflowId,
+    this.template,
+    this.stateMachine,
+    this.state,
+  });
+
+  final String listingId;
+  final String title;
+  final String? category;
+  final String? iconKey;
+  final String? condition;
+  final String availability;
+  final String? currentHolderLabel;
+  final int queueLength;
+  final String? dueLabel;
+  final String? description;
+  final String? linkedWorkflowId;
+  final String? template;
+  final LoomListingStateMachine? stateMachine;
+  final String? state;
+
+  LoomMarketplaceListing copyWith({
+    String? listingId,
+    String? title,
+    String? category,
+    String? iconKey,
+    String? condition,
+    String? availability,
+    String? currentHolderLabel,
+    int? queueLength,
+    String? dueLabel,
+    String? description,
+    String? linkedWorkflowId,
+    String? template,
+    LoomListingStateMachine? stateMachine,
+    String? state,
+  }) {
+    return LoomMarketplaceListing(
+      listingId: listingId ?? this.listingId,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      iconKey: iconKey ?? this.iconKey,
+      condition: condition ?? this.condition,
+      availability: availability ?? this.availability,
+      currentHolderLabel: currentHolderLabel ?? this.currentHolderLabel,
+      queueLength: queueLength ?? this.queueLength,
+      dueLabel: dueLabel ?? this.dueLabel,
+      description: description ?? this.description,
+      linkedWorkflowId: linkedWorkflowId ?? this.linkedWorkflowId,
+      template: template ?? this.template,
+      stateMachine: stateMachine ?? this.stateMachine,
+      state: state ?? this.state,
+    );
+  }
+}
+
+class LoomMessageThread {
+  const LoomMessageThread({
+    required this.threadId,
+    required this.subject,
+    required this.participantPersonaIds,
+    required this.messages,
+    this.muted = false,
+    this.archived = false,
+  });
+
+  final String threadId;
+  final String subject;
+  final List<String> participantPersonaIds;
+  final List<LoomMessage> messages;
+  final bool muted;
+  final bool archived;
+
+  LoomMessageThread copyWith({
+    String? threadId,
+    String? subject,
+    List<String>? participantPersonaIds,
+    List<LoomMessage>? messages,
+    bool? muted,
+    bool? archived,
+  }) {
+    return LoomMessageThread(
+      threadId: threadId ?? this.threadId,
+      subject: subject ?? this.subject,
+      participantPersonaIds: participantPersonaIds ?? this.participantPersonaIds,
+      messages: messages ?? this.messages,
+      muted: muted ?? this.muted,
+      archived: archived ?? this.archived,
+    );
+  }
+}
+
+class LoomMessage {
+  const LoomMessage({
+    required this.messageId,
+    required this.senderPersonaId,
+    required this.body,
+    required this.timestamp,
+  });
+
+  final String messageId;
+  final String senderPersonaId;
+  final String body;
+  final DateTime timestamp;
 }
 
 class LoomProductionWorkflowContract {
@@ -216,19 +402,11 @@ class LoomAppShellTabSpec {
     required String extensionId,
     required LoomWorkflowDefinition workflow,
   }) {
-    if (tabId == 'home') {
-      return true;
-    }
-    if (tabId == 'messages') {
-      return false;
-    }
-    if (pinnedWorkflowIds.contains(workflow.workflowId)) {
-      return true;
-    }
+    if (tabId == 'home') return true;
+    if (tabId == 'messages') return false;
+    if (pinnedWorkflowIds.contains(workflow.workflowId)) return true;
     final sectionTitle = _sectionTitleFor(workflow);
-    if (sectionTitles.contains(sectionTitle)) {
-      return true;
-    }
+    if (sectionTitles.contains(sectionTitle)) return true;
     final registry = cardSurfaceRegistryEntryFor(
       extensionId: extensionId,
       workflow: workflow,
@@ -237,20 +415,16 @@ class LoomAppShellTabSpec {
   }
 
   String descriptionFor(LoomPersonaDefinition persona) {
-    if (visiblePersonaIds.isEmpty) {
-      return description;
-    }
+    if (visiblePersonaIds.isEmpty) return description;
     return '$description Tuned for ${persona.label}.';
   }
 
   bool get declaresPinnedSurfaces => pinnedWorkflowIds.isNotEmpty;
 
   bool get hasExplicitPinningPolicy =>
-      pinningPolicy.trim().isNotEmpty &&
-      pinningPolicyRationale.trim().length >= 12;
+      pinningPolicy.trim().isNotEmpty && pinningPolicyRationale.trim().length >= 12;
 
-  LoomTabRendererContract get rendererContract =>
-      tabRendererContractFor(rendererContractId);
+  LoomTabRendererContract get rendererContract => tabRendererContractFor(rendererContractId);
 }
 
 class LoomDeclarativeTabSpec {
@@ -382,15 +556,6 @@ class CommunityAppShellCustomizationSpec {
     });
   }
 
-  /// Resolves the [LoomCardTheme] a given workflow's card surface should
-  /// render with, regardless of which tab currently lists it (e.g. Home
-  /// lists every workflow): looks up the workflow's *owning* tab — its
-  /// dedicated tab if it has one, else Home — merges any `tabThemes`
-  /// override for that tab onto the community default, then merges the
-  /// workflow's own theme override on top. `home` is excluded from the
-  /// match search itself since `LoomAppShellTabSpec.matchesWorkflow` always
-  /// returns true for it (Home lists every workflow), which would otherwise
-  /// make it win the search for every workflow regardless of its real tab.
   LoomCardTheme cardThemeFor(LoomWorkflowDefinition workflow) {
     final owningTab = tabs.firstWhere(
       (tab) =>
@@ -417,44 +582,24 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     label: 'Home surface stack',
     tabIds: ['home'],
     surfaceFamilies: [
-      'community-home',
-      'announcement',
-      'event-rsvp',
-      'calendar',
-      'volunteer',
-      'care-request',
-      'approval',
-      'workflow-status',
-      'payment',
-      'exchange',
-      'equipment-loan',
-      'documents',
-      'external-document-link',
-      'operations',
-      'thread',
-      'social',
-      'form',
+      'community-home', 'announcement', 'event-rsvp', 'calendar', 'volunteer',
+      'care-request', 'approval', 'workflow-status', 'payment', 'exchange',
+      'equipment-loan', 'documents', 'external-document-link', 'operations',
+      'thread', 'social', 'form',
     ],
     requiredAnatomy: [
-      'community identity header',
-      'pinned or in-focus surface region',
-      'minimized surface stack',
-      'medium in-focus surface',
-      'tap-to-expanded detail state',
+      'community identity header', 'pinned or in-focus surface region',
+      'minimized surface stack', 'medium in-focus surface', 'tap-to-expanded detail state',
     ],
     requiredInteractions: [
-      'resolveCommunityTheme',
-      'resolvePersonaTabs',
-      'getPersonaSurfacePresentationState',
-      'updatePersonaSurfacePresentationState',
-      'previewNavigationConfiguration',
+      'resolveCommunityTheme', 'resolvePersonaTabs', 'getPersonaSurfacePresentationState',
+      'updatePersonaSurfacePresentationState', 'previewNavigationConfiguration',
     ],
     requiredStates: ['minimized', 'medium', 'expanded', 'pinned or no-pin'],
     evidenceRequirements: [
       'community list minimized/medium card screenshots',
       'in-community minimized, medium, and expanded surface screenshots',
-      'theme token proof',
-      'explicit pinning policy proof',
+      'theme token proof', 'explicit pinning policy proof',
     ],
     fallbackPolicy:
         'May host unassigned surfaces, but primary workflows should move to a tab-native renderer when a dedicated tab exists.',
@@ -465,34 +610,21 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['calendar'],
     surfaceFamilies: ['calendar', 'event-rsvp', 'member-meetup'],
     requiredAnatomy: [
-      'month or week/date strip',
-      'agenda list grouped by date',
+      'month or week/date strip', 'agenda list grouped by date',
       'event detail with title, time, location, capacity, host, and reminders',
       'RSVP or meetup action state',
     ],
     requiredInteractions: [
-      'listCalendarItems',
-      'getCalendarItem',
-      'openLinkedSurface',
-      'respondGoingMaybeNo',
-      'changeRsvp',
-      'cancelRsvp',
-      'joinWaitlist',
-      'setReminder',
+      'listCalendarItems', 'getCalendarItem', 'openLinkedSurface',
+      'respondGoingMaybeNo', 'changeRsvp', 'cancelRsvp', 'joinWaitlist', 'setReminder',
     ],
     requiredStates: [
-      'empty schedule',
-      'upcoming item',
-      'selected detail',
-      'responded',
-      'waitlisted or full',
-      'cancelled or rescheduled',
+      'empty schedule', 'upcoming item', 'selected detail', 'responded',
+      'waitlisted or full', 'cancelled or rescheduled',
     ],
     evidenceRequirements: [
-      'calendar tab screenshot',
-      'selected event detail screenshot',
-      'RSVP/change response screenshot',
-      'receiver or reminder state screenshot',
+      'calendar tab screenshot', 'selected event detail screenshot',
+      'RSVP/change response screenshot', 'receiver or reminder state screenshot',
     ],
     fallbackPolicy:
         'Event workflows may appear on Home as summaries, but Calendar owns dated browsing and event detail rendering.',
@@ -503,38 +635,20 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['messages'],
     surfaceFamilies: ['thread', 'social', 'inbox'],
     requiredAnatomy: [
-      'conversation or inbox list',
-      'unread badges',
-      'thread detail',
-      'message composer',
-      'connection invite/accept/decline state',
+      'conversation or inbox list', 'unread badges', 'thread detail',
+      'message composer', 'connection invite/accept/decline state',
     ],
     requiredInteractions: [
-      'createThread',
-      'reply',
-      'markRead',
-      'listUnread',
-      'muteThread',
-      'archiveThread',
-      'sendInvite',
-      'acceptInvite',
-      'declineInvite',
-      'connectionStatus',
+      'createThread', 'reply', 'markRead', 'listUnread', 'muteThread',
+      'archiveThread', 'sendInvite', 'acceptInvite', 'declineInvite', 'connectionStatus',
     ],
     requiredStates: [
-      'empty inbox',
-      'unread',
-      'thread open',
-      'sending',
-      'sent/read',
-      'muted/archived',
-      'invite pending',
+      'empty inbox', 'unread', 'thread open', 'sending', 'sent/read',
+      'muted/archived', 'invite pending',
     ],
     evidenceRequirements: [
-      'messages tab inbox screenshot',
-      'thread detail screenshot',
-      'composer/action screenshot',
-      'connection invite or state screenshot',
+      'messages tab inbox screenshot', 'thread detail screenshot',
+      'composer/action screenshot', 'connection invite or state screenshot',
     ],
     fallbackPolicy:
         'Messages must not render as a generic workflow list; it needs a chat/thread information architecture.',
@@ -545,40 +659,23 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['marketplace'],
     surfaceFamilies: ['equipment-loan', 'exchange'],
     requiredAnatomy: [
-      'browse/search/filter header',
-      'listing grid or list',
+      'browse/search/filter header', 'listing grid or list',
       'listing detail with owner, availability, custody, queue, condition, and pickup',
-      'list your item action',
-      'loan/giveaway action state',
+      'list your item action', 'loan/giveaway action state',
     ],
     requiredInteractions: [
-      'browseEquipment',
-      'searchEquipment',
-      'listEquipmentListing',
-      'updateEquipmentListing',
-      'removeEquipmentListing',
-      'requestLoan',
-      'joinLoanQueue',
-      'getCurrentHolder',
-      'listCustodyHistory',
-      'returnItem',
-      'claimGiveaway',
-      'transferGiveawayOwnership',
+      'browseEquipment', 'searchEquipment', 'listEquipmentListing',
+      'updateEquipmentListing', 'removeEquipmentListing', 'requestLoan',
+      'joinLoanQueue', 'getCurrentHolder', 'listCustodyHistory', 'returnItem',
+      'claimGiveaway', 'transferGiveawayOwnership',
     ],
     requiredStates: [
-      'available',
-      'reserved',
-      'checked out/current holder',
-      'queued',
-      'returned',
-      'giveaway claimed',
-      'delisted',
+      'available', 'reserved', 'checked out/current holder', 'queued',
+      'returned', 'giveaway claimed', 'delisted',
     ],
     evidenceRequirements: [
-      'marketplace browse screenshot',
-      'listing detail screenshot',
-      'loan/giveaway action screenshot',
-      'current holder or queue screenshot',
+      'marketplace browse screenshot', 'listing detail screenshot',
+      'loan/giveaway action screenshot', 'current holder or queue screenshot',
     ],
     fallbackPolicy:
         'Marketplace surfaces require browse and listing affordances; a single workflow card is not sufficient.',
@@ -588,44 +685,25 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     label: 'Documents library, detail, embedded, and external open',
     tabIds: ['documents'],
     surfaceFamilies: [
-      'documents',
-      'external-document-link',
-      'operations',
-      'portability',
-      'workflow-status',
+      'documents', 'external-document-link', 'operations', 'portability', 'workflow-status',
     ],
     requiredAnatomy: [
-      'document library categories',
-      'document detail with metadata and permissions',
-      'embedded open affordance',
-      'external app/link open affordance',
+      'document library categories', 'document detail with metadata and permissions',
+      'embedded open affordance', 'external app/link open affordance',
       'version/access/acknowledgement state',
     ],
     requiredInteractions: [
-      'listDocuments',
-      'getDocumentDetail',
-      'openEmbeddedDocument',
-      'openExternalDocument',
-      'downloadDocument',
-      'acknowledgeDocument',
-      'requestDocumentAccess',
-      'listDocumentVersions',
-      'documentAuditTrail',
+      'listDocuments', 'getDocumentDetail', 'openEmbeddedDocument',
+      'openExternalDocument', 'downloadDocument', 'acknowledgeDocument',
+      'requestDocumentAccess', 'listDocumentVersions', 'documentAuditTrail',
     ],
     requiredStates: [
-      'available',
-      'restricted',
-      'access requested',
-      'opened embedded',
-      'opened external',
-      'acknowledged',
-      'retired/versioned',
+      'available', 'restricted', 'access requested', 'opened embedded',
+      'opened external', 'acknowledged', 'retired/versioned',
     ],
     evidenceRequirements: [
-      'documents tab library screenshot',
-      'document detail screenshot',
-      'embedded open screenshot or handoff proof',
-      'external open screenshot or handoff proof',
+      'documents tab library screenshot', 'document detail screenshot',
+      'embedded open screenshot or handoff proof', 'external open screenshot or handoff proof',
     ],
     fallbackPolicy:
         'Document and portability workflows may summarize on Home, but Documents owns library/detail/open rendering.',
@@ -636,37 +714,20 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['home', 'admin', 'documents'],
     surfaceFamilies: ['workflow-status', 'approval', 'form', 'operations'],
     requiredAnatomy: [
-      'status timeline',
-      'current step and owner',
-      'submitted details',
-      'comments/documents/payment needed',
-      'next actions and alternate/reopen paths',
+      'status timeline', 'current step and owner', 'submitted details',
+      'comments/documents/payment needed', 'next actions and alternate/reopen paths',
     ],
     requiredInteractions: [
-      'createWorkflowInstance',
-      'getWorkflowStatus',
-      'listWorkflowSteps',
-      'transitionWorkflowStep',
-      'requestWorkflowChanges',
-      'approveWorkflowStep',
-      'rejectWorkflowStep',
-      'addWorkflowComment',
-      'attachWorkflowDocument',
-      'reopenWorkflow',
+      'createWorkflowInstance', 'getWorkflowStatus', 'listWorkflowSteps',
+      'transitionWorkflowStep', 'requestWorkflowChanges', 'approveWorkflowStep',
+      'rejectWorkflowStep', 'addWorkflowComment', 'attachWorkflowDocument', 'reopenWorkflow',
     ],
     requiredStates: [
-      'submitted',
-      'under review',
-      'feedback needed',
-      'payment needed',
-      'approved/rejected',
-      'reopened',
-      'cancelled',
+      'submitted', 'under review', 'feedback needed', 'payment needed',
+      'approved/rejected', 'reopened', 'cancelled',
     ],
     evidenceRequirements: [
-      'timeline screenshot',
-      'current step screenshot',
-      'action/result screenshot',
+      'timeline screenshot', 'current step screenshot', 'action/result screenshot',
       'receiver/notification state screenshot',
     ],
     fallbackPolicy:
@@ -678,34 +739,18 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['giving'],
     surfaceFamilies: ['payment', 'ad-off-entitlement', 'ad-off-settlement'],
     requiredAnatomy: [
-      'amount and purpose summary',
-      'checkout or payment intent',
-      'receipt and audit state',
-      'subscription/entitlement management',
+      'amount and purpose summary', 'checkout or payment intent',
+      'receipt and audit state', 'subscription/entitlement management',
     ],
     requiredInteractions: [
-      'createPaymentIntent',
-      'confirmPayment',
-      'retryPayment',
-      'refund',
-      'manageRecurringPlan',
-      'getReceipt',
-      'getEntitlement',
-      'settlementStatus',
+      'createPaymentIntent', 'confirmPayment', 'retryPayment', 'refund',
+      'manageRecurringPlan', 'getReceipt', 'getEntitlement', 'settlementStatus',
     ],
     requiredStates: [
-      'due',
-      'checkout',
-      'paid',
-      'failed/retry',
-      'refunded',
-      'recurring',
-      'entitled',
+      'due', 'checkout', 'paid', 'failed/retry', 'refunded', 'recurring', 'entitled',
     ],
     evidenceRequirements: [
-      'giving tab screenshot',
-      'payment detail screenshot',
-      'receipt/entitlement screenshot',
+      'giving tab screenshot', 'payment detail screenshot', 'receipt/entitlement screenshot',
     ],
     fallbackPolicy:
         'Payment summaries may appear elsewhere, but Giving owns checkout, receipt, and entitlement depth.',
@@ -716,37 +761,20 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['care'],
     surfaceFamilies: ['care-request', 'volunteer'],
     requiredAnatomy: [
-      'request or shift queue',
-      'protected/public data split',
-      'roster or volunteer count',
-      'assignment/check-in state',
-      'neutral notification state',
+      'request or shift queue', 'protected/public data split',
+      'roster or volunteer count', 'assignment/check-in state', 'neutral notification state',
     ],
     requiredInteractions: [
-      'createRequest',
-      'assignCareTeam',
-      'reviewRequest',
-      'resolveRequest',
-      'listShifts',
-      'signup',
-      'listVolunteers',
-      'protectedContactReveal',
-      'checkIn',
+      'createRequest', 'assignCareTeam', 'reviewRequest', 'resolveRequest',
+      'listShifts', 'signup', 'listVolunteers', 'protectedContactReveal', 'checkIn',
     ],
     requiredStates: [
-      'open request',
-      'assigned',
-      'resolved',
-      'shift open',
-      'signed up',
-      'checked in',
-      'protected',
+      'open request', 'assigned', 'resolved', 'shift open', 'signed up',
+      'checked in', 'protected',
     ],
     evidenceRequirements: [
-      'care tab queue screenshot',
-      'request/detail screenshot',
-      'volunteer roster/count screenshot',
-      'protected contact handling screenshot',
+      'care tab queue screenshot', 'request/detail screenshot',
+      'volunteer roster/count screenshot', 'protected contact handling screenshot',
     ],
     fallbackPolicy:
         'Care and volunteer tasks need privacy-aware queues/details, not generic action cards.',
@@ -757,38 +785,20 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     tabIds: ['admin'],
     surfaceFamilies: ['announcement', 'approval', 'ad', 'workflow-status'],
     requiredAnatomy: [
-      'role-specific task queue',
-      'composer or reviewer detail',
-      'preview/status/audit summary',
-      'approve/reject/request changes actions',
+      'role-specific task queue', 'composer or reviewer detail',
+      'preview/status/audit summary', 'approve/reject/request changes actions',
     ],
     requiredInteractions: [
-      'createDraft',
-      'previewAnnouncement',
-      'publishAnnouncement',
-      'assignReviewer',
-      'approve',
-      'reject',
-      'requestChanges',
-      'comment',
-      'recordImpression',
-      'getDisclosure',
+      'createDraft', 'previewAnnouncement', 'publishAnnouncement', 'assignReviewer',
+      'approve', 'reject', 'requestChanges', 'comment', 'recordImpression', 'getDisclosure',
     ],
     requiredStates: [
-      'draft',
-      'preview',
-      'published',
-      'pending review',
-      'approved',
-      'rejected',
-      'changes requested',
-      'disclosed',
+      'draft', 'preview', 'published', 'pending review', 'approved',
+      'rejected', 'changes requested', 'disclosed',
     ],
     evidenceRequirements: [
-      'admin tab queue screenshot',
-      'compose/detail screenshot',
-      'decision/action screenshot',
-      'result/audit screenshot',
+      'admin tab queue screenshot', 'compose/detail screenshot',
+      'decision/action screenshot', 'result/audit screenshot',
     ],
     fallbackPolicy:
         'Admin tasks need queues and compose/review surfaces; do not expose them as undifferentiated workflow cards.',
@@ -813,6 +823,9 @@ class LoomExperienceDefinition {
     required this.workflows,
     this.personas,
     this.personaPolicies,
+    this.threads,
+    this.marketplaceListings,
+    this.marketplaceTemplate,
     this.themeOverride,
     this.tabThemeOverrides = const {},
   });
@@ -822,24 +835,12 @@ class LoomExperienceDefinition {
   final String tagline;
   final int accentColor;
   final List<LoomWorkflowDefinition> workflows;
-
-  /// Package-declared personas. Null means "not package-driven": callers
-  /// should fall back to [personasForExtensionId]'s hardcoded catalog.
   final List<LoomPersonaDefinition>? personas;
-
-  /// Package-declared per-workflow persona policy, keyed by workflowId. Null
-  /// (or a missing workflowId key) means "not package-driven": callers
-  /// should fall back to [personaPolicyForWorkflow]'s hardcoded catalog.
   final Map<String, LoomWorkflowPersonaPolicy>? personaPolicies;
-
-  /// Package-declared community-level theme override, merged on top of the
-  /// theme derived from [accentColor]. Null means the community renders
-  /// with the plain accent-derived default.
+  final List<LoomMessageThread>? threads;
+  final List<LoomMarketplaceListing>? marketplaceListings;
+  final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;
-
-  /// Package-declared per-tab theme overrides, keyed by `tabId`, merged on
-  /// top of the community-level theme for whichever tab is selected. Empty
-  /// means no tab has a distinct look from the community default.
   final Map<String, LoomCardTheme> tabThemeOverrides;
 }
 
@@ -960,4 +961,3 @@ class LoomWorkflowDependency {
   final String receiverPersonaId;
   final String prerequisiteWorkflowId;
 }
-

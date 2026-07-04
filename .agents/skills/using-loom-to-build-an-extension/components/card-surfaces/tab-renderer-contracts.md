@@ -21,6 +21,13 @@ workflow -> cardSurfaceFamily -> tabRendererContract -> renderer target -> fake 
 - Dedicated tabs must use tab-native information architecture: Calendar looks like calendar/agenda,
   Messages looks like inbox/thread/composer, Marketplace looks like browse/listing/detail, and
   Documents looks like a document library/detail/open surface.
+- **Default vs. data-driven tabs:** Messages and Home render by default. Calendar gate-checks its
+  own `calendarItem` data per workflow. Every other domain tab (Marketplace, Documents, Giving,
+  Care, Admin, Payment, Volunteer) renders its full tab-native UI **only when its data is declared**
+  under `experience` (e.g. `threads`, `marketplaceListings`, `givingPayment` fields on workflows).
+  When no data is declared for that tab, it shows an explicit themed placeholder — "‹Tab› is coming
+  to ‹community›" — never a generic mock. This replaces the earlier implicit assumption that a
+  matching tab always fills with a generic renderer.
 - Pinning policy is explicit and job-based. A tab can declare no pinned surface when the product doc
   explains why pinning would not help that persona.
 - A workflow summary may appear on Home, but the primary task must route to the tab-native renderer
@@ -113,11 +120,15 @@ garden plants, wine glasses, neighborhood library items, and giveaways.
 Required anatomy:
 
 - browse/search/filter header;
-- listing list/grid with item image/icon, owner or policy-safe owner label, availability, and category;
+- **responsive listing grid** (LayoutBuilder-based: 2-up narrow, 3-up wide) with item image/icon,
+  owner or policy-safe owner label, availability, and category;
 - listing detail with description, condition, current holder or privacy-safe unavailable state, queue,
   due/return rules, pickup handoff, and custody history;
 - list-your-item flow for create/modify/delist/pause/reactivate;
-- loan, reserve, join queue, return, report issue, or claim giveaway actions.
+- **engine-derived action buttons** driven by the per-listing state machine (see
+  [equipment-loan.md](./equipment-loan.md#marketplace-state-machine-model)) — persona-gated via
+  `allowedPersonaIds` on each transition;
+- loan, reserve, join queue, return, report issue, claim giveaway, buy, trade, or claim actions.
 
 Required interactions:
 
@@ -134,11 +145,20 @@ Required interactions:
 - `CommunityEquipmentLoanApi.claimGiveaway`
 - `CommunityEquipmentLoanApi.transferGiveawayOwnership`
 
+**Per-listing state-machine API:**
+
+- `CommunityMarketplaceApi.listListings` — list with current state, persona-filtered.
+- `CommunityMarketplaceApi.getListing` — single listing detail.
+- `CommunityMarketplaceApi.listTransitions` — available transitions from the current persona.
+- `CommunityMarketplaceApi.applyTransition` — apply a transition with effect flags, return updated state.
+- `CommunityMarketplaceApi.listCustodyHistory` — existing custody/claim history.
+
 Evidence:
 
 - marketplace browse/search state;
-- listing detail;
-- loan/giveaway action;
+- listing detail with engine-derived action buttons;
+- persona-gating: organizer sees shared actions but member-only transitions are hidden;
+- loan/giveaway/sale/trade action and result state;
 - current holder, queue, return, or delisted state.
 
 ## DocumentsTabSurface
@@ -231,11 +251,12 @@ visually coherent with the community default. See
 
 ## Missing Renderer Signal
 
-Treat these as product-spec gaps:
+These are **hard product-spec failures** for any package-declared community — they must not ship:
 
-- Calendar tab renders only a workflow-card list.
-- Messages tab renders only an informational card rather than inbox/thread/composer.
-- Marketplace tab renders only a workflow list rather than browse/listing/detail.
+- Calendar tab renders only a workflow-card list instead of month/week/date strip + agenda + detail.
+- Messages tab renders only an informational card instead of inbox/thread/composer.
+- Marketplace tab renders only a workflow list instead of browse/search/filter + listing grid + detail.
 - Documents tab has no library/detail/open affordance.
 - Multi-step requests use a fixed approve/reject card when a status timeline is needed.
 - Home is the only place a primary workflow can be completed despite a dedicated tab existing.
+- A domain tab renders mock content (fake inbox, read-only search, hardcoded timeline) instead of either its declared data or an explicit themed placeholder.

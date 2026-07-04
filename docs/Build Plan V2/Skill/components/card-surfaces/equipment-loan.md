@@ -62,4 +62,112 @@ Requires `CommunityEquipmentLoanApi`: `browseEquipment`, `searchEquipment`, `get
 `getCurrentHolder`, `transferCustody`, `listCustodyHistory`, `recordConditionCheck`, `extendLoan`,
 `returnItem`, `sendReturnReminder`, `reportOverdue`, `markDamaged`, `reportLostItem`,
 `resolveLoanDispute`, `cancelLoan`, `listAvailability`, `listBorrowers`, `privacyScopedContact`,
-`transferGiveawayOwnership`.
+    `transferGiveawayOwnership`.
+
+## Marketplace State Machine Model
+
+Listing interactions (loan, sale, trade, giveaway) are powered by a community-declared **per-listing
+state machine**, not hardcoded framework logic. The App Shell ships a generic, mode-agnostic engine;
+each community declares its own states, transitions, persona permissions, and effect flags in the
+`experience.marketplace` block.
+
+### Declaring a template (community-level)
+
+A community may declare **templates** under `marketplace.templates` and reference them from listings
+via the `template` key, or inline a custom `stateMachine` per listing. A template is a named set of
+states and transitions shared by multiple listings:
+
+```json
+"marketplace": {
+  "templates": {
+    "loan": {
+      "initialState": "available",
+      "states": {
+        "available": { "label": "Available", "tone": "positive" },
+        "onLoan":    { "label": "On loan",   "tone": "warning", "showsHolder": true, "showsDue": true },
+        "queued":    { "label": "Queue open", "tone": "info",    "showsQueue": true }
+      },
+      "transitions": [
+        { "id": "borrow",     "label": "Request loan", "fromStates": ["available"], "to": "onLoan",
+          "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
+          "setsHolderToActor": true },
+        { "id": "join-queue", "label": "Join queue",   "fromStates": ["onLoan"],    "to": "onLoan",
+          "allowedPersonaIds": ["tabletop-member"], "incrementsQueue": true },
+        { "id": "return",     "label": "Return",       "fromStates": ["onLoan"],    "to": "available",
+          "allowedPersonaIds": ["tabletop-member","tabletop-organizer"], "clearsHolder": true }
+      ]
+    }
+  }
+}
+```
+
+### Listing model
+
+Each listing under `experience.marketplaceListings` may optionally carry:
+
+| Field | Type | Required | Purpose |
+| --- | --- | --- | --- |
+| `template` | String? | No | Ref to a `marketplace.templates` key. |
+| `stateMachine` | Object? | No | Inline `LoomListingStateMachine` overriding the template. |
+| `state` | String? | No | Runtime state override (defaults to `initialState`). |
+
+Resolution: `listing.stateMachine ?? community.MarketplaceTemplate` (template = firstOrNull from
+the community's `marketplace.templates`). A listing without any machine renders with no actions.
+
+### State fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `label` | String | Display label for the state (e.g. "Available"). |
+| `tone` | String? | `positive`, `warning`, `info`, or `error` — maps to color treatment. |
+| `showsHolder` | bool = false | Surfaces `currentHolderLabel` in the detail card. |
+| `showsDue` | bool = false | Surfaces `dueLabel`. |
+| `showsQueue` | bool = false | Surfaces `queueLength`. |
+
+### Transition fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | String | Stable key; renders as `marketplace-action-<id>`. |
+| `label` | String | Button label. |
+| `fromStates` | String[] | States this transition is valid from. |
+| `to` | String? | Target state after applying (null = self-transition). |
+| `allowedPersonaIds` | String[]? | Persona IDs permitted to invoke this transition (empty/null = all). |
+| `linkedWorkflowId` | String? | Real workflow fired via `onConfirmWorkflow` (resolved from `experience.workflows`). |
+| `setsHolderToActor` | bool = false | On apply: sets `currentHolderLabel` to the actor's display name. |
+| `clearsHolder` | bool = false | On apply: clears `currentHolderLabel`. |
+| `incrementsQueue` | bool = false | On apply: increments `queueLength`. |
+| `decrementsQueue` | bool = false | On apply: decrements `queueLength` (floor 0). |
+| `removesFromList` | bool = false | On apply: removes the listing from the local grid (used by buy/claim). |
+
+### Action derivation (per persona)
+
+`availableActions(stateId, personaId)` returns all transitions where:
+- `stateId ∈ fromStates`
+- `personaId ∈ allowedPersonaIds` (if `allowedPersonaIds` is `null`, all personas pass)
+
+Example: a `borrow` transition gated to `["tabletop-member"]` is *hidden* from organizers when they
+view the same listing, even though they share the `return` transition.
+
+### Mode-agnostic: loan / sale / trade / giveaway
+
+All four canonical marketplace modes are **expressible as declared machines** without framework
+built-ins:
+
+- **Loan** (Tabletop Club): `available → onLoan → available` with queue, holder, and return.
+- **Sale**: `available → purchased` with `removesFromList: true` and a `linkedWorkflowId` for checkout.
+- **Trade**: `offered → pending → traded` with different personas permitted at each step.
+- **Giveaway**: `available → claimed` with `removesFromList: true`.
+
+Each mode is a community-authored template, not a Dart `enum`. The engine derives actions, applies
+effect flags, and resolves linked workflows generically.
+
+### API operations
+
+| Operation | Purpose |
+| --- | --- |
+| `listListings` | List marketplace listings with current state, persona-filtered. |
+| `getListing` | Get a single listing detail. |
+| `listTransitions` | List available transitions for a listing from the current persona context. |
+| `applyTransition` | Apply a transition, returning the updated listing state. |
+| `listCustodyHistory` | List custody/claim history for a listing (existing). |

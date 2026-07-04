@@ -49,7 +49,27 @@
           "date": "2026-07-10",
           "time": "19:00",
           "location": "Community room",
-          "capacityLabel": "12 of 20 seats filled"
+          "capacityLabel": "12 of 20 seats filled",
+          "host": "Alex Chen (Organizer)"
+        },
+        "responseChoices": [
+          {"responseId": "going", "label": "Going"},
+          {"responseId": "maybe", "label": "Maybe"},
+          {"responseId": "not-going", "label": "Can't go", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-tournament-rsvp",
+        "title": "RSVP to the afternoon tournament",
+        "entryText": "Summer tournament earlier the same day, 1-5pm. 8 of 16 brackets claimed.",
+        "actionText": "Claim a bracket in the summer tournament.",
+        "resultText": "Your bracket is reserved for the summer tournament.",
+        "calendar": {
+          "date": "2026-07-10",
+          "time": "13:00",
+          "location": "Main hall",
+          "capacityLabel": "8 of 16 brackets claimed",
+          "host": "Priya Nair (Tournament Lead)"
         },
         "responseChoices": [
           {"responseId": "going", "label": "Going"},
@@ -82,7 +102,13 @@
         "entryText": "Quarterly dues of $15 are due by the end of the month.",
         "actionText": "Pay $15 in quarterly dues.",
         "resultText": "Dues payment recorded and receipt saved.",
-        "theme": { "accent": "#8A5A34" }
+        "theme": { "accent": "#8A5A34" },
+        "givingPayment": {
+          "amountLabel": "$15.00",
+          "purpose": "Quarterly club dues",
+          "cadence": "quarterly",
+          "entitlement": "Member in good standing through the quarter"
+        }
       },
       {
         "workflowId": "tabletop-meetup-announcement",
@@ -99,6 +125,13 @@
         "receiverEntryText": "A member RSVP'd to Friday's game night.",
         "receiverActionText": "Acknowledge RSVP",
         "receiverResultText": "RSVP acknowledged and added to the roster."
+      },
+      "tabletop-tournament-rsvp": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member claimed a bracket in the summer tournament.",
+        "receiverActionText": "Acknowledge bracket",
+        "receiverResultText": "Bracket acknowledged and added to the tournament board."
       },
       "tabletop-committee-decision": {
         "actorPersonaIds": ["tabletop-organizer"],
@@ -128,6 +161,130 @@
         "receiverActionText": "Mark as read",
         "receiverResultText": "Announcement marked as read."
       }
-    }
+    },
+    "marketplace": {
+      "templates": {
+        "loan": {
+          "initialState": "available",
+          "states": {
+            "available": { "label": "Available", "tone": "positive" },
+            "onLoan": { "label": "On loan", "tone": "warning", "showsHolder": true, "showsDue": true },
+            "queued": { "label": "Queue open", "tone": "info", "showsQueue": true }
+          },
+          "transitions": [
+            { "id": "borrow", "label": "Request loan", "from": ["available"], "to": "onLoan",
+              "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
+              "setsHolderToActor": true },
+            { "id": "join-queue", "label": "Join queue", "from": ["onLoan"], "to": "onLoan",
+              "allowedPersonaIds": ["tabletop-member"], "incrementsQueue": true },
+            { "id": "return", "label": "Return", "from": ["onLoan"], "to": "available",
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"], "clearsHolder": true }
+          ]
+        }
+      }
+    },
+    "threads": [
+      {
+        "threadId": "thread-welcome",
+        "subject": "Welcome new members!",
+        "participantPersonaIds": ["tabletop-organizer", "tabletop-member"],
+        "messages": [
+          {
+            "messageId": "msg-welcome-1",
+            "senderPersonaId": "tabletop-organizer",
+            "body": "Welcome to the Tabletop Club! Our first game night is Friday at 7pm in the community room.",
+            "timestamp": "2026-07-01T10:00:00"
+          },
+          {
+            "messageId": "msg-welcome-2",
+            "senderPersonaId": "tabletop-member",
+            "body": "Thanks! I'll bring snacks and my copy of Catan.",
+            "timestamp": "2026-07-01T11:30:00"
+          }
+        ]
+      },
+      {
+        "threadId": "thread-game-suggestions",
+        "subject": "Game suggestions for next week",
+        "participantPersonaIds": ["tabletop-member", "tabletop-organizer"],
+        "messages": [
+          {
+            "messageId": "msg-suggest-1",
+            "senderPersonaId": "tabletop-member",
+            "body": "Can we try Wingspan this week? I've been wanting to play it.",
+            "timestamp": "2026-07-02T14:00:00"
+          },
+          {
+            "messageId": "msg-suggest-2",
+            "senderPersonaId": "tabletop-organizer",
+            "body": "Great idea — I'll reserve the main table and bring my copy.",
+            "timestamp": "2026-07-02T14:45:00"
+          }
+        ]
+      }
+    ],
+    "marketplaceListings": [
+      {
+        "listingId": "listing-catan",
+        "title": "Catan",
+        "category": "Board Games",
+        "iconKey": "casino",
+        "condition": "Like new",
+        "availability": "available",
+        "queueLength": 0,
+        "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-wingspan",
+        "title": "Wingspan",
+        "category": "Board Games",
+        "iconKey": "raven",
+        "condition": "Excellent",
+        "availability": "onLoan",
+        "currentHolderLabel": "Jamie (Member)",
+        "dueLabel": "Due back Jul 17",
+        "description": "Award-winning engine-building bird game. Includes European expansion.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-root",
+        "title": "Root",
+        "category": "Strategy Games",
+        "iconKey": "forest",
+        "condition": "Good",
+        "availability": "queued",
+        "queueLength": 2,
+        "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-old-catan",
+        "title": "Catan (retired club copy)",
+        "category": "Board Games",
+        "iconKey": "casino",
+        "condition": "Fair",
+        "availability": "giveaway",
+        "description": "Free to a member — retired club copy, replaced by the newer set above.",
+        "stateMachine": {
+          "initialState": "available",
+          "states": {
+            "available": { "label": "Available", "tone": "positive" },
+            "claimed": { "label": "Claimed", "tone": "positive" }
+          },
+          "transitions": [
+            {
+              "id": "claim",
+              "label": "Claim giveaway",
+              "from": ["available"],
+              "to": "claimed",
+              "allowedPersonaIds": ["tabletop-member"],
+              "linkedWorkflowId": "tabletop-game-loan",
+              "removesFromList": true
+            }
+          ]
+        }
+      }
+    ]
   }
 }

@@ -43,12 +43,16 @@ class _WorkflowAction extends StatelessWidget {
     final accent =
         accentOverride ?? _categoryAccentColor(contract.category, scheme);
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
-    final buttonStyle = FilledButton.styleFrom(
+    final legacyButtonStyle = FilledButton.styleFrom(
       backgroundColor: foreground.withValues(alpha: 0.14),
       foregroundColor: foreground,
       iconColor: foreground,
       side: BorderSide(color: foreground.withValues(alpha: 0.28)),
     );
+    final actorButtonStyle =
+        _buttonStyleFor(modernTheme?.primaryButton) ?? legacyButtonStyle;
+    final receiverButtonStyle =
+        _buttonStyleFor(modernTheme?.secondaryButton) ?? legacyButtonStyle;
     if (view.waitingForPrerequisite) {
       return Align(
         alignment: Alignment.centerRight,
@@ -57,6 +61,7 @@ class _WorkflowAction extends StatelessWidget {
           icon: Icons.schedule,
           label: view.waitingText,
           foreground: foreground,
+          accent: modernTheme?.accent,
         ),
       );
     }
@@ -68,7 +73,7 @@ class _WorkflowAction extends StatelessWidget {
           child: FilledButton.icon(
             key: ValueKey('workflow-button-${workflow.workflowId}'),
             onPressed: onPressed,
-            style: buttonStyle,
+            style: actorButtonStyle,
             icon: Icon(contract.icon, size: 18),
             label: Text(
               contract.primaryActionLabel,
@@ -88,7 +93,7 @@ class _WorkflowAction extends StatelessWidget {
           child: FilledButton.tonalIcon(
             key: ValueKey('workflow-receive-button-${workflow.workflowId}'),
             onPressed: onReceivePressed,
-            style: buttonStyle,
+            style: receiverButtonStyle,
             icon: const Icon(Icons.inbox_outlined, size: 18),
             label: Text(
               view.actionText,
@@ -108,6 +113,7 @@ class _WorkflowAction extends StatelessWidget {
           icon: Icons.visibility_outlined,
           label: 'Read only',
           foreground: foreground,
+          accent: modernTheme?.accent,
         ),
       );
     }
@@ -118,6 +124,7 @@ class _WorkflowAction extends StatelessWidget {
         icon: Icons.block,
         label: view.actionText,
         foreground: foreground,
+        accent: modernTheme?.accent,
       ),
     );
   }
@@ -202,8 +209,11 @@ class _WorkflowActionSurface extends StatelessWidget {
         ? contract.receiverSurfaceTitle
         : contract.screenTitle;
 
+    final background = modernTheme != null
+        ? Color.alphaBlend(accent.withValues(alpha: 0.035), Colors.white)
+        : _actionScreenBackgroundFor(accent);
     return Scaffold(
-      backgroundColor: _actionScreenBackgroundFor(accent),
+      backgroundColor: background,
       appBar: AppBar(
         title: Text(title),
         backgroundColor: accent,
@@ -274,6 +284,7 @@ class _WorkflowActionSurface extends StatelessWidget {
           const SizedBox(height: 18),
           _ActionSurfaceDetailStack(
             accent: accent,
+            modernTheme: modernTheme,
             rows: [
               _ActionSurfaceDetail(
                 icon: Icons.rule_folder_outlined,
@@ -413,6 +424,7 @@ class _RichWorkflowActionSurface extends StatelessWidget {
           _InteractionModelSummary(
             contract: contract,
             foreground: bodyForeground,
+            modernTheme: modernTheme,
           ),
           const SizedBox(height: 14),
           _RichInlineActionPanel(
@@ -1675,11 +1687,15 @@ class _RichInlineActionPanel extends StatelessWidget {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final bodyColor = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     final textTheme = Theme.of(context).textTheme;
+    final primaryStyle = _buttonStyleFor(modernTheme?.primaryButton);
+    final cancelForeground = modernTheme?.accent ?? foreground;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.10),
+        color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+        border: Border.all(
+          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1710,6 +1726,7 @@ class _RichInlineActionPanel extends StatelessWidget {
                     icon: fact.icon,
                     label: fact.label,
                     foreground: foreground,
+                    accent: modernTheme?.accent,
                   ),
               ],
             ),
@@ -1731,6 +1748,7 @@ class _RichInlineActionPanel extends StatelessWidget {
                   final primary = FilledButton.icon(
                     key: confirmButtonKey,
                     onPressed: () => Navigator.of(context).pop(true),
+                    style: primaryStyle,
                     icon: compact
                         ? const SizedBox.shrink()
                         : Icon(actionIcon, size: 18),
@@ -1743,6 +1761,11 @@ class _RichInlineActionPanel extends StatelessWidget {
                   );
                   final secondary = TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
+                    style: modernTheme != null
+                        ? TextButton.styleFrom(
+                            foregroundColor: cancelForeground,
+                          )
+                        : null,
                     child: Text(
                       alternateLabel,
                       maxLines: 1,
@@ -1798,11 +1821,15 @@ class _InlineActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+    final primaryStyle = _buttonStyleFor(modernTheme?.primaryButton);
+    final cancelForeground = modernTheme?.accent ?? foreground;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.10),
+        color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+        border: Border.all(
+          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1810,6 +1837,9 @@ class _InlineActionBar extends StatelessWidget {
           children: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
+              style: modernTheme != null
+                  ? TextButton.styleFrom(foregroundColor: cancelForeground)
+                  : null,
               child: Text(alternateLabel),
             ),
             const SizedBox(width: 12),
@@ -1817,6 +1847,7 @@ class _InlineActionBar extends StatelessWidget {
               child: FilledButton.icon(
                 key: confirmButtonKey,
                 onPressed: () => Navigator.of(context).pop(true),
+                style: primaryStyle,
                 icon: Icon(actionIcon, size: 18),
                 label: Text(actionLabel, textAlign: TextAlign.center),
               ),
@@ -1849,12 +1880,22 @@ class _WorkflowResponseChoiceBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final errorColor = Theme.of(context).colorScheme.error;
+    final primaryStyle = _buttonStyleFor(modernTheme?.primaryButton);
+    final secondaryStyle = _buttonStyleFor(modernTheme?.secondaryButton);
+    final firstNonDestructiveId = choices
+        .firstWhere(
+          (choice) => !choice.isDestructive,
+          orElse: () => choices.first,
+        )
+        .responseId;
     return DecoratedBox(
       key: const ValueKey('workflow-response-choice-bar'),
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.10),
+        color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: foreground.withValues(alpha: 0.20)),
+        border: Border.all(
+          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.20),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -1866,7 +1907,9 @@ class _WorkflowResponseChoiceBar extends StatelessWidget {
                 key: ValueKey('workflow-response-${choice.responseId}'),
                 style: choice.isDestructive
                     ? FilledButton.styleFrom(backgroundColor: errorColor)
-                    : null,
+                    : (choice.responseId == firstNonDestructiveId
+                        ? primaryStyle
+                        : secondaryStyle),
                 onPressed: () => onSelected(choice.responseId),
                 icon: Icon(choice.icon, size: 18),
                 label: Text(choice.label, textAlign: TextAlign.center),

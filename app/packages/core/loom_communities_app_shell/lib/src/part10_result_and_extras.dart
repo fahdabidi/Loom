@@ -157,7 +157,7 @@ class _WorkflowResultPanel extends StatelessWidget {
                       child: TextButton(
                         key: const ValueKey('workflow-change-response'),
                         style: TextButton.styleFrom(
-                          foregroundColor: foreground,
+                          foregroundColor: modernTheme?.accent ?? foreground,
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(0, 32),
                         ),
@@ -180,20 +180,36 @@ class _PersonaStatusStrip extends StatelessWidget {
     required this.persona,
     required this.personaCount,
     required this.foreground,
+    this.modernTheme,
   });
 
   final LoomPersonaDefinition persona;
   final int personaCount;
   final Color foreground;
 
+  /// Non-null only for communities that opted into the modern card theme —
+  /// switches the strip's fill/border from a foreground-tinted gray wash to
+  /// an accent tint, matching the rest of the light hero card it sits in.
+  final LoomCardTheme? modernTheme;
+
   @override
   Widget build(BuildContext context) {
+    final accent = modernTheme?.accent;
+    final fill = accent != null
+        ? accent.withValues(alpha: 0.08)
+        : foreground.withValues(alpha: 0.13);
+    final border = accent != null
+        ? accent.withValues(alpha: 0.18)
+        : foreground.withValues(alpha: 0.24);
+    final countFill = accent != null
+        ? accent.withValues(alpha: 0.12)
+        : foreground.withValues(alpha: 0.12);
     return DecoratedBox(
       key: const ValueKey('active-persona-card'),
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.13),
+        color: fill,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: foreground.withValues(alpha: 0.24)),
+        border: Border.all(color: border),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -226,7 +242,7 @@ class _PersonaStatusStrip extends StatelessWidget {
             DecoratedBox(
               key: const ValueKey('active-persona-count'),
               decoration: BoxDecoration(
-                color: foreground.withValues(alpha: 0.12),
+                color: countFill,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Padding(

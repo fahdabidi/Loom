@@ -55,6 +55,19 @@ Customization knobs should be declared as a `CommunityAppShellCustomizationSpec`
 Each `LoomAppShellTabSpec` must also declare a `rendererContractId`. The contract determines the
 tab-native surface anatomy:
 
+### Default vs. data-driven tabs
+
+Messages and Home render by default. Calendar gate-checks its own `calendarItem` data per
+workflow. Every other domain tab (Marketplace, Documents, Giving, Care, Admin, Payment, Volunteer)
+renders its full tab-native UI **only when its data is declared** under `experience` (e.g.
+`threads`, `marketplaceListings`, `givingPayment` fields on workflows). When no data is declared
+for that tab, it shows an explicit themed placeholder — "‹Tab› is coming to ‹community›" — never
+a generic mock. This replaces the earlier implicit assumption that a matching tab always fills
+with a generic renderer. See the JSON contracts in
+[Per-Tab Renderer Contracts](./tab-renderer-contracts.md) for the exact shape per tab.
+
+The renderer contracts map to these shell-owned `rendererContractId` values:
+
 - `home-surface-stack` for Home summaries, pinned/in-focus surfaces, and minimized/medium/expanded
   presentation;
 - `calendar-agenda-event-detail` for month/week/agenda and event detail/RSVP surfaces;
@@ -114,6 +127,93 @@ Minimal shape:
 persona. Home and Messages remain required shell destinations; custom declarations may rename,
 reorder, or specialize them, but cannot remove the shell-owned navigation invariants.
 
+### Seeding domain tab content
+
+A community seeds its domain tabs — Messages, Marketplace, Calendar, Giving — through the
+`experience` block. Each tab's data shape is documented in
+[Per-Tab Renderer Contracts](./tab-renderer-contracts.md); the JSON fields map directly to the
+parser in `part15_evidence_catalog.dart`.
+
+**Messages (`experience.threads`):**
+
+```json
+"threads": [
+  {
+    "threadId": "tt-announcements",
+    "subject": "Club announcements",
+    "participantPersonaIds": ["camera-organizer", "camera-member"],
+    "muted": false,
+    "messages": [
+      {
+        "messageId": "msg-1",
+        "senderPersonaId": "camera-organizer",
+        "body": "Welcome to the club! Our first photo walk is April 18.",
+        "timestamp": "2026-04-01T09:00:00"
+      }
+    ]
+  }
+]
+```
+
+**Marketplace (`experience.marketplaceListings`):**
+
+```json
+"marketplaceListings": [
+  {
+    "listingId": "ml-lens-50mm",
+    "title": "50mm f/1.8 lens",
+    "category": "Lenses",
+    "condition": "Excellent",
+    "availability": "available",
+    "description": "Lightweight prime lens for portraits and street photography.",
+    "linkedWorkflowId": "gear-loan-request"
+  },
+  {
+    "listingId": "ml-tripod-carbon",
+    "title": "Carbon-fiber tripod",
+    "category": "Tripods",
+    "condition": "Good",
+    "availability": "onLoan",
+    "currentHolderLabel": "Camera member",
+    "queueLength": 2,
+    "dueLabel": "Return by Apr 25",
+    "linkedWorkflowId": "gear-loan-request"
+  }
+]
+```
+
+**Calendar (`workflow.calendar` — per-workflow field):**
+
+```json
+{
+  "workflowId": "photo-walk-rsvp",
+  "calendar": {
+    "date": "2026-04-18",
+    "time": "10:00",
+    "location": "Riverside Greenhouse, north entrance",
+    "capacityLabel": "18 members going, 6 spots left",
+    "host": "Maya Chen, Camera Club coordinator"
+  }
+}
+```
+
+**Giving (`workflow.givingPayment` — per-workflow field):**
+
+```json
+{
+  "workflowId": "club-dues-payment",
+  "givingPayment": {
+    "amountLabel": "$15",
+    "purpose": "Quarterly club dues",
+    "cadence": "recurring",
+    "entitlement": "ad-off"
+  }
+}
+```
+
+When these fields are absent, the corresponding domain tab shows a themed placeholder
+("‹Tab› is coming to ‹community›") instead of the full domain UI.
+
 ## Card Theme Cascade
 
 A community's card surfaces (workflow tiles, their chrome frame, and their buttons) resolve their
@@ -128,6 +228,32 @@ The community-level default is always available for free from `accentColor` alon
 buttons — rather than filling the whole card in one solid color. This is what keeps a community's
 chrome frame (the "in-focus"/"expanded product surface" bar wrapping every tile) and the tile it
 wraps visually coherent instead of using two unrelated colors.
+
+### Light ("modern card") opt-in
+
+Declaring an `experience.theme` block at all — even just `{"accent": "#C4703F"}` with no other
+fields — opts the whole community into a second, lighter visual mode: a subtle accent-tinted fill
+over white with fixed dark ink heading/body text, matching the community-list card's look, instead
+of the neutral-dark-with-accent-highlights default a bare `accentColor` produces. Every secondary
+chip, badge, panel, avatar, persona status strip, interaction-summary panel, and workflow action
+surface body background resolves from the same cascade — declaring the theme block once re-themes
+them all consistently to an accent tint rather than needing per-widget configuration.
+
+When the theme block is declared, every workflow's action surface body background switches from a
+hardcoded dark fill to the same light white+tint treatment, both for rich-spec workflows (e.g.
+event RSVP, payment, export) and for the generic fallback used by simpler workflows. Authors do
+not need to configure this per-workflow or per-action-surface — it follows the theme opt-in
+automatically.
+
+### Buttons
+
+`primaryButton`/`secondaryButton` are **consumed by every card surface's buttons**, not just
+carried as inert style hints: a workflow's primary action (RSVP, confirm, pay) renders as a solid
+`primaryButton`-styled pill; its alternate/receive/cancel actions render `secondaryButton`-styled;
+a multi-choice response bar (e.g. Going/Maybe/Can't go) styles its first non-destructive choice
+`primaryButton`, remaining non-destructive choices `secondaryButton`, and **a choice marked
+`isDestructive` always keeps the platform's semantic error color** regardless of the theme, so a
+declining/cancelling action stays recognizable across every community.
 
 Every field below is optional in JSON; omitted ones are derived from `accent`:
 

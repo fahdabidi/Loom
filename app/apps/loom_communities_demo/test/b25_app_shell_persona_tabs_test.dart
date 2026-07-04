@@ -174,7 +174,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-tab-messages')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const ValueKey('messages-tab-surface')), findsOneWidget);
+    // Messages tab renders: catalog communities don't seed threads, so
+    // the empty state ("No messages yet") is expected here.
+    expect(find.text('No messages yet'), findsOneWidget);
 
     await selectPersona(tester, 'mosque-member');
 
@@ -205,30 +207,23 @@ void main() {
       findsOneWidget,
     );
 
+    // Marketplace tab now renders a clean placeholder until data is declared
+    // (M1: data-driven tab rendering). The mock marketplace-browse-search and
+    // old marketplace-tab-surface keys are retired with the mock renderer.
     await _tapTab(tester, 'marketplace');
+    expect(find.textContaining('is coming to'), findsOneWidget);
+    expect(find.textContaining('Check back soon'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('marketplace-tab-surface')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(
       find.byKey(const ValueKey('marketplace-browse-search')),
-      findsOneWidget,
-    );
-    expect(
-      find.textContaining('/marketplace/', skipOffstage: false),
-      findsOneWidget,
+      findsNothing,
     );
 
     await _tapTab(tester, 'messages');
-    expect(find.byKey(const ValueKey('messages-tab-surface')), findsOneWidget);
-    expect(
-      find.byKey(const ValueKey('messages-inbox-preview')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('messages-thread-composer-preview')),
-      findsOneWidget,
-    );
+    expect(find.text('No messages yet'), findsOneWidget);
   });
 }
 

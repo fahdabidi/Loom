@@ -157,122 +157,509 @@ class _SelectedTabHeader extends StatelessWidget {
   }
 }
 
-class _MessagesTabSurface extends StatelessWidget {
+/// Real, interactive Messages tab — inbox list, thread detail, composer.
+/// Replaces the old static `_MessagesTabSurface` mock entirely.
+class _MessagesTabSurface extends StatefulWidget {
   const _MessagesTabSurface({
     required this.experience,
     required this.persona,
     required this.accent,
     this.modernTheme,
-    this.sections = const [],
-    this.workflowBuilder,
-    this.focusedWorkflowId,
-    this.expandedWorkflowId,
   });
 
   final LoomExperienceDefinition experience;
   final LoomPersonaDefinition persona;
   final Color accent;
   final LoomCardTheme? modernTheme;
-  final List<_CommunityWorkflowSection> sections;
-  final _WorkflowSurfaceBuilder? workflowBuilder;
-  final String? focusedWorkflowId;
-  final String? expandedWorkflowId;
+
+  @override
+  State<_MessagesTabSurface> createState() => _MessagesTabSurfaceState();
+}
+
+class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
+  final _composerController = TextEditingController();
+  String? _selectedThreadId;
+  final _readMessageIds = <String>{};
+  final _mutedThreadIds = <String>{};
+  final _archivedThreadIds = <String>{};
+  // Locally-authored replies keyed by threadId
+  final _localReplies = <String, List<LoomMessage>>{};
+
+  List<LoomMessageThread> get _threads =>
+      widget.experience.threads ?? const [];
+
+  List<LoomMessageThread> get _visibleThreads {
+    return _threads
+        .where((thread) =>
+            thread.participantPersonaIds.contains(widget.persona.personaId) &&
+            !_archivedThreadIds.contains(thread.threadId))
+        .toList();
+  }
+
+  LoomMessageThread? get _selectedThread {
+    if (_selectedThreadId == null) return null;
+    try {
+      final base = _threads.firstWhere(
+        (thread) => thread.threadId == _selectedThreadId,
+      );
+      final replies = _localReplies[_selectedThreadId] ?? const [];
+      return base.copyWith(messages: [...base.messages, ...replies]);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isUnread(String threadId) {
+    final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
+    return thread.messages.any(
+      (message) => !_readMessageIds.contains(message.messageId),
+    );
+  }
+
+  String _lastPreview(String threadId) {
+    final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
+    final last = thread.messages.isNotEmpty ? thread.messages.last.body : '';
+    return last.length > 60 ? '${last.substring(0, 57)}...' : last;
+  }
+
+  void _toggleThread(String threadId) {
+    setState(() {
+      if (_selectedThreadId == threadId) {
+        _selectedThreadId = null;
+      } else {
+        _selectedThreadId = threadId;
+        // Mark all messages as read
+        final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
+        for (final message in thread.messages) {
+          _readMessageIds.add(message.messageId);
+        }
+        final replies = _localReplies[threadId];
+        if (replies != null) {
+          for (final message in replies) {
+            _readMessageIds.add(message.messageId);
+          }
+        }
+      }
+    });
+  }
+
+  void _sendReply() {
+    final text = _composerController.text.trim();
+    if (text.isEmpty || _selectedThreadId == null) return;
+    final message = LoomMessage(
+      messageId: 'local-${DateTime.now().millisecondsSinceEpoch}',
+      senderPersonaId: widget.persona.personaId,
+      body: text,
+      timestamp: DateTime.now(),
+    );
+    setState(() {
+      _localReplies.update(
+        _selectedThreadId!,
+        (list) => [...list, message],
+        ifAbsent: () => [message],
+      );
+      _readMessageIds.add(message.messageId);
+      _composerController.clear();
+    });
+  }
+
+  void _toggleMute(String threadId) {
+    setState(() {
+      if (_mutedThreadIds.contains(threadId)) {
+        _mutedThreadIds.remove(threadId);
+      } else {
+        _mutedThreadIds.add(threadId);
+      }
+    });
+  }
+
+  void _toggleArchive(String threadId) {
+    setState(() {
+      if (_archivedThreadIds.contains(threadId)) {
+        _archivedThreadIds.remove(threadId);
+      } else {
+        _archivedThreadIds.add(threadId);
+        if (_selectedThreadId == threadId) {
+          _selectedThreadId = null;
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _composerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
-    final fill = modernTheme?.resolvedFill ?? accent;
-    final body = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.92);
-    final messageWorkflows = [
-      for (final section in sections)
-        for (final workflow in section.workflows) workflow,
-    ];
-    return DecoratedBox(
+    final foreground = widget.modernTheme?.resolvedHeading ??
+        _foregroundFor(widget.accent);
+    final visibleThreads = _visibleThreads;
+    if (_selectedThread != null) {
+      return _ThreadDetailView(
+        thread: _selectedThread!,
+        foreground: foreground,
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+        personaId: widget.persona.personaId,
+        composerController: _composerController,
+        muted: _mutedThreadIds.contains(_selectedThreadId!),
+        onSend: _sendReply,
+        onBack: () => setState(() => _selectedThreadId = null),
+        onToggleMute: () => _toggleMute(_selectedThreadId!),
+        onToggleArchive: () => _toggleArchive(_selectedThreadId!),
+      );
+    }
+    if (visibleThreads.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inbox_outlined, color: foreground, size: 56),
+              const SizedBox(height: 16),
+              Text(
+                'No messages yet',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${widget.experience.displayName} hasn\'t published any threads for ${widget.persona.label} yet.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: foreground.withValues(alpha: 0.86),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    final inboxFill = widget.modernTheme?.resolvedFill ?? widget.accent;
+    final inboxBorder = widget.modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    return Column(
       key: const ValueKey('messages-tab-surface'),
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: BorderRadius.circular(12),
-        border: modernTheme != null
-            ? Border.all(color: modernTheme!.resolvedBorder)
-            : null,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.forum_outlined, color: foreground),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '${experience.displayName} messages',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.w800,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: inboxFill,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: inboxBorder),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Icon(Icons.forum_outlined, color: foreground, size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${widget.experience.displayName} inbox',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${visibleThreads.length} thread${visibleThreads.length == 1 ? '' : 's'}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground.withValues(alpha: 0.80),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: visibleThreads.length,
+            itemBuilder: (context, index) {
+              final thread = visibleThreads[index];
+              final unread = _isUnread(thread.threadId);
+              final muted = _mutedThreadIds.contains(thread.threadId);
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: InkWell(
+                  key: ValueKey('messages-inbox-item-${thread.threadId}'),
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: () => _toggleThread(thread.threadId),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: foreground.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: foreground.withValues(alpha: 0.14),
+                      ),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: foreground.withValues(alpha: 0.14),
+                        child: Icon(
+                          muted
+                              ? Icons.volume_off_outlined
+                              : Icons.mark_chat_unread_outlined,
+                          color: foreground,
+                          size: 20,
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          if (unread) ...[
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: widget.modernTheme?.accent ??
+                                    widget.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              thread.subject,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    color: foreground,
+                                    fontWeight:
+                                        unread ? FontWeight.w800 : FontWeight.w600,
+                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        _lastPreview(thread.threadId),
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.80),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Text(
+                        '${thread.messages.length}',
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.72),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '${persona.label} can continue community threads, member messages, and connection invites for ${experience.displayName}.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: body,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Expanded thread detail view with chronological message bubbles
+/// and a working composer at the bottom.
+class _ThreadDetailView extends StatelessWidget {
+  const _ThreadDetailView({
+    required this.thread,
+    required this.foreground,
+    required this.accent,
+    this.modernTheme,
+    required this.personaId,
+    required this.composerController,
+    required this.muted,
+    required this.onSend,
+    required this.onBack,
+    required this.onToggleMute,
+    required this.onToggleArchive,
+  });
+
+  final LoomMessageThread thread;
+  final Color foreground;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  final String personaId;
+  final TextEditingController composerController;
+  final bool muted;
+  final VoidCallback onSend;
+  final VoidCallback onBack;
+  final VoidCallback onToggleMute;
+  final VoidCallback onToggleArchive;
+
+  @override
+  Widget build(BuildContext context) {
+    final headerFill = modernTheme?.resolvedFill ?? accent;
+    final headerBorder = modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    return Column(
+      key: ValueKey('messages-thread-detail-${thread.threadId}'),
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: headerFill,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: headerBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               children: [
-                _SurfaceFactPill(
-                  icon: Icons.mark_chat_unread_outlined,
-                  label: 'Threads',
-                  foreground: foreground,
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  color: foreground,
+                  onPressed: onBack,
+                  tooltip: 'Back to inbox',
                 ),
-                _SurfaceFactPill(
-                  icon: Icons.people_alt_outlined,
-                  label: 'Connections',
-                  foreground: foreground,
-                ),
-                _SurfaceFactPill(
-                  icon: Icons.notifications_active_outlined,
-                  label: 'Unread state',
-                  foreground: foreground,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _InboxPreviewCard(
-              accent: accent,
-              modernTheme: modernTheme,
-              title: '${experience.displayName} coordination',
-              sender: persona.label,
-              preview:
-                  'Unread updates, replies, invites, and action follow-up stay in one conversation surface.',
-              timestamp: 'Today',
-            ),
-            const SizedBox(height: 12),
-            _ThreadComposerPreview(accent: accent, modernTheme: modernTheme),
-            if (messageWorkflows.isNotEmpty && workflowBuilder != null) ...[
-              const SizedBox(height: 14),
-              for (final workflow in messageWorkflows)
-                workflowBuilder!(
-                  workflow,
-                  _presentationStateForWorkflow(
-                    workflowId: workflow.workflowId,
-                    focusedWorkflowId: focusedWorkflowId,
-                    expandedWorkflowId: expandedWorkflowId,
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        thread.subject,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        '${thread.messages.length} message${thread.messages.length == 1 ? '' : 's'}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: foreground.withValues(alpha: 0.82),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ],
+                IconButton(
+                  icon: Icon(
+                    muted ? Icons.volume_up : Icons.volume_off,
+                    size: 20,
+                  ),
+                  color: foreground,
+                  tooltip: muted ? 'Unmute' : 'Mute',
+                  onPressed: onToggleMute,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.archive_outlined, size: 20),
+                  color: foreground,
+                  tooltip: 'Archive',
+                  onPressed: onToggleArchive,
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+            itemCount: thread.messages.length,
+            itemBuilder: (context, index) {
+              final message = thread.messages[index];
+              final isMe = message.senderPersonaId == personaId;
+              return Align(
+                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  ),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? (modernTheme?.accent ?? accent).withValues(alpha: 0.18)
+                        : foreground.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        message.body,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatMessageTime(message.timestamp),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: foreground.withValues(alpha: 0.64),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: foreground.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: foreground.withValues(alpha: 0.14)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const ValueKey('messages-composer-field'),
+                    controller: composerController,
+                    style: TextStyle(color: foreground),
+                    decoration: InputDecoration(
+                      hintText: 'Write a reply...',
+                      hintStyle: TextStyle(
+                        color: foreground.withValues(alpha: 0.60),
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                    ),
+                    maxLines: 3,
+                    minLines: 1,
+                  ),
+                ),
+                IconButton(
+                  key: const ValueKey('messages-send-button'),
+                  icon: const Icon(Icons.send),
+                  color: foreground,
+                  tooltip: 'Send',
+                  onPressed: onSend,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  String _formatMessageTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute $period';
   }
 }
 
@@ -296,6 +683,7 @@ class _TabNativeRenderer extends StatelessWidget {
     this.reminderEnabledWorkflowIds = const {},
     this.onToggleReminder,
     this.onSelectCalendarDate,
+    this.onConfirmWorkflow,
   });
 
   final LoomExperienceDefinition experience;
@@ -310,11 +698,15 @@ class _TabNativeRenderer extends StatelessWidget {
   final Set<String> reminderEnabledWorkflowIds;
   final ValueChanged<String>? onToggleReminder;
   final ValueChanged<String>? onSelectCalendarDate;
+  final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
 
   @override
   Widget build(BuildContext context) {
     final rendererId = selectedTab.rendererContract.rendererId;
     final modernTheme = theme.usesModernCardTheme ? theme.tabCard : null;
+    // Messages and Home are the only present-by-default domain tabs.
+    // Marketplace and Giving are data-driven: real UI when data declared,
+    // placeholder otherwise. Other domain tabs stay placeholder-only.
     switch (rendererId) {
       case 'CalendarTabSurface':
         return _CalendarTabSurface(
@@ -335,70 +727,40 @@ class _TabNativeRenderer extends StatelessWidget {
           persona: persona,
           accent: accent,
           modernTheme: modernTheme,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
-          workflowBuilder: workflowBuilder,
         );
       case 'MarketplaceTabSurface':
-        return _MarketplaceTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
+        final listings = experience.marketplaceListings;
+        if (listings != null && listings.isNotEmpty) {
+          return _MarketplaceBrowseSurface(
+            listings: listings,
+            marketplaceTemplate: experience.marketplaceTemplate,
+            workflows: experience.workflows,
+            personaId: persona.personaId,
+            accent: accent,
+            modernTheme: modernTheme,
+            onConfirmWorkflow: onConfirmWorkflow,
+          );
+        }
+        return _TabPlaceholderSurface(
+          tabLabel: selectedTab.label,
+          communityName: experience.displayName,
+          tabIcon: selectedTab.icon,
           accent: accent,
           modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
         );
       case 'DocumentsTabSurface':
-        return _DocumentsTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
-          accent: accent,
-          modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
-        );
       case 'WorkflowStatusSurface':
-        return _WorkflowStatusTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
-          accent: accent,
-          modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
-        );
       case 'PaymentGivingTabSurface':
-        return _PaymentGivingTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
-          accent: accent,
-          modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
-        );
       case 'CareVolunteerTabSurface':
-        return _CareVolunteerTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
-          accent: accent,
-          modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
-        );
       case 'AdminReviewComposeTabSurface':
-        return _AdminReviewComposeTabSurface(
-          experience: experience,
-          sections: sections,
-          focusedWorkflowId: focusedWorkflowId,
-          expandedWorkflowId: expandedWorkflowId,
+        // These domain tabs render via placeholder until their data is declared
+        // in experience JSON (M5: giving payment, etc.)
+        return _TabPlaceholderSurface(
+          tabLabel: selectedTab.label,
+          communityName: experience.displayName,
+          tabIcon: selectedTab.icon,
           accent: accent,
           modernTheme: modernTheme,
-          workflowBuilder: workflowBuilder,
         );
     }
     return _HomeTabSurfaceStack(
@@ -852,63 +1214,583 @@ String _formatEventDateTime(DateTime dateTime) {
   return '$month ${dateTime.day}, $hour:$minute $period';
 }
 
-class _MarketplaceTabSurface extends StatelessWidget {
-  const _MarketplaceTabSurface({
-    required this.experience,
-    required this.sections,
-    required this.focusedWorkflowId,
-    required this.expandedWorkflowId,
+/// Real, interactive Marketplace tab — search, category filter, responsive
+/// grid, listing detail, and loan/queue action wired via onConfirmWorkflow.
+class _MarketplaceBrowseSurface extends StatefulWidget {
+  const _MarketplaceBrowseSurface({
+    required this.listings,
     required this.accent,
     this.modernTheme,
-    required this.workflowBuilder,
+    this.onConfirmWorkflow,
+    this.marketplaceTemplate,
+    this.workflows = const [],
+    this.personaId = 'tabletop-member',
   });
 
-  final LoomExperienceDefinition experience;
-  final List<_CommunityWorkflowSection> sections;
-  final String? focusedWorkflowId;
-  final String? expandedWorkflowId;
+  final List<LoomMarketplaceListing> listings;
   final Color accent;
   final LoomCardTheme? modernTheme;
-  final _WorkflowSurfaceBuilder workflowBuilder;
+  final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
+  final LoomListingStateMachine? marketplaceTemplate;
+  final List<LoomWorkflowDefinition> workflows;
+  final String personaId;
+
+  @override
+  State<_MarketplaceBrowseSurface> createState() =>
+      _MarketplaceBrowseSurfaceState();
+}
+
+class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
+  String _searchQuery = '';
+  String? _selectedCategory;
+  String? _selectedListingId;
+  late final Map<String, LoomMarketplaceListing> _mutableListings;
+
+  @override
+  void initState() {
+    super.initState();
+    _mutableListings = {
+      for (final l in widget.listings) l.listingId: l,
+    };
+  }
+
+  List<LoomMarketplaceListing> get _filteredListings {
+    var listings = _mutableListings.values.toList();
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      listings =
+          listings
+              .where(
+                (l) => l.title.toLowerCase().contains(q) ||
+                    (l.description?.toLowerCase().contains(q) ?? false),
+              )
+              .toList();
+    }
+    if (_selectedCategory != null) {
+      listings =
+          listings
+              .where((l) => l.category == _selectedCategory)
+              .toList();
+    }
+    return listings;
+  }
+
+  LoomMarketplaceListing? get _selectedListing {
+    if (_selectedListingId == null) return null;
+    return _mutableListings[_selectedListingId];
+  }
+
+  LoomWorkflowDefinition? _resolveWorkflow(String workflowId) {
+    try {
+      return widget.workflows.firstWhere((w) => w.workflowId == workflowId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<LoomListingTransition> _actionsFor(LoomMarketplaceListing listing) {
+    // Resolve per-listing: listing's own stateMachine → community template
+    final machine = listing.stateMachine ?? widget.marketplaceTemplate;
+    if (machine == null) return [];
+    final currentState = listing.state ?? listing.availability;
+    return machine.availableActions(currentState, widget.personaId);
+  }
+
+  void _applyTransition(LoomMarketplaceListing listing, LoomListingTransition transition) {
+    final current = _mutableListings[listing.listingId];
+    if (current == null) return;
+    var updated = current;
+
+    if (transition.to != null) {
+      updated = updated.copyWith(availability: transition.to!);
+    }
+    if (transition.setsHolderToActor) {
+      updated = updated.copyWith(currentHolderLabel: 'You (Member)');
+    }
+    if (transition.clearsHolder) {
+      updated = updated.copyWith(currentHolderLabel: null);
+    }
+    if (transition.incrementsQueue) {
+      updated = updated.copyWith(queueLength: current.queueLength + 1);
+    }
+    if (transition.decrementsQueue) {
+      updated = updated.copyWith(queueLength: (current.queueLength - 1).clamp(0, 999));
+    }
+    if (transition.removesFromList) {
+      setState(() => _mutableListings.remove(listing.listingId));
+      return;
+    }
+    setState(() => _mutableListings[listing.listingId] = updated);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final workflows = _workflowsFromSections(sections);
-    if (workflows.isEmpty) {
-      return _TabEmptyState(
-        icon: Icons.storefront_outlined,
-        title: 'No listings yet',
-        body:
-            'Listings, loans, queues, and giveaways for ${experience.displayName} will appear here.',
-        accent: accent,
-        modernTheme: modernTheme,
+    final foreground = _foregroundFor(widget.accent);
+    final listing = _selectedListing;
+    if (listing != null) {
+      final actions = _actionsFor(listing);
+      return _ListingDetailView(
+        listing: listing,
+        foreground: foreground,
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+        onBack: () => setState(() => _selectedListingId = null),
+        onConfirmWorkflow: widget.onConfirmWorkflow,
+        resolveWorkflow: _resolveWorkflow,
+        engineActions: actions,
+        onTransitionApplied: (transition) => _applyTransition(listing, transition),
       );
     }
+    final filtered = _filteredListings;
+    final categories = <String>{
+      for (final l in _mutableListings.values)
+        if (l.category != null) l.category!,
+    };
+    final fill = widget.modernTheme?.resolvedFill ?? widget.accent;
+    final border = widget.modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
     return Column(
       key: const ValueKey('marketplace-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _MarketplaceSearchHeader(accent: accent, modernTheme: modernTheme),
-        const SizedBox(height: 12),
-        _TabNativeSummary(
-          icon: Icons.inventory_2_outlined,
-          title: '${experience.displayName} marketplace',
-          body:
-              'Browse available items, inspect listing details, join a queue, see current-holder state, or list an item.',
-          accent: accent,
-          modernTheme: modernTheme,
-          facts: const ['Browse', 'Search', 'List item', 'Queue', 'Holder'],
+        // Search field
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TextField(
+            key: const ValueKey('marketplace-search-field'),
+            style: TextStyle(color: foreground),
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search, color: foreground),
+              hintText: 'Search available items',
+              hintStyle: TextStyle(
+                color: foreground.withValues(alpha: 0.60),
+              ),
+              filled: true,
+              fillColor: foreground.withValues(alpha: 0.06),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(
+                  color: widget.modernTheme?.accent ?? widget.accent,
+                ),
+              ),
+            ),
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
         ),
-        const SizedBox(height: 12),
-        for (final workflow in workflows)
-          workflowBuilder(
-            workflow,
-            _presentationStateForWorkflow(
-              workflowId: workflow.workflowId,
-              focusedWorkflowId: focusedWorkflowId,
-              expandedWorkflowId: expandedWorkflowId,
+        // Category filter chips
+        if (categories.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final cat in categories)
+                  InkWell(
+                    key: ValueKey('marketplace-filter-$cat'),
+                    borderRadius: BorderRadius.circular(999),
+                    onTap: () => setState(() {
+                      _selectedCategory =
+                          _selectedCategory == cat ? null : cat;
+                    }),
+                    child: Chip(
+                      label: Text(cat),
+                      backgroundColor:
+                          _selectedCategory == cat
+                              ? (widget.modernTheme?.accent ?? widget.accent)
+                              : foreground.withValues(alpha: 0.10),
+                      labelStyle: TextStyle(
+                        color:
+                            _selectedCategory == cat
+                                ? Colors.white
+                                : foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      side: BorderSide(
+                        color:
+                            _selectedCategory == cat
+                                ? (widget.modernTheme?.accent ??
+                                    widget.accent)
+                                : border,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
+        // Grid — uses a fixed height via LayoutBuilder so it works inside
+        // the community SingleChildScrollView as well as standalone.
+        if (filtered.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text(
+                'No listings match your search',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: foreground.withValues(alpha: 0.80),
+                ),
+              ),
+            ),
+          )
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth > 380;
+              final crossAxisCount = wide ? 3 : 2;
+              // Compute needed height from item count + spacing.
+              final itemWidth =
+                  (constraints.maxWidth - (crossAxisCount - 1) * 10) /
+                      crossAxisCount;
+              final itemHeight = itemWidth / 0.72;
+              final rows = (filtered.length / crossAxisCount).ceil();
+              final gridHeight = rows * (itemHeight + 10) - 10;
+              return SizedBox(
+                height: gridHeight,
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 0.72,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final item = filtered[index];
+                    return _ListingCard(
+                      listing: item,
+                      foreground: foreground,
+                      fill: fill,
+                      border: border,
+                      accent: widget.accent,
+                      modernTheme: widget.modernTheme,
+                      onTap: () =>
+                          setState(() => _selectedListingId = item.listingId),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+/// Compact listing card for the marketplace grid.
+class _ListingCard extends StatelessWidget {
+  const _ListingCard({
+    required this.listing,
+    required this.foreground,
+    required this.fill,
+    required this.border,
+    required this.accent,
+    this.modernTheme,
+    required this.onTap,
+  });
+
+  final LoomMarketplaceListing listing;
+  final Color foreground;
+  final Color fill;
+  final Color border;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final statusLabel = switch (listing.availability) {
+      'onLoan' => 'On loan',
+      'queued' => 'Queued',
+      _ => 'Available',
+    };
+    final statusColor = listing.availability == 'available'
+        ? Colors.green
+        : listing.availability == 'queued'
+            ? Colors.orange
+            : foreground.withValues(alpha: 0.70);
+    return InkWell(
+      key: ValueKey('marketplace-listing-${listing.listingId}'),
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: foreground.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      statusLabel,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                listing.title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (listing.category != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  listing.category!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.72),
+                  ),
+                ),
+              ],
+              if (listing.currentHolderLabel != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Holder: ${listing.currentHolderLabel}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.70),
+                  ),
+                ),
+              ],
+              if (listing.queueLength > 0) ...[
+                const SizedBox(height: 2),
+                Text(
+                  'Queue: ${listing.queueLength}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              const Spacer(),
+              if (listing.dueLabel != null)
+                Text(
+                  listing.dueLabel!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: foreground.withValues(alpha: 0.64),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full listing detail with description, condition, holder/queue info,
+/// and engine-derived action buttons (GAP B: resolves real workflows).
+class _ListingDetailView extends StatelessWidget {
+  const _ListingDetailView({
+    required this.listing,
+    required this.foreground,
+    required this.accent,
+    this.modernTheme,
+    required this.onBack,
+    this.onConfirmWorkflow,
+    this.resolveWorkflow,
+    this.engineActions = const [],
+    this.onTransitionApplied,
+  });
+
+  final LoomMarketplaceListing listing;
+  final Color foreground;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  final VoidCallback onBack;
+  final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
+  final LoomWorkflowDefinition? Function(String workflowId)? resolveWorkflow;
+  final List<LoomListingTransition> engineActions;
+  final ValueChanged<LoomListingTransition>? onTransitionApplied;
+
+  @override
+  Widget build(BuildContext context) {
+    final headerFill = modernTheme?.resolvedFill ?? accent;
+    final headerBorder = modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    final factFill = modernTheme?.resolvedFill ??
+        Color.alphaBlend(foreground.withValues(alpha: 0.06), accent);
+    return Column(
+      key: ValueKey('marketplace-listing-detail-${listing.listingId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Header with back button
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: headerFill,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: headerBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  color: foreground,
+                  onPressed: onBack,
+                  tooltip: 'Back to browse',
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    listing.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Facts
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: factFill,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: foreground.withValues(alpha: 0.14),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (listing.condition != null)
+                  _SurfaceFactPill(
+                    icon: Icons.verified_outlined,
+                    label: listing.condition!,
+                    foreground: foreground,
+                  ),
+                _SurfaceFactPill(
+                  icon: Icons.label_outline,
+                  label: listing.availability == 'available'
+                      ? 'Available'
+                      : listing.availability == 'onLoan'
+                          ? 'On loan'
+                          : 'Queued',
+                  foreground: foreground,
+                ),
+                if (listing.category != null)
+                  _SurfaceFactPill(
+                    icon: Icons.category_outlined,
+                    label: listing.category!,
+                    foreground: foreground,
+                  ),
+                if (listing.currentHolderLabel != null)
+                  _SurfaceFactPill(
+                    icon: Icons.person_outline,
+                    label: 'Holder: ${listing.currentHolderLabel}',
+                    foreground: foreground,
+                  ),
+                if (listing.queueLength > 0)
+                  _SurfaceFactPill(
+                    icon: Icons.queue_outlined,
+                    label: 'Queue: ${listing.queueLength}',
+                    foreground: foreground,
+                  ),
+                if (listing.dueLabel != null)
+                  _SurfaceFactPill(
+                    icon: Icons.schedule_outlined,
+                    label: listing.dueLabel!,
+                    foreground: foreground,
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Description
+        if (listing.description != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              listing.description!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: foreground.withValues(alpha: 0.88),
+              ),
+            ),
+          ),
+        // Engine-derived action buttons (GAP C: all states get actions)
+        if (engineActions.isNotEmpty) ...[
+          for (final transition in engineActions)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton.icon(
+                  key: ValueKey('marketplace-action-${transition.id}'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        modernTheme?.primaryButton?.resolvedFill ?? accent,
+                    foregroundColor:
+                        modernTheme?.primaryButton?.resolvedForeground ??
+                            Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () {
+                    // GAP B: resolve the real workflow from the transition
+                    final workflowId = transition.linkedWorkflowId;
+                    final workflow = workflowId != null
+                        ? resolveWorkflow?.call(workflowId)
+                        : null;
+                    if (workflow != null && onConfirmWorkflow != null) {
+                      onConfirmWorkflow!(workflow);
+                    }
+                    // GAP A: apply the transition's effects to mutable state
+                    onTransitionApplied?.call(transition);
+                  },
+                  icon: Icon(
+                    transition.id == 'borrow'
+                        ? Icons.swap_horiz
+                        : transition.id == 'join-queue'
+                            ? Icons.queue_outlined
+                            : transition.id == 'return'
+                                ? Icons.assignment_return_outlined
+                                : Icons.arrow_forward,
+                  ),
+                  label: Text(transition.label),
+                ),
+              ),
+            ),
+        ],
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -1218,6 +2100,75 @@ class _TabEmptyState extends StatelessWidget {
   }
 }
 
+/// Empty-state placeholder shown when a community has declared a domain tab
+/// (e.g. Marketplace, Documents, Care, Admin) but hasn't yet populated its
+/// data. Replaces the old mock renderers with an honest "coming soon" card
+/// themed to the community accent.
+class _TabPlaceholderSurface extends StatelessWidget {
+  const _TabPlaceholderSurface({
+    required this.tabLabel,
+    required this.communityName,
+    required this.tabIcon,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final String tabLabel;
+  final String communityName;
+  final IconData tabIcon;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+    final fill = modernTheme?.resolvedFill ?? accent.withValues(alpha: 0.82);
+    final border = modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    final bodyColor = modernTheme?.resolvedBody ??
+        foreground.withValues(alpha: 0.86);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(tabIcon, color: foreground, size: 56),
+            const SizedBox(height: 20),
+            Text(
+              '$tabLabel is coming to $communityName',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: fill,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: border),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Text(
+                  'This tab will light up when $communityName publishes '
+                  '${tabLabel.toLowerCase()} content. Check back soon.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: bodyColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _WeekDateStrip extends StatelessWidget {
   const _WeekDateStrip({required this.accent, this.modernTheme});
 
@@ -1273,72 +2224,6 @@ class _WeekDateStrip extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _MarketplaceSearchHeader extends StatelessWidget {
-  const _MarketplaceSearchHeader({required this.accent, this.modernTheme});
-
-  final Color accent;
-  final LoomCardTheme? modernTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    final foreground = _foregroundFor(accent);
-    return DecoratedBox(
-      key: const ValueKey('marketplace-browse-search'),
-      decoration: BoxDecoration(
-        color: modernTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: modernTheme?.resolvedBorder ?? accent.withValues(alpha: 0.22),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: accent),
-                hintText: 'Search available items',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _SurfaceFactPill(
-                  icon: Icons.inventory_2_outlined,
-                  label: 'Available',
-                  foreground: accent,
-                ),
-                _SurfaceFactPill(
-                  icon: Icons.schedule_outlined,
-                  label: 'Queue',
-                  foreground: accent,
-                ),
-                _SurfaceFactPill(
-                  icon: Icons.person_pin_circle_outlined,
-                  label: 'Current holder',
-                  foreground: accent,
-                ),
-                _SurfaceFactPill(
-                  icon: Icons.add_box_outlined,
-                  label: 'List item',
-                  foreground: foreground,
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

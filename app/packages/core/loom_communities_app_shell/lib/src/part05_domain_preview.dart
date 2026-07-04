@@ -92,6 +92,7 @@ class _WorkflowSurfacePresenter extends StatelessWidget {
     required this.view,
     required this.state,
     required this.theme,
+    this.modernTheme,
     required this.child,
     required this.onPressed,
     required this.onReceivePressed,
@@ -104,6 +105,14 @@ class _WorkflowSurfacePresenter extends StatelessWidget {
   final LoomPersonaWorkflowView view;
   final SurfacePresentationState state;
   final LoomCardTheme theme;
+
+  /// Non-null only for communities that opted into the modern card theme —
+  /// see `LoomSurfaceTheme.usesModernCardTheme`. `theme` itself is always
+  /// populated (bespoke communities resolve a legacy dark/solid theme here
+  /// too), so this separate flag is what lets the minimized surface's chips
+  /// switch to an accent tint without misclassifying a bespoke community's
+  /// own light accent as "modern".
+  final LoomCardTheme? modernTheme;
   final Widget child;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
@@ -130,6 +139,7 @@ class _WorkflowSurfacePresenter extends StatelessWidget {
         view: view,
         contract: contract,
         theme: theme,
+        modernTheme: modernTheme,
         onExpand: onExpand,
         onPressed: onPressed,
         onReceivePressed: onReceivePressed,
@@ -229,6 +239,7 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
     required this.view,
     required this.contract,
     required this.theme,
+    this.modernTheme,
     required this.onExpand,
     required this.onPressed,
     required this.onReceivePressed,
@@ -238,6 +249,10 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
   final LoomPersonaWorkflowView view;
   final LoomProductionWorkflowContract contract;
   final LoomCardTheme theme;
+
+  /// Non-null only for communities that opted into the modern card theme —
+  /// see `_WorkflowSurfacePresenter.modernTheme`.
+  final LoomCardTheme? modernTheme;
   final VoidCallback onExpand;
   final VoidCallback onPressed;
   final VoidCallback onReceivePressed;
@@ -325,6 +340,7 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
                           : Icons.center_focus_strong_outlined,
                       label: complete ? contract.successChipLabel : 'Minimized',
                       foreground: foreground,
+                      accent: modernTheme?.accent,
                     ),
                   ],
                 ),
@@ -337,11 +353,13 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
                       icon: Icons.unfold_more_outlined,
                       label: 'Tap for expanded view',
                       foreground: foreground,
+                      accent: modernTheme?.accent,
                     ),
                     _SurfaceFactPill(
                       icon: Icons.layers_outlined,
                       label: _surfaceLabelFor(contract.category),
                       foreground: foreground,
+                      accent: modernTheme?.accent,
                     ),
                   ],
                 ),
@@ -352,9 +370,11 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
                       key: ValueKey('workflow-expand-${workflow.workflowId}'),
                       onPressed: onExpand,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: foreground,
+                        foregroundColor: modernTheme?.accent ?? foreground,
                         side: BorderSide(
-                          color: foreground.withValues(alpha: 0.34),
+                          color: modernTheme?.accent != null
+                              ? modernTheme!.accent!.withValues(alpha: 0.4)
+                              : foreground.withValues(alpha: 0.34),
                         ),
                       ),
                       icon: const Icon(Icons.open_in_full_outlined, size: 18),
@@ -367,6 +387,7 @@ class _MinimizedWorkflowSurface extends StatelessWidget {
                         workflow: workflow,
                         view: view,
                         accentOverride: theme.accent,
+                        modernTheme: modernTheme,
                         onPressed: onPressed,
                         onReceivePressed: onReceivePressed,
                       ),
@@ -709,8 +730,13 @@ class _RichWorkflowTile extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: foreground.withValues(alpha: 0.13),
-                  child: Icon(spec.icon, color: foreground),
+                  backgroundColor: modernTheme?.accent != null
+                      ? modernTheme!.accent!.withValues(alpha: 0.15)
+                      : foreground.withValues(alpha: 0.13),
+                  child: Icon(
+                    spec.icon,
+                    color: modernTheme?.accent ?? foreground,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -754,6 +780,7 @@ class _RichWorkflowTile extends StatelessWidget {
                     icon: fact.icon,
                     label: fact.label,
                     foreground: foreground,
+                    accent: modernTheme?.accent,
                   ),
               ],
             ),
@@ -766,14 +793,17 @@ class _RichWorkflowTile extends StatelessWidget {
               _InteractionModelSummary(
                 contract: contract,
                 foreground: foreground,
+                modernTheme: modernTheme,
               ),
               const SizedBox(height: 12),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: foreground.withValues(alpha: 0.10),
+                  color: modernTheme?.resolvedFill ??
+                      foreground.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: foreground.withValues(alpha: 0.20),
+                    color: modernTheme?.resolvedBorder ??
+                        foreground.withValues(alpha: 0.20),
                   ),
                 ),
                 child: Padding(
@@ -800,6 +830,7 @@ class _RichWorkflowTile extends StatelessWidget {
                         icon: Icons.compare_arrows_outlined,
                         label: spec.alternateActionLabel,
                         foreground: foreground,
+                        accent: modernTheme?.accent,
                       ),
                     ],
                   ),
@@ -864,6 +895,7 @@ class _RichWorkflowTile extends StatelessWidget {
                   icon: Icons.done,
                   label: spec.completeLabel,
                   foreground: foreground,
+                  accent: modernTheme?.accent,
                 ),
               ),
             if (view.received)
@@ -874,6 +906,7 @@ class _RichWorkflowTile extends StatelessWidget {
                   icon: Icons.mark_email_read_outlined,
                   label: 'Received',
                   foreground: foreground,
+                  accent: modernTheme?.accent,
                 ),
               ),
           ],

@@ -502,34 +502,69 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       experience.extensionId,
       experience: experience,
     );
+    final usesModernCardTheme = experience.themeOverride != null;
+    final communityCard = usesModernCardTheme
+        ? LoomCardTheme.merge(
+            LoomCardTheme.deriveFromAccent(
+              Color(experience.accentColor),
+              lightSurface: true,
+            ),
+            experience.themeOverride,
+          )
+        : null;
     final selected = await showDialog<String>(
       context: context,
       builder: (context) {
+        final dialogAccent = communityCard?.accent;
         return AlertDialog(
           key: const ValueKey('persona-picker-dialog'),
-          title: const Text('Account role and permissions'),
+          backgroundColor: communityCard?.resolvedFill,
+          shape: communityCard != null
+              ? RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                )
+              : null,
+          title: Text(
+            'Account role and permissions',
+            style: communityCard != null
+                ? TextStyle(color: communityCard.resolvedHeading)
+                : null,
+          ),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Your memberships determine which community actions are available. Choose the role you want to use in this community.',
+                    style: communityCard != null
+                        ? TextStyle(color: communityCard.resolvedBody)
+                        : null,
                   ),
                   const SizedBox(height: 8),
                   for (final persona in personas)
                     ListTile(
                       key: ValueKey('persona-option-${persona.personaId}'),
                       selected: persona.personaId == activePersona.personaId,
+                      selectedTileColor: dialogAccent?.withValues(alpha: 0.08),
                       leading: Icon(
                         persona.personaId == activePersona.personaId
                             ? Icons.radio_button_checked
                             : Icons.radio_button_unchecked,
+                        color: dialogAccent,
                       ),
-                      title: Text(persona.label),
+                      title: Text(
+                        persona.label,
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedHeading)
+                            : null,
+                      ),
                       subtitle: Text(
                         '${persona.roleLabel} - ${persona.description}',
+                        style: communityCard != null
+                            ? TextStyle(color: communityCard.resolvedBody)
+                            : null,
                       ),
                       onTap: () => Navigator.of(context).pop(persona.personaId),
                     ),
@@ -540,6 +575,9 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: dialogAccent != null
+                  ? TextButton.styleFrom(foregroundColor: dialogAccent)
+                  : null,
               child: const Text('Cancel'),
             ),
           ],
@@ -602,6 +640,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         view: view,
         state: state,
         theme: workflowCardTheme,
+        modernTheme: modernTheme,
         child: workflowTile,
         onPressed: () => _confirmWorkflow(workflow),
         onReceivePressed: () => _receiveWorkflow(
@@ -709,29 +748,42 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    const Icon(Icons.campaign_outlined, color: Colors.white),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'No sponsored message right now.',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: Colors.white,
+            Builder(
+              builder: (context) {
+                final bannerTheme = shellSpec.theme.usesModernCardTheme
+                    ? shellSpec.theme.communityCard
+                    : null;
+                final bannerFill =
+                    bannerTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.10);
+                final bannerBorder = bannerTheme?.resolvedBorder ??
+                    Colors.white.withValues(alpha: 0.22);
+                final bannerForeground =
+                    bannerTheme?.resolvedBody ?? Colors.white;
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: bannerFill,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: bannerBorder),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.campaign_outlined, color: bannerForeground),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'No sponsored message right now.',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: bannerForeground,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 20),
             Builder(
@@ -822,6 +874,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                             experience: experience,
                           ).length,
                           foreground: heroHeading,
+                          modernTheme: heroTheme,
                         ),
                         Offstage(
                           child: Text(
@@ -881,6 +934,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
               onSelectCalendarDate: (workflowId) => setState(() {
                 _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
               }),
+              onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
             ),
             const SizedBox(height: 24),
             ExpansionTile(

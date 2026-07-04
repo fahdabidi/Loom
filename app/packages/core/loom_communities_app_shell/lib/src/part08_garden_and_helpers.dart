@@ -379,23 +379,49 @@ Color _actionScreenBackgroundFor(Color accent) {
   return _screenBackgroundFor(accent);
 }
 
+/// Resolves a `FilledButton`/`OutlinedButton` style from a `LoomButtonTheme`
+/// token (`LoomCardTheme.primaryButton`/`secondaryButton`) — null when
+/// [buttonTheme] is null so callers fall back to their existing legacy
+/// button formula unchanged.
+ButtonStyle? _buttonStyleFor(LoomButtonTheme? buttonTheme) {
+  if (buttonTheme == null) return null;
+  final borderWidth = buttonTheme.borderWidth ?? 0;
+  return FilledButton.styleFrom(
+    backgroundColor: buttonTheme.resolvedFill,
+    foregroundColor: buttonTheme.resolvedForeground,
+    iconColor: buttonTheme.resolvedForeground,
+    side: borderWidth > 0
+        ? BorderSide(color: buttonTheme.resolvedBorder, width: borderWidth)
+        : BorderSide.none,
+    shape: buttonTheme.resolvedShape,
+    textStyle: TextStyle(fontWeight: buttonTheme.labelWeight),
+  );
+}
+
 class _InteractionModelSummary extends StatelessWidget {
   const _InteractionModelSummary({
     required this.contract,
     required this.foreground,
+    this.modernTheme,
   });
 
   final LoomProductionWorkflowContract contract;
   final Color foreground;
+
+  /// Non-null only for communities that opted into the modern card theme —
+  /// see `_SurfaceFactPill.accent`.
+  final LoomCardTheme? modernTheme;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.10),
+        color: modernTheme?.resolvedFill ?? foreground.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: foreground.withValues(alpha: 0.18)),
+        border: Border.all(
+          color: modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
@@ -417,6 +443,7 @@ class _InteractionModelSummary extends StatelessWidget {
                   icon: Icons.compare_arrows_outlined,
                   label: contract.alternateActionLabel,
                   foreground: foreground,
+                  accent: modernTheme?.accent,
                 ),
               ],
             ),
@@ -432,31 +459,42 @@ class _SurfaceFactPill extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.foreground,
+    this.accent,
   });
 
   final IconData icon;
   final String label;
   final Color foreground;
 
+  /// Non-null only for communities that opted into the modern card theme —
+  /// switches the pill from a `foreground`-tinted gray wash (dark ink at low
+  /// alpha reads as flat gray) to an accent tint, matching the reference
+  /// `CommunityLaunchCard` chip look.
+  final Color? accent;
+
   @override
   Widget build(BuildContext context) {
+    final tint = accent ?? foreground;
+    final contentColor = accent ?? foreground;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.12),
+        color: tint.withValues(alpha: accent != null ? 0.10 : 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: foreground.withValues(alpha: 0.22)),
+        border: Border.all(
+          color: tint.withValues(alpha: accent != null ? 0.24 : 0.22),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 17, color: foreground),
+            Icon(icon, size: 17, color: contentColor),
             const SizedBox(width: 7),
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: foreground,
+                color: contentColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -473,31 +511,40 @@ class _StateBadge extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.foreground,
+    this.accent,
   });
 
   final IconData icon;
   final String label;
   final Color foreground;
 
+  /// Non-null only for communities that opted into the modern card theme —
+  /// see `_SurfaceFactPill.accent`.
+  final Color? accent;
+
   @override
   Widget build(BuildContext context) {
+    final tint = accent ?? foreground;
+    final contentColor = accent ?? foreground;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: foreground.withValues(alpha: 0.14),
+        color: tint.withValues(alpha: accent != null ? 0.12 : 0.14),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: foreground.withValues(alpha: 0.24)),
+        border: Border.all(
+          color: tint.withValues(alpha: accent != null ? 0.28 : 0.24),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: foreground),
+            Icon(icon, size: 18, color: contentColor),
             const SizedBox(width: 8),
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: foreground,
+                color: contentColor,
                 fontWeight: FontWeight.w700,
               ),
             ),

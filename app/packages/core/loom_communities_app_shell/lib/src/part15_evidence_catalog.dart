@@ -89,6 +89,49 @@ LoomExperienceDefinition? _experienceFromConfiguration(
 
   final themeRaw = experienceConfiguration['theme'];
 
+  List<LoomMessageThread>? threads;
+  final threadsRaw = experienceConfiguration['threads'];
+  if (threadsRaw is List) {
+    final parsed = <LoomMessageThread>[
+      for (final entry in threadsRaw)
+        if (entry is Map<String, Object?>)
+          if (_parseThread(entry) case final thread?) thread,
+    ];
+    if (parsed.isNotEmpty) threads = parsed;
+  }
+
+  // Parse marketplace templates first (listings may reference them)
+  LoomListingStateMachine? marketplaceTemplate;
+  final Map<String, LoomListingStateMachine> marketplaceTemplateMap = {};
+  final marketplaceRaw = experienceConfiguration['marketplace'];
+  if (marketplaceRaw is Map<String, Object?>) {
+    final templatesRaw = marketplaceRaw['templates'];
+    if (templatesRaw is Map<String, Object?>) {
+      for (final entry in templatesRaw.entries) {
+        final value = entry.value;
+        if (value is Map<String, Object?>) {
+          final parsed = _parseListingStateMachine(value);
+          if (parsed != null) {
+            marketplaceTemplateMap[entry.key] = parsed;
+          }
+        }
+      }
+    }
+  }
+  // Default template (first available) for backward compatibility
+  marketplaceTemplate = marketplaceTemplateMap.values.firstOrNull;
+
+  List<LoomMarketplaceListing>? marketplaceListings;
+  final listingsRaw = experienceConfiguration['marketplaceListings'];
+  if (listingsRaw is List) {
+    final parsed = <LoomMarketplaceListing>[
+      for (final entry in listingsRaw)
+        if (entry is Map<String, Object?>)
+          if (_parseListing(entry, marketplaceTemplateMap) case final listing?) listing,
+    ];
+    if (parsed.isNotEmpty) marketplaceListings = parsed;
+  }
+
   return LoomExperienceDefinition(
     extensionId: extensionId,
     displayName: _shellStringOr(
@@ -109,6 +152,9 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     tabThemeOverrides: _parseTabThemes(
       themeRaw is Map<String, Object?> ? themeRaw['tabThemes'] : null,
     ),
+    threads: threads,
+    marketplaceListings: marketplaceListings,
+    marketplaceTemplate: marketplaceTemplate,
   );
 }
 
@@ -136,6 +182,7 @@ LoomWorkflowDefinition? _parseWorkflowDefinition(Map<String, Object?> map) {
     calendarItem: _parseCalendarItem(map['calendar']),
     responseChoices: _parseResponseChoices(map['responseChoices']),
     theme: _parseCardTheme(map['theme']),
+    givingPayment: _parseGivingPayment(map['givingPayment']),
   );
 }
 
@@ -315,10 +362,151 @@ LoomCalendarItem? _parseCalendarItem(Object? value) {
   }
   final location = value['location'];
   final capacityLabel = value['capacityLabel'];
+  final host = value['host'];
   return LoomCalendarItem(
     dateTime: dateTime,
     location: location is String ? location : null,
     capacityLabel: capacityLabel is String ? capacityLabel : null,
+    host: host is String ? host : null,
+  );
+}
+
+LoomGivingPayment? _parseGivingPayment(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final amountLabel = value['amountLabel'];
+  if (amountLabel is! String || amountLabel.isEmpty) return null;
+  return LoomGivingPayment(
+    amountLabel: amountLabel,
+    purpose: value['purpose'] as String?,
+    cadence: value['cadence'] as String?,
+    entitlement: value['entitlement'] as String?,
+  );
+}
+
+LoomMessageThread? _parseThread(Map<String, Object?> map) {
+  final threadId = map['threadId'];
+  final subject = map['subject'];
+  if (threadId is! String || threadId.isEmpty || subject is! String) return null;
+  final participantPersonaIds = _shellStringList(map['participantPersonaIds']);
+  final messagesRaw = map['messages'];
+  final messages = <LoomMessage>[];
+  if (messagesRaw is List) {
+    for (final entry in messagesRaw) {
+      if (entry is Map<String, Object?>) {
+        final parsed = _parseMessage(entry);
+        if (parsed != null) messages.add(parsed);
+      }
+    }
+  }
+  return LoomMessageThread(
+    threadId: threadId,
+    subject: subject,
+    participantPersonaIds: participantPersonaIds,
+    messages: messages,
+    muted: map['muted'] == true,
+    archived: map['archived'] == true,
+  );
+}
+
+LoomMessage? _parseMessage(Map<String, Object?> map) {
+  final messageId = map['messageId'];
+  final senderPersonaId = map['senderPersonaId'];
+  final body = map['body'];
+  if (messageId is! String || messageId.isEmpty || senderPersonaId is! String || body is! String) return null;
+  final timestamp = DateTime.tryParse(map['timestamp'] as String? ?? '') ?? DateTime.now();
+  return LoomMessage(messageId: messageId, senderPersonaId: senderPersonaId, body: body, timestamp: timestamp);
+}
+
+LoomMarketplaceListing? _parseListing(
+  Map<String, Object?> map,
+  Map<String, LoomListingStateMachine> marketplaceTemplateMap,
+) {
+  final listingId = map['listingId'];
+  final title = map['title'];
+  if (listingId is! String || listingId.isEmpty || title is! String || title.isEmpty) return null;
+
+  LoomListingStateMachine? resolvedStateMachine;
+  // 1) Inline stateMachine overrides everything
+  final smRaw = map['stateMachine'];
+  if (smRaw is Map<String, Object?>) {
+    resolvedStateMachine = _parseListingStateMachine(smRaw);
+  }
+  // 2) Named template reference
+  if (resolvedStateMachine == null) {
+    final templateName = map['template'];
+    if (templateName is String) {
+      resolvedStateMachine = marketplaceTemplateMap[templateName];
+    }
+  }
+  // 3) Runtime state override, defaulting to machine's initialState
+  final stateOverride = map['state'] as String? ??
+      resolvedStateMachine?.initialState;
+
+  return LoomMarketplaceListing(
+    listingId: listingId,
+    title: title,
+    category: map['category'] as String?,
+    iconKey: map['iconKey'] as String?,
+    condition: map['condition'] as String?,
+    availability: map['availability'] as String? ?? 'available',
+    currentHolderLabel: map['currentHolderLabel'] as String?,
+    queueLength: (map['queueLength'] as num?)?.toInt() ?? 0,
+    dueLabel: map['dueLabel'] as String?,
+    description: map['description'] as String?,
+    linkedWorkflowId: map['linkedWorkflowId'] as String?,
+    stateMachine: resolvedStateMachine,
+    template: map['template'] as String?,
+    state: stateOverride,
+  );
+}
+
+LoomListingStateMachine? _parseListingStateMachine(Map<String, Object?> map) {
+  final initialState = map['initialState'];
+  if (initialState is! String) return null;
+  final statesRaw = map['states'];
+  final transitionsRaw = map['transitions'];
+  if (statesRaw is! Map<String, Object?> || transitionsRaw is! List) return null;
+  final states = <String, LoomListingState>{};
+  for (final entry in statesRaw.entries) {
+    final value = entry.value;
+    if (value is Map<String, Object?>) {
+      final label = value['label'];
+      if (label is String) {
+        states[entry.key] = LoomListingState(
+          label: label,
+          tone: value['tone'] as String?,
+          showsHolder: value['showsHolder'] == true,
+          showsDue: value['showsDue'] == true,
+          showsQueue: value['showsQueue'] == true,
+        );
+      }
+    }
+  }
+  if (!states.containsKey(initialState)) return null;
+  final transitions = <LoomListingTransition>[
+    for (final entry in transitionsRaw)
+      if (entry is Map<String, Object?>) _parseTransition(entry),
+  ];
+  return LoomListingStateMachine(
+    initialState: initialState,
+    states: states,
+    transitions: transitions,
+  );
+}
+
+LoomListingTransition _parseTransition(Map<String, Object?> map) {
+  return LoomListingTransition(
+    id: map['id'] as String? ?? '',
+    label: map['label'] as String? ?? '',
+    fromStates: _shellStringList(map['from']),
+    to: map['to'] as String?,
+    allowedPersonaIds: _shellStringList(map['allowedPersonaIds']),
+    linkedWorkflowId: map['linkedWorkflowId'] as String?,
+    setsHolderToActor: map['setsHolderToActor'] == true,
+    clearsHolder: map['clearsHolder'] == true,
+    incrementsQueue: map['incrementsQueue'] == true,
+    decrementsQueue: map['decrementsQueue'] == true,
+    removesFromList: map['removesFromList'] == true,
   );
 }
 
