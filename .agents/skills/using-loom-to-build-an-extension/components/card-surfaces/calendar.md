@@ -28,6 +28,27 @@ Masjid can show prayer, classes, Ramadan events, volunteer shifts, and donation 
 Use this surface when users need to discover "what is happening when" across the community. Use
 [Event RSVP](./event-rsvp.md) for the event detail/action flow after a calendar item is selected.
 
+### Calendar Item JSON
+
+A dated workflow declares a `calendar` block. The `host` field is optional and renders as a fact
+pill in the event detail alongside date/time, location, and capacity.
+
+```json
+{
+  "workflowId": "tabletop-game-night-rsvp",
+  "calendar": {
+    "date": "2026-07-10",
+    "time": "19:00",
+    "location": "Community room",
+    "host": "Alex Chen (Organizer)",
+    "capacityLabel": "12 of 20 seats filled"
+  }
+}
+```
+
+The agenda groups events by date (`YYYY-MM-DD`), with a date header ("Jul 10") above the event
+cards for each group. Tapping an event card expands it to the full event detail panel.
+
 ## API Support
 
 Requires `CommunityCalendarSurfaceApi`: `listCalendarItems`, `getCalendarItem`, `createCalendarItem`,

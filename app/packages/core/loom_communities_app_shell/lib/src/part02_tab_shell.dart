@@ -961,10 +961,19 @@ class _CalendarTabSurface extends StatelessWidget {
       (workflow) => workflow.workflowId == focusedWorkflowId,
       orElse: () => datedWorkflows.first,
     );
+    // Group dated workflows by date string (ISO date YYYY-MM-DD)
+    final groupedByDate = <String, List<LoomWorkflowDefinition>>{};
+    for (final wf in datedWorkflows) {
+      final dateKey = _isoDateKey(wf.calendarItem!.dateTime);
+      groupedByDate.putIfAbsent(dateKey, () => []).add(wf);
+    }
+    final dateKeys = groupedByDate.keys.toList()..sort();
+
     return Column(
       key: const ValueKey('calendar-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Horizontal quick-jump date strip (preserved)
         _CalendarAgendaDateStrip(
           accent: accent,
           modernTheme: modernTheme,
@@ -973,17 +982,81 @@ class _CalendarTabSurface extends StatelessWidget {
           onSelectWorkflow: onSelectCalendarDate,
         ),
         const SizedBox(height: 12),
-        _CalendarEventDetail(
-          accent: accent,
-          modernTheme: modernTheme,
-          workflow: selectedDated,
-          reminderEnabled: reminderEnabledWorkflowIds.contains(
-            selectedDated.workflowId,
-          ),
-          onToggleReminder: onToggleReminder == null
-              ? null
-              : () => onToggleReminder!(selectedDated.workflowId),
-        ),
+        // Vertical date-grouped agenda (unrolled — no Expanded/ListView
+        // since _TabNativeRenderer's output lives inside a SingleChildScrollView)
+        for (final dateKey in dateKeys) ...[
+          Builder(builder: (context) {
+            final events = groupedByDate[dateKey]!;
+            final date = events.first.calendarItem!.dateTime;
+            final foreground =
+                modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Date group header
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color:
+                          modernTheme?.resolvedFill ??
+                          accent.withValues(alpha: 0.82),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color:
+                            modernTheme?.resolvedBorder ??
+                            accent.withValues(alpha: 0.20),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        '${_monthLabel(date.month)} ${date.day}',
+                        key: ValueKey(
+                          'calendar-agenda-date-group-$dateKey',
+                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Event cards under this date
+                for (final workflow in events)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _CalendarEventCard(
+                      workflow: workflow,
+                      accent: accent,
+                      modernTheme: modernTheme,
+                      isFocused:
+                          workflow.workflowId == selectedDated.workflowId,
+                      reminderEnabled: reminderEnabledWorkflowIds.contains(
+                        workflow.workflowId,
+                      ),
+                      onTap: onSelectCalendarDate == null
+                          ? null
+                          : () =>
+                              onSelectCalendarDate!(workflow.workflowId),
+                      onToggleReminder: onToggleReminder == null
+                          ? null
+                          : () =>
+                              onToggleReminder!(workflow.workflowId),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+            );
+          }),
+        ],
         const SizedBox(height: 12),
         for (final workflow in workflows)
           workflowBuilder(
@@ -997,6 +1070,111 @@ class _CalendarTabSurface extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Compact event card for the date-grouped vertical agenda.
+/// When focused, renders the full _CalendarEventDetail; otherwise
+/// a tappable summary row. Tapping an unfocused card sets the
+/// selection which expands it in-place.
+class _CalendarEventCard extends StatelessWidget {
+  const _CalendarEventCard({
+    required this.workflow,
+    required this.accent,
+    this.modernTheme,
+    required this.isFocused,
+    required this.reminderEnabled,
+    this.onTap,
+    this.onToggleReminder,
+  });
+
+  final LoomWorkflowDefinition workflow;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  final bool isFocused;
+  final bool reminderEnabled;
+  final VoidCallback? onTap;
+  final VoidCallback? onToggleReminder;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isFocused) {
+      return _CalendarEventDetail(
+        accent: accent,
+        modernTheme: modernTheme,
+        workflow: workflow,
+        reminderEnabled: reminderEnabled,
+        onToggleReminder: onToggleReminder,
+      );
+    }
+    final foreground =
+        modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+    final item = workflow.calendarItem!;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: foreground.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: foreground.withValues(alpha: 0.14)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Icon(Icons.event_outlined, color: foreground, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _displayTitleFor(workflow),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _formatEventDateTime(item.dateTime),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: foreground.withValues(alpha: 0.72),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (item.location != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    color: foreground.withValues(alpha: 0.60),
+                    size: 18,
+                  ),
+                ),
+              Icon(Icons.chevron_right, color: foreground, size: 22),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _isoDateKey(DateTime date) {
+  return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+}
+
+String _monthLabel(int month) {
+  const labels = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return labels[(month - 1).clamp(0, 11)];
 }
 
 class _CalendarAgendaDateStrip extends StatelessWidget {
@@ -1110,6 +1288,7 @@ class _CalendarEventDetail extends StatelessWidget {
     final item = workflow.calendarItem!;
     final facts = <String>[
       _formatEventDateTime(item.dateTime),
+      if (item.host != null) item.host!,
       if (item.location != null) item.location!,
       if (item.capacityLabel != null) item.capacityLabel!,
     ];
@@ -1325,7 +1504,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = _foregroundFor(widget.accent);
+    final foreground = widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
     final listing = _selectedListing;
     if (listing != null) {
       final actions = _actionsFor(listing);
@@ -1507,16 +1686,23 @@ class _ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusLabel = switch (listing.availability) {
+    final resolvedState = listing.stateMachine?.states[listing.state ?? listing.availability];
+    final statusLabel = resolvedState?.label ?? switch (listing.availability) {
       'onLoan' => 'On loan',
       'queued' => 'Queued',
       _ => 'Available',
     };
-    final statusColor = listing.availability == 'available'
-        ? Colors.green
-        : listing.availability == 'queued'
-            ? Colors.orange
-            : foreground.withValues(alpha: 0.70);
+    final statusColor = resolvedState != null
+        ? resolvedState.tone == 'positive'
+            ? Colors.green
+            : resolvedState.tone == 'warning'
+                ? Colors.orange
+                : foreground.withValues(alpha: 0.70)
+        : listing.availability == 'available'
+            ? Colors.green
+            : listing.availability == 'queued'
+                ? Colors.orange
+                : foreground.withValues(alpha: 0.70);
     return InkWell(
       key: ValueKey('marketplace-listing-${listing.listingId}'),
       borderRadius: BorderRadius.circular(14),
@@ -1698,11 +1884,12 @@ class _ListingDetailView extends StatelessWidget {
                   ),
                 _SurfaceFactPill(
                   icon: Icons.label_outline,
-                  label: listing.availability == 'available'
-                      ? 'Available'
-                      : listing.availability == 'onLoan'
-                          ? 'On loan'
-                          : 'Queued',
+                  label: listing.stateMachine?.states[listing.state ?? listing.availability]?.label ??
+                      (listing.availability == 'available'
+                          ? 'Available'
+                          : listing.availability == 'onLoan'
+                              ? 'On loan'
+                              : 'Queued'),
                   foreground: foreground,
                 ),
                 if (listing.category != null)

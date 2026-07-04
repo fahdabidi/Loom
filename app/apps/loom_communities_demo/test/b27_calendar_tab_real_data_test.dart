@@ -60,13 +60,45 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('Jul 10'), findsOneWidget);
+      // Date-group header ("Jul 10") + fact pill ("Jul 10, 7:00 PM")
+      expect(find.textContaining('Jul 10'), findsAtLeast(1));
       expect(find.textContaining('Community room'), findsOneWidget);
       // Appears twice by design: the capacity fact pill states it as a
       // compact tag, and the workflow tile's body restates it in the full
       // entryText sentence below.
       expect(find.textContaining('12 of 20 seats filled'), findsNWidgets(2));
     });
+
+    testWidgets(
+      'wf_calendar-tab-renders-host-when-declared',
+      (tester) async {
+        final fixture = _writeTabletopClubPackagePair(includeHost: true);
+        await tester.pumpWidget(const LoomCommunitiesDemoApp());
+        await _installAndOpen(tester, fixture);
+        await _tapTab(tester, 'calendar');
+        // host renders as a fact pill in the event detail
+        expect(
+          find.textContaining('Alex Chen (Organizer)'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'wf_calendar-tab-still-renders-without-host',
+      (tester) async {
+        // Rule 2: negative direction — detail renders correctly when host is absent
+        final fixture = _writeTabletopClubPackagePair(includeHost: false);
+        await tester.pumpWidget(const LoomCommunitiesDemoApp());
+        await _installAndOpen(tester, fixture);
+        await _tapTab(tester, 'calendar');
+        expect(
+          find.byKey(const ValueKey('calendar-tab-surface')),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Alex Chen'), findsNothing);
+      },
+    );
 
     testWidgets(
       'wf_calendar-tab-catalog-community-keeps-placeholder-strip',
@@ -122,7 +154,31 @@ class _PackagePairFixture {
   final String initializationPath;
 }
 
-_PackagePairFixture _writeTabletopClubPackagePair() {
+Future<void> _installAndOpen(
+  WidgetTester tester,
+  _PackagePairFixture fixture,
+) async {
+  await tester.tap(find.byKey(const ValueKey('add-community-button')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+    find.byKey(const ValueKey('extension-package-path-field')),
+    fixture.extensionPath,
+  );
+  await tester.enterText(
+    find.byKey(const ValueKey('initialization-package-path-field')),
+    fixture.initializationPath,
+  );
+  await tester.tap(find.byKey(const ValueKey('load-local-community-button')));
+  await tester.pumpAndSettle();
+  await tester.tap(
+    find.byKey(
+      const ValueKey('community-card-community_verify_tabletop_club'),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+_PackagePairFixture _writeTabletopClubPackagePair({bool includeHost = false}) {
   final tempDir = Directory.systemTemp.createTempSync('loom_b27_tabletop_');
   final extensionFile = File(
     '${tempDir.path}/$_extensionId.loom-extension.zip',
@@ -181,6 +237,7 @@ _PackagePairFixture _writeTabletopClubPackagePair() {
               'time': '19:00',
               'location': 'Community room',
               'capacityLabel': '12 of 20 seats filled',
+              if (includeHost) 'host': 'Alex Chen (Organizer)',
             },
           },
         ],

@@ -1,4 +1,4 @@
-﻿openapi: 3.1.0
+openapi: 3.1.0
 info:
   title: Loom Community Card Surfaces API
   version: 0.1.0
@@ -80,6 +80,8 @@ tags:
     description: Dedicated document library, embedded/external open, access, version, and audit interactions implemented by CommunityDocumentSurfaceApi.
   - name: External Document Link Surface
     description: External document preview, embedded browser, external app launch, link, access, and audit interactions implemented by CommunityExternalDocumentApi.
+  - name: Marketplace State Machine Surface
+    description: Per-listing state machine interactions implemented by CommunityMarketplaceApi — list, get, transitions, apply-transition, custody history.
 paths:
   /v1/communities/{communityId}/card-surfaces/community-home/get-home-summary:
     get:
@@ -11955,6 +11957,193 @@ paths:
           $ref: '../_shared/errors.yaml#/components/responses/NotFound'
         '409':
           $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/marketplace/list-listings:
+    get:
+      tags:
+        - Marketplace State Machine Surface
+      operationId: CommunityMarketplaceApi_listListings
+      summary: Read listListings for the marketplace surface.
+      description: List all marketplace listings with their current state machine state for a community.
+      x-loom-surface-family: marketplace
+      x-loom-api-contract: CommunityMarketplaceApi
+      x-loom-contract-operation: listListings
+      x-loom-permission-scope: community.surface.marketplace.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/marketplace/get-listing:
+    get:
+      tags:
+        - Marketplace State Machine Surface
+      operationId: CommunityMarketplaceApi_getListing
+      summary: Read getListing for the marketplace surface.
+      description: Get a single listing with per-listing state machine, current state, and available transitions.
+      x-loom-surface-family: marketplace
+      x-loom-api-contract: CommunityMarketplaceApi
+      x-loom-contract-operation: getListing
+      x-loom-permission-scope: community.surface.marketplace.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceStateResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/marketplace/list-transitions:
+    get:
+      tags:
+        - Marketplace State Machine Surface
+      operationId: CommunityMarketplaceApi_listTransitions
+      summary: Read listTransitions for the marketplace surface.
+      description: List available transitions from the current listing state, filtered by active persona.
+      x-loom-surface-family: marketplace
+      x-loom-api-contract: CommunityMarketplaceApi
+      x-loom-contract-operation: listTransitions
+      x-loom-permission-scope: community.surface.marketplace.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/marketplace/apply-transition:
+    post:
+      tags:
+        - Marketplace State Machine Surface
+      operationId: CommunityMarketplaceApi_applyTransition
+      summary: Execute applyTransition for the marketplace surface.
+      description: Apply a state machine transition to a listing. Effects include state change, holder/queue mutations, and optional removeFromList.
+      x-loom-surface-family: marketplace
+      x-loom-api-contract: CommunityMarketplaceApi
+      x-loom-contract-operation: applyTransition
+      x-loom-permission-scope: community.surface.marketplace.write
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/components.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - listingId
+                - transitionId
+                - personaId
+              properties:
+                listingId:
+                  type: string
+                transitionId:
+                  type: string
+                personaId:
+                  type: string
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceActionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
+  /v1/communities/{communityId}/card-surfaces/marketplace/list-custody-history:
+    get:
+      tags:
+        - Marketplace State Machine Surface
+      operationId: CommunityMarketplaceApi_listCustodyHistory
+      summary: Read listCustodyHistory for the marketplace surface.
+      description: List custody history (transitions applied) for a listing.
+      x-loom-surface-family: marketplace
+      x-loom-api-contract: CommunityMarketplaceApi
+      x-loom-contract-operation: listCustodyHistory
+      x-loom-permission-scope: community.surface.marketplace.read
+      x-loom-product-workflow-doc: ../../../Product%20Docs%20V2/Card%20Surface%20Workflow%20and%20User%20Story%20Coverage.md
+      parameters:
+        - $ref: '../_shared/components.yaml#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/CommunityId'
+        - $ref: '#/components/parameters/SurfaceId'
+        - $ref: '#/components/parameters/PersonaId'
+      responses:
+        '200':
+          description: Card-surface operation completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurfaceCollectionResponse'
+        '400':
+          $ref: '../_shared/errors.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../_shared/errors.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../_shared/errors.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../_shared/errors.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../_shared/errors.yaml#/components/responses/Conflict'
 components:
   securitySchemes:
     LoomUserOAuth:
@@ -12042,7 +12231,130 @@ components:
         payload:
           type: object
           additionalProperties: true
-          description: Domain payload configured by the selected card surface.
+    MarketplaceListing:
+      type: object
+      required:
+        - listingId
+        - title
+        - state
+      properties:
+        listingId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        condition:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        quantity:
+          type: integer
+          nullable: true
+        availability:
+          type: string
+          description: Flat back-compat availability string; superseded by stateMachine.
+        currentHolderLabel:
+          type: string
+          nullable: true
+        dueLabel:
+          type: string
+          nullable: true
+        queueLength:
+          type: integer
+        ownerLabel:
+          type: string
+          nullable: true
+        template:
+          type: string
+          nullable: true
+          description: Named reference to a community-authored marketplace.templates entry.
+        stateMachine:
+          $ref: '#/components/schemas/ListingStateMachine'
+          nullable: true
+          description: Per-listing inline state machine (overrides template).
+        state:
+          type: string
+          description: Current state key (defaults to machine initialState at parse time).
+    ListingStateMachine:
+      type: object
+      required:
+        - initialState
+        - states
+        - transitions
+      properties:
+        initialState:
+          type: string
+        states:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ListingState'
+        transitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingTransition'
+    ListingState:
+      type: object
+      required:
+        - label
+        - tone
+      properties:
+        label:
+          type: string
+        tone:
+          type: string
+          enum:
+            - positive
+            - warning
+            - info
+        showsHolder:
+          type: boolean
+        showsDue:
+          type: boolean
+        showsQueue:
+          type: boolean
+    ListingTransition:
+      type: object
+      required:
+        - id
+        - label
+        - from
+        - to
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        from:
+          type: array
+          items:
+            type: string
+        to:
+          type: string
+          nullable: true
+        allowedPersonaIds:
+          type: array
+          items:
+            type: string
+        linkedWorkflowId:
+          type: string
+          nullable: true
+        setsHolderToActor:
+          type: boolean
+        clearsHolder:
+          type: boolean
+        incrementsQueue:
+          type: boolean
+        decrementsQueue:
+          type: boolean
+        removesFromList:
+          type: boolean
     SurfaceActionResponse:
       type: object
       required:

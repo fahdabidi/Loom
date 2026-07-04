@@ -111,8 +111,8 @@ Each listing under `experience.marketplaceListings` may optionally carry:
 | `stateMachine` | Object? | No | Inline `LoomListingStateMachine` overriding the template. |
 | `state` | String? | No | Runtime state override (defaults to `initialState`). |
 
-Resolution: `listing.stateMachine ?? community.MarketplaceTemplate` (template = firstOrNull from
-the community's `marketplace.templates`). A listing without any machine renders with no actions.
+Resolution: `listing.stateMachine ?? community.marketplaceTemplate` (template resolved by name
+via `marketplaceTemplateMap[templateName]`). A listing without any machine renders with no actions.
 
 ### State fields
 

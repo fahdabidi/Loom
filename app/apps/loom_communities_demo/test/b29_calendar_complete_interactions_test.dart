@@ -11,6 +11,39 @@ const _extensionId = 'ext_verify_tabletop_club';
 
 void main() {
   group('B29 complete Calendar tab (Phase 2)', () {
+    testWidgets('wf_calendar-agenda-is-date-grouped', (tester) async {
+      final fixture = _writeTabletopClubPackagePair();
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await _openCalendarTab(tester);
+
+      // Two events share 2026-07-10 → one date-group header
+      expect(
+        find.byKey(const ValueKey('calendar-agenda-date-group-2026-07-10')),
+        findsOneWidget,
+      );
+      // Both cards exist under the same group
+      expect(
+        find.byKey(
+          const ValueKey('calendar-event-detail-tabletop-game-night-rsvp'),
+        ),
+        findsOneWidget,
+      );
+      // Tapping second card switches focus to it
+      final secondCard = find.byKey(
+        const ValueKey('calendar-agenda-date-tabletop-tournament-rsvp'),
+      );
+      await scrollFinderIntoViewport(tester, secondCard);
+      await tester.tap(secondCard);
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(
+          const ValueKey('calendar-event-detail-tabletop-tournament-rsvp'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('wf_calendar-agenda-has-two-dated-events-and-is-tappable', (
       tester,
     ) async {

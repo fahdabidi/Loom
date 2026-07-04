@@ -34,7 +34,7 @@ void main() {
 
           for (final actorPersonaId in policy.actorPersonaIds.skip(1)) {
             await selectPersona(tester, actorPersonaId);
-            await _scrollToWorkflow(tester, workflow);
+            await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-result-${workflow.workflowId}')),
               findsOneWidget,
@@ -43,7 +43,7 @@ void main() {
 
           for (final receiverPersonaId in policy.receiverPersonaIds) {
             await selectPersona(tester, receiverPersonaId);
-            await _scrollToWorkflow(tester, workflow);
+            await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(
                 ValueKey('workflow-receive-button-${workflow.workflowId}'),
@@ -55,7 +55,7 @@ void main() {
 
           for (final readOnlyPersonaId in policy.readOnlyPersonaIds) {
             await selectPersona(tester, readOnlyPersonaId);
-            await _scrollToWorkflow(tester, workflow);
+            await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-read-only-${workflow.workflowId}')),
               findsOneWidget,
@@ -71,7 +71,7 @@ void main() {
             explicitPersonaIds,
           )) {
             await selectPersona(tester, disabledPersonaId);
-            await _scrollToWorkflow(tester, workflow);
+            await scrollToWorkflowCard(tester, workflow);
             expect(
               find.byKey(ValueKey('workflow-disabled-${workflow.workflowId}')),
               findsOneWidget,
@@ -84,35 +84,3 @@ void main() {
   );
 }
 
-Future<void> _scrollToWorkflow(
-  WidgetTester tester,
-  LoomWorkflowDefinition workflow,
-) async {
-  final workflowCard = find.byKey(ValueKey('workflow-${workflow.workflowId}'));
-  if (workflowCard.evaluate().isNotEmpty) {
-    await tester.ensureVisible(workflowCard);
-    await tester.pumpAndSettle();
-    return;
-  }
-  final scrollable = find.byType(Scrollable);
-  expect(scrollable, findsWidgets);
-  for (var index = 0; index < 40; index += 1) {
-    await tester.drag(scrollable, const Offset(0, -180), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    if (workflowCard.evaluate().isNotEmpty) {
-      await tester.ensureVisible(workflowCard);
-      await tester.pumpAndSettle();
-      return;
-    }
-  }
-  for (var index = 0; index < 40; index += 1) {
-    await tester.drag(scrollable, const Offset(0, 180), warnIfMissed: false);
-    await tester.pumpAndSettle();
-    if (workflowCard.evaluate().isNotEmpty) {
-      await tester.ensureVisible(workflowCard);
-      await tester.pumpAndSettle();
-      return;
-    }
-  }
-  fail('Could not find workflow card ${workflow.workflowId}');
-}

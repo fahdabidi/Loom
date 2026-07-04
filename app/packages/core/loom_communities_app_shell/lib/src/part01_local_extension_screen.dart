@@ -465,7 +465,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
       appShellConfiguration: community.appShellConfiguration,
     );
     final targetTab = tabSpecs.firstWhere(
-      (tab) => tab.matchesWorkflow(
+      (tab) => tab.tabId != 'home' && tab.matchesWorkflow(
         extensionId: experience.extensionId,
         workflow: workflow,
       ),
