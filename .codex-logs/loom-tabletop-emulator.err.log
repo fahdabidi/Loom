@@ -1,5 +1,2 @@
-WARNING: cannnot unmap ptr 0x778d30fea000 as it is in the protected range from 0x778d30fea000 to 0x778db11ea000
-WARNING: cannnot unmap ptr 0x778db1001000 as it is in the protected range from 0x778d30fea000 to 0x778db11ea000
-X connection to :0 broken (explicit kill or server shutdown).
-XIO:  fatal IO error 2 (No such file or directory) on X server ":0"
-      after 12122 requests (12122 known processed) with 0 events remaining.
+WARNING: cannnot unmap ptr 0x7320097ea000 as it is in the protected range from 0x7320097ea000 to 0x7320899ea000
+WARNING: cannnot unmap ptr 0x732089801000 as it is in the protected range from 0x7320097ea000 to 0x7320899ea000

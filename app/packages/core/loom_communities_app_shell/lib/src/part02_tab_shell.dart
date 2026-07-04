@@ -381,90 +381,76 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
             ),
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: visibleThreads.length,
-            itemBuilder: (context, index) {
-              final thread = visibleThreads[index];
-              final unread = _isUnread(thread.threadId);
-              final muted = _mutedThreadIds.contains(thread.threadId);
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: InkWell(
-                  key: ValueKey('messages-inbox-item-${thread.threadId}'),
+        // Unrolled inbox list (no Expanded/ListView — parent is
+        // SingleChildScrollView via _TabNativeRenderer)
+        for (final thread in visibleThreads) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: InkWell(
+              key: ValueKey('messages-inbox-item-${thread.threadId}'),
+              borderRadius: BorderRadius.circular(14),
+              onTap: () => _toggleThread(thread.threadId),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: foreground.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
-                  onTap: () => _toggleThread(thread.threadId),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: foreground.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: foreground.withValues(alpha: 0.14),
-                      ),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: foreground.withValues(alpha: 0.14),
-                        child: Icon(
-                          muted
-                              ? Icons.volume_off_outlined
-                              : Icons.mark_chat_unread_outlined,
-                          color: foreground,
-                          size: 20,
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          if (unread) ...[
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: widget.modernTheme?.accent ??
-                                    widget.accent,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Expanded(
-                            child: Text(
-                              thread.subject,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
-                                    color: foreground,
-                                    fontWeight:
-                                        unread ? FontWeight.w800 : FontWeight.w600,
-                                  ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Text(
-                        _lastPreview(thread.threadId),
-                        style: TextStyle(
-                          color: foreground.withValues(alpha: 0.80),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: Text(
-                        '${thread.messages.length}',
-                        style: TextStyle(
-                          color: foreground.withValues(alpha: 0.72),
-                        ),
-                      ),
-                    ),
+                  border: Border.all(
+                    color: foreground.withValues(alpha: 0.14),
                   ),
                 ),
-              );
-            },
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: foreground.withValues(alpha: 0.14),
+                    child: Icon(
+                      _mutedThreadIds.contains(thread.threadId)
+                          ? Icons.volume_off_outlined
+                          : Icons.mark_chat_unread_outlined,
+                      color: foreground,
+                      size: 20,
+                    ),
+                  ),
+                  title: Row(
+                    children: [
+                      if (_isUnread(thread.threadId)) ...[
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: widget.modernTheme?.accent ?? widget.accent,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: Text(
+                          thread.subject,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: foreground,
+                            fontWeight: _isUnread(thread.threadId)
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    _lastPreview(thread.threadId),
+                    style: TextStyle(color: foreground.withValues(alpha: 0.80)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Text(
+                    '${thread.messages.length}',
+                    style: TextStyle(color: foreground.withValues(alpha: 0.72)),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -563,53 +549,57 @@ class _ThreadDetailView extends StatelessWidget {
             ),
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-            itemCount: thread.messages.length,
-            itemBuilder: (context, index) {
-              final message = thread.messages[index];
-              final isMe = message.senderPersonaId == personaId;
-              return Align(
-                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.75,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isMe
-                        ? (modernTheme?.accent ?? accent).withValues(alpha: 0.18)
-                        : foreground.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        message.body,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: foreground,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _formatMessageTime(message.timestamp),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: foreground.withValues(alpha: 0.64),
-                        ),
-                      ),
-                    ],
-                  ),
+        // Unrolled message list (no Expanded/ListView — parent is
+        // SingleChildScrollView via _TabNativeRenderer)
+        for (final message in thread.messages) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+            child: Align(
+              alignment:
+                  message.senderPersonaId == personaId
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.75,
                 ),
-              );
-            },
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color:
+                      message.senderPersonaId == personaId
+                          ? (modernTheme?.accent ?? accent)
+                              .withValues(alpha: 0.18)
+                          : foreground.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.body,
+                      style:
+                          Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: foreground,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatMessageTime(message.timestamp),
+                      style:
+                          Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: foreground.withValues(alpha: 0.64),
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
           child: DecoratedBox(
@@ -684,6 +674,7 @@ class _TabNativeRenderer extends StatelessWidget {
     this.onToggleReminder,
     this.onSelectCalendarDate,
     this.onConfirmWorkflow,
+    this.completedWorkflowIds = const {},
   });
 
   final LoomExperienceDefinition experience;
@@ -699,6 +690,7 @@ class _TabNativeRenderer extends StatelessWidget {
   final ValueChanged<String>? onToggleReminder;
   final ValueChanged<String>? onSelectCalendarDate;
   final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
+  final Set<String> completedWorkflowIds;
 
   @override
   Widget build(BuildContext context) {
@@ -748,13 +740,39 @@ class _TabNativeRenderer extends StatelessWidget {
           accent: accent,
           modernTheme: modernTheme,
         );
+      case 'PaymentGivingTabSurface':
+        // Find the first workflow in the Giving tab's sections whose
+        // givingPayment is declared, to gate between real UI and placeholder.
+        LoomWorkflowDefinition? givingWorkflow;
+        for (final workflow in experience.workflows) {
+          if (workflow.givingPayment != null) {
+            givingWorkflow = workflow;
+            break;
+          }
+        }
+        if (givingWorkflow != null) {
+          return _GivingTabSurface(
+            givingPayment: givingWorkflow.givingPayment!,
+            workflowId: givingWorkflow.workflowId,
+            workflow: givingWorkflow,
+            accent: accent,
+            modernTheme: modernTheme,
+            onConfirmWorkflow: onConfirmWorkflow,
+            paid: completedWorkflowIds.contains(givingWorkflow.workflowId),
+          );
+        }
+        return _TabPlaceholderSurface(
+          tabLabel: selectedTab.label,
+          communityName: experience.displayName,
+          tabIcon: selectedTab.icon,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
       case 'DocumentsTabSurface':
       case 'WorkflowStatusSurface':
-      case 'PaymentGivingTabSurface':
       case 'CareVolunteerTabSurface':
       case 'AdminReviewComposeTabSurface':
         // These domain tabs render via placeholder until their data is declared
-        // in experience JSON (M5: giving payment, etc.)
         return _TabPlaceholderSurface(
           tabLabel: selectedTab.label,
           communityName: experience.displayName,
@@ -969,15 +987,21 @@ class _CalendarTabSurface extends StatelessWidget {
     }
     final dateKeys = groupedByDate.keys.toList()..sort();
 
+    // Dedupe date-strip items by date key (one chip per date)
+    final stripItems = <String, LoomWorkflowDefinition>{};
+    for (final wf in datedWorkflows) {
+      stripItems.putIfAbsent(_isoDateKey(wf.calendarItem!.dateTime), () => wf);
+    }
     return Column(
       key: const ValueKey('calendar-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Horizontal quick-jump date strip (preserved)
+        // Horizontal quick-jump date strip — one chip per date, not per workflow
         _CalendarAgendaDateStrip(
           accent: accent,
           modernTheme: modernTheme,
-          items: datedWorkflows,
+          items: stripItems.values.toList()
+            ..sort((a, b) => a.calendarItem!.dateTime.compareTo(b.calendarItem!.dateTime)),
           selectedWorkflowId: selectedDated.workflowId,
           onSelectWorkflow: onSelectCalendarDate,
         ),
@@ -1286,12 +1310,6 @@ class _CalendarEventDetail extends StatelessWidget {
     final border = modernTheme?.resolvedBorder ??
         foreground.withValues(alpha: 0.18);
     final item = workflow.calendarItem!;
-    final facts = <String>[
-      _formatEventDateTime(item.dateTime),
-      if (item.host != null) item.host!,
-      if (item.location != null) item.location!,
-      if (item.capacityLabel != null) item.capacityLabel!,
-    ];
     return DecoratedBox(
       key: ValueKey('calendar-event-detail-${workflow.workflowId}'),
       decoration: BoxDecoration(
@@ -1345,10 +1363,27 @@ class _CalendarEventDetail extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final fact in facts)
+                _SurfaceFactPill(
+                  icon: Icons.schedule,
+                  label: _formatEventDateTime(item.dateTime),
+                  foreground: foreground,
+                ),
+                if (item.host != null)
                   _SurfaceFactPill(
-                    icon: Icons.check_circle_outline,
-                    label: fact,
+                    icon: Icons.person_outline,
+                    label: item.host!,
+                    foreground: foreground,
+                  ),
+                if (item.location != null)
+                  _SurfaceFactPill(
+                    icon: Icons.location_on_outlined,
+                    label: item.location!,
+                    foreground: foreground,
+                  ),
+                if (item.capacityLabel != null)
+                  _SurfaceFactPill(
+                    icon: Icons.groups_outlined,
+                    label: item.capacityLabel!,
                     foreground: foreground,
                   ),
                 if (reminderEnabled)
@@ -1472,7 +1507,11 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     final machine = listing.stateMachine ?? widget.marketplaceTemplate;
     if (machine == null) return [];
     final currentState = listing.state ?? listing.availability;
-    return machine.availableActions(currentState, widget.personaId);
+    return machine.availableActions(
+      currentState,
+      widget.personaId,
+      listing: listing,
+    );
   }
 
   void _applyTransition(LoomMarketplaceListing listing, LoomListingTransition transition) {
@@ -1494,6 +1533,22 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     }
     if (transition.decrementsQueue) {
       updated = updated.copyWith(queueLength: (current.queueLength - 1).clamp(0, 999));
+    }
+    if (transition.addsActorToQueue) {
+      final personaId = widget.personaId;
+      if (!updated.queuedPersonaIds.contains(personaId)) {
+        updated = updated.copyWith(
+          queuedPersonaIds: [...updated.queuedPersonaIds, personaId],
+        );
+      }
+    }
+    if (transition.removesActorFromQueue) {
+      final personaId = widget.personaId;
+      updated = updated.copyWith(
+        queuedPersonaIds: updated.queuedPersonaIds
+            .where((p) => p != personaId)
+            .toList(),
+      );
     }
     if (transition.removesFromList) {
       setState(() => _mutableListings.remove(listing.listingId));
@@ -2112,6 +2167,182 @@ class _PaymentGivingTabSurface extends _WorkflowStatusTabSurface {
     super.modernTheme,
     required super.workflowBuilder,
   });
+}
+
+/// Real Giving tab — amount/purpose summary, checkout CTA (→ action surface
+/// via the resolved real giving workflow), receipt after payment, failure/
+/// retry, and conditional recurring/entitlement rows.
+class _GivingTabSurface extends StatelessWidget {
+  const _GivingTabSurface({
+    required this.givingPayment,
+    required this.workflowId,
+    required this.workflow,
+    required this.accent,
+    this.modernTheme,
+    this.onConfirmWorkflow,
+    required this.paid,
+  });
+
+  final LoomGivingPayment givingPayment;
+  final String workflowId;
+  final LoomWorkflowDefinition workflow;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
+  final bool paid;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+    final fill = modernTheme?.resolvedFill ??
+        Color.alphaBlend(foreground.withValues(alpha: 0.08), accent);
+    final border = modernTheme?.resolvedBorder ??
+        foreground.withValues(alpha: 0.18);
+    final bodyColor = modernTheme?.resolvedBody ??
+        foreground.withValues(alpha: 0.88);
+
+    return Column(
+      key: const ValueKey('giving-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Amount and purpose summary
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              key: const ValueKey('giving-amount-summary'),
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      paid ? Icons.receipt_long : Icons.payment_outlined,
+                      color: foreground,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            givingPayment.amountLabel,
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                          ),
+                          if (givingPayment.purpose != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              givingPayment.purpose!,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: bodyColor,
+                                  ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (paid)
+                      _SurfaceFactPill(
+                        icon: Icons.check_circle,
+                        label: 'Paid',
+                        foreground: Colors.green,
+                      ),
+                  ],
+                ),
+                // Conditional rows
+                if (givingPayment.cadence != null) ...[
+                  const SizedBox(height: 12),
+                  _SurfaceFactPill(
+                    icon: Icons.repeat,
+                    label: givingPayment.cadence!,
+                    foreground: foreground,
+                  ),
+                ],
+                if (givingPayment.entitlement != null) ...[
+                  const SizedBox(height: 8),
+                  _SurfaceFactPill(
+                    icon: Icons.verified_outlined,
+                    label: givingPayment.entitlement!,
+                    foreground: foreground,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Checkout button (unpaid) or receipt card (paid)
+        if (paid)
+          DecoratedBox(
+            key: ValueKey('giving-receipt-$workflowId'),
+            decoration: BoxDecoration(
+              color: foreground.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.green,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      '${givingPayment.amountLabel} — complete',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(
+                            color: bodyColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              key: ValueKey('giving-checkout-$workflowId'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    modernTheme?.primaryButton?.resolvedFill ?? accent,
+                foregroundColor:
+                    modernTheme?.primaryButton?.resolvedForeground ??
+                        Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () => onConfirmWorkflow?.call(workflow),
+              icon: const Icon(Icons.payment),
+              label: Text('Pay ${givingPayment.amountLabel}'),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _CareVolunteerTabSurface extends _WorkflowStatusTabSurface {

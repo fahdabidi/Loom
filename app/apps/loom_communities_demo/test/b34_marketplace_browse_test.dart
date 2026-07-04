@@ -110,6 +110,67 @@ void main() {
       // Claimed state has NO actions (terminal)
       expect(machine.availableActions('claimed', 'tabletop-member'), isEmpty);
     });
+
+    test(
+      'queue machine: join-then-leave roundtrip via per-member tracking',
+      () {
+        final machine = LoomListingStateMachine(
+          initialState: 'available',
+          states: {
+            'available': const LoomListingState(label: 'Available', tone: 'positive'),
+            'queued': const LoomListingState(label: 'Queue open', tone: 'info', showsQueue: true),
+          },
+          transitions: [
+            const LoomListingTransition(
+              id: 'join-queue',
+              label: 'Join queue',
+              fromStates: ['available', 'queued'],
+              allowedPersonaIds: ['tabletop-member'],
+              addsActorToQueue: true,
+              requiresActorNotInQueue: true,
+            ),
+            const LoomListingTransition(
+              id: 'leave-queue',
+              label: 'Leave queue',
+              fromStates: ['queued'],
+              allowedPersonaIds: ['tabletop-member'],
+              requiresActorInQueue: true,
+              removesActorFromQueue: true,
+            ),
+          ],
+        );
+
+        // Member NOT in queue → sees "Join queue", NOT "Leave queue"
+        final notInQueue = LoomMarketplaceListing(
+          listingId: 'l',
+          title: 'X',
+          availability: 'available',
+          queuedPersonaIds: const [],
+        );
+        var actions = machine.availableActions(
+          'available',
+          'tabletop-member',
+          listing: notInQueue,
+        );
+        expect(actions.map((a) => a.id), contains('join-queue'));
+        expect(actions.map((a) => a.id), isNot(contains('leave-queue')));
+
+        // Member IS in queue → sees "Leave queue", NOT "Join queue"
+        final inQueue = LoomMarketplaceListing(
+          listingId: 'l',
+          title: 'X',
+          availability: 'queued',
+          queuedPersonaIds: const ['tabletop-member'],
+        );
+        actions = machine.availableActions(
+          'queued',
+          'tabletop-member',
+          listing: inQueue,
+        );
+        expect(actions.map((a) => a.id), contains('leave-queue'));
+        expect(actions.map((a) => a.id), isNot(contains('join-queue')));
+      },
+    );
   });
 
   // ── Browse surface widget tests ─────────────────────────────────
@@ -475,10 +536,18 @@ _PackagePairFixture _writeFixture({
             {
               'id': 'join-queue',
               'label': 'Join queue',
-              'from': ['onLoan'],
-              'to': 'onLoan',
+              'from': ['onLoan', 'queued'],
               'allowedPersonaIds': ['tabletop-member'],
-              'incrementsQueue': true,
+              'addsActorToQueue': true,
+              'requiresActorNotInQueue': true,
+            },
+            {
+              'id': 'leave-queue',
+              'label': 'Leave queue',
+              'from': ['queued'],
+              'allowedPersonaIds': ['tabletop-member'],
+              'requiresActorInQueue': true,
+              'removesActorFromQueue': true,
             },
             {
               'id': 'return',
@@ -600,6 +669,12 @@ Future<void> _installAndOpen(
 Future<void> _openListingDetail(WidgetTester tester, String listingId) async {
   final card = find.byKey(ValueKey('marketplace-listing-$listingId'));
   expect(card, findsOneWidget, reason: 'card $listingId must exist');
+  // Drag the parent scrollable downward to bring grid cards into view
+  // (grid uses NeverScrollableScrollPhysics; ensureVisible on its own
+  // does not scroll the parent SingleChildScrollView)
+  final scrollable = find.byType(SingleChildScrollView);
+  await tester.drag(scrollable, const Offset(0, -300));
+  await tester.pumpAndSettle();
   await tester.ensureVisible(card);
   await tester.pumpAndSettle();
   await tester.tap(card, warnIfMissed: false);

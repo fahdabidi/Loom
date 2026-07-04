@@ -1,1 +1,290 @@
-{"schemaVersion":1,"communityId":"community_verify_tabletop_club","communityName":"Tabletop Club","extensionId":"ext_verify_tabletop_club","seedDataFiles":["seed/community.json","seed/workflows.json"],"branding":{"accentColor":"#C4703F"},"experience":{"displayName":"Tabletop Club","tagline":"Board game nights, tournaments, and dues for local tabletop fans.","accentColor":"#C4703F","theme":{"accent":"#C4703F","tabThemes":{"giving":{"accent":"#8A5A34"}}},"personas":[{"personaId":"tabletop-organizer","label":"Organizer","roleLabel":"Organizer","description":"Plans game nights and tournaments."},{"personaId":"tabletop-member","label":"Member","roleLabel":"Member","description":"RSVPs to game nights and tournaments."}],"workflows":[{"workflowId":"tabletop-game-night-rsvp","title":"RSVP to Friday game night","entryText":"Friday game night at the community room, 7-10pm. 12 of 20 seats filled.","actionText":"Reserve a seat at Friday's game night.","resultText":"You're on the roster for Friday's game night.","calendar":{"date":"2026-07-10","time":"19:00","location":"Community room","capacityLabel":"12 of 20 seats filled"},"responseChoices":[{"responseId":"going","label":"Going"},{"responseId":"maybe","label":"Maybe"},{"responseId":"not-going","label":"Can't go","isDestructive":true}]},{"workflowId":"tabletop-tournament-rsvp","title":"Sign up for the Saturday tournament","entryText":"Saturday board game tournament at the community hall, 1-5pm. 20 of 20 seats filled.","actionText":"Sign up for the Saturday tournament.","resultText":"You're signed up for the Saturday tournament.","calendar":{"date":"2026-07-11","time":"13:00","location":"Community hall","capacityLabel":"20 of 20 seats filled"},"responseChoices":[{"responseId":"going","label":"Going"},{"responseId":"waitlist","label":"Join waitlist"}]},{"workflowId":"tabletop-club-dues-payment","title":"Pay quarterly club dues","entryText":"Quarterly dues of $15 are due by the end of the month.","actionText":"Pay $15 in quarterly dues.","resultText":"Dues payment recorded and receipt saved.","theme":{"accent":"#8A5A34"}}],"personaPolicies":{"tabletop-game-night-rsvp":{"actorPersonaIds":["tabletop-member"],"receiverPersonaIds":["tabletop-organizer"],"receiverEntryText":"A member RSVP'd to Friday's game night.","receiverActionText":"Acknowledge RSVP","receiverResultText":"RSVP acknowledged and added to the roster."},"tabletop-tournament-rsvp":{"actorPersonaIds":["tabletop-member"],"receiverPersonaIds":["tabletop-organizer"],"receiverEntryText":"A member signed up for the Saturday tournament.","receiverActionText":"Acknowledge signup","receiverResultText":"Signup acknowledged."},"tabletop-club-dues-payment":{"actorPersonaIds":["tabletop-member"],"receiverPersonaIds":["tabletop-organizer"],"receiverEntryText":"A member paid quarterly dues.","receiverActionText":"Confirm receipt","receiverResultText":"Dues payment confirmed and receipt issued."}}}}
+{
+  "schemaVersion": 1,
+  "packageId": "init_verify_tabletop_club_1",
+  "communityId": "community_verify_tabletop_club",
+  "communityHandle": "tabletop-club",
+  "displayName": "Tabletop Club",
+  "extensionId": "ext_verify_tabletop_club",
+  "branding": {
+    "logo": "seed/assets/tabletop-logo.png",
+    "cardImage": "seed/assets/tabletop-card.png",
+    "heroImage": "seed/assets/tabletop-hero.png",
+    "accentColor": "#C4703F",
+    "altText": "Tabletop club members around a game table"
+  },
+  "seedDataFiles": ["seed/community.json", "seed/workflows.json"],
+  "idempotencyKey": "init-verify-tabletop-club",
+  "experience": {
+    "displayName": "Tabletop Club",
+    "tagline": "Board game nights, loaner games, and dues for local tabletop fans.",
+    "accentColor": "#C4703F",
+    "theme": {
+      "accent": "#C4703F",
+      "tabThemes": {
+        "giving": { "accent": "#8A5A34" }
+      }
+    },
+    "personas": [
+      {
+        "personaId": "tabletop-organizer",
+        "label": "Organizer",
+        "roleLabel": "Organizer",
+        "description": "Plans game nights, manages the game library, and collects dues."
+      },
+      {
+        "personaId": "tabletop-member",
+        "label": "Member",
+        "roleLabel": "Member",
+        "description": "RSVPs to game nights, borrows games, and pays dues."
+      }
+    ],
+    "workflows": [
+      {
+        "workflowId": "tabletop-game-night-rsvp",
+        "title": "RSVP to Friday game night",
+        "entryText": "Friday game night at the community room, 7-10pm. 12 of 20 seats filled.",
+        "actionText": "Reserve a seat at Friday's game night.",
+        "resultText": "You're on the roster for Friday's game night.",
+        "calendar": {
+          "date": "2026-07-10",
+          "time": "19:00",
+          "location": "Community room",
+          "capacityLabel": "12 of 20 seats filled",
+          "host": "Alex Chen (Organizer)"
+        },
+        "responseChoices": [
+          {"responseId": "going", "label": "Going"},
+          {"responseId": "maybe", "label": "Maybe"},
+          {"responseId": "not-going", "label": "Can't go", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-tournament-rsvp",
+        "title": "RSVP to the afternoon tournament",
+        "entryText": "Summer tournament earlier the same day, 1-5pm. 8 of 16 brackets claimed.",
+        "actionText": "Claim a bracket in the summer tournament.",
+        "resultText": "Your bracket is reserved for the summer tournament.",
+        "calendar": {
+          "date": "2026-07-10",
+          "time": "13:00",
+          "location": "Main hall",
+          "capacityLabel": "8 of 16 brackets claimed",
+          "host": "Priya Nair (Tournament Lead)"
+        },
+        "responseChoices": [
+          {"responseId": "going", "label": "Going"},
+          {"responseId": "maybe", "label": "Maybe"},
+          {"responseId": "not-going", "label": "Can't go", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-committee-decision",
+        "title": "Decide on new game purchase",
+        "entryText": "A member proposed buying a copy of Wingspan for the club library.",
+        "actionText": "Decide on the Wingspan purchase proposal.",
+        "resultText": "Decision recorded for the Wingspan proposal.",
+        "responseChoices": [
+          {"responseId": "approved", "label": "Approve"},
+          {"responseId": "changes-requested", "label": "Request changes"},
+          {"responseId": "rejected", "label": "Reject", "isDestructive": true}
+        ]
+      },
+      {
+        "workflowId": "tabletop-game-loan",
+        "title": "Borrow a game from the club library",
+        "entryText": "Catan is available in the club game library.",
+        "actionText": "Request to borrow Catan for two weeks.",
+        "resultText": "Your loan request for Catan was sent to the organizer."
+      },
+      {
+        "workflowId": "tabletop-club-dues-payment",
+        "title": "Pay quarterly club dues",
+        "entryText": "Quarterly dues of $15 are due by the end of the month.",
+        "actionText": "Pay $15 in quarterly dues.",
+        "resultText": "Dues payment recorded and receipt saved.",
+        "theme": { "accent": "#8A5A34" },
+        "givingPayment": {
+          "amountLabel": "$15.00",
+          "purpose": "Quarterly club dues",
+          "cadence": "quarterly",
+          "entitlement": "Member in good standing through the quarter"
+        }
+      },
+      {
+        "workflowId": "tabletop-meetup-announcement",
+        "title": "Publish game night announcement",
+        "entryText": "Draft: 'Friday game night moves to the larger room starting next week.'",
+        "actionText": "Publish the game night announcement to all members.",
+        "resultText": "Announcement published to all Tabletop Club members."
+      }
+    ],
+    "personaPolicies": {
+      "tabletop-game-night-rsvp": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member RSVP'd to Friday's game night.",
+        "receiverActionText": "Acknowledge RSVP",
+        "receiverResultText": "RSVP acknowledged and added to the roster."
+      },
+      "tabletop-tournament-rsvp": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member claimed a bracket in the summer tournament.",
+        "receiverActionText": "Acknowledge bracket",
+        "receiverResultText": "Bracket acknowledged and added to the tournament board."
+      },
+      "tabletop-committee-decision": {
+        "actorPersonaIds": ["tabletop-organizer"],
+        "receiverPersonaIds": ["tabletop-member"],
+        "receiverEntryText": "The committee decided on the Wingspan purchase proposal.",
+        "receiverActionText": "View decision",
+        "receiverResultText": "Decision visible to members."
+      },
+      "tabletop-game-loan": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member requested to borrow Catan from the club library.",
+        "receiverActionText": "Approve loan",
+        "receiverResultText": "Loan approved and logged in the club library."
+      },
+      "tabletop-club-dues-payment": {
+        "actorPersonaIds": ["tabletop-member"],
+        "receiverPersonaIds": ["tabletop-organizer"],
+        "receiverEntryText": "A member paid quarterly dues.",
+        "receiverActionText": "Confirm receipt",
+        "receiverResultText": "Dues payment confirmed and receipt issued."
+      },
+      "tabletop-meetup-announcement": {
+        "actorPersonaIds": ["tabletop-organizer"],
+        "receiverPersonaIds": ["tabletop-member"],
+        "receiverEntryText": "The organizer published a new game night announcement.",
+        "receiverActionText": "Mark as read",
+        "receiverResultText": "Announcement marked as read."
+      }
+    },
+    "marketplace": {
+      "templates": {
+        "loan": {
+          "initialState": "available",
+          "states": {
+            "available": { "label": "Available", "tone": "positive" },
+            "onLoan": { "label": "On loan", "tone": "warning", "showsHolder": true, "showsDue": true },
+            "queued": { "label": "Queue open", "tone": "info", "showsQueue": true }
+          },
+          "transitions": [
+            { "id": "borrow", "label": "Request loan", "from": ["available"], "to": "onLoan",
+              "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
+              "setsHolderToActor": true },
+            { "id": "join-queue", "label": "Join queue", "from": ["onLoan"], "to": "onLoan",
+              "allowedPersonaIds": ["tabletop-member"], "incrementsQueue": true },
+            { "id": "return", "label": "Return", "from": ["onLoan"], "to": "available",
+              "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"], "clearsHolder": true }
+          ]
+        }
+      }
+    },
+    "threads": [
+      {
+        "threadId": "thread-welcome",
+        "subject": "Welcome new members!",
+        "participantPersonaIds": ["tabletop-organizer", "tabletop-member"],
+        "messages": [
+          {
+            "messageId": "msg-welcome-1",
+            "senderPersonaId": "tabletop-organizer",
+            "body": "Welcome to the Tabletop Club! Our first game night is Friday at 7pm in the community room.",
+            "timestamp": "2026-07-01T10:00:00"
+          },
+          {
+            "messageId": "msg-welcome-2",
+            "senderPersonaId": "tabletop-member",
+            "body": "Thanks! I'll bring snacks and my copy of Catan.",
+            "timestamp": "2026-07-01T11:30:00"
+          }
+        ]
+      },
+      {
+        "threadId": "thread-game-suggestions",
+        "subject": "Game suggestions for next week",
+        "participantPersonaIds": ["tabletop-member", "tabletop-organizer"],
+        "messages": [
+          {
+            "messageId": "msg-suggest-1",
+            "senderPersonaId": "tabletop-member",
+            "body": "Can we try Wingspan this week? I've been wanting to play it.",
+            "timestamp": "2026-07-02T14:00:00"
+          },
+          {
+            "messageId": "msg-suggest-2",
+            "senderPersonaId": "tabletop-organizer",
+            "body": "Great idea — I'll reserve the main table and bring my copy.",
+            "timestamp": "2026-07-02T14:45:00"
+          }
+        ]
+      }
+    ],
+    "marketplaceListings": [
+      {
+        "listingId": "listing-catan",
+        "title": "Catan",
+        "category": "Board Games",
+        "iconKey": "casino",
+        "condition": "Like new",
+        "availability": "available",
+        "queueLength": 0,
+        "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-wingspan",
+        "title": "Wingspan",
+        "category": "Board Games",
+        "iconKey": "raven",
+        "condition": "Excellent",
+        "availability": "onLoan",
+        "currentHolderLabel": "Jamie (Member)",
+        "dueLabel": "Due back Jul 17",
+        "description": "Award-winning engine-building bird game. Includes European expansion.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-root",
+        "title": "Root",
+        "category": "Strategy Games",
+        "iconKey": "forest",
+        "condition": "Good",
+        "availability": "queued",
+        "queueLength": 2,
+        "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
+        "linkedWorkflowId": "tabletop-game-loan"
+      },
+      {
+        "listingId": "listing-old-catan",
+        "title": "Catan (retired club copy)",
+        "category": "Board Games",
+        "iconKey": "casino",
+        "condition": "Fair",
+        "availability": "giveaway",
+        "description": "Free to a member — retired club copy, replaced by the newer set above.",
+        "stateMachine": {
+          "initialState": "available",
+          "states": {
+            "available": { "label": "Available", "tone": "positive" },
+            "claimed": { "label": "Claimed", "tone": "positive" }
+          },
+          "transitions": [
+            {
+              "id": "claim",
+              "label": "Claim giveaway",
+              "from": ["available"],
+              "to": "claimed",
+              "allowedPersonaIds": ["tabletop-member"],
+              "linkedWorkflowId": "tabletop-game-loan",
+              "removesFromList": true
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

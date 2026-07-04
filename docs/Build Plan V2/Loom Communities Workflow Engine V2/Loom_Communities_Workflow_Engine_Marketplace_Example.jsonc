@@ -1,0 +1,240 @@
+// LIVING DESIGN DOCUMENT — not a final spec. Comment on this directly; expect it to change as the
+// schema in Loom_Communities_Workflow_Engine.md is refined. Not implemented yet — this file is the
+// worked example for §9f of that tracker, showing how the tabletop-club Marketplace tab (multi-tile
+// grid: Catan / Wingspan / Root / retired-Catan giveaway) would be expressed once the general engine
+// exists, to prove the schema covers the same modern UI we already built by hand.
+//
+// Two top-level sections:
+//   "workflowDefinitions" — the reusable TYPE (like a class): states/transitions/guards/effects/
+//                           display metadata. One definition, many instances.
+//   "workflowInstances"   — the actual DATA (like objects): one entry per listing tile in the grid,
+//                           each pointing at a workflowType + its own current state + instanceData.
+//
+// A DESIGN CHANGE from the interim Dart fix worth calling out up front: the interim fix (already
+// approved, ships first) kept "available" / "onLoan" / "queued" as three states, and had to special-
+// case join-queue/leave-queue with `from: ["onLoan", "queued"]` because "queued" was really just a
+// legacy display label, not a real orthogonal state (an item can be on loan AND have people queued
+// at the same time — see the XState modeling discussion). This schema removes "queued" as a state
+// entirely. Queue membership is just derived instanceData (`queuedPersonaIds.length > 0`). That's
+// the whole reason the original bug happened: "queued" the state had a display purpose but no
+// declared transitions, and nothing caught that before a live emulator walk did. Under this schema,
+// the validator (§9c) catches it at author-time instead, because there's no separate state to forget
+// transitions for in the first place.
+
+{
+  "workflowDefinitions": {
+
+    // ---------------------------------------------------------------------------------------------
+    // The shared "loan" template — used by Catan and Wingspan (Root, below, shows a per-instance
+    // override for the giveaway case, same as today's `listing.stateMachine ?? marketplaceTemplate`
+    // fallback pattern).
+    // ---------------------------------------------------------------------------------------------
+    "equipment-loan": {
+      // §3a update: one binding covers every state/role — Marketplace is the *simple* end of the
+      // workflow/surface/tab spectrum, not a special case. Member vs. organizer only ever differ in
+      // WHICH buttons they see on this one surface (guard-filtered by availableTransitions), never
+      // in which surface or tab they see it on — unlike the document/approval example in §3a, which
+      // needs multiple bindings because the surface itself changes per role and per state.
+      "renderBindings": [
+        { "states": ["available", "onLoan"], "role": "any", "tabId": "marketplace",
+          "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
+      ],
+      "initialState": "available",
+
+      // Display metadata — this is what lets the tile grid AND the detail view render fact pills
+      // with the correct icon/label automatically, instead of a hardcoded call site per surface
+      // (the exact bug we found in Calendar: every fact pill used the same checkmark icon).
+      // `displayContexts` controls whether a field shows on the compact grid TILE, the full DETAIL
+      // view, or both — this is what makes one schema drive both today's grid AND detail screens.
+      "instanceDataSchema": {
+        "holderPersonaId": {
+          "type": "personaId?",
+          "displayIcon": "person_outline",
+          "labelTemplate": "Holder: {value}",
+          "displayContexts": ["tile", "detail"]
+        },
+        "queuedPersonaIds": {
+          "type": "personaId[]",
+          "displayIcon": "groups_outlined",
+          "labelTemplate": "Queue: {value.length}",
+          "displayContexts": ["tile", "detail"],
+          "hideWhenEmpty": true // don't show "Queue: 0" on items nobody's queued for
+        },
+        "dueDate": {
+          "type": "date?",
+          "displayIcon": "schedule",
+          "labelTemplate": "Due back {value}",
+          "displayContexts": ["tile", "detail"],
+          "hideWhenEmpty": true
+        }
+      },
+
+      // No "queued" state — see the file-level comment above.
+      "states": {
+        "available": { "label": "Available", "tone": "positive" },
+        "onLoan": { "label": "On loan", "tone": "warning" }
+      },
+
+      "transitions": [
+        {
+          "id": "borrow",
+          "label": "Request loan",
+          "from": ["available"],
+          "to": "onLoan",
+          "guard": {
+            "allowedPersonaIds": ["tabletop-member"],
+            // Illustrative use of §9b's cross-workflow dependency field: you must be a member in
+            // good standing (dues current) to borrow. This formalizes something that today only
+            // exists as PROSE on the Giving tab's entitlement text ("Member in good standing
+            // through the quarter") — under this schema it becomes an enforced gate, not just a
+            // description. Left as a comment-only illustration here since wiring it for real is a
+            // cross-workflow-type decision, not a marketplace-only one — do not implement until
+            // that's explicitly scoped.
+            // "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
+          },
+          "effects": [
+            { "op": "set", "key": "holderPersonaId", "value": "$actor" }
+          ],
+          "linkedWorkflowId": "tabletop-game-loan" // fires the existing generic action-surface UI
+        },
+        {
+          "id": "join-queue",
+          "label": "Join queue",
+          // Both states allowed on purpose: someone can queue for an item that's already checked
+          // out (the common case), or reserve-ahead on one that's technically available right now
+          // but in high demand (a real, valid pattern — not a leftover data inconsistency like the
+          // old "queued" state was).
+          "from": ["available", "onLoan"],
+          "guard": {
+            "allowedPersonaIds": ["tabletop-member"],
+            "actorInList": { "key": "queuedPersonaIds", "present": false }
+          },
+          "effects": [
+            { "op": "appendUnique", "key": "queuedPersonaIds", "value": "$actor" }
+          ]
+        },
+        {
+          "id": "leave-queue",
+          "label": "Leave queue",
+          "from": ["available", "onLoan"],
+          "guard": {
+            "allowedPersonaIds": ["tabletop-member"],
+            "actorInList": { "key": "queuedPersonaIds", "present": true }
+          },
+          "effects": [
+            { "op": "removeValue", "key": "queuedPersonaIds", "value": "$actor" }
+          ]
+        },
+        {
+          "id": "return",
+          "label": "Return",
+          "from": ["onLoan"],
+          "to": "available",
+          "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+          "effects": [
+            { "op": "set", "key": "holderPersonaId", "value": null },
+            { "op": "set", "key": "dueDate", "value": null }
+          ]
+        }
+      ]
+    },
+
+    // ---------------------------------------------------------------------------------------------
+    // The giveaway template — a DIFFERENT workflowType, used only by the retired Catan copy. Shows
+    // that not every listing needs to share the loan template; a listing instance can reference
+    // whichever workflowType fits (mirrors today's per-listing `stateMachine` override).
+    // ---------------------------------------------------------------------------------------------
+    "equipment-giveaway": {
+      // Same tile/detail layout family as equipment-loan, different FSM underneath — one binding is
+      // still enough, same reasoning as above.
+      "renderBindings": [
+        { "states": ["available", "claimed"], "role": "any", "tabId": "marketplace",
+          "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
+      ],
+      "initialState": "available",
+      "instanceDataSchema": {
+        "claimedByPersonaId": {
+          "type": "personaId?",
+          "displayIcon": "person_outline",
+          "labelTemplate": "Claimed by: {value}",
+          "displayContexts": ["tile", "detail"],
+          "hideWhenEmpty": true
+        }
+      },
+      "states": {
+        "available": { "label": "Available", "tone": "positive" },
+        "claimed": { "label": "Claimed", "tone": "positive" }
+      },
+      "transitions": [
+        {
+          "id": "claim",
+          "label": "Claim giveaway",
+          "from": ["available"],
+          "to": "claimed",
+          "guard": { "allowedPersonaIds": ["tabletop-member"] },
+          "effects": [
+            { "op": "set", "key": "claimedByPersonaId", "value": "$actor" },
+            { "op": "removeFromTileGrid" } // generalizes today's `removesFromList: true`
+          ],
+          "linkedWorkflowId": "tabletop-game-loan"
+        }
+      ]
+    }
+  },
+
+  // -----------------------------------------------------------------------------------------------
+  // The tile-grid data — one entry per card in the Marketplace tab's grid. This list is what the
+  // generic tile-grid renderer walks: each instance's `workflowType` resolves its FSM+schema above,
+  // `currentState` + `instanceData` drive both the compact tile and (once tapped) the full detail
+  // view, using the SAME `instanceDataSchema` for both — no separate hand-maintained tile widget.
+  // -----------------------------------------------------------------------------------------------
+  "workflowInstances": [
+    {
+      "instanceId": "listing-catan",
+      "workflowType": "equipment-loan",
+      "title": "Catan",
+      "category": "Board Games",
+      "condition": "Like new",
+      "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
+      "currentState": "available",
+      "instanceData": { "holderPersonaId": null, "queuedPersonaIds": [], "dueDate": null }
+    },
+    {
+      "instanceId": "listing-wingspan",
+      "workflowType": "equipment-loan",
+      "title": "Wingspan",
+      "category": "Board Games",
+      "condition": "Excellent",
+      "description": "Award-winning engine-building bird game. Includes European expansion.",
+      "currentState": "onLoan",
+      "instanceData": {
+        "holderPersonaId": "tabletop-member",
+        "queuedPersonaIds": ["tabletop-organizer"], // shows join-queue already exercised once
+        "dueDate": "2026-07-17"
+      }
+    },
+    {
+      "instanceId": "listing-root",
+      "workflowType": "equipment-loan",
+      "title": "Root",
+      "category": "Strategy Games",
+      "condition": "Good",
+      "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
+      // No holder, but reserved-ahead — the "available + queued" pattern join-queue's `from` allows.
+      // This is the corrected replacement for the old "queued" state Root used to dangle in with
+      // zero transitions; same real-world situation, now expressible without a stuck state.
+      "currentState": "available",
+      "instanceData": { "holderPersonaId": null, "queuedPersonaIds": ["tabletop-member"], "dueDate": null }
+    },
+    {
+      "instanceId": "listing-old-catan",
+      "workflowType": "equipment-giveaway", // different template, per-instance override
+      "title": "Catan (retired club copy)",
+      "category": "Board Games",
+      "condition": "Fair",
+      "description": "Free to a member — retired club copy, replaced by the newer set above.",
+      "currentState": "available",
+      "instanceData": { "claimedByPersonaId": null }
+    }
+  ]
+}

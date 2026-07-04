@@ -14,7 +14,7 @@ INFO         |      Ok: Hardware GPU compatibility checks are not required
 INFO         |   Checking: hasSufficientSystem
 INFO         |      Ok: System requirements to run avd: `PantryVision_Manual_API_36` are met
 INFO         | Warning: Could not find the Qt platform plugin "wayland" in "/usr/lib/android-sdk/emulator/lib64/qt/plugins" (:0, )
-INFO         | Storing crashdata in: /tmp/android-fahd_/emu-crash-36.5.10.db, detection is enabled for process: 896643
+INFO         | Storing crashdata in: /tmp/android-fahd_/emu-crash-36.5.10.db, detection is enabled for process: 1223876
 INFO         | Initializing gfxstream backend
 INFO         | android_startOpenglesRenderer: gpu info
 INFO         | 
@@ -84,13 +84,13 @@ INFO         | Monitoring duration of emulator setup.
 WARNING      | The emulator now requires a signed jwt token for gRPC access! Use the -grpc flag if you really want an open unprotected grpc port
 INFO         | Using security allow list from: /usr/lib/android-sdk/emulator/lib/emulator_access.json
 WARNING      | *** Basic token auth should only be used by android-studio ***
-INFO         | The active JSON Web Key Sets can be found here: /run/user/1000/avd/running/896643/jwks/0bd5edd1-ad53-41d3-87b2-e1d3adefa8ef/active.jwk
-INFO         | Scanning /run/user/1000/avd/running/896643/jwks/0bd5edd1-ad53-41d3-87b2-e1d3adefa8ef for jwk keys.
+INFO         | The active JSON Web Key Sets can be found here: /run/user/1000/avd/running/1223876/jwks/4b311e29-5225-4762-b2f3-3fe43cbad168/active.jwk
+INFO         | Scanning /run/user/1000/avd/running/1223876/jwks/4b311e29-5225-4762-b2f3-3fe43cbad168 for jwk keys.
 INFO         | Started GRPC server at 127.0.0.1:8554, security: Local, auth: +token
-INFO         | Advertising in: /run/user/1000/avd/running/pid_896643.ini
-INFO         | Activated packet streamer for bluetooth emulation
-INFO         | Activated packet streamer for uwb emulation
+INFO         | Advertising in: /run/user/1000/avd/running/pid_1223876.ini
 INFO         | Successfully initialized netsim WiFi
+INFO         | Activated packet streamer for uwb emulation
+INFO         | Activated packet streamer for bluetooth emulation
 INFO         | Setting display: 0 configuration to: 1080x2340, dpi: 440x440 
 INFO         | setDisplayActiveConfig: id:0, 1080x2340
 INFO         | emulatorSetupEnvironment: Setting up screen background view and display layout at env:1080x2340, lcd:1080x2340
@@ -115,6 +115,5 @@ INFO         | Warning: QObject::connect:  (receiver name: 'microphonePage') (:0
 INFO         | Warning: QObject::connect: No such signal MicrophonePage::microphoneEnabledChanged() in /buildbot/src/googleplex-android/emu-36-5-release/external/qemu/android/android-ui/modules/aemu-ui-qt/src/android/skin/qt/extended-window.cpp:162 (:0, )
 INFO         | Warning: QObject::connect:  (sender name:   'microphonePage') (:0, )
 INFO         | Warning: QObject::connect:  (receiver name: 'ToolControls') (:0, )
-INFO         | Created extended window in 708.299ms
-INFO         | Successfully loaded snapshot 'default_boot' using 12162 ms
-WARNING      | Netsim Wifi localhost:34175 is gone due to CANCELLED
+INFO         | Created extended window in 847.099ms
+INFO         | Successfully loaded snapshot 'default_boot' using 13198 ms

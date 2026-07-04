@@ -935,6 +935,7 @@ class _LocalExtensionScreenState extends State<LocalExtensionScreen> {
                 _focusedWorkflowIdByPersonaTab[focusKey] = workflowId;
               }),
               onConfirmWorkflow: (workflow) => _confirmWorkflow(workflow),
+              completedWorkflowIds: _completedWorkflowIds,
             ),
             const SizedBox(height: 24),
             ExpansionTile(

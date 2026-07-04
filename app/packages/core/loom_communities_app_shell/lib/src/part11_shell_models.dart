@@ -95,6 +95,10 @@ class LoomListingTransition {
     this.incrementsQueue = false,
     this.decrementsQueue = false,
     this.removesFromList = false,
+    this.addsActorToQueue = false,
+    this.removesActorFromQueue = false,
+    this.requiresActorInQueue = false,
+    this.requiresActorNotInQueue = false,
   });
 
   final String id;
@@ -108,6 +112,10 @@ class LoomListingTransition {
   final bool incrementsQueue;
   final bool decrementsQueue;
   final bool removesFromList;
+  final bool addsActorToQueue;
+  final bool removesActorFromQueue;
+  final bool requiresActorInQueue;
+  final bool requiresActorNotInQueue;
 }
 
 class LoomListingStateMachine {
@@ -127,14 +135,23 @@ class LoomListingStateMachine {
 
   List<LoomListingTransition> availableActions(
     String currentState,
-    String personaId,
-  ) {
+    String personaId, {
+    LoomMarketplaceListing? listing,
+  }) {
     return transitionsFrom(currentState)
         .where(
           (t) =>
-              t.allowedPersonaIds == null ||
-              t.allowedPersonaIds!.isEmpty ||
-              t.allowedPersonaIds!.contains(personaId),
+              (t.allowedPersonaIds == null ||
+                  t.allowedPersonaIds!.isEmpty ||
+                  t.allowedPersonaIds!.contains(personaId)) &&
+              (t.requiresActorInQueue
+                  ? listing != null &&
+                      listing.queuedPersonaIds.contains(personaId)
+                  : true) &&
+              (t.requiresActorNotInQueue
+                  ? listing != null &&
+                      !listing.queuedPersonaIds.contains(personaId)
+                  : true),
         )
         .toList();
   }
@@ -156,6 +173,7 @@ class LoomMarketplaceListing {
     this.template,
     this.stateMachine,
     this.state,
+    this.queuedPersonaIds = const [],
   });
 
   final String listingId;
@@ -172,6 +190,7 @@ class LoomMarketplaceListing {
   final String? template;
   final LoomListingStateMachine? stateMachine;
   final String? state;
+  final List<String> queuedPersonaIds;
 
   LoomMarketplaceListing copyWith({
     String? listingId,
@@ -188,6 +207,7 @@ class LoomMarketplaceListing {
     String? template,
     LoomListingStateMachine? stateMachine,
     String? state,
+    List<String>? queuedPersonaIds,
   }) {
     return LoomMarketplaceListing(
       listingId: listingId ?? this.listingId,
@@ -204,6 +224,7 @@ class LoomMarketplaceListing {
       template: template ?? this.template,
       stateMachine: stateMachine ?? this.stateMachine,
       state: state ?? this.state,
+      queuedPersonaIds: queuedPersonaIds ?? this.queuedPersonaIds,
     );
   }
 }

@@ -457,6 +457,7 @@ LoomMarketplaceListing? _parseListing(
     stateMachine: resolvedStateMachine,
     template: map['template'] as String?,
     state: stateOverride,
+    queuedPersonaIds: _shellStringList(map['queuedPersonaIds']),
   );
 }
 
@@ -507,6 +508,10 @@ LoomListingTransition _parseTransition(Map<String, Object?> map) {
     incrementsQueue: map['incrementsQueue'] == true,
     decrementsQueue: map['decrementsQueue'] == true,
     removesFromList: map['removesFromList'] == true,
+    addsActorToQueue: map['addsActorToQueue'] == true,
+    removesActorFromQueue: map['removesActorFromQueue'] == true,
+    requiresActorInQueue: map['requiresActorInQueue'] == true,
+    requiresActorNotInQueue: map['requiresActorNotInQueue'] == true,
   );
 }
 

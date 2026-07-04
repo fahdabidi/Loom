@@ -491,11 +491,14 @@ class _SurfaceFactPill extends StatelessWidget {
           children: [
             Icon(icon, size: 17, color: contentColor),
             const SizedBox(width: 7),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: contentColor,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: contentColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
