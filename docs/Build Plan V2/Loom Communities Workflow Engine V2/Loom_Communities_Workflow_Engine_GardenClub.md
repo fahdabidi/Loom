@@ -4,10 +4,10 @@ Source: `docs/Product Docs V2/Community Examples/garden-club-product-experience.
 avoid: "a generic workflow list with event and form labels."
 
 ## Personas
-| Persona | Role | Key constraint |
-| --- | --- | --- |
-| Member | actor on RSVP/plant-exchange/tool-loan | contact details/private requests must not be overexposed |
-| Coordinator | actor on event organizing/export | export needs checksum/redaction context |
+| Persona     | Role                                   | Key constraint                                           |
+| ----------- | -------------------------------------- | -------------------------------------------------------- |
+| Member      | actor on RSVP/plant-exchange/tool-loan | contact details/private requests must not be overexposed |
+| Coordinator | actor on event organizing/export       | export needs checksum/redaction context                  |
 
 ## Tabs → Cards → Archetype → Actions
 
@@ -28,9 +28,12 @@ many-to-many model)
   condition/damage. Source doc explicitly flags "single generic request" as the anti-pattern — this
   card needs the full browse+queue+custody treatment, matching Book Club's shared-library and
   Tabletop's equipment-loan almost exactly (third independent confirmation of `stateMachineGrid`).
-- **Plant exchange card** (a lighter `stateMachineGrid` instance, closer to classifieds): draft /
-  submitted / reviewed states, privacy-gated contact handoff on claim. Actions: submit listing, edit,
-  withdraw, claim, cancel-claim.
+- **Plant exchange listing** (`formEntry` to create/edit + a lighter `stateMachineGrid` for the
+  browse/claim lifecycle): fields plant type/quantity/photo/pickup-notes; states draft / submitted /
+  reviewed; privacy-gated contact handoff on claim. Actions: submit listing (formEntry), edit,
+  withdraw, claim, cancel-claim (grid). Both `stateMachineGrid` cards on this tab share it via §3a's
+  many-to-many binding — the "list your own item" entry is `formEntry`, the browse/claim is
+  `stateMachineGrid`.
 
 ### Care (member) — `volunteerRoster`-adjacent
 - Care/volunteer coordination for garden maintenance shifts — same shape as Mosque's volunteer
@@ -43,6 +46,19 @@ many-to-many model)
   direct evidence a plain `singleItem`/`list` was insufficient here.
 
 ### Messages (both) — `discussionThread`
+
+## Community-specific customizations (per archetype, per persona)
+
+| Archetype                               | Community customization (theme/fields/states/copy)                                 | Member needs                                                   | Coordinator needs                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------- |
+| `calendarAgenda`                        | Seasonal accents; states open/RSVPed/full/cancelled; waitlist                      | RSVP, join waitlist                                            | create events, see attendee counts     |
+| `formEntry` (plant/tool listing)        | Fields plant-type/qty/photo/pickup OR tool/condition/loan-vs-giveaway              | list own item, edit, withdraw                                  | —                                      |
+| `stateMachineGrid` (tool loan/giveaway) | States available/queued/reserved/loaned/overdue/given/returned/lost; custody+queue | browse, borrow, join/leave queue, claim, return, report damage | see custody history, moderate listings |
+| `stateMachineGrid` (plant exchange)     | Classifieds-lite; privacy-gated contact on claim                                   | claim, cancel-claim                                            | review submissions                     |
+| `volunteerRoster` (care shifts)         | Garden maintenance shifts; open-spots meter                                        | sign up for shift                                              | open/close shifts, see roster          |
+| `exportWizard`                          | Schemas garden_event + plant_exchange; redaction/checksum                          | read-only export view                                          | run export, scope, rollback            |
+| `discussionThread`                      | Standard                                                                           | member↔member                                                  | coordinator broadcast                  |
+| `dashboard` (Home)                      | Seasonal; "this week's activity + help/exchange needed + records"                  | member activity pins                                           | coordinator organizing pins            |
 
 ## Cross-cutting notes
 - Garden Club is the *second* independent confirmation (after Tabletop) that `stateMachineGrid` needs

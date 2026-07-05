@@ -10,6 +10,14 @@
 //   "workflowInstances"   — the actual DATA (like objects): one entry per listing tile in the grid,
 //                           each pointing at a workflowType + its own current state + instanceData.
 //
+// SCOPE NOTE RESOLVED (2026-07-04, was open since §3b): listing *creation* ("list your own item") is
+// now modeled — see §3d "creation/moderation lifecycle vs. interaction lifecycle." draft/
+// pending-review/published/delisted are real top-level states below, each with its own
+// renderBindings (formEntry while drafting, statusTimeline if reviewed, stateMachineGrid once
+// published) and states.<state>.editableFields (§9a-i). Availability (available/onLoan) stays
+// orthogonal instanceData, per the design change noted below — the two lifecycles never merge into
+// one flat state list.
+//
 // A DESIGN CHANGE from the interim Dart fix worth calling out up front: the interim fix (already
 // approved, ships first) kept "available" / "onLoan" / "queued" as three states, and had to special-
 // case join-queue/leave-queue with `from: ["onLoan", "queued"]` because "queued" was really just a
@@ -20,6 +28,12 @@
 // declared transitions, and nothing caught that before a live emulator walk did. Under this schema,
 // the validator (§9c) catches it at author-time instead, because there's no separate state to forget
 // transitions for in the first place.
+//
+// FIELD-MODEL CLEANUP (2026-07-04): title/category/condition/description used to sit as flat
+// top-level instance properties, OUTSIDE instanceData — inconsistent with instanceDataSchema being
+// the single source of truth (§9a). They're formEntry-writable fields like any other, so they now
+// live IN instanceData, declared in instanceDataSchema with required/writableBy/storage/searchable/
+// sortable like everything else.
 
 {
   "workflowDefinitions": {
@@ -30,59 +44,121 @@
     // fallback pattern).
     // ---------------------------------------------------------------------------------------------
     "equipment-loan": {
-      // §3a update: one binding covers every state/role — Marketplace is the *simple* end of the
-      // workflow/surface/tab spectrum, not a special case. Member vs. organizer only ever differ in
-      // WHICH buttons they see on this one surface (guard-filtered by availableTransitions), never
-      // in which surface or tab they see it on — unlike the document/approval example in §3a, which
-      // needs multiple bindings because the surface itself changes per role and per state.
+      // §3a + §3d: multiple bindings across the lifecycle — creation (formEntry), optional review
+      // (statusTimeline), and the interactive grid (stateMachineGrid) once published. Communities
+      // without review skip straight draft→published (submit-listing targets published directly).
       "renderBindings": [
-        { "states": ["available", "onLoan"], "role": "any", "tabId": "marketplace",
+        { "states": ["draft"], "role": "actor", "tabId": "marketplace",
+          "cardSurfaceFamily": "listing-editor", "bindingKind": "primary" },
+        { "states": ["pending-review"], "role": "actor", "tabId": "marketplace",
+          "cardSurfaceFamily": "listing-status-badge", "bindingKind": "summary" },
+        { "states": ["pending-review"], "role": "receiver", "tabId": "admin",
+          "cardSurfaceFamily": "listing-review-queue-item", "bindingKind": "primary" },
+        { "states": ["published"], "role": "any", "tabId": "marketplace",
           "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
       ],
-      "initialState": "available",
+      "initialState": "draft",
 
-      // Display metadata — this is what lets the tile grid AND the detail view render fact pills
-      // with the correct icon/label automatically, instead of a hardcoded call site per surface
-      // (the exact bug we found in Calendar: every fact pill used the same checkmark icon).
-      // `displayContexts` controls whether a field shows on the compact grid TILE, the full DETAIL
-      // view, or both — this is what makes one schema drive both today's grid AND detail screens.
+      // Display + storage + validation metadata — this is what lets the tile grid AND the detail
+      // view render fact pills with the correct icon/label automatically (the exact bug we found in
+      // Calendar: every fact pill used the same checkmark icon), AND is now the single source of
+      // truth backend validation/indexing and form entry both read from (§9a) — no separate
+      // formEntry.fields[] list anymore. `displayContexts` controls tile vs. detail; `editableFields`
+      // per state (below) controls which of these are user-editable right now.
       "instanceDataSchema": {
+        "photo": {
+          "type": "image", "required": true,
+          "writableBy": "formEntry",
+          "storage": "reference", "storageTarget": "firebase-storage", // NOT stored inline — see §9a
+          "displayContexts": ["tile", "detail"]
+        },
+        "title": {
+          "type": "text", "required": true, "maxLength": 80,
+          "writableBy": "formEntry", "storage": "inline",
+          "searchable": true, "sortable": true,
+          "displayIcon": null, "labelTemplate": "{value}", "displayContexts": ["tile", "detail"]
+        },
+        "category": {
+          "type": "text", "required": true,
+          "writableBy": "formEntry", "storage": "inline",
+          "searchable": false, "sortable": true,   // used by stateMachineGrid's filters.field chips
+          "displayContexts": ["tile", "detail"]
+        },
+        "condition": {
+          "type": "text", "required": true,
+          "writableBy": "formEntry", "storage": "inline", "sortable": true,
+          "displayIcon": "verified_outlined", "labelTemplate": "{value}", "displayContexts": ["detail"]
+        },
+        "description": {
+          "type": "textarea", "required": false, "maxLength": 500,
+          "writableBy": "formEntry", "storage": "inline", "searchable": true, "sortable": false,
+          "displayContexts": ["detail"]
+        },
         "holderPersonaId": {
           "type": "personaId?",
-          "displayIcon": "person_outline",
-          "labelTemplate": "Holder: {value}",
+          "writableBy": "effect", "sortable": false,   // no useful sort order on a persona ID
+          "displayIcon": "person_outline", "labelTemplate": "Holder: {value}",
           "displayContexts": ["tile", "detail"]
         },
         "queuedPersonaIds": {
           "type": "personaId[]",
-          "displayIcon": "groups_outlined",
-          "labelTemplate": "Queue: {value.length}",
+          "writableBy": "effect",
+          "displayIcon": "groups_outlined", "labelTemplate": "Queue: {value.length}",
           "displayContexts": ["tile", "detail"],
           "hideWhenEmpty": true // don't show "Queue: 0" on items nobody's queued for
         },
         "dueDate": {
           "type": "date?",
-          "displayIcon": "schedule",
-          "labelTemplate": "Due back {value}",
+          "writableBy": "effect", "sortable": true,
+          "displayIcon": "schedule", "labelTemplate": "Due back {value}",
           "displayContexts": ["tile", "detail"],
           "hideWhenEmpty": true
         }
       },
 
-      // No "queued" state — see the file-level comment above.
+      // §3d: moderation/existence lifecycle as top-level states. No "queued" state — see the
+      // file-level comment above; availability is orthogonal instanceData (availabilityState),
+      // introduced fresh on the "published" state and never promoted to a top-level state either,
+      // for the identical reason.
       "states": {
-        "available": { "label": "Available", "tone": "positive" },
-        "onLoan": { "label": "On loan", "tone": "warning" }
+        "draft":          { "label": "Draft",
+                             "editableFields": ["photo","title","category","condition","description"] },
+        "pending-review": { "label": "Pending review", "tone": "info",
+                             "editableFields": [] }, // locked while under review; nothing to edit
+        "published":      { "label": "Published", "tone": "positive" }, // no editableFields — edits
+                                                                          // happen via transitions,
+                                                                          // not a form, once live
+        "delisted":       { "label": "Delisted" }
       },
 
       "transitions": [
         {
+          "id": "submit-listing", "label": "Submit for review", "icon": "send", "tone": "primary",
+          "from": ["draft"], "to": "pending-review",
+          "guard": { "allowedPersonaIds": ["tabletop-member"] }
+          // No review configured for Tabletop today — this transition's "to" would instead be
+          // "published" directly (with the effect below) for a community that skips review. Left as
+          // pending-review here to show the fuller shape; see §3d.
+        },
+        {
+          "id": "approve-listing", "label": "Approve", "icon": "check_circle", "tone": "primary",
+          "from": ["pending-review"], "to": "published",
+          "guard": { "allowedPersonaIds": ["tabletop-organizer"] },
+          "effects": [{ "op": "set", "key": "availabilityState", "value": "available" }]
+        },
+        {
+          "id": "reject-listing", "label": "Send back", "icon": "undo", "tone": "secondary",
+          "from": ["pending-review"], "to": "draft",
+          "guard": { "allowedPersonaIds": ["tabletop-organizer"] }
+        },
+        {
           "id": "borrow",
           "label": "Request loan",
-          "from": ["available"],
-          "to": "onLoan",
+          "icon": "arrow_forward", "tone": "primary",
+          "from": ["published"], "to": null, // top-level state doesn't change — see §3d
           "guard": {
             "allowedPersonaIds": ["tabletop-member"],
+            "instanceDataEquals": { "key": "availabilityState", "value": "available" }
             // Illustrative use of §9b's cross-workflow dependency field: you must be a member in
             // good standing (dues current) to borrow. This formalizes something that today only
             // exists as PROSE on the Giving tab's entitlement text ("Member in good standing
@@ -93,6 +169,7 @@
             // "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
           },
           "effects": [
+            { "op": "set", "key": "availabilityState", "value": "onLoan" },
             { "op": "set", "key": "holderPersonaId", "value": "$actor" }
           ],
           "linkedWorkflowId": "tabletop-game-loan" // fires the existing generic action-surface UI
@@ -100,11 +177,11 @@
         {
           "id": "join-queue",
           "label": "Join queue",
-          // Both states allowed on purpose: someone can queue for an item that's already checked
-          // out (the common case), or reserve-ahead on one that's technically available right now
-          // but in high demand (a real, valid pattern — not a leftover data inconsistency like the
-          // old "queued" state was).
-          "from": ["available", "onLoan"],
+          "icon": "add_circle_outline", "tone": "secondary",
+          // Both availabilityState values allowed on purpose: someone can queue for an item that's
+          // already checked out (the common case), or reserve-ahead on one that's technically
+          // available right now but in high demand (a real, valid pattern).
+          "from": ["published"], "to": null,
           "guard": {
             "allowedPersonaIds": ["tabletop-member"],
             "actorInList": { "key": "queuedPersonaIds", "present": false }
@@ -116,7 +193,8 @@
         {
           "id": "leave-queue",
           "label": "Leave queue",
-          "from": ["available", "onLoan"],
+          "icon": "remove_circle_outline", "tone": "secondary",
+          "from": ["published"], "to": null,
           "guard": {
             "allowedPersonaIds": ["tabletop-member"],
             "actorInList": { "key": "queuedPersonaIds", "present": true }
@@ -128,13 +206,22 @@
         {
           "id": "return",
           "label": "Return",
-          "from": ["onLoan"],
-          "to": "available",
-          "guard": { "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"] },
+          "icon": "keyboard_return", "tone": "primary",
+          "from": ["published"], "to": null,
+          "guard": {
+            "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"],
+            "instanceDataEquals": { "key": "availabilityState", "value": "onLoan" }
+          },
           "effects": [
+            { "op": "set", "key": "availabilityState", "value": "available" },
             { "op": "set", "key": "holderPersonaId", "value": null },
             { "op": "set", "key": "dueDate", "value": null }
           ]
+        },
+        {
+          "id": "delist", "label": "Delist", "icon": "delete_outline", "tone": "destructive",
+          "from": ["published"], "to": "delisted",
+          "guard": { "allowedPersonaIds": ["tabletop-member-owner", "tabletop-organizer"] }
         }
       ]
     },
@@ -142,19 +229,28 @@
     // ---------------------------------------------------------------------------------------------
     // The giveaway template — a DIFFERENT workflowType, used only by the retired Catan copy. Shows
     // that not every listing needs to share the loan template; a listing instance can reference
-    // whichever workflowType fits (mirrors today's per-listing `stateMachine` override).
+    // whichever workflowType fits (mirrors today's per-listing `stateMachine` override). Simplified
+    // here — no draft/review lifecycle shown, to keep one worked example of that pattern (above)
+    // rather than repeating it; a real giveaway listing would follow the same §3d shape.
     // ---------------------------------------------------------------------------------------------
     "equipment-giveaway": {
-      // Same tile/detail layout family as equipment-loan, different FSM underneath — one binding is
-      // still enough, same reasoning as above.
       "renderBindings": [
         { "states": ["available", "claimed"], "role": "any", "tabId": "marketplace",
           "cardSurfaceFamily": "equipment-loan", "bindingKind": "primary" }
       ],
       "initialState": "available",
       "instanceDataSchema": {
+        "title": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+          "searchable": true, "sortable": true, "displayContexts": ["tile", "detail"] },
+        "category": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+          "sortable": true, "displayContexts": ["tile", "detail"] },
+        "condition": { "type": "text", "required": true, "writableBy": "formEntry", "storage": "inline",
+          "sortable": true, "displayContexts": ["detail"] },
+        "description": { "type": "textarea", "required": false, "writableBy": "formEntry",
+          "storage": "inline", "searchable": true, "displayContexts": ["detail"] },
         "claimedByPersonaId": {
           "type": "personaId?",
+          "writableBy": "effect",
           "displayIcon": "person_outline",
           "labelTemplate": "Claimed by: {value}",
           "displayContexts": ["tile", "detail"],
@@ -169,6 +265,7 @@
         {
           "id": "claim",
           "label": "Claim giveaway",
+          "icon": "check_circle", "tone": "primary",
           "from": ["available"],
           "to": "claimed",
           "guard": { "allowedPersonaIds": ["tabletop-member"] },
@@ -187,27 +284,31 @@
   // generic tile-grid renderer walks: each instance's `workflowType` resolves its FSM+schema above,
   // `currentState` + `instanceData` drive both the compact tile and (once tapped) the full detail
   // view, using the SAME `instanceDataSchema` for both — no separate hand-maintained tile widget.
+  // ALL declared fields (including title/category/condition/description) now live inside
+  // `instanceData` — nothing sits outside it as a flat instance property anymore (2026-07-04 cleanup).
   // -----------------------------------------------------------------------------------------------
   "workflowInstances": [
     {
       "instanceId": "listing-catan",
       "workflowType": "equipment-loan",
-      "title": "Catan",
-      "category": "Board Games",
-      "condition": "Like new",
-      "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
-      "currentState": "available",
-      "instanceData": { "holderPersonaId": null, "queuedPersonaIds": [], "dueDate": null }
+      "currentState": "published",
+      "instanceData": {
+        "photo": "gs://tabletop-club/listings/catan.jpg",
+        "title": "Catan", "category": "Board Games", "condition": "Like new",
+        "description": "Classic resource-trading strategy game for 3-4 players. Includes 5-6 player expansion.",
+        "availabilityState": "available",
+        "holderPersonaId": null, "queuedPersonaIds": [], "dueDate": null
+      }
     },
     {
       "instanceId": "listing-wingspan",
       "workflowType": "equipment-loan",
-      "title": "Wingspan",
-      "category": "Board Games",
-      "condition": "Excellent",
-      "description": "Award-winning engine-building bird game. Includes European expansion.",
-      "currentState": "onLoan",
+      "currentState": "published",
       "instanceData": {
+        "photo": "gs://tabletop-club/listings/wingspan.jpg",
+        "title": "Wingspan", "category": "Board Games", "condition": "Excellent",
+        "description": "Award-winning engine-building bird game. Includes European expansion.",
+        "availabilityState": "onLoan",
         "holderPersonaId": "tabletop-member",
         "queuedPersonaIds": ["tabletop-organizer"], // shows join-queue already exercised once
         "dueDate": "2026-07-17"
@@ -216,25 +317,38 @@
     {
       "instanceId": "listing-root",
       "workflowType": "equipment-loan",
-      "title": "Root",
-      "category": "Strategy Games",
-      "condition": "Good",
-      "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
-      // No holder, but reserved-ahead — the "available + queued" pattern join-queue's `from` allows.
-      // This is the corrected replacement for the old "queued" state Root used to dangle in with
-      // zero transitions; same real-world situation, now expressible without a stuck state.
-      "currentState": "available",
-      "instanceData": { "holderPersonaId": null, "queuedPersonaIds": ["tabletop-member"], "dueDate": null }
+      "currentState": "published",
+      "instanceData": {
+        "photo": "gs://tabletop-club/listings/root.jpg",
+        "title": "Root", "category": "Strategy Games", "condition": "Good",
+        "description": "Asymmetric woodland strategy game. Faction boards for 3-4 players.",
+        // No holder, but reserved-ahead — the "available + queued" pattern join-queue's `from`
+        // allows. This is the corrected replacement for the old "queued" state Root used to dangle
+        // in with zero transitions; same real-world situation, now expressible without a stuck state.
+        "availabilityState": "available",
+        "holderPersonaId": null, "queuedPersonaIds": ["tabletop-member"], "dueDate": null
+      }
     },
     {
       "instanceId": "listing-old-catan",
       "workflowType": "equipment-giveaway", // different template, per-instance override
-      "title": "Catan (retired club copy)",
-      "category": "Board Games",
-      "condition": "Fair",
-      "description": "Free to a member — retired club copy, replaced by the newer set above.",
       "currentState": "available",
-      "instanceData": { "claimedByPersonaId": null }
+      "instanceData": {
+        "title": "Catan (retired club copy)", "category": "Board Games", "condition": "Fair",
+        "description": "Free to a member — retired club copy, replaced by the newer set above.",
+        "claimedByPersonaId": null
+      }
+    },
+    {
+      "instanceId": "listing-example-draft",
+      "workflowType": "equipment-loan",
+      "currentState": "draft",
+      "instanceData": {
+        // A listing mid-creation — proves the §3d lifecycle end to end. Not visible in the
+        // Marketplace grid at all (no renderBinding matches "draft" for role:any); only the
+        // creating member sees it, via the "listing-editor" formEntry binding.
+        "photo": null, "title": "", "category": "", "condition": "", "description": ""
+      }
     }
   ]
 }

@@ -404,6 +404,51 @@ void main() {
       );
     });
 
+    // ── (f.ii) queue join-then-leave roundtrip ─────────────────────
+
+    testWidgets('wf_marketplace-join-then-leave-queue', (tester) async {
+      final fixture = _writeFixture(includeListings: true);
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      // Select member persona BEFORE navigating
+      await selectPersona(tester, 'tabletop-member');
+      await tester.pumpAndSettle();
+      await _tapTab(tester, 'marketplace');
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      // Open listing-root (queued, no members in queue yet)
+      await _openListingDetail(tester, 'listing-root');
+
+      // Member NOT in queue → sees "Join queue"
+      expect(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-action-leave-queue')),
+        findsNothing,
+      );
+
+      // Tap "Join queue"
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      // After tapping, "Leave queue" replaces "Join queue"
+      expect(
+        find.byKey(const ValueKey('marketplace-action-leave-queue')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        findsNothing,
+      );
+    });
+
     // ── (g) per-listing giveaway: inline stateMachine + removesFromList ──
 
     testWidgets('wf_marketplace-giveaway-per-listing', (tester) async {

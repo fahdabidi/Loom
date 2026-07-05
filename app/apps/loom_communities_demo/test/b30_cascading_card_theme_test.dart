@@ -16,12 +16,6 @@ void main() {
         await tester.pumpWidget(const LoomCommunitiesDemoApp());
         await _installAndOpen(tester, fixture);
 
-        // The Home tab is always present and renders all three workflows.
-        // Tab-level theme overrides (giving #8A5A34, marketplace #2F6F5C)
-        // and workflow-level overrides (tabletop-game-loan's #4C2F1B) are
-        // covered by the JSON-level model-parse test above. Full tab-
-        // integration theme-assertion tests land in M3 (marketplace) and
-        // M5 (giving).
         for (final id in [
           'tabletop-committee-decision',
           'tabletop-club-dues-payment',
@@ -33,6 +27,42 @@ void main() {
             reason: id,
           );
         }
+      },
+    );
+
+    testWidgets(
+      'wf_marketplace-tab-renders-cascaded-theme-fill',
+      (tester) async {
+        final fixture = _writeCascadeFixture();
+        await tester.pumpWidget(const LoomCommunitiesDemoApp());
+        await _installAndOpen(tester, fixture);
+
+        await _tapTab(tester, 'marketplace');
+
+        // Positive (rule 2): marketplaceListings declared → real listing
+        // card renders, placeholder is absent.
+        final listingCardFinder = find.byKey(
+          const ValueKey('marketplace-listing-listing-catan'),
+        );
+        expect(listingCardFinder, findsOneWidget);
+        expect(find.textContaining('is coming to'), findsNothing);
+
+        // The listing card's DecoratedBox fill must be a non-null,
+        // non-transparent Color — proof the cascade was consumed
+        // (community #C4703F → tab override #2F6F5C → themed fill).
+        // Without a theme, the fill would be solid or null.
+        final decoratedFinder = find.descendant(
+          of: listingCardFinder,
+          matching: find.byType(DecoratedBox),
+          matchRoot: true,
+        );
+        expect(decoratedFinder, findsAtLeast(1), reason: 'card fill');
+        final decoratedBox =
+            tester.widget<DecoratedBox>(decoratedFinder.first);
+        final decoration = decoratedBox.decoration as BoxDecoration;
+        expect(decoration.color, isNotNull);
+        expect(decoration.color!.alpha, lessThan(255),
+            reason: 'themed fill must have alpha < 255');
       },
     );
 
@@ -75,10 +105,6 @@ Color _lightFillFor(Color accent) {
 Color _tileColorFor(WidgetTester tester, String workflowId) {
   final finder = find.byKey(ValueKey('workflow-$workflowId'));
   expect(finder, findsOneWidget, reason: workflowId);
-  // The keyed widget may instantiate a DecoratedBox child (e.g.
-  // _MinimizedWorkflowSurface wraps a DecoratedBox).  Traverse down one
-  // level so the cast succeeds regardless of which intermediate class the
-  // production code uses.
   final decoratedFinder = find.descendant(
     of: finder,
     matching: find.byType(DecoratedBox),
@@ -220,6 +246,19 @@ _PackagePairFixture _writeCascadeFixture() {
             'resultText':
                 'Your loan request for Catan was sent to the organizer.',
             'theme': {'accent': '#4C2F1B'},
+          },
+        ],
+        'marketplaceListings': [
+          {
+            'listingId': 'listing-catan',
+            'title': 'Catan',
+            'category': 'Board Games',
+            'iconKey': 'casino',
+            'condition': 'Like new',
+            'availability': 'available',
+            'queueLength': 0,
+            'description': 'Classic resource-trading strategy game.',
+            'linkedWorkflowId': 'tabletop-game-loan',
           },
         ],
         'personaPolicies': {

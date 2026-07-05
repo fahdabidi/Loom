@@ -91,8 +91,10 @@ states and transitions shared by multiple listings:
         { "id": "borrow",     "label": "Request loan", "fromStates": ["available"], "to": "onLoan",
           "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
           "setsHolderToActor": true },
-        { "id": "join-queue", "label": "Join queue",   "fromStates": ["onLoan"],    "to": "onLoan",
-          "allowedPersonaIds": ["tabletop-member"], "incrementsQueue": true },
+        { "id": "join-queue", "label": "Join queue",   "fromStates": ["onLoan", "queued"],
+          "allowedPersonaIds": ["tabletop-member"], "addsActorToQueue": true, "requiresActorNotInQueue": true },
+        { "id": "leave-queue", "label": "Leave queue",   "fromStates": ["queued"],
+          "allowedPersonaIds": ["tabletop-member"], "requiresActorInQueue": true, "removesActorFromQueue": true },
         { "id": "return",     "label": "Return",       "fromStates": ["onLoan"],    "to": "available",
           "allowedPersonaIds": ["tabletop-member","tabletop-organizer"], "clearsHolder": true }
       ]

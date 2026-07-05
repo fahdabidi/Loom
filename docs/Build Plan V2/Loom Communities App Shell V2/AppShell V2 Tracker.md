@@ -100,16 +100,27 @@ per tab — and update the normative docs so extension authors get the new contr
 | 1 | Deprecate shared mock tab renderers → empty placeholder | [x] |
 | 2 | Messages: full thread model | [x] `b33` live+passing — 3/3 green (inbox, open-thread+reply, mute+archive); see §3a/M2 |
 | 3 | Marketplace browse UI shell (grid/search/filter/detail) | [x] Phase B UI shell done → **merged into M3b** (gaps A/B/C subsumed by the engine) |
-| 3b | Marketplace = generic mode-agnostic per-listing state-machine engine (community-declared, no built-ins; loan tested, sale/trade/giveaway via example fixtures) + docs + APIs. **Absorbs M3's gaps A/B/C + b34.** | [~] **Queue fix code-verified 2026-07-04** — per-member queue tracking (`queuedPersonaIds` + 4 transition flags) correctly implemented and traced end-to-end (part11/part15/part02); full suite 92/93. **Still open:** docs fixture + both `equipment-loan.md` mirrors still have the OLD `join-queue` def with no `queued`-state transition (would still reproduce the bug on a live sideload today); `b34` got an engine-level unit test, not the widget-level round-trip test that opens Root's actual UI; live evidence not captured. See §4 M3b. |
-| 4 | Calendar: modern rebuild (keep tested interactions) | [~] **Both defect fixes code-verified 2026-07-04** — date-strip dedup (`part02_tab_shell.dart:990-994`) and per-fact icons (`part02_tab_shell.dart:1366-1388`) match spec exactly, traced by hand, full suite 92/93 unaffected. **Still open:** neither fix has any test coverage (nothing would fail if reverted) and no live-emulator screenshot exists yet. See §4 M4. |
+| 3b | Marketplace = generic mode-agnostic per-listing state-machine engine (community-declared, no built-ins; loan tested, sale/trade/giveaway via example fixtures) + docs + APIs. **Absorbs M3's gaps A/B/C + b34.** | [x] **FULLY CLOSED 2026-07-04** — fixture/mirror sync (4 files) verified byte-consistent; `wf_marketplace-join-then-leave-queue` opens Root's real detail view and proves the roundtrip in the widget tree; live emulator walk confirmed Root: zero actions → "Join queue" → "Leave queue" → "Join queue" round trip on-device, no bugs found; full suite 94/95. See §4 M3b. |
+| 4 | Calendar: modern rebuild (keep tested interactions) | [x] **FULLY CLOSED 2026-07-04** — fixed the dedup test to assert on the strip's own keys (previous version tested the wrong widget); verified the new assertion actually fails without the fix and passes with it; live emulator walk confirmed exactly one "Fri 10" strip chip for two same-date events plus distinct per-fact icons (schedule/host/location/capacity), no bugs found; full suite 94/95. See §4 M4. |
 | 5 | Giving: modern payment rebuild | [x] **FULLY CLOSED 2026-07-04** — live emulator walk (WSL Ubuntu + Android emulator) confirmed real amount/checkout/receipt round trip; found + fixed a live-only text-overflow bug (`_SurfaceFactPill`) and 4 test-authoring bugs in `b35`; `b35` now 5/5 green. See §4 M5. |
 | 6 | Fix data-driven placeholder gating bug (blocks M3 & M5) | [x] **CLOSED 2026-07-04** — M5's `b35` rule-2 pair now passes for real (not just read); M3b's already closed. |
-| 7 | Fixture enrichment (threads/marketplaceListings/host/givingPayment) | [~] authoring done+validated; only live-walk sideload regen deferred — see M7 |
-| 8 | Restore b30 tab-integration cascade coverage (b33 closed, M2 done) | [ ] |
+| 7 | Fixture enrichment (threads/marketplaceListings/host/givingPayment) | [x] **CLOSED 2026-07-04** — authoring validated 2026-07-03; live-walk sideload regen closed by the M3b/M4 emulator session, which pushed this exact docs file to the device and rendered it correctly. See §4 M7. |
+| 8 | Restore b30 tab-integration cascade coverage (b33 closed, M2 done) | [x] **CLOSED 2026-07-04** — new `wf_marketplace-tab-renders-cascaded-theme-fill` navigates into the real Marketplace tab and asserts the cascaded theme fill (alpha < 255) on the rendered listing card, restoring the widget-tree proof rule 3 requires; full suite 95/96. |
 | D | Documentation sync across all three locations | [x] |
 
-**➡️ Next phase (2026-07-04): M8 b30 cascade restoration.**
-M0, M1, M2, M3b, M4, M5, M6, and D are all closed (`[x]`). M5 closed for real in this pass — a live
+**➡️ EVERY MILESTONE FULLY CLOSED (2026-07-04) — M0–M8 and D, all `[x]`, all with cited evidence.**
+The M3b (queue-actions) and M4 (date-strip dedup + semantic icons) reopenings are fully closed:
+docs/fixture sync verified across all 4 locations, a corrected/verified regression test for each
+fix, and live emulator evidence captured for both (screenshots in
+`.codex-logs/m3b-evidence-2026-07-04-queue-fix/` and
+`.codex-logs/m4-evidence-2026-07-04-dedup-icons-fix/`) — no bugs found during either walk. M7's last
+open item (regenerate the sideload from the docs fixture and confirm it matches) closed the same
+session: the docs fixture was pushed directly to the emulator and rendered correctly end-to-end. M8
+closed with a new widget-tree test (`wf_marketplace-tab-renders-cascaded-theme-fill`) proving the
+community→tab theme cascade renders in the real Marketplace tab, not just in a JSON-parse test.
+Full suite: **95 passed, 1 failed** (the one failure is the pre-existing, unrelated
+`widget_test.dart` boilerplate referencing a nonexistent `MyApp` constructor).
+M0, M1, M2, M3b, M4, M5, M6, M7, M8, and D are all closed (`[x]`). M5 closed for real in this pass — a live
 emulator walk (WSL Ubuntu + Android SDK, `PantryVision_Manual_API_36` AVD) confirmed the full
 checkout→receipt round trip on-device, and running (not just reading) `b35_giving_payment_test.dart`
 surfaced 4 real test-authoring bugs plus one genuine production bug (a text-overflow in
@@ -118,9 +129,9 @@ closed 2026-07-04: 3/3 green (wf_messages-inbox-lists-seeded-threads, wf_message
 wf_messages-mute-and-archive-toggle), full-suite 91/92 (one pre-existing boilerplate widget_test.dart fails
 independently on `MyApp`). Two product fixes shipped: unrolled Expanded/ListView `for` loops in the Messages
 inbox+thread detail (same SingleChildScrollView bug Calendar had) and archive auto-back removed redundant
-test tap. M7 is functionally done except for a live-walk-time regen step, which this pass
-also performed for the Calendar/Giving walk (regenerated `ext_verify_tabletop_club.loom-init.zip`/
-`.loom-extension.zip` from the current docs fixture before sideloading).
+test tap. M7's live-walk regen step was closed in the M3b/M4 live-evidence session (2026-07-04): the
+docs fixture was pushed to the emulator and sideloaded directly, with no intermediate copy to drift
+— see §4 M7.
 
 Each milestone is independently shippable: `flutter analyze` clean → `flutter test` green → live
 emulator walk → docs synced.
@@ -304,7 +315,7 @@ Mirror to `app-shell-navigation-theming.md` Package/Initialization section.
   placeholder for those two tab types forever.
 - [x] Full suite green at time of closing: 69/69.
 
-### Milestone 2 — Messages: full thread model  `[~]` (implementation verified, test gap open)
+### Milestone 2 — Messages: full thread model  `[x]` (implementation + test both verified — CLOSED)
 **What & why:** Messages is the one shared default tab; make it a real inbox/thread/composer per the
 spec, on local state.
 
@@ -342,15 +353,13 @@ seed it.*
 - [x] `_ThreadDetailView`'s `TextField` (key `messages-composer-field`) and `IconButton`/send (key
   `messages-send-button`) are wired to a handler that mutates local state (`_sendReply` appends to
   `_localReplies` and calls `setState`) — confirmed real, not a no-op stub.
-- `[ ]` **GAP:** `b33_messages_thread_test.dart` must exist verbatim (rule 4) with, at minimum,
-  separate assertions for: inbox lists seeded threads by key; tapping an inbox item opens
-  `messages-thread-detail-<id>` and marks it read (unread dot disappears); typing in
-  `messages-composer-field` and tapping `messages-send-button` appends a new message bubble visible
-  in the same test (not just that the field cleared); mute/archive toggles change the inbox list.
-  Until this file exists with these specific assertions, M2 stays open per rule 5 (full-suite green
-  is not sufficient — there is no test proving this milestone's own behavior). See Milestone 8.
+- [x] `b33_messages_thread_test.dart` exists verbatim (rule 4) with the required assertions: inbox
+  lists seeded threads by key; tapping an inbox item opens `messages-thread-detail-<id>`; composer
+  field + send button appends a new message bubble in the same test; mute/archive toggles change the
+  inbox list. **CLOSED** — see the Steps section above (3/3 green). M2 is fully closed; this bullet
+  was left stale from before `b33` existed and is now corrected.
 
-### Milestone 3 — Marketplace: browse/list/detail  `[~]→merged into M3b` (2026-07-03)
+### Milestone 3 — Marketplace: browse/list/detail  `[x]` (merged into M3b, 2026-07-03; closed together with M3b, 2026-07-04)
 > **MERGE DECISION (2026-07-03, confirmed):** M3 is **folded into M3b**. The Phase B browse **UI
 > shell** (grid, `LayoutBuilder` reflow, search field, category chips, `_ListingCard`,
 > `_ListingDetailView`) is **kept and reused**; only the **action/state layer** (the
@@ -409,26 +418,27 @@ remain in part02 (`_DocumentsTabSurface`, `_PaymentGivingTabSurface`, `_CareVolu
 **Evidence required to mark `[x]`:**
 - [x] `grep -rn "experience.marketplaceListings" part02_tab_shell.dart` shows it read in the gated
   `case` (rule 1). ✓
-- [ ] A single test file `b34_marketplace_browse_test.dart` (exact name, rule 4) with separate cases:
-  (a) `marketplaceListings` declared → grid renders (`marketplace-listing-<id>` `findsWidgets`) +
-  placeholder text `findsNothing` (rule 2 positive); (b) absent → placeholder + `marketplace-listing-*`
-  `findsNothing` (rule 2 negative); (c) `marketplace-search-field` filters; (d) `marketplace-filter-<cat>`
-  filters; (e) detail opens with description/condition/holder/queue; **(f) each action flips local
-  state** — Request loan on `available` → `onLoan` + sets holder; Join queue on `queued` →
-  queue-length increments; Reserve on `onLoan` → reserved/waitlisted marker (covers GAP A + GAP C);
-  **(f2) the fired workflow is the resolved real `tabletop-game-loan` def, not a synthetic one**
-  (covers GAP B — e.g. assert the pushed surface shows the real workflow's text/persona routing);
-  (g) `LayoutBuilder` width test proves 2-up↔3-up reflow.
-- [ ] `b30_cascading_card_theme_test.dart` (or successor) taps into the Marketplace tab and asserts
+- [x] A single test file `b34_marketplace_browse_test.dart` (exact name, rule 4) with the cases
+  listed below (grid render positive/negative, search, category filter, detail anatomy, per-action
+  local-state flips, resolved-not-synthetic workflow, responsive reflow) **— satisfied via M3b's own
+  evidence bar** (per the merge decision above, this was always going to close together with M3b,
+  not separately). See §4 M3b for the full accounting, including the 2026-07-04
+  `wf_marketplace-join-then-leave-queue` addition.
+- [x] `b30_cascading_card_theme_test.dart` (or successor) taps into the Marketplace tab and asserts
   the rendered listing/tile color matches the community→tab→workflow cascade (widget-tree, not
-  JSON-parse) — restores §3a gap 5.
-- [ ] Live evidence (rule 6): screenshot of Tabletop Club's Marketplace tab showing the real listings
-  (available/onLoan/queued) with working actions, not the placeholder.
-- [ ] `flutter analyze` reconciled + full suite green, exact count cited.
+  JSON-parse) — restores §3a gap 5. **CLOSED 2026-07-04 via M8**:
+  `wf_marketplace-tab-renders-cascaded-theme-fill` in `b30_cascading_card_theme_test.dart` does
+  exactly this. See Milestone 8.
+- [x] Live evidence (rule 6): screenshot of Tabletop Club's Marketplace tab showing the real listings
+  (available/onLoan/queued) with working actions, not the placeholder. **CLOSED 2026-07-04** — see
+  §4 M3b's live-evidence bullet and `.codex-logs/m3b-evidence-2026-07-04-queue-fix/` (and the
+  earlier `.codex-logs/m3b-evidence/` from 2026-07-03 for the base browse/detail/action anatomy).
+- [x] `flutter analyze` reconciled + full suite green, exact count cited. **95 passed, 1 failed**
+  (pre-existing `widget_test.dart` boilerplate only), re-verified 2026-07-04.
 
 ---
 
-### Milestone 3b — Configurable per-listing state-machine marketplace  `[~]` (2026-07-03: CLOSED, then REOPENED 2026-07-04 — see new Build status addendum below)
+### Milestone 3b — Configurable per-listing state-machine marketplace  `[x]` (2026-07-03: CLOSED, REOPENED 2026-07-04 for the queue-actions gap, RE-CLOSED 2026-07-04 with live evidence — see Build status addendum below)
 **What & why:** The Phase-B model hardcodes the loan interaction (fixed `availability` enum + loan
 action). The user's requirement: the marketplace's **interaction model itself** is configurable per
 community and per persona — some have a queue, some don't; shopping/trading has "buy → purchased,
@@ -826,49 +836,55 @@ membership) — no new engine, no change to any other workflow type.
   is untouched (`join-queue`/`leave-queue` declare no `to`, correctly self-transitions) → on
   recompute, `requiresActorInQueue` now passes and `requiresActorNotInQueue` fails → "Leave queue"
   replaces it. **This is the correct fix for the reported bug.**
-- [~] Loan template (docs fixture + both `equipment-loan.md` mirrors + `b34`'s inline copy) gains
-  `join-queue`/`leave-queue` transitions with `from: ['onLoan', 'queued']` and no `to` (self-transition).
-  **Only `b34`'s inline copy was updated** (verified via `git diff` on the test file: `join-queue`
-  now `from: ['onLoan', 'queued']` + `addsActorToQueue`/`requiresActorNotInQueue`, no `to`;
-  new `leave-queue` `from: ['queued']` + `requiresActorInQueue`/`removesActorFromQueue`, no `to`).
-  **`docs/Build Plan V2/Skill/examples/verify-tabletop-club/loom.initialization.json:178` and BOTH
-  `equipment-loan.md` mirrors (`docs/CardSurfaces/equipment-loan.md:94`,
-  `docs/Build Plan V2/Skill/components/card-surfaces/equipment-loan.md`,
-  `.agents/skills/using-loom-to-build-an-extension/components/card-surfaces/equipment-loan.md`)
-  still show the OLD `join-queue` definition — `"from": ["onLoan"], "to": "onLoan", "incrementsQueue": true`
-  — no `leave-queue` transition anywhere, and no `queued` source state.** grep confirms `leave-queue`
-  and `addsActorToQueue`/`requiresActorInQueue` appear **only** in `b34_marketplace_browse_test.dart`
-  across the whole repo. **This is the one item that actually blocks a live walk:** the on-device
-  sideload is regenerated from `loom.initialization.json` (M7), so re-sideloading today and opening
-  Root would reproduce the original bug (its `queued` state still has zero matching `from`), even
-  though the engine and Tabletop's own `b34` fixture are fixed. Fix is a data-only edit to 4 files
-  (mirror the `b34` transition JSON), no further code change needed.
-- [~] `b34_marketplace_browse_test.dart`: new `wf_marketplace-join-then-leave-queue-roundtrip` +
-  a queued-member-sees-leave-queue case, both passing; existing `wf_marketplace-actions-member`
-  stays green unmodified. **Partially satisfied.** What actually landed: a pure engine-level
-  `test()` (not `testWidgets()`) named `'queue machine: join-then-leave roundtrip via per-member
-  tracking'` that calls `LoomListingStateMachine.availableActions(...)` directly with hand-built
-  `LoomMarketplaceListing` fixtures — it genuinely proves the engine logic both directions
-  (not-in-queue → `join-queue` present/`leave-queue` absent; in-queue → reverse), but it is a
-  different name than the one this evidence line specifies, and per rule 2 it is not a rendering
-  proof — it never pumps `LoomCommunitiesDemoApp`, never opens Root's actual listing card, and
-  never taps a button in the widget tree. No test in the file opens `listing-root`'s detail view at
-  all (confirmed: `grep -n "listing-root" b34_marketplace_browse_test.dart` only shows it referenced
-  in grid/filter-existence checks, never via `_openListingDetail`). `wf_marketplace-actions-member`
-  itself is confirmed untouched (only opens Wingspan/onLoan, not Root) — so it does stay green
-  unmodified, but it was never the test that would have caught this bug and still doesn't cover it.
-  **Gap: a `testWidgets` case that opens Root, asserts `marketplace-action-join-queue` renders
-  (not `findsNothing` as it did pre-fix), taps it, and asserts `marketplace-action-leave-queue`
-  replaces it — the actual regression proof for the reported bug — does not exist yet.**
-- [ ] Live evidence: screenshot of Root now showing "Join queue," tapping it, then showing "Leave
-  queue" — round-tripped on-device, not just in the widget test. **Not done** (explicitly deferred
-  by the user). Blocked on the docs-fixture/mirror sync gap above — fix that first, or the live walk
-  will still show the bug.
-- [x] Full suite green, exact count cited. **Verified 2026-07-04 by re-running the suite myself:
-  `flutter test apps/loom_communities_demo/test/` → 92 passed, 1 failed (`widget_test.dart`'s
-  pre-existing `MyApp` constructor error, unrelated to this fix) — matches the reported "92/93".**
+- [x] Loan template (docs fixture + both `equipment-loan.md` mirrors + `b34`'s inline copy) gains
+  `join-queue`/`leave-queue` transitions with per-member tracking and no `to` (self-transition).
+  **Sync gap closed 2026-07-04, re-verified by direct grep across all 4 locations.**
+  `docs/Build Plan V2/Skill/examples/verify-tabletop-club/loom.initialization.json:178-181`,
+  `docs/CardSurfaces/equipment-loan.md:94-97`, `docs/Build Plan V2/Skill/components/card-surfaces/
+  equipment-loan.md:94-97`, and `.agents/skills/using-loom-to-build-an-extension/components/
+  card-surfaces/equipment-loan.md:94-97` now all carry the corrected two-transition definition
+  (`join-queue`: `from ['onLoan','queued']` + `addsActorToQueue`/`requiresActorNotInQueue`, no `to`;
+  `leave-queue`: `from ['queued']` + `requiresActorInQueue`/`removesActorFromQueue`, no `to`),
+  matching `b34`'s inline copy exactly. Confirmed all three `equipment-loan.md` mirrors are still
+  byte-identical (`diff -q`, clean both ways) — the doc-sync guardrail (§9) holds. The on-device
+  sideload (regenerated from `loom.initialization.json` per M7) will now reproduce the fix, not the
+  original bug.
+- [x] `b34_marketplace_browse_test.dart`: a `testWidgets` roundtrip case, plus existing
+  `wf_marketplace-actions-member` stays green unmodified. **Closed 2026-07-04 — this is now a real
+  rendering proof, verified by direct read.** `wf_marketplace-join-then-leave-queue`
+  (b34:409-449) pumps the real app, installs the fixture, selects the member persona, opens
+  **`listing-root`'s actual detail view** via `_openListingDetail` (confirmed: this is the first
+  test in the file to do so — previously only referenced in grid/filter-existence checks), asserts
+  `marketplace-action-join-queue` renders and `marketplace-action-leave-queue` is `findsNothing`,
+  taps the join-queue button, then asserts the reverse — `leave-queue` renders,
+  `join-queue` is `findsNothing`. This is exactly the regression proof the reopening needed: it
+  would fail if the fix were reverted. `wf_marketplace-actions-member` is confirmed untouched by
+  `git diff` (still only opens Wingspan/onLoan) — stays green unmodified as required.
+- [x] Live evidence: screenshot of Root now showing "Join queue," tapping it, then showing "Leave
+  queue" — round-tripped on-device, not just in the widget test. **CLOSED 2026-07-04 — captured
+  live, not just re-checked in the widget test.** Built and installed a fresh debug APK on a real
+  Android emulator (WSL Ubuntu + Android SDK, `PantryVision_Manual_API_36` AVD), sideloaded Tabletop
+  Club from the now-synced `loom.initialization.json`/`loom.extension.json` docs fixture, switched
+  to the Member persona, opened Root's detail view: it showed **"Join queue"** (not zero actions —
+  the original bug is gone), tapped it → detail immediately re-rendered showing **"Leave queue"**
+  (Join queue gone), tapped again → back to **"Join queue"**. Full round trip proven on-device.
+  Screenshots in `.codex-logs/m3b-evidence-2026-07-04-queue-fix/` (`01_root_shows_join_queue.png`,
+  `02_after_join_shows_leave_queue.png`, `03_after_leave_shows_join_queue_again.png`). No bugs found
+  during this walk — the fix works exactly as designed.
+- [x] Full suite green, exact count cited. **Re-verified 2026-07-04 by re-running the suite myself:
+  `flutter test apps/loom_communities_demo/test/` → 94 passed, 1 failed (`widget_test.dart`'s
+  pre-existing `MyApp` constructor error, unrelated) — matches the reported "94/95" (up from 92/93;
+  the 2 new tests are this milestone's `wf_marketplace-join-then-leave-queue` and M4's
+  `wf_calendar-tab-dedupes-date-strip-chips-and-uses-semantic-icons`, both accounted for).**
 
-### Milestone 4 — Calendar: modern rebuild  `[~]` (2026-07-03: FULLY CLOSED, then REOPENED 2026-07-04 — see new Build status addendum below)
+**✅ M3b — FULLY CLOSED 2026-07-04.** Every item in this reopening's evidence bar is now satisfied:
+model/parser/wiring (verified by code read), docs/fixture sync across all 4 locations (verified by
+grep), a genuine widget-tree regression test (`wf_marketplace-join-then-leave-queue`, opens Root and
+proves the round trip), full suite green (94/95, only the pre-existing unrelated boilerplate
+failure), and now live on-device evidence confirming the exact reported bug is fixed with no
+regressions found in the walk.
+
+### Milestone 4 — Calendar: modern rebuild  `[x]` (2026-07-03: FULLY CLOSED, REOPENED 2026-07-04 for two UI defects, RE-CLOSED 2026-07-04 with a corrected test + live evidence — see Build status addendum below)
 
 **2026-07-04 re-confirmation (fresh live walk, independent of the 07-03 evidence above):** built and
 ran the app on a real Android emulator (WSL Ubuntu, `PantryVision_Manual_API_36` AVD, debug build) and
@@ -1003,34 +1019,51 @@ rather than polished iconography, inconsistent with Marketplace/Giving's own fac
 already use distinct icons per field.
 
 **Evidence required to close this reopening:**
-- [~] `_CalendarAgendaDateStrip` dedupes chips by date key (reusing `_isoDateKey`), one chip per
-  date not per workflow; `b29_calendar_complete_interactions_test.dart` keys updated to match; new
-  test proves the two-same-date-events case renders exactly one chip. **Code fix verified
-  2026-07-04 by direct read, test half not done.** `part02_tab_shell.dart:990-994` now builds a
-  `stripItems` map keyed by `_isoDateKey(...)` via `putIfAbsent` before handing it to
-  `_CalendarAgendaDateStrip` (part02:1000-1004) — for the two same-date Tabletop workflows
-  (`tabletop-game-night-rsvp` + `tabletop-tournament-rsvp`, both 2026-07-10) this correctly
-  collapses to one map entry → one chip. **`b29_calendar_complete_interactions_test.dart` was NOT
-  touched** (confirmed: `git status` shows no changes to that file) — no key was updated because
-  none needed to be, but also no new assertion counts the strip chips or otherwise proves the
-  dedup. There is no test anywhere in the suite that would fail if this fix were reverted.
-- [~] `_CalendarEventDetail`'s facts list carries per-fact icons (`Icons.schedule`/
+- [x] `_CalendarAgendaDateStrip` dedupes chips by date key (reusing `_isoDateKey`), one chip per
+  date not per workflow; new test proves the two-same-date-events case renders exactly one chip.
+  **Test gap closed 2026-07-04.** The previous pass's assertion targeted the wrong widget (the
+  pre-existing vertical group header, not the strip); fixed
+  `wf_calendar-tab-dedupes-date-strip-chips-and-uses-semantic-icons`
+  (`b27_calendar_tab_real_data_test.dart:83-101`) to assert directly on the strip's own per-workflow
+  keys: `find.byKey(calendar-agenda-date-tabletop-game-night-rsvp).evaluate().length +
+  find.byKey(calendar-agenda-date-tabletop-tournament-rsvp).evaluate().length == 1` — exactly one of
+  the two same-date workflows' strip chips may survive the dedup, not both. **Verified this is a
+  real regression guard, not just a plausible-looking assertion**: temporarily reverted
+  `part02_tab_shell.dart:990-994`'s dedup (`stripItems[wf.workflowId] = wf` instead of
+  `stripItems.putIfAbsent(_isoDateKey(...), ...)`), re-ran the test — it failed exactly as expected;
+  restored the fix, re-ran — passes again. `git diff` on `part02_tab_shell.dart` confirms no net
+  change from this verification (temp edit fully reverted).
+- [x] `_CalendarEventDetail`'s facts list carries per-fact icons (`Icons.schedule`/
   `Icons.person_outline`/`Icons.location_on_outlined`/`Icons.groups_outlined`) instead of the
-  shared checkmark. **Code fix verified 2026-07-04, matches spec exactly** —
-  `part02_tab_shell.dart:1366-1388` now gives the date/time pill `Icons.schedule`, host
-  `Icons.person_outline`, location `Icons.location_on_outlined`, capacity `Icons.groups_outlined`
-  (the reminder pill separately already used `Icons.notifications_active`, untouched). Confirmed
-  `Icons.check_circle_outline` no longer appears in this widget (remaining repo occurrences are in
-  unrelated surfaces). **No test coverage**: no test in the suite asserts on `find.byIcon(...)` for
-  any of these — grep across `test/*calendar*` for the new icon constants returns nothing, so
-  nothing would fail if this were reverted either.
-- [ ] Live evidence: screenshot of a two-same-date-event day showing one strip chip; screenshot of
-  an event detail showing distinct icons per fact. **Not done** (explicitly deferred by the user).
-  Unlike M3b, nothing in the docs fixture blocks this walk — the existing Tabletop fixture already
-  has the two same-date events needed to exercise Bug 1, and no data change is needed for Bug 2.
-- [x] Full suite green, exact count cited. **Verified 2026-07-04**: same full-suite run as M3b above
-  — 92 passed, 1 failed (pre-existing `widget_test.dart` only) — matches "92/93", and confirms
-  neither fix introduced a regression despite having zero direct test coverage of its own.
+  shared checkmark. **Closed 2026-07-04 — genuine rendering proof, verified by direct read.** The
+  same test's icon assertions (b27:104-115) open the real event detail
+  (`calendar-event-detail-tabletop-game-night-rsvp`) and, scoped via
+  `find.descendant(of: detail, matching: find.byIcon(...))` (correctly avoiding a false match
+  against the date-strip chip, which also happens to use `Icons.schedule`), assert `Icons.schedule`/
+  `Icons.location_on_outlined`/`Icons.groups_outlined` each render exactly once inside the detail,
+  plus a suite-wide `find.byIcon(Icons.check_circle_outline)` → `findsNothing`. Real, scoped, would
+  fail if the icon fix were reverted.
+- [x] Live evidence: screenshot of a two-same-date-event day showing one strip chip; screenshot of
+  an event detail showing distinct icons per fact. **CLOSED 2026-07-04 — captured live.** Same
+  emulator session as M3b: sideloaded Tabletop Club, opened the Calendar tab as Member. The
+  horizontal strip showed exactly **one** "Fri 10" chip despite two same-date workflows (Friday game
+  night + afternoon tournament) both being present in the vertical agenda below — confirming Bug 1
+  is fixed on-device, not just in the widget test. The expanded "RSVP to Friday game night" card
+  showed distinct icons per fact: clock for "Jul 10, 7:00 PM", person for "Alex Chen (Organizer)",
+  pin for "Community room", group icon for "12 of 20 seats filled" — no generic checkmarks anywhere,
+  confirming Bug 2. Also tapped the compact "RSVP to the afternoon tournament" card to switch focus:
+  the strip still showed one chip (now highlighted) and the newly-expanded card showed its own
+  correct icons and host ("Priya Nair, Tournament Lead"). No bugs found. Screenshots in
+  `.codex-logs/m4-evidence-2026-07-04-dedup-icons-fix/`
+  (`01_one_chip_two_events_semantic_icons.png`, `02_switched_focus_still_one_chip_semantic_icons.png`).
+- [x] Full suite green, exact count cited. **Re-verified 2026-07-04**: same full-suite run as M3b
+  above — 94 passed, 1 failed (pre-existing `widget_test.dart` only) — matches "94/95" (up from
+  92/93 last pass; +2 for this milestone's new icon/strip test and M3b's queue-roundtrip test).
+
+**✅ M4 — FULLY CLOSED 2026-07-04.** Both defects from the reopening are now closed with real
+evidence: Bug 1's test was corrected to assert on the actual strip widget and independently verified
+to fail without the fix (not just pass with it); Bug 2's test was already a genuine scoped proof;
+both are now additionally confirmed live on-device with no new bugs found during the walk.
 
 ### Milestone 5 — Giving: modern payment rebuild  `[x]` (FULLY CLOSED 2026-07-04 — live emulator walk done, `b35` executed and green 5/5 after fixing 4 test bugs, 1 production bug found+fixed)
 **What & why:** Replace the fake "Status timeline" with a real giving/payment surface driven by the
@@ -1193,7 +1226,7 @@ Steps:
   `wf_giving-shows-placeholder-without-payment`) now **actually passes** — confirmed 2026-07-04 via
   `flutter test`, not just read. **M6 is closed.**
 
-### Milestone 7 — Fixture enrichment  `[~]` (authoring complete; live-walk sideload regen deferred — 2026-07-03)
+### Milestone 7 — Fixture enrichment  `[x]` (authoring complete 2026-07-03; live-walk sideload regen CLOSED 2026-07-04)
 **What & why:** Enrich the Tabletop Club init JSON at
 `docs/Build Plan V2/Skill/examples/verify-tabletop-club/loom.initialization.json` to exercise the
 new models. Without this, M3/M4/M5's UI has nothing to render even once built: verified 2026-07-03
@@ -1233,39 +1266,61 @@ Steps:
   states (`available`/`onLoan`/`queued`), each `"linkedWorkflowId": "tabletop-game-loan"`; wingspan
   carries `currentHolderLabel`+`dueLabel`, root carries `queueLength: 2`. **Done + validated
   2026-07-03.**
-- `[ ]` Before the live walk (Phase B verify-time), regenerate the sideload JSON from this docs
-  example and confirm the `experience` blocks match (per the clarification above). *Deferred by
-  design — not a fixture-authoring gap.*
+- `[x]` Before the live walk (Phase B verify-time), regenerate the sideload JSON from this docs
+  example and confirm the `experience` blocks match (per the clarification above). **CLOSED
+  2026-07-04.** During the M3b/M4 live-evidence session, pushed `loom.extension.json` and
+  `loom.initialization.json` from this exact docs path directly to the emulator's app-private
+  storage (`adb push` of the docs files themselves, not a separately-maintained cache) and loaded
+  them via the app's "Add Community" flow. Since the sideload **is** the docs file (no intermediate
+  copy exists to drift), there is nothing to diff — installing succeeded ("Installed Tabletop Club
+  from local packages") and every screen walked (Marketplace: 4 listings incl. Root
+  available/onLoan/queued states; Calendar: the two same-date Jul 10 events with their respective
+  hosts) rendered exactly what this fixture declares, which is the strongest possible confirmation
+  that the "regenerated" sideload matches the docs example. Screenshot:
+  `.codex-logs/m7-evidence-2026-07-04-sideload-regen/01_installed_from_docs_fixture_directly.png`.
 
 **Evidence required to mark `[x]`:**
 - [x] `grep -c` in the docs fixture: `threads`=1, `marketplaceListings`=1, `"host"`=2 (two dated
-  events), `givingPayment`=1, `linkedWorkflowId`=3. **All present, validated 2026-07-03.**
+  events), `givingPayment`=1. **All present, re-verified 2026-07-04.** `linkedWorkflowId` is now 5
+  (not the original 3) — legitimate drift from the already-closed M3b Item 5 (giveaway listing) work
+  landing after this bullet was first written, not a regression; `listingId` count is 4, matching
+  the 4 listing cards seen live.
 - [x] Valid JSON after all additions (`json.load` succeeds); all 4 message timestamps parse as
-  ISO-8601 (no silent `DateTime.now()` fallback). **Validated 2026-07-03.**
-- [ ] The regenerated sideload JSON's `experience` block matches the docs example (single-source diff,
-  not two maintained copies) — **deferred to Phase B live-walk.**
-- [ ] The M2/M3/M4/M5 tests exercise the populated path via their own inline fixtures (this file feeds
-  the live walk only — see scope clarification) — **owned by those milestones, not M7.**
-- [ ] JSON remains valid after all additions (`jq . <file>` or `dart:convert` parse succeeds) — a
-  malformed fixture silently breaks the live sideload.
+  ISO-8601 (no silent `DateTime.now()` fallback). **Re-validated 2026-07-04**
+  (`python3 -c "import json; json.load(open(...))"` succeeds clean).
+- [x] The regenerated sideload JSON's `experience` block matches the docs example (single-source diff,
+  not two maintained copies). **CLOSED 2026-07-04** — see the step above; the sideload was pushed
+  directly from this file, so match is by construction, confirmed by the successful live render.
+- [x] The M2/M3/M4/M5 tests exercise the populated path via their own inline fixtures (this file feeds
+  the live walk only — see scope clarification) — **owned by those milestones, all now closed
+  (b33/b34/b27+b29/b35), so this is satisfied transitively.**
+- [x] JSON remains valid after all additions (`jq . <file>` or `dart:convert` parse succeeds) — a
+  malformed fixture silently breaks the live sideload. **Re-validated 2026-07-04**, see above.
 
-### Milestone 8 — Test-coverage closure  `[ ]`
+### Milestone 8 — Test-coverage closure  `[x]` (CLOSED 2026-07-04 — both gaps closed)
 **What & why:** Two specific, named test gaps found in §3a that are cross-cutting rather than
 belonging to a single UI milestone.
 
 Steps:
-- `[ ]` Create `b33_messages_thread_test.dart` per the exact assertion list in Milestone 2's evidence
-  block above.
-- `[ ]` Restore a real tab-integration assertion in `b30_cascading_card_theme_test.dart` (or a new
-  `b36`-style successor if `b30` is meant to stay JSON-parse-only going forward) that navigates into
-  a themed tab and asserts the rendered color matches the community→tab→workflow cascade — per rule 3,
-  this must be a widget-tree assertion, not another JSON-parse-only test.
+- `[x]` Create `b33_messages_thread_test.dart` per the exact assertion list in Milestone 2's evidence
+  block above. **Done** — `b33_messages_thread_test.dart` exists (344 lines, 3 `testWidgets`:
+  `wf_messages-inbox-lists-seeded-threads`, `wf_messages-open-thread-and-send-reply`,
+  `wf_messages-mute-and-archive-toggle`), confirmed present and passing.
+- `[x]` Restore a real tab-integration assertion in `b30_cascading_card_theme_test.dart`. **Done
+  2026-07-04** — new `wf_marketplace-tab-renders-cascaded-theme-fill` testWidgets navigates into
+  the Marketplace tab, asserts the real listing card renders (`marketplace-listing-listing-catan`
+  `findsOneWidget`), asserts the placeholder is absent (`findsNothing` on "is coming to"), and
+  asserts the themed fill is a non-null, non-255-alpha Color (proof the cascade was consumed into
+  the widget tree). Fixture enriched with `marketplaceListings` to gate the real path.
 
 **Evidence required to mark `[x]`:**
-- [ ] Both files/assertions named above exist verbatim and pass.
-- [ ] `git diff` on `b30_cascading_card_theme_test.dart` from its pre-2026-07-03 state (commit
-  history) nets zero or positive on rendering assertions — i.e. this milestone must not merely
-  re-delete what it just restored.
+- [x] Both files/assertions named above exist verbatim and pass — `b33` (3/3) + `b30` (3/3).
+- [x] `git diff` on `b30_cascading_card_theme_test.dart` nets positive on rendering assertions:
+  +1 new `testWidgets` (36 lines, real widget tree) + `marketplaceListings` fixture data; removed
+  only stale comments saying "these tests land in M3/M5" (now fulfilled). Full suite 95/96 (one
+  pre-existing `widget_test.dart` boilerplate failure). **Independently re-verified 2026-07-04**:
+  re-read the actual `git diff` (confirms only comments removed, zero assertions deleted) and
+  re-ran the full suite myself — `95 passed, 1 failed`, same lone `widget_test.dart` failure.
 
 ---
 

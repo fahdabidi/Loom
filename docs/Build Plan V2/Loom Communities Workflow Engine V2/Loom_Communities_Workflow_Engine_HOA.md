@@ -6,10 +6,10 @@ implementation — per the anti-pattern the source doc names: must not feel like
 task list with dues and document chips."
 
 ## Personas
-| Persona | Role | Key constraint |
-| --- | --- | --- |
-| Homeowner/Member | actor on dues/documents/facilities/requests | non-member denied/hidden everywhere |
-| HOA Board | receiver on requests, actor on document management/export | decisions require audit trail; non-board denied on review actions |
+| Persona          | Role                                                      | Key constraint                                                    |
+| ---------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| Homeowner/Member | actor on dues/documents/facilities/requests               | non-member denied/hidden everywhere                               |
+| HOA Board        | receiver on requests, actor on document management/export | decisions require audit trail; non-board denied on review actions |
 
 ## Tabs → Cards → Archetype → Actions
 
@@ -29,11 +29,14 @@ architectural decision queue, owner notifications, facility requests.
   payment, manage/cancel subscription, refund, retry. States: due / paid / failed (retry shown only
   on failure; pay disabled after paid).
 
-### Requests (homeowner) — `statusTimeline`
-- **Architectural request card**: current step of submitted → under-review → changes-needed →
-  approved/denied → reopened, with reviewer, requested-changes path, document/payment checkpoints,
-  comments, audit/status history. Actions: submit, edit, withdraw, revise (on changes-needed), reopen,
-  appeal.
+### Requests (homeowner) — `formEntry` (submit) + `statusTimeline` (track)
+- **Architectural request form** (`formEntry`, `role: actor`): typed fields — project description,
+  property address, attachments, requested-completion date. Draft/submit + revise on changes-needed.
+  This is the *entry* side, split out from the timeline per §3b (Redwood gap #2).
+- **Architectural request status card** (`statusTimeline`, same instance, tracking view): current
+  step of submitted → under-review → changes-needed → approved/denied → reopened, with reviewer,
+  requested-changes path, document/payment checkpoints, comments, audit/status history. Actions
+  (homeowner): withdraw, reopen, appeal. Both cards are two `renderBindings` on one workflow instance.
 
 ### Board (board persona only) — `statusTimeline` (reviewer-facing) + `dashboard` (queue)
 - **Decision queue card** (`dashboard`-style list of `statusTimeline` summaries): requester, current
@@ -52,6 +55,19 @@ architectural decision queue, owner notifications, facility requests.
 - **Facility reservation card**: facility/date/time, conflict/status, reminder. Actions: reserve,
   cancel, change, reschedule. Conflict detection surfaces inline in the event-detail panel, not a
   separate dialog.
+
+## Community-specific customizations (per archetype, per persona)
+
+| Archetype                     | Community customization (theme/fields/states/copy)                                           | Homeowner needs                              | Board needs                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------- |
+| `paymentCheckout`             | Civic palette; fields = dues amount/period/property; states due/paid/failed; copy "Pay dues" | pay, view receipt, manage autopay            | read-only ledger view of who's paid (audit)             |
+| `documentLibrary`             | Categories = bylaws/covenants/minutes; acknowledgement required on governing docs            | open/download/acknowledge, request access    | upload/version/retire docs, see who acknowledged        |
+| `formEntry` (request)         | Fields = project desc/address/attachments/date; validation on required attachments           | submit, edit draft, revise on changes-needed | — (board doesn't submit requests)                       |
+| `statusTimeline` (request)    | Steps submitted→review→changes→approved/denied→reopened; audit-trail emphasis                | watch status, withdraw, reopen, appeal       | approve/reject/request-changes, comment, decision audit |
+| `calendarAgenda` (facilities) | Conflict-detection inline; fields = facility/date/time                                       | reserve/cancel/reschedule, see conflicts     | see all reservations, override/block                    |
+| `notificationInbox`           | Sender = Board; audience = homeowners; civic tone                                            | receive owner notifications, mark read       | compose/schedule owner notifications, delivery receipts |
+| `dashboard` (Home)            | Pins: dues receipt, active request, governing docs                                           | homeowner-priority pins                      | board-priority pins: decision queue, facility requests  |
+| `discussionThread`            | Standard                                                                                     | member↔member, member↔board                  | board broadcast + moderation                            |
 
 ## Cross-cutting notes
 - Every workflow above has an explicit actor-state **and** receiver-state requirement (e.g. board

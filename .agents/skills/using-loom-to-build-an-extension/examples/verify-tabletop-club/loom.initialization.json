@@ -175,8 +175,10 @@
             { "id": "borrow", "label": "Request loan", "from": ["available"], "to": "onLoan",
               "allowedPersonaIds": ["tabletop-member"], "linkedWorkflowId": "tabletop-game-loan",
               "setsHolderToActor": true },
-            { "id": "join-queue", "label": "Join queue", "from": ["onLoan"], "to": "onLoan",
-              "allowedPersonaIds": ["tabletop-member"], "incrementsQueue": true },
+            { "id": "join-queue", "label": "Join queue", "from": ["onLoan", "queued"],
+              "allowedPersonaIds": ["tabletop-member"], "addsActorToQueue": true, "requiresActorNotInQueue": true },
+            { "id": "leave-queue", "label": "Leave queue", "from": ["queued"],
+              "allowedPersonaIds": ["tabletop-member"], "requiresActorInQueue": true, "removesActorFromQueue": true },
             { "id": "return", "label": "Return", "from": ["onLoan"], "to": "available",
               "allowedPersonaIds": ["tabletop-member", "tabletop-organizer"], "clearsHolder": true }
           ]
