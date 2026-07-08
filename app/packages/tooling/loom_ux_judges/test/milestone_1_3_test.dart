@@ -1217,4 +1217,132 @@ void main() {
       expect(report.passed, isTrue);
     });
   });
+
+  group('Validator - HOA architectural request fixture', () {
+    test('the HOA request fixture parses and passes with zero findings', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_HOA_Architectural_Request_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_HOA_Architectural_Request_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personaIds'] as List).cast<String>();
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+      expect(
+        machines['cedar-commons-architectural-request']!
+            .renderBindings
+            .where((binding) => binding.role == 'receiver')
+            .length,
+        greaterThanOrEqualTo(2),
+        reason: 'Fixture must declare reviewer dashboard and timeline bindings.',
+      );
+    });
+  });
+
+  group('Validator - HOA dues payment fixture', () {
+    test('the HOA dues fixture reuses paymentCheckout and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_HOA_Dues_Payment_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_HOA_Dues_Payment_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(
+        (templates['paymentCheckout']!['slots'] as List).cast<String>(),
+        equals(['WorkflowFactPillRow', 'WorkflowActionButtonRow']),
+        reason: 'HOA dues must reuse the Phase 3 paymentCheckout slot shape.',
+      );
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
+
+  group('Validator - Garden Club migration fixture', () {
+    test('the Garden Club Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('garden-event-rsvp'));
+      expect(machines.keys, contains('garden-tool-loan'));
+      expect(machines.keys, contains('plant-exchange-submission'));
+      expect(machines.keys, contains('garden-volunteer-shift'));
+      expect(machines.keys, contains('garden-export-custom-schemas'));
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
 }

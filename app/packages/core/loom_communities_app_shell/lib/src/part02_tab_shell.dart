@@ -703,6 +703,15 @@ class _TabNativeRenderer extends StatelessWidget {
     // placeholder otherwise. Other domain tabs stay placeholder-only.
     switch (rendererId) {
       case 'CalendarTabSurface':
+        if (_isGardenEngineExperience(experience)) {
+          return _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         return _CalendarTabSurface(
           experience: experience,
           communityId: experience.extensionId,
@@ -725,6 +734,15 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'MarketplaceTabSurface':
+        if (_isGardenEngineExperience(experience)) {
+          return _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         final listings = experience.marketplaceListings;
         if (listings != null && listings.isNotEmpty) {
           return _MarketplaceBrowseSurface(
@@ -763,6 +781,11 @@ class _TabNativeRenderer extends StatelessWidget {
             workflowId: givingWorkflow.workflowId,
             workflow: givingWorkflow,
             personaId: persona.personaId,
+            personaLabel: persona.label,
+            allowedPersonaIds: experience
+                    .personaPolicies?[givingWorkflow.workflowId]
+                    ?.actorPersonaIds ??
+                [persona.personaId],
             accent: accent,
             modernTheme: modernTheme,
             onConfirmWorkflow: onConfirmWorkflow,
@@ -777,6 +800,15 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'DocumentsTabSurface':
+        if (_isGardenEngineExperience(experience)) {
+          return _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (experience.workflows.any((workflow) => workflow.documentLibrary != null)) {
           return _DocumentsTabSurface(
             experience: experience,
@@ -797,8 +829,65 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'WorkflowStatusSurface':
+        if (experience.workflows.any(
+          (workflow) => workflow.architecturalRequest != null,
+        )) {
+          return _ArchitecturalRequestTabSurface(
+            experience: experience,
+            persona: persona,
+            boardMode: false,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        return _TabPlaceholderSurface(
+          tabLabel: selectedTab.label,
+          communityName: experience.displayName,
+          tabIcon: selectedTab.icon,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
       case 'CareVolunteerTabSurface':
+        if (_isGardenEngineExperience(experience)) {
+          return _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (experience.workflows.any(
+          (workflow) => workflow.architecturalRequest != null,
+        )) {
+          return _ArchitecturalRequestTabSurface(
+            experience: experience,
+            persona: persona,
+            boardMode: true,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        // These domain tabs render via placeholder until their data is declared
+        return _TabPlaceholderSurface(
+          tabLabel: selectedTab.label,
+          communityName: experience.displayName,
+          tabIcon: selectedTab.icon,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
       case 'AdminReviewComposeTabSurface':
+        if (experience.workflows.any(
+          (workflow) => workflow.architecturalRequest != null,
+        )) {
+          return _ArchitecturalRequestTabSurface(
+            experience: experience,
+            persona: persona,
+            boardMode: true,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         // These domain tabs render via placeholder until their data is declared
         return _TabPlaceholderSurface(
           tabLabel: selectedTab.label,
@@ -818,6 +907,15 @@ class _TabNativeRenderer extends StatelessWidget {
       workflowBuilder: workflowBuilder,
     );
   }
+}
+
+bool _isGardenEngineExperience(LoomExperienceDefinition experience) {
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('garden-event-rsvp') &&
+      ids.contains('plant-exchange-submission') &&
+      ids.contains('garden-tool-loan') &&
+      ids.contains('garden-volunteer-shift') &&
+      ids.contains('garden-export-custom-schemas');
 }
 
 SurfacePresentationState _presentationStateForWorkflow({
@@ -3774,6 +3872,1474 @@ class _DocumentDetailCard extends StatelessWidget {
   }
 }
 
+class _ArchitecturalRequestTabSurface extends StatefulWidget {
+  const _ArchitecturalRequestTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.boardMode,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final bool boardMode;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_ArchitecturalRequestTabSurface> createState() =>
+      _ArchitecturalRequestTabSurfaceState();
+}
+
+class _ArchitecturalRequestTabSurfaceState
+    extends State<_ArchitecturalRequestTabSurface> {
+  static final _stores = <String, _ArchitecturalRequestStore>{};
+
+  late final LoomWorkflowDefinition _workflow;
+  late final LoomArchitecturalRequest _requestSpec;
+  late final _ArchitecturalRequestStore _store;
+  late final TextEditingController _projectController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _dateController;
+  late final TextEditingController _attachmentsController;
+  List<WorkflowInstance> _instances = const [];
+  String? _selectedInstanceId;
+  var _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _workflow = widget.experience.workflows.firstWhere(
+      (workflow) => workflow.architecturalRequest != null,
+    );
+    _requestSpec = _workflow.architecturalRequest!;
+    _store = _stores.putIfAbsent(
+      '${widget.experience.extensionId}:${_workflow.workflowId}',
+      () => _ArchitecturalRequestStore(
+        communityId: widget.experience.extensionId,
+        workflowId: _workflow.workflowId,
+      ),
+    );
+    _projectController = TextEditingController(
+      text: _requestSpec.defaultProjectDescription,
+    );
+    _addressController = TextEditingController(
+      text: _requestSpec.defaultPropertyAddress,
+    );
+    _dateController = TextEditingController(
+      text: _requestSpec.defaultRequestedCompletionDate,
+    );
+    _attachmentsController = TextEditingController(
+      text: _requestSpec.defaultAttachments,
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void dispose() {
+    _projectController.dispose();
+    _addressController.dispose();
+    _dateController.dispose();
+    _attachmentsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final instances = await _store.instancesFor(widget.persona.personaId);
+    if (!mounted) return;
+    setState(() {
+      _instances = instances;
+      _selectedInstanceId ??= instances.firstOrNull?.instanceId;
+      _loaded = true;
+    });
+  }
+
+  Future<void> _submit() async {
+    final instance = await _store.submit(
+      personaId: widget.persona.personaId,
+      ownerLabel: widget.persona.label,
+      projectDescription: _projectController.text,
+      propertyAddress: _addressController.text,
+      requestedCompletionDate: _dateController.text,
+      attachments: _attachmentsController.text,
+    );
+    if (!mounted) return;
+    setState(() {
+      _selectedInstanceId = instance.instanceId;
+    });
+    await _load();
+  }
+
+  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+    await _store.apply(
+      instance: instance,
+      transitionId: transitionId,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    final selected = _selectedInstance;
+    return Column(
+      key: ValueKey(
+        widget.boardMode
+            ? 'hoa-board-request-dashboard'
+            : 'hoa-homeowner-request-surface',
+      ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!widget.boardMode && _canEditSelectedRequest(selected))
+          _buildForm(context),
+        if (!widget.boardMode && _canEditSelectedRequest(selected))
+          const SizedBox(height: 12),
+        if (widget.boardMode) _buildDashboard(context),
+        if (widget.boardMode) const SizedBox(height: 12),
+        if (selected == null)
+          _TabEmptyState(
+            icon: Icons.fact_check_outlined,
+            title: widget.boardMode
+                ? 'No architectural requests pending'
+                : 'No architectural request submitted',
+            body: widget.boardMode
+                ? 'Submitted owner requests will appear in the board queue.'
+                : 'Submit an architectural request to open the status timeline.',
+            accent: widget.accent,
+            modernTheme: widget.modernTheme,
+          )
+        else
+          _buildTimeline(context, selected),
+      ],
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
+    return DecoratedBox(
+      key: const ValueKey('hoa-request-form-entry'),
+      decoration: _requestBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Architectural request form',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              key: const ValueKey('hoa-request-project-type'),
+              initialValue: _requestSpec.projectTypes.first,
+              items: [
+                for (final type in _requestSpec.projectTypes)
+                  DropdownMenuItem(value: type, child: Text(type)),
+              ],
+              onChanged: (_) {},
+              decoration: const InputDecoration(labelText: 'Project type'),
+            ),
+            TextField(
+              key: const ValueKey('hoa-request-project-description'),
+              controller: _projectController,
+              decoration: const InputDecoration(labelText: 'Project description'),
+            ),
+            TextField(
+              key: const ValueKey('hoa-request-property-address'),
+              controller: _addressController,
+              decoration: const InputDecoration(labelText: 'Property address'),
+            ),
+            TextField(
+              key: const ValueKey('hoa-request-completion-date'),
+              controller: _dateController,
+              decoration: const InputDecoration(
+                labelText: 'Requested completion date',
+              ),
+            ),
+            TextField(
+              key: const ValueKey('hoa-request-attachments'),
+              controller: _attachmentsController,
+              decoration: const InputDecoration(labelText: 'Attachments'),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              key: const ValueKey('hoa-request-submit'),
+              onPressed: _submit,
+              icon: const Icon(Icons.send_outlined),
+              label: const Text('Submit architectural request'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboard(BuildContext context) {
+    return DecoratedBox(
+      key: const ValueKey('hoa-board-dashboard'),
+      decoration: _requestBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Decision queue',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            if (_instances.isEmpty)
+              const Text('No pending architectural requests.')
+            else
+              for (final instance in _instances)
+                Card(
+                  key: ValueKey(
+                    "hoa-board-queue-${instance.instanceData['ownerPersonaId']}",
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.assignment_outlined),
+                    title: Text('${instance.instanceData['projectDescription']}'),
+                    subtitle: Text(
+                      '${instance.instanceData['ownerLabel']} - ${_labelForState(instance.currentState)}',
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    selected: instance.instanceId == _selectedInstanceId,
+                    onTap: () =>
+                        setState(() => _selectedInstanceId = instance.instanceId),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeline(BuildContext context, WorkflowInstance instance) {
+    final transitions = _store.availableTransitions(
+      instance: instance,
+      personaId: widget.persona.personaId,
+    );
+    final history = instance.instanceData['history'];
+    final historyItems = history is List
+        ? [for (final entry in history) if (entry is String) entry]
+        : const <String>[];
+    return DecoratedBox(
+      key: const ValueKey('hoa-request-timeline'),
+      decoration: _requestBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.boardMode
+                  ? 'Committee decision card'
+                  : 'Architectural request status',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label: 'State: ${_labelForState(instance.currentState)}',
+                  foreground: widget.accent,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.home_work_outlined,
+                  label: '${instance.instanceData['propertyAddress']}',
+                  foreground: widget.accent,
+                ),
+                _SurfaceFactPill(
+                  icon: Icons.person_outline,
+                  label: '${instance.instanceData['ownerLabel']}',
+                  foreground: widget.accent,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text('Project: ${instance.instanceData['projectDescription']}'),
+            Text('Requested date: ${instance.instanceData['requestedCompletionDate']}'),
+            Text('Attachments: ${instance.instanceData['attachments']}'),
+            if (instance.instanceData['reviewerNote'] case final note?)
+              Text('Reviewer note: $note'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final transition in transitions)
+                  OutlinedButton(
+                    key: ValueKey(
+                      'hoa-request-action-${transition.id}',
+                    ),
+                    onPressed: () => _transition(instance, transition.id),
+                    child: Text(transition.label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Status history',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            for (final entry in historyItems)
+              Text(entry, key: ValueKey('hoa-request-history-${entry.hashCode}')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration get _requestBoxDecoration => BoxDecoration(
+        color: widget.modernTheme?.resolvedFill ?? Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              widget.modernTheme?.resolvedBorder ??
+              widget.accent.withValues(alpha: 0.2),
+        ),
+      );
+
+  WorkflowInstance? get _selectedInstance {
+    for (final instance in _instances) {
+      if (instance.instanceId == _selectedInstanceId) return instance;
+    }
+    return _instances.firstOrNull;
+  }
+
+  bool _canEditSelectedRequest(WorkflowInstance? selected) {
+    if (selected == null) return true;
+    return selected.currentState == 'submitted' ||
+        selected.currentState == 'changes-needed';
+  }
+}
+
+class _ArchitecturalRequestStore {
+  _ArchitecturalRequestStore({
+    required this.communityId,
+    required this.workflowId,
+  });
+
+  final String communityId;
+  final String workflowId;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  var _ready = false;
+
+  Future<void> ensureReady() async {
+    if (_ready) return;
+    _engine.registerDefinition(_machine);
+    _ready = true;
+  }
+
+  Future<WorkflowInstance> submit({
+    required String personaId,
+    required String ownerLabel,
+    required String projectDescription,
+    required String propertyAddress,
+    required String requestedCompletionDate,
+    required String attachments,
+  }) async {
+    await ensureReady();
+    final data = {
+      'projectDescription': projectDescription,
+      'propertyAddress': propertyAddress,
+      'requestedCompletionDate': requestedCompletionDate,
+      'attachments': attachments,
+      'ownerPersonaId': personaId,
+      'ownerLabel': ownerLabel,
+      'reviewerNote': '',
+      'history': [
+        '$ownerLabel at ${DateTime.now().toUtc().toIso8601String()} submitted architectural request',
+      ],
+    };
+    final instanceId = await _engine.createInstance(
+      workflowType: workflowId,
+      initialInstanceData: data,
+      personaId: personaId,
+    );
+    return WorkflowInstance(
+      instanceId: instanceId,
+      workflowType: workflowId,
+      currentState: 'submitted',
+      instanceData: data,
+      createdByPersonaId: personaId,
+    );
+  }
+
+  Future<List<WorkflowInstance>> instancesFor(String personaId) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: 'requests',
+      personaId: personaId,
+      limit: 100,
+      query: const SurfaceQuery(sort: SortSpec(key: 'projectDescription')),
+    );
+    return page.items
+        .where((instance) => instance.workflowType == workflowId)
+        .toList(growable: false);
+  }
+
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) {
+    return _engine.availableTransitions(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      currentState: instance.currentState,
+      instanceData: instance.instanceData,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    await _engine.applyTransition(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+    );
+  }
+
+  LoomWorkflowStateMachine get _machine => LoomWorkflowStateMachine(
+        workflowType: workflowId,
+        initialState: 'submitted',
+        states: const {
+          'submitted': LoomWorkflowState(
+            label: 'Submitted',
+            editableFields: [
+              'projectDescription',
+              'propertyAddress',
+              'requestedCompletionDate',
+              'attachments',
+            ],
+          ),
+          'under-review': LoomWorkflowState(label: 'Under review'),
+          'changes-needed': LoomWorkflowState(
+            label: 'Changes needed',
+            editableFields: [
+              'projectDescription',
+              'propertyAddress',
+              'requestedCompletionDate',
+              'attachments',
+            ],
+          ),
+          'approved': LoomWorkflowState(label: 'Approved'),
+          'denied': LoomWorkflowState(label: 'Denied'),
+          'reopened': LoomWorkflowState(label: 'Reopened'),
+          'withdrawn': LoomWorkflowState(label: 'Withdrawn', isTerminal: true),
+        },
+        renderBindings: const [
+          RenderBinding(
+            states: [
+              'submitted',
+              'under-review',
+              'changes-needed',
+              'approved',
+              'denied',
+              'reopened',
+              'withdrawn',
+            ],
+            role: 'actor',
+            tabId: 'requests',
+            cardSurfaceFamily: 'statusTimeline',
+            bindingKind: 'primary',
+          ),
+          RenderBinding(
+            states: [
+              'submitted',
+              'under-review',
+              'changes-needed',
+              'reopened',
+            ],
+            role: 'receiver',
+            tabId: 'admin',
+            cardSurfaceFamily: 'dashboard',
+            bindingKind: 'summary',
+          ),
+          RenderBinding(
+            states: [
+              'submitted',
+              'under-review',
+              'changes-needed',
+              'approved',
+              'denied',
+              'reopened',
+            ],
+            role: 'receiver',
+            tabId: 'admin',
+            cardSurfaceFamily: 'statusTimeline',
+            bindingKind: 'primary',
+          ),
+        ],
+        instanceDataSchema: const {
+          'projectDescription': InstanceDataField(
+            type: 'text',
+            required: true,
+          ),
+          'propertyAddress': InstanceDataField(type: 'text', required: true),
+          'requestedCompletionDate': InstanceDataField(
+            type: 'date',
+            required: true,
+          ),
+          'attachments': InstanceDataField(type: 'text', required: true),
+          'ownerPersonaId': InstanceDataField(type: 'string', required: true),
+          'ownerLabel': InstanceDataField(type: 'string', required: true),
+          'reviewerNote': InstanceDataField(type: 'text'),
+          'history': InstanceDataField(type: 'list'),
+        },
+        transitions: [
+          _transition(
+            id: 'start-review',
+            label: 'Start review',
+            from: const ['submitted', 'reopened'],
+            to: 'under-review',
+            personas: const ['hoa-board'],
+            history: 'HOA Board at \$timestamp started review',
+          ),
+          _transition(
+            id: 'request-changes',
+            label: 'Request changes',
+            from: const ['submitted', 'under-review', 'reopened'],
+            to: 'changes-needed',
+            personas: const ['hoa-board'],
+            reviewerNote: 'Please revise the color sample and setback diagram.',
+            history: 'HOA Board at \$timestamp requested changes',
+          ),
+          _transition(
+            id: 'approve',
+            label: 'Approve request',
+            from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
+            to: 'approved',
+            personas: const ['hoa-board'],
+            reviewerNote: 'Approved with standard construction-hour conditions.',
+            history: 'HOA Board at \$timestamp approved request',
+          ),
+          _transition(
+            id: 'reject',
+            label: 'Reject request',
+            from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
+            to: 'denied',
+            personas: const ['hoa-board'],
+            reviewerNote: 'Rejected; proposal conflicts with current covenants.',
+            history: 'HOA Board at \$timestamp rejected request',
+          ),
+          _transition(
+            id: 'resubmit',
+            label: 'Retry submission',
+            from: const ['changes-needed'],
+            to: 'submitted',
+            personas: const ['hoa-homeowner'],
+            history: '{ownerLabel} at \$timestamp retried submission',
+          ),
+          _transition(
+            id: 'reopen',
+            label: 'Reopen request',
+            from: const ['approved', 'denied', 'changes-needed'],
+            to: 'reopened',
+            personas: const ['hoa-homeowner'],
+            history: '{ownerLabel} at \$timestamp reopened request',
+          ),
+          _transition(
+            id: 'appeal',
+            label: 'Appeal decision',
+            from: const ['denied'],
+            to: 'reopened',
+            personas: const ['hoa-homeowner'],
+            history: '{ownerLabel} at \$timestamp appealed decision',
+          ),
+          _transition(
+            id: 'withdraw',
+            label: 'Withdraw request',
+            from: const ['submitted', 'changes-needed', 'reopened'],
+            to: 'withdrawn',
+            personas: const ['hoa-homeowner'],
+            history: '{ownerLabel} at \$timestamp withdrew request',
+          ),
+        ],
+      );
+}
+
+class _GardenClubEngineTabSurface extends StatefulWidget {
+  const _GardenClubEngineTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.tabId,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final String tabId;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_GardenClubEngineTabSurface> createState() =>
+      _GardenClubEngineTabSurfaceState();
+}
+
+class _GardenClubEngineTabSurfaceState
+    extends State<_GardenClubEngineTabSurface> {
+  static final _stores = <String, _GardenClubEngineStore>{};
+
+  late final _GardenClubEngineStore _store;
+  List<WorkflowInstance> _instances = const [];
+  var _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _GardenClubEngineStore(communityId: widget.experience.extensionId),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_GardenClubEngineTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.tabId != widget.tabId) {
+      unawaited(_load());
+    }
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final instances = await _store.instancesFor(
+      tabId: widget.tabId,
+      personaId: widget.persona.personaId,
+    );
+    if (!mounted) return;
+    setState(() {
+      _instances = instances;
+      _loaded = true;
+    });
+  }
+
+  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+    await _store.apply(
+      instance: instance,
+      transitionId: transitionId,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    return Column(
+      key: ValueKey('garden-engine-${widget.tabId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.tabId == 'calendar')
+          _gardenWorkflowCard(
+            context,
+            _instance('garden-event-rsvp'),
+            title: 'Spring planting workshop',
+            subtitle: 'Calendar RSVP',
+            icon: Icons.event_available_outlined,
+          ),
+        if (widget.tabId == 'marketplace') ...[
+          _gardenWorkflowCard(
+            context,
+            _instance('garden-tool-loan'),
+            title: 'Broadfork loan',
+            subtitle: 'Shared equipment',
+            icon: Icons.handyman_outlined,
+          ),
+          const SizedBox(height: 12),
+          _gardenWorkflowCard(
+            context,
+            _instance('plant-exchange-submission'),
+            title: 'Basil seedling exchange',
+            subtitle: 'Plant offer and claim',
+            icon: Icons.local_florist_outlined,
+          ),
+        ],
+        if (widget.tabId == 'care')
+          _gardenWorkflowCard(
+            context,
+            _instance('garden-volunteer-shift'),
+            title: 'Compost turning shift',
+            subtitle: 'Volunteer roster',
+            icon: Icons.volunteer_activism_outlined,
+          ),
+        if (widget.tabId == 'documents')
+          _gardenWorkflowCard(
+            context,
+            _instance('garden-export-custom-schemas'),
+            title: 'Garden custom-schema export',
+            subtitle: 'Export wizard',
+            icon: Icons.ios_share_outlined,
+          ),
+      ],
+    );
+  }
+
+  WorkflowInstance? _instance(String workflowType) {
+    for (final instance in _instances) {
+      if (instance.workflowType == workflowType) return instance;
+    }
+    return null;
+  }
+
+  Widget _gardenWorkflowCard(
+    BuildContext context,
+    WorkflowInstance? instance, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    if (instance == null) {
+      return _TabEmptyState(
+        icon: icon,
+        title: '$title unavailable',
+        body: 'No engine instance is available for this Garden Club surface.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    final transitions = _store.availableTransitions(
+      instance: instance,
+      personaId: widget.persona.personaId,
+    );
+    final data = instance.instanceData;
+    final history = data['history'];
+    final historyItems = history is List
+        ? [for (final item in history) if (item is String) item]
+        : const <String>[];
+    final queue = data['queuedPersonaIds'];
+    final queueCount = queue is List ? queue.length : 0;
+    return DecoratedBox(
+      key: ValueKey('garden-card-${instance.workflowType}'),
+      decoration: _gardenBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: widget.accent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                      Text(subtitle),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label: 'State: ${_gardenStateLabel(instance.currentState)}',
+                  foreground: widget.accent,
+                ),
+                if (data['eventDate'] case final value?)
+                  _SurfaceFactPill(
+                    icon: Icons.calendar_month_outlined,
+                    label: 'Date: $value',
+                    foreground: widget.accent,
+                  ),
+                if (data['toolName'] case final value?)
+                  _SurfaceFactPill(
+                    icon: Icons.handyman_outlined,
+                    label: '$value',
+                    foreground: widget.accent,
+                  ),
+                if (data['plantName'] case final value?)
+                  _SurfaceFactPill(
+                    icon: Icons.local_florist_outlined,
+                    label: '$value',
+                    foreground: widget.accent,
+                  ),
+                if (data['slotCount'] case final value?)
+                  _SurfaceFactPill(
+                    icon: Icons.groups_outlined,
+                    label: 'Slots: $value',
+                    foreground: widget.accent,
+                  ),
+                if (queueCount > 0)
+                  _SurfaceFactPill(
+                    icon: Icons.people_alt_outlined,
+                    label: 'Queue: $queueCount',
+                    foreground: widget.accent,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (data['location'] case final value?) Text('Location: $value'),
+            if (data['notes'] case final value?) Text('Notes: $value'),
+            if (data['schemaNames'] case final value?) Text('Schemas: $value'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final transition in transitions)
+                  OutlinedButton.icon(
+                    key: ValueKey('garden-action-${transition.id}'),
+                    style: _gardenButtonStyle(transition),
+                    onPressed: () => _transition(instance, transition.id),
+                    icon: Icon(_gardenIconForTransition(transition.icon)),
+                    label: Text(transition.label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Garden timeline',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+            for (final item in historyItems)
+              Text(item, key: ValueKey('garden-history-${item.hashCode}')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ButtonStyle _gardenButtonStyle(LoomWorkflowTransition transition) {
+    final destructive = transition.tone == 'destructive' ||
+        transition.id.contains('cancel') ||
+        transition.id.contains('withdraw');
+    final primary = transition.tone == 'primary' ||
+        transition.id.contains('submit') ||
+        transition.id.contains('request') ||
+        transition.id.contains('claim') ||
+        transition.id.contains('sign-up') ||
+        transition.id.contains('generate');
+    return OutlinedButton.styleFrom(
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+              ? Colors.white
+              : widget.accent,
+      backgroundColor: primary ? widget.accent : null,
+      side: BorderSide(
+        color: destructive ? Colors.red.shade800 : widget.accent,
+      ),
+    );
+  }
+
+  IconData _gardenIconForTransition(String? icon) {
+    switch (icon) {
+      case 'event_available':
+        return Icons.event_available_outlined;
+      case 'queue':
+        return Icons.people_alt_outlined;
+      case 'undo':
+        return Icons.undo_outlined;
+      case 'handyman':
+        return Icons.handyman_outlined;
+      case 'local_florist':
+        return Icons.local_florist_outlined;
+      case 'volunteer':
+        return Icons.volunteer_activism_outlined;
+      case 'export':
+        return Icons.ios_share_outlined;
+    }
+    return Icons.fact_check_outlined;
+  }
+
+  BoxDecoration get _gardenBoxDecoration => BoxDecoration(
+        color: widget.modernTheme?.resolvedFill ?? Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              widget.modernTheme?.resolvedBorder ??
+              widget.accent.withValues(alpha: 0.2),
+        ),
+      );
+}
+
+class _GardenClubEngineStore {
+  _GardenClubEngineStore({required this.communityId});
+
+  final String communityId;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  var _ready = false;
+
+  Future<void> ensureReady() async {
+    if (_ready) return;
+    for (final machine in _gardenMachines) {
+      _engine.registerDefinition(machine);
+    }
+    await _seedInstances();
+    _ready = true;
+  }
+
+  Future<void> _seedInstances() async {
+    await _engine.createInstance(
+      workflowType: 'garden-event-rsvp',
+      personaId: 'garden-member',
+      initialInstanceData: {
+        'title': 'Spring planting workshop',
+        'eventDate': '2026-04-18',
+        'location': 'North beds',
+        'rsvpStatus': 'Open',
+        'history': ['Spring planting workshop opened for RSVP'],
+      },
+    );
+    await _engine.createInstance(
+      workflowType: 'garden-tool-loan',
+      personaId: 'garden-member',
+      initialInstanceData: {
+        'title': 'Broadfork loan',
+        'toolName': 'Broadfork',
+        'borrowerPersonaId': '',
+        'queuedPersonaIds': <String>[],
+        'notes': 'Pickup from the shed after Saturday workday.',
+        'history': ['Broadfork available for members'],
+      },
+    );
+    await _engine.createInstance(
+      workflowType: 'plant-exchange-submission',
+      personaId: 'garden-member',
+      initialInstanceData: {
+        'title': 'Basil seedling exchange',
+        'plantName': 'Genovese basil seedlings',
+        'claimantPersonaId': '',
+        'notes': 'Six starts in compostable pots.',
+        'history': ['Plant exchange draft created'],
+      },
+    );
+    await _engine.createInstance(
+      workflowType: 'garden-volunteer-shift',
+      personaId: 'garden-member',
+      initialInstanceData: {
+        'title': 'Compost turning shift',
+        'slotCount': 3,
+        'signedUpPersonaIds': <String>[],
+        'notes': 'Bring gloves and close-toed shoes.',
+        'history': ['Volunteer shift opened'],
+      },
+    );
+    await _engine.createInstance(
+      workflowType: 'garden-export-custom-schemas',
+      personaId: 'garden-coordinator',
+      initialInstanceData: {
+        'title': 'Garden custom-schema export',
+        'schemaNames': 'garden_event, plant_exchange, garden_tool_loan',
+        'exportStatus': 'Ready',
+        'history': ['Garden export wizard ready'],
+      },
+    );
+  }
+
+  Future<List<WorkflowInstance>> instancesFor({
+    required String tabId,
+    required String personaId,
+  }) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      limit: 100,
+      query: const SurfaceQuery(sort: SortSpec(key: 'title')),
+    );
+    final allowed = switch (tabId) {
+      'calendar' => const {'garden-event-rsvp'},
+      'marketplace' => const {'garden-tool-loan', 'plant-exchange-submission'},
+      'care' => const {'garden-volunteer-shift'},
+      'documents' => const {'garden-export-custom-schemas'},
+      _ => const <String>{},
+    };
+    return page.items
+        .where((instance) => allowed.contains(instance.workflowType))
+        .toList(growable: false);
+  }
+
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) {
+    return _engine.availableTransitions(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      currentState: instance.currentState,
+      instanceData: instance.instanceData,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    await _engine.applyTransition(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+    );
+  }
+
+  List<LoomWorkflowStateMachine> get _gardenMachines => [
+        _gardenEventMachine,
+        _gardenToolMachine,
+        _gardenPlantMachine,
+        _gardenVolunteerMachine,
+        _gardenExportMachine,
+      ];
+}
+
+LoomWorkflowStateMachine get _gardenEventMachine => LoomWorkflowStateMachine(
+      workflowType: 'garden-event-rsvp',
+      initialState: 'open',
+      states: const {
+        'open': LoomWorkflowState(label: 'Open'),
+        'going': LoomWorkflowState(label: 'Going'),
+        'waitlisted': LoomWorkflowState(label: 'Waitlisted'),
+        'cancelled': LoomWorkflowState(label: 'Cancelled'),
+      },
+      renderBindings: const [
+        RenderBinding(
+          states: ['open', 'going', 'waitlisted', 'cancelled'],
+          role: 'actor',
+          tabId: 'calendar',
+          cardSurfaceFamily: 'calendarAgenda',
+          bindingKind: 'primary',
+        ),
+      ],
+      instanceDataSchema: const {
+        'title': InstanceDataField(type: 'string', required: true),
+        'eventDate': InstanceDataField(type: 'date', required: true),
+        'location': InstanceDataField(type: 'string', required: true),
+        'rsvpStatus': InstanceDataField(type: 'string', required: true),
+        'history': InstanceDataField(type: 'list'),
+      },
+      transitions: [
+        _gardenTransition(
+          id: 'rsvp-going',
+          label: 'RSVP going',
+          from: const ['open', 'waitlisted', 'cancelled'],
+          to: 'going',
+          personas: const ['garden-member'],
+          icon: 'event_available',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Going'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'RSVP marked going'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'join-waitlist',
+          label: 'Join waitlist',
+          from: const ['open', 'cancelled'],
+          to: 'waitlisted',
+          personas: const ['garden-member'],
+          icon: 'queue',
+          tone: 'secondary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Waitlisted'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Member joined RSVP waitlist'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'cancel-rsvp',
+          label: 'Cancel RSVP',
+          from: const ['going', 'waitlisted'],
+          to: 'cancelled',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Cancelled'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'RSVP cancelled'),
+          ],
+        ),
+      ],
+    );
+
+LoomWorkflowStateMachine get _gardenToolMachine => LoomWorkflowStateMachine(
+      workflowType: 'garden-tool-loan',
+      initialState: 'available',
+      states: const {
+        'available': LoomWorkflowState(label: 'Available'),
+        'loaned': LoomWorkflowState(label: 'Loaned'),
+        'queued': LoomWorkflowState(label: 'Queued'),
+        'returned': LoomWorkflowState(label: 'Returned'),
+      },
+      renderBindings: const [
+        RenderBinding(
+          states: ['available', 'loaned', 'queued', 'returned'],
+          role: 'actor',
+          tabId: 'marketplace',
+          cardSurfaceFamily: 'equipment-loan',
+          bindingKind: 'primary',
+        ),
+      ],
+      instanceDataSchema: const {
+        'title': InstanceDataField(type: 'string', required: true),
+        'toolName': InstanceDataField(type: 'string', required: true),
+        'borrowerPersonaId': InstanceDataField(type: 'string'),
+        'queuedPersonaIds': InstanceDataField(type: 'list'),
+        'notes': InstanceDataField(type: 'text'),
+        'history': InstanceDataField(type: 'list'),
+      },
+      transitions: [
+        _gardenTransition(
+          id: 'request-loan',
+          label: 'Request loan',
+          from: const ['available', 'returned'],
+          to: 'loaned',
+          personas: const ['garden-member'],
+          icon: 'handyman',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'borrowerPersonaId', value: 'garden-member'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Broadfork loan requested'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'join-queue',
+          label: 'Join queue',
+          from: const ['loaned'],
+          to: 'queued',
+          personas: const ['garden-member'],
+          icon: 'queue',
+          tone: 'secondary',
+          effects: const [
+            WorkflowEffect(op: 'append', key: 'queuedPersonaIds', value: 'garden-member'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Member joined broadfork queue'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'leave-queue',
+          label: 'Leave queue',
+          from: const ['queued'],
+          to: 'loaned',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'queuedPersonaIds', value: <String>[]),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Member left broadfork queue'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'return-tool',
+          label: 'Return tool',
+          from: const ['loaned', 'queued'],
+          to: 'returned',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'secondary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'borrowerPersonaId', value: ''),
+            WorkflowEffect(op: 'set', key: 'queuedPersonaIds', value: <String>[]),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Broadfork returned'),
+          ],
+        ),
+      ],
+    );
+
+LoomWorkflowStateMachine get _gardenPlantMachine => LoomWorkflowStateMachine(
+      workflowType: 'plant-exchange-submission',
+      initialState: 'draft',
+      states: const {
+        'draft': LoomWorkflowState(label: 'Draft'),
+        'submitted': LoomWorkflowState(label: 'Submitted'),
+        'claimed': LoomWorkflowState(label: 'Claimed'),
+        'withdrawn': LoomWorkflowState(label: 'Withdrawn', isTerminal: true),
+      },
+      renderBindings: const [
+        RenderBinding(
+          states: ['draft', 'submitted', 'claimed', 'withdrawn'],
+          role: 'actor',
+          tabId: 'marketplace',
+          cardSurfaceFamily: 'exchange',
+          bindingKind: 'primary',
+        ),
+      ],
+      instanceDataSchema: const {
+        'title': InstanceDataField(type: 'string', required: true),
+        'plantName': InstanceDataField(type: 'string', required: true),
+        'claimantPersonaId': InstanceDataField(type: 'string'),
+        'notes': InstanceDataField(type: 'text'),
+        'history': InstanceDataField(type: 'list'),
+      },
+      transitions: [
+        _gardenTransition(
+          id: 'submit-listing',
+          label: 'Submit listing',
+          from: const ['draft'],
+          to: 'submitted',
+          personas: const ['garden-member'],
+          icon: 'local_florist',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'append', key: 'history', value: 'Basil seedling offer submitted'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'claim',
+          label: 'Claim',
+          from: const ['submitted'],
+          to: 'claimed',
+          personas: const ['garden-member'],
+          icon: 'local_florist',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'claimantPersonaId', value: 'garden-member'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Basil seedlings claimed'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'cancel-claim',
+          label: 'Cancel claim',
+          from: const ['claimed'],
+          to: 'submitted',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'claimantPersonaId', value: ''),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Plant exchange claim cancelled'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'withdraw',
+          label: 'Withdraw',
+          from: const ['draft', 'submitted'],
+          to: 'withdrawn',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'append', key: 'history', value: 'Plant exchange listing withdrawn'),
+          ],
+        ),
+      ],
+    );
+
+LoomWorkflowStateMachine get _gardenVolunteerMachine => LoomWorkflowStateMachine(
+      workflowType: 'garden-volunteer-shift',
+      initialState: 'open',
+      states: const {
+        'open': LoomWorkflowState(label: 'Open'),
+        'signed-up': LoomWorkflowState(label: 'Signed up'),
+        'cancelled': LoomWorkflowState(label: 'Cancelled'),
+      },
+      renderBindings: const [
+        RenderBinding(
+          states: ['open', 'signed-up', 'cancelled'],
+          role: 'actor',
+          tabId: 'care',
+          cardSurfaceFamily: 'volunteer',
+          bindingKind: 'primary',
+        ),
+      ],
+      instanceDataSchema: const {
+        'title': InstanceDataField(type: 'string', required: true),
+        'slotCount': InstanceDataField(type: 'number', required: true),
+        'signedUpPersonaIds': InstanceDataField(type: 'list'),
+        'notes': InstanceDataField(type: 'text'),
+        'history': InstanceDataField(type: 'list'),
+      },
+      transitions: [
+        _gardenTransition(
+          id: 'sign-up',
+          label: 'Sign up',
+          from: const ['open', 'cancelled'],
+          to: 'signed-up',
+          personas: const ['garden-member'],
+          icon: 'volunteer',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'append', key: 'signedUpPersonaIds', value: 'garden-member'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Member signed up for compost shift'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'cancel-signup',
+          label: 'Cancel signup',
+          from: const ['signed-up'],
+          to: 'cancelled',
+          personas: const ['garden-member'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'signedUpPersonaIds', value: <String>[]),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Volunteer signup cancelled'),
+          ],
+        ),
+      ],
+    );
+
+LoomWorkflowStateMachine get _gardenExportMachine => LoomWorkflowStateMachine(
+      workflowType: 'garden-export-custom-schemas',
+      initialState: 'ready',
+      states: const {
+        'ready': LoomWorkflowState(label: 'Ready'),
+        'generated': LoomWorkflowState(label: 'Generated'),
+        'rolled-back': LoomWorkflowState(label: 'Rolled back'),
+      },
+      renderBindings: const [
+        RenderBinding(
+          states: ['ready', 'generated', 'rolled-back'],
+          role: 'actor',
+          tabId: 'documents',
+          cardSurfaceFamily: 'exportWizard',
+          bindingKind: 'primary',
+        ),
+      ],
+      instanceDataSchema: const {
+        'title': InstanceDataField(type: 'string', required: true),
+        'schemaNames': InstanceDataField(type: 'string', required: true),
+        'exportStatus': InstanceDataField(type: 'string', required: true),
+        'history': InstanceDataField(type: 'list'),
+      },
+      transitions: [
+        _gardenTransition(
+          id: 'generate-export',
+          label: 'Generate export',
+          from: const ['ready', 'rolled-back'],
+          to: 'generated',
+          personas: const ['garden-coordinator'],
+          icon: 'export',
+          tone: 'primary',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'exportStatus', value: 'Generated'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Garden custom-schema export generated'),
+          ],
+        ),
+        _gardenTransition(
+          id: 'rollback-export',
+          label: 'Rollback export',
+          from: const ['generated'],
+          to: 'rolled-back',
+          personas: const ['garden-coordinator'],
+          icon: 'undo',
+          tone: 'destructive',
+          effects: const [
+            WorkflowEffect(op: 'set', key: 'exportStatus', value: 'Rolled back'),
+            WorkflowEffect(op: 'append', key: 'history', value: 'Garden export rolled back'),
+          ],
+        ),
+      ],
+    );
+
+LoomWorkflowTransition _gardenTransition({
+  required String id,
+  required String label,
+  required List<String> from,
+  required String to,
+  required List<String> personas,
+  required String icon,
+  required String tone,
+  required List<WorkflowEffect> effects,
+}) {
+  return LoomWorkflowTransition(
+    id: id,
+    label: label,
+    icon: icon,
+    tone: tone,
+    from: from,
+    to: to,
+    guard: WorkflowGuard(allowedPersonaIds: personas),
+    effects: effects,
+  );
+}
+
+String _gardenStateLabel(String state) {
+  final label = state.replaceAll('-', ' ');
+  if (label.isEmpty) return label;
+  return '${label[0].toUpperCase()}${label.substring(1)}';
+}
+
+LoomWorkflowTransition _transition({
+  required String id,
+  required String label,
+  required List<String> from,
+  required String to,
+  required List<String> personas,
+  required String history,
+  String? reviewerNote,
+}) {
+  return LoomWorkflowTransition(
+    id: id,
+    label: label,
+    icon: 'fact_check',
+    tone: id == 'reject' || id == 'withdraw' ? 'destructive' : 'primary',
+    from: from,
+    to: to,
+    guard: WorkflowGuard(allowedPersonaIds: personas),
+    effects: [
+      if (reviewerNote != null)
+        WorkflowEffect(op: 'set', key: 'reviewerNote', value: reviewerNote),
+      WorkflowEffect(op: 'append', key: 'history', value: history),
+    ],
+  );
+}
+
+String _labelForState(String state) {
+  switch (state) {
+    case 'submitted':
+      return 'Submitted';
+    case 'under-review':
+      return 'Under review';
+    case 'changes-needed':
+      return 'Changes needed';
+    case 'approved':
+      return 'Approved';
+    case 'denied':
+      return 'Denied';
+    case 'reopened':
+      return 'Reopened';
+    case 'withdrawn':
+      return 'Withdrawn';
+  }
+  return state;
+}
+
 class _WorkflowStatusTabSurface extends StatelessWidget {
   const _WorkflowStatusTabSurface({
     required this.experience,
@@ -3848,6 +5414,8 @@ class _GivingTabSurface extends StatefulWidget {
     required this.workflowId,
     required this.workflow,
     required this.personaId,
+    required this.personaLabel,
+    required this.allowedPersonaIds,
     required this.accent,
     this.modernTheme,
     this.onConfirmWorkflow,
@@ -3859,6 +5427,8 @@ class _GivingTabSurface extends StatefulWidget {
   final String workflowId;
   final LoomWorkflowDefinition workflow;
   final String personaId;
+  final String personaLabel;
+  final List<String> allowedPersonaIds;
   final Color accent;
   final LoomCardTheme? modernTheme;
   final ValueChanged<LoomWorkflowDefinition>? onConfirmWorkflow;
@@ -3959,9 +5529,11 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
       'amountLabel': widget.givingPayment.amountLabel,
       'purpose': widget.givingPayment.purpose ?? '',
       'recipient': widget.givingPayment.recipient ?? 'Tabletop Club treasury',
+      'payerLabel': widget.personaLabel,
       'cadence': widget.givingPayment.cadence ?? '',
       'entitlement': widget.givingPayment.entitlement ?? '',
       'receiptStatus': '',
+      'paymentHistory': const <String>[],
     };
   }
 
@@ -4008,11 +5580,16 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
           tone: 'primary',
           from: const ['unpaid'],
           to: 'paid',
-          guard: const WorkflowGuard(
-            allowedPersonaIds: ['tabletop-member', 'tabletop-organizer'],
+          guard: WorkflowGuard(
+            allowedPersonaIds: widget.allowedPersonaIds,
           ),
           effects: const [
             WorkflowEffect(op: 'set', key: 'receiptStatus', value: 'complete'),
+            WorkflowEffect(
+              op: 'append',
+              key: 'paymentHistory',
+              value: 'Payment completed at \$timestamp',
+            ),
           ],
           linkedWorkflowId: workflowId,
         ),
@@ -4044,6 +5621,11 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
           displayIcon: 'account_balance_outlined',
           labelTemplate: 'Recipient: {value}',
         ),
+        'payerLabel': InstanceDataField(
+          type: 'text',
+          displayIcon: 'person_outline',
+          labelTemplate: 'Payer: {value}',
+        ),
         'cadence': InstanceDataField(
           type: 'text',
           displayIcon: 'repeat',
@@ -4055,6 +5637,7 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
           labelTemplate: '{value}',
         ),
         'receiptStatus': InstanceDataField(type: 'text'),
+        'paymentHistory': InstanceDataField(type: 'list'),
       },
     );
   }
@@ -4073,6 +5656,14 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
       return const Center(child: CircularProgressIndicator());
     }
     final paid = instance.currentState == 'paid';
+    final paymentActions = _paymentActions();
+    final paymentHistory = instance.instanceData['paymentHistory'];
+    final paymentHistoryItems = paymentHistory is List
+        ? [
+            for (final entry in paymentHistory)
+              if (entry is String) entry,
+          ]
+        : const <String>[];
 
     return Column(
       key: const ValueKey('giving-tab-surface'),
@@ -4122,9 +5713,21 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                                   .bodyMedium
                                   ?.copyWith(
                                     color: bodyColor,
-                                  ),
+                              ),
                             ),
                           ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Payer: ${widget.personaLabel}',
+                            key: ValueKey('giving-payer-${widget.workflowId}'),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: bodyColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
                         ],
                       ),
                     ),
@@ -4144,7 +5747,7 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                   accent: widget.accent,
                   instanceData: instance.instanceData,
                   instanceDataSchema: paymentCheckoutDefaultInstanceDataSchema,
-                  availableTransitions: _paymentActions(),
+                  availableTransitions: paymentActions,
                   onTransitionPressed: (transitionId) {
                     final transition = _machine.transitions.firstWhere(
                       (candidate) => candidate.id == transitionId,
@@ -4155,6 +5758,24 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                     }
                   },
                 ),
+                if (paid && paymentHistoryItems.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'Payment history',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: bodyColor,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  for (final entry in paymentHistoryItems)
+                    Text(
+                      entry,
+                      key: ValueKey('giving-payment-history-${entry.hashCode}'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: bodyColor,
+                          ),
+                    ),
+                ],
               ],
             ),
           ),
@@ -4195,7 +5816,7 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
               ),
             ),
           )
-        else
+        else if (paymentActions.isNotEmpty)
           SizedBox(
             height: 48,
             child: ElevatedButton.icon(
@@ -4213,6 +5834,25 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
               onPressed: () => widget.onConfirmWorkflow?.call(widget.workflow),
               icon: const Icon(Icons.payment),
               label: Text('Pay ${widget.givingPayment.amountLabel}'),
+            ),
+          )
+        else
+          DecoratedBox(
+            key: ValueKey('giving-readonly-${widget.workflowId}'),
+            decoration: BoxDecoration(
+              color: foreground.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: border),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                'Read-only ledger view. Payment actions are available to the payer.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: bodyColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
             ),
           ),
       ],

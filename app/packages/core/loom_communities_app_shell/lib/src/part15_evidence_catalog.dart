@@ -184,6 +184,9 @@ LoomWorkflowDefinition? _parseWorkflowDefinition(Map<String, Object?> map) {
     theme: _parseCardTheme(map['theme']),
     givingPayment: _parseGivingPayment(map['givingPayment']),
     documentLibrary: _parseDocumentLibrary(map['documentLibrary']),
+    architecturalRequest: _parseArchitecturalRequest(
+      map['architecturalRequest'],
+    ),
   );
 }
 
@@ -402,6 +405,30 @@ LoomDocumentLibrary? _parseDocumentLibrary(Object? value) {
           for (final document in documents) document.category,
         }.toList();
   return LoomDocumentLibrary(categories: categories, documents: documents);
+}
+
+LoomArchitecturalRequest? _parseArchitecturalRequest(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final projectTypes = _shellStringList(value['projectTypes']);
+  return LoomArchitecturalRequest(
+    projectTypes: projectTypes.isEmpty ? const ['Exterior change'] : projectTypes,
+    defaultProjectDescription: _shellStringOr(
+      value['defaultProjectDescription'],
+      'Fence color update with matching trim sample.',
+    ),
+    defaultPropertyAddress: _shellStringOr(
+      value['defaultPropertyAddress'],
+      'Lot 42, Cedar Commons',
+    ),
+    defaultRequestedCompletionDate: _shellStringOr(
+      value['defaultRequestedCompletionDate'],
+      '2026-08-15',
+    ),
+    defaultAttachments: _shellStringOr(
+      value['defaultAttachments'],
+      'paint-chip.pdf, elevation-photo.jpg',
+    ),
+  );
 }
 
 LoomDocumentItem? _parseDocumentItem(Map<String, Object?> map) {
@@ -959,6 +986,8 @@ LoomWorkflowPersonaPolicy _gardenPolicy(String workflowId) {
   switch (workflowId) {
     case 'garden-event-rsvp':
     case 'plant-exchange-submission':
+    case 'garden-tool-loan':
+    case 'garden-volunteer-shift':
       return const LoomWorkflowPersonaPolicy(
         actorPersonaIds: ['garden-member'],
         receiverPersonaIds: ['garden-coordinator'],

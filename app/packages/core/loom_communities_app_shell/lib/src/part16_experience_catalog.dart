@@ -23,6 +23,20 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
         resultText: 'Plant exchange record created for basil seedlings.',
       ),
       LoomWorkflowDefinition(
+        workflowId: 'garden-tool-loan',
+        title: 'Garden tool loan',
+        entryText: 'Shared garden tools are available to borrow or queue for.',
+        actionText: 'Borrow the broadfork and manage the loan queue.',
+        resultText: 'Garden tool loan state updated.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'garden-volunteer-shift',
+        title: 'Garden volunteer shift',
+        entryText: 'Compost turning shift has open volunteer slots.',
+        actionText: 'Sign up for the compost turning volunteer shift.',
+        resultText: 'Volunteer shift signup updated.',
+      ),
+      LoomWorkflowDefinition(
         workflowId: 'garden-export-custom-schemas',
         title: 'Garden export custom schemas',
         entryText: 'Garden event and plant exchange schemas are exportable.',

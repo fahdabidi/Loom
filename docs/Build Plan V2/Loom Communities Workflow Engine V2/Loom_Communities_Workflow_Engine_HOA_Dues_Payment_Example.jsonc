@@ -1,0 +1,150 @@
+{
+  "personas": [
+    "hoa-homeowner",
+    "hoa-board"
+  ],
+  "templates": {
+    "paymentCheckout": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    }
+  },
+  "workflowDefinitions": {
+    "hoa-dues-payment": {
+      "initialState": "unpaid",
+      "states": {
+        "unpaid": {
+          "label": "Due",
+          "tone": "warning"
+        },
+        "paid": {
+          "label": "Paid",
+          "tone": "positive",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "pay",
+          "label": "Pay $450",
+          "icon": "payments_outlined",
+          "tone": "primary",
+          "from": ["unpaid"],
+          "to": "paid",
+          "linkedWorkflowId": "hoa-dues-payment",
+          "guard": {
+            "allowedPersonaIds": ["hoa-homeowner"]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "receiptStatus",
+              "value": "complete"
+            },
+            {
+              "op": "append",
+              "key": "paymentHistory",
+              "value": "Payment completed at $timestamp"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["unpaid", "paid"],
+          "role": "actor",
+          "tabId": "giving",
+          "cardSurfaceFamily": "paymentCheckout",
+          "bindingKind": "primary"
+        },
+        {
+          "states": ["unpaid", "paid"],
+          "role": "receiver",
+          "tabId": "giving",
+          "cardSurfaceFamily": "paymentCheckout",
+          "bindingKind": "summary"
+        }
+      ],
+      "instanceDataSchema": {
+        "workflowId": {
+          "type": "text",
+          "required": true,
+          "storage": "inline"
+        },
+        "amountLabel": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "payments_outlined",
+          "labelTemplate": "{value}"
+        },
+        "purpose": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "receipt_long",
+          "labelTemplate": "{value}"
+        },
+        "recipient": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "account_balance_outlined",
+          "labelTemplate": "Recipient: {value}"
+        },
+        "payerLabel": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "person_outline",
+          "labelTemplate": "Payer: {value}"
+        },
+        "cadence": {
+          "type": "text",
+          "storage": "inline",
+          "displayIcon": "repeat",
+          "labelTemplate": "{value}",
+          "hideWhenEmpty": true
+        },
+        "entitlement": {
+          "type": "text",
+          "storage": "inline",
+          "displayIcon": "verified_outlined",
+          "labelTemplate": "{value}",
+          "hideWhenEmpty": true
+        },
+        "receiptStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "storage": "inline"
+        },
+        "paymentHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "storage": "inline"
+        }
+      }
+    }
+  },
+  "workflowInstances": [
+    {
+      "instanceId": "hoa-dues-payment-homeowner",
+      "workflowType": "hoa-dues-payment",
+      "currentState": "unpaid",
+      "createdByPersonaId": "hoa-homeowner",
+      "instanceData": {
+        "workflowId": "hoa-dues-payment",
+        "amountLabel": "$450",
+        "purpose": "Annual HOA dues",
+        "recipient": "Cedar Commons HOA",
+        "payerLabel": "Avery Brooks",
+        "cadence": "Annual dues due July 31",
+        "entitlement": "Member in good standing",
+        "receiptStatus": "",
+        "paymentHistory": []
+      }
+    }
+  ]
+}

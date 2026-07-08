@@ -1,0 +1,445 @@
+{
+  "personas": ["garden-member", "garden-coordinator"],
+  "templates": {
+    "calendarAgenda": {
+      "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"]
+    },
+    "formEntry": {
+      "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"]
+    },
+    "stateMachineGrid": {
+      "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"]
+    },
+    "volunteerRoster": {
+      "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"]
+    },
+    "exportWizard": {
+      "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"]
+    }
+  },
+  "workflowDefinitions": {
+    "garden-event-rsvp": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "rsvped": { "label": "RSVPed" },
+        "waitlisted": { "label": "Waitlisted" },
+        "cancelled": { "label": "Cancelled", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "rsvp-going",
+          "label": "RSVP going",
+          "icon": "event_available",
+          "tone": "primary",
+          "from": ["open", "waitlisted"],
+          "to": "rsvped",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "rsvpStatus", "value": "Going" },
+            { "op": "append", "key": "eventHistory", "value": "{eventTitle} RSVP changed to Going at $timestamp" }
+          ]
+        },
+        {
+          "id": "join-waitlist",
+          "label": "Join waitlist",
+          "icon": "playlist_add",
+          "tone": "secondary",
+          "from": ["open"],
+          "to": "waitlisted",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "rsvpStatus", "value": "Waitlisted" },
+            { "op": "append", "key": "eventHistory", "value": "{eventTitle} waitlist joined at $timestamp" }
+          ]
+        },
+        {
+          "id": "cancel-rsvp",
+          "label": "Cancel RSVP",
+          "icon": "event_busy",
+          "tone": "destructive",
+          "from": ["rsvped", "waitlisted"],
+          "to": "open",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "rsvpStatus", "value": "" },
+            { "op": "append", "key": "eventHistory", "value": "{eventTitle} RSVP cancelled at $timestamp" }
+          ]
+        },
+        {
+          "id": "cancel-event",
+          "label": "Cancel event",
+          "icon": "cancel",
+          "tone": "destructive",
+          "from": ["open", "rsvped", "waitlisted"],
+          "to": "cancelled",
+          "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+          "effects": [
+            { "op": "append", "key": "eventHistory", "value": "{eventTitle} cancelled by coordinator at $timestamp" }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["open", "rsvped", "waitlisted", "cancelled"],
+          "role": "actor",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "eventTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "eventDateTime": { "type": "text", "required": true, "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "capacityLabel": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "rsvpStatus": { "type": "text", "writableBy": "effect" },
+        "eventHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-tool-loan": {
+      "initialState": "available",
+      "states": {
+        "available": { "label": "Available" },
+        "queued": { "label": "Queued" },
+        "loaned": { "label": "Loaned" },
+        "returned": { "label": "Returned", "isTerminal": true },
+        "lost": { "label": "Lost", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "request-loan",
+          "label": "Request loan",
+          "icon": "handshake",
+          "tone": "primary",
+          "from": ["available"],
+          "to": "loaned",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "currentHolder", "value": "{actorLabel}" },
+            { "op": "append", "key": "custodyHistory", "value": "{actorLabel} borrowed {itemTitle} at $timestamp" }
+          ]
+        },
+        {
+          "id": "join-queue",
+          "label": "Join queue",
+          "icon": "queue",
+          "tone": "secondary",
+          "from": ["loaned"],
+          "to": "queued",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "append", "key": "queuePersonaIds", "value": "{actor}" }
+          ]
+        },
+        {
+          "id": "return-tool",
+          "label": "Return tool",
+          "icon": "assignment_return",
+          "tone": "primary",
+          "from": ["loaned", "queued"],
+          "to": "returned",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "currentHolder", "value": "" },
+            { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }
+          ]
+        },
+        {
+          "id": "report-lost",
+          "label": "Report lost",
+          "icon": "report",
+          "tone": "destructive",
+          "from": ["loaned", "queued"],
+          "to": "lost",
+          "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"] },
+          "effects": [
+            { "op": "append", "key": "custodyHistory", "value": "{itemTitle} reported lost at $timestamp" }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["available", "queued", "loaned", "returned", "lost"],
+          "role": "any",
+          "tabId": "marketplace",
+          "cardSurfaceFamily": "stateMachineGrid",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "mode": { "type": "text", "required": true, "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "plant-exchange-submission": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["plantType", "quantity", "pickupNotes", "privacyNote"] },
+        "submitted": { "label": "Submitted" },
+        "claimed": { "label": "Claimed" },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "submit-listing",
+          "label": "Submit listing",
+          "icon": "local_florist",
+          "tone": "primary",
+          "from": ["draft"],
+          "to": "submitted",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "append", "key": "exchangeHistory", "value": "{plantType} submitted at $timestamp" }
+          ]
+        },
+        {
+          "id": "claim",
+          "label": "Claim",
+          "icon": "check_circle",
+          "tone": "primary",
+          "from": ["submitted"],
+          "to": "claimed",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "claimantPersonaId", "value": "{actor}" },
+            { "op": "append", "key": "exchangeHistory", "value": "{plantType} claimed at $timestamp" }
+          ]
+        },
+        {
+          "id": "cancel-claim",
+          "label": "Cancel claim",
+          "icon": "undo",
+          "tone": "secondary",
+          "from": ["claimed"],
+          "to": "submitted",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "set", "key": "claimantPersonaId", "value": "" },
+            { "op": "append", "key": "exchangeHistory", "value": "{plantType} claim cancelled at $timestamp" }
+          ]
+        },
+        {
+          "id": "withdraw",
+          "label": "Withdraw",
+          "icon": "delete",
+          "tone": "destructive",
+          "from": ["draft", "submitted", "claimed"],
+          "to": "withdrawn",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "append", "key": "exchangeHistory", "value": "{plantType} withdrawn at $timestamp" }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["draft"],
+          "role": "actor",
+          "tabId": "marketplace",
+          "cardSurfaceFamily": "formEntry",
+          "bindingKind": "primary"
+        },
+        {
+          "states": ["submitted", "claimed", "withdrawn"],
+          "role": "any",
+          "tabId": "marketplace",
+          "cardSurfaceFamily": "stateMachineGrid",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "plantType": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"] },
+        "quantity": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "inventory", "labelTemplate": "{value}" },
+        "pickupNotes": { "type": "text", "writableBy": "formEntry", "displayIcon": "place", "labelTemplate": "{value}" },
+        "privacyNote": { "type": "text", "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "{value}" },
+        "claimantPersonaId": { "type": "text", "writableBy": "effect" },
+        "exchangeHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-volunteer-shift": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "signed-up": { "label": "Signed up" },
+        "closed": { "label": "Closed", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "sign-up",
+          "label": "Sign up",
+          "icon": "volunteer_activism",
+          "tone": "primary",
+          "from": ["open"],
+          "to": "signed-up",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "append", "key": "signedUpPersonaIds", "value": "{actor}" }
+          ]
+        },
+        {
+          "id": "cancel-signup",
+          "label": "Cancel signup",
+          "icon": "undo",
+          "tone": "secondary",
+          "from": ["signed-up"],
+          "to": "open",
+          "guard": { "allowedPersonaIds": ["garden-member"] },
+          "effects": [
+            { "op": "append", "key": "shiftHistory", "value": "{actorLabel} cancelled at $timestamp" }
+          ]
+        },
+        {
+          "id": "close-shift",
+          "label": "Close shift",
+          "icon": "lock",
+          "tone": "destructive",
+          "from": ["open", "signed-up"],
+          "to": "closed",
+          "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+          "effects": [
+            { "op": "append", "key": "shiftHistory", "value": "{shiftTitle} closed at $timestamp" }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["open", "signed-up", "closed"],
+          "role": "any",
+          "tabId": "care",
+          "cardSurfaceFamily": "volunteerRoster",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "shiftTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "openSpots": { "type": "number", "required": true, "displayIcon": "groups", "labelTemplate": "Open spots: {value}" },
+        "signedUpPersonaIds": { "type": "list", "writableBy": "effect" },
+        "shiftHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-export-custom-schemas": {
+      "initialState": "ready",
+      "states": {
+        "ready": { "label": "Ready" },
+        "generated": { "label": "Generated" },
+        "rolled-back": { "label": "Rolled back", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "generate-export",
+          "label": "Generate export",
+          "icon": "download",
+          "tone": "primary",
+          "from": ["ready"],
+          "to": "generated",
+          "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+          "effects": [
+            { "op": "set", "key": "downloadStatus", "value": "Download ready" },
+            { "op": "append", "key": "exportHistory", "value": "Garden export generated at $timestamp" }
+          ]
+        },
+        {
+          "id": "rollback-export",
+          "label": "Rollback export",
+          "icon": "undo",
+          "tone": "destructive",
+          "from": ["generated"],
+          "to": "rolled-back",
+          "guard": { "allowedPersonaIds": ["garden-coordinator"] },
+          "effects": [
+            { "op": "set", "key": "downloadStatus", "value": "Rolled back" },
+            { "op": "append", "key": "exportHistory", "value": "Garden export rolled back at $timestamp" }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": ["ready", "generated", "rolled-back"],
+          "role": "actor",
+          "tabId": "documents",
+          "cardSurfaceFamily": "exportWizard",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "schemas": { "type": "list", "required": true, "displayIcon": "schema", "labelTemplate": "{value.length} schemas selected" },
+        "redactionPreview": { "type": "text", "required": true, "displayIcon": "shield", "labelTemplate": "{value}" },
+        "checksum": { "type": "text", "required": true, "displayIcon": "verified", "labelTemplate": "Checksum: {value}" },
+        "downloadStatus": { "type": "text", "writableBy": "effect", "displayIcon": "download", "labelTemplate": "{value}" },
+        "exportHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    {
+      "instanceId": "garden-event-spring-planting",
+      "workflowType": "garden-event-rsvp",
+      "currentState": "open",
+      "createdByPersonaId": "garden-coordinator",
+      "instanceData": {
+        "eventTitle": "Spring Planting Workshop",
+        "eventDateTime": "Saturday, Apr 18 at 10:00 AM",
+        "location": "Riverside Greenhouse",
+        "capacityLabel": "18 of 24 spots",
+        "rsvpStatus": "",
+        "eventHistory": []
+      }
+    },
+    {
+      "instanceId": "garden-tool-broadfork",
+      "workflowType": "garden-tool-loan",
+      "currentState": "available",
+      "createdByPersonaId": "garden-member",
+      "instanceData": {
+        "itemTitle": "Broadfork",
+        "mode": "Loan",
+        "currentHolder": "",
+        "queuePersonaIds": [],
+        "custodyHistory": []
+      }
+    },
+    {
+      "instanceId": "garden-plant-basil",
+      "workflowType": "plant-exchange-submission",
+      "currentState": "draft",
+      "createdByPersonaId": "garden-member",
+      "instanceData": {
+        "plantType": "Sweet Genovese basil",
+        "quantity": "6 starter pots",
+        "pickupNotes": "Pickup Sat 1-3 PM",
+        "privacyNote": "Contact after claim",
+        "claimantPersonaId": "",
+        "exchangeHistory": []
+      }
+    },
+    {
+      "instanceId": "garden-shift-bed-prep",
+      "workflowType": "garden-volunteer-shift",
+      "currentState": "open",
+      "createdByPersonaId": "garden-coordinator",
+      "instanceData": {
+        "shiftTitle": "Saturday bed prep",
+        "openSpots": 4,
+        "signedUpPersonaIds": [],
+        "shiftHistory": []
+      }
+    },
+    {
+      "instanceId": "garden-export-package",
+      "workflowType": "garden-export-custom-schemas",
+      "currentState": "ready",
+      "createdByPersonaId": "garden-coordinator",
+      "instanceData": {
+        "schemas": ["garden_event", "plant_exchange"],
+        "redactionPreview": "Protected contact fields redacted",
+        "checksum": "8F4A-PLANT",
+        "downloadStatus": "Not generated",
+        "exportHistory": []
+      }
+    }
+  ]
+}

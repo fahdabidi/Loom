@@ -271,7 +271,7 @@ List<LoomAppShellTabSpec> appShellTabsFor({
     if (_hasAnySection(experience, const ['Giving']))
       LoomAppShellTabSpec(
         tabId: 'giving',
-        label: 'Giving',
+        label: _paymentTabLabelFor(experience),
         icon: Icons.payments_outlined,
         description: 'Payments, dues, donations, receipts, and ad-off state.',
         rendererContractId: 'payment-giving-ledger',
@@ -284,6 +284,24 @@ List<LoomAppShellTabSpec> appShellTabsFor({
           'Giving',
         ]),
         requiredPermission: 'community.surface.payments.read',
+      ),
+    if (experience.workflows.any((workflow) => workflow.architecturalRequest != null))
+      LoomAppShellTabSpec(
+        tabId: 'requests',
+        label: 'Requests',
+        icon: Icons.fact_check_outlined,
+        description: 'Submit and track architectural requests.',
+        rendererContractId: 'workflow-status-timeline-actions',
+        pinningPolicy: 'pin-first-critical-surface',
+        pinningPolicyRationale:
+            'Request tabs pin the active case so homeowners can see status and next actions.',
+        sectionTitles: const ['Requests and approvals'],
+        cardSurfaceFamilies: const ['formEntry', 'statusTimeline', 'workflow-status'],
+        pinnedWorkflowIds: _pinnedWorkflowIdsForSurfaceFamilies(
+          experience,
+          const ['formEntry', 'statusTimeline', 'workflow-status', 'approval'],
+        ),
+        requiredPermission: 'community.surface.requests.read',
       ),
     if (_hasAnySurfaceFamily(experience, const ['volunteer', 'care-request']))
       LoomAppShellTabSpec(
@@ -652,6 +670,10 @@ bool _personaCanAdministerAnyWorkflow(
       personaId: personaId,
       experience: experience,
     );
+    if (state == LoomPersonaWorkflowState.receiver &&
+        workflow.architecturalRequest != null) {
+      return true;
+    }
     if (state != LoomPersonaWorkflowState.actor) {
       return false;
     }
@@ -681,6 +703,15 @@ String _adminTabLabelFor(String extensionId) {
       return 'Host';
   }
   return 'Admin';
+}
+
+String _paymentTabLabelFor(LoomExperienceDefinition experience) {
+  if (experience.workflows.any(
+    (workflow) => workflow.workflowId == 'hoa-dues-payment',
+  )) {
+    return 'Payments';
+  }
+  return 'Giving';
 }
 
 String workflowPersonaReceiptKey({
@@ -791,4 +822,3 @@ LoomProductionWorkflowContract productionWorkflowContractFor({
     icon: _iconFor(category),
   );
 }
-

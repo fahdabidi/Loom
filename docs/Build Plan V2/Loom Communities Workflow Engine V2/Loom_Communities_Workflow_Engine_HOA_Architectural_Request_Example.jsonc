@@ -1,0 +1,204 @@
+{
+  "personaIds": ["hoa-homeowner", "hoa-board"],
+  "templates": {
+    "formEntry": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "WorkflowFormFieldList"
+      ]
+    },
+    "statusTimeline": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "WorkflowStatusTimeline"
+      ]
+    },
+    "dashboard": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "WorkflowDashboardQueue"
+      ]
+    }
+  },
+  "workflowDefinitions": {
+    "cedar-commons-architectural-request": {
+      "initialState": "submitted",
+      "instanceDataSchema": {
+        "projectDescription": { "type": "text", "label": "Project", "writableBy": "formEntry", "displayContexts": ["tile", "detail"] },
+        "propertyAddress": { "type": "text", "label": "Property address", "writableBy": "formEntry", "displayContexts": ["detail"] },
+        "requestedCompletionDate": { "type": "date", "label": "Requested completion date", "writableBy": "formEntry", "displayContexts": ["detail"] },
+        "attachments": { "type": "text", "label": "Attachments", "writableBy": "formEntry", "displayContexts": ["detail"] },
+        "ownerPersonaId": { "type": "string", "label": "Owner persona" },
+        "ownerLabel": { "type": "string", "label": "Owner", "displayContexts": ["tile", "detail"] },
+        "reviewerNote": { "type": "text", "label": "Reviewer note", "displayContexts": ["detail"] },
+        "history": { "type": "list", "label": "Status history", "displayContexts": ["detail"] }
+      },
+      "renderBindings": [
+        {
+          "states": ["submitted", "changes-needed"],
+          "role": "actor",
+          "tabId": "requests",
+          "cardSurfaceFamily": "formEntry",
+          "bindingKind": "primary"
+        },
+        {
+          "states": ["submitted", "under-review", "changes-needed", "approved", "denied", "reopened", "withdrawn"],
+          "role": "actor",
+          "tabId": "requests",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        },
+        {
+          "states": ["submitted", "under-review", "changes-needed", "reopened"],
+          "role": "receiver",
+          "tabId": "admin",
+          "cardSurfaceFamily": "dashboard",
+          "bindingKind": "summary"
+        },
+        {
+          "states": ["submitted", "under-review", "changes-needed", "approved", "denied", "reopened"],
+          "role": "receiver",
+          "tabId": "admin",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        }
+      ],
+      "states": {
+        "submitted": {
+          "label": "Submitted",
+          "editableFields": ["projectDescription", "propertyAddress", "requestedCompletionDate", "attachments"]
+        },
+        "under-review": { "label": "Under review" },
+        "changes-needed": {
+          "label": "Changes needed",
+          "editableFields": ["projectDescription", "propertyAddress", "requestedCompletionDate", "attachments"]
+        },
+        "approved": { "label": "Approved" },
+        "denied": { "label": "Denied" },
+        "reopened": { "label": "Reopened" },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "start-review",
+          "label": "Start review",
+          "icon": "fact_check",
+          "tone": "primary",
+          "from": ["submitted", "reopened"],
+          "to": "under-review",
+          "guard": { "allowedPersonaIds": ["hoa-board"] },
+          "effects": [
+            { "op": "append", "key": "history", "value": "HOA Board at $timestamp started review" }
+          ]
+        },
+        {
+          "id": "request-changes",
+          "label": "Request changes",
+          "icon": "edit_note",
+          "tone": "secondary",
+          "from": ["submitted", "under-review", "reopened"],
+          "to": "changes-needed",
+          "guard": { "allowedPersonaIds": ["hoa-board"] },
+          "effects": [
+            { "op": "set", "key": "reviewerNote", "value": "Please revise the color sample and setback diagram." },
+            { "op": "append", "key": "history", "value": "HOA Board at $timestamp requested changes" }
+          ]
+        },
+        {
+          "id": "approve",
+          "label": "Approve request",
+          "icon": "check_circle",
+          "tone": "primary",
+          "from": ["submitted", "under-review", "changes-needed", "reopened"],
+          "to": "approved",
+          "guard": { "allowedPersonaIds": ["hoa-board"] },
+          "effects": [
+            { "op": "set", "key": "reviewerNote", "value": "Approved with standard construction-hour conditions." },
+            { "op": "append", "key": "history", "value": "HOA Board at $timestamp approved request" }
+          ]
+        },
+        {
+          "id": "reject",
+          "label": "Reject request",
+          "icon": "cancel",
+          "tone": "destructive",
+          "from": ["submitted", "under-review", "changes-needed", "reopened"],
+          "to": "denied",
+          "guard": { "allowedPersonaIds": ["hoa-board"] },
+          "effects": [
+            { "op": "set", "key": "reviewerNote", "value": "Rejected; proposal conflicts with current covenants." },
+            { "op": "append", "key": "history", "value": "HOA Board at $timestamp rejected request" }
+          ]
+        },
+        {
+          "id": "resubmit",
+          "label": "Retry submission",
+          "icon": "send",
+          "tone": "primary",
+          "from": ["changes-needed"],
+          "to": "submitted",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "history", "value": "{ownerLabel} at $timestamp retried submission" }
+          ]
+        },
+        {
+          "id": "reopen",
+          "label": "Reopen request",
+          "icon": "replay",
+          "tone": "secondary",
+          "from": ["approved", "denied", "changes-needed"],
+          "to": "reopened",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "history", "value": "{ownerLabel} at $timestamp reopened request" }
+          ]
+        },
+        {
+          "id": "appeal",
+          "label": "Appeal decision",
+          "icon": "gavel",
+          "tone": "secondary",
+          "from": ["denied"],
+          "to": "reopened",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "history", "value": "{ownerLabel} at $timestamp appealed decision" }
+          ]
+        },
+        {
+          "id": "withdraw",
+          "label": "Withdraw request",
+          "icon": "delete",
+          "tone": "destructive",
+          "from": ["submitted", "changes-needed", "reopened"],
+          "to": "withdrawn",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "history", "value": "{ownerLabel} at $timestamp withdrew request" }
+          ]
+        }
+      ]
+    }
+  },
+  "workflowInstances": [
+    {
+      "instanceId": "arc-request-fence-001",
+      "workflowType": "cedar-commons-architectural-request",
+      "currentState": "submitted",
+      "instanceData": {
+        "projectDescription": "Fence color update",
+        "propertyAddress": "42 Cedar Loop",
+        "requestedCompletionDate": "2026-08-15",
+        "attachments": "fence-elevation.pdf",
+        "ownerPersonaId": "hoa-homeowner",
+        "ownerLabel": "Avery Brooks",
+        "reviewerNote": "",
+        "history": ["Avery Brooks at 2026-07-07T00:00:00Z submitted architectural request"]
+      }
+    }
+  ]
+}

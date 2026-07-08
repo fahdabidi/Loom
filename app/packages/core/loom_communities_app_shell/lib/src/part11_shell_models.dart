@@ -12,6 +12,7 @@ class LoomWorkflowDefinition {
     this.theme,
     this.givingPayment,
     this.documentLibrary,
+    this.architecturalRequest,
   });
 
   final String workflowId;
@@ -24,6 +25,23 @@ class LoomWorkflowDefinition {
   final LoomCardTheme? theme;
   final LoomGivingPayment? givingPayment;
   final LoomDocumentLibrary? documentLibrary;
+  final LoomArchitecturalRequest? architecturalRequest;
+}
+
+class LoomArchitecturalRequest {
+  const LoomArchitecturalRequest({
+    required this.projectTypes,
+    required this.defaultProjectDescription,
+    required this.defaultPropertyAddress,
+    required this.defaultRequestedCompletionDate,
+    required this.defaultAttachments,
+  });
+
+  final List<String> projectTypes;
+  final String defaultProjectDescription;
+  final String defaultPropertyAddress;
+  final String defaultRequestedCompletionDate;
+  final String defaultAttachments;
 }
 
 class LoomDocumentLibrary {
