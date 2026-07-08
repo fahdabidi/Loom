@@ -1,0 +1,253 @@
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
+import 'package:test/test.dart';
+
+LoomWorkflowStateMachine _calendarInviteMachine() {
+  return const LoomWorkflowStateMachine(
+    workflowType: 'calendar-invite',
+    initialState: 'scheduled',
+    states: {
+      'scheduled': LoomWorkflowState(label: 'Scheduled'),
+    },
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'rsvp-going',
+        label: 'Going',
+        from: ['scheduled'],
+        to: null,
+        guard: WorkflowGuard(
+          allowedPersonaIds: ['creator', 'alice', 'bob', 'cora', 'drew', 'erin'],
+        ),
+        effects: [
+          WorkflowEffect(
+            op: 'set',
+            key: 'rsvpByPersona.\$actor',
+            value: 'going',
+          ),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'rsvp-maybe',
+        label: 'Maybe',
+        from: ['scheduled'],
+        to: null,
+        guard: WorkflowGuard(
+          allowedPersonaIds: ['creator', 'alice', 'bob', 'cora', 'drew', 'erin'],
+        ),
+        effects: [
+          WorkflowEffect(
+            op: 'set',
+            key: 'rsvpByPersona.\$actor',
+            value: 'maybe',
+          ),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'rsvp-not-going',
+        label: 'Not going',
+        from: ['scheduled'],
+        to: null,
+        guard: WorkflowGuard(
+          allowedPersonaIds: ['creator', 'alice', 'bob', 'cora', 'drew', 'erin'],
+        ),
+        effects: [
+          WorkflowEffect(
+            op: 'set',
+            key: 'rsvpByPersona.\$actor',
+            value: 'not-going',
+          ),
+        ],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: ['scheduled'],
+        role: 'actor',
+        tabId: 'calendar',
+        cardSurfaceFamily: 'event-host',
+        bindingKind: 'primary',
+      ),
+      RenderBinding(
+        states: ['scheduled'],
+        role: 'receiver',
+        tabId: 'calendar',
+        cardSurfaceFamily: 'event-invite',
+        bindingKind: 'primary',
+        audienceMemberField: 'invitedPersonaIds',
+      ),
+    ],
+    instanceDataSchema: {
+      'title': InstanceDataField(type: 'text', required: true),
+      'audienceScope': InstanceDataField(type: 'audienceSelector'),
+      'invitedPersonaIds': InstanceDataField(type: 'personaId[]'),
+      'rsvpByPersona': InstanceDataField(type: 'personaResponseMap'),
+    },
+  );
+}
+
+LocalWorkflowEngineApi _makeApi() {
+  final db = WorkflowDatabase.memory();
+  final api = LocalWorkflowEngineApi(db: db, communityId: 'calendar');
+  api.registerDefinition(_calendarInviteMachine());
+  return api;
+}
+
+void main() {
+  group('Milestone 2.1 audience/distribution primitive', () {
+    test('audience cardinalities resolve receiver role correctly', () {
+      final machine = _calendarInviteMachine();
+
+      final allBindings = resolveBindings(
+        machine,
+        'scheduled',
+        ['receiver'],
+        instanceData: {
+          'audienceScope': 'all',
+          'invitedPersonaIds': <String>[],
+        },
+        personaId: 'alice',
+      );
+      expect(allBindings.map((binding) => binding.role), contains('receiver'));
+
+      final selectedMatches = ['alice', 'bob', 'cora'].where((personaId) {
+        return resolveBindings(
+          machine,
+          'scheduled',
+          const [],
+          instanceData: {
+            'audienceScope': 'selected',
+            'invitedPersonaIds': ['alice', 'bob', 'cora'],
+          },
+          personaId: personaId,
+        ).any((binding) => binding.role == 'receiver');
+      }).toList();
+      expect(selectedMatches, ['alice', 'bob', 'cora']);
+
+      final selectedNonMember = resolveBindings(
+        machine,
+        'scheduled',
+        const [],
+        instanceData: {
+          'audienceScope': 'selected',
+          'invitedPersonaIds': ['alice', 'bob', 'cora'],
+        },
+        personaId: 'drew',
+      );
+      expect(selectedNonMember.any((binding) => binding.role == 'receiver'),
+          isFalse);
+
+      final individualMatches = ['alice', 'bob'].where((personaId) {
+        return resolveBindings(
+          machine,
+          'scheduled',
+          const [],
+          instanceData: {
+            'audienceScope': 'individual',
+            'invitedPersonaIds': ['bob'],
+          },
+          personaId: personaId,
+        ).any((binding) => binding.role == 'receiver');
+      }).toList();
+      expect(individualMatches, ['bob']);
+    });
+
+    test('selected audience excludes non-invited persona receiver binding', () {
+      final bindings = resolveBindings(
+        _calendarInviteMachine(),
+        'scheduled',
+        const [],
+        instanceData: {
+          'audienceScope': 'selected',
+          'invitedPersonaIds': ['alice', 'bob'],
+        },
+        personaId: 'cora',
+      );
+
+      expect(bindings.where((binding) => binding.role == 'receiver'), isEmpty);
+    });
+
+    test('queryInstances fans out on read for persona audience membership',
+        () async {
+      final api = _makeApi();
+      for (var index = 0; index < 5; index += 1) {
+        await api.createInstance(
+          workflowType: 'calendar-invite',
+          personaId: 'creator',
+          initialInstanceData: {
+            'title': 'Invite $index',
+            'audienceScope': 'selected',
+            'invitedPersonaIds': index == 1 || index == 3
+                ? ['alice', 'bob']
+                : ['bob', 'cora'],
+            'rsvpByPersona': <String, String>{},
+          },
+        );
+      }
+
+      final page = await api.queryInstances(
+        tabId: 'calendar',
+        personaId: 'alice',
+        query: const SurfaceQuery(audienceMemberField: 'invitedPersonaIds'),
+      );
+
+      expect(page.items, hasLength(2));
+      expect(
+        page.items.map((item) => item.instanceData['title']).toSet(),
+        {'Invite 1', 'Invite 3'},
+      );
+    });
+
+    test('selected invitees can RSVP and creator sees responses', () async {
+      final api = _makeApi();
+      final instanceId = await api.createInstance(
+        workflowType: 'calendar-invite',
+        personaId: 'creator',
+        initialInstanceData: {
+          'title': 'Game night',
+          'audienceScope': 'selected',
+          'invitedPersonaIds': ['alice', 'bob'],
+          'rsvpByPersona': <String, String>{},
+        },
+      );
+
+      for (final invitee in ['alice', 'bob']) {
+        final receiveBindings = resolveBindings(
+          _calendarInviteMachine(),
+          'scheduled',
+          const [],
+          instanceData: {
+            'audienceScope': 'selected',
+            'invitedPersonaIds': ['alice', 'bob'],
+          },
+          personaId: invitee,
+        );
+        expect(receiveBindings.any((binding) => binding.role == 'receiver'),
+            isTrue);
+      }
+
+      await api.applyTransition(
+        workflowType: 'calendar-invite',
+        instanceId: instanceId,
+        transitionId: 'rsvp-going',
+        personaId: 'alice',
+      );
+      await api.applyTransition(
+        workflowType: 'calendar-invite',
+        instanceId: instanceId,
+        transitionId: 'rsvp-maybe',
+        personaId: 'bob',
+      );
+
+      final creatorPage = await api.queryInstances(
+        tabId: 'calendar',
+        personaId: 'creator',
+      );
+      final instance = creatorPage.items
+          .singleWhere((item) => item.instanceId == instanceId);
+
+      expect(instance.instanceData['rsvpByPersona'], {
+        'alice': 'going',
+        'bob': 'maybe',
+      });
+    });
+  });
+}

@@ -183,6 +183,7 @@ LoomWorkflowDefinition? _parseWorkflowDefinition(Map<String, Object?> map) {
     responseChoices: _parseResponseChoices(map['responseChoices']),
     theme: _parseCardTheme(map['theme']),
     givingPayment: _parseGivingPayment(map['givingPayment']),
+    documentLibrary: _parseDocumentLibrary(map['documentLibrary']),
   );
 }
 
@@ -378,8 +379,64 @@ LoomGivingPayment? _parseGivingPayment(Object? value) {
   return LoomGivingPayment(
     amountLabel: amountLabel,
     purpose: value['purpose'] as String?,
+    recipient: value['recipient'] as String?,
     cadence: value['cadence'] as String?,
     entitlement: value['entitlement'] as String?,
+  );
+}
+
+LoomDocumentLibrary? _parseDocumentLibrary(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final documentsRaw = value['documents'];
+  if (documentsRaw is! List) return null;
+  final documents = <LoomDocumentItem>[
+    for (final entry in documentsRaw)
+      if (entry is Map<String, Object?>)
+        if (_parseDocumentItem(entry) case final document?) document,
+  ];
+  if (documents.isEmpty) return null;
+  final declaredCategories = _shellStringList(value['categories']);
+  final categories = declaredCategories.isNotEmpty
+      ? declaredCategories
+      : <String>{
+          for (final document in documents) document.category,
+        }.toList();
+  return LoomDocumentLibrary(categories: categories, documents: documents);
+}
+
+LoomDocumentItem? _parseDocumentItem(Map<String, Object?> map) {
+  final documentId = map['documentId'];
+  final title = map['title'];
+  final category = map['category'];
+  final version = map['version'];
+  final updatedLabel = map['updatedLabel'];
+  final accessState = map['accessState'];
+  if (documentId is! String ||
+      documentId.isEmpty ||
+      title is! String ||
+      title.isEmpty ||
+      category is! String ||
+      category.isEmpty ||
+      version is! String ||
+      version.isEmpty ||
+      updatedLabel is! String ||
+      updatedLabel.isEmpty ||
+      accessState is! String ||
+      accessState.isEmpty) {
+    return null;
+  }
+  return LoomDocumentItem(
+    documentId: documentId,
+    title: title,
+    category: category,
+    version: version,
+    updatedLabel: updatedLabel,
+    accessState: accessState,
+    summary: map['summary'] as String?,
+    embeddedLabel: map['embeddedLabel'] as String? ?? 'Open embedded',
+    externalLabel: map['externalLabel'] as String? ?? 'Open external',
+    acknowledgeLabel: map['acknowledgeLabel'] as String? ?? 'Acknowledge',
+    requestAccessLabel: map['requestAccessLabel'] as String? ?? 'Request access',
   );
 }
 
@@ -502,6 +559,9 @@ LoomListingTransition _parseTransition(Map<String, Object?> map) {
     fromStates: _shellStringList(map['from']),
     to: map['to'] as String?,
     allowedPersonaIds: _shellStringList(map['allowedPersonaIds']),
+    requiresWorkflowsComplete: _shellStringList(
+      map['requiresWorkflowsComplete'],
+    ),
     linkedWorkflowId: map['linkedWorkflowId'] as String?,
     setsHolderToActor: map['setsHolderToActor'] == true,
     clearsHolder: map['clearsHolder'] == true,
@@ -1240,4 +1300,3 @@ LoomWorkflowPersonaPolicy _exportPolicy(String workflowId) {
   }
   return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['export-owner']);
 }
-

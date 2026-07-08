@@ -3,6 +3,9 @@ info:
   title: Loom Community Card Surfaces API
   version: 0.1.0
   summary: Executable API contracts for Loom Communities production card surfaces.
+  license:
+    name: Proprietary
+    url: https://loom.example/legal/proprietary-license
   description: |
     This OpenAPI specification defines every interaction required by the Loom Communities card-surface
     catalog. Generated extensions select card surfaces first, then call these Loom-owned operations via
@@ -134,6 +137,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -728,6 +733,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -762,6 +769,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -1142,6 +1151,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -1176,6 +1187,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -1517,6 +1530,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -1707,6 +1722,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -1858,6 +1875,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -2457,6 +2476,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -2837,6 +2858,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -3022,6 +3045,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -3757,6 +3782,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5053,6 +5080,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5204,6 +5233,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5384,6 +5415,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5574,6 +5607,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5686,6 +5721,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -5754,6 +5791,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -6382,6 +6421,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -7590,6 +7631,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -7921,6 +7964,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -7955,6 +8000,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -8023,6 +8070,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -8291,6 +8340,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -8807,6 +8858,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -9406,6 +9459,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -9908,6 +9963,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -10161,6 +10218,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -10960,6 +11019,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -11106,6 +11167,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -11974,6 +12037,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -12042,6 +12107,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -12127,6 +12194,8 @@ paths:
         - $ref: '#/components/parameters/CommunityId'
         - $ref: '#/components/parameters/SurfaceId'
         - $ref: '#/components/parameters/PersonaId'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Limit'
+        - $ref: '../_shared/pagination.yaml#/components/parameters/Cursor'
       responses:
         '200':
           description: Card-surface operation completed.
@@ -12214,20 +12283,24 @@ components:
         surfaceFamily:
           $ref: '#/components/schemas/SurfaceFamily'
         surfaceId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         operation:
           type: string
           description: Contract operation name from x-loom-contract-operation.
         personaId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         roleId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         expectedVersion:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         payload:
           type: object
           additionalProperties: true
@@ -12243,37 +12316,46 @@ components:
         title:
           type: string
         description:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         category:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         condition:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         price:
-          type: number
-          nullable: true
+          type:
+            - number
+            - 'null'
         quantity:
-          type: integer
-          nullable: true
+          type:
+            - integer
+            - 'null'
         availability:
           type: string
           description: Flat back-compat availability string; superseded by stateMachine.
         currentHolderLabel:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         dueLabel:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         queueLength:
           type: integer
         ownerLabel:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         template:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
           description: Named reference to a community-authored marketplace.templates entry.
         stateMachine:
           $ref: '#/components/schemas/ListingStateMachine'
@@ -12336,15 +12418,17 @@ components:
           items:
             type: string
         to:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         allowedPersonaIds:
           type: array
           items:
             type: string
         linkedWorkflowId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         setsHolderToActor:
           type: boolean
         clearsHolder:
@@ -12389,9 +12473,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SurfaceState'
-        nextPageToken:
-          type: string
-          nullable: true
+        nextCursor:
+          type:
+            - string
+            - 'null'
     SurfaceState:
       type: object
       required:
@@ -12412,23 +12497,29 @@ components:
         surfaceFamily:
           $ref: '#/components/schemas/SurfaceFamily'
         personaId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         roleId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         state:
           type: string
           description: Domain state such as draft, open, submitted, approved, paid, sent, read, failed, cancelled, or archived.
         title:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         summary:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         domainObject:
-          type: object
-          additionalProperties: true
+          oneOf:
+            - $ref: '#/components/schemas/MarketplaceListing'
+            - type: object
+              additionalProperties: true
           description: Domain-specific card data visible to the current persona.
         allowedActions:
           type: array
@@ -12459,9 +12550,10 @@ components:
         version:
           type: string
         updatedAt:
-          type: string
+          type:
+            - string
+            - 'null'
           format: date-time
-          nullable: true
     AllowedSurfaceAction:
       type: object
       required:
@@ -12493,8 +12585,9 @@ components:
         reason:
           type: string
         remediation:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     ReceiverState:
       type: object
       required:
@@ -12504,13 +12597,15 @@ components:
         personaId:
           type: string
         roleId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         state:
           type: string
         visibleSummary:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     ReceiptRef:
       type: object
       required:

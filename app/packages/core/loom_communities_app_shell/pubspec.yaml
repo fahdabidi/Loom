@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   loom_demo_local_backend:
     path: ../loom_demo_local_backend
+  loom_workflow_engine:
+    path: ../loom_workflow_engine
+  sqlite3_flutter_libs: ^0.5.42
 
 dev_dependencies:
   flutter_test:

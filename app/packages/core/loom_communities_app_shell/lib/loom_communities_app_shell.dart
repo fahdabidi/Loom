@@ -1,7 +1,10 @@
 library loom_communities_app_shell;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';
+import 'package:loom_workflow_engine/loom_workflow_engine.dart';
 
 part 'src/part01_local_extension_screen.dart';
 part 'src/part02_tab_shell.dart';
@@ -20,3 +23,4 @@ part 'src/part14_copy_helpers.dart';
 part 'src/part15_evidence_catalog.dart';
 part 'src/part16_experience_catalog.dart';
 part 'src/part17_theme_tokens.dart';
+part 'src/part18_marketplace_rendering.dart';

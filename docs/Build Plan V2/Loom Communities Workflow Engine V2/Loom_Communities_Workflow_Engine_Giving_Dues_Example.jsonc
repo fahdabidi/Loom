@@ -1,0 +1,129 @@
+// Giving/dues fixture for Phase 3 Milestone 3.1.
+// Models the Tabletop Club dues checkout as a normal workflow engine state
+// machine with a type-agnostic linked workflow action surface.
+
+{
+  "personas": [
+    "tabletop-member",
+    "tabletop-organizer"
+  ],
+
+  "workflowDefinitions": {
+    "tabletop-club-dues-payment": {
+      "initialState": "unpaid",
+
+      "states": {
+        "unpaid": {
+          "label": "Unpaid",
+          "tone": "warning"
+        },
+        "paid": {
+          "label": "Paid",
+          "tone": "positive",
+          "isTerminal": true
+        }
+      },
+
+      "transitions": [
+        {
+          "id": "pay",
+          "label": "Pay $15",
+          "icon": "payments_outlined",
+          "tone": "primary",
+          "from": ["unpaid"],
+          "to": "paid",
+          "linkedWorkflowId": "tabletop-club-dues-payment",
+          "guard": {
+            "allowedPersonaIds": [
+              "tabletop-member",
+              "tabletop-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "receiptStatus",
+              "value": "complete"
+            }
+          ]
+        }
+      ],
+
+      "renderBindings": [
+        {
+          "states": ["unpaid", "paid"],
+          "role": "actor",
+          "tabId": "giving",
+          "cardSurfaceFamily": "paymentCheckout",
+          "bindingKind": "primary"
+        }
+      ],
+
+      "instanceDataSchema": {
+        "workflowId": {
+          "type": "text",
+          "required": true,
+          "storage": "inline"
+        },
+        "amountLabel": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "payments_outlined",
+          "labelTemplate": "{value}"
+        },
+        "purpose": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "receipt_long",
+          "labelTemplate": "{value}"
+        },
+        "recipient": {
+          "type": "text",
+          "required": true,
+          "storage": "inline",
+          "displayIcon": "account_balance_outlined",
+          "labelTemplate": "Recipient: {value}"
+        },
+        "cadence": {
+          "type": "text",
+          "storage": "inline",
+          "displayIcon": "repeat",
+          "labelTemplate": "{value}",
+          "hideWhenEmpty": true
+        },
+        "entitlement": {
+          "type": "text",
+          "storage": "inline",
+          "displayIcon": "verified_outlined",
+          "labelTemplate": "{value}",
+          "hideWhenEmpty": true
+        },
+        "receiptStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "storage": "inline"
+        }
+      }
+    }
+  },
+
+  "workflowInstances": [
+    {
+      "instanceId": "tabletop-club-dues-payment-member",
+      "workflowType": "tabletop-club-dues-payment",
+      "currentState": "unpaid",
+      "createdByPersonaId": "tabletop-member",
+      "instanceData": {
+        "workflowId": "tabletop-club-dues-payment",
+        "amountLabel": "$15",
+        "purpose": "Quarterly club dues",
+        "recipient": "Tabletop Club treasury",
+        "cadence": "recurring",
+        "entitlement": "Voting member badge",
+        "receiptStatus": ""
+      }
+    }
+  ]
+}

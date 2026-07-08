@@ -11,6 +11,7 @@ class LoomWorkflowDefinition {
     this.responseChoices,
     this.theme,
     this.givingPayment,
+    this.documentLibrary,
   });
 
   final String workflowId;
@@ -22,6 +23,45 @@ class LoomWorkflowDefinition {
   final List<LoomWorkflowResponseChoice>? responseChoices;
   final LoomCardTheme? theme;
   final LoomGivingPayment? givingPayment;
+  final LoomDocumentLibrary? documentLibrary;
+}
+
+class LoomDocumentLibrary {
+  const LoomDocumentLibrary({
+    required this.categories,
+    required this.documents,
+  });
+
+  final List<String> categories;
+  final List<LoomDocumentItem> documents;
+}
+
+class LoomDocumentItem {
+  const LoomDocumentItem({
+    required this.documentId,
+    required this.title,
+    required this.category,
+    required this.version,
+    required this.updatedLabel,
+    required this.accessState,
+    this.summary,
+    this.embeddedLabel = 'Open embedded',
+    this.externalLabel = 'Open external',
+    this.acknowledgeLabel = 'Acknowledge',
+    this.requestAccessLabel = 'Request access',
+  });
+
+  final String documentId;
+  final String title;
+  final String category;
+  final String version;
+  final String updatedLabel;
+  final String accessState;
+  final String? summary;
+  final String embeddedLabel;
+  final String externalLabel;
+  final String acknowledgeLabel;
+  final String requestAccessLabel;
 }
 
 class LoomWorkflowResponseChoice {
@@ -56,12 +96,14 @@ class LoomGivingPayment {
   const LoomGivingPayment({
     required this.amountLabel,
     this.purpose,
+    this.recipient,
     this.cadence,
     this.entitlement,
   });
 
   final String amountLabel;
   final String? purpose;
+  final String? recipient;
   final String? cadence;
   final String? entitlement;
 }
@@ -89,6 +131,7 @@ class LoomListingTransition {
     required this.fromStates,
     this.to,
     this.allowedPersonaIds,
+    this.requiresWorkflowsComplete = const [],
     this.linkedWorkflowId,
     this.setsHolderToActor = false,
     this.clearsHolder = false,
@@ -106,6 +149,7 @@ class LoomListingTransition {
   final List<String> fromStates;
   final String? to;
   final List<String>? allowedPersonaIds;
+  final List<String> requiresWorkflowsComplete;
   final String? linkedWorkflowId;
   final bool setsHolderToActor;
   final bool clearsHolder;
@@ -144,6 +188,7 @@ class LoomListingStateMachine {
               (t.allowedPersonaIds == null ||
                   t.allowedPersonaIds!.isEmpty ||
                   t.allowedPersonaIds!.contains(personaId)) &&
+              t.requiresWorkflowsComplete.isEmpty &&
               (t.requiresActorInQueue
                   ? listing != null &&
                       listing.queuedPersonaIds.contains(personaId)

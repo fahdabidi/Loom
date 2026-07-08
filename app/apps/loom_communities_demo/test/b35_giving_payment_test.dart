@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_demo/main.dart';
 
-import 'workflow_ui_test_harness.dart';
-
 const _extensionId = 'ext_verify_tabletop_club';
 
 void main() {
@@ -30,9 +28,17 @@ void main() {
       );
       // Exact match (not textContaining) so this doesn't also match the
       // checkout button's "Pay $15" label.
-      expect(find.text('\$15'), findsOneWidget);
+      expect(find.text('\$15'), findsWidgets);
       expect(
         find.textContaining('Quarterly club dues'),
+        findsWidgets,
+      );
+      expect(
+        find.textContaining('Recipient: Tabletop Club treasury'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('giving-action-pay')),
         findsOneWidget,
       );
       // Checkout button exists
@@ -94,11 +100,9 @@ void main() {
 
       // Tap checkout → opens action surface (scroll into view first; the
       // button can sit below the fold on the default test viewport)
-      final checkoutButton = find.byKey(
-        const ValueKey('giving-checkout-tabletop-club-dues-payment'),
-      );
-      await tester.ensureVisible(checkoutButton);
-      await tester.tap(checkoutButton);
+      final payButton = find.byKey(const ValueKey('giving-action-pay'));
+      await tester.ensureVisible(payButton);
+      await tester.tap(payButton);
       await tester.pumpAndSettle();
 
       // Confirm the workflow
@@ -161,10 +165,10 @@ void main() {
       );
       // Amount and purpose are still visible (exact match so this doesn't
       // also match the checkout button's "Pay $15" label).
-      expect(find.text('\$15'), findsOneWidget);
+      expect(find.text('\$15'), findsWidgets);
       expect(
         find.textContaining('Quarterly club dues'),
-        findsOneWidget,
+        findsWidgets,
       );
     });
 
@@ -329,6 +333,7 @@ _PackagePairFixture _writeTabletopClubPackagePair({
     final givingPayment = <String, dynamic>{
       'amountLabel': '\$15',
       'purpose': 'Quarterly club dues',
+      'recipient': 'Tabletop Club treasury',
     };
     if (includeCadence) {
       givingPayment['cadence'] = 'recurring';

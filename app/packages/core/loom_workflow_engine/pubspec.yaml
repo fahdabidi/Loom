@@ -1,0 +1,16 @@
+name: loom_workflow_engine
+description: Domain-agnostic general workflow engine for Loom Communities — state machines, guards, effects, render bindings.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  drift: ^2.33.0
+  ffi: ^2.1.4
+  sqlite3: ^3.3.4
+
+dev_dependencies:
+  test: ^1.25.0

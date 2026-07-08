@@ -9,3 +9,8 @@ environment:
 
 dependencies:
   image: ^4.7.2
+  loom_workflow_engine:
+    path: ../../core/loom_workflow_engine
+
+dev_dependencies:
+  test: ^1.25.0

@@ -36,7 +36,52 @@
 // sortable like everything else.
 
 {
+  "personas": [
+    "tabletop-member",
+    "tabletop-member-owner",
+    "tabletop-organizer"
+  ],
+
   "workflowDefinitions": {
+
+    "tabletop-club-dues-payment": {
+      "initialState": "unpaid",
+      "instanceDataSchema": {
+        "workflowId": { "type": "string", "label": "Workflow ID" },
+        "completionWorkflowId": { "type": "string", "label": "Completion workflow ID" },
+        "receiptStatus": { "type": "string", "label": "Receipt status" }
+      },
+      "states": {
+        "unpaid": { "label": "Dues pending" },
+        "paid": { "label": "Dues current", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "pay",
+          "label": "Pay dues",
+          "icon": "payments",
+          "tone": "primary",
+          "from": ["unpaid"],
+          "to": "paid",
+          "guard": { "allowedPersonaIds": ["tabletop-member"] },
+          "effects": [
+            { "op": "set", "key": "receiptStatus", "value": "paid" }
+          ]
+        }
+      ]
+    },
+
+    "tabletop-game-loan": {
+      "initialState": "open",
+      "instanceDataSchema": {},
+      "states": {
+        "open": {
+          "label": "Open",
+          "isTerminal": true
+        }
+      },
+      "transitions": []
+    },
 
     // ---------------------------------------------------------------------------------------------
     // The shared "loan" template — used by Catan and Wingspan (Root, below, shows a per-instance
@@ -113,6 +158,11 @@
           "displayIcon": "schedule", "labelTemplate": "Due back {value}",
           "displayContexts": ["tile", "detail"],
           "hideWhenEmpty": true
+        },
+        "availabilityState": {
+          "type": "text",
+          "writableBy": "effect",
+          "displayContexts": ["detail"]
         }
       },
 
@@ -128,7 +178,7 @@
         "published":      { "label": "Published", "tone": "positive" }, // no editableFields — edits
                                                                           // happen via transitions,
                                                                           // not a form, once live
-        "delisted":       { "label": "Delisted" }
+        "delisted":       { "label": "Delisted", "isTerminal": true }
       },
 
       "transitions": [
@@ -158,15 +208,8 @@
           "from": ["published"], "to": null, // top-level state doesn't change — see §3d
           "guard": {
             "allowedPersonaIds": ["tabletop-member"],
-            "instanceDataEquals": { "key": "availabilityState", "value": "available" }
-            // Illustrative use of §9b's cross-workflow dependency field: you must be a member in
-            // good standing (dues current) to borrow. This formalizes something that today only
-            // exists as PROSE on the Giving tab's entitlement text ("Member in good standing
-            // through the quarter") — under this schema it becomes an enforced gate, not just a
-            // description. Left as a comment-only illustration here since wiring it for real is a
-            // cross-workflow-type decision, not a marketplace-only one — do not implement until
-            // that's explicitly scoped.
-            // "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
+            "instanceDataEquals": { "key": "availabilityState", "value": "available" },
+            "requiresWorkflowsComplete": ["tabletop-club-dues-payment"]
           },
           "effects": [
             { "op": "set", "key": "availabilityState", "value": "onLoan" },
@@ -259,7 +302,7 @@
       },
       "states": {
         "available": { "label": "Available", "tone": "positive" },
-        "claimed": { "label": "Claimed", "tone": "positive" }
+        "claimed": { "label": "Claimed", "tone": "positive", "isTerminal": true }
       },
       "transitions": [
         {

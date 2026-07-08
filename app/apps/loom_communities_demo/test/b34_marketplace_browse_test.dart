@@ -447,6 +447,78 @@ void main() {
         find.byKey(const ValueKey('marketplace-action-join-queue')),
         findsNothing,
       );
+
+      // Tap "Leave queue" and verify the member can join again.
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-leave-queue')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('marketplace-action-join-queue')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('marketplace-action-leave-queue')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('wf_marketplace-borrow-action-functions', (tester) async {
+      final fixture = _writeFixture(includeListings: true);
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      await selectPersona(tester, 'tabletop-member');
+      await tester.pumpAndSettle();
+      await _tapTab(tester, 'marketplace');
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      await _openListingDetail(tester, 'listing-catan');
+      expect(
+        find.byKey(const ValueKey('marketplace-action-borrow')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-borrow')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(
+          const ValueKey('workflow-action-surface-tabletop-game-loan'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('wf_marketplace-return-action-functions', (tester) async {
+      final fixture = _writeFixture(includeListings: true);
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      await selectPersona(tester, 'tabletop-member');
+      await tester.pumpAndSettle();
+      await _tapTab(tester, 'marketplace');
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      await _openListingDetail(tester, 'listing-wingspan');
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-return')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Available'), findsAtLeastNWidgets(1));
+      expect(
+        find.byKey(const ValueKey('marketplace-action-borrow')),
+        findsOneWidget,
+      );
     });
 
     // ── (g) per-listing giveaway: inline stateMachine + removesFromList ──
@@ -484,6 +556,51 @@ void main() {
         find.byKey(const ValueKey('marketplace-action-borrow')),
         findsNothing,
       );
+
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-action-claim')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('marketplace-listing-detail-listing-old-catan')),
+        findsNothing,
+      );
+    });
+
+    testWidgets('wf_marketplace-queryInstances-loads-second-page', (
+      tester,
+    ) async {
+      final fixture = _writeFixture(
+        includeListings: true,
+        extraListingCount: 14,
+      );
+      await tester.pumpWidget(const LoomCommunitiesDemoApp());
+      await _installAndOpen(tester, fixture);
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+
+      await _tapTab(tester, 'marketplace');
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      expect(
+        find.byKey(const ValueKey('marketplace-listing-listing-extra-13')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('marketplace-load-more')), findsOneWidget);
+
+      await tester.ensureVisible(find.byKey(const ValueKey('marketplace-load-more')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('marketplace-load-more')),
+        warnIfMissed: false,
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('marketplace-listing-listing-extra-13')),
+        findsOneWidget,
+      );
     });
   });
 }
@@ -495,6 +612,7 @@ void main() {
 _PackagePairFixture _writeFixture({
   required bool includeListings,
   bool includeGiveaway = false,
+  int extraListingCount = 0,
 }) {
   final tempDir = Directory.systemTemp.createTempSync('loom_b34_');
   final extensionFile = File('${tempDir.path}/$_extensionId.loom-extension.zip');
@@ -668,6 +786,17 @@ _PackagePairFixture _writeFixture({
           ],
         },
       },
+      for (var index = 0; index < extraListingCount; index += 1)
+        {
+          'listingId': 'listing-extra-${index.toString().padLeft(2, '0')}',
+          'title': 'Extra game ${index.toString().padLeft(2, '0')}',
+          'category': 'Board Games',
+          'condition': 'Good',
+          'availability': 'available',
+          'queueLength': 0,
+          'description': 'Extra paginated fixture game $index.',
+          'linkedWorkflowId': 'tabletop-game-loan',
+        },
     ];
   }
 
@@ -723,11 +852,6 @@ Future<void> _openListingDetail(WidgetTester tester, String listingId) async {
   await tester.ensureVisible(card);
   await tester.pumpAndSettle();
   await tester.tap(card, warnIfMissed: false);
-  await tester.pumpAndSettle();
-}
-
-Future<void> _backToBrowse(WidgetTester tester) async {
-  await tester.tap(find.byTooltip('Back to browse'), warnIfMissed: false);
   await tester.pumpAndSettle();
 }
 

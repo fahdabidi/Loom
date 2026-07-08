@@ -45,8 +45,9 @@ components:
         actorId:
           type: string
         displayName:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         scopes:
           type: array
           items:
@@ -62,8 +63,9 @@ components:
         resourceId:
           type: string
         version:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     PolicyDecision:
       type: object
       required:
@@ -105,11 +107,13 @@ components:
         channelId:
           type: string
         handle:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         manifestVersion:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     FanRef:
       type: object
       required:
@@ -118,8 +122,9 @@ components:
         fanId:
           type: string
         pairwiseCreatorFanId:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
     Money:
       type: object
       required:
@@ -163,8 +168,9 @@ components:
         status:
           $ref: '#/components/schemas/JobStatus'
         message:
-          type: string
-          nullable: true
+          type:
+            - string
+            - 'null'
         resource:
           $ref: '#/components/schemas/ResourceRef'
 

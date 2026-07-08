@@ -1,0 +1,289 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:loom_ux_judges/src/validator/workflow_validator.dart';
+import 'package:loom_workflow_engine/src/models/workflow_models.dart';
+
+void main(List<String> args) {
+  if (args.contains('--help') || args.isEmpty) {
+    _usage();
+    return;
+  }
+
+  final definitionsPath = _argValue(args, '--definitions');
+  if (definitionsPath == null) {
+    stderr.writeln('Missing required --definitions <json-file-or-directory>');
+    _usage();
+    exit(64);
+  }
+
+  final templatesPath = _argValue(args, '--templates');
+  final tableConfigsPath = _argValue(args, '--table-configs');
+  final outputPath = _argValue(args, '--output');
+
+  // Load workflow definitions
+  final WorkflowDefinitionsBundle definitionBundle;
+  final Set<String> knownPersonaIds;
+  final Map<String, LoomWorkflowStateMachine> workflows;
+  try {
+    definitionBundle = _loadDefinitions(definitionsPath);
+    workflows = definitionBundle.workflows;
+    knownPersonaIds = definitionBundle.knownPersonaIds;
+  } catch (e) {
+    stderr.writeln('Failed to load definitions: $e');
+    exit(1);
+  }
+
+  if (workflows.isEmpty) {
+    stderr.writeln('No workflow definitions found in "$definitionsPath".');
+    exit(1);
+  }
+
+  // Load optional templates
+  Map<String, Map<String, dynamic>>? templates;
+  if (templatesPath != null) {
+    try {
+      final raw = jsonDecode(File(templatesPath).readAsStringSync());
+      templates = (raw as Map<String, dynamic>).map(
+        (k, v) => MapEntry(k, v as Map<String, dynamic>),
+      );
+    } catch (e) {
+      stderr.writeln('Failed to load templates: $e');
+      exit(1);
+    }
+  }
+
+  // Load optional table archetype configs
+  Map<String, Map<String, dynamic>>? tableConfigs;
+  if (tableConfigsPath != null) {
+    try {
+      final raw = jsonDecode(File(tableConfigsPath).readAsStringSync());
+      tableConfigs = (raw as Map<String, dynamic>).map(
+        (k, v) => MapEntry(k, v as Map<String, dynamic>),
+      );
+    } catch (e) {
+      stderr.writeln('Failed to load table configs: $e');
+      exit(1);
+    }
+  }
+
+  // Run validation
+  final validator = WorkflowValidator(
+    templates: templates,
+    tableArchetypeConfigs: tableConfigs,
+    knownPersonaIds: knownPersonaIds,
+  );
+  final report = validator.validate(workflows);
+  final json = const JsonEncoder.withIndent('  ').convert(report.toJson());
+
+  if (outputPath != null) {
+    File(outputPath).writeAsStringSync('$json\n');
+  }
+  stdout.writeln(json);
+
+  if (!report.passed) {
+    stderr.writeln(
+      'workflow_state_machine_validator: fail '
+      '(${report.errors.length} errors, ${report.warnings.length} warnings)',
+    );
+    for (final e in report.errors) {
+      stderr.writeln('  ERROR: $e');
+    }
+    for (final w in report.warnings) {
+      stderr.writeln('  WARNING: $w');
+    }
+    exit(1);
+  }
+
+  if (report.warnings.isNotEmpty) {
+    stderr.writeln(
+      'workflow_state_machine_validator: pass '
+      '(${report.warnings.length} warnings)',
+    );
+    for (final w in report.warnings) {
+      stderr.writeln('  WARNING: $w');
+    }
+  } else {
+    stdout.writeln('workflow_state_machine_validator: pass (clean)');
+  }
+}
+
+class WorkflowDefinitionsBundle {
+  final Map<String, LoomWorkflowStateMachine> workflows;
+  final Set<String> knownPersonaIds;
+
+  WorkflowDefinitionsBundle({
+    required this.workflows,
+    this.knownPersonaIds = const <String>{},
+  });
+}
+
+WorkflowDefinitionsBundle _loadDefinitions(String path) {
+  final file = File(path);
+  if (file.existsSync()) {
+    return _parseDefinitionsFile(file);
+  }
+
+  final dir = Directory(path);
+  if (dir.existsSync()) {
+    final result = <String, LoomWorkflowStateMachine>{};
+    final allPersonas = <String>{};
+    for (final entity in dir.listSync()) {
+      if (entity is File &&
+          (entity.path.endsWith('.json') || entity.path.endsWith('.jsonc'))) {
+        final parsed = _parseDefinitionsFile(entity);
+        result.addAll(parsed.workflows);
+        allPersonas.addAll(parsed.knownPersonaIds);
+      }
+    }
+
+    return WorkflowDefinitionsBundle(
+      workflows: result,
+      knownPersonaIds: allPersonas,
+    );
+  }
+
+  throw FileSystemException('Path not found', path);
+}
+
+WorkflowDefinitionsBundle _parseDefinitionsFile(File file) {
+  final content = _stripComments(file.readAsStringSync());
+  final json = jsonDecode(content) as Map<String, dynamic>;
+
+  // Support both plain definitions map and the marketplace fixture's
+  // {"workflowDefinitions": {...}, "workflowInstances": [...]} shape
+  final defs = json['workflowDefinitions'] as Map<String, dynamic>? ?? json;
+  final knownPersonas = <String>{};
+  if (json['personas'] is List<dynamic>) {
+    for (final persona in (json['personas'] as List<dynamic>)) {
+      if (persona is String && persona.isNotEmpty) {
+        knownPersonas.add(persona);
+      }
+    }
+  }
+
+  final workflows = defs.map((k, v) {
+    final definition = v as Map<String, dynamic>;
+    return MapEntry(
+      k,
+      LoomWorkflowStateMachine.fromJson(definition, k),
+    );
+  });
+
+  return WorkflowDefinitionsBundle(
+    workflows: workflows,
+    knownPersonaIds: knownPersonas,
+  );
+}
+
+String _stripComments(String content) {
+  // String-aware JSONC comment stripper. The naive regex approach
+  // (RegExp(r'//.*')) corrupts gs:// URLs and other // inside string
+  // literals. This scanner tracks quote state inline (single pass)
+  // because comment text itself often contains " characters that would
+  // throw off a separate pre-scan of the unmodified content.
+  final buf = StringBuffer();
+  var i = 0;
+  var inString = false;
+  const space = ' '; // preserve line/column positions
+
+  while (i < content.length) {
+    // Escaped character inside a string — write both, don't toggle state
+    if (inString && content[i] == '\\' && i + 1 < content.length) {
+      buf.write(content[i]);
+      i++;
+      buf.write(content[i]);
+      i++;
+      continue;
+    }
+
+    // Quote — toggle string state
+    if (content[i] == '"') {
+      inString = !inString;
+      buf.write(content[i]);
+      i++;
+      continue;
+    }
+
+    // Block comments /* ... */ (only when outside a string)
+    if (!inString &&
+        i + 1 < content.length &&
+        content[i] == '/' &&
+        content[i + 1] == '*') {
+      buf.write(space); // first /
+      buf.write(space); // second *
+      i += 2;
+      while (i + 1 < content.length) {
+        if (content[i] == '*' && content[i + 1] == '/') {
+          buf.write(space); // *
+          buf.write(space); // /
+          i += 2;
+          break;
+        }
+        buf.write(content[i] == '\n' ? '\n' : space);
+        i++;
+      }
+      continue;
+    }
+
+    // Single-line comments // (only when outside a string)
+    if (!inString &&
+        i + 1 < content.length &&
+        content[i] == '/' &&
+        content[i + 1] == '/') {
+      buf.write(space); // first /
+      buf.write(space); // second /
+      i += 2;
+      while (i < content.length && content[i] != '\n') {
+        buf.write(space);
+        i++;
+      }
+      if (i < content.length && content[i] == '\n') {
+        buf.write('\n');
+        i++;
+      }
+      continue;
+    }
+
+    buf.write(content[i]);
+    i++;
+  }
+
+  return buf.toString().trim();
+}
+
+String? _argValue(List<String> args, String flag) {
+  final idx = args.indexOf(flag);
+  if (idx == -1 || idx + 1 >= args.length) return null;
+  final val = args[idx + 1];
+  if (val.startsWith('--')) return null; // next arg is another flag
+  return val;
+}
+
+void _usage() {
+  stdout.writeln('''
+workflow_state_machine_validator — validates LoomWorkflowStateMachine JSON
+definitions against §7c checks (stuck states, unreachable states, dangling
+references, dependency cycles, missing labels, binding cap, editableFields
+constraints, action-button-row mandation, sortable-column backing).
+
+Usage:
+  dart run packages/tooling/loom_ux_judges/bin/workflow_state_machine_validator.dart \\
+    --definitions <json-file-or-directory> \\
+    [--templates <json>] \\
+    [--table-configs <json>] \\
+    [--output <json>]
+
+Options:
+  --definitions  Path to a single JSON/JSONC file or a directory of them.
+                 Supports both plain {"workflowType": {...}} maps and the
+                 marketplace fixture's {"workflowDefinitions": {...}} shape.
+  --templates    Optional. JSON map of templateName → { "slots": [...] }.
+                 Enables the action-button-row check (§7d).
+  --table-configs Optional. JSON map of workflowType → { "columns": [...] }.
+                 Enables the sortable-column check.
+  --output       Optional. Write the JSON report to this file instead of stdout.
+
+Exit codes: 0 = pass (no errors), 1 = fail (errors found).
+''');
+}

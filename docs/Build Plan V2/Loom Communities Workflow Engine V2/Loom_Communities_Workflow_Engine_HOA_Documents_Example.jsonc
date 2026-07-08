@@ -1,0 +1,111 @@
+{
+  "personaIds": ["hoa-homeowner", "hoa-board"],
+  "templates": {
+    "documentLibrary": {
+      "slots": [
+        "DocumentCategoryList",
+        "DocumentDetailPane",
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "DocumentAuditTrail"
+      ]
+    }
+  },
+  "workflowDefinitions": {
+    "cedar-commons-document-library": {
+      "initialState": "available",
+      "instanceDataSchema": {
+        "documentId": { "type": "string", "label": "Document ID" },
+        "title": { "type": "string", "label": "Title", "displayContexts": ["tile", "detail"] },
+        "category": { "type": "string", "label": "Category", "displayContexts": ["tile", "detail"] },
+        "version": { "type": "string", "label": "Version", "displayContexts": ["detail"] },
+        "accessState": { "type": "string", "label": "Access", "displayContexts": ["detail"] },
+        "auditTrail": { "type": "list", "label": "Audit trail", "displayContexts": ["detail"] }
+      },
+      "renderBindings": [
+        {
+          "states": ["available", "read", "acknowledged", "access-requested"],
+          "role": "any",
+          "tabId": "documents",
+          "cardSurfaceFamily": "documentLibrary",
+          "bindingKind": "primary"
+        }
+      ],
+      "states": {
+        "available": { "label": "Available" },
+        "read": { "label": "Read" },
+        "acknowledged": { "label": "Acknowledged", "isTerminal": true },
+        "access-requested": { "label": "Access requested", "isTerminal": true }
+      },
+      "transitions": [
+        {
+          "id": "open-embedded",
+          "label": "Open embedded",
+          "icon": "open_in_browser",
+          "tone": "primary",
+          "from": ["available", "read"],
+          "to": "read",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner", "hoa-board"] },
+          "effects": [
+            { "op": "append", "key": "auditTrail", "value": "{actorLabel} at $timestamp opened {title} embedded" },
+            { "op": "set", "key": "accessState", "value": "read" }
+          ]
+        },
+        {
+          "id": "open-external",
+          "label": "Open external",
+          "icon": "open_in_new",
+          "tone": "secondary",
+          "from": ["available", "read"],
+          "to": "read",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner", "hoa-board"] },
+          "effects": [
+            { "op": "append", "key": "auditTrail", "value": "{actorLabel} at $timestamp opened {title} external" }
+          ]
+        },
+        {
+          "id": "acknowledge",
+          "label": "Acknowledge",
+          "icon": "fact_check",
+          "tone": "primary",
+          "from": ["available", "read"],
+          "to": "acknowledged",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "auditTrail", "value": "{actorLabel} at $timestamp acknowledged {title}" },
+            { "op": "set", "key": "accessState", "value": "acknowledged" }
+          ]
+        },
+        {
+          "id": "request-access",
+          "label": "Request access",
+          "icon": "lock_open",
+          "tone": "secondary",
+          "from": ["available"],
+          "to": "access-requested",
+          "guard": { "allowedPersonaIds": ["hoa-homeowner"] },
+          "effects": [
+            { "op": "append", "key": "auditTrail", "value": "{actorLabel} at $timestamp requested access to {title}" },
+            { "op": "set", "key": "accessState", "value": "access-requested" }
+          ]
+        }
+      ]
+    }
+  },
+  "workflowInstances": [
+    {
+      "instanceId": "doc-community-rules",
+      "workflowType": "cedar-commons-document-library",
+      "currentState": "available",
+      "instanceData": {
+        "documentId": "doc-community-rules",
+        "title": "Community Rules",
+        "category": "bylaws",
+        "version": "v2026.3",
+        "accessState": "available",
+        "actorLabel": "Avery Brooks",
+        "auditTrail": []
+      }
+    }
+  ]
+}

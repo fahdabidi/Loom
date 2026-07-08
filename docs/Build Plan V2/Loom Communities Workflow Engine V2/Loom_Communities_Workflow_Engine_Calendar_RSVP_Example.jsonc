@@ -1,0 +1,286 @@
+// Calendar/RSVP fixture for Phase 2 Milestone 2.2.
+//
+// Design finding represented here:
+// - The event lifecycle is still a normal workflow state machine.
+// - Per-persona attendance is not modeled as global workflow states because
+//   many invitees can simultaneously be going/maybe/not-going/waitlisted.
+// - The additive responseModel declaration records the simple RSVP semantics
+//   the Calendar renderer/API path needs for going/maybe/not-going + capacity
+//   + waitlist without adding a second general-purpose state evaluator.
+
+{
+  "personas": [
+    "tabletop-member",
+    "tabletop-member-owner",
+    "tabletop-organizer"
+  ],
+
+  "workflowDefinitions": {
+    "tabletop-game-night-rsvp": {
+      "initialState": "open",
+
+      "states": {
+        "open": {
+          "label": "RSVP open",
+          "tone": "positive",
+          "editableFields": [
+            "title",
+            "eventDate",
+            "eventTime",
+            "location",
+            "capacity",
+            "audienceScope",
+            "invitedPersonaIds"
+          ]
+        },
+        "cancelled": {
+          "label": "Cancelled",
+          "tone": "negative",
+          "isTerminal": true
+        }
+      },
+
+      "transitions": [
+        {
+          "id": "rsvp-going",
+          "label": "Going",
+          "icon": "event_available",
+          "tone": "primary",
+          "from": ["open"],
+          "to": null,
+          "guard": {
+            "allowedPersonaIds": [
+              "tabletop-member",
+              "tabletop-member-owner"
+            ]
+          }
+        },
+        {
+          "id": "rsvp-maybe",
+          "label": "Maybe",
+          "icon": "help_outline",
+          "tone": "secondary",
+          "from": ["open"],
+          "to": null,
+          "guard": {
+            "allowedPersonaIds": [
+              "tabletop-member",
+              "tabletop-member-owner"
+            ]
+          }
+        },
+        {
+          "id": "rsvp-not-going",
+          "label": "Not going",
+          "icon": "event_busy",
+          "tone": "secondary",
+          "from": ["open"],
+          "to": null,
+          "guard": {
+            "allowedPersonaIds": [
+              "tabletop-member",
+              "tabletop-member-owner"
+            ]
+          }
+        },
+        {
+          "id": "join-waitlist",
+          "label": "Join waitlist",
+          "icon": "groups",
+          "tone": "secondary",
+          "from": ["open"],
+          "to": null,
+          "guard": {
+            "allowedPersonaIds": [
+              "tabletop-member",
+              "tabletop-member-owner"
+            ]
+          }
+        },
+        {
+          "id": "cancel-event",
+          "label": "Cancel event",
+          "icon": "cancel",
+          "tone": "destructive",
+          "from": ["open"],
+          "to": "cancelled",
+          "guard": {
+            "allowedPersonaIds": ["tabletop-organizer"]
+          }
+        }
+      ],
+
+      "renderBindings": [
+        {
+          "states": ["open"],
+          "role": "actor",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "event-editor",
+          "bindingKind": "primary"
+        },
+        {
+          "states": ["open"],
+          "role": "receiver",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "event-rsvp",
+          "bindingKind": "primary",
+          "audienceMemberField": "invitedPersonaIds"
+        },
+        {
+          "states": ["open", "cancelled"],
+          "role": "actor",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "event-roster",
+          "bindingKind": "summary"
+        }
+      ],
+
+      "instanceDataSchema": {
+        "title": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "searchable": true,
+          "sortable": true,
+          "displayIcon": "event",
+          "labelTemplate": "{value}"
+        },
+        "eventDate": {
+          "type": "date",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "sortable": true,
+          "displayIcon": "calendar_today",
+          "labelTemplate": "{value}"
+        },
+        "eventTime": {
+          "type": "time",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "displayIcon": "schedule",
+          "labelTemplate": "{value}"
+        },
+        "location": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "displayIcon": "location_on_outlined",
+          "labelTemplate": "{value}"
+        },
+        "capacity": {
+          "type": "integer",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "sortable": true,
+          "displayIcon": "groups_outlined",
+          "labelTemplate": "{value} seats"
+        },
+        "audienceScope": {
+          "type": "audienceSelector",
+          "required": true,
+          "writableBy": "formEntry",
+          "storage": "inline"
+        },
+        "invitedPersonaIds": {
+          "type": "personaId[]",
+          "writableBy": "formEntry",
+          "storage": "inline",
+          "displayIcon": "person_outline",
+          "labelTemplate": "Invited: {value.length}",
+          "hideWhenEmpty": true
+        },
+        "rsvpByPersona": {
+          "type": "personaResponseMap",
+          "writableBy": "responseModel",
+          "storage": "inline"
+        },
+        "goingPersonaIds": {
+          "type": "personaId[]",
+          "writableBy": "responseModel",
+          "storage": "inline",
+          "displayIcon": "groups_outlined",
+          "labelTemplate": "Going: {value.length}",
+          "hideWhenEmpty": true
+        },
+        "waitlistedPersonaIds": {
+          "type": "personaId[]",
+          "writableBy": "responseModel",
+          "storage": "inline",
+          "displayIcon": "hourglass_empty",
+          "labelTemplate": "Waitlist: {value.length}",
+          "hideWhenEmpty": true
+        }
+      },
+
+      "responseModel": {
+        "kind": "simpleRsvp",
+        "responseMapField": "rsvpByPersona",
+        "audienceScopeField": "audienceScope",
+        "audienceMemberField": "invitedPersonaIds",
+        "capacityField": "capacity",
+        "goingListField": "goingPersonaIds",
+        "waitlistField": "waitlistedPersonaIds",
+        "waitlistPolicy": "whenGoingCountReachesCapacity",
+        "choices": [
+          {
+            "id": "going",
+            "label": "Going",
+            "takesCapacity": true
+          },
+          {
+            "id": "maybe",
+            "label": "Maybe",
+            "takesCapacity": false
+          },
+          {
+            "id": "not-going",
+            "label": "Not going",
+            "takesCapacity": false,
+            "releasesCapacity": true
+          }
+        ]
+      }
+    }
+  },
+
+  "workflowInstances": [
+    {
+      "instanceId": "tabletop-game-night-rsvp-friday",
+      "workflowType": "tabletop-game-night-rsvp",
+      "currentState": "open",
+      "createdByPersonaId": "tabletop-organizer",
+      "instanceData": {
+        "title": "RSVP to Friday game night",
+        "eventDate": "2026-07-10",
+        "eventTime": "19:00",
+        "location": "Community room",
+        "capacity": 20,
+        "audienceScope": "all",
+        "invitedPersonaIds": [],
+        "rsvpByPersona": {
+          "tabletop-member": "going"
+        },
+        "goingPersonaIds": [
+          "tabletop-member",
+          "tabletop-member-owner",
+          "tabletop-member-03",
+          "tabletop-member-04",
+          "tabletop-member-05",
+          "tabletop-member-06",
+          "tabletop-member-07",
+          "tabletop-member-08",
+          "tabletop-member-09",
+          "tabletop-member-10",
+          "tabletop-member-11",
+          "tabletop-member-12"
+        ],
+        "waitlistedPersonaIds": []
+      }
+    }
+  ]
+}
