@@ -49,18 +49,27 @@ void main() {
     expect(find.text('2. Maya Patel - 1480 (0)'), findsOneWidget);
 
     await _selectTab(tester, 'matches');
+    await tester.enterText(find.byKey(const ValueKey('chess-edit-whitePlayer')), 'Ari Stone');
+    await tester.enterText(find.byKey(const ValueKey('chess-edit-blackPlayer')), 'Lina Ortiz');
+    await tester.enterText(find.byKey(const ValueKey('chess-edit-score')), '0-1');
+    await tester.ensureVisible(find.byKey(const ValueKey('chess-save-edit-chess-match-result')));
+    await _pumpForUi(tester);
+    await tester.tap(find.byKey(const ValueKey('chess-save-edit-chess-match-result')), warnIfMissed: false);
+    await _pumpForUi(tester);
     await _tapChessAction(tester, 'submit-result');
     expect(find.text('State: Submitted'), findsOneWidget);
     await _selectTab(tester, 'rankings');
-    await _waitForFinder(tester, find.text('2. Maya Patel - 1496 (+16)'));
-    expect(find.text('2. Maya Patel - 1496 (+16)'), findsOneWidget);
+    await _waitForFinder(tester, find.text('3. Lina Ortiz - 1466 (+16)'));
+    expect(find.text('3. Lina Ortiz - 1466 (+16)'), findsOneWidget);
+    expect(find.text('4. Ari Stone - 1444 (-16)'), findsOneWidget);
 
     await _selectTab(tester, 'matches');
     await _tapChessAction(tester, 'correct-result');
     expect(find.text('State: Corrected'), findsOneWidget);
     await _selectTab(tester, 'rankings');
-    await _waitForFinder(tester, find.text('2. Maya Patel - 1492 (+12)'));
-    expect(find.text('2. Maya Patel - 1492 (+12)'), findsOneWidget);
+    await _waitForFinder(tester, find.text('3. Lina Ortiz - 1478 (+12)'));
+    expect(find.text('3. Lina Ortiz - 1478 (+12)'), findsOneWidget);
+    expect(find.text('4. Ari Stone - 1432 (-12)'), findsOneWidget);
     await _selectTab(tester, 'matches');
     await _tapChessAction(tester, 'dispute-result');
     expect(find.text('State: Disputed'), findsOneWidget);
