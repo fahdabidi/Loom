@@ -23,7 +23,9 @@
       "Bash(MSYS_NO_PATHCONV=1 wsl bash /mnt/c/Users/fahd_/AppData/Local/Temp/claude/c--Users-fahd--OneDrive-Documents-Loom/4e996380-c77e-47ab-ab07-5055087d21e3/scratchpad/type_ext_path.sh)",
       "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell input tap 538 1387\")",
       "Bash(MSYS_NO_PATHCONV=1 wsl bash -lc \"adb shell screencap -p /sdcard/loom_verify_5.png && adb pull /sdcard/loom_verify_5.png /mnt/c/Users/fahd_/OneDrive/Documents/Loom/.codex-logs/loom_verify_5.png\")",
-      "Bash(wmic process *)"
+      "Bash(wmic process *)",
+      "Bash(taskkill //PID 31736 //F)",
+      "Bash(wsl bash -lc 'python3 -c \" *)"
     ],
     "additionalDirectories": [
       "\\mnt\\c\\Users\\fahd_\\OneDrive\\Documents\\Loom"

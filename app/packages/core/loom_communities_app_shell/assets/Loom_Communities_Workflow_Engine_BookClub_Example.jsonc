@@ -1,0 +1,195 @@
+{
+  "personas": ["book-member", "book-organizer"],
+  "templates": {
+    "dashboard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
+    "votePoll": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "notificationInbox": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "discussionThread": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "documentLibrary": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "searchAiAnswer": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "exportWizard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  },
+  "workflowDefinitions": {
+    "book-nomination": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["title", "author", "reason", "coverImage"] },
+        "submitted": { "label": "Submitted" },
+        "selected": { "label": "Selected", "isTerminal": true },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "submit-nomination", "label": "Submit nomination", "icon": "book", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} nominated at $timestamp" }] },
+        { "id": "edit-nomination", "label": "Edit nomination", "icon": "edit", "tone": "secondary", "from": ["submitted"], "to": "draft", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} reopened for edit at $timestamp" }] },
+        { "id": "select-nomination", "label": "Select nomination", "icon": "verified", "tone": "primary", "from": ["submitted"], "to": "selected", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} selected at $timestamp" }] },
+        { "id": "withdraw-nomination", "label": "Withdraw nomination", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} withdrawn at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["draft", "submitted", "selected", "withdrawn"], "role": "any", "tabId": "books", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "title": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "book", "labelTemplate": "{value}" },
+        "author": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "person", "labelTemplate": "{value}" },
+        "reason": { "type": "text", "writableBy": "formEntry" },
+        "coverImage": { "type": "text", "writableBy": "formEntry" },
+        "nominationHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-vote": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "cast": { "label": "Vote cast" },
+        "winner": { "label": "Winner selected" },
+        "tie": { "label": "Tie", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "cast-vote", "label": "Cast vote", "icon": "vote", "tone": "primary", "from": ["open"], "to": "cast", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "Parable of the Sower" }, { "op": "set", "key": "parableVotes", "value": 7 }, { "op": "append", "key": "voteHistory", "value": "Vote cast at $timestamp" }] },
+        { "id": "change-vote", "label": "Change vote", "icon": "edit", "tone": "secondary", "from": ["cast"], "to": "cast", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "The Left Hand of Darkness" }, { "op": "set", "key": "leftHandVotes", "value": 7 }, { "op": "append", "key": "voteHistory", "value": "Vote changed at $timestamp" }] },
+        { "id": "clear-vote", "label": "Clear vote", "icon": "delete", "tone": "destructive", "from": ["cast"], "to": "open", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "" }, { "op": "append", "key": "voteHistory", "value": "Vote cleared at $timestamp" }] },
+        { "id": "close-winner", "label": "Close with winner", "icon": "verified", "tone": "primary", "from": ["cast", "open"], "to": "winner", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "winnerTitle", "value": "Parable of the Sower" }, { "op": "append", "key": "voteHistory", "value": "Ballot closed with winner at $timestamp" }] },
+        { "id": "mark-tie", "label": "Mark tie", "icon": "vote", "tone": "secondary", "from": ["winner"], "to": "tie", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "winnerTitle", "value": "Tie: Parable / Left Hand" }, { "op": "append", "key": "voteHistory", "value": "Ballot marked tie at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "cast", "winner", "tie"], "role": "any", "tabId": "books", "cardSurfaceFamily": "votePoll", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "deadline": { "type": "text", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "candidates": { "type": "list", "displayIcon": "book", "labelTemplate": "{value.length} candidates" },
+        "memberVote": { "type": "text", "writableBy": "effect" },
+        "parableVotes": { "type": "number", "writableBy": "effect" },
+        "leftHandVotes": { "type": "number", "writableBy": "effect" },
+        "winnerTitle": { "type": "text", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Winner: {value}" },
+        "voteHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-meeting-rsvp": {
+      "initialState": "open",
+      "states": { "open": { "label": "Open" }, "going": { "label": "Going" }, "maybe": { "label": "Maybe" }, "not-going": { "label": "Not going" } },
+      "transitions": [
+        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "maybe", "not-going"], "to": "going", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP going at $timestamp" }] },
+        { "id": "rsvp-maybe", "label": "RSVP maybe", "icon": "edit", "tone": "secondary", "from": ["open", "going", "not-going"], "to": "maybe", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP maybe at $timestamp" }] },
+        { "id": "cancel-rsvp", "label": "Cancel RSVP", "icon": "undo", "tone": "destructive", "from": ["going", "maybe"], "to": "not-going", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP cancelled at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "going", "maybe", "not-going"], "role": "actor", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "meetingTitle": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "eventDateTime": { "type": "text", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "attendance": { "type": "list", "displayIcon": "groups", "labelTemplate": "{value.length} attending" },
+        "meetingHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-library-item": {
+      "initialState": "available",
+      "states": { "available": { "label": "Available", "editableFields": ["itemTitle", "condition"] }, "borrowed": { "label": "Borrowed" }, "queued": { "label": "Queued" }, "returned": { "label": "Returned" }, "giveaway": { "label": "Giveaway" }, "given": { "label": "Given", "isTerminal": true }, "lost": { "label": "Lost", "isTerminal": true }, "delisted": { "label": "Delisted", "isTerminal": true } },
+      "transitions": [
+        { "id": "request-loan", "label": "Request loan", "icon": "book", "tone": "primary", "from": ["available"], "to": "borrowed", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} borrowed at $timestamp" }] },
+        { "id": "join-waitlist", "label": "Join waitlist", "icon": "queue", "tone": "secondary", "from": ["borrowed"], "to": "queued", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "leave-waitlist", "label": "Leave waitlist", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "borrowed", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "return-item", "label": "Return item", "icon": "undo", "tone": "primary", "from": ["borrowed", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
+        { "id": "offer-giveaway", "label": "Offer giveaway", "icon": "book", "tone": "secondary", "from": ["returned"], "to": "giveaway", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "mode", "value": "Giveaway" }] },
+        { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "verified", "tone": "primary", "from": ["giveaway"], "to": "given", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} given at $timestamp" }] },
+        { "id": "report-lost", "label": "Report lost", "icon": "delete", "tone": "destructive", "from": ["borrowed", "queued"], "to": "lost", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} reported lost at $timestamp" }] },
+        { "id": "delist-item", "label": "Delist item", "icon": "delete", "tone": "destructive", "from": ["available", "returned"], "to": "delisted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} delisted at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "borrowed", "queued", "returned", "giveaway", "given", "lost", "delisted"], "role": "any", "tabId": "library", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "writableBy": "formEntry", "displayIcon": "book", "labelTemplate": "{value}" },
+        "format": { "type": "text", "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "condition": { "type": "text", "writableBy": "formEntry", "displayIcon": "verified", "labelTemplate": "{value}" },
+        "mode": { "type": "text", "writableBy": "effect", "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-discussion-message": {
+      "initialState": "open",
+      "states": { "open": { "label": "Open", "editableFields": ["messageBody"] }, "replied": { "label": "Replied" }, "moderated": { "label": "Moderated", "isTerminal": true }, "deleted": { "label": "Deleted", "isTerminal": true } },
+      "transitions": [
+        { "id": "reply", "label": "Reply", "icon": "reply", "tone": "primary", "from": ["open"], "to": "replied", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "replies", "value": "{actorLabel} replied at $timestamp" }] },
+        { "id": "edit-reply", "label": "Edit reply", "icon": "edit", "tone": "secondary", "from": ["replied"], "to": "open", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Reply edited at $timestamp" }] },
+        { "id": "delete-reply", "label": "Delete reply", "icon": "delete", "tone": "destructive", "from": ["replied"], "to": "deleted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Reply deleted at $timestamp" }] },
+        { "id": "moderate-thread", "label": "Moderate thread", "icon": "verified", "tone": "primary", "from": ["replied"], "to": "moderated", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Thread moderated at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "replied", "moderated", "deleted"], "role": "any", "tabId": "discussions", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "prompt": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "messageBody": { "type": "text", "writableBy": "formEntry" },
+        "replies": { "type": "list", "writableBy": "effect" },
+        "discussionHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-reading-material": {
+      "initialState": "available",
+      "states": { "available": { "label": "Available" }, "embedded-opened": { "label": "Embedded opened" }, "external-opened": { "label": "External opened" }, "downloaded": { "label": "Downloaded", "isTerminal": true } },
+      "transitions": [
+        { "id": "open-embedded", "label": "Open embedded", "icon": "book", "tone": "primary", "from": ["available"], "to": "embedded-opened", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Embedded guide opened at $timestamp" }] },
+        { "id": "open-external", "label": "Open external", "icon": "book", "tone": "secondary", "from": ["embedded-opened"], "to": "external-opened", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Author link opened at $timestamp" }] },
+        { "id": "download-material", "label": "Download", "icon": "download", "tone": "primary", "from": ["external-opened"], "to": "downloaded", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Guide downloaded at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "embedded-opened", "external-opened", "downloaded"], "role": "any", "tabId": "documents", "cardSurfaceFamily": "documentLibrary", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "materialTitle": { "type": "text", "displayIcon": "description", "labelTemplate": "{value}" },
+        "sourceCount": { "type": "number", "displayIcon": "book", "labelTemplate": "{value} sources" },
+        "documentHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-selection-publish": {
+      "initialState": "draft",
+      "states": { "draft": { "label": "Draft" }, "preview": { "label": "Preview" }, "scheduled": { "label": "Scheduled" }, "sent": { "label": "Sent" }, "read": { "label": "Read", "isTerminal": true } },
+      "transitions": [
+        { "id": "preview-selection", "label": "Preview selection", "icon": "edit", "tone": "secondary", "from": ["draft"], "to": "preview", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection previewed at $timestamp" }] },
+        { "id": "schedule-selection", "label": "Schedule selection", "icon": "schedule", "tone": "secondary", "from": ["preview"], "to": "scheduled", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection scheduled at $timestamp" }] },
+        { "id": "publish-selection", "label": "Publish selection", "icon": "publish", "tone": "primary", "from": ["scheduled"], "to": "sent", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection published at $timestamp" }] },
+        { "id": "read-selection", "label": "Mark read", "icon": "verified", "tone": "primary", "from": ["sent"], "to": "read", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection read at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["draft", "preview", "scheduled", "sent", "read"], "role": "any", "tabId": "books", "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }, { "states": ["draft", "preview", "scheduled", "sent", "read"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "announcementTitle": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "audience": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "publishHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-search-ai-digest": {
+      "initialState": "ready",
+      "states": { "ready": { "label": "Ready" }, "answered": { "label": "Answered", "isTerminal": true } },
+      "transitions": [
+        { "id": "generate-answer", "label": "Generate answer", "icon": "search", "tone": "primary", "from": ["ready"], "to": "answered", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "set", "key": "answer", "value": "Cited answer generated from discussion notes and reading guide." }, { "op": "append", "key": "searchHistory", "value": "Cited digest generated at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["ready", "answered"], "role": "any", "tabId": "search", "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "query": { "type": "text", "displayIcon": "search", "labelTemplate": "{value}" },
+        "answer": { "type": "text", "writableBy": "effect" },
+        "citations": { "type": "list", "displayIcon": "description", "labelTemplate": "{value.length} citations" },
+        "searchHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-export-metadata": {
+      "initialState": "ready",
+      "states": { "ready": { "label": "Ready" }, "generated": { "label": "Generated" }, "rolled-back": { "label": "Rolled back", "isTerminal": true } },
+      "transitions": [
+        { "id": "generate-export", "label": "Generate export", "icon": "download", "tone": "primary", "from": ["ready"], "to": "generated", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Download ready" }, { "op": "append", "key": "exportHistory", "value": "Book export generated at $timestamp" }] },
+        { "id": "rollback-export", "label": "Rollback export", "icon": "undo", "tone": "destructive", "from": ["generated"], "to": "rolled-back", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Rolled back" }, { "op": "append", "key": "exportHistory", "value": "Book export rolled back at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["ready", "generated", "rolled-back"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "exportWizard", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "schemas": { "type": "list", "displayIcon": "description", "labelTemplate": "{value.length} schemas" },
+        "checksum": { "type": "text", "displayIcon": "verified", "labelTemplate": "Checksum: {value}" },
+        "downloadStatus": { "type": "text", "writableBy": "effect" },
+        "exportHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    { "instanceId": "book-nomination-parable", "workflowType": "book-nomination", "currentState": "draft", "createdByPersonaId": "book-member", "instanceData": { "title": "Parable of the Sower", "author": "Octavia Butler", "reason": "Timely climate and community themes.", "coverImage": "parable-cover", "nominationHistory": [] } },
+    { "instanceId": "book-vote-march", "workflowType": "book-vote", "currentState": "open", "createdByPersonaId": "book-organizer", "instanceData": { "deadline": "Voting closes Friday", "candidates": ["Parable of the Sower", "The Left Hand of Darkness"], "memberVote": "", "parableVotes": 6, "leftHandVotes": 5, "winnerTitle": "Pending", "voteHistory": [] } },
+    { "instanceId": "book-meeting-march", "workflowType": "book-meeting-rsvp", "currentState": "open", "createdByPersonaId": "book-member", "instanceData": { "meetingTitle": "March discussion: Parable", "eventDateTime": "Sunday, Mar 22 at 4:00 PM", "location": "Library room B and video link", "attendance": [], "meetingHistory": [] } },
+    { "instanceId": "book-library-parable", "workflowType": "book-library-item", "currentState": "available", "createdByPersonaId": "book-member", "instanceData": { "itemTitle": "Parable paperback", "format": "Book", "condition": "Good", "mode": "Loan", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "book-discussion-parable", "workflowType": "book-discussion-message", "currentState": "open", "createdByPersonaId": "book-member", "instanceData": { "prompt": "What does community resilience mean in chapter 4?", "messageBody": "I want to compare the neighborhood scenes.", "replies": ["Prompt seeded for current selection"], "discussionHistory": [] } },
+    { "instanceId": "book-reading-guide", "workflowType": "book-reading-material", "currentState": "available", "createdByPersonaId": "book-organizer", "instanceData": { "materialTitle": "Parable reading guide", "sourceCount": 3, "documentHistory": [] } },
+    { "instanceId": "book-selection-march", "workflowType": "book-selection-publish", "currentState": "draft", "createdByPersonaId": "book-organizer", "instanceData": { "announcementTitle": "March selection: Parable of the Sower", "audience": "All book-club members", "publishHistory": [] } },
+    { "instanceId": "book-search-parable", "workflowType": "book-search-ai-digest", "currentState": "ready", "createdByPersonaId": "book-member", "instanceData": { "query": "What themes did members raise about resilience?", "answer": "", "citations": ["Reading guide", "Discussion prompt", "Meeting notes"], "searchHistory": [] } },
+    { "instanceId": "book-export", "workflowType": "book-export-metadata", "currentState": "ready", "createdByPersonaId": "book-organizer", "instanceData": { "schemas": ["book_nomination", "book_vote"], "checksum": "B00K-CLUB", "downloadStatus": "Not generated", "exportHistory": [] } }
+  ]
+}

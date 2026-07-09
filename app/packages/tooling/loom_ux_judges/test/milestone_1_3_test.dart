@@ -1345,4 +1345,136 @@ void main() {
       expect(report.passed, isTrue);
     });
   });
+
+  group('Validator - Camera Club migration fixture', () {
+    test('the Camera Club Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('photo-walk-rsvp'));
+      expect(machines.keys, contains('critique-submission'));
+      expect(machines.keys, contains('gear-loan-request'));
+      expect(machines.keys, contains('camera-validation-report'));
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
+
+  group('Validator - Book Club migration fixture', () {
+    test('the Book Club Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_BookClub_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('book-nomination'));
+      expect(machines.keys, contains('book-vote'));
+      expect(machines.keys, contains('book-library-item'));
+      expect(machines.keys, contains('book-search-ai-digest'));
+      expect(templates.keys, contains('votePoll'));
+      expect(templates.keys, contains('searchAiAnswer'));
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
+
+  group('Validator - Chess Club migration fixture', () {
+    test('the Chess Club Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('chess-match-meetup'));
+      expect(machines.keys, contains('chess-match-result'));
+      expect(machines.keys, contains('chess-rankings-table'));
+      expect(templates['table']!['rankingMode'], isTrue);
+      expect(
+        machines['chess-match-result']!.transitions.any((transition) =>
+            transition.id == 'submit-result' &&
+            transition.effects.any((effect) => effect.key == 'rankingRows')),
+        isTrue,
+      );
+
+      final report = WorkflowValidator(
+        templates: templates,
+        tableArchetypeConfigs: {'chess-rankings-table': templates['table']!},
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
 }

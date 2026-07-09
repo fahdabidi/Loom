@@ -171,9 +171,9 @@ void main() {
     testWidgets(
       'wf_calendar-tab-catalog-community-keeps-placeholder-strip',
       (tester) async {
-        // Regression guard: a catalog-driven community with no
-        // package-declared calendar data must keep today's placeholder
-        // rendering rather than showing an empty/broken agenda strip.
+        // Regression guard: Camera Club now has package-declared calendar
+        // workflow data, so it must render the engine-backed agenda surface
+        // instead of the legacy placeholder strip.
         final target = loomEvidenceTargets.firstWhere(
           (target) => target.extensionId == 'ext_camera_club',
         );
@@ -184,7 +184,7 @@ void main() {
         await _tapTab(tester, 'calendar');
 
         expect(
-          find.byKey(const ValueKey('calendar-week-strip')),
+          find.byKey(const ValueKey('camera-engine-calendar')),
           findsOneWidget,
         );
         expect(

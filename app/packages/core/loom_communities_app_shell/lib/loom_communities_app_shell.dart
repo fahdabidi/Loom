@@ -1,6 +1,7 @@
 library loom_communities_app_shell;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:loom_demo_local_backend/loom_demo_local_backend.dart';

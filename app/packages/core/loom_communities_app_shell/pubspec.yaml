@@ -19,3 +19,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter:
+  assets:
+    - assets/Loom_Communities_Workflow_Engine_GardenClub_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_BookClub_Example.jsonc
+    - assets/Loom_Communities_Workflow_Engine_ChessClub_Example.jsonc

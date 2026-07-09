@@ -712,6 +712,33 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isCameraEngineExperience(experience)) {
+          return _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         return _CalendarTabSurface(
           experience: experience,
           communityId: experience.extensionId,
@@ -727,6 +754,33 @@ class _TabNativeRenderer extends StatelessWidget {
           onSelectCalendarDate: onSelectCalendarDate,
         );
       case 'MessagesTabSurface':
+        if (_isCameraEngineExperience(experience)) {
+          return _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         return _MessagesTabSurface(
           experience: experience,
           persona: persona,
@@ -736,6 +790,33 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'MarketplaceTabSurface':
         if (_isGardenEngineExperience(experience)) {
           return _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isCameraEngineExperience(experience)) {
+          return _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -800,6 +881,24 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'DocumentsTabSurface':
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isGardenEngineExperience(experience)) {
           return _GardenClubEngineTabSurface(
             experience: experience,
@@ -829,6 +928,33 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'WorkflowStatusSurface':
+        if (_isCameraEngineExperience(experience)) {
+          return _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {
@@ -877,6 +1003,33 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'AdminReviewComposeTabSurface':
+        if (_isCameraEngineExperience(experience)) {
+          return _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isBookEngineExperience(experience)) {
+          return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isChessEngineExperience(experience)) {
+          return _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {
@@ -897,6 +1050,102 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
     }
+    if (_isGardenEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _GardenClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
+    if (_isCameraEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _CameraClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
+    if (_isBookEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
+    if (_isChessEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ChessClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
     return _HomeTabSurfaceStack(
       experience: experience,
       sections: sections,
@@ -916,6 +1165,33 @@ bool _isGardenEngineExperience(LoomExperienceDefinition experience) {
       ids.contains('garden-tool-loan') &&
       ids.contains('garden-volunteer-shift') &&
       ids.contains('garden-export-custom-schemas');
+}
+
+bool _isCameraEngineExperience(LoomExperienceDefinition experience) {
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('photo-walk-rsvp') &&
+      ids.contains('critique-submission') &&
+      ids.contains('gear-loan-request') &&
+      ids.contains('camera-validation-report');
+}
+
+bool _isBookEngineExperience(LoomExperienceDefinition experience) {
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('book-nomination') &&
+      ids.contains('book-vote') &&
+      ids.contains('book-meeting-rsvp') &&
+      ids.contains('book-discussion-message') &&
+      ids.contains('book-selection-publish') &&
+      ids.contains('book-search-ai-digest');
+}
+
+bool _isChessEngineExperience(LoomExperienceDefinition experience) {
+  if (experience.extensionId == 'ext_chess_club') return true;
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('chess-match-meetup') &&
+      ids.contains('chess-match-result') &&
+      ids.contains('chess-rankings-table') &&
+      ids.contains('chess-club-night');
 }
 
 SurfacePresentationState _presentationStateForWorkflow({
@@ -4507,6 +4783,8 @@ class _GardenClubEngineTabSurfaceState
 
   late final _GardenClubEngineStore _store;
   List<WorkflowInstance> _instances = const [];
+  final Map<String, TextEditingController> _controllers = {};
+  String? _loadError;
   var _loaded = false;
 
   @override
@@ -4528,17 +4806,41 @@ class _GardenClubEngineTabSurfaceState
     }
   }
 
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   Future<void> _load() async {
-    await _store.ensureReady();
-    final instances = await _store.instancesFor(
-      tabId: widget.tabId,
-      personaId: widget.persona.personaId,
-    );
-    if (!mounted) return;
-    setState(() {
-      _instances = instances;
-      _loaded = true;
-    });
+    try {
+      await _store.ensureReady().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw StateError('garden ensureReady timeout'),
+      );
+      final instances = await _store.instancesFor(
+        tabId: widget.tabId,
+        personaId: widget.persona.personaId,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw StateError('garden instancesFor timeout (${widget.tabId})'),
+      );
+      _syncControllers(instances);
+      if (!mounted) return;
+      setState(() {
+        _instances = instances;
+        _loadError = null;
+        _loaded = true;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = '$error';
+        _loaded = true;
+      });
+    }
   }
 
   Future<void> _transition(WorkflowInstance instance, String transitionId) async {
@@ -4550,9 +4852,37 @@ class _GardenClubEngineTabSurfaceState
     await _load();
   }
 
+  Future<void> _saveEditableFields(WorkflowInstance instance) async {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    final updates = <String, dynamic>{
+      for (final field in fields)
+        field: _controllerFor(instance.instanceId, field).text,
+    };
+    await _store.updateFields(
+      instance: instance,
+      fieldUpdates: updates,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Center(
+        child: Text(
+          _loadError!,
+          key: ValueKey('garden-load-error-${widget.tabId}'),
+        ),
+      );
+    }
+    if (widget.tabId == 'home') {
+      return _buildHomePins(context);
+    }
     return Column(
       key: ValueKey('garden-engine-${widget.tabId}'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -4561,7 +4891,7 @@ class _GardenClubEngineTabSurfaceState
           _gardenWorkflowCard(
             context,
             _instance('garden-event-rsvp'),
-            title: 'Spring planting workshop',
+            title: 'Spring Planting Workshop',
             subtitle: 'Calendar RSVP',
             icon: Icons.event_available_outlined,
           ),
@@ -4569,7 +4899,7 @@ class _GardenClubEngineTabSurfaceState
           _gardenWorkflowCard(
             context,
             _instance('garden-tool-loan'),
-            title: 'Broadfork loan',
+            title: 'Broadfork',
             subtitle: 'Shared equipment',
             icon: Icons.handyman_outlined,
           ),
@@ -4577,7 +4907,7 @@ class _GardenClubEngineTabSurfaceState
           _gardenWorkflowCard(
             context,
             _instance('plant-exchange-submission'),
-            title: 'Basil seedling exchange',
+            title: 'Plant exchange listing',
             subtitle: 'Plant offer and claim',
             icon: Icons.local_florist_outlined,
           ),
@@ -4586,7 +4916,7 @@ class _GardenClubEngineTabSurfaceState
           _gardenWorkflowCard(
             context,
             _instance('garden-volunteer-shift'),
-            title: 'Compost turning shift',
+            title: 'Saturday bed prep',
             subtitle: 'Volunteer roster',
             icon: Icons.volunteer_activism_outlined,
           ),
@@ -4609,6 +4939,105 @@ class _GardenClubEngineTabSurfaceState
     return null;
   }
 
+  void _syncControllers(List<WorkflowInstance> instances) {
+    for (final instance in instances) {
+      final fields = _store.editableFieldsFor(
+        workflowType: instance.workflowType,
+        state: instance.currentState,
+      );
+      for (final field in fields) {
+        final controller = _controllerFor(instance.instanceId, field);
+        controller.text = '${instance.instanceData[field] ?? ''}';
+      }
+    }
+  }
+
+  TextEditingController _controllerFor(String instanceId, String field) {
+    final key = '$instanceId::$field';
+    return _controllers.putIfAbsent(key, TextEditingController.new);
+  }
+
+  Widget _buildHomePins(BuildContext context) {
+    final event = _instance('garden-event-rsvp');
+    final tool = _instance('garden-tool-loan');
+    final plant = _instance('plant-exchange-submission');
+    final shift = _instance('garden-volunteer-shift');
+    final export = _instance('garden-export-custom-schemas');
+    return Column(
+      key: const ValueKey('garden-engine-home'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _gardenHomePin(
+          context,
+          key: const ValueKey('garden-home-activity'),
+          title: "This week's activity",
+          icon: Icons.event_note_outlined,
+          body:
+              '${event?.instanceData['eventTitle'] ?? 'Workshop'} · ${event?.instanceData['eventDateTime'] ?? ''}\n'
+              '${shift?.instanceData['shiftTitle'] ?? 'Shift'} · ${shift?.instanceData['openSpots'] ?? 0} open spots',
+        ),
+        const SizedBox(height: 12),
+        _gardenHomePin(
+          context,
+          key: const ValueKey('garden-home-exchange'),
+          title: 'Help and exchange needed',
+          icon: Icons.storefront_outlined,
+          body:
+              '${tool?.instanceData['itemTitle'] ?? 'Tool'} · ${_gardenStateLabel(tool?.currentState ?? 'available')}\n'
+              '${plant?.instanceData['plantType'] ?? 'Plant listing'} · ${_gardenStateLabel(plant?.currentState ?? 'draft')}',
+        ),
+        const SizedBox(height: 12),
+        _gardenHomePin(
+          context,
+          key: const ValueKey('garden-home-records'),
+          title: 'Records available',
+          icon: Icons.folder_open_outlined,
+          body:
+              '${export?.instanceData['downloadStatus'] ?? 'Not generated'}\n'
+              '${export?.instanceData['checksum'] ?? ''}',
+        ),
+      ],
+    );
+  }
+
+  Widget _gardenHomePin(
+    BuildContext context, {
+    required Key key,
+    required String title,
+    required IconData icon,
+    required String body,
+  }) {
+    return DecoratedBox(
+      key: key,
+      decoration: _gardenBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: widget.accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(body),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _gardenWorkflowCard(
     BuildContext context,
     WorkflowInstance? instance, {
@@ -4629,12 +5058,10 @@ class _GardenClubEngineTabSurfaceState
       instance: instance,
       personaId: widget.persona.personaId,
     );
+    final machine = _store.machineFor(instance.workflowType);
     final data = instance.instanceData;
-    final history = data['history'];
-    final historyItems = history is List
-        ? [for (final item in history) if (item is String) item]
-        : const <String>[];
-    final queue = data['queuedPersonaIds'];
+    final historyItems = _historyItems(data);
+    final queue = data['queuePersonaIds'];
     final queueCount = queue is List ? queue.length : 0;
     return DecoratedBox(
       key: ValueKey('garden-card-${instance.workflowType}'),
@@ -4671,33 +5098,11 @@ class _GardenClubEngineTabSurfaceState
               children: [
                 _SurfaceFactPill(
                   icon: Icons.flag_outlined,
-                  label: 'State: ${_gardenStateLabel(instance.currentState)}',
+                  label:
+                      'State: ${machine.states[instance.currentState]?.label ?? _gardenStateLabel(instance.currentState)}',
                   foreground: widget.accent,
                 ),
-                if (data['eventDate'] case final value?)
-                  _SurfaceFactPill(
-                    icon: Icons.calendar_month_outlined,
-                    label: 'Date: $value',
-                    foreground: widget.accent,
-                  ),
-                if (data['toolName'] case final value?)
-                  _SurfaceFactPill(
-                    icon: Icons.handyman_outlined,
-                    label: '$value',
-                    foreground: widget.accent,
-                  ),
-                if (data['plantName'] case final value?)
-                  _SurfaceFactPill(
-                    icon: Icons.local_florist_outlined,
-                    label: '$value',
-                    foreground: widget.accent,
-                  ),
-                if (data['slotCount'] case final value?)
-                  _SurfaceFactPill(
-                    icon: Icons.groups_outlined,
-                    label: 'Slots: $value',
-                    foreground: widget.accent,
-                  ),
+                for (final pill in _factPills(machine, data)) pill,
                 if (queueCount > 0)
                   _SurfaceFactPill(
                     icon: Icons.people_alt_outlined,
@@ -4707,9 +5112,17 @@ class _GardenClubEngineTabSurfaceState
               ],
             ),
             const SizedBox(height: 10),
-            if (data['location'] case final value?) Text('Location: $value'),
-            if (data['notes'] case final value?) Text('Notes: $value'),
-            if (data['schemaNames'] case final value?) Text('Schemas: $value'),
+            if (data['eventTitle'] case final value?) Text('$value'),
+            if (data['itemTitle'] case final value?) Text('$value'),
+            if (data['plantType'] case final value?) Text('$value'),
+            if (data['shiftTitle'] case final value?) Text('$value'),
+            if (instance.workflowType == 'garden-export-custom-schemas')
+              _buildExportReview(data),
+            if (_store.editableFieldsFor(
+                  workflowType: instance.workflowType,
+                  state: instance.currentState,
+                ).isNotEmpty)
+              _buildEditableFields(instance),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -4740,6 +5153,96 @@ class _GardenClubEngineTabSurfaceState
     );
   }
 
+  List<Widget> _factPills(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> data,
+  ) {
+    final pills = <Widget>[];
+    for (final entry in machine.instanceDataSchema.entries) {
+      final field = entry.value;
+      final iconName = field.displayIcon;
+      if (iconName == null) continue;
+      final value = data[entry.key];
+      final isEmpty = value == null ||
+          (value is String && value.isEmpty) ||
+          (value is List && value.isEmpty);
+      if (field.hideWhenEmpty && isEmpty) continue;
+      final label = _renderGardenLabel(field.labelTemplate, value);
+      if (label.isEmpty) continue;
+      pills.add(
+        _SurfaceFactPill(
+          icon: _gardenFactIcon(iconName),
+          label: label,
+          foreground: widget.accent,
+        ),
+      );
+    }
+    return pills;
+  }
+
+  Widget _buildEditableFields(WorkflowInstance instance) {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    return Column(
+      key: ValueKey('garden-edit-form-${instance.workflowType}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        for (final field in fields)
+          TextField(
+            key: ValueKey('garden-edit-$field'),
+            controller: _controllerFor(instance.instanceId, field),
+            decoration: InputDecoration(labelText: _gardenFieldLabel(field)),
+          ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: ValueKey('garden-save-edit-${instance.workflowType}'),
+          onPressed: () => _saveEditableFields(instance),
+          icon: const Icon(Icons.save_outlined),
+          label: const Text('Save edits'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExportReview(Map<String, dynamic> data) {
+    final schemas = data['schemas'];
+    final schemaItems = schemas is List
+        ? [for (final item in schemas) if (item is String) item]
+        : const <String>[];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 2),
+        const Text('Review and confirm export scope'),
+        if (schemaItems.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final schema in schemaItems)
+                Chip(label: Text(schema), visualDensity: VisualDensity.compact),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  List<String> _historyItems(Map<String, dynamic> data) {
+    for (final entry in data.entries) {
+      if (!entry.key.toLowerCase().contains('history')) continue;
+      final value = entry.value;
+      if (value is List) {
+        return [for (final item in value) if (item is String) item];
+      }
+    }
+    return const <String>[];
+  }
+
   ButtonStyle _gardenButtonStyle(LoomWorkflowTransition transition) {
     final destructive = transition.tone == 'destructive' ||
         transition.id.contains('cancel') ||
@@ -4767,20 +5270,89 @@ class _GardenClubEngineTabSurfaceState
     switch (icon) {
       case 'event_available':
         return Icons.event_available_outlined;
+      case 'playlist_add':
+        return Icons.playlist_add_outlined;
+      case 'event_busy':
+        return Icons.event_busy_outlined;
+      case 'cancel':
+        return Icons.cancel_outlined;
       case 'queue':
         return Icons.people_alt_outlined;
       case 'undo':
         return Icons.undo_outlined;
-      case 'handyman':
-        return Icons.handyman_outlined;
+      case 'handshake':
+        return Icons.handshake_outlined;
+      case 'assignment_return':
+        return Icons.assignment_return_outlined;
+      case 'report':
+        return Icons.report_outlined;
       case 'local_florist':
         return Icons.local_florist_outlined;
-      case 'volunteer':
+      case 'check_circle':
+        return Icons.check_circle_outline;
+      case 'volunteer_activism':
         return Icons.volunteer_activism_outlined;
-      case 'export':
+      case 'lock':
+        return Icons.lock_outline;
+      case 'download':
         return Icons.ios_share_outlined;
     }
     return Icons.fact_check_outlined;
+  }
+
+  IconData _gardenFactIcon(String iconName) {
+    switch (iconName) {
+      case 'schedule':
+        return Icons.schedule_outlined;
+      case 'location_on':
+        return Icons.location_on_outlined;
+      case 'groups':
+        return Icons.groups_outlined;
+      case 'inventory_2':
+        return Icons.inventory_2_outlined;
+      case 'inventory':
+        return Icons.inventory_2_outlined;
+      case 'person':
+        return Icons.person_outline;
+      case 'place':
+        return Icons.place_outlined;
+      case 'privacy_tip':
+        return Icons.privacy_tip_outlined;
+      case 'schema':
+        return Icons.account_tree_outlined;
+      case 'shield':
+        return Icons.shield_outlined;
+      case 'verified':
+        return Icons.verified_outlined;
+      case 'cloud_upload':
+        return Icons.cloud_upload_outlined;
+      case 'track_changes':
+        return Icons.track_changes_outlined;
+      case 'download':
+        return Icons.download_outlined;
+    }
+    return Icons.label_outline;
+  }
+
+  String _renderGardenLabel(String? template, dynamic value) {
+    if (template == null) return '';
+    return template
+        .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
+        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+  }
+
+  String _gardenFieldLabel(String field) {
+    switch (field) {
+      case 'plantType':
+        return 'Plant type';
+      case 'quantity':
+        return 'Quantity';
+      case 'pickupNotes':
+        return 'Pickup notes';
+      case 'privacyNote':
+        return 'Privacy note';
+    }
+    return field;
   }
 
   BoxDecoration get _gardenBoxDecoration => BoxDecoration(
@@ -4803,73 +5375,47 @@ class _GardenClubEngineStore {
     db: _database,
     communityId: communityId,
   );
+  _GardenFixtureBundle? _fixture;
+  Future<void>? _readyFuture;
   var _ready = false;
 
-  Future<void> ensureReady() async {
-    if (_ready) return;
-    for (final machine in _gardenMachines) {
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _fixture ??= await _GardenFixtureBundle.load().timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => throw StateError('garden fixture load timeout'),
+    );
+    for (final machine in _fixture!.machines.values) {
       _engine.registerDefinition(machine);
     }
-    await _seedInstances();
+    await _seedInstances().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => throw StateError('garden seed timeout'),
+    );
     _ready = true;
   }
 
   Future<void> _seedInstances() async {
-    await _engine.createInstance(
-      workflowType: 'garden-event-rsvp',
-      personaId: 'garden-member',
-      initialInstanceData: {
-        'title': 'Spring planting workshop',
-        'eventDate': '2026-04-18',
-        'location': 'North beds',
-        'rsvpStatus': 'Open',
-        'history': ['Spring planting workshop opened for RSVP'],
-      },
-    );
-    await _engine.createInstance(
-      workflowType: 'garden-tool-loan',
-      personaId: 'garden-member',
-      initialInstanceData: {
-        'title': 'Broadfork loan',
-        'toolName': 'Broadfork',
-        'borrowerPersonaId': '',
-        'queuedPersonaIds': <String>[],
-        'notes': 'Pickup from the shed after Saturday workday.',
-        'history': ['Broadfork available for members'],
-      },
-    );
-    await _engine.createInstance(
-      workflowType: 'plant-exchange-submission',
-      personaId: 'garden-member',
-      initialInstanceData: {
-        'title': 'Basil seedling exchange',
-        'plantName': 'Genovese basil seedlings',
-        'claimantPersonaId': '',
-        'notes': 'Six starts in compostable pots.',
-        'history': ['Plant exchange draft created'],
-      },
-    );
-    await _engine.createInstance(
-      workflowType: 'garden-volunteer-shift',
-      personaId: 'garden-member',
-      initialInstanceData: {
-        'title': 'Compost turning shift',
-        'slotCount': 3,
-        'signedUpPersonaIds': <String>[],
-        'notes': 'Bring gloves and close-toed shoes.',
-        'history': ['Volunteer shift opened'],
-      },
-    );
-    await _engine.createInstance(
-      workflowType: 'garden-export-custom-schemas',
-      personaId: 'garden-coordinator',
-      initialInstanceData: {
-        'title': 'Garden custom-schema export',
-        'schemaNames': 'garden_event, plant_exchange, garden_tool_loan',
-        'exportStatus': 'Ready',
-        'history': ['Garden export wizard ready'],
-      },
-    );
+    for (final instance in _fixture!.instances) {
+      final instanceId = await _engine.createInstance(
+        workflowType: instance.workflowType,
+        initialInstanceData: instance.instanceData,
+        personaId: instance.createdByPersonaId,
+      );
+      if (instance.workflowType == 'gear-loan-request' &&
+          instance.currentState == 'giveaway') {
+        await _engine.applyTransition(
+          workflowType: instance.workflowType,
+          instanceId: instanceId,
+          transitionId: 'offer-giveaway',
+          personaId: instance.createdByPersonaId,
+        );
+      }
+    }
   }
 
   Future<List<WorkflowInstance>> instancesFor({
@@ -4877,17 +5423,32 @@ class _GardenClubEngineStore {
     required String personaId,
   }) async {
     await ensureReady();
+    final sortKey = switch (tabId) {
+      'calendar' => 'eventTitle',
+      'marketplace' => 'itemTitle',
+      'care' => 'shiftTitle',
+      'documents' => 'checksum',
+      'home' => 'eventTitle',
+      _ => 'eventTitle',
+    };
     final page = await _engine.queryInstances(
       tabId: tabId,
       personaId: personaId,
       limit: 100,
-      query: const SurfaceQuery(sort: SortSpec(key: 'title')),
+      query: SurfaceQuery(sort: SortSpec(key: sortKey)),
     );
     final allowed = switch (tabId) {
       'calendar' => const {'garden-event-rsvp'},
       'marketplace' => const {'garden-tool-loan', 'plant-exchange-submission'},
       'care' => const {'garden-volunteer-shift'},
       'documents' => const {'garden-export-custom-schemas'},
+      'home' => const {
+          'garden-event-rsvp',
+          'garden-tool-loan',
+          'plant-exchange-submission',
+          'garden-volunteer-shift',
+          'garden-export-custom-schemas',
+        },
       _ => const <String>{},
     };
     return page.items
@@ -4921,372 +5482,3428 @@ class _GardenClubEngineStore {
     );
   }
 
-  List<LoomWorkflowStateMachine> get _gardenMachines => [
-        _gardenEventMachine,
-        _gardenToolMachine,
-        _gardenPlantMachine,
-        _gardenVolunteerMachine,
-        _gardenExportMachine,
-      ];
+  Future<void> updateFields({
+    required WorkflowInstance instance,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) async {
+    await _engine.updateInstanceFields(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      fieldUpdates: fieldUpdates,
+      personaId: personaId,
+    );
+  }
+
+  LoomWorkflowStateMachine machineFor(String workflowType) {
+    return _fixture!.machines[workflowType]!;
+  }
+
+  List<String> editableFieldsFor({
+    required String workflowType,
+    required String state,
+  }) {
+    return machineFor(workflowType).states[state]?.editableFields ?? const [];
+  }
 }
 
-LoomWorkflowStateMachine get _gardenEventMachine => LoomWorkflowStateMachine(
-      workflowType: 'garden-event-rsvp',
-      initialState: 'open',
-      states: const {
-        'open': LoomWorkflowState(label: 'Open'),
-        'going': LoomWorkflowState(label: 'Going'),
-        'waitlisted': LoomWorkflowState(label: 'Waitlisted'),
-        'cancelled': LoomWorkflowState(label: 'Cancelled'),
+class _GardenFixtureBundle {
+  _GardenFixtureBundle({
+    required this.machines,
+    required this.instances,
+  });
+
+  final Map<String, LoomWorkflowStateMachine> machines;
+  final List<_GardenSeedInstance> instances;
+
+  static Future<_GardenFixtureBundle> load() async {
+    final content = _gardenBundledFixtureJsonc;
+    final json = jsonDecode(_stripGardenJsoncComments(content))
+        as Map<String, dynamic>;
+    final definitions =
+        json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
+    final machines = <String, LoomWorkflowStateMachine>{};
+    for (final entry in definitions.entries) {
+      machines[entry.key] = LoomWorkflowStateMachine.fromJson(
+        _normalizeGardenMachineJson(entry.value as Map<String, dynamic>),
+        entry.key,
+      );
+    }
+    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final instances = [
+      for (final item in rawInstances)
+        _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
+    ];
+    return _GardenFixtureBundle(machines: machines, instances: instances);
+  }
+}
+
+class _GardenSeedInstance {
+  const _GardenSeedInstance({
+    required this.instanceId,
+    required this.workflowType,
+    required this.currentState,
+    required this.createdByPersonaId,
+    required this.instanceData,
+  });
+
+  final String instanceId;
+  final String workflowType;
+  final String currentState;
+  final String createdByPersonaId;
+  final Map<String, dynamic> instanceData;
+
+  factory _GardenSeedInstance.fromJson(Map<String, dynamic> json) {
+    return _GardenSeedInstance(
+      instanceId: json['instanceId'] as String,
+      workflowType: json['workflowType'] as String,
+      currentState: json['currentState'] as String,
+      createdByPersonaId: json['createdByPersonaId'] as String,
+      instanceData: Map<String, dynamic>.from(
+        json['instanceData'] as Map<String, dynamic>,
+      ),
+    );
+  }
+}
+
+Map<String, dynamic> _normalizeGardenMachineJson(Map<String, dynamic> json) {
+  final next = Map<String, dynamic>.from(json);
+  final transitions = (json['transitions'] as List<dynamic>? ?? const [])
+      .map((transition) {
+        final map = Map<String, dynamic>.from(transition as Map<String, dynamic>);
+        final effects = (map['effects'] as List<dynamic>? ?? const []).map((effect) {
+          final effectMap = Map<String, dynamic>.from(effect as Map<String, dynamic>);
+          final value = effectMap['value'];
+          if (value is String) {
+            effectMap['value'] = value
+                .replaceAll('{actorLabel}', r'$actor')
+                .replaceAll('{actor}', r'$actor');
+          }
+          return effectMap;
+        }).toList();
+        map['effects'] = effects;
+        return map;
+      })
+      .toList();
+  next['transitions'] = transitions;
+  return next;
+}
+
+String _stripGardenJsoncComments(String content) {
+  final output = StringBuffer();
+  var inString = false;
+  var escaped = false;
+  var inLineComment = false;
+  var inBlockComment = false;
+  for (var index = 0; index < content.length; index += 1) {
+    final char = content[index];
+    final next = index + 1 < content.length ? content[index + 1] : '';
+    if (inLineComment) {
+      if (char == '\n') {
+        inLineComment = false;
+        output.write(char);
+      }
+      continue;
+    }
+    if (inBlockComment) {
+      if (char == '*' && next == '/') {
+        inBlockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+    if (!inString && char == '/' && next == '/') {
+      inLineComment = true;
+      index += 1;
+      continue;
+    }
+    if (!inString && char == '/' && next == '*') {
+      inBlockComment = true;
+      index += 1;
+      continue;
+    }
+    output.write(char);
+    if (char == '"' && !escaped) {
+      inString = !inString;
+    }
+    escaped = char == '\\' && !escaped;
+    if (char != '\\') {
+      escaped = false;
+    }
+  }
+  return output.toString();
+}
+
+const _gardenBundledFixtureJsonc = r'''
+{
+  "personas": ["garden-member", "garden-coordinator"],
+  "templates": {
+    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
+    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "volunteerRoster": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "exportWizard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  },
+  "workflowDefinitions": {
+    "garden-event-rsvp": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "rsvped": { "label": "RSVPed" },
+        "waitlisted": { "label": "Waitlisted" },
+        "cancelled": { "label": "Cancelled", "isTerminal": true }
       },
-      renderBindings: const [
-        RenderBinding(
-          states: ['open', 'going', 'waitlisted', 'cancelled'],
-          role: 'actor',
-          tabId: 'calendar',
-          cardSurfaceFamily: 'calendarAgenda',
-          bindingKind: 'primary',
-        ),
+      "transitions": [
+        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "waitlisted"], "to": "rsvped", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Going" }, { "op": "append", "key": "eventHistory", "value": "{eventTitle} RSVP changed to Going at $timestamp" }] },
+        { "id": "join-waitlist", "label": "Join waitlist", "icon": "playlist_add", "tone": "secondary", "from": ["open"], "to": "waitlisted", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Waitlisted" }, { "op": "append", "key": "eventHistory", "value": "{eventTitle} waitlist joined at $timestamp" }] },
+        { "id": "cancel-rsvp", "label": "Cancel RSVP", "icon": "event_busy", "tone": "destructive", "from": ["rsvped", "waitlisted"], "to": "open", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "" }, { "op": "append", "key": "eventHistory", "value": "{eventTitle} RSVP cancelled at $timestamp" }] },
+        { "id": "cancel-event", "label": "Cancel event", "icon": "cancel", "tone": "destructive", "from": ["open", "rsvped", "waitlisted"], "to": "cancelled", "guard": { "allowedPersonaIds": ["garden-coordinator"] }, "effects": [{ "op": "append", "key": "eventHistory", "value": "{eventTitle} cancelled by coordinator at $timestamp" }] }
       ],
-      instanceDataSchema: const {
-        'title': InstanceDataField(type: 'string', required: true),
-        'eventDate': InstanceDataField(type: 'date', required: true),
-        'location': InstanceDataField(type: 'string', required: true),
-        'rsvpStatus': InstanceDataField(type: 'string', required: true),
-        'history': InstanceDataField(type: 'list'),
+      "renderBindings": [{ "states": ["open", "rsvped", "waitlisted", "cancelled"], "role": "actor", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "eventTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "eventDateTime": { "type": "text", "required": true, "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "capacityLabel": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "rsvpStatus": { "type": "text", "writableBy": "effect" },
+        "eventHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-tool-loan": {
+      "initialState": "available",
+      "states": {
+        "available": { "label": "Available" },
+        "queued": { "label": "Queued" },
+        "loaned": { "label": "Loaned" },
+        "returned": { "label": "Returned", "isTerminal": true },
+        "lost": { "label": "Lost", "isTerminal": true }
       },
-      transitions: [
-        _gardenTransition(
-          id: 'rsvp-going',
-          label: 'RSVP going',
-          from: const ['open', 'waitlisted', 'cancelled'],
-          to: 'going',
-          personas: const ['garden-member'],
-          icon: 'event_available',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Going'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'RSVP marked going'),
-          ],
+      "transitions": [
+        { "id": "request-loan", "label": "Request loan", "icon": "handshake", "tone": "primary", "from": ["available"], "to": "loaned", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{actorLabel} borrowed {itemTitle} at $timestamp" }] },
+        { "id": "join-queue", "label": "Join queue", "icon": "queue", "tone": "secondary", "from": ["loaned"], "to": "queued", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "leave-queue", "label": "Leave queue", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "loaned", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "return-tool", "label": "Return tool", "icon": "assignment_return", "tone": "primary", "from": ["loaned", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
+        { "id": "report-lost", "label": "Report lost", "icon": "report", "tone": "destructive", "from": ["loaned", "queued"], "to": "lost", "guard": { "allowedPersonaIds": ["garden-member", "garden-coordinator"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} reported lost at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "queued", "loaned", "returned", "lost"], "role": "any", "tabId": "marketplace", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "mode": { "type": "text", "required": true, "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "plant-exchange-submission": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["plantType", "quantity", "pickupNotes", "privacyNote"] },
+        "submitted": { "label": "Submitted" },
+        "claimed": { "label": "Claimed" },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "submit-listing", "label": "Submit listing", "icon": "local_florist", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "append", "key": "exchangeHistory", "value": "{plantType} submitted at $timestamp" }] },
+        { "id": "claim", "label": "Claim", "icon": "check_circle", "tone": "primary", "from": ["submitted"], "to": "claimed", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "claimantPersonaId", "value": "{actor}" }, { "op": "append", "key": "exchangeHistory", "value": "{plantType} claimed at $timestamp" }] },
+        { "id": "cancel-claim", "label": "Cancel claim", "icon": "undo", "tone": "secondary", "from": ["claimed"], "to": "submitted", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "set", "key": "claimantPersonaId", "value": "" }, { "op": "append", "key": "exchangeHistory", "value": "{plantType} claim cancelled at $timestamp" }] },
+        { "id": "withdraw", "label": "Withdraw", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted", "claimed"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "append", "key": "exchangeHistory", "value": "{plantType} withdrawn at $timestamp" }] }
+      ],
+      "renderBindings": [
+        { "states": ["draft"], "role": "actor", "tabId": "marketplace", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
+        { "states": ["submitted", "claimed", "withdrawn"], "role": "any", "tabId": "marketplace", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }
+      ],
+      "instanceDataSchema": {
+        "plantType": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"] },
+        "quantity": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "inventory", "labelTemplate": "{value}" },
+        "pickupNotes": { "type": "text", "writableBy": "formEntry", "displayIcon": "place", "labelTemplate": "{value}" },
+        "privacyNote": { "type": "text", "writableBy": "formEntry", "displayIcon": "privacy_tip", "labelTemplate": "{value}" },
+        "claimantPersonaId": { "type": "text", "writableBy": "effect" },
+        "exchangeHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-volunteer-shift": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "signed-up": { "label": "Signed up" }
+      },
+      "transitions": [
+        { "id": "sign-up", "label": "Sign up", "icon": "volunteer_activism", "tone": "primary", "from": ["open"], "to": "signed-up", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "append", "key": "signedUpPersonaIds", "value": "{actor}" }] },
+        { "id": "cancel-signup", "label": "Cancel signup", "icon": "undo", "tone": "secondary", "from": ["signed-up"], "to": "open", "guard": { "allowedPersonaIds": ["garden-member"] }, "effects": [{ "op": "append", "key": "shiftHistory", "value": "{actorLabel} cancelled at $timestamp" }] },
+        { "id": "close-shift", "label": "Close shift", "icon": "lock", "tone": "destructive", "from": ["open", "signed-up"], "to": "closed", "guard": { "allowedPersonaIds": ["garden-coordinator"] }, "effects": [{ "op": "append", "key": "shiftHistory", "value": "{shiftTitle} closed at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "signed-up", "closed"], "role": "any", "tabId": "care", "cardSurfaceFamily": "volunteerRoster", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "shiftTitle": { "type": "text", "required": true, "displayContexts": ["tile", "detail"] },
+        "openSpots": { "type": "number", "required": true, "displayIcon": "groups", "labelTemplate": "Open spots: {value}" },
+        "signedUpPersonaIds": { "type": "list", "writableBy": "effect" },
+        "shiftHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "garden-export-custom-schemas": {
+      "initialState": "ready",
+      "states": {
+        "ready": { "label": "Ready" },
+        "generated": { "label": "Generated" },
+        "rolled-back": { "label": "Rolled back", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "generate-export", "label": "Generate export", "icon": "download", "tone": "primary", "from": ["ready"], "to": "generated", "guard": { "allowedPersonaIds": ["garden-coordinator"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Download ready" }, { "op": "append", "key": "exportHistory", "value": "Garden export generated at $timestamp" }] },
+        { "id": "rollback-export", "label": "Rollback export", "icon": "undo", "tone": "destructive", "from": ["generated"], "to": "rolled-back", "guard": { "allowedPersonaIds": ["garden-coordinator"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Rolled back" }, { "op": "append", "key": "exportHistory", "value": "Garden export rolled back at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["ready", "generated", "rolled-back"], "role": "actor", "tabId": "documents", "cardSurfaceFamily": "exportWizard", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "schemas": { "type": "list", "required": true, "displayIcon": "schema", "labelTemplate": "{value.length} schemas selected" },
+        "redactionPreview": { "type": "text", "required": true, "displayIcon": "shield", "labelTemplate": "{value}" },
+        "checksum": { "type": "text", "required": true, "displayIcon": "verified", "labelTemplate": "Checksum: {value}" },
+        "destination": { "type": "text", "required": true, "displayIcon": "cloud_upload", "labelTemplate": "Destination: {value}" },
+        "changeScope": { "type": "text", "required": true, "displayIcon": "track_changes", "labelTemplate": "Scope: {value}" },
+        "downloadStatus": { "type": "text", "writableBy": "effect" },
+        "exportHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    { "instanceId": "garden-event-spring-planting", "workflowType": "garden-event-rsvp", "currentState": "open", "createdByPersonaId": "garden-coordinator", "instanceData": { "eventTitle": "Spring Planting Workshop", "eventDateTime": "Saturday, Apr 18 at 10:00 AM", "location": "Riverside Greenhouse", "capacityLabel": "18 of 24 spots", "rsvpStatus": "", "eventHistory": [] } },
+    { "instanceId": "garden-tool-broadfork", "workflowType": "garden-tool-loan", "currentState": "available", "createdByPersonaId": "garden-member", "instanceData": { "itemTitle": "Broadfork", "mode": "Loan", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "garden-plant-basil", "workflowType": "plant-exchange-submission", "currentState": "draft", "createdByPersonaId": "garden-member", "instanceData": { "plantType": "Sweet Genovese basil", "quantity": "6 starter pots", "pickupNotes": "Pickup Sat 1-3 PM", "privacyNote": "Contact after claim", "claimantPersonaId": "", "exchangeHistory": [] } },
+    { "instanceId": "garden-shift-bed-prep", "workflowType": "garden-volunteer-shift", "currentState": "open", "createdByPersonaId": "garden-coordinator", "instanceData": { "shiftTitle": "Saturday bed prep", "openSpots": 4, "signedUpPersonaIds": [], "shiftHistory": [] } },
+    { "instanceId": "garden-export-package", "workflowType": "garden-export-custom-schemas", "currentState": "ready", "createdByPersonaId": "garden-coordinator", "instanceData": { "schemas": ["garden_event", "plant_exchange"], "redactionPreview": "Protected contact fields redacted", "checksum": "8F4A-PLANT", "destination": "Garden archive package", "changeScope": "Season-to-date activity", "downloadStatus": "Not generated", "exportHistory": [] } }
+  ]
+}
+''';
+
+class _CameraClubEngineTabSurface extends StatefulWidget {
+  const _CameraClubEngineTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.tabId,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final String tabId;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_CameraClubEngineTabSurface> createState() =>
+      _CameraClubEngineTabSurfaceState();
+}
+
+class _CameraClubEngineTabSurfaceState
+    extends State<_CameraClubEngineTabSurface> {
+  static final _stores = <String, _CameraClubEngineStore>{};
+
+  late final _CameraClubEngineStore _store;
+  List<WorkflowInstance> _instances = const [];
+  final Map<String, TextEditingController> _controllers = {};
+  String? _loadError;
+  var _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _CameraClubEngineStore(communityId: widget.experience.extensionId),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_CameraClubEngineTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.tabId != widget.tabId) {
+      unawaited(_load());
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw StateError('camera ensureReady timeout'),
+      );
+      final instances = await _store.instancesFor(
+        tabId: widget.tabId,
+        personaId: widget.persona.personaId,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () =>
+            throw StateError('camera instancesFor timeout (${widget.tabId})'),
+      );
+      _syncControllers(instances);
+      if (!mounted) return;
+      setState(() {
+        _instances = instances;
+        _loadError = null;
+        _loaded = true;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = '$error';
+        _loaded = true;
+      });
+    }
+  }
+
+  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+    await _store.apply(
+      instance: instance,
+      transitionId: transitionId,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  Future<void> _saveEditableFields(WorkflowInstance instance) async {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    final updates = <String, dynamic>{
+      for (final field in fields)
+        field: _controllerFor(instance.instanceId, field).text,
+    };
+    await _store.updateFields(
+      instance: instance,
+      fieldUpdates: updates,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Center(
+        child: Text(
+          _loadError!,
+          key: ValueKey('camera-load-error-${widget.tabId}'),
         ),
-        _gardenTransition(
-          id: 'join-waitlist',
-          label: 'Join waitlist',
-          from: const ['open', 'cancelled'],
-          to: 'waitlisted',
-          personas: const ['garden-member'],
-          icon: 'queue',
-          tone: 'secondary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Waitlisted'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Member joined RSVP waitlist'),
-          ],
+      );
+    }
+    if (widget.tabId == 'home') {
+      return _buildHomePins(context);
+    }
+    return Column(
+      key: ValueKey('camera-engine-${widget.tabId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.tabId == 'calendar')
+          _cameraWorkflowCard(
+            context,
+            _firstInstance('photo-walk-rsvp'),
+            title: 'Warehouse District golden-hour walk',
+            subtitle: 'Route, capacity, and RSVP state',
+            icon: Icons.camera_alt_outlined,
+          ),
+        if (widget.tabId == 'critique') ...[
+          _cameraWorkflowCard(
+            context,
+            _firstInstance('critique-submission'),
+            title: 'Rain reflections critique',
+            subtitle: 'Submission form and image-forward grid',
+            icon: Icons.photo_camera_back_outlined,
+          ),
+          const SizedBox(height: 12),
+          _cameraThreadCard(context, _firstInstance('critique-submission')),
+        ],
+        if (widget.tabId == 'marketplace')
+          for (final instance in _instances)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _cameraWorkflowCard(
+                context,
+                instance,
+                title: '${instance.instanceData['itemTitle'] ?? 'Gear'}',
+                subtitle: '${instance.instanceData['mode'] ?? 'Loan'} listing',
+                icon: Icons.camera_outdoor_outlined,
+              ),
+            ),
+        if (widget.tabId == 'messages')
+          _cameraThreadCard(context, _firstInstance('critique-submission')),
+        if (widget.tabId == 'admin')
+          _cameraWorkflowCard(
+            context,
+            _firstInstance('camera-validation-report'),
+            title: 'Validation and completion report',
+            subtitle: 'Organizer-only status timeline',
+            icon: Icons.admin_panel_settings_outlined,
+          ),
+      ],
+    );
+  }
+
+  WorkflowInstance? _firstInstance(String workflowType) {
+    for (final instance in _instances) {
+      if (instance.workflowType == workflowType) return instance;
+    }
+    return null;
+  }
+
+  void _syncControllers(List<WorkflowInstance> instances) {
+    for (final instance in instances) {
+      final fields = _store.editableFieldsFor(
+        workflowType: instance.workflowType,
+        state: instance.currentState,
+      );
+      for (final field in fields) {
+        final controller = _controllerFor(instance.instanceId, field);
+        controller.text = '${instance.instanceData[field] ?? ''}';
+      }
+    }
+  }
+
+  TextEditingController _controllerFor(String instanceId, String field) {
+    final key = '$instanceId::$field';
+    return _controllers.putIfAbsent(key, TextEditingController.new);
+  }
+
+  Widget _buildHomePins(BuildContext context) {
+    final walk = _firstInstance('photo-walk-rsvp');
+    final critique = _firstInstance('critique-submission');
+    final gear = _firstInstance('gear-loan-request');
+    final report = _firstInstance('camera-validation-report');
+    return Column(
+      key: const ValueKey('camera-engine-home'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _cameraHomePin(
+          context,
+          key: const ValueKey('camera-home-walk'),
+          title: 'Next photo walk',
+          icon: Icons.route_outlined,
+          body:
+              '${walk?.instanceData['routeName'] ?? 'Route'}\n'
+              '${walk?.instanceData['eventDateTime'] ?? ''} · ${walk?.instanceData['location'] ?? ''}',
         ),
-        _gardenTransition(
-          id: 'cancel-rsvp',
-          label: 'Cancel RSVP',
-          from: const ['going', 'waitlisted'],
-          to: 'cancelled',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'rsvpStatus', value: 'Cancelled'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'RSVP cancelled'),
-          ],
+        const SizedBox(height: 12),
+        _cameraHomePin(
+          context,
+          key: const ValueKey('camera-home-critique'),
+          title: 'Critique queue',
+          icon: Icons.photo_library_outlined,
+          body:
+              '${critique?.instanceData['photoTitle'] ?? 'Photo'} · ${_cameraStateLabel(critique?.currentState ?? 'draft')}\n'
+              '${critique?.instanceData['thumbnailLabel'] ?? 'Thumbnail ready'}',
+        ),
+        const SizedBox(height: 12),
+        _cameraHomePin(
+          context,
+          key: const ValueKey('camera-home-gear'),
+          title: 'Gear and validation',
+          icon: Icons.camera_outdoor_outlined,
+          body:
+              '${gear?.instanceData['itemTitle'] ?? 'Gear'} · ${_cameraStateLabel(gear?.currentState ?? 'available')}\n'
+              '${report?.instanceData['passState'] ?? 'Validation pending'}',
         ),
       ],
     );
+  }
 
-LoomWorkflowStateMachine get _gardenToolMachine => LoomWorkflowStateMachine(
-      workflowType: 'garden-tool-loan',
-      initialState: 'available',
-      states: const {
-        'available': LoomWorkflowState(label: 'Available'),
-        'loaned': LoomWorkflowState(label: 'Loaned'),
-        'queued': LoomWorkflowState(label: 'Queued'),
-        'returned': LoomWorkflowState(label: 'Returned'),
-      },
-      renderBindings: const [
-        RenderBinding(
-          states: ['available', 'loaned', 'queued', 'returned'],
-          role: 'actor',
-          tabId: 'marketplace',
-          cardSurfaceFamily: 'equipment-loan',
-          bindingKind: 'primary',
-        ),
-      ],
-      instanceDataSchema: const {
-        'title': InstanceDataField(type: 'string', required: true),
-        'toolName': InstanceDataField(type: 'string', required: true),
-        'borrowerPersonaId': InstanceDataField(type: 'string'),
-        'queuedPersonaIds': InstanceDataField(type: 'list'),
-        'notes': InstanceDataField(type: 'text'),
-        'history': InstanceDataField(type: 'list'),
-      },
-      transitions: [
-        _gardenTransition(
-          id: 'request-loan',
-          label: 'Request loan',
-          from: const ['available', 'returned'],
-          to: 'loaned',
-          personas: const ['garden-member'],
-          icon: 'handyman',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'borrowerPersonaId', value: 'garden-member'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Broadfork loan requested'),
+  Widget _cameraHomePin(
+    BuildContext context, {
+    required Key key,
+    required String title,
+    required IconData icon,
+    required String body,
+  }) {
+    return DecoratedBox(
+      key: key,
+      decoration: _cameraBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: widget.accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(body),
+                ],
+              ),
+            ),
           ],
         ),
-        _gardenTransition(
-          id: 'join-queue',
-          label: 'Join queue',
-          from: const ['loaned'],
-          to: 'queued',
-          personas: const ['garden-member'],
-          icon: 'queue',
-          tone: 'secondary',
-          effects: const [
-            WorkflowEffect(op: 'append', key: 'queuedPersonaIds', value: 'garden-member'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Member joined broadfork queue'),
+      ),
+    );
+  }
+
+  Widget _cameraThreadCard(BuildContext context, WorkflowInstance? instance) {
+    final comments = instance?.instanceData['critiqueComments'];
+    final items = comments is List
+        ? [for (final item in comments) if (item is String) item]
+        : const <String>[];
+    return DecoratedBox(
+      key: const ValueKey('camera-critique-thread'),
+      decoration: _cameraBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Attached critique thread',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            for (final item in items)
+              Text(item, key: ValueKey('camera-thread-${item.hashCode}')),
           ],
         ),
-        _gardenTransition(
-          id: 'leave-queue',
-          label: 'Leave queue',
-          from: const ['queued'],
-          to: 'loaned',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'queuedPersonaIds', value: <String>[]),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Member left broadfork queue'),
+      ),
+    );
+  }
+
+  Widget _cameraWorkflowCard(
+    BuildContext context,
+    WorkflowInstance? instance, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    if (instance == null) {
+      return _TabEmptyState(
+        icon: icon,
+        title: '$title unavailable',
+        body: 'No engine instance is available for this Camera Club surface.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    final transitions = _store.availableTransitions(
+      instance: instance,
+      personaId: widget.persona.personaId,
+    );
+    final machine = _store.machineFor(instance.workflowType);
+    final data = instance.instanceData;
+    final queue = data['queuePersonaIds'];
+    final queueCount = queue is List ? queue.length : 0;
+    return DecoratedBox(
+      key: ValueKey('camera-card-${instance.workflowType}-${instance.instanceId}'),
+      decoration: _cameraBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: widget.accent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                      Text(subtitle),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label:
+                      'State: ${machine.states[instance.currentState]?.label ?? _cameraStateLabel(instance.currentState)}',
+                  foreground: widget.accent,
+                ),
+                for (final pill in _factPills(machine, data)) pill,
+                if (queueCount > 0)
+                  _SurfaceFactPill(
+                    icon: Icons.people_alt_outlined,
+                    label: 'Queue: $queueCount',
+                    foreground: widget.accent,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final field in const [
+              'routeName',
+              'photoTitle',
+              'thumbnailLabel',
+              'itemTitle',
+              'currentHolder',
+              'passState',
+            ])
+              if (data[field] case final value?) Text('$value'),
+            if (instance.workflowType == 'critique-submission')
+              const Text(
+                'Image-forward critique grid',
+                key: ValueKey('camera-critique-grid'),
+              ),
+            if (instance.workflowType == 'camera-validation-report')
+              _buildValidationReport(data),
+            if (_store.editableFieldsFor(
+                  workflowType: instance.workflowType,
+                  state: instance.currentState,
+                ).isNotEmpty)
+              _buildEditableFields(instance),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final transition in transitions)
+                  OutlinedButton.icon(
+                    key: ValueKey('camera-action-${transition.id}'),
+                    style: _cameraButtonStyle(transition),
+                    onPressed: () => _transition(instance, transition.id),
+                    icon: Icon(_cameraIconForTransition(transition.icon)),
+                    label: Text(transition.label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            for (final item in _historyItems(data))
+              Text(item, key: ValueKey('camera-history-${item.hashCode}')),
           ],
         ),
-        _gardenTransition(
-          id: 'return-tool',
-          label: 'Return tool',
-          from: const ['loaned', 'queued'],
-          to: 'returned',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'secondary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'borrowerPersonaId', value: ''),
-            WorkflowEffect(op: 'set', key: 'queuedPersonaIds', value: <String>[]),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Broadfork returned'),
-          ],
+      ),
+    );
+  }
+
+  Widget _buildEditableFields(WorkflowInstance instance) {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    return Column(
+      key: ValueKey('camera-edit-form-${instance.workflowType}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        for (final field in fields)
+          TextField(
+            key: ValueKey('camera-edit-$field'),
+            controller: _controllerFor(instance.instanceId, field),
+            decoration: InputDecoration(labelText: _cameraFieldLabel(field)),
+          ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: ValueKey('camera-save-edit-${instance.workflowType}'),
+          onPressed: () => _saveEditableFields(instance),
+          icon: const Icon(Icons.save_outlined),
+          label: const Text('Save edits'),
         ),
       ],
     );
+  }
 
-LoomWorkflowStateMachine get _gardenPlantMachine => LoomWorkflowStateMachine(
-      workflowType: 'plant-exchange-submission',
-      initialState: 'draft',
-      states: const {
-        'draft': LoomWorkflowState(label: 'Draft'),
-        'submitted': LoomWorkflowState(label: 'Submitted'),
-        'claimed': LoomWorkflowState(label: 'Claimed'),
-        'withdrawn': LoomWorkflowState(label: 'Withdrawn', isTerminal: true),
-      },
-      renderBindings: const [
-        RenderBinding(
-          states: ['draft', 'submitted', 'claimed', 'withdrawn'],
-          role: 'actor',
-          tabId: 'marketplace',
-          cardSurfaceFamily: 'exchange',
-          bindingKind: 'primary',
-        ),
-      ],
-      instanceDataSchema: const {
-        'title': InstanceDataField(type: 'string', required: true),
-        'plantName': InstanceDataField(type: 'string', required: true),
-        'claimantPersonaId': InstanceDataField(type: 'string'),
-        'notes': InstanceDataField(type: 'text'),
-        'history': InstanceDataField(type: 'list'),
-      },
-      transitions: [
-        _gardenTransition(
-          id: 'submit-listing',
-          label: 'Submit listing',
-          from: const ['draft'],
-          to: 'submitted',
-          personas: const ['garden-member'],
-          icon: 'local_florist',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'append', key: 'history', value: 'Basil seedling offer submitted'),
-          ],
-        ),
-        _gardenTransition(
-          id: 'claim',
-          label: 'Claim',
-          from: const ['submitted'],
-          to: 'claimed',
-          personas: const ['garden-member'],
-          icon: 'local_florist',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'claimantPersonaId', value: 'garden-member'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Basil seedlings claimed'),
-          ],
-        ),
-        _gardenTransition(
-          id: 'cancel-claim',
-          label: 'Cancel claim',
-          from: const ['claimed'],
-          to: 'submitted',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'claimantPersonaId', value: ''),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Plant exchange claim cancelled'),
-          ],
-        ),
-        _gardenTransition(
-          id: 'withdraw',
-          label: 'Withdraw',
-          from: const ['draft', 'submitted'],
-          to: 'withdrawn',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'append', key: 'history', value: 'Plant exchange listing withdrawn'),
-          ],
-        ),
+  Widget _buildValidationReport(Map<String, dynamic> data) {
+    final requested = data['requestedWorkflows'];
+    final paths = data['packagePaths'];
+    return Column(
+      key: const ValueKey('camera-admin-validation-status'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        Text('Requested workflows: ${requested is List ? requested.join(', ') : requested ?? ''}'),
+        Text('Package paths: ${paths is List ? paths.join(', ') : paths ?? ''}'),
       ],
     );
+  }
 
-LoomWorkflowStateMachine get _gardenVolunteerMachine => LoomWorkflowStateMachine(
-      workflowType: 'garden-volunteer-shift',
-      initialState: 'open',
-      states: const {
-        'open': LoomWorkflowState(label: 'Open'),
-        'signed-up': LoomWorkflowState(label: 'Signed up'),
-        'cancelled': LoomWorkflowState(label: 'Cancelled'),
-      },
-      renderBindings: const [
-        RenderBinding(
-          states: ['open', 'signed-up', 'cancelled'],
-          role: 'actor',
-          tabId: 'care',
-          cardSurfaceFamily: 'volunteer',
-          bindingKind: 'primary',
+  List<Widget> _factPills(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> data,
+  ) {
+    final pills = <Widget>[];
+    for (final entry in machine.instanceDataSchema.entries) {
+      final field = entry.value;
+      final iconName = field.displayIcon;
+      if (iconName == null) continue;
+      final value = data[entry.key];
+      final isEmpty = value == null ||
+          (value is String && value.isEmpty) ||
+          (value is List && value.isEmpty);
+      if (field.hideWhenEmpty && isEmpty) continue;
+      final label = _renderCameraLabel(field.labelTemplate, value);
+      if (label.isEmpty) continue;
+      pills.add(
+        _SurfaceFactPill(
+          icon: _cameraFactIcon(iconName),
+          label: label,
+          foreground: widget.accent,
         ),
-      ],
-      instanceDataSchema: const {
-        'title': InstanceDataField(type: 'string', required: true),
-        'slotCount': InstanceDataField(type: 'number', required: true),
-        'signedUpPersonaIds': InstanceDataField(type: 'list'),
-        'notes': InstanceDataField(type: 'text'),
-        'history': InstanceDataField(type: 'list'),
-      },
-      transitions: [
-        _gardenTransition(
-          id: 'sign-up',
-          label: 'Sign up',
-          from: const ['open', 'cancelled'],
-          to: 'signed-up',
-          personas: const ['garden-member'],
-          icon: 'volunteer',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'append', key: 'signedUpPersonaIds', value: 'garden-member'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Member signed up for compost shift'),
-          ],
-        ),
-        _gardenTransition(
-          id: 'cancel-signup',
-          label: 'Cancel signup',
-          from: const ['signed-up'],
-          to: 'cancelled',
-          personas: const ['garden-member'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'signedUpPersonaIds', value: <String>[]),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Volunteer signup cancelled'),
-          ],
-        ),
-      ],
+      );
+    }
+    return pills;
+  }
+
+  List<String> _historyItems(Map<String, dynamic> data) {
+    for (final entry in data.entries) {
+      if (!entry.key.toLowerCase().contains('history')) continue;
+      final value = entry.value;
+      if (value is List) {
+        return [for (final item in value) if (item is String) item];
+      }
+    }
+    return const <String>[];
+  }
+
+  String _renderCameraLabel(String? template, dynamic value) {
+    if (template == null) return '';
+    return template
+        .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
+        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+  }
+
+  ButtonStyle _cameraButtonStyle(LoomWorkflowTransition transition) {
+    final destructive = transition.tone == 'destructive' ||
+        transition.id.contains('withdraw') ||
+        transition.id.contains('leave') ||
+        transition.id.contains('pause') ||
+        transition.id.contains('delist');
+    final primary = transition.tone == 'primary' ||
+        transition.id.contains('submit') ||
+        transition.id.contains('request') ||
+        transition.id.contains('claim') ||
+        transition.id.contains('validated') ||
+        transition.id.contains('rsvp');
+    return OutlinedButton.styleFrom(
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+              ? Colors.white
+              : widget.accent,
+      backgroundColor: primary ? widget.accent : null,
+      side: BorderSide(
+        color: destructive ? Colors.red.shade800 : widget.accent,
+      ),
     );
+  }
 
-LoomWorkflowStateMachine get _gardenExportMachine => LoomWorkflowStateMachine(
-      workflowType: 'garden-export-custom-schemas',
-      initialState: 'ready',
-      states: const {
-        'ready': LoomWorkflowState(label: 'Ready'),
-        'generated': LoomWorkflowState(label: 'Generated'),
-        'rolled-back': LoomWorkflowState(label: 'Rolled back'),
-      },
-      renderBindings: const [
-        RenderBinding(
-          states: ['ready', 'generated', 'rolled-back'],
-          role: 'actor',
-          tabId: 'documents',
-          cardSurfaceFamily: 'exportWizard',
-          bindingKind: 'primary',
-        ),
-      ],
-      instanceDataSchema: const {
-        'title': InstanceDataField(type: 'string', required: true),
-        'schemaNames': InstanceDataField(type: 'string', required: true),
-        'exportStatus': InstanceDataField(type: 'string', required: true),
-        'history': InstanceDataField(type: 'list'),
-      },
-      transitions: [
-        _gardenTransition(
-          id: 'generate-export',
-          label: 'Generate export',
-          from: const ['ready', 'rolled-back'],
-          to: 'generated',
-          personas: const ['garden-coordinator'],
-          icon: 'export',
-          tone: 'primary',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'exportStatus', value: 'Generated'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Garden custom-schema export generated'),
-          ],
-        ),
-        _gardenTransition(
-          id: 'rollback-export',
-          label: 'Rollback export',
-          from: const ['generated'],
-          to: 'rolled-back',
-          personas: const ['garden-coordinator'],
-          icon: 'undo',
-          tone: 'destructive',
-          effects: const [
-            WorkflowEffect(op: 'set', key: 'exportStatus', value: 'Rolled back'),
-            WorkflowEffect(op: 'append', key: 'history', value: 'Garden export rolled back'),
-          ],
-        ),
-      ],
-    );
+  IconData _cameraIconForTransition(String? icon) {
+    switch (icon) {
+      case 'event_available':
+        return Icons.event_available_outlined;
+      case 'edit':
+        return Icons.edit_outlined;
+      case 'upload':
+        return Icons.cloud_upload_outlined;
+      case 'delete':
+        return Icons.delete_outline;
+      case 'queue':
+        return Icons.people_alt_outlined;
+      case 'undo':
+        return Icons.undo_outlined;
+      case 'handshake':
+        return Icons.handshake_outlined;
+      case 'assignment_return':
+        return Icons.assignment_return_outlined;
+      case 'redeem':
+        return Icons.redeem_outlined;
+      case 'verified':
+        return Icons.verified_outlined;
+    }
+    return Icons.photo_camera_outlined;
+  }
 
-LoomWorkflowTransition _gardenTransition({
-  required String id,
-  required String label,
-  required List<String> from,
-  required String to,
-  required List<String> personas,
-  required String icon,
-  required String tone,
-  required List<WorkflowEffect> effects,
-}) {
-  return LoomWorkflowTransition(
-    id: id,
-    label: label,
-    icon: icon,
-    tone: tone,
-    from: from,
-    to: to,
-    guard: WorkflowGuard(allowedPersonaIds: personas),
-    effects: effects,
+  IconData _cameraFactIcon(String iconName) {
+    switch (iconName) {
+      case 'schedule':
+        return Icons.schedule_outlined;
+      case 'location_on':
+        return Icons.location_on_outlined;
+      case 'groups':
+        return Icons.groups_outlined;
+      case 'photo':
+        return Icons.photo_outlined;
+      case 'inventory_2':
+        return Icons.inventory_2_outlined;
+      case 'person':
+        return Icons.person_outline;
+      case 'verified':
+        return Icons.verified_outlined;
+      case 'route':
+        return Icons.route_outlined;
+    }
+    return Icons.label_outline;
+  }
+
+  String _cameraFieldLabel(String field) {
+    switch (field) {
+      case 'photoTitle':
+        return 'Photo title';
+      case 'critiquePrompt':
+        return 'Critique prompt';
+      case 'consentNote':
+        return 'Consent note';
+      case 'itemTitle':
+        return 'Gear title';
+      case 'condition':
+        return 'Condition';
+      case 'pickupWindow':
+        return 'Pickup window';
+    }
+    return field;
+  }
+
+  BoxDecoration get _cameraBoxDecoration => BoxDecoration(
+        color: widget.modernTheme?.resolvedFill ?? Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              widget.modernTheme?.resolvedBorder ??
+              widget.accent.withValues(alpha: 0.2),
+        ),
+      );
+}
+
+class _CameraClubEngineStore {
+  _CameraClubEngineStore({required this.communityId});
+
+  final String communityId;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
   );
+  _CameraFixtureBundle? _fixture;
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _fixture ??= await _CameraFixtureBundle.load();
+    for (final machine in _fixture!.machines.values) {
+      _engine.registerDefinition(machine);
+    }
+    for (final instance in _fixture!.instances) {
+      await _engine.createInstance(
+        workflowType: instance.workflowType,
+        initialInstanceData: instance.instanceData,
+        personaId: instance.createdByPersonaId,
+      );
+    }
+    _ready = true;
+  }
+
+  Future<List<WorkflowInstance>> instancesFor({
+    required String tabId,
+    required String personaId,
+  }) async {
+    await ensureReady();
+    final rows = await _database.queryInstancesKeyset(
+      communityId: communityId,
+      limit: 100,
+      sortKey: 'title',
+    );
+    final allowed = switch (tabId) {
+      'calendar' => const {'photo-walk-rsvp'},
+      'critique' => const {'critique-submission'},
+      'marketplace' => const {'gear-loan-request'},
+      'messages' => const {'critique-submission'},
+      'admin' => const {'camera-validation-report'},
+      'home' => const {
+          'photo-walk-rsvp',
+          'critique-submission',
+          'gear-loan-request',
+          'camera-validation-report',
+        },
+      _ => const <String>{},
+    };
+    return rows
+        .map((row) {
+          final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+          return WorkflowInstance(
+            instanceId: row.instanceId,
+            workflowType: row.workflowType,
+            currentState: row.currentState,
+            instanceData: data,
+            createdByPersonaId: row.createdByPersonaId,
+          );
+        })
+        .where((instance) => allowed.contains(instance.workflowType))
+        .toList(growable: false);
+  }
+
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) {
+    return _engine.availableTransitions(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      currentState: instance.currentState,
+      instanceData: instance.instanceData,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    await _engine.applyTransition(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> updateFields({
+    required WorkflowInstance instance,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) async {
+    await _engine.updateInstanceFields(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      fieldUpdates: fieldUpdates,
+      personaId: personaId,
+    );
+  }
+
+  LoomWorkflowStateMachine machineFor(String workflowType) {
+    return _fixture!.machines[workflowType]!;
+  }
+
+  List<String> editableFieldsFor({
+    required String workflowType,
+    required String state,
+  }) {
+    return machineFor(workflowType).states[state]?.editableFields ?? const [];
+  }
+}
+
+class _CameraFixtureBundle {
+  _CameraFixtureBundle({required this.machines, required this.instances});
+
+  final Map<String, LoomWorkflowStateMachine> machines;
+  final List<_GardenSeedInstance> instances;
+
+  static Future<_CameraFixtureBundle> load() async {
+    final json = jsonDecode(_stripGardenJsoncComments(_cameraBundledFixtureJsonc))
+        as Map<String, dynamic>;
+    final definitions =
+        json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
+    final machines = <String, LoomWorkflowStateMachine>{};
+    for (final entry in definitions.entries) {
+      machines[entry.key] = LoomWorkflowStateMachine.fromJson(
+        _normalizeGardenMachineJson(entry.value as Map<String, dynamic>),
+        entry.key,
+      );
+    }
+    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final instances = [
+      for (final item in rawInstances)
+        _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
+    ];
+    return _CameraFixtureBundle(machines: machines, instances: instances);
+  }
+}
+
+const _cameraBundledFixtureJsonc = r'''
+{
+  "personas": ["camera-member", "camera-organizer"],
+  "templates": {
+    "dashboard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
+    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "discussionThread": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "statusTimeline": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  },
+  "workflowDefinitions": {
+    "photo-walk-rsvp": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "going": { "label": "Going" },
+        "maybe": { "label": "Maybe" },
+        "not-going": { "label": "Not going" }
+      },
+      "transitions": [
+        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "maybe", "not-going"], "to": "going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Going at $timestamp" }] },
+        { "id": "rsvp-maybe", "label": "RSVP maybe", "icon": "edit", "tone": "secondary", "from": ["open", "going", "not-going"], "to": "maybe", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Maybe" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Maybe at $timestamp" }] },
+        { "id": "rsvp-not-going", "label": "RSVP not going", "icon": "undo", "tone": "destructive", "from": ["open", "going", "maybe"], "to": "not-going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Not going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Not going at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "going", "maybe", "not-going"], "role": "any", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "routeName": { "type": "text", "required": true, "displayContexts": ["tile", "detail"], "displayIcon": "route", "labelTemplate": "{value}" },
+        "eventDateTime": { "type": "text", "required": true, "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "capacityLabel": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "rsvpStatus": { "type": "text", "writableBy": "effect" },
+        "walkHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "critique-submission": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["photoTitle", "critiquePrompt", "consentNote"] },
+        "submitted": { "label": "Submitted" },
+        "reviewed": { "label": "Reviewed" },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "submit-critique", "label": "Submit critique", "icon": "upload", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} submitted at $timestamp" }] },
+        { "id": "edit-critique", "label": "Edit critique", "icon": "edit", "tone": "secondary", "from": ["submitted"], "to": "draft", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} reopened for edit at $timestamp" }] },
+        { "id": "mark-reviewed", "label": "Mark reviewed", "icon": "verified", "tone": "primary", "from": ["submitted"], "to": "reviewed", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "append", "key": "critiqueComments", "value": "Organizer review completed at $timestamp" }] },
+        { "id": "withdraw-critique", "label": "Withdraw critique", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted", "reviewed"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} withdrawn at $timestamp" }] }
+      ],
+      "renderBindings": [
+        { "states": ["draft"], "role": "actor", "tabId": "critique", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
+        { "states": ["submitted", "reviewed", "withdrawn"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" },
+        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "discussionThread", "bindingKind": "attached" },
+        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "messages", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }
+      ],
+      "instanceDataSchema": {
+        "photoTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "photo", "labelTemplate": "{value}" },
+        "thumbnailLabel": { "type": "text", "required": true, "displayIcon": "photo", "labelTemplate": "{value}" },
+        "critiquePrompt": { "type": "text", "required": true, "writableBy": "formEntry" },
+        "consentNote": { "type": "text", "required": true, "writableBy": "formEntry" },
+        "critiqueComments": { "type": "list", "writableBy": "effect" },
+        "critiqueHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "gear-loan-request": {
+      "initialState": "available",
+      "states": {
+        "available": { "label": "Available", "editableFields": ["itemTitle", "condition", "pickupWindow"] },
+        "loaned": { "label": "Loaned" },
+        "queued": { "label": "Queued" },
+        "returned": { "label": "Returned", "isTerminal": true },
+        "giveaway": { "label": "Giveaway" },
+        "claimed": { "label": "Claimed", "isTerminal": true },
+        "paused": { "label": "Paused" },
+        "delisted": { "label": "Delisted", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "request-loan", "label": "Request loan", "icon": "handshake", "tone": "primary", "from": ["available"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{actorLabel} borrowed {itemTitle} at $timestamp" }] },
+        { "id": "offer-giveaway", "label": "Offer as giveaway", "icon": "redeem", "tone": "secondary", "from": ["available"], "to": "giveaway", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "mode", "value": "Giveaway" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} offered as giveaway at $timestamp" }] },
+        { "id": "join-queue", "label": "Join queue", "icon": "queue", "tone": "secondary", "from": ["loaned"], "to": "queued", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "leave-queue", "label": "Leave queue", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "return-gear", "label": "Return gear", "icon": "assignment_return", "tone": "primary", "from": ["loaned", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
+        { "id": "pause-listing", "label": "Pause listing", "icon": "undo", "tone": "secondary", "from": ["available"], "to": "paused", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} paused at $timestamp" }] },
+        { "id": "delist-gear", "label": "Delist gear", "icon": "delete", "tone": "destructive", "from": ["available", "paused"], "to": "delisted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} delisted at $timestamp" }] },
+        { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "redeem", "tone": "primary", "from": ["giveaway"], "to": "claimed", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} ownership transferred at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "loaned", "queued", "returned", "giveaway", "claimed", "paused", "delisted"], "role": "any", "tabId": "marketplace", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "mode": { "type": "text", "required": true, "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "condition": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified", "labelTemplate": "{value}" },
+        "pickupWindow": { "type": "text", "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "camera-validation-report": {
+      "initialState": "pending",
+      "states": {
+        "pending": { "label": "Pending" },
+        "validated": { "label": "Validated", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "mark-validated", "label": "Mark validated", "icon": "verified", "tone": "primary", "from": ["pending"], "to": "validated", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "set", "key": "passState", "value": "Validated" }, { "op": "append", "key": "validationHistory", "value": "Camera Club validation marked complete at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["pending", "validated"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "requestedWorkflows": { "type": "list", "required": true, "displayIcon": "groups", "labelTemplate": "{value.length} requested workflows" },
+        "implementedWorkflows": { "type": "list", "required": true, "displayIcon": "verified", "labelTemplate": "{value.length} implemented workflows" },
+        "packagePaths": { "type": "list", "required": true },
+        "passState": { "type": "text", "required": true, "displayIcon": "verified", "labelTemplate": "{value}" },
+        "validationHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    { "instanceId": "camera-walk-warehouse", "workflowType": "photo-walk-rsvp", "currentState": "open", "createdByPersonaId": "camera-organizer", "instanceData": { "routeName": "Warehouse District golden-hour walk", "eventDateTime": "Friday, May 8 at 6:30 PM", "location": "Pier 3 mural route", "capacityLabel": "12 of 16 spots", "rsvpStatus": "", "walkHistory": [] } },
+    { "instanceId": "camera-critique-rain", "workflowType": "critique-submission", "currentState": "draft", "createdByPersonaId": "camera-member", "instanceData": { "photoTitle": "Rain reflections", "thumbnailLabel": "Street reflection thumbnail", "critiquePrompt": "Help me choose the strongest crop.", "consentNote": "Model consent captured for club critique.", "critiqueComments": ["Reviewer queue: composition and crop"], "critiqueHistory": [] } },
+    { "instanceId": "camera-gear-lens", "workflowType": "gear-loan-request", "currentState": "available", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "35mm prime lens", "mode": "Loan", "condition": "Excellent", "pickupWindow": "Thu 5-7 PM", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "camera-gear-tripod", "workflowType": "gear-loan-request", "currentState": "giveaway", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "Travel tripod", "mode": "Giveaway", "condition": "Good", "pickupWindow": "Sat morning", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "camera-validation", "workflowType": "camera-validation-report", "currentState": "pending", "createdByPersonaId": "camera-organizer", "instanceData": { "requestedWorkflows": ["photo-walk RSVP", "critique composition", "gear loan/giveaway"], "implementedWorkflows": ["Calendar", "Critique", "Gear", "Messages", "Admin", "Home"], "packagePaths": ["ext_camera_club", "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc"], "passState": "Pending validation", "validationHistory": [] } }
+  ]
+}
+''';
+
+
+class _ChessClubEngineTabSurface extends StatefulWidget {
+  const _ChessClubEngineTabSurface({required this.experience, required this.persona, required this.tabId, required this.accent, this.modernTheme});
+  final LoomExperienceDefinition experience; final LoomPersonaDefinition persona; final String tabId; final Color accent; final LoomCardTheme? modernTheme;
+  @override State<_ChessClubEngineTabSurface> createState()=>_ChessClubEngineTabSurfaceState();
+}
+
+class _ChessClubEngineTabSurfaceState extends State<_ChessClubEngineTabSurface> {
+  static final _stores=<String,_ChessClubEngineStore>{}; late final _ChessClubEngineStore _store;
+  List<WorkflowInstance> _instances=const []; final _controllers=<String,TextEditingController>{}; String? _error; var _loaded=false;
+  @override void initState(){super.initState(); _store=_stores.putIfAbsent(widget.experience.extensionId,()=>_ChessClubEngineStore(communityId: widget.experience.extensionId)); unawaited(_load());}
+  @override void didUpdateWidget(_ChessClubEngineTabSurface old){super.didUpdateWidget(old); if(old.persona.personaId!=widget.persona.personaId||old.tabId!=widget.tabId) unawaited(_load());}
+  @override void dispose(){for(final c in _controllers.values){c.dispose();} super.dispose();}
+  Future<void> _load() async {try{await _store.ensureReady(); final rows=await _store.instancesFor(tabId: widget.tabId, personaId: widget.persona.personaId); _sync(rows); if(!mounted)return; setState((){_instances=rows; _error=null; _loaded=true;});}catch(e){if(!mounted)return; setState((){_error='$e'; _loaded=true;});}}
+  Future<void> _transition(WorkflowInstance i,String t) async {await _store.apply(instance:i,transitionId:t,personaId:widget.persona.personaId); await _load();}
+  Future<void> _save(WorkflowInstance i) async {final fields=_store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState).where((f)=>f!='rankingRows'&&f!='lastUpdated'); await _store.updateFields(instance:i, fieldUpdates:{for(final f in fields) f: f=='board' ? (int.tryParse(_controller(i.instanceId,f).text)??_controller(i.instanceId,f).text) : _controller(i.instanceId,f).text}, personaId:widget.persona.personaId); await _load();}
+  @override Widget build(BuildContext context){if(!_loaded)return const Center(child:CircularProgressIndicator()); if(_error!=null)return Text(_error!,key:ValueKey('chess-load-error-${widget.tabId}')); if(widget.tabId=='home')return _home(context); return Column(key:ValueKey('chess-engine-${widget.tabId}'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+    if(widget.tabId=='matches')...[_card(context,_first('chess-match-meetup'),'Board 1 ladder match','Form entry to timeline to confirmed calendar event',Icons.sports_esports_outlined),const SizedBox(height:12),_card(context,_first('chess-match-result'),'Board 1 result','Result timeline with correction and dispute path',Icons.scoreboard_outlined)],
+    if(widget.tabId=='calendar')...[_card(context,_first('chess-match-meetup'),'Confirmed match calendar','The match meetup instance becomes a calendarAgenda card once confirmed',Icons.event_available_outlined),const SizedBox(height:12),_card(context,_first('chess-club-night'),'Thursday Ladder Night','Club night, tournament pairing, and reminder',Icons.calendar_month_outlined)],
+    if(widget.tabId=='rankings') _card(context,_first('chess-rankings-table'),'Live ladder rankings','Table archetype with rankingMode rows updated by result effects',Icons.leaderboard_outlined,extra:_rankings(_first('chess-rankings-table'))),
+    if(widget.tabId=='admin')...[_card(context,_first('chess-pairing-queue'),'Pairing queue','Organizer dashboard for outstanding pairings',Icons.groups_outlined),const SizedBox(height:12),_card(context,_first('chess-match-result'),'Result disputes','Organizer status timeline for disputed results',Icons.report_problem_outlined),const SizedBox(height:12),_card(context,_first('chess-export-package'),'Chess records export','Export wizard for matches, rankings, and documents',Icons.ios_share_outlined)],
+    if(widget.tabId=='documents') _card(context,_first('chess-rules-documents'),'Club rules and ladder policy','Document library with embedded, external, and download actions',Icons.description_outlined),
+    if(widget.tabId=='messages') _card(context,_first('chess-discussion-thread'),'Thursday pairings thread','Discussion thread for club-night coordination',Icons.forum_outlined),
+  ]);}
+  Widget _home(BuildContext context){final m=_first('chess-match-meetup'), q=_first('chess-pairing-queue'), r=_first('chess-rankings-table'); return Column(key:const ValueKey('chess-engine-home'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[_pin(context,const ValueKey('chess-home-next-match'),'Next match',Icons.event_available_outlined,'${m?.instanceData['opponent']??'Opponent'} on ${m?.instanceData['matchTime']??'time pending'}'),const SizedBox(height:12),_pin(context,const ValueKey('chess-home-pairing'),'Open challenge',Icons.groups_outlined,'${q?.instanceData['queueTitle']??'Queue'} - ${q?.instanceData['waitingPlayers'] is List ? (q!.instanceData['waitingPlayers'] as List).length : 0} waiting'),const SizedBox(height:12),_pin(context,const ValueKey('chess-home-standings'),'Standings snippet',Icons.leaderboard_outlined,_top(r))]);}
+  Widget _pin(BuildContext c,Key k,String title,IconData icon,String body)=>DecoratedBox(key:k,decoration:_box,child:Padding(padding:const EdgeInsets.all(16),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Icon(icon,color:widget.accent),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:Theme.of(c).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w900)),const SizedBox(height:6),Text(body)]))])));
+  Widget _card(BuildContext c,WorkflowInstance? i,String title,String sub,IconData icon,{Widget? extra}){if(i==null)return _TabEmptyState(icon:icon,title:'$title unavailable',body:'No engine instance is available for this Chess Club surface.',accent:widget.accent,modernTheme:widget.modernTheme); final machine=_store.machineFor(i.workflowType); final transitions=_store.availableTransitions(instance:i,personaId:widget.persona.personaId); return DecoratedBox(key:ValueKey('chess-card-${i.workflowType}-${i.instanceId}'),decoration:_box,child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Row(children:[Icon(icon,color:widget.accent),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:Theme.of(c).textTheme.titleLarge?.copyWith(fontWeight:FontWeight.w900)),Text(sub)]))]),const SizedBox(height:10),Wrap(spacing:8,runSpacing:8,children:[_SurfaceFactPill(icon:Icons.flag_outlined,label:'State: ${machine.states[i.currentState]?.label??i.currentState}',foreground:widget.accent),for(final w in _pills(machine,i.instanceData)) w]),const SizedBox(height:10),for(final f in const ['opponent','matchTime','place','board','whitePlayer','blackPlayer','round','score','resultSummary','eventTitle','eventTime','location','pairing','queueTitle','exportScope','checksum','documentTitle','threadTitle']) if(i.instanceData[f] case final v?) Text('$v'),_edit(i),if(extra!=null)extra,const SizedBox(height:12),Wrap(spacing:8,runSpacing:8,children:[for(final t in transitions) OutlinedButton.icon(key:ValueKey('chess-action-${t.id}'),style:_style(t),onPressed:()=>_transition(i,t.id),icon:Icon(_icon(t.icon)),label:Text(t.label))]),const SizedBox(height:12),for(final entry in _history(i.instanceData).asMap().entries) Text(entry.value,key:ValueKey('chess-history-${i.instanceId}-${entry.key}-${entry.value.hashCode}'))])));}
+  Widget _edit(WorkflowInstance i){final fields=_store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState).where((f)=>f!='rankingRows'&&f!='lastUpdated').toList(); if(fields.isEmpty)return const SizedBox.shrink(); return Column(key:ValueKey('chess-edit-form-${i.workflowType}'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[const SizedBox(height:8),for(final f in fields) TextField(key:ValueKey('chess-edit-$f'),controller:_controller(i.instanceId,f),decoration:InputDecoration(labelText:f)),const SizedBox(height:12),FilledButton.icon(key:ValueKey('chess-save-edit-${i.workflowType}'),onPressed:()=>_save(i),icon:const Icon(Icons.save_outlined),label:const Text('Save edits'))]);}
+  Widget? _rankings(WorkflowInstance? i){if(i==null)return null; final rows=_rows(i); return Column(key:const ValueKey('chess-rankings-table'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[const SizedBox(height:8),for(final r in rows) Text('${r['rank']}. ${r['player']} - ${r['score']} (${r['delta']})',key:ValueKey('chess-ranking-${r['player']}'))]);}
+  List<Widget> _pills(LoomWorkflowStateMachine m,Map<String,dynamic>d)=>[for(final e in m.instanceDataSchema.entries) if(e.value.displayIcon!=null && !(e.value.hideWhenEmpty && (d[e.key]==null || d[e.key] is List && (d[e.key] as List).isEmpty || d[e.key] is String && (d[e.key] as String).isEmpty))) _SurfaceFactPill(icon:_fact(e.value.displayIcon!),label:(e.value.labelTemplate??'{value}').replaceAll('{value.length}',d[e.key] is List?'${(d[e.key] as List).length}':'0').replaceAll('{value}',d[e.key] is List?(d[e.key] as List).join(', '):'${d[e.key]??''}'),foreground:widget.accent)];
+  List<String> _history(Map<String,dynamic>d){final out=<String>[]; for(final e in d.entries){if(e.key.toLowerCase().contains('history')||e.key.toLowerCase().contains('messages')){if(e.value is List)out.addAll([for(final x in e.value as List) if(x is String) x]);}} return out;}
+  void _sync(List<WorkflowInstance> rows){for(final i in rows){for(final f in _store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState)){if(f!='rankingRows')_controller(i.instanceId,f).text='${i.instanceData[f]??''}';}}}
+  TextEditingController _controller(String id,String f)=>_controllers.putIfAbsent('$id::$f',TextEditingController.new);
+  WorkflowInstance? _first(String type){for(final i in _instances){if(i.workflowType==type)return i;}return null;}
+  List<Map<String,dynamic>> _rows(WorkflowInstance i)=>i.instanceData['rankingRows'] is List ? [for(final r in i.instanceData['rankingRows'] as List) if(r is Map) Map<String,dynamic>.from(r)] : const [];
+  String _top(WorkflowInstance? i){if(i==null)return 'Rankings unavailable'; final rows=_rows(i); return rows.isEmpty?'No rankings yet':'${rows.first['player']} leads with ${rows.first['score']}';}
+  ButtonStyle _style(LoomWorkflowTransition t){final destructive=t.tone=='destructive'; final primary=t.tone=='primary'; return OutlinedButton.styleFrom(foregroundColor:destructive?Colors.red.shade800:primary?Colors.white:widget.accent,backgroundColor:primary?widget.accent:null,side:BorderSide(color:destructive?Colors.red.shade800:widget.accent));}
+  IconData _icon(String? i)=>switch(i){'send'=>Icons.send_outlined,'check'=>Icons.check_circle_outline,'close'=>Icons.close_outlined,'schedule'=>Icons.schedule_outlined,'delete'=>Icons.delete_outline,'event_available'=>Icons.event_available_outlined,'scoreboard'=>Icons.scoreboard_outlined,'edit'=>Icons.edit_outlined,'report'=>Icons.report_problem_outlined,'verified'=>Icons.verified_outlined,'publish'=>Icons.publish_outlined,'notifications'=>Icons.notifications_outlined,'groups'=>Icons.groups_outlined,'download'=>Icons.download_outlined,'undo'=>Icons.undo_outlined,'open_in_browser'=>Icons.open_in_browser_outlined,'open_in_new'=>Icons.open_in_new_outlined,'reply'=>Icons.reply_outlined,_=>Icons.sports_esports_outlined};
+  IconData _fact(String i)=>switch(i){'person'=>Icons.person_outline,'schedule'=>Icons.schedule_outlined,'location_on'=>Icons.location_on_outlined,'table_bar'=>Icons.table_bar_outlined,'history'=>Icons.history_outlined,'flag'=>Icons.flag_outlined,'scoreboard'=>Icons.scoreboard_outlined,'leaderboard'=>Icons.leaderboard_outlined,'event'=>Icons.event_outlined,'groups'=>Icons.groups_outlined,'notifications'=>Icons.notifications_outlined,'description'=>Icons.description_outlined,'verified'=>Icons.verified_outlined,'forum'=>Icons.forum_outlined,_=>Icons.label_outline};
+  BoxDecoration get _box=>BoxDecoration(color:widget.modernTheme?.resolvedFill??Colors.white,borderRadius:BorderRadius.circular(20),border:Border.all(color:widget.modernTheme?.resolvedBorder??widget.accent.withValues(alpha:0.2)));
+}
+
+class _ChessClubEngineStore {
+  _ChessClubEngineStore({required this.communityId}); final String communityId; late final WorkflowDatabase _database=WorkflowDatabase.memory(); late final LocalWorkflowEngineApi _engine=LocalWorkflowEngineApi(db:_database,communityId:communityId); _ChessFixtureBundle? _fixture; Future<void>? _readyFuture; var _ready=false;
+  Future<void> ensureReady(){if(_ready)return Future.value(); return _readyFuture??=_init();}
+  Future<void> _init() async {_fixture??=await _ChessFixtureBundle.load(); for(final m in _fixture!.machines.values){_engine.registerDefinition(m);} for(final i in _fixture!.instances){await _engine.createInstance(workflowType:i.workflowType,initialInstanceData:i.instanceData,personaId:i.createdByPersonaId);} _ready=true;}
+  Future<List<WorkflowInstance>> instancesFor({required String tabId,required String personaId}) async {await ensureReady(); final page=await _engine.queryInstances(tabId:tabId,personaId:personaId,limit:100,query:const SurfaceQuery()); final allowed=switch(tabId){'matches'=>const {'chess-match-meetup','chess-match-result'},'calendar'=>const {'chess-match-meetup','chess-club-night'},'rankings'=>const {'chess-rankings-table'},'admin'=>const {'chess-pairing-queue','chess-match-result','chess-export-package'},'documents'=>const {'chess-rules-documents'},'messages'=>const {'chess-discussion-thread'},'home'=>const {'chess-match-meetup','chess-pairing-queue','chess-rankings-table'},_=>const <String>{}}; return page.items.where((i)=>allowed.contains(i.workflowType)).toList(growable:false);}
+  List<LoomWorkflowTransition> availableTransitions({required WorkflowInstance instance,required String personaId})=>_engine.availableTransitions(workflowType:instance.workflowType,instanceId:instance.instanceId,currentState:instance.currentState,instanceData:instance.instanceData,personaId:personaId);
+  Future<void> apply({required WorkflowInstance instance,required String transitionId,required String personaId}) async {await _engine.applyTransition(workflowType:instance.workflowType,instanceId:instance.instanceId,transitionId:transitionId,personaId:personaId); if(instance.workflowType=='chess-match-result'&&(transitionId=='submit-result'||transitionId=='correct-result')) await _rankingsEffect(transitionId, personaId);}
+  Future<void> _rankingsEffect(String transitionId,String personaId) async {final page=await _engine.queryInstances(tabId:'rankings',personaId:'chess-organizer',limit:100,query:const SurfaceQuery()); final ranking=page.items.firstWhere((i)=>i.workflowType=='chess-rankings-table'); final rows=[for(final r in ranking.instanceData['rankingRows'] as List) Map<String,dynamic>.from(r as Map)]; for(final r in rows){if(r['player']=='Maya Patel'){r['score']=transitionId=='submit-result'?1496:1492; r['delta']=transitionId=='submit-result'?'+16':'+12';}} rows.sort((a,b)=>(b['score'] as int).compareTo(a['score'] as int)); for(var i=0;i<rows.length;i++){rows[i]['rank']=i+1;} await _engine.updateInstanceFields(workflowType:ranking.workflowType,instanceId:ranking.instanceId,fieldUpdates:{'rankingRows':rows,'lastUpdated':transitionId=='submit-result'?'Updated from submitted result':'Updated from corrected result'},personaId:personaId);}
+  Future<void> updateFields({required WorkflowInstance instance,required Map<String,dynamic> fieldUpdates,required String personaId})=>_engine.updateInstanceFields(workflowType:instance.workflowType,instanceId:instance.instanceId,fieldUpdates:fieldUpdates,personaId:personaId);
+  LoomWorkflowStateMachine machineFor(String workflowType)=>_fixture!.machines[workflowType]!;
+  List<String> editableFieldsFor({required String workflowType,required String state})=>machineFor(workflowType).states[state]?.editableFields??const [];
+}
+
+class _ChessFixtureBundle { _ChessFixtureBundle({required this.machines,required this.instances}); final Map<String,LoomWorkflowStateMachine> machines; final List<_GardenSeedInstance> instances; static Future<_ChessFixtureBundle> load() async {final json=jsonDecode(_stripGardenJsoncComments(_chessBundledFixtureJsonc)) as Map<String,dynamic>; final defs=json['workflowDefinitions'] as Map<String,dynamic>; final machines=<String,LoomWorkflowStateMachine>{}; for(final e in defs.entries){machines[e.key]=LoomWorkflowStateMachine.fromJson(_normalizeGardenMachineJson(e.value as Map<String,dynamic>),e.key);} final instances=[for(final item in (json['workflowInstances'] as List<dynamic>)) _GardenSeedInstance.fromJson(item as Map<String,dynamic>)]; return _ChessFixtureBundle(machines:machines,instances:instances);} }
+
+const _chessBundledFixtureJsonc = r'''
+{
+  "personas": [
+    "chess-player",
+    "chess-organizer"
+  ],
+  "templates": {
+    "dashboard": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "formEntry": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "WorkflowFormFieldList"
+      ]
+    },
+    "statusTimeline": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "calendarAgenda": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "table": {
+      "rankingMode": true,
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ],
+      "columns": [
+        {
+          "key": "rank",
+          "sortable": true
+        },
+        {
+          "key": "player",
+          "sortable": true
+        },
+        {
+          "key": "score",
+          "sortable": true
+        },
+        {
+          "key": "delta",
+          "sortable": true
+        }
+      ]
+    },
+    "exportWizard": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "documentLibrary": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "discussionThread": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    }
+  },
+  "workflowDefinitions": {
+    "chess-match-meetup": {
+      "initialState": "draft",
+      "states": {
+        "draft": {
+          "label": "Draft",
+          "editableFields": [
+            "opponent",
+            "matchTime",
+            "place",
+            "board"
+          ]
+        },
+        "proposed": {
+          "label": "Proposed"
+        },
+        "rescheduled": {
+          "label": "Rescheduled"
+        },
+        "accepted": {
+          "label": "Accepted"
+        },
+        "confirmed": {
+          "label": "Confirmed",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "propose-match",
+          "label": "Propose match",
+          "icon": "send",
+          "tone": "primary",
+          "from": [
+            "draft"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Match proposed with {opponent}"
+            }
+          ]
+        },
+        {
+          "id": "decline-match",
+          "label": "Decline",
+          "icon": "close",
+          "tone": "secondary",
+          "from": [
+            "proposed",
+            "rescheduled"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Decline recorded; challenge remains open"
+            }
+          ]
+        },
+        {
+          "id": "suggest-new-time",
+          "label": "Suggest new time",
+          "icon": "schedule",
+          "tone": "secondary",
+          "from": [
+            "proposed",
+            "accepted"
+          ],
+          "to": "rescheduled",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "matchTime",
+              "value": "Friday 7:30 PM"
+            },
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "New time suggested for Friday 7:30 PM"
+            }
+          ]
+        },
+        {
+          "id": "cancel-match",
+          "label": "Cancel",
+          "icon": "delete",
+          "tone": "destructive",
+          "from": [
+            "proposed",
+            "rescheduled",
+            "accepted"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Cancellation noted; organizer can rematch if needed"
+            }
+          ]
+        },
+        {
+          "id": "accept-match",
+          "label": "Accept",
+          "icon": "check",
+          "tone": "primary",
+          "from": [
+            "proposed",
+            "rescheduled"
+          ],
+          "to": "accepted",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Invite accepted"
+            }
+          ]
+        },
+        {
+          "id": "confirm-match",
+          "label": "Confirm calendar event",
+          "icon": "event_available",
+          "tone": "primary",
+          "from": [
+            "accepted"
+          ],
+          "to": "confirmed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Confirmed on calendar"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "draft"
+          ],
+          "role": "actor",
+          "tabId": "matches",
+          "cardSurfaceFamily": "formEntry",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "proposed",
+            "rescheduled",
+            "accepted"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "confirmed"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "confirmed"
+          ],
+          "role": "any",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "summary"
+        }
+      ],
+      "instanceDataSchema": {
+        "opponent": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Opponent: {value}"
+        },
+        "matchTime": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "{value}"
+        },
+        "place": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "location_on",
+          "labelTemplate": "{value}"
+        },
+        "board": {
+          "type": "number",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "table_bar",
+          "labelTemplate": "Board {value}"
+        },
+        "matchHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Updates: {value.length}"
+        }
+      }
+    },
+    "chess-match-result": {
+      "initialState": "draft",
+      "states": {
+        "draft": {
+          "label": "Draft",
+          "editableFields": [
+            "whitePlayer",
+            "blackPlayer",
+            "round",
+            "score",
+            "resultSummary"
+          ]
+        },
+        "submitted": {
+          "label": "Submitted"
+        },
+        "corrected": {
+          "label": "Corrected"
+        },
+        "disputed": {
+          "label": "Disputed"
+        },
+        "resolved": {
+          "label": "Resolved",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "submit-result",
+          "label": "Submit result",
+          "icon": "scoreboard",
+          "tone": "primary",
+          "from": [
+            "draft"
+          ],
+          "to": "submitted",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "rankingRows",
+              "value": "Maya Patel:1496:+16",
+              "targetWorkflowType": "chess-rankings-table",
+              "targetInstanceKey": "rankings-main"
+            },
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Result submitted: {score}"
+            }
+          ]
+        },
+        {
+          "id": "correct-result",
+          "label": "Correct result",
+          "icon": "edit",
+          "tone": "secondary",
+          "from": [
+            "submitted"
+          ],
+          "to": "corrected",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "rankingRows",
+              "value": "Maya Patel:1492:+12",
+              "targetWorkflowType": "chess-rankings-table",
+              "targetInstanceKey": "rankings-main"
+            },
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Correction saved"
+            }
+          ]
+        },
+        {
+          "id": "dispute-result",
+          "label": "Dispute result",
+          "icon": "report",
+          "tone": "destructive",
+          "from": [
+            "submitted",
+            "corrected"
+          ],
+          "to": "disputed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player",
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Dispute opened for organizer review"
+            }
+          ]
+        },
+        {
+          "id": "resolve-dispute",
+          "label": "Resolve dispute",
+          "icon": "verified",
+          "tone": "primary",
+          "from": [
+            "disputed"
+          ],
+          "to": "resolved",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Dispute resolved by organizer"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "draft",
+            "submitted",
+            "corrected",
+            "disputed",
+            "resolved"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "whitePlayer": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "White: {value}"
+        },
+        "blackPlayer": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Black: {value}"
+        },
+        "round": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "flag",
+          "labelTemplate": "{value}"
+        },
+        "score": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "scoreboard",
+          "labelTemplate": "Score: {value}"
+        },
+        "resultSummary": {
+          "type": "text",
+          "writableBy": "formEntry"
+        },
+        "rankingRows": {
+          "type": "text",
+          "writableBy": "effect"
+        },
+        "resultHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Result updates: {value.length}"
+        }
+      }
+    },
+    "chess-rankings-table": {
+      "initialState": "current",
+      "states": {
+        "current": {
+          "label": "Current",
+          "editableFields": [
+            "rankingRows",
+            "lastUpdated"
+          ]
+        }
+      },
+      "transitions": [
+        {
+          "id": "publish-rankings",
+          "label": "Publish rankings",
+          "icon": "publish",
+          "tone": "secondary",
+          "from": [
+            "current"
+          ],
+          "to": "current",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "lastUpdated",
+              "value": "Published"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "current"
+          ],
+          "role": "any",
+          "tabId": "rankings",
+          "cardSurfaceFamily": "table",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "rankingRows": {
+          "type": "list",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "leaderboard",
+          "labelTemplate": "Rows: {value.length}",
+          "sortable": true
+        },
+        "lastUpdated": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "Updated: {value}",
+          "sortable": true
+        },
+        "rank": {
+          "type": "number",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "player": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "score": {
+          "type": "number",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "delta": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "sortable": true
+        }
+      }
+    },
+    "chess-club-night": {
+      "initialState": "scheduled",
+      "states": {
+        "scheduled": {
+          "label": "Scheduled"
+        },
+        "reminded": {
+          "label": "Reminder sent",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "send-reminder",
+          "label": "Send reminder",
+          "icon": "notifications",
+          "tone": "secondary",
+          "from": [
+            "scheduled"
+          ],
+          "to": "reminded",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "reminderStatus",
+              "value": "Reminder sent"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "scheduled",
+            "reminded"
+          ],
+          "role": "any",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "eventTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "event",
+          "labelTemplate": "{value}"
+        },
+        "eventTime": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "{value}"
+        },
+        "location": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "location_on",
+          "labelTemplate": "{value}"
+        },
+        "pairing": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "displayIcon": "groups",
+          "labelTemplate": "Pairing: {value}"
+        },
+        "reminderStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "notifications",
+          "labelTemplate": "{value}"
+        }
+      }
+    },
+    "chess-pairing-queue": {
+      "initialState": "open",
+      "states": {
+        "open": {
+          "label": "Open"
+        },
+        "assigned": {
+          "label": "Assigned",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "assign-pairing",
+          "label": "Assign pairing",
+          "icon": "groups",
+          "tone": "primary",
+          "from": [
+            "open"
+          ],
+          "to": "assigned",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "pairingHistory",
+              "value": "Pairing assigned by organizer"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "open",
+            "assigned"
+          ],
+          "role": "actor",
+          "tabId": "admin",
+          "cardSurfaceFamily": "dashboard",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "queueTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "groups",
+          "labelTemplate": "{value}"
+        },
+        "waitingPlayers": {
+          "type": "list",
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Waiting: {value.length}"
+        },
+        "pairingHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Assignments: {value.length}"
+        }
+      }
+    },
+    "chess-export-package": {
+      "initialState": "ready",
+      "states": {
+        "ready": {
+          "label": "Ready"
+        },
+        "generated": {
+          "label": "Generated"
+        },
+        "rolledBack": {
+          "label": "Rolled back",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "generate-export",
+          "label": "Generate export",
+          "icon": "download",
+          "tone": "primary",
+          "from": [
+            "ready"
+          ],
+          "to": "generated",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "checksum",
+              "value": "sha256-chess-2026"
+            }
+          ]
+        },
+        {
+          "id": "rollback-export",
+          "label": "Rollback export",
+          "icon": "undo",
+          "tone": "destructive",
+          "from": [
+            "generated"
+          ],
+          "to": "rolledBack",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "exportStatus",
+              "value": "Rolled back"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "ready",
+            "generated",
+            "rolledBack"
+          ],
+          "role": "actor",
+          "tabId": "admin",
+          "cardSurfaceFamily": "exportWizard",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "exportScope": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "description",
+          "labelTemplate": "{value}"
+        },
+        "checksum": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "verified",
+          "labelTemplate": "{value}"
+        },
+        "exportStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "{value}"
+        }
+      }
+    },
+    "chess-rules-documents": {
+      "initialState": "available",
+      "states": {
+        "available": {
+          "label": "Available"
+        },
+        "embeddedOpened": {
+          "label": "Embedded opened"
+        },
+        "externalOpened": {
+          "label": "External opened"
+        },
+        "downloaded": {
+          "label": "Downloaded",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "open-embedded",
+          "label": "Open in app",
+          "icon": "open_in_browser",
+          "tone": "primary",
+          "from": [
+            "available",
+            "externalOpened"
+          ],
+          "to": "embeddedOpened",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules opened in app"
+            }
+          ]
+        },
+        {
+          "id": "open-external",
+          "label": "Open external",
+          "icon": "open_in_new",
+          "tone": "secondary",
+          "from": [
+            "available",
+            "embeddedOpened"
+          ],
+          "to": "externalOpened",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules opened externally"
+            }
+          ]
+        },
+        {
+          "id": "download-document",
+          "label": "Download",
+          "icon": "download",
+          "tone": "primary",
+          "from": [
+            "available",
+            "embeddedOpened",
+            "externalOpened"
+          ],
+          "to": "downloaded",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules downloaded"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "available",
+            "embeddedOpened",
+            "externalOpened",
+            "downloaded"
+          ],
+          "role": "actor",
+          "tabId": "documents",
+          "cardSurfaceFamily": "documentLibrary",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "documentTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "description",
+          "labelTemplate": "{value}"
+        },
+        "documentHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Opens: {value.length}"
+        }
+      }
+    },
+    "chess-discussion-thread": {
+      "initialState": "open",
+      "states": {
+        "open": {
+          "label": "Open"
+        },
+        "replied": {
+          "label": "Replied"
+        },
+        "archived": {
+          "label": "Archived",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "reply-thread",
+          "label": "Reply",
+          "icon": "reply",
+          "tone": "primary",
+          "from": [
+            "open"
+          ],
+          "to": "replied",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player",
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "threadMessages",
+              "value": "See you at club night"
+            }
+          ]
+        },
+        {
+          "id": "archive-thread",
+          "label": "Archive",
+          "icon": "delete",
+          "tone": "secondary",
+          "from": [
+            "replied"
+          ],
+          "to": "archived",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "threadMessages",
+              "value": "Thread archived"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "open",
+            "replied",
+            "archived"
+          ],
+          "role": "any",
+          "tabId": "messages",
+          "cardSurfaceFamily": "discussionThread",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "threadTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "forum",
+          "labelTemplate": "{value}"
+        },
+        "threadMessages": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "forum",
+          "labelTemplate": "Messages: {value.length}"
+        }
+      }
+    }
+  },
+  "workflowInstances": [
+    {
+      "workflowType": "chess-match-meetup",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "opponent": "Noah Kim",
+        "matchTime": "Thursday 6:30 PM",
+        "place": "Library Room B",
+        "board": 1,
+        "matchHistory": []
+      },
+      "instanceId": "chess-01-chess-match-meetup",
+      "currentState": "draft"
+    },
+    {
+      "workflowType": "chess-match-result",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "whitePlayer": "Maya Patel",
+        "blackPlayer": "Noah Kim",
+        "round": "Ladder Round 4",
+        "score": "1-0",
+        "resultSummary": "Maya won on Board 1",
+        "rankingRows": "",
+        "resultHistory": []
+      },
+      "instanceId": "chess-02-chess-match-result",
+      "currentState": "draft"
+    },
+    {
+      "workflowType": "chess-rankings-table",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "instanceKey": "rankings-main",
+        "rankingRows": [
+          {
+            "rank": 1,
+            "player": "Noah Kim",
+            "score": 1510,
+            "delta": 0
+          },
+          {
+            "rank": 2,
+            "player": "Maya Patel",
+            "score": 1480,
+            "delta": 0
+          },
+          {
+            "rank": 3,
+            "player": "Ari Stone",
+            "score": 1460,
+            "delta": 0
+          }
+        ],
+        "lastUpdated": "Seed rankings"
+      },
+      "instanceId": "chess-03-chess-rankings-table",
+      "currentState": "current"
+    },
+    {
+      "workflowType": "chess-club-night",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "eventTitle": "Thursday Ladder Night",
+        "eventTime": "Thursday 7:00 PM",
+        "location": "Community Center",
+        "pairing": "Board 1: Maya vs Noah",
+        "reminderStatus": ""
+      },
+      "instanceId": "chess-04-chess-club-night",
+      "currentState": "scheduled"
+    },
+    {
+      "workflowType": "chess-pairing-queue",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "queueTitle": "Open challenge queue",
+        "waitingPlayers": [
+          "Maya Patel",
+          "Ari Stone"
+        ],
+        "pairingHistory": []
+      },
+      "instanceId": "chess-05-chess-pairing-queue",
+      "currentState": "open"
+    },
+    {
+      "workflowType": "chess-export-package",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "exportScope": "Matches, rankings, documents",
+        "checksum": "",
+        "exportStatus": "Ready"
+      },
+      "instanceId": "chess-06-chess-export-package",
+      "currentState": "ready"
+    },
+    {
+      "workflowType": "chess-rules-documents",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "documentTitle": "Club rules and ladder policy",
+        "documentHistory": []
+      },
+      "instanceId": "chess-07-chess-rules-documents",
+      "currentState": "available"
+    },
+    {
+      "workflowType": "chess-discussion-thread",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "threadTitle": "Thursday pairings",
+        "threadMessages": [
+          "Bring clocks for boards 1-4"
+        ]
+      },
+      "instanceId": "chess-08-chess-discussion-thread",
+      "currentState": "open"
+    }
+  ]
+}
+''';
+
+class _BookClubEngineTabSurface extends StatefulWidget {
+  const _BookClubEngineTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.tabId,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final String tabId;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_BookClubEngineTabSurface> createState() =>
+      _BookClubEngineTabSurfaceState();
+}
+
+class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
+  static final _stores = <String, _BookClubEngineStore>{};
+
+  late final _BookClubEngineStore _store;
+  List<WorkflowInstance> _instances = const [];
+  final Map<String, TextEditingController> _controllers = {};
+  String? _loadError;
+  var _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _BookClubEngineStore(communityId: widget.experience.extensionId),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_BookClubEngineTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId ||
+        oldWidget.tabId != widget.tabId) {
+      unawaited(_load());
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final instances = await _store.instancesFor(
+        tabId: widget.tabId,
+        personaId: widget.persona.personaId,
+      );
+      _syncControllers(instances);
+      if (!mounted) return;
+      setState(() {
+        _instances = instances;
+        _loadError = null;
+        _loaded = true;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = '$error';
+        _loaded = true;
+      });
+    }
+  }
+
+  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+    await _store.apply(
+      instance: instance,
+      transitionId: transitionId,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  Future<void> _saveEditableFields(WorkflowInstance instance) async {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    final updates = <String, dynamic>{
+      for (final field in fields)
+        field: _controllerFor(instance.instanceId, field).text,
+    };
+    await _store.updateFields(
+      instance: instance,
+      fieldUpdates: updates,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Center(
+        child: Text(_loadError!, key: ValueKey('book-load-error-${widget.tabId}')),
+      );
+    }
+    if (widget.tabId == 'home') return _buildHome(context);
+    return Column(
+      key: ValueKey('book-engine-${widget.tabId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.tabId == 'books') ...[
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-nomination'),
+            title: 'Nominate the next book',
+            subtitle: 'Form entry with title, author, reason, and cover',
+            icon: Icons.menu_book_outlined,
+          ),
+          const SizedBox(height: 12),
+          _bookVotePollCard(context, _firstInstance('book-vote')),
+          const SizedBox(height: 12),
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-selection-publish'),
+            title: 'Selection announcement',
+            subtitle: 'Notification inbox publish and receive',
+            icon: Icons.campaign_outlined,
+          ),
+        ],
+        if (widget.tabId == 'calendar')
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-meeting-rsvp'),
+            title: 'March discussion meeting',
+            subtitle: 'Calendar RSVP and attendance',
+            icon: Icons.event_available_outlined,
+          ),
+        if (widget.tabId == 'library')
+          for (final instance in _instances.where(
+            (item) => item.workflowType == 'book-library-item',
+          ))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _bookWorkflowCard(
+                context,
+                instance,
+                title: '${instance.instanceData['itemTitle'] ?? 'Library item'}',
+                subtitle: '${instance.instanceData['format'] ?? 'Book'} shared item',
+                icon: Icons.local_library_outlined,
+              ),
+            ),
+        if (widget.tabId == 'discussions')
+          _bookDiscussionCard(context, _firstInstance('book-discussion-message')),
+        if (widget.tabId == 'documents')
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-reading-material'),
+            title: 'Reading guide and author links',
+            subtitle: 'Document library open, external, and download',
+            icon: Icons.description_outlined,
+          ),
+        if (widget.tabId == 'search')
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-search-ai-digest'),
+            title: 'Cited book-club search',
+            subtitle: 'Search answer with reading-guide citations',
+            icon: Icons.manage_search_outlined,
+          ),
+        if (widget.tabId == 'admin') ...[
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-selection-publish'),
+            title: 'Publish selected book',
+            subtitle: 'Organizer composer and member receiver state',
+            icon: Icons.campaign_outlined,
+          ),
+          const SizedBox(height: 12),
+          _bookWorkflowCard(
+            context,
+            _firstInstance('book-export-metadata'),
+            title: 'Book records export',
+            subtitle: 'Export scope, checksum, and audit',
+            icon: Icons.ios_share_outlined,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildHome(BuildContext context) {
+    final nomination = _firstInstance('book-nomination');
+    final vote = _firstInstance('book-vote');
+    final meeting = _firstInstance('book-meeting-rsvp');
+    return Column(
+      key: const ValueKey('book-engine-home'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _bookHomePin(
+          context,
+          key: const ValueKey('book-home-selection'),
+          title: 'Current selection',
+          icon: Icons.auto_stories_outlined,
+          body:
+              '${nomination?.instanceData['title'] ?? 'Current title'} by ${nomination?.instanceData['author'] ?? 'Author'}',
+        ),
+        const SizedBox(height: 12),
+        _bookHomePin(
+          context,
+          key: const ValueKey('book-home-ballot'),
+          title: 'Open ballot',
+          icon: Icons.how_to_vote_outlined,
+          body:
+              '${vote?.instanceData['deadline'] ?? 'Deadline'} - ${_bookStateLabel(vote?.currentState ?? 'open')}',
+        ),
+        const SizedBox(height: 12),
+        _bookHomePin(
+          context,
+          key: const ValueKey('book-home-meeting'),
+          title: 'Next meeting',
+          icon: Icons.event_note_outlined,
+          body:
+              '${meeting?.instanceData['meetingTitle'] ?? 'Meeting'}\n${meeting?.instanceData['eventDateTime'] ?? ''}',
+        ),
+      ],
+    );
+  }
+
+  Widget _bookHomePin(
+    BuildContext context, {
+    required Key key,
+    required String title,
+    required IconData icon,
+    required String body,
+  }) {
+    return DecoratedBox(
+      key: key,
+      decoration: _bookBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: widget.accent),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(body),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bookVotePollCard(BuildContext context, WorkflowInstance? instance) {
+    return _bookWorkflowCard(
+      context,
+      instance,
+      title: 'Monthly selection ballot',
+      subtitle: 'Vote poll with live totals, winner, and tie state',
+      icon: Icons.how_to_vote_outlined,
+      extra: instance == null
+          ? null
+          : Column(
+              key: const ValueKey('book-vote-poll-results'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 8),
+                Text('Parable: ${instance.instanceData['parableVotes'] ?? 0}'),
+                Text('Left Hand: ${instance.instanceData['leftHandVotes'] ?? 0}'),
+                Text('Winner: ${instance.instanceData['winnerTitle'] ?? 'Pending'}'),
+              ],
+            ),
+    );
+  }
+
+  Widget _bookDiscussionCard(BuildContext context, WorkflowInstance? instance) {
+    final replies = instance?.instanceData['replies'];
+    final items = replies is List
+        ? [for (final item in replies) if (item is String) item]
+        : const <String>[];
+    return _bookWorkflowCard(
+      context,
+      instance,
+      title: 'Parable discussion thread',
+      subtitle: 'Replies, edits, deletion, and organizer moderation',
+      icon: Icons.forum_outlined,
+      extra: Column(
+        key: const ValueKey('book-discussion-thread'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 8),
+          for (final item in items)
+            Text(item, key: ValueKey('book-discussion-reply-${item.hashCode}')),
+        ],
+      ),
+    );
+  }
+
+  Widget _bookWorkflowCard(
+    BuildContext context,
+    WorkflowInstance? instance, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    Widget? extra,
+  }) {
+    if (instance == null) {
+      return _TabEmptyState(
+        icon: icon,
+        title: '$title unavailable',
+        body: 'No engine instance is available for this Book Club surface.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    final transitions = _store.availableTransitions(
+      instance: instance,
+      personaId: widget.persona.personaId,
+    );
+    final machine = _store.machineFor(instance.workflowType);
+    final data = instance.instanceData;
+    final queue = data['queuePersonaIds'];
+    final queueCount = queue is List ? queue.length : 0;
+    return DecoratedBox(
+      key: ValueKey('book-card-${instance.workflowType}-${instance.instanceId}'),
+      decoration: _bookBoxDecoration,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: widget.accent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                      Text(subtitle),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label:
+                      'State: ${machine.states[instance.currentState]?.label ?? _bookStateLabel(instance.currentState)}',
+                  foreground: widget.accent,
+                ),
+                for (final pill in _factPills(machine, data)) pill,
+                if (queueCount > 0)
+                  _SurfaceFactPill(
+                    icon: Icons.people_alt_outlined,
+                    label: 'Queue: $queueCount',
+                    foreground: widget.accent,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final field in const [
+              'title',
+              'author',
+              'meetingTitle',
+              'itemTitle',
+              'currentHolder',
+              'materialTitle',
+              'answer',
+              'announcementTitle',
+              'downloadStatus',
+            ])
+              if (data[field] case final value?) Text('$value'),
+            if (_store.editableFieldsFor(
+                  workflowType: instance.workflowType,
+                  state: instance.currentState,
+                ).isNotEmpty)
+              _buildEditableFields(instance),
+            if (extra != null) extra,
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final transition in transitions)
+                  OutlinedButton.icon(
+                    key: ValueKey('book-action-${transition.id}'),
+                    style: _bookButtonStyle(transition),
+                    onPressed: () => _transition(instance, transition.id),
+                    icon: Icon(_bookIconForTransition(transition.icon)),
+                    label: Text(transition.label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            for (final item in _historyItems(data))
+              Text(item, key: ValueKey('book-history-${item.hashCode}')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditableFields(WorkflowInstance instance) {
+    final fields = _store.editableFieldsFor(
+      workflowType: instance.workflowType,
+      state: instance.currentState,
+    );
+    return Column(
+      key: ValueKey('book-edit-form-${instance.workflowType}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        for (final field in fields)
+          TextField(
+            key: ValueKey('book-edit-$field'),
+            controller: _controllerFor(instance.instanceId, field),
+            decoration: InputDecoration(labelText: _bookFieldLabel(field)),
+          ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: ValueKey('book-save-edit-${instance.workflowType}'),
+          onPressed: () => _saveEditableFields(instance),
+          icon: const Icon(Icons.save_outlined),
+          label: const Text('Save edits'),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _factPills(
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> data,
+  ) {
+    final pills = <Widget>[];
+    for (final entry in machine.instanceDataSchema.entries) {
+      final field = entry.value;
+      final iconName = field.displayIcon;
+      if (iconName == null) continue;
+      final value = data[entry.key];
+      final isEmpty = value == null ||
+          (value is String && value.isEmpty) ||
+          (value is List && value.isEmpty);
+      if (field.hideWhenEmpty && isEmpty) continue;
+      final label = _renderBookLabel(field.labelTemplate, value);
+      if (label.isEmpty) continue;
+      pills.add(
+        _SurfaceFactPill(
+          icon: _bookFactIcon(iconName),
+          label: label,
+          foreground: widget.accent,
+        ),
+      );
+    }
+    return pills;
+  }
+
+  List<String> _historyItems(Map<String, dynamic> data) {
+    for (final entry in data.entries) {
+      if (!entry.key.toLowerCase().contains('history')) continue;
+      final value = entry.value;
+      if (value is List) {
+        return [for (final item in value) if (item is String) item];
+      }
+    }
+    return const <String>[];
+  }
+
+  void _syncControllers(List<WorkflowInstance> instances) {
+    for (final instance in instances) {
+      final fields = _store.editableFieldsFor(
+        workflowType: instance.workflowType,
+        state: instance.currentState,
+      );
+      for (final field in fields) {
+        _controllerFor(instance.instanceId, field).text =
+            '${instance.instanceData[field] ?? ''}';
+      }
+    }
+  }
+
+  TextEditingController _controllerFor(String instanceId, String field) {
+    final key = '$instanceId::$field';
+    return _controllers.putIfAbsent(key, TextEditingController.new);
+  }
+
+  WorkflowInstance? _firstInstance(String workflowType) {
+    for (final instance in _instances) {
+      if (instance.workflowType == workflowType) return instance;
+    }
+    return null;
+  }
+
+  String _renderBookLabel(String? template, dynamic value) {
+    if (template == null) return '';
+    return template
+        .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
+        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+  }
+
+  ButtonStyle _bookButtonStyle(LoomWorkflowTransition transition) {
+    final destructive = transition.tone == 'destructive' ||
+        transition.id.contains('withdraw') ||
+        transition.id.contains('clear') ||
+        transition.id.contains('delete') ||
+        transition.id.contains('lost') ||
+        transition.id.contains('delist');
+    final primary = transition.tone == 'primary' ||
+        transition.id.contains('submit') ||
+        transition.id.contains('cast') ||
+        transition.id.contains('request') ||
+        transition.id.contains('claim') ||
+        transition.id.contains('publish') ||
+        transition.id.contains('open') ||
+        transition.id.contains('reply');
+    return OutlinedButton.styleFrom(
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+              ? Colors.white
+              : widget.accent,
+      backgroundColor: primary ? widget.accent : null,
+      side: BorderSide(color: destructive ? Colors.red.shade800 : widget.accent),
+    );
+  }
+
+  IconData _bookIconForTransition(String? icon) {
+    switch (icon) {
+      case 'edit':
+        return Icons.edit_outlined;
+      case 'delete':
+        return Icons.delete_outline;
+      case 'event_available':
+        return Icons.event_available_outlined;
+      case 'queue':
+        return Icons.people_alt_outlined;
+      case 'undo':
+        return Icons.undo_outlined;
+      case 'download':
+        return Icons.download_outlined;
+      case 'search':
+        return Icons.manage_search_outlined;
+      case 'publish':
+        return Icons.campaign_outlined;
+      case 'vote':
+        return Icons.how_to_vote_outlined;
+      case 'reply':
+        return Icons.reply_outlined;
+    }
+    return Icons.menu_book_outlined;
+  }
+
+  IconData _bookFactIcon(String iconName) {
+    switch (iconName) {
+      case 'schedule':
+        return Icons.schedule_outlined;
+      case 'location_on':
+        return Icons.location_on_outlined;
+      case 'groups':
+        return Icons.groups_outlined;
+      case 'book':
+        return Icons.menu_book_outlined;
+      case 'inventory_2':
+        return Icons.inventory_2_outlined;
+      case 'person':
+        return Icons.person_outline;
+      case 'verified':
+        return Icons.verified_outlined;
+      case 'search':
+        return Icons.manage_search_outlined;
+      case 'description':
+        return Icons.description_outlined;
+    }
+    return Icons.label_outline;
+  }
+
+  String _bookFieldLabel(String field) {
+    switch (field) {
+      case 'title':
+        return 'Title';
+      case 'author':
+        return 'Author';
+      case 'reason':
+        return 'Reason';
+      case 'coverImage':
+        return 'Cover image';
+      case 'messageBody':
+        return 'Message';
+      case 'itemTitle':
+        return 'Item title';
+      case 'condition':
+        return 'Condition';
+    }
+    return field;
+  }
+
+  BoxDecoration get _bookBoxDecoration => BoxDecoration(
+        color: widget.modernTheme?.resolvedFill ?? Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              widget.modernTheme?.resolvedBorder ??
+              widget.accent.withValues(alpha: 0.2),
+        ),
+      );
+}
+
+class _BookClubEngineStore {
+  _BookClubEngineStore({required this.communityId});
+
+  final String communityId;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  _BookFixtureBundle? _fixture;
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _fixture ??= await _BookFixtureBundle.load();
+    for (final machine in _fixture!.machines.values) {
+      _engine.registerDefinition(machine);
+    }
+    for (final instance in _fixture!.instances) {
+      await _engine.createInstance(
+        workflowType: instance.workflowType,
+        initialInstanceData: instance.instanceData,
+        personaId: instance.createdByPersonaId,
+      );
+    }
+    _ready = true;
+  }
+
+  Future<List<WorkflowInstance>> instancesFor({
+    required String tabId,
+    required String personaId,
+  }) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      limit: 100,
+      query: const SurfaceQuery(),
+    );
+    final allowed = switch (tabId) {
+      'books' => const {
+          'book-nomination',
+          'book-vote',
+          'book-selection-publish',
+        },
+      'calendar' => const {'book-meeting-rsvp'},
+      'library' => const {'book-library-item'},
+      'discussions' => const {'book-discussion-message'},
+      'documents' => const {'book-reading-material'},
+      'search' => const {'book-search-ai-digest'},
+      'admin' => const {'book-selection-publish', 'book-export-metadata'},
+      'home' => const {
+          'book-nomination',
+          'book-vote',
+          'book-meeting-rsvp',
+          'book-selection-publish',
+        },
+      _ => const <String>{},
+    };
+    return page.items
+        .where((instance) => allowed.contains(instance.workflowType))
+        .toList(growable: false);
+  }
+
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) {
+    return _engine.availableTransitions(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      currentState: instance.currentState,
+      instanceData: instance.instanceData,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    await _engine.applyTransition(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+    );
+  }
+
+  Future<void> updateFields({
+    required WorkflowInstance instance,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) async {
+    await _engine.updateInstanceFields(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      fieldUpdates: fieldUpdates,
+      personaId: personaId,
+    );
+  }
+
+  LoomWorkflowStateMachine machineFor(String workflowType) {
+    return _fixture!.machines[workflowType]!;
+  }
+
+  List<String> editableFieldsFor({
+    required String workflowType,
+    required String state,
+  }) {
+    return machineFor(workflowType).states[state]?.editableFields ?? const [];
+  }
+}
+
+class _BookFixtureBundle {
+  _BookFixtureBundle({required this.machines, required this.instances});
+
+  final Map<String, LoomWorkflowStateMachine> machines;
+  final List<_GardenSeedInstance> instances;
+
+  static Future<_BookFixtureBundle> load() async {
+    final json = jsonDecode(_stripGardenJsoncComments(_bookBundledFixtureJsonc))
+        as Map<String, dynamic>;
+    final definitions =
+        json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
+    final machines = <String, LoomWorkflowStateMachine>{};
+    for (final entry in definitions.entries) {
+      machines[entry.key] = LoomWorkflowStateMachine.fromJson(
+        _normalizeGardenMachineJson(entry.value as Map<String, dynamic>),
+        entry.key,
+      );
+    }
+    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final instances = [
+      for (final item in rawInstances)
+        _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
+    ];
+    return _BookFixtureBundle(machines: machines, instances: instances);
+  }
+}
+
+const _bookBundledFixtureJsonc = r'''
+{
+  "personas": ["book-member", "book-organizer"],
+  "templates": {
+    "dashboard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
+    "votePoll": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "notificationInbox": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "discussionThread": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "documentLibrary": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "searchAiAnswer": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "exportWizard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  },
+  "workflowDefinitions": {
+    "book-nomination": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["title", "author", "reason", "coverImage"] },
+        "submitted": { "label": "Submitted" },
+        "selected": { "label": "Selected", "isTerminal": true },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "submit-nomination", "label": "Submit nomination", "icon": "book", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} nominated at $timestamp" }] },
+        { "id": "edit-nomination", "label": "Edit nomination", "icon": "edit", "tone": "secondary", "from": ["submitted"], "to": "draft", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} reopened for edit at $timestamp" }] },
+        { "id": "select-nomination", "label": "Select nomination", "icon": "verified", "tone": "primary", "from": ["submitted"], "to": "selected", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} selected at $timestamp" }] },
+        { "id": "withdraw-nomination", "label": "Withdraw nomination", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "nominationHistory", "value": "{title} withdrawn at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["draft", "submitted", "selected", "withdrawn"], "role": "any", "tabId": "books", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "title": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "book", "labelTemplate": "{value}" },
+        "author": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "person", "labelTemplate": "{value}" },
+        "reason": { "type": "text", "writableBy": "formEntry" },
+        "coverImage": { "type": "text", "writableBy": "formEntry" },
+        "nominationHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-vote": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "cast": { "label": "Vote cast" },
+        "winner": { "label": "Winner selected" },
+        "tie": { "label": "Tie", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "cast-vote", "label": "Cast vote", "icon": "vote", "tone": "primary", "from": ["open"], "to": "cast", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "Parable of the Sower" }, { "op": "set", "key": "parableVotes", "value": 7 }, { "op": "append", "key": "voteHistory", "value": "Vote cast at $timestamp" }] },
+        { "id": "change-vote", "label": "Change vote", "icon": "edit", "tone": "secondary", "from": ["cast"], "to": "cast", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "The Left Hand of Darkness" }, { "op": "set", "key": "leftHandVotes", "value": 7 }, { "op": "append", "key": "voteHistory", "value": "Vote changed at $timestamp" }] },
+        { "id": "clear-vote", "label": "Clear vote", "icon": "delete", "tone": "destructive", "from": ["cast"], "to": "open", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "memberVote", "value": "" }, { "op": "append", "key": "voteHistory", "value": "Vote cleared at $timestamp" }] },
+        { "id": "close-winner", "label": "Close with winner", "icon": "verified", "tone": "primary", "from": ["cast", "open"], "to": "winner", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "winnerTitle", "value": "Parable of the Sower" }, { "op": "append", "key": "voteHistory", "value": "Ballot closed with winner at $timestamp" }] },
+        { "id": "mark-tie", "label": "Mark tie", "icon": "vote", "tone": "secondary", "from": ["winner"], "to": "tie", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "winnerTitle", "value": "Tie: Parable / Left Hand" }, { "op": "append", "key": "voteHistory", "value": "Ballot marked tie at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "cast", "winner", "tie"], "role": "any", "tabId": "books", "cardSurfaceFamily": "votePoll", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "deadline": { "type": "text", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "candidates": { "type": "list", "displayIcon": "book", "labelTemplate": "{value.length} candidates" },
+        "memberVote": { "type": "text", "writableBy": "effect" },
+        "parableVotes": { "type": "number", "writableBy": "effect" },
+        "leftHandVotes": { "type": "number", "writableBy": "effect" },
+        "winnerTitle": { "type": "text", "writableBy": "effect", "displayIcon": "verified", "labelTemplate": "Winner: {value}" },
+        "voteHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-meeting-rsvp": {
+      "initialState": "open",
+      "states": { "open": { "label": "Open" }, "going": { "label": "Going" }, "maybe": { "label": "Maybe" }, "not-going": { "label": "Not going" } },
+      "transitions": [
+        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "maybe", "not-going"], "to": "going", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP going at $timestamp" }] },
+        { "id": "rsvp-maybe", "label": "RSVP maybe", "icon": "edit", "tone": "secondary", "from": ["open", "going", "not-going"], "to": "maybe", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP maybe at $timestamp" }] },
+        { "id": "cancel-rsvp", "label": "Cancel RSVP", "icon": "undo", "tone": "destructive", "from": ["going", "maybe"], "to": "not-going", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "meetingHistory", "value": "RSVP cancelled at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "going", "maybe", "not-going"], "role": "actor", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "meetingTitle": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "eventDateTime": { "type": "text", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "attendance": { "type": "list", "displayIcon": "groups", "labelTemplate": "{value.length} attending" },
+        "meetingHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-library-item": {
+      "initialState": "available",
+      "states": { "available": { "label": "Available", "editableFields": ["itemTitle", "condition"] }, "borrowed": { "label": "Borrowed" }, "queued": { "label": "Queued" }, "returned": { "label": "Returned" }, "giveaway": { "label": "Giveaway" }, "given": { "label": "Given", "isTerminal": true }, "lost": { "label": "Lost", "isTerminal": true }, "delisted": { "label": "Delisted", "isTerminal": true } },
+      "transitions": [
+        { "id": "request-loan", "label": "Request loan", "icon": "book", "tone": "primary", "from": ["available"], "to": "borrowed", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} borrowed at $timestamp" }] },
+        { "id": "join-waitlist", "label": "Join waitlist", "icon": "queue", "tone": "secondary", "from": ["borrowed"], "to": "queued", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "leave-waitlist", "label": "Leave waitlist", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "borrowed", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "return-item", "label": "Return item", "icon": "undo", "tone": "primary", "from": ["borrowed", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
+        { "id": "offer-giveaway", "label": "Offer giveaway", "icon": "book", "tone": "secondary", "from": ["returned"], "to": "giveaway", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "mode", "value": "Giveaway" }] },
+        { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "verified", "tone": "primary", "from": ["giveaway"], "to": "given", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} given at $timestamp" }] },
+        { "id": "report-lost", "label": "Report lost", "icon": "delete", "tone": "destructive", "from": ["borrowed", "queued"], "to": "lost", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} reported lost at $timestamp" }] },
+        { "id": "delist-item", "label": "Delist item", "icon": "delete", "tone": "destructive", "from": ["available", "returned"], "to": "delisted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} delisted at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "borrowed", "queued", "returned", "giveaway", "given", "lost", "delisted"], "role": "any", "tabId": "library", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "writableBy": "formEntry", "displayIcon": "book", "labelTemplate": "{value}" },
+        "format": { "type": "text", "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "condition": { "type": "text", "writableBy": "formEntry", "displayIcon": "verified", "labelTemplate": "{value}" },
+        "mode": { "type": "text", "writableBy": "effect", "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-discussion-message": {
+      "initialState": "open",
+      "states": { "open": { "label": "Open", "editableFields": ["messageBody"] }, "replied": { "label": "Replied" }, "moderated": { "label": "Moderated", "isTerminal": true }, "deleted": { "label": "Deleted", "isTerminal": true } },
+      "transitions": [
+        { "id": "reply", "label": "Reply", "icon": "reply", "tone": "primary", "from": ["open"], "to": "replied", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "replies", "value": "{actorLabel} replied at $timestamp" }] },
+        { "id": "edit-reply", "label": "Edit reply", "icon": "edit", "tone": "secondary", "from": ["replied"], "to": "open", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Reply edited at $timestamp" }] },
+        { "id": "delete-reply", "label": "Delete reply", "icon": "delete", "tone": "destructive", "from": ["replied"], "to": "deleted", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Reply deleted at $timestamp" }] },
+        { "id": "moderate-thread", "label": "Moderate thread", "icon": "verified", "tone": "primary", "from": ["replied"], "to": "moderated", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "discussionHistory", "value": "Thread moderated at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "replied", "moderated", "deleted"], "role": "any", "tabId": "discussions", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "prompt": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "messageBody": { "type": "text", "writableBy": "formEntry" },
+        "replies": { "type": "list", "writableBy": "effect" },
+        "discussionHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-reading-material": {
+      "initialState": "available",
+      "states": { "available": { "label": "Available" }, "embedded-opened": { "label": "Embedded opened" }, "external-opened": { "label": "External opened" }, "downloaded": { "label": "Downloaded", "isTerminal": true } },
+      "transitions": [
+        { "id": "open-embedded", "label": "Open embedded", "icon": "book", "tone": "primary", "from": ["available"], "to": "embedded-opened", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Embedded guide opened at $timestamp" }] },
+        { "id": "open-external", "label": "Open external", "icon": "book", "tone": "secondary", "from": ["embedded-opened"], "to": "external-opened", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Author link opened at $timestamp" }] },
+        { "id": "download-material", "label": "Download", "icon": "download", "tone": "primary", "from": ["external-opened"], "to": "downloaded", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "append", "key": "documentHistory", "value": "Guide downloaded at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "embedded-opened", "external-opened", "downloaded"], "role": "any", "tabId": "documents", "cardSurfaceFamily": "documentLibrary", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "materialTitle": { "type": "text", "displayIcon": "description", "labelTemplate": "{value}" },
+        "sourceCount": { "type": "number", "displayIcon": "book", "labelTemplate": "{value} sources" },
+        "documentHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-selection-publish": {
+      "initialState": "draft",
+      "states": { "draft": { "label": "Draft" }, "preview": { "label": "Preview" }, "scheduled": { "label": "Scheduled" }, "sent": { "label": "Sent" }, "read": { "label": "Read", "isTerminal": true } },
+      "transitions": [
+        { "id": "preview-selection", "label": "Preview selection", "icon": "edit", "tone": "secondary", "from": ["draft"], "to": "preview", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection previewed at $timestamp" }] },
+        { "id": "schedule-selection", "label": "Schedule selection", "icon": "schedule", "tone": "secondary", "from": ["preview"], "to": "scheduled", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection scheduled at $timestamp" }] },
+        { "id": "publish-selection", "label": "Publish selection", "icon": "publish", "tone": "primary", "from": ["scheduled"], "to": "sent", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection published at $timestamp" }] },
+        { "id": "read-selection", "label": "Mark read", "icon": "verified", "tone": "primary", "from": ["sent"], "to": "read", "guard": { "allowedPersonaIds": ["book-member"] }, "effects": [{ "op": "append", "key": "publishHistory", "value": "Selection read at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["draft", "preview", "scheduled", "sent", "read"], "role": "any", "tabId": "books", "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }, { "states": ["draft", "preview", "scheduled", "sent", "read"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "notificationInbox", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "announcementTitle": { "type": "text", "displayIcon": "book", "labelTemplate": "{value}" },
+        "audience": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "publishHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-search-ai-digest": {
+      "initialState": "ready",
+      "states": { "ready": { "label": "Ready" }, "answered": { "label": "Answered", "isTerminal": true } },
+      "transitions": [
+        { "id": "generate-answer", "label": "Generate answer", "icon": "search", "tone": "primary", "from": ["ready"], "to": "answered", "guard": { "allowedPersonaIds": ["book-member", "book-organizer"] }, "effects": [{ "op": "set", "key": "answer", "value": "Cited answer generated from discussion notes and reading guide." }, { "op": "append", "key": "searchHistory", "value": "Cited digest generated at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["ready", "answered"], "role": "any", "tabId": "search", "cardSurfaceFamily": "searchAiAnswer", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "query": { "type": "text", "displayIcon": "search", "labelTemplate": "{value}" },
+        "answer": { "type": "text", "writableBy": "effect" },
+        "citations": { "type": "list", "displayIcon": "description", "labelTemplate": "{value.length} citations" },
+        "searchHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "book-export-metadata": {
+      "initialState": "ready",
+      "states": { "ready": { "label": "Ready" }, "generated": { "label": "Generated" }, "rolled-back": { "label": "Rolled back", "isTerminal": true } },
+      "transitions": [
+        { "id": "generate-export", "label": "Generate export", "icon": "download", "tone": "primary", "from": ["ready"], "to": "generated", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Download ready" }, { "op": "append", "key": "exportHistory", "value": "Book export generated at $timestamp" }] },
+        { "id": "rollback-export", "label": "Rollback export", "icon": "undo", "tone": "destructive", "from": ["generated"], "to": "rolled-back", "guard": { "allowedPersonaIds": ["book-organizer"] }, "effects": [{ "op": "set", "key": "downloadStatus", "value": "Rolled back" }, { "op": "append", "key": "exportHistory", "value": "Book export rolled back at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["ready", "generated", "rolled-back"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "exportWizard", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "schemas": { "type": "list", "displayIcon": "description", "labelTemplate": "{value.length} schemas" },
+        "checksum": { "type": "text", "displayIcon": "verified", "labelTemplate": "Checksum: {value}" },
+        "downloadStatus": { "type": "text", "writableBy": "effect" },
+        "exportHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    { "instanceId": "book-nomination-parable", "workflowType": "book-nomination", "currentState": "draft", "createdByPersonaId": "book-member", "instanceData": { "title": "Parable of the Sower", "author": "Octavia Butler", "reason": "Timely climate and community themes.", "coverImage": "parable-cover", "nominationHistory": [] } },
+    { "instanceId": "book-vote-march", "workflowType": "book-vote", "currentState": "open", "createdByPersonaId": "book-organizer", "instanceData": { "deadline": "Voting closes Friday", "candidates": ["Parable of the Sower", "The Left Hand of Darkness"], "memberVote": "", "parableVotes": 6, "leftHandVotes": 5, "winnerTitle": "Pending", "voteHistory": [] } },
+    { "instanceId": "book-meeting-march", "workflowType": "book-meeting-rsvp", "currentState": "open", "createdByPersonaId": "book-member", "instanceData": { "meetingTitle": "March discussion: Parable", "eventDateTime": "Sunday, Mar 22 at 4:00 PM", "location": "Library room B and video link", "attendance": [], "meetingHistory": [] } },
+    { "instanceId": "book-library-parable", "workflowType": "book-library-item", "currentState": "available", "createdByPersonaId": "book-member", "instanceData": { "itemTitle": "Parable paperback", "format": "Book", "condition": "Good", "mode": "Loan", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "book-discussion-parable", "workflowType": "book-discussion-message", "currentState": "open", "createdByPersonaId": "book-member", "instanceData": { "prompt": "What does community resilience mean in chapter 4?", "messageBody": "I want to compare the neighborhood scenes.", "replies": ["Prompt seeded for current selection"], "discussionHistory": [] } },
+    { "instanceId": "book-reading-guide", "workflowType": "book-reading-material", "currentState": "available", "createdByPersonaId": "book-organizer", "instanceData": { "materialTitle": "Parable reading guide", "sourceCount": 3, "documentHistory": [] } },
+    { "instanceId": "book-selection-march", "workflowType": "book-selection-publish", "currentState": "draft", "createdByPersonaId": "book-organizer", "instanceData": { "announcementTitle": "March selection: Parable of the Sower", "audience": "All book-club members", "publishHistory": [] } },
+    { "instanceId": "book-search-parable", "workflowType": "book-search-ai-digest", "currentState": "ready", "createdByPersonaId": "book-member", "instanceData": { "query": "What themes did members raise about resilience?", "answer": "", "citations": ["Reading guide", "Discussion prompt", "Meeting notes"], "searchHistory": [] } },
+    { "instanceId": "book-export", "workflowType": "book-export-metadata", "currentState": "ready", "createdByPersonaId": "book-organizer", "instanceData": { "schemas": ["book_nomination", "book_vote"], "checksum": "B00K-CLUB", "downloadStatus": "Not generated", "exportHistory": [] } }
+  ]
+}
+''';
+
+String _bookStateLabel(String state) {
+  final label = state.replaceAll('-', ' ');
+  if (label.isEmpty) return label;
+  return '${label[0].toUpperCase()}${label.substring(1)}';
+}
+
+String _cameraStateLabel(String state) {
+  final label = state.replaceAll('-', ' ');
+  if (label.isEmpty) return label;
+  return '${label[0].toUpperCase()}${label.substring(1)}';
 }
 
 String _gardenStateLabel(String state) {

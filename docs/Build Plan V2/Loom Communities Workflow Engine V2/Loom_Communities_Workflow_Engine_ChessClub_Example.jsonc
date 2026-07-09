@@ -1,0 +1,1186 @@
+{
+  "personas": [
+    "chess-player",
+    "chess-organizer"
+  ],
+  "templates": {
+    "dashboard": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "formEntry": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow",
+        "WorkflowFormFieldList"
+      ]
+    },
+    "statusTimeline": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "calendarAgenda": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "table": {
+      "rankingMode": true,
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ],
+      "columns": [
+        {
+          "key": "rank",
+          "sortable": true
+        },
+        {
+          "key": "player",
+          "sortable": true
+        },
+        {
+          "key": "score",
+          "sortable": true
+        },
+        {
+          "key": "delta",
+          "sortable": true
+        }
+      ]
+    },
+    "exportWizard": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "documentLibrary": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    },
+    "discussionThread": {
+      "slots": [
+        "WorkflowFactPillRow",
+        "WorkflowActionButtonRow"
+      ]
+    }
+  },
+  "workflowDefinitions": {
+    "chess-match-meetup": {
+      "initialState": "draft",
+      "states": {
+        "draft": {
+          "label": "Draft",
+          "editableFields": [
+            "opponent",
+            "matchTime",
+            "place",
+            "board"
+          ]
+        },
+        "proposed": {
+          "label": "Proposed"
+        },
+        "rescheduled": {
+          "label": "Rescheduled"
+        },
+        "accepted": {
+          "label": "Accepted"
+        },
+        "confirmed": {
+          "label": "Confirmed",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "propose-match",
+          "label": "Propose match",
+          "icon": "send",
+          "tone": "primary",
+          "from": [
+            "draft"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Match proposed with {opponent}"
+            }
+          ]
+        },
+        {
+          "id": "decline-match",
+          "label": "Decline",
+          "icon": "close",
+          "tone": "secondary",
+          "from": [
+            "proposed",
+            "rescheduled"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Decline recorded; challenge remains open"
+            }
+          ]
+        },
+        {
+          "id": "suggest-new-time",
+          "label": "Suggest new time",
+          "icon": "schedule",
+          "tone": "secondary",
+          "from": [
+            "proposed",
+            "accepted"
+          ],
+          "to": "rescheduled",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "matchTime",
+              "value": "Friday 7:30 PM"
+            },
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "New time suggested for Friday 7:30 PM"
+            }
+          ]
+        },
+        {
+          "id": "cancel-match",
+          "label": "Cancel",
+          "icon": "delete",
+          "tone": "destructive",
+          "from": [
+            "proposed",
+            "rescheduled",
+            "accepted"
+          ],
+          "to": "proposed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Cancellation noted; organizer can rematch if needed"
+            }
+          ]
+        },
+        {
+          "id": "accept-match",
+          "label": "Accept",
+          "icon": "check",
+          "tone": "primary",
+          "from": [
+            "proposed",
+            "rescheduled"
+          ],
+          "to": "accepted",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Invite accepted"
+            }
+          ]
+        },
+        {
+          "id": "confirm-match",
+          "label": "Confirm calendar event",
+          "icon": "event_available",
+          "tone": "primary",
+          "from": [
+            "accepted"
+          ],
+          "to": "confirmed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "matchHistory",
+              "value": "Confirmed on calendar"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "draft"
+          ],
+          "role": "actor",
+          "tabId": "matches",
+          "cardSurfaceFamily": "formEntry",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "proposed",
+            "rescheduled",
+            "accepted"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "confirmed"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "primary"
+        },
+        {
+          "states": [
+            "confirmed"
+          ],
+          "role": "any",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "summary"
+        }
+      ],
+      "instanceDataSchema": {
+        "opponent": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Opponent: {value}"
+        },
+        "matchTime": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "{value}"
+        },
+        "place": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "location_on",
+          "labelTemplate": "{value}"
+        },
+        "board": {
+          "type": "number",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "table_bar",
+          "labelTemplate": "Board {value}"
+        },
+        "matchHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Updates: {value.length}"
+        }
+      }
+    },
+    "chess-match-result": {
+      "initialState": "draft",
+      "states": {
+        "draft": {
+          "label": "Draft",
+          "editableFields": [
+            "whitePlayer",
+            "blackPlayer",
+            "round",
+            "score",
+            "resultSummary"
+          ]
+        },
+        "submitted": {
+          "label": "Submitted"
+        },
+        "corrected": {
+          "label": "Corrected"
+        },
+        "disputed": {
+          "label": "Disputed"
+        },
+        "resolved": {
+          "label": "Resolved",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "submit-result",
+          "label": "Submit result",
+          "icon": "scoreboard",
+          "tone": "primary",
+          "from": [
+            "draft"
+          ],
+          "to": "submitted",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "rankingRows",
+              "value": "Maya Patel:1496:+16",
+              "targetWorkflowType": "chess-rankings-table",
+              "targetInstanceKey": "rankings-main"
+            },
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Result submitted: {score}"
+            }
+          ]
+        },
+        {
+          "id": "correct-result",
+          "label": "Correct result",
+          "icon": "edit",
+          "tone": "secondary",
+          "from": [
+            "submitted"
+          ],
+          "to": "corrected",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "rankingRows",
+              "value": "Maya Patel:1492:+12",
+              "targetWorkflowType": "chess-rankings-table",
+              "targetInstanceKey": "rankings-main"
+            },
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Correction saved"
+            }
+          ]
+        },
+        {
+          "id": "dispute-result",
+          "label": "Dispute result",
+          "icon": "report",
+          "tone": "destructive",
+          "from": [
+            "submitted",
+            "corrected"
+          ],
+          "to": "disputed",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player",
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Dispute opened for organizer review"
+            }
+          ]
+        },
+        {
+          "id": "resolve-dispute",
+          "label": "Resolve dispute",
+          "icon": "verified",
+          "tone": "primary",
+          "from": [
+            "disputed"
+          ],
+          "to": "resolved",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "resultHistory",
+              "value": "Dispute resolved by organizer"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "draft",
+            "submitted",
+            "corrected",
+            "disputed",
+            "resolved"
+          ],
+          "role": "any",
+          "tabId": "matches",
+          "cardSurfaceFamily": "statusTimeline",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "whitePlayer": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "White: {value}"
+        },
+        "blackPlayer": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Black: {value}"
+        },
+        "round": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "flag",
+          "labelTemplate": "{value}"
+        },
+        "score": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "scoreboard",
+          "labelTemplate": "Score: {value}"
+        },
+        "resultSummary": {
+          "type": "text",
+          "writableBy": "formEntry"
+        },
+        "rankingRows": {
+          "type": "text",
+          "writableBy": "effect"
+        },
+        "resultHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Result updates: {value.length}"
+        }
+      }
+    },
+    "chess-rankings-table": {
+      "initialState": "current",
+      "states": {
+        "current": {
+          "label": "Current",
+          "editableFields": [
+            "rankingRows",
+            "lastUpdated"
+          ]
+        }
+      },
+      "transitions": [
+        {
+          "id": "publish-rankings",
+          "label": "Publish rankings",
+          "icon": "publish",
+          "tone": "secondary",
+          "from": [
+            "current"
+          ],
+          "to": "current",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "lastUpdated",
+              "value": "Published"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "current"
+          ],
+          "role": "any",
+          "tabId": "rankings",
+          "cardSurfaceFamily": "table",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "rankingRows": {
+          "type": "list",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "leaderboard",
+          "labelTemplate": "Rows: {value.length}",
+          "sortable": true
+        },
+        "lastUpdated": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "Updated: {value}",
+          "sortable": true
+        },
+        "rank": {
+          "type": "number",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "player": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "score": {
+          "type": "number",
+          "writableBy": "formEntry",
+          "sortable": true
+        },
+        "delta": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "sortable": true
+        }
+      }
+    },
+    "chess-club-night": {
+      "initialState": "scheduled",
+      "states": {
+        "scheduled": {
+          "label": "Scheduled"
+        },
+        "reminded": {
+          "label": "Reminder sent",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "send-reminder",
+          "label": "Send reminder",
+          "icon": "notifications",
+          "tone": "secondary",
+          "from": [
+            "scheduled"
+          ],
+          "to": "reminded",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "reminderStatus",
+              "value": "Reminder sent"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "scheduled",
+            "reminded"
+          ],
+          "role": "any",
+          "tabId": "calendar",
+          "cardSurfaceFamily": "calendarAgenda",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "eventTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "event",
+          "labelTemplate": "{value}"
+        },
+        "eventTime": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "schedule",
+          "labelTemplate": "{value}"
+        },
+        "location": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "location_on",
+          "labelTemplate": "{value}"
+        },
+        "pairing": {
+          "type": "text",
+          "writableBy": "formEntry",
+          "displayIcon": "groups",
+          "labelTemplate": "Pairing: {value}"
+        },
+        "reminderStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "notifications",
+          "labelTemplate": "{value}"
+        }
+      }
+    },
+    "chess-pairing-queue": {
+      "initialState": "open",
+      "states": {
+        "open": {
+          "label": "Open"
+        },
+        "assigned": {
+          "label": "Assigned",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "assign-pairing",
+          "label": "Assign pairing",
+          "icon": "groups",
+          "tone": "primary",
+          "from": [
+            "open"
+          ],
+          "to": "assigned",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "pairingHistory",
+              "value": "Pairing assigned by organizer"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "open",
+            "assigned"
+          ],
+          "role": "actor",
+          "tabId": "admin",
+          "cardSurfaceFamily": "dashboard",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "queueTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "groups",
+          "labelTemplate": "{value}"
+        },
+        "waitingPlayers": {
+          "type": "list",
+          "writableBy": "formEntry",
+          "displayIcon": "person",
+          "labelTemplate": "Waiting: {value.length}"
+        },
+        "pairingHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Assignments: {value.length}"
+        }
+      }
+    },
+    "chess-export-package": {
+      "initialState": "ready",
+      "states": {
+        "ready": {
+          "label": "Ready"
+        },
+        "generated": {
+          "label": "Generated"
+        },
+        "rolledBack": {
+          "label": "Rolled back",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "generate-export",
+          "label": "Generate export",
+          "icon": "download",
+          "tone": "primary",
+          "from": [
+            "ready"
+          ],
+          "to": "generated",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "checksum",
+              "value": "sha256-chess-2026"
+            }
+          ]
+        },
+        {
+          "id": "rollback-export",
+          "label": "Rollback export",
+          "icon": "undo",
+          "tone": "destructive",
+          "from": [
+            "generated"
+          ],
+          "to": "rolledBack",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "set",
+              "key": "exportStatus",
+              "value": "Rolled back"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "ready",
+            "generated",
+            "rolledBack"
+          ],
+          "role": "actor",
+          "tabId": "admin",
+          "cardSurfaceFamily": "exportWizard",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "exportScope": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "description",
+          "labelTemplate": "{value}"
+        },
+        "checksum": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "verified",
+          "labelTemplate": "{value}"
+        },
+        "exportStatus": {
+          "type": "text",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "{value}"
+        }
+      }
+    },
+    "chess-rules-documents": {
+      "initialState": "available",
+      "states": {
+        "available": {
+          "label": "Available"
+        },
+        "embeddedOpened": {
+          "label": "Embedded opened"
+        },
+        "externalOpened": {
+          "label": "External opened"
+        },
+        "downloaded": {
+          "label": "Downloaded",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "open-embedded",
+          "label": "Open in app",
+          "icon": "open_in_browser",
+          "tone": "primary",
+          "from": [
+            "available",
+            "externalOpened"
+          ],
+          "to": "embeddedOpened",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules opened in app"
+            }
+          ]
+        },
+        {
+          "id": "open-external",
+          "label": "Open external",
+          "icon": "open_in_new",
+          "tone": "secondary",
+          "from": [
+            "available",
+            "embeddedOpened"
+          ],
+          "to": "externalOpened",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules opened externally"
+            }
+          ]
+        },
+        {
+          "id": "download-document",
+          "label": "Download",
+          "icon": "download",
+          "tone": "primary",
+          "from": [
+            "available",
+            "embeddedOpened",
+            "externalOpened"
+          ],
+          "to": "downloaded",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "documentHistory",
+              "value": "Rules downloaded"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "available",
+            "embeddedOpened",
+            "externalOpened",
+            "downloaded"
+          ],
+          "role": "actor",
+          "tabId": "documents",
+          "cardSurfaceFamily": "documentLibrary",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "documentTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "description",
+          "labelTemplate": "{value}"
+        },
+        "documentHistory": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "history",
+          "labelTemplate": "Opens: {value.length}"
+        }
+      }
+    },
+    "chess-discussion-thread": {
+      "initialState": "open",
+      "states": {
+        "open": {
+          "label": "Open"
+        },
+        "replied": {
+          "label": "Replied"
+        },
+        "archived": {
+          "label": "Archived",
+          "isTerminal": true
+        }
+      },
+      "transitions": [
+        {
+          "id": "reply-thread",
+          "label": "Reply",
+          "icon": "reply",
+          "tone": "primary",
+          "from": [
+            "open"
+          ],
+          "to": "replied",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-player",
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "threadMessages",
+              "value": "See you at club night"
+            }
+          ]
+        },
+        {
+          "id": "archive-thread",
+          "label": "Archive",
+          "icon": "delete",
+          "tone": "secondary",
+          "from": [
+            "replied"
+          ],
+          "to": "archived",
+          "guard": {
+            "allowedPersonaIds": [
+              "chess-organizer"
+            ]
+          },
+          "effects": [
+            {
+              "op": "append",
+              "key": "threadMessages",
+              "value": "Thread archived"
+            }
+          ]
+        }
+      ],
+      "renderBindings": [
+        {
+          "states": [
+            "open",
+            "replied",
+            "archived"
+          ],
+          "role": "any",
+          "tabId": "messages",
+          "cardSurfaceFamily": "discussionThread",
+          "bindingKind": "primary"
+        }
+      ],
+      "instanceDataSchema": {
+        "threadTitle": {
+          "type": "text",
+          "required": true,
+          "writableBy": "formEntry",
+          "displayIcon": "forum",
+          "labelTemplate": "{value}"
+        },
+        "threadMessages": {
+          "type": "list",
+          "writableBy": "effect",
+          "hideWhenEmpty": true,
+          "displayIcon": "forum",
+          "labelTemplate": "Messages: {value.length}"
+        }
+      }
+    }
+  },
+  "workflowInstances": [
+    {
+      "workflowType": "chess-match-meetup",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "opponent": "Noah Kim",
+        "matchTime": "Thursday 6:30 PM",
+        "place": "Library Room B",
+        "board": 1,
+        "matchHistory": []
+      },
+      "instanceId": "chess-01-chess-match-meetup",
+      "currentState": "draft"
+    },
+    {
+      "workflowType": "chess-match-result",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "whitePlayer": "Maya Patel",
+        "blackPlayer": "Noah Kim",
+        "round": "Ladder Round 4",
+        "score": "1-0",
+        "resultSummary": "Maya won on Board 1",
+        "rankingRows": "",
+        "resultHistory": []
+      },
+      "instanceId": "chess-02-chess-match-result",
+      "currentState": "draft"
+    },
+    {
+      "workflowType": "chess-rankings-table",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "instanceKey": "rankings-main",
+        "rankingRows": [
+          {
+            "rank": 1,
+            "player": "Noah Kim",
+            "score": 1510,
+            "delta": 0
+          },
+          {
+            "rank": 2,
+            "player": "Maya Patel",
+            "score": 1480,
+            "delta": 0
+          },
+          {
+            "rank": 3,
+            "player": "Ari Stone",
+            "score": 1460,
+            "delta": 0
+          }
+        ],
+        "lastUpdated": "Seed rankings"
+      },
+      "instanceId": "chess-03-chess-rankings-table",
+      "currentState": "current"
+    },
+    {
+      "workflowType": "chess-club-night",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "eventTitle": "Thursday Ladder Night",
+        "eventTime": "Thursday 7:00 PM",
+        "location": "Community Center",
+        "pairing": "Board 1: Maya vs Noah",
+        "reminderStatus": ""
+      },
+      "instanceId": "chess-04-chess-club-night",
+      "currentState": "scheduled"
+    },
+    {
+      "workflowType": "chess-pairing-queue",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "queueTitle": "Open challenge queue",
+        "waitingPlayers": [
+          "Maya Patel",
+          "Ari Stone"
+        ],
+        "pairingHistory": []
+      },
+      "instanceId": "chess-05-chess-pairing-queue",
+      "currentState": "open"
+    },
+    {
+      "workflowType": "chess-export-package",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "exportScope": "Matches, rankings, documents",
+        "checksum": "",
+        "exportStatus": "Ready"
+      },
+      "instanceId": "chess-06-chess-export-package",
+      "currentState": "ready"
+    },
+    {
+      "workflowType": "chess-rules-documents",
+      "createdByPersonaId": "chess-organizer",
+      "instanceData": {
+        "documentTitle": "Club rules and ladder policy",
+        "documentHistory": []
+      },
+      "instanceId": "chess-07-chess-rules-documents",
+      "currentState": "available"
+    },
+    {
+      "workflowType": "chess-discussion-thread",
+      "createdByPersonaId": "chess-player",
+      "instanceData": {
+        "threadTitle": "Thursday pairings",
+        "threadMessages": [
+          "Bring clocks for boards 1-4"
+        ]
+      },
+      "instanceId": "chess-08-chess-discussion-thread",
+      "currentState": "open"
+    }
+  ]
+}

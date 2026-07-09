@@ -200,19 +200,15 @@ void main() {
     await openEvidenceTarget(tester, target);
 
     await _tapTab(tester, 'calendar');
-    expect(find.byKey(const ValueKey('calendar-tab-surface')), findsOneWidget);
-    expect(find.byKey(const ValueKey('calendar-week-strip')), findsOneWidget);
+    expect(find.byKey(const ValueKey('camera-engine-calendar')), findsOneWidget);
+    expect(find.text('Warehouse District golden-hour walk'), findsWidgets);
+
+    await _tapTab(tester, 'marketplace');
     expect(
-      find.textContaining('/calendar/', skipOffstage: false),
+      find.byKey(const ValueKey('camera-engine-marketplace')),
       findsOneWidget,
     );
-
-    // Marketplace tab now renders a clean placeholder until data is declared
-    // (M1: data-driven tab rendering). The mock marketplace-browse-search and
-    // old marketplace-tab-surface keys are retired with the mock renderer.
-    await _tapTab(tester, 'marketplace');
-    expect(find.textContaining('is coming to'), findsOneWidget);
-    expect(find.textContaining('Check back soon'), findsOneWidget);
+    expect(find.text('35mm prime lens'), findsWidgets);
     expect(
       find.byKey(const ValueKey('marketplace-tab-surface')),
       findsNothing,
@@ -223,7 +219,8 @@ void main() {
     );
 
     await _tapTab(tester, 'messages');
-    expect(find.text('No messages yet'), findsOneWidget);
+    expect(find.byKey(const ValueKey('camera-engine-messages')), findsOneWidget);
+    expect(find.byKey(const ValueKey('camera-critique-thread')), findsOneWidget);
   });
 }
 

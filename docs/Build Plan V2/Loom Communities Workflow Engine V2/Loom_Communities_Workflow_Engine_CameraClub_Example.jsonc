@@ -1,0 +1,123 @@
+{
+  "personas": ["camera-member", "camera-organizer"],
+  "templates": {
+    "dashboard": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "calendarAgenda": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "formEntry": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow", "WorkflowFormFieldList"] },
+    "stateMachineGrid": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "discussionThread": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] },
+    "statusTimeline": { "slots": ["WorkflowFactPillRow", "WorkflowActionButtonRow"] }
+  },
+  "workflowDefinitions": {
+    "photo-walk-rsvp": {
+      "initialState": "open",
+      "states": {
+        "open": { "label": "Open" },
+        "going": { "label": "Going" },
+        "maybe": { "label": "Maybe" },
+        "not-going": { "label": "Not going" }
+      },
+      "transitions": [
+        { "id": "rsvp-going", "label": "RSVP going", "icon": "event_available", "tone": "primary", "from": ["open", "maybe", "not-going"], "to": "going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Going at $timestamp" }] },
+        { "id": "rsvp-maybe", "label": "RSVP maybe", "icon": "edit", "tone": "secondary", "from": ["open", "going", "not-going"], "to": "maybe", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Maybe" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Maybe at $timestamp" }] },
+        { "id": "rsvp-not-going", "label": "RSVP not going", "icon": "undo", "tone": "destructive", "from": ["open", "going", "maybe"], "to": "not-going", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "rsvpStatus", "value": "Not going" }, { "op": "append", "key": "walkHistory", "value": "{routeName} RSVP changed to Not going at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["open", "going", "maybe", "not-going"], "role": "actor", "tabId": "calendar", "cardSurfaceFamily": "calendarAgenda", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "routeName": { "type": "text", "required": true, "displayContexts": ["tile", "detail"], "displayIcon": "route", "labelTemplate": "{value}" },
+        "eventDateTime": { "type": "text", "required": true, "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "location": { "type": "text", "required": true, "displayIcon": "location_on", "labelTemplate": "{value}" },
+        "capacityLabel": { "type": "text", "displayIcon": "groups", "labelTemplate": "{value}" },
+        "rsvpStatus": { "type": "text", "writableBy": "effect" },
+        "walkHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "critique-submission": {
+      "initialState": "draft",
+      "states": {
+        "draft": { "label": "Draft", "editableFields": ["photoTitle", "critiquePrompt", "consentNote"] },
+        "submitted": { "label": "Submitted" },
+        "reviewed": { "label": "Reviewed" },
+        "withdrawn": { "label": "Withdrawn", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "submit-critique", "label": "Submit critique", "icon": "upload", "tone": "primary", "from": ["draft"], "to": "submitted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} submitted at $timestamp" }] },
+        { "id": "edit-critique", "label": "Edit critique", "icon": "edit", "tone": "secondary", "from": ["submitted"], "to": "draft", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} reopened for edit at $timestamp" }] },
+        { "id": "mark-reviewed", "label": "Mark reviewed", "icon": "verified", "tone": "primary", "from": ["submitted"], "to": "reviewed", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "append", "key": "critiqueComments", "value": "Organizer review completed at $timestamp" }] },
+        { "id": "withdraw-critique", "label": "Withdraw critique", "icon": "delete", "tone": "destructive", "from": ["draft", "submitted", "reviewed"], "to": "withdrawn", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "critiqueHistory", "value": "{photoTitle} withdrawn at $timestamp" }] }
+      ],
+      "renderBindings": [
+        { "states": ["draft"], "role": "actor", "tabId": "critique", "cardSurfaceFamily": "formEntry", "bindingKind": "primary" },
+        { "states": ["submitted", "reviewed", "withdrawn"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" },
+        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "critique", "cardSurfaceFamily": "discussionThread", "bindingKind": "attached" },
+        { "states": ["submitted", "reviewed"], "role": "any", "tabId": "messages", "cardSurfaceFamily": "discussionThread", "bindingKind": "primary" }
+      ],
+      "instanceDataSchema": {
+        "photoTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "photo", "labelTemplate": "{value}" },
+        "thumbnailLabel": { "type": "text", "required": true, "displayIcon": "photo", "labelTemplate": "{value}" },
+        "critiquePrompt": { "type": "text", "required": true, "writableBy": "formEntry" },
+        "consentNote": { "type": "text", "required": true, "writableBy": "formEntry" },
+        "critiqueComments": { "type": "list", "writableBy": "effect" },
+        "critiqueHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "gear-loan-request": {
+      "initialState": "available",
+      "states": {
+        "available": { "label": "Available", "editableFields": ["itemTitle", "condition", "pickupWindow"] },
+        "loaned": { "label": "Loaned" },
+        "queued": { "label": "Queued" },
+        "returned": { "label": "Returned", "isTerminal": true },
+        "giveaway": { "label": "Giveaway" },
+        "claimed": { "label": "Claimed", "isTerminal": true },
+        "paused": { "label": "Paused" },
+        "delisted": { "label": "Delisted", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "request-loan", "label": "Request loan", "icon": "handshake", "tone": "primary", "from": ["available"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{actorLabel} borrowed {itemTitle} at $timestamp" }] },
+        { "id": "offer-giveaway", "label": "Offer as giveaway", "icon": "redeem", "tone": "secondary", "from": ["available"], "to": "giveaway", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "mode", "value": "Giveaway" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} offered as giveaway at $timestamp" }] },
+        { "id": "join-queue", "label": "Join queue", "icon": "queue", "tone": "secondary", "from": ["loaned"], "to": "queued", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "leave-queue", "label": "Leave queue", "icon": "undo", "tone": "secondary", "from": ["queued"], "to": "loaned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "removeValue", "key": "queuePersonaIds", "value": "{actor}" }] },
+        { "id": "return-gear", "label": "Return gear", "icon": "assignment_return", "tone": "primary", "from": ["loaned", "queued"], "to": "returned", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} returned at $timestamp" }] },
+        { "id": "pause-listing", "label": "Pause listing", "icon": "undo", "tone": "secondary", "from": ["available"], "to": "paused", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} paused at $timestamp" }] },
+        { "id": "delist-gear", "label": "Delist gear", "icon": "delete", "tone": "destructive", "from": ["available", "paused"], "to": "delisted", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "append", "key": "custodyHistory", "value": "{itemTitle} delisted at $timestamp" }] },
+        { "id": "claim-giveaway", "label": "Claim giveaway", "icon": "redeem", "tone": "primary", "from": ["giveaway"], "to": "claimed", "guard": { "allowedPersonaIds": ["camera-member"] }, "effects": [{ "op": "set", "key": "currentHolder", "value": "{actorLabel}" }, { "op": "append", "key": "custodyHistory", "value": "{itemTitle} ownership transferred at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["available", "loaned", "queued", "returned", "giveaway", "claimed", "paused", "delisted"], "role": "any", "tabId": "marketplace", "cardSurfaceFamily": "stateMachineGrid", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "itemTitle": { "type": "text", "required": true, "writableBy": "formEntry", "displayContexts": ["tile", "detail"], "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "mode": { "type": "text", "required": true, "displayIcon": "inventory_2", "labelTemplate": "{value}" },
+        "condition": { "type": "text", "required": true, "writableBy": "formEntry", "displayIcon": "verified", "labelTemplate": "{value}" },
+        "pickupWindow": { "type": "text", "writableBy": "formEntry", "displayIcon": "schedule", "labelTemplate": "{value}" },
+        "currentHolder": { "type": "text", "writableBy": "effect", "displayIcon": "person", "labelTemplate": "Holder: {value}", "hideWhenEmpty": true },
+        "queuePersonaIds": { "type": "list", "writableBy": "effect" },
+        "custodyHistory": { "type": "list", "writableBy": "effect" }
+      }
+    },
+    "camera-validation-report": {
+      "initialState": "pending",
+      "states": {
+        "pending": { "label": "Pending" },
+        "validated": { "label": "Validated", "isTerminal": true }
+      },
+      "transitions": [
+        { "id": "mark-validated", "label": "Mark validated", "icon": "verified", "tone": "primary", "from": ["pending"], "to": "validated", "guard": { "allowedPersonaIds": ["camera-organizer"] }, "effects": [{ "op": "set", "key": "passState", "value": "Validated" }, { "op": "append", "key": "validationHistory", "value": "Camera Club validation marked complete at $timestamp" }] }
+      ],
+      "renderBindings": [{ "states": ["pending", "validated"], "role": "actor", "tabId": "admin", "cardSurfaceFamily": "statusTimeline", "bindingKind": "primary" }],
+      "instanceDataSchema": {
+        "requestedWorkflows": { "type": "list", "required": true, "displayIcon": "groups", "labelTemplate": "{value.length} requested workflows" },
+        "implementedWorkflows": { "type": "list", "required": true, "displayIcon": "verified", "labelTemplate": "{value.length} implemented workflows" },
+        "packagePaths": { "type": "list", "required": true },
+        "passState": { "type": "text", "required": true, "displayIcon": "verified", "labelTemplate": "{value}" },
+        "validationHistory": { "type": "list", "writableBy": "effect" }
+      }
+    }
+  },
+  "workflowInstances": [
+    { "instanceId": "camera-walk-warehouse", "workflowType": "photo-walk-rsvp", "currentState": "open", "createdByPersonaId": "camera-organizer", "instanceData": { "routeName": "Warehouse District golden-hour walk", "eventDateTime": "Friday, May 8 at 6:30 PM", "location": "Pier 3 mural route", "capacityLabel": "12 of 16 spots", "rsvpStatus": "", "walkHistory": [] } },
+    { "instanceId": "camera-critique-rain", "workflowType": "critique-submission", "currentState": "draft", "createdByPersonaId": "camera-member", "instanceData": { "photoTitle": "Rain reflections", "thumbnailLabel": "Street reflection thumbnail", "critiquePrompt": "Help me choose the strongest crop.", "consentNote": "Model consent captured for club critique.", "critiqueComments": ["Reviewer queue: composition and crop"], "critiqueHistory": [] } },
+    { "instanceId": "camera-gear-lens", "workflowType": "gear-loan-request", "currentState": "available", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "35mm prime lens", "mode": "Loan", "condition": "Excellent", "pickupWindow": "Thu 5-7 PM", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "camera-gear-tripod", "workflowType": "gear-loan-request", "currentState": "giveaway", "createdByPersonaId": "camera-member", "instanceData": { "itemTitle": "Travel tripod", "mode": "Giveaway", "condition": "Good", "pickupWindow": "Sat morning", "currentHolder": "", "queuePersonaIds": [], "custodyHistory": [] } },
+    { "instanceId": "camera-validation", "workflowType": "camera-validation-report", "currentState": "pending", "createdByPersonaId": "camera-organizer", "instanceData": { "requestedWorkflows": ["photo-walk RSVP", "critique composition", "gear loan/giveaway"], "implementedWorkflows": ["Calendar", "Critique", "Gear", "Messages", "Admin", "Home"], "packagePaths": ["ext_camera_club", "Loom_Communities_Workflow_Engine_CameraClub_Example.jsonc"], "passState": "Pending validation", "validationHistory": [] } }
+  ]
+}
