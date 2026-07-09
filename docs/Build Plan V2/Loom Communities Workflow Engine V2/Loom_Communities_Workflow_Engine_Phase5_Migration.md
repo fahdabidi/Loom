@@ -407,3 +407,5 @@ Validation commands/results:
 - `flutter test apps/loom_communities_demo/test`: 127/127.
 
 Live emulator/screenshot validation prep: stable keys exist for `chess-engine-home`, `chess-engine-matches`, `chess-engine-calendar`, `chess-engine-rankings`, `chess-engine-admin`, `chess-engine-documents`, `chess-rankings-table`, and `chess-action-<transitionId>` actions covering proposal, accept, decline, reschedule, cancel, confirm, submit/correct/dispute/resolve, pairing assignment, export generation, and document open/download.
+
+Commit coverage: `e5492c8` (`Implement Phase 5 engine migrations M5.1-M5.4`) covers the prior verified M5.1/M5.2/M5.3 backlog and the M5.4 implementation/test/fixture/tracker changes.
