@@ -427,6 +427,8 @@ Re-validation after fix:
 - `flutter test packages/core/loom_communities_app_shell`: 5/5.
 - `flutter test apps/loom_communities_demo/test/b44_chess_engine_migration_test.dart`: 1/1.
 - `flutter test apps/loom_communities_demo/test`: 127/127.
+
+M5.4 fix commit: `5468eec` (`Fix M5.4 computed Chess rankings effect`).
 ### Milestone 5.5 — Youth Soccer tab reimplementation
 - [ ] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
 - [ ] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
