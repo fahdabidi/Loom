@@ -171,6 +171,20 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
         actionText: 'Generate protected export metadata for youth soccer.',
         resultText: 'Export metadata includes registration and roster schemas.',
       ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-waiver-document',
+        title: 'Waiver document library',
+        entryText: 'The current waiver is available for embedded and external review.',
+        actionText: 'Open and acknowledge the current youth sports waiver.',
+        resultText: 'Waiver acknowledgement is recorded with an audit trail.',
+      ),
+      LoomWorkflowDefinition(
+        workflowId: 'soccer-team-discussion',
+        title: 'Team discussion thread',
+        entryText: 'Guardian and coach messages are tied to the U10 team.',
+        actionText: 'Reply to the weekend coordination thread.',
+        resultText: 'Team discussion reply is recorded.',
+      ),
     ],
   ),
   'ext_hoa': LoomExperienceDefinition(

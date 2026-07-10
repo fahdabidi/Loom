@@ -1477,4 +1477,53 @@ void main() {
       expect(report.passed, isTrue);
     });
   });
+
+  group('Validator - Youth Soccer migration fixture', () {
+    test('the Youth Soccer Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_YouthSoccer_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('soccer-guardian-join-approval'));
+      expect(machines.keys, contains('soccer-team-roster'));
+      expect(machines.keys, contains('soccer-minor-redaction'));
+      expect(templates.keys, contains('guidedProcess'));
+      expect(templates.keys, contains('protectedDetail'));
+      expect(
+        machines['soccer-team-roster']!
+            .instanceDataSchema['playerName']!
+            .sortable,
+        isTrue,
+      );
+
+      final report = WorkflowValidator(
+        templates: templates,
+        tableArchetypeConfigs: {'soccer-team-roster': templates['table']!},
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
 }

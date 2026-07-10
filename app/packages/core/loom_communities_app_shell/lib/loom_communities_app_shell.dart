@@ -25,3 +25,4 @@ part 'src/part15_evidence_catalog.dart';
 part 'src/part16_experience_catalog.dart';
 part 'src/part17_theme_tokens.dart';
 part 'src/part18_marketplace_rendering.dart';
+part 'src/part19_youth_soccer_engine.dart';

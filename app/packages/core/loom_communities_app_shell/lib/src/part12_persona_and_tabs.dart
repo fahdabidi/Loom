@@ -540,7 +540,10 @@ IconData _tabIconForKey(String iconKey) {
       return Icons.photo_camera_back_outlined;
     case 'messages':
       return Icons.forum_outlined;
+    case 'groups':
+      return Icons.groups_outlined;
     case 'giving':
+    case 'payment':
       return Icons.payments_outlined;
     case 'care':
       return Icons.volunteer_activism_outlined;
@@ -553,6 +556,16 @@ IconData _tabIconForKey(String iconKey) {
 }
 
 const _declarativeTabSpecsByExtensionId = <String, List<LoomDeclarativeTabSpec>>{
+  'ext_youth_soccer': [
+    LoomDeclarativeTabSpec(tabId: 'registration', label: 'Registration', iconKey: 'documents', description: 'Guardian guided registration wizard and reviewer timeline on the same engine instance.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-active-registration', pinningPolicyRationale: 'Youth Soccer pins registration because waiver and payment gates block roster participation.', sectionTitles: ['Registration'], cardSurfaceFamilies: ['guidedProcess', 'statusTimeline'], pinnedWorkflowIds: ['soccer-guardian-join-approval'], requiredPermission: 'community.surface.workflow.read'),
+    LoomDeclarativeTabSpec(tabId: 'schedule', label: 'Schedule', iconKey: 'calendar', description: 'Practice and game agenda with RSVP, reminder, field, opponent, and attendance state.', rendererContractId: 'calendar-agenda-event-detail', pinningPolicy: 'pin-next-practice', pinningPolicyRationale: 'Schedule-first is the top Youth Soccer hierarchy.', sectionTitles: ['Schedule'], cardSurfaceFamilies: ['calendarAgenda'], pinnedWorkflowIds: ['soccer-practice-schedule'], requiredPermission: 'community.surface.calendar.read'),
+    LoomDeclarativeTabSpec(tabId: 'team', label: 'Team', iconKey: 'groups', description: 'Guardian roster card, coach roster table, and protected minor detail.', rendererContractId: 'workflow-status-timeline-actions', pinningPolicy: 'pin-my-player', pinningPolicyRationale: 'The team tab pins the player roster surface and protected detail card.', sectionTitles: ['Team'], cardSurfaceFamilies: ['stateMachineGrid', 'table', 'protectedDetail', 'documentLibrary'], pinnedWorkflowIds: ['soccer-team-roster'], requiredPermission: 'community.surface.workflow.read'),
+    LoomDeclarativeTabSpec(tabId: 'payments', label: 'Payments', iconKey: 'payment', description: 'Guardian registration checkout with receipt, failed payment recovery, refund, and subscription management.', rendererContractId: 'payment-giving-ledger', pinningPolicy: 'pin-registration-fee', pinningPolicyRationale: 'Guardians need the amount, receipt, and next payment action before roster confirmation.', sectionTitles: ['Payments'], cardSurfaceFamilies: ['paymentCheckout'], pinnedWorkflowIds: ['soccer-registration-payment'], visiblePersonaIds: ['guardian'], requiredPermission: 'community.surface.payments.read'),
+    LoomDeclarativeTabSpec(tabId: 'documents', label: 'Waivers', iconKey: 'documents', description: 'Waiver library with embedded/external open, acknowledgement, access request, and audit trail.', rendererContractId: 'documents-library-detail', pinningPolicy: 'pin-current-waiver', pinningPolicyRationale: 'The current waiver is the primary document.', sectionTitles: ['Documents'], cardSurfaceFamilies: ['documentLibrary'], pinnedWorkflowIds: ['soccer-waiver-document'], visiblePersonaIds: ['guardian', 'coach'], requiredPermission: 'community.surface.documents.read'),
+    LoomDeclarativeTabSpec(tabId: 'coach', label: 'Coach', iconKey: 'admin', description: 'Coach dashboard combining roster, schedule controls, and reminder inbox.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-roster-and-reminders', pinningPolicyRationale: 'Coach-only work belongs off the guardian tabs.', sectionTitles: ['Coach'], cardSurfaceFamilies: ['dashboard', 'notificationInbox'], pinnedWorkflowIds: ['soccer-reminder-notification'], visiblePersonaIds: ['coach'], requiredPermission: 'community.surface.navigation.configure'),
+    LoomDeclarativeTabSpec(tabId: 'messages', label: 'Messages', iconKey: 'messages', description: 'Team discussion thread for guardian and coach coordination.', rendererContractId: 'messages-inbox-thread-composer', pinningPolicy: 'none-declared-for-messages', pinningPolicyRationale: 'Messages uses threads rather than pinned workflow cards.', sectionTitles: ['Messages'], cardSurfaceFamilies: ['discussionThread'], pinnedWorkflowIds: ['soccer-team-discussion'], requiredPermission: 'community.surface.messages.read'),
+    LoomDeclarativeTabSpec(tabId: 'admin', label: 'Export', iconKey: 'admin', description: 'Owner export wizard with minor redaction preview, checksum, transfer, rollback, and retry.', rendererContractId: 'admin-review-compose-queue', pinningPolicy: 'pin-redaction-preview', pinningPolicyRationale: 'Owner export must foreground redaction before transfer.', sectionTitles: ['Admin'], cardSurfaceFamilies: ['exportWizard'], pinnedWorkflowIds: ['soccer-export-metadata'], visiblePersonaIds: ['owner'], requiredPermission: 'community.surface.navigation.configure'),
+  ],
   'ext_camera_club': [
     LoomDeclarativeTabSpec(
       tabId: 'calendar',

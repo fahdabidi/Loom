@@ -730,6 +730,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isChessEngineExperience(experience)) {
           return _ChessClubEngineTabSurface(
             experience: experience,
@@ -765,6 +774,15 @@ class _TabNativeRenderer extends StatelessWidget {
         }
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -815,6 +833,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isChessEngineExperience(experience)) {
           return _ChessClubEngineTabSurface(
             experience: experience,
@@ -846,6 +873,15 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'PaymentGivingTabSurface':
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         // Find the first workflow in the Giving tab's sections whose
         // givingPayment is declared, to gate between real UI and placeholder.
         LoomWorkflowDefinition? givingWorkflow;
@@ -883,6 +919,15 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'DocumentsTabSurface':
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -939,6 +984,15 @@ class _TabNativeRenderer extends StatelessWidget {
         }
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -1014,6 +1068,15 @@ class _TabNativeRenderer extends StatelessWidget {
         }
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isYouthSoccerEngineExperience(experience)) {
+          return _YouthSoccerEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -1122,6 +1185,30 @@ class _TabNativeRenderer extends StatelessWidget {
         ],
       );
     }
+    if (_isYouthSoccerEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _YouthSoccerEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
     if (_isChessEngineExperience(experience)) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1183,6 +1270,15 @@ bool _isBookEngineExperience(LoomExperienceDefinition experience) {
       ids.contains('book-discussion-message') &&
       ids.contains('book-selection-publish') &&
       ids.contains('book-search-ai-digest');
+}
+
+bool _isYouthSoccerEngineExperience(LoomExperienceDefinition experience) {
+  if (experience.extensionId == 'ext_youth_soccer') return true;
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('soccer-guardian-join-approval') &&
+      ids.contains('soccer-team-roster') &&
+      ids.contains('soccer-practice-schedule') &&
+      ids.contains('soccer-registration-payment');
 }
 
 bool _isChessEngineExperience(LoomExperienceDefinition experience) {
@@ -7093,9 +7189,7 @@ const _chessBundledFixtureJsonc = r'''
             {
               "op": "set",
               "key": "rankingRows",
-              "value": "Maya Patel:1496:+16",
-              "targetWorkflowType": "chess-rankings-table",
-              "targetInstanceKey": "rankings-main"
+              "value": "Maya Patel:1496:+16"
             },
             {
               "op": "append",
@@ -7122,9 +7216,7 @@ const _chessBundledFixtureJsonc = r'''
             {
               "op": "set",
               "key": "rankingRows",
-              "value": "Maya Patel:1492:+12",
-              "targetWorkflowType": "chess-rankings-table",
-              "targetInstanceKey": "rankings-main"
+              "value": "Maya Patel:1492:+12"
             },
             {
               "op": "append",

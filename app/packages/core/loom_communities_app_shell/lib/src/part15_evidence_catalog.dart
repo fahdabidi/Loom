@@ -851,16 +851,22 @@ const Map<String, List<LoomPersonaDefinition>> _personasByExtensionId = {
   ],
   'ext_youth_soccer': [
     LoomPersonaDefinition(
-      personaId: 'soccer-coach',
-      label: 'Coach',
-      roleLabel: 'Team staff',
-      description: 'Approves guardians and publishes team operations.',
-    ),
-    LoomPersonaDefinition(
-      personaId: 'soccer-guardian',
+      personaId: 'guardian',
       label: 'Guardian',
       roleLabel: 'Guardian',
       description: 'Handles player registration, payments, and reminders.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'coach',
+      label: 'Coach',
+      roleLabel: 'Team staff',
+      description: 'Approves guardians, manages rosters, and publishes team operations.',
+    ),
+    LoomPersonaDefinition(
+      personaId: 'owner',
+      label: 'Owner',
+      roleLabel: 'Owner',
+      description: 'Runs protected exports with minor-data redaction.',
     ),
   ],
   'ext_hoa': [
@@ -1050,40 +1056,40 @@ LoomWorkflowPersonaPolicy _soccerPolicy(String workflowId) {
   switch (workflowId) {
     case 'soccer-guardian-join-approval':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['soccer-coach'],
-        receiverPersonaIds: ['soccer-guardian'],
+        actorPersonaIds: ['guardian'],
+        receiverPersonaIds: ['coach', 'owner'],
         receiverEntryText: 'Guardian approval is ready to receive.',
         receiverActionText: 'Receive approval',
         receiverResultText: 'Guardian received active membership approval.',
       );
     case 'soccer-team-roster':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['soccer-coach', 'soccer-guardian'],
+        actorPersonaIds: ['coach', 'guardian'],
       );
     case 'soccer-minor-redaction':
     case 'soccer-registration-payment':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['soccer-guardian'],
-        readOnlyPersonaIds: ['soccer-coach'],
+        actorPersonaIds: ['guardian'],
+        readOnlyPersonaIds: ['coach'],
         readOnlyText: 'Coach sees only permission-safe evidence.',
       );
     case 'soccer-practice-schedule':
     case 'soccer-reminder-notification':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['soccer-coach'],
-        receiverPersonaIds: ['soccer-guardian'],
+        actorPersonaIds: ['guardian'],
+        receiverPersonaIds: ['coach', 'owner'],
         receiverEntryText: 'Team update is ready for guardian receipt.',
         receiverActionText: 'Receive update',
         receiverResultText: 'Guardian received the team update.',
       );
     case 'soccer-export-metadata':
       return const LoomWorkflowPersonaPolicy(
-        actorPersonaIds: ['soccer-coach'],
-        readOnlyPersonaIds: ['soccer-guardian'],
+        actorPersonaIds: ['owner'],
+        readOnlyPersonaIds: ['guardian', 'coach'],
         readOnlyText: 'Guardian can open protected export coverage.',
       );
   }
-  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['soccer-coach']);
+  return const LoomWorkflowPersonaPolicy(actorPersonaIds: ['coach']);
 }
 
 LoomWorkflowPersonaPolicy _hoaPolicy(String workflowId) {
