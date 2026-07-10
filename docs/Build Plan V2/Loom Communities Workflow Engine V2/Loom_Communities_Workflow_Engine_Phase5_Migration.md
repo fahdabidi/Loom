@@ -473,14 +473,14 @@ precedent as the non-blocking process notes already on record for M5.1–M5.3 ab
 
 **M5.4 is now fully closed.**
 ### Milestone 5.5 — Youth Soccer tab reimplementation
-- [ ] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
-- [ ] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
+- [~] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
+- [~] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
   reviewer status timeline, schedule RSVP/reminders, guardian roster card, coach roster table,
   protected minor detail redaction, reminders, documents, and export.
-- [ ] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
+- [~] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
   Documents, Coach/Admin, and Home.
-- [ ] Full `flutter test` suite green, exact pass count cited.
-- [ ] Youth Soccer generality note focuses on `guidedProcess` and `protectedDetail` for minor data.
+- [~] Full `flutter test` suite green, exact pass count cited.
+- [~] Youth Soccer generality note focuses on `guidedProcess` and `protectedDetail` for minor data.
 
 ### Milestone 5.6 — Mosque tab reimplementation
 - [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
