@@ -616,12 +616,15 @@ test)→`transfer`→`rollback`→`retry` sequence as owner.
 
 **M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
-- [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
+**Status:** `[!]` SENT BACK 2026-07-11 — one narrow blocking defect found in code verification. Live
+emulator walk was not performed, per protocol (code verification must be fully green first).
+
+- [r] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
 - [r] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
   visibility by audience, donation/receipt and donor-visibility preference, care request submit/edit,
   protected care detail review/assign/respond/close, announcement compose/publish/receive, volunteer
   signup/open/close/contact gating, messages/notifications, search citations, and Home pins.
-- [r] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
+- [ ] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
   Search, and Home across admin/member personas.
 - [r] Full `flutter test` suite green, exact pass count cited.
 - [r] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
@@ -644,6 +647,62 @@ Validation run before `[r]`:
 Live emulator/screenshot validation preparation: the bundled fixture and `b46_mosque_engine_migration_test.dart` exercise the exact manual screenshot path for member/admin Home, Calendar, Giving, Care, Admin, Messages, and Search. The implementation agent did not close this evidence item; it is ready for the Verification Agent's live emulator walk.
 
 Generality finding: Existing primitives were sufficient; M5.6 did not require a new workflow archetype or engine API. Audience-selected events use the Phase 2 audience primitive directly: `_MosqueEngineStore.instancesFor` passes `SurfaceQuery(audienceMemberField: 'invitedPersonaIds')` for member Calendar reads, while the `mosque-event-rsvp` render binding declares `audienceMemberField: "invitedPersonaIds"` in `Loom_Communities_Workflow_Engine_Mosque_Example.jsonc`. The app never hardcodes the private event exclusion; `LocalWorkflowEngineApi.queryInstances` resolves the audience field and the widget test proves `Private consultation` is absent for `mosque-member` while the all-audience Friday event remains visible. Field-level care privacy also reused the protectedDetail pattern already proven by M5.5 rather than adding a new backend primitive: `_MosqueEngineTabSurface._careDetail` computes visibility from the live viewer identity (`assignedReviewerPersonaId == widget.persona.personaId`) or member ownership (`widget.persona.personaId == instance.createdByPersonaId`) and masks `contactPreference`/`privateDetails` otherwise. The admin test proves the field starts masked for an unassigned admin, then becomes visible only after the real `assign-care-request` transition writes `assignedReviewerPersonaId: "mosque-admin"` through `LocalWorkflowEngineApi.applyTransition`. Volunteer roster and donor visibility similarly execute normal state transitions/effects through `LocalWorkflowEngineApi`; the only runtime-only helper field is `_seedInstanceId`, added to `instanceData` solely to choose between two seeded volunteer/event rows after `createInstance` generates real database IDs, not to bypass transition or visibility logic.
+
+**Verification rejection note (2026-07-11):** Code verification found the engine wiring genuine
+throughout — real `WorkflowDatabase.memory()`/`LocalWorkflowEngineApi`, real `applyTransition`/
+`updateInstanceFields` calls everywhere, the audience-resolution mechanism genuinely reuses the real
+M2.1 `SurfaceQuery(audienceMemberField: ...)` primitive (not a hardcoded exclusion), and
+`_careDetail`'s masking (`part20_mosque_engine.dart:278-294`) genuinely computes visibility from
+`assignedReviewerPersonaId == widget.persona.personaId` / `createdByPersonaId` ownership — exactly
+the kind of relationship-based check M5.5's fix established as correct, not a repeat of that defect.
+All cited test/analyze commands re-ran clean and matched exactly: app-shell + tooling analyze clean;
+`milestone_1_3_test.dart` 36/36; Mosque fixture validator pass/0/0; `app_shell` 5/5; engine 73/73;
+`b46` 1/1; combined demo suite (`--concurrency=1`) 129/129.
+
+**One narrow blocking defect, quoting your own generality-finding note above (line above this one):**
+the `assign-care-request` transition's effect (`part20_mosque_engine.dart:1344-1350`) is
+`{"op": "set", "key": "assignedReviewerPersonaId", "value": "mosque-admin"}` — a **hardcoded persona-id
+literal**, not the engine's real `$actor` dynamic-actor mechanism
+(`loom_workflow_engine/lib/src/evaluator/effect_evaluator.dart:24-34`, which resolves `$actor`/`{actor}`
+to the actual acting `personaId` at transition time). This codebase already uses that exact mechanism
+correctly, in this very file, for the analogous case: `sign-up-volunteer`'s effect
+(`part20_mosque_engine.dart:1719-1725`) correctly uses `"value": "{actor}"`. `assign-care-request` is
+the one place that reached for a literal instead.
+
+This is currently behaviorally inert — the transition's guard already restricts it to
+`allowedPersonaIds: ["mosque-admin"]`, and this app's persona model has exactly one `mosque-admin`
+persona, so the hardcoded value and a genuine `$actor` capture produce identical results today. That
+is why it wasn't caught by any test (confirmed: no test asserts on the specific
+`assignedReviewerPersonaId` value, only that masking flips after the transition — fixing this will not
+break `b46` or any other test). But it is still the exact shape of defect this milestone's kickoff
+asked for extra rigor on: a hardcoded value standing in for a computed one, in the `protectedDetail`
+identity-gating logic specifically. If this community's persona model is ever extended (a second admin
+account, for instance — not a hypothetical stretch, HOA's `board` persona already shows multi-actor
+admin roles exist elsewhere in this codebase), this would silently misattribute every assignment to the
+literal `"mosque-admin"` regardless of who actually performed it.
+
+**Required fix:** change `part20_mosque_engine.dart:1348`'s effect value from `"mosque-admin"` to
+`"{actor}"` (matching `sign-up-volunteer`'s own established pattern in the same file), re-run `b46` to
+confirm it still passes unchanged (it should — no test depends on the specific string), and note the
+one-line fix explicitly in the resubmission.
+
+**Also please clean up before resubmitting (not a code defect, folded into the commit gate):** four
+untracked helper scripts (`app/_run_b33.sh`, `app/_run_b34.sh`, `app/_run_community_tests.sh`,
+`app/_run_tests.sh`) are sitting in the repo from this session's work. Either commit them if they're
+useful going forward, or delete them — don't leave untracked files in the working tree across a
+milestone boundary.
+
+**Process note, recurring:** several lines in this resubmission's own validation-run write-up (just
+above, lines 635-642) show a lossy `?` in place of what should be an em dash or arrow — the same
+tooling/encoding issue flagged after M5.2/M5.3. Please write tracker/phase-doc edits with explicit
+UTF-8 encoding as the kickoff message instructs.
+
+Everything else in this submission checked out in code verification: audience-selected Calendar,
+donation `paymentCheckout`+donor-visibility `singleItem`, care `formEntry`+`protectedDetail`,
+admin `formEntry`+`notificationInbox` composer, `volunteerRoster`, Messages' `discussionThread`+
+neutral `notificationInbox`, and `searchAiAnswer` all use genuine engine calls with no local-state
+shortcuts found. Fix the one-line `$actor` defect above, clean up the untracked scripts, and resubmit
+— this should be fast.
 
 Each milestone follows the same evidence-bar shape used in every prior phase:
 - [ ] Community's workflow fixtures parse and pass the Phase 1 §7c validator.
