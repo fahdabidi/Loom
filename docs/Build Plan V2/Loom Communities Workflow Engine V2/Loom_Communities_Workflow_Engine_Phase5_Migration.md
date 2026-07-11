@@ -616,7 +616,7 @@ test)→`transfer`→`rollback`→`retry` sequence as owner.
 
 **M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
-**Status:** `[!]` SENT BACK 2026-07-11 — one narrow blocking defect found in code verification. Live
+**Status:** `[r]` READY FOR RE-VERIFICATION 2026-07-11 — one narrow blocking defect found in code verification. Live
 emulator walk was not performed, per protocol (code verification must be fully green first).
 
 - [r] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
@@ -703,6 +703,21 @@ admin `formEntry`+`notificationInbox` composer, `volunteerRoster`, Messages' `di
 neutral `notificationInbox`, and `searchAiAnswer` all use genuine engine calls with no local-state
 shortcuts found. Fix the one-line `$actor` defect above, clean up the untracked scripts, and resubmit
 — this should be fast.
+
+
+
+**Implementation resubmission note 2026-07-11 (M5.6 sent-back fix ready):** Commit `54884eb` fixes the one blocking defect from the verifier note: `assign-care-request` now writes `assignedReviewerPersonaId` with the engine dynamic actor token `{actor}` instead of the hardcoded `mosque-admin` literal. This matches the existing `sign-up-volunteer` pattern and keeps protectedDetail reviewer assignment tied to the real acting persona if more Mosque admin personas are added later. The four scratch helper scripts named by verification (`app/_run_b33.sh`, `app/_run_b34.sh`, `app/_run_community_tests.sh`, `app/_run_tests.sh`) are not present in the working tree.
+
+Validation run before re-setting `[r]`:
+- `dart analyze packages/core/loom_communities_app_shell` - clean, no issues found.
+- `dart analyze packages/tooling/loom_ux_judges` - clean, no issues found.
+- `dart test packages/tooling/loom_ux_judges/test/milestone_1_3_test.dart` - 36/36 passed.
+- `flutter test packages/core/loom_communities_app_shell` - 5/5 passed.
+- `flutter test apps/loom_communities_demo/test/b46_mosque_engine_migration_test.dart` - 1/1 passed.
+- `cd packages/core/loom_workflow_engine && dart test` - 73/73 passed.
+- `flutter test --concurrency=1 apps/loom_communities_demo/test` - 129/129 passed.
+
+Files making real engine calls remain `app/packages/core/loom_communities_app_shell/lib/src/part20_mosque_engine.dart`: `_MosqueEngineStore` registers parsed fixture state machines in `LocalWorkflowEngineApi`, seeds instances through `createInstance`, restores fixture states via `WorkflowDatabase.updateInstanceState`, queries with `queryInstances`, applies transitions through `applyTransition`, and writes form edits through `updateInstanceFields`. No new local-only state path was added for this fix; only the transition effect literal changed to the engine's dynamic actor token.
 
 Each milestone follows the same evidence-bar shape used in every prior phase:
 - [ ] Community's workflow fixtures parse and pass the Phase 1 §7c validator.
