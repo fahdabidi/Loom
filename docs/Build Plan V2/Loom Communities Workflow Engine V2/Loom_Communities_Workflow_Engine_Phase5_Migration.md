@@ -473,7 +473,7 @@ precedent as the non-blocking process notes already on record for M5.1–M5.3 ab
 
 **M5.4 is now fully closed.**
 ### Milestone 5.5 — Youth Soccer tab reimplementation
-**Status:** `[!]` SENT BACK 2026-07-10 — one blocking defect found in code verification. Live emulator
+**Status:** `[r]` READY FOR RE-VERIFICATION 2026-07-10 — one blocking defect found in code verification. Live emulator
 walk was not performed, per protocol (code verification must be fully green first).
 
 - [r] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
