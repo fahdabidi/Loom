@@ -617,15 +617,33 @@ test)→`transfer`→`rollback`→`retry` sequence as owner.
 **M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
 - [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
-- [~] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
+- [r] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
   visibility by audience, donation/receipt and donor-visibility preference, care request submit/edit,
   protected care detail review/assign/respond/close, announcement compose/publish/receive, volunteer
   signup/open/close/contact gating, messages/notifications, search citations, and Home pins.
-- [~] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
+- [r] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
   Search, and Home across admin/member personas.
-- [~] Full `flutter test` suite green, exact pass count cited.
-- [~] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
+- [r] Full `flutter test` suite green, exact pass count cited.
+- [r] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
   highest-risk remaining privacy/audience/volunteer migration.
+
+
+
+**Implementation resubmission note 2026-07-11 (M5.6 ready for verification):** Implementation commit `e5ccc75` added the production Mosque engine migration. Changed files: `part20_mosque_engine.dart` (engine-backed Mosque renderer/store and embedded fixture), `part02_tab_shell.dart` (Mosque tab dispatch), `part12_persona_and_tabs.dart` (Calendar/Giving/Care/Admin/Search/Messages tab declarations), `part15_evidence_catalog.dart` and `part16_experience_catalog.dart` (Mosque policy/catalog including discussion thread), app-shell `pubspec.yaml` + bundled Mosque fixture asset, docs Mosque fixture, `milestone_1_3_test.dart` fixture regression, `b46_mosque_engine_migration_test.dart`, and updated b25 persona-tab expectations for the now-explicit Mosque engine tabs.
+
+Validation run before `[r]`:
+- `dart analyze packages/core/loom_communities_app_shell` ? clean, no issues found.
+- `dart analyze packages/tooling/loom_ux_judges` ? clean, no issues found.
+- `dart run packages/tooling/loom_ux_judges/bin/workflow_state_machine_validator.dart --definitions ../docs/Build\ Plan\ V2/Loom\ Communities\ Workflow\ Engine\ V2/Loom_Communities_Workflow_Engine_Mosque_Example.jsonc` ? pass clean, 0 errors, 0 warnings.
+- `dart test packages/tooling/loom_ux_judges/test/milestone_1_3_test.dart` ? 36/36 passed, including the new Mosque fixture regression.
+- `flutter test packages/core/loom_communities_app_shell` ? 5/5 passed.
+- `cd packages/core/loom_workflow_engine && dart test` ? 73/73 passed.
+- `flutter test apps/loom_communities_demo/test/b46_mosque_engine_migration_test.dart` ? 1/1 passed.
+- `flutter test --concurrency=1 apps/loom_communities_demo/test` ? 129/129 passed.
+
+Live emulator/screenshot validation preparation: the bundled fixture and `b46_mosque_engine_migration_test.dart` exercise the exact manual screenshot path for member/admin Home, Calendar, Giving, Care, Admin, Messages, and Search. The implementation agent did not close this evidence item; it is ready for the Verification Agent's live emulator walk.
+
+Generality finding: Existing primitives were sufficient; M5.6 did not require a new workflow archetype or engine API. Audience-selected events use the Phase 2 audience primitive directly: `_MosqueEngineStore.instancesFor` passes `SurfaceQuery(audienceMemberField: 'invitedPersonaIds')` for member Calendar reads, while the `mosque-event-rsvp` render binding declares `audienceMemberField: "invitedPersonaIds"` in `Loom_Communities_Workflow_Engine_Mosque_Example.jsonc`. The app never hardcodes the private event exclusion; `LocalWorkflowEngineApi.queryInstances` resolves the audience field and the widget test proves `Private consultation` is absent for `mosque-member` while the all-audience Friday event remains visible. Field-level care privacy also reused the protectedDetail pattern already proven by M5.5 rather than adding a new backend primitive: `_MosqueEngineTabSurface._careDetail` computes visibility from the live viewer identity (`assignedReviewerPersonaId == widget.persona.personaId`) or member ownership (`widget.persona.personaId == instance.createdByPersonaId`) and masks `contactPreference`/`privateDetails` otherwise. The admin test proves the field starts masked for an unassigned admin, then becomes visible only after the real `assign-care-request` transition writes `assignedReviewerPersonaId: "mosque-admin"` through `LocalWorkflowEngineApi.applyTransition`. Volunteer roster and donor visibility similarly execute normal state transitions/effects through `LocalWorkflowEngineApi`; the only runtime-only helper field is `_seedInstanceId`, added to `instanceData` solely to choose between two seeded volunteer/event rows after `createInstance` generates real database IDs, not to bypass transition or visibility logic.
 
 Each milestone follows the same evidence-bar shape used in every prior phase:
 - [ ] Community's workflow fixtures parse and pass the Phase 1 §7c validator.
