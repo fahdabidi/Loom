@@ -1345,7 +1345,7 @@ const _mosqueBundledFixtureJsonc = r'''
             {
               "op": "set",
               "key": "assignedReviewerPersonaId",
-              "value": "mosque-admin"
+              "value": "{actor}"
             }
           ]
         },
