@@ -616,18 +616,19 @@ test)→`transfer`→`rollback`→`retry` sequence as owner.
 
 **M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
-**Status:** `[r]` READY FOR RE-VERIFICATION 2026-07-11 — one narrow blocking defect found in code verification. Live
-emulator walk was not performed, per protocol (code verification must be fully green first).
+**Status:** `[x]` CLOSED 2026-07-11 — sent back once for a hardcoded persona literal in
+`assign-care-request`, fixed with the engine's real `{actor}` token and independently re-verified
+(code-read + fresh gates + full live emulator walk across both personas). **This closes Phase 5.**
 
-- [r] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
-- [r] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
+- [x] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
+- [x] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
   visibility by audience, donation/receipt and donor-visibility preference, care request submit/edit,
   protected care detail review/assign/respond/close, announcement compose/publish/receive, volunteer
   signup/open/close/contact gating, messages/notifications, search citations, and Home pins.
-- [ ] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
+- [x] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
   Search, and Home across admin/member personas.
-- [r] Full `flutter test` suite green, exact pass count cited.
-- [r] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
+- [x] Full `flutter test` suite green, exact pass count cited.
+- [x] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
   highest-risk remaining privacy/audience/volunteer migration.
 
 
@@ -718,6 +719,35 @@ Validation run before re-setting `[r]`:
 - `flutter test --concurrency=1 apps/loom_communities_demo/test` - 129/129 passed.
 
 Files making real engine calls remain `app/packages/core/loom_communities_app_shell/lib/src/part20_mosque_engine.dart`: `_MosqueEngineStore` registers parsed fixture state machines in `LocalWorkflowEngineApi`, seeds instances through `createInstance`, restores fixture states via `WorkflowDatabase.updateInstanceState`, queries with `queryInstances`, applies transitions through `applyTransition`, and writes form edits through `updateInstanceFields`. No new local-only state path was added for this fix; only the transition effect literal changed to the engine's dynamic actor token.
+
+**Verification Agent close-out (2026-07-11):** Independently re-verified the resubmission — CLOSED.
+**Phase 5 is now fully complete** (all of 5.1–5.6 closed). Confirmed via `git show 54884eb`: the diff
+is exactly the one line described, `"value": "mosque-admin"` → `"value": "{actor}"`, nothing else
+touched. Confirmed the four scratch scripts are genuinely gone (`git status` clean). Fresh re-runs
+matched the resubmission's cited numbers exactly: app-shell + tooling analyze clean;
+`milestone_1_3_test.dart` 36/36; Mosque fixture validator pass/0/0; `app_shell` 5/5; engine 73/73;
+`b46` 1/1; combined demo suite (`--concurrency=1`) 129/129 — `b46` genuinely unaffected by the fix, as
+predicted.
+
+Live emulator walk (fresh install after a clean rebuild — the first build hit a stale Gradle dex-merge
+cache conflict unrelated to this change, resolved by `flutter clean`; `PantryVision_Manual_API_36`,
+both personas) exercised every required surface with real on-device state. **Calendar directly
+confirmed the audience-resolution generality claim:** as admin, published a `selected-many` audience
+event (`State: Published`); switching to `mosque-member` showed *only* the pre-existing `all`-audience
+Friday event — the `selected-many` event the member wasn't invited to was genuinely absent from their
+agenda, not just hidden by a client-side filter (confirmed by scrolling the full list). Member RSVP
+going, donation pay, and donor-visibility set-public all produced real state changes. **Care directly
+confirmed the fix under test:** submitted a care request as member (own-detail visible immediately,
+since the member owns it); switched to admin and confirmed the detail card read `Private details:
+Masked for this viewer` before assignment; tapped `Assign reviewer` and watched it flip live to
+`Assigned reviewer: mosque-admin` with the real contact/private fields now unmasked — the `{actor}`
+token resolved correctly to the acting persona in a genuine on-device transition, not just in the
+widget test. Continued the same instance through `respond-care-request`→`close-care-request` to
+`State: Resolved`. Also verified: member volunteer sign-up (`State: Signed up`); admin
+`contact-volunteer` (`Protected contact sent`, phone still hidden until this action); admin
+announcement `preview`→`publish` (`State: Sent`); Messages' member `reply` and the neutral
+notification correctly reading a privacy-safe summary with zero leaked care details; Search's
+`hide-source` genuinely updating `hiddenSources`. Home pins rendered correctly for both personas.
 
 Each milestone follows the same evidence-bar shape used in every prior phase:
 - [ ] Community's workflow fixtures parse and pass the Phase 1 §7c validator.
