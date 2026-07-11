@@ -617,14 +617,14 @@ test)→`transfer`→`rollback`→`retry` sequence as owner.
 **M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
 - [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
-- [ ] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
+- [~] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
   visibility by audience, donation/receipt and donor-visibility preference, care request submit/edit,
   protected care detail review/assign/respond/close, announcement compose/publish/receive, volunteer
   signup/open/close/contact gating, messages/notifications, search citations, and Home pins.
-- [ ] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
+- [~] Live emulator walk with screenshot evidence for Calendar, Giving, Care, Admin, Messages,
   Search, and Home across admin/member personas.
-- [ ] Full `flutter test` suite green, exact pass count cited.
-- [ ] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
+- [~] Full `flutter test` suite green, exact pass count cited.
+- [~] Mosque generality finding is mandatory and Phase-4-level detailed because this is the
   highest-risk remaining privacy/audience/volunteer migration.
 
 Each milestone follows the same evidence-bar shape used in every prior phase:
