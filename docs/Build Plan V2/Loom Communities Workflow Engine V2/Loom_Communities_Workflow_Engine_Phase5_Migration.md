@@ -473,17 +473,18 @@ precedent as the non-blocking process notes already on record for M5.1–M5.3 ab
 
 **M5.4 is now fully closed.**
 ### Milestone 5.5 — Youth Soccer tab reimplementation
-**Status:** `[r]` READY FOR RE-VERIFICATION 2026-07-10 — one blocking defect found in code verification. Live emulator
-walk was not performed, per protocol (code verification must be fully green first).
+**Status:** `[x]` CLOSED 2026-07-10 — sent back once for a hardcoded guardian-child identity gate,
+fixed and independently re-verified (code-read + fresh gates + full live emulator walk across all
+three personas). See close-out note below.
 
-- [r] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
-- [r] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
+- [x] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
+- [x] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
   reviewer status timeline, schedule RSVP/reminders, guardian roster card, coach roster table,
   protected minor detail redaction, reminders, documents, and export.
-- [ ] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
+- [x] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
   Documents, Coach/Admin, and Home.
-- [r] Full `flutter test` suite green, exact pass count cited.
-- [r] Youth Soccer generality note focuses on `guidedProcess` and `protectedDetail` for minor data.
+- [x] Full `flutter test` suite green, exact pass count cited.
+- [x] Youth Soccer generality note focuses on `guidedProcess` and `protectedDetail` for minor data.
 
 **Verification rejection note (2026-07-10):** Code verification found the engine wiring genuine for
 every tab — `_YouthSoccerEngineStore` (`part19_youth_soccer_engine.dart:738`) uses a real
@@ -553,6 +554,67 @@ Everything else in this submission checked out in code verification: `guidedProc
 found. Fix the `protectedDetail` identity-gating defect above, keep everything else as-is, and
 resubmit.
 
+Implementation Agent resubmission note (2026-07-10): fixed the M5.5 blocker. `soccer-team-roster`
+and `soccer-guardian-join-approval` now declare a real `guardianPersonaId` field, seeded with genuine
+relationship data: Sofia Rivera and a new second child, Ari Rivera, both link to `guardianPersonaId:
+"guardian"`; Miles Chen links to a different, non-matching `"guardian-chen"`. `_YouthSoccerEngineStore._visible`
+now filters the guardian's Team-tab roster rows with `instance.instanceData['guardianPersonaId'] ==
+personaId` instead of the old `playerName == 'Sofia Rivera'` literal, and the guardian card iterates
+all matching rows (`for (final instance in roster)`, no longer `.take(1)`). `_rosterLine` now also
+renders `guardianPersonaId` and wires the real `redactedFields`/`medicalNotes` instance data into the
+UI (`Medical notes: redacted (medicalNotes)` when `redactedFields` contains it, the real value
+otherwise). `b45_youth_soccer_engine_migration_test.dart` now asserts both `Sofia Rivera` and
+`Ari Rivera` appear on the guardian's card and `Miles Chen` does not, plus asserts the redacted-field
+text after `redact-field` fires.
+
+Re-validation after fix:
+- `dart analyze packages/core/loom_communities_app_shell`: clean.
+- `dart analyze packages/tooling/loom_ux_judges`: clean.
+- `dart test packages/tooling/loom_ux_judges/test/milestone_1_3_test.dart`: 35/35.
+- Youth fixture validator: `status: pass`, `errorCount: 0`, `warningCount: 0`.
+- `flutter test packages/core/loom_communities_app_shell`: 5/5.
+- `flutter test apps/loom_communities_demo/test/b45_youth_soccer_engine_migration_test.dart`: 1/1.
+- `cd app && flutter test apps/loom_communities_demo/test`: 128/128.
+- `dart test packages/core/loom_workflow_engine`: 73/73.
+
+M5.5 fix commit: `c2324b1` (`Fix M5.5 Youth Soccer guardian roster relationship`).
+
+**Verification Agent close-out (2026-07-10):** Independently re-verified the resubmission — CLOSED.
+Read the actual diff line by line (not just the resubmission note): confirmed
+`_YouthSoccerEngineStore._visible` (`part19_youth_soccer_engine.dart:837`) now compares
+`instance.instanceData['guardianPersonaId'] == personaId` — a genuine relationship check against the
+live persona parameter, not a hardcoded comparison target — and the guardian card's `roster.take(1)`
+cap was removed so all matching rows render. Confirmed `b45`'s new assertions
+(`findsWidgets` for `Ari Rivera - U12`, `findsNothing` for `Miles Chen - U10`) genuinely prove both
+inclusion and exclusion, the same shape as M5.4's Ari-Stone/Lina-Ortiz regression. The bloated diff
+size (6,139 insertions) is JSON pretty-printing noise from the fixture literal being reformatted, not
+a sign of anything untoward — the functional diff is exactly the three changes described above.
+
+Fresh re-runs matched the resubmission's cited numbers exactly: app-shell + tooling analyze clean;
+`milestone_1_3_test.dart` 35/35; Youth fixture validator pass/0/0; `flutter test
+packages/core/loom_communities_app_shell` 5/5; `b45` 1/1; combined demo suite 128/128 (run from the
+`app/` workspace root); engine 73/73.
+
+Live emulator walk (fresh build+install, `PantryVision_Manual_API_36`, all three personas —
+`guardian`/`coach`/`owner`) exercised every required surface with real on-device state: Home's 4
+pins; Registration's full 4-step guided wizard (`submit-join-request`→`sign-waiver`→
+`confirm-registration-payment`→roster confirmation, each step genuinely gated — the payment action
+was provably unavailable until the waiver step); Schedule's `rsvp-going` (persisted across a persona
+switch to coach, proving one shared engine instance) and coach's `change-practice`/
+`send-schedule-reminder`. **Team tab — the specific fix under test — directly confirmed both
+directions live:** as guardian, the roster card showed exactly Sofia Rivera and Ari Rivera (both
+`guardianPersonaId: "guardian"`), with Miles Chen (`guardianPersonaId: "guardian-chen"`) genuinely
+absent; switching to coach showed all three players in the sortable table, with Miles Chen's
+pre-existing `redactedFields: ["medicalNotes"]` correctly rendering as "Medical notes: redacted
+(medicalNotes)" — then tapping `redact-field` live on Sofia's own row produced the identical rendering
+change in real time, proving the redaction display is genuinely data-driven, not static seed
+formatting. Payments' `pay-registration`→`refund-payment` with a real generated receipt ID; Waivers'
+`open-embedded`→`open-external`→`acknowledge`; Messages' `reply`; Coach's dashboard composition
+(roster operations card, reminder inbox `schedule-reminder`→`publish-reminder`, schedule controls);
+and Export's full `preview-redaction`→`generate-export` (real checksum `sha256-rys-77a9`, matching the
+test)→`transfer`→`rollback`→`retry` sequence as owner.
+
+**M5.5 is now fully closed.**
 ### Milestone 5.6 — Mosque tab reimplementation
 - [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
 - [ ] Behavioral-parity widget tests cover admin event creation with `audienceSelector`, member RSVP
