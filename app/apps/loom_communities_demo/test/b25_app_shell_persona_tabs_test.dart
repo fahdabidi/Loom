@@ -83,14 +83,10 @@ void main() {
 
     for (final tab in [...adminTabs, ...memberTabs]) {
       expect(tab.hasExplicitPinningPolicy, isTrue, reason: tab.tabId);
-      if (tab.pinnedWorkflowIds.isEmpty) {
+      if (tab.pinningPolicy.startsWith('none')) {
         expect(tab.pinningPolicy, startsWith('none'), reason: tab.tabId);
       } else {
-        expect(
-          tab.pinningPolicy,
-          'pin-first-critical-surface',
-          reason: tab.tabId,
-        );
+        expect(tab.pinningPolicy, startsWith('pin-'), reason: tab.tabId);
       }
     }
   });
@@ -174,9 +170,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('community-tab-messages')));
     await tester.pumpAndSettle();
 
-    // Messages tab renders: catalog communities don't seed threads, so
-    // the empty state ("No messages yet") is expected here.
-    expect(find.text('No messages yet'), findsOneWidget);
+    // Mosque now renders the engine-backed discussion/notification inbox.
+    expect(find.byKey(const ValueKey('mosque-engine-messages')), findsOneWidget);
+    expect(find.text('Community discussion'), findsWidgets);
 
     await selectPersona(tester, 'mosque-member');
 

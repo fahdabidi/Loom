@@ -26,3 +26,4 @@ part 'src/part16_experience_catalog.dart';
 part 'src/part17_theme_tokens.dart';
 part 'src/part18_marketplace_rendering.dart';
 part 'src/part19_youth_soccer_engine.dart';
+part 'src/part20_mosque_engine.dart';

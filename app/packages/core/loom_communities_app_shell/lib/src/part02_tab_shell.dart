@@ -730,6 +730,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isYouthSoccerEngineExperience(experience)) {
           return _YouthSoccerEngineTabSurface(
             experience: experience,
@@ -774,6 +783,15 @@ class _TabNativeRenderer extends StatelessWidget {
         }
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -833,6 +851,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isYouthSoccerEngineExperience(experience)) {
           return _YouthSoccerEngineTabSurface(
             experience: experience,
@@ -873,6 +900,15 @@ class _TabNativeRenderer extends StatelessWidget {
           modernTheme: modernTheme,
         );
       case 'PaymentGivingTabSurface':
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isYouthSoccerEngineExperience(experience)) {
           return _YouthSoccerEngineTabSurface(
             experience: experience,
@@ -919,6 +955,15 @@ class _TabNativeRenderer extends StatelessWidget {
       case 'DocumentsTabSurface':
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -991,6 +1036,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (_isYouthSoccerEngineExperience(experience)) {
           return _YouthSoccerEngineTabSurface(
             experience: experience,
@@ -1037,6 +1091,15 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
         if (experience.workflows.any(
           (workflow) => workflow.architecturalRequest != null,
         )) {
@@ -1068,6 +1131,15 @@ class _TabNativeRenderer extends StatelessWidget {
         }
         if (_isBookEngineExperience(experience)) {
           return _BookClubEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          );
+        }
+        if (_isMosqueEngineExperience(experience)) {
+          return _MosqueEngineTabSurface(
             experience: experience,
             persona: persona,
             tabId: selectedTab.tabId,
@@ -1185,6 +1257,30 @@ class _TabNativeRenderer extends StatelessWidget {
         ],
       );
     }
+    if (_isMosqueEngineExperience(experience)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _MosqueEngineTabSurface(
+            experience: experience,
+            persona: persona,
+            tabId: selectedTab.tabId,
+            accent: accent,
+            modernTheme: modernTheme,
+          ),
+          const SizedBox(height: 12),
+          _HomeTabSurfaceStack(
+            experience: experience,
+            sections: sections,
+            focusedWorkflowId: focusedWorkflowId,
+            expandedWorkflowId: expandedWorkflowId,
+            accent: accent,
+            theme: theme,
+            workflowBuilder: workflowBuilder,
+          ),
+        ],
+      );
+    }
     if (_isYouthSoccerEngineExperience(experience)) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1270,6 +1366,15 @@ bool _isBookEngineExperience(LoomExperienceDefinition experience) {
       ids.contains('book-discussion-message') &&
       ids.contains('book-selection-publish') &&
       ids.contains('book-search-ai-digest');
+}
+
+bool _isMosqueEngineExperience(LoomExperienceDefinition experience) {
+  if (experience.extensionId == 'ext_mosque') return true;
+  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  return ids.contains('mosque-event-rsvp') &&
+      ids.contains('mosque-care-request') &&
+      ids.contains('mosque-donation-payment') &&
+      ids.contains('mosque-announcement');
 }
 
 bool _isYouthSoccerEngineExperience(LoomExperienceDefinition experience) {

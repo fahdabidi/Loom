@@ -1144,7 +1144,13 @@ LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
         receiverResultText: 'Member received the public announcement.',
       );
     case 'mosque-event-rsvp':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+      );
     case 'mosque-volunteer-signup':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin', 'mosque-member'],
+      );
     case 'mosque-donor-visibility':
     case 'mosque-donation-payment':
     case 'mosque-care-request':
@@ -1163,6 +1169,10 @@ LoomWorkflowPersonaPolicy _mosquePolicy(String workflowId) {
         receiverEntryText: 'A neutral care notification is ready to receive.',
         receiverActionText: 'Receive notice',
         receiverResultText: 'Member received the neutral care notification.',
+      );
+    case 'mosque-discussion-thread':
+      return const LoomWorkflowPersonaPolicy(
+        actorPersonaIds: ['mosque-admin', 'mosque-member'],
       );
     case 'mosque-search-ai-citation':
       return const LoomWorkflowPersonaPolicy(

@@ -309,6 +309,13 @@ const Map<String, LoomExperienceDefinition> _experienceByExtensionId = {
         actionText: 'Ask for iftar information from indexed announcements.',
         resultText: 'AI answer includes public announcement citation.',
       ),
+      LoomWorkflowDefinition(
+        workflowId: 'mosque-discussion-thread',
+        title: 'Community discussion thread',
+        entryText: 'Members can discuss iftar logistics without leaking protected care details.',
+        actionText: 'Reply to the iftar logistics thread.',
+        resultText: 'Discussion thread updated.',
+      ),
     ],
   ),
   'ext_chess_club': LoomExperienceDefinition(

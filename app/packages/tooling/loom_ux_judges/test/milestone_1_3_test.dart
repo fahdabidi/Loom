@@ -1526,4 +1526,53 @@ void main() {
       expect(report.passed, isTrue);
     });
   });
+
+  group('Validator - Mosque migration fixture', () {
+    test('the Mosque Phase 5 fixture parses and passes cleanly', () {
+      final file = File(
+        '../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
+      );
+      final fallbackFile = File(
+        '../../../../docs/Build Plan V2/Loom Communities Workflow Engine V2/'
+        'Loom_Communities_Workflow_Engine_Mosque_Example.jsonc',
+      );
+      final fixtureFile = file.existsSync() ? file : fallbackFile;
+      final json = jsonDecode(_stripJsoncComments(fixtureFile.readAsStringSync()))
+          as Map<String, dynamic>;
+      final definitions = json['workflowDefinitions'] as Map<String, dynamic>;
+      final machines = definitions.map(
+        (key, value) => MapEntry(
+          key,
+          LoomWorkflowStateMachine.fromJson(value as Map<String, dynamic>, key),
+        ),
+      );
+      final templates = (json['templates'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, value as Map<String, dynamic>),
+      );
+      final personaIds = (json['personas'] as List).cast<String>();
+
+      expect(machines.keys, contains('mosque-event-rsvp'));
+      expect(machines.keys, contains('mosque-care-request'));
+      expect(machines.keys, contains('mosque-discussion-thread'));
+      expect(templates.keys, contains('protectedDetail'));
+      expect(templates.keys, contains('searchAiAnswer'));
+      expect(
+        machines['mosque-event-rsvp']!.renderBindings.any(
+          (binding) => binding.audienceMemberField == 'invitedPersonaIds',
+        ),
+        isTrue,
+      );
+
+      final report = WorkflowValidator(
+        templates: templates,
+        knownPersonaIds: personaIds.toSet(),
+      ).validate(machines);
+
+      expect(report.errors, isEmpty);
+      expect(report.warnings, isEmpty);
+      expect(report.passed, isTrue);
+    });
+  });
+
 }
