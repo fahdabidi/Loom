@@ -473,14 +473,85 @@ precedent as the non-blocking process notes already on record for M5.1–M5.3 ab
 
 **M5.4 is now fully closed.**
 ### Milestone 5.5 — Youth Soccer tab reimplementation
-- [~] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
-- [~] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
+**Status:** `[!]` SENT BACK 2026-07-10 — one blocking defect found in code verification. Live emulator
+walk was not performed, per protocol (code verification must be fully green first).
+
+- [r] Youth Soccer workflow fixtures parse and pass the Phase 1 §7c validator.
+- [r] Behavioral-parity widget tests cover guided registration steps, waiver gate, payment gate,
   reviewer status timeline, schedule RSVP/reminders, guardian roster card, coach roster table,
   protected minor detail redaction, reminders, documents, and export.
-- [~] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
+- [ ] Live emulator walk with screenshot evidence for Registration, Schedule, Team, Payments,
   Documents, Coach/Admin, and Home.
-- [~] Full `flutter test` suite green, exact pass count cited.
+- [r] Full `flutter test` suite green, exact pass count cited.
 - [r] Youth Soccer generality note focuses on `guidedProcess` and `protectedDetail` for minor data.
+
+**Verification rejection note (2026-07-10):** Code verification found the engine wiring genuine for
+every tab — `_YouthSoccerEngineStore` (`part19_youth_soccer_engine.dart:738`) uses a real
+`WorkflowDatabase.memory()` + `LocalWorkflowEngineApi`, real `registerDefinition`/`createInstance`
+from a genuine `jsonDecode`d fixture, and real `applyTransition`/`updateInstanceFields` calls — no
+local-only widget state anywhere. The `guidedProcess` registration wizard is genuinely gated by real
+engine state (confirmed live: the `confirm-registration-payment` action button is provably absent
+until `sign-waiver` fires, not just a cosmetic label). All cited test/analyze commands re-ran clean
+and matched exactly: app-shell + tooling analyze clean; `milestone_1_3_test.dart` 35/35; Youth
+fixture validator pass/0/0 (via the same test); `flutter test packages/core/loom_communities_app_shell`
+5/5; `b45_youth_soccer_engine_migration_test.dart` 1/1; combined demo suite 128/128 (note: must be run
+from the `app/` workspace root — `flutter test apps/loom_communities_demo/test` — not from inside the
+package directory, since `b36_calendar_engine_rsvp_test.dart` resolves a `../docs/...` relative path
+that only exists correctly from that CWD; running from inside the package directory produces a false
+`b36` failure unrelated to this milestone, confirmed by re-running from the correct CWD); engine
+73/73.
+
+**Blocking defect: the "guardian sees own child only" `protectedDetail` gate is a hardcoded literal,
+not a genuine identity-based computation — the exact same anti-pattern M5.4 was sent back for.**
+
+1. `_YouthSoccerEngineStore._visible` (`part19_youth_soccer_engine.dart:826`) filters the guardian's
+   Team-tab roster row with `instance.instanceData['playerName'] == 'Sofia Rivera'` — a literal string
+   comparison against the one demo child's name, not a check against any guardian-to-player
+   relationship. The fixture seeds two roster instances (`soccer-roster-sofia`,
+   `part19_youth_soccer_engine.dart:1142`, and `soccer-roster-miles`, line 1143) but there is no
+   `guardianPersonaId` field or equivalent anywhere in the schema linking a specific guardian identity
+   to a specific child — `guardianName` is a display-only string. This means the guardian's "own child
+   only" card will always show Sofia Rivera regardless of who or what the guardian actually registered;
+   register a new child through the guided registration wizard (e.g. `playerName: "Emma Wilson"`) and
+   the guardian's Team tab would show nothing for that child, or would still incorrectly show Sofia
+   Rivera if any roster row happens to exist. This is the exact class of defect the M5.4 rejection
+   flagged (`_ChessClubEngineStore._rankingsEffect` matching `'Maya Patel'` literally instead of reading
+   real match data) — here it lands on this milestone's *other* explicitly-required focus area
+   (`protectedDetail`), not the one M5.4 covered.
+2. `b45_youth_soccer_engine_migration_test.dart:53` asserts
+   `expect(find.textContaining('Sofia Rivera - U10'), findsWidgets)` — this only proves the hardcoded
+   literal reproduces itself, the same anti-pattern the original (pre-fix) `b44` test had for Chess
+   Club. No test registers a second/different guardian-child pair and confirms the guardian's card
+   correctly follows *that* pairing rather than the hardcoded name.
+3. Secondary, non-blocking finding worth fixing alongside the above: the roster schema declares
+   `medicalNotes` and `redactedFields` (`part19_youth_soccer_engine.dart:1014,1016`, with a real
+   `redact-field` transition that genuinely appends to `redactedFields` via a real engine effect,
+   confirmed at line 999) but `_rosterLine` (line 373) never reads either field — the coach's roster
+   table always renders the same four fields (`playerName`/`ageGroup`/`waiverStatus`/`birthDate`)
+   regardless of what's actually been redacted. `redactedFields` is genuinely engine-persisted (not
+   decorative JSON the way Chess Club's `targetWorkflowType` was), but its value has no visible effect
+   on the UI, which undercuts the milestone's own claim that `protectedDetail` masking is data-driven.
+
+**Required fix:**
+- Add a genuine identity-linking field (e.g. `guardianPersonaId` or an equivalent relationship key) to
+  the `soccer-team-roster` (and ideally `soccer-guardian-join-approval`) schema, and change `_visible`
+  to filter by that relationship instead of a hardcoded player name. If the current single-persona-
+  per-role demo architecture (one shared `guardian` persona, not per-account identity) makes a fully
+  general per-guardian check impossible without a larger architectural change, say so explicitly and
+  propose the smallest fix that still proves the mechanism generalizes beyond the one seeded name —
+  e.g. deriving "own child" from the guardian's own most-recently-created `soccer-guardian-join-approval`
+  instance rather than a literal string match.
+- Add a regression test that seeds or creates a *second* guardian-linked child (different name than
+  Sofia Rivera) and asserts the guardian's roster card follows that relationship, not the literal name
+  — proving the fix generalizes, the same way M5.4's fix added an Ari-Stone/Lina-Ortiz regression.
+- Either wire `redactedFields`/`medicalNotes` into `_rosterLine`'s rendering so redaction is visibly
+  data-driven, or explicitly note in the resubmission why that's out of scope.
+
+Everything else in this submission checked out in code verification: `guidedProcess` step-gating,
+`statusTimeline` reviewer view, `paymentCheckout`, `documentLibrary`, `notificationInbox`,
+`discussionThread`, and `exportWizard` all use genuine engine calls with no local-state shortcuts
+found. Fix the `protectedDetail` identity-gating defect above, keep everything else as-is, and
+resubmit.
 
 ### Milestone 5.6 — Mosque tab reimplementation
 - [ ] Mosque workflow fixtures parse and pass the Phase 1 §7c validator.
