@@ -51,7 +51,10 @@ void main() {
       find.byKey(const ValueKey('soccer-guardian-roster-card')),
     );
     expect(find.textContaining('Sofia Rivera - U10'), findsWidgets);
-    expect(find.text('Birth date: protected by consent scope'), findsOneWidget);
+    expect(find.textContaining('Ari Rivera - U12'), findsWidgets);
+    expect(find.textContaining('Miles Chen - U10'), findsNothing);
+    expect(find.text('Guardian persona: guardian'), findsWidgets);
+    expect(find.text('Birth date: protected by consent scope'), findsNWidgets(2));
     expect(find.textContaining('Birth date: 2016-08-03'), findsNothing);
     await _tapSoccerAction(tester, 'request-access');
     expect(find.text('State: Access requested'), findsOneWidget);
@@ -89,6 +92,8 @@ void main() {
     expect(find.text('State: Update requested'), findsWidgets);
     await _tapSoccerAction(tester, 'redact-field');
     expect(find.text('State: Redacted'), findsWidgets);
+    expect(find.text('Medical notes: redacted (medicalNotes)'), findsWidgets);
+    expect(find.text('Redacted fields: medicalNotes'), findsWidgets);
     await _tapSoccerAction(tester, 'undo-redaction');
     expect(find.text('State: Active roster'), findsWidgets);
 
