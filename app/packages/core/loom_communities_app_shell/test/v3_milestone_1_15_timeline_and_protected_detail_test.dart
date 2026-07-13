@@ -12,7 +12,15 @@ LocalInstalledCommunity _timelineCommunity() => const LocalInstalledCommunity(
   heroImageAssetId: null,
   accentColor: '#4a3b2a',
   experienceConfiguration: {
-    'workflows': [],
+    'workflows': [
+      {
+        'workflowId': 'tabletop-status-timeline-workflow',
+        'title': 'Friday event',
+        'entryText': 'Follow the event status.',
+        'actionText': 'View timeline.',
+        'resultText': 'Timeline viewed.',
+      },
+    ],
     'personas': [
       {
         'personaId': 'tabletop-member',
@@ -55,7 +63,15 @@ LocalInstalledCommunity _detailCommunity({required bool authorized}) =>
       heroImageAssetId: null,
       accentColor: '#4a3b2a',
       experienceConfiguration: {
-        'workflows': const [],
+        'workflows': const [
+          {
+            'workflowId': 'tabletop-protected-detail-workflow',
+            'title': 'Tournament venue',
+            'entryText': 'View protected venue details.',
+            'actionText': 'View details.',
+            'resultText': 'Details viewed.',
+          },
+        ],
         'personas': [
           {
             'personaId': authorized ? 'tabletop-owner' : 'tabletop-outsider',
