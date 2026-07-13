@@ -671,14 +671,43 @@ at both the UI and engine layers before trusting the test. Committed (`de2bf1f`)
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.11 — Volunteer roster capacity meter
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific volunteer roster surface
-exists. Other communities' `volunteerRoster` workflows (Garden Club, Mosque) each seed a single shift
+existed. Other communities' `volunteerRoster` workflows (Garden Club, Mosque) each seed a single shift
 with a hand-set `openSpots` field — not a computed `capacity − filled` meter, and not multiple shifts
-listed together — exactly the "hardcoded... showing one at a time" gap the tracker names. Needs genuinely
-new UI (same situation as 1.9/1.10). Kickoff points at `_ExportWizardTabSurface` (1.10) as the most
-recently-verified static-store template.
+listed together — exactly the "hardcoded... showing one at a time" gap the tracker named. Needed
+genuinely new UI (same situation as 1.9/1.10). Kickoff pointed at `_ExportWizardTabSurface` (1.10) as the
+most recently-verified static-store template.
+- [x] New `_VolunteerRosterTabSurface`/`_VolunteerRosterEngineStore` (`part02_tab_shell.dart:1883`),
+  following the same static-store pattern. `remaining = capacity - filled` computed at render time from
+  live-queried instance data (`capacityFor`/`filledFor`), not a cached/pre-computed value — genuinely
+  reflects state changes.
+- [x] ≥2 shifts (2 seeded: `Welcome table` capacity 3/filled 1, `Teach-a-game host` capacity 2/filled 0)
+  render simultaneously via `RepeaterSurface.live` — the same primitive proven in 1.7/1.9.
+- [x] Sign-up gated at **both** layers: engine-side `WorkflowGuard(formula: 'filled < capacity')` on the
+  `sign-up` transition plus an atomic `WorkflowEffect(op: 'increment', key: 'filled')` (real backend
+  enforcement, not just a client-side disabled button), and the UI additionally hides the sign-up button
+  and shows "This shift is full" once `remaining == 0`. A local `_signingUpShiftIds` set disables the
+  button mid-flight to prevent double-submission.
+- [x] `shiftId` round-trips through `instanceData['shiftId']` (the seed's own id), never the engine's
+  generated `instanceId` — confirmed by direct code read, avoiding 1.7's pitfall.
+- [x] Widget test (`v3_milestone_1_11_volunteer_roster_test.dart`): confirms both shifts render together
+  with correctly computed meters ("1 of 3 filled · 2 remaining", "0 of 2 filled · 2 remaining"), signs up
+  for one shift, and confirms its meter updates ("2 of 3 filled · 1 remaining") while the *other* shift's
+  meter is unchanged — proves the update is correctly scoped, not a coincidental global re-render.
+- [x] `flutter analyze` clean; full app-shell suite **20/20** (including this milestone's 1 new test).
+
+**Implementation history:** completed correctly in one dispatch round — no bugs found on independent
+review or test run, matching 1.10's clean run. Diff was small and purely additive (31/12/34/105 lines
+across 4 files, zero deletions), no collateral formatting noise. Correctly could not run `flutter test`
+itself (same sandboxed pub.dev restriction as prior milestones) and left the tracker `[~]` rather than
+guess.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Read the actual engine store and widget code
+directly before trusting the test: confirmed the guard/effect are real (not just UI-level hiding) and
+the shift-id derivation avoids the 1.7 pitfall. Independently re-ran: `v3_milestone_1_11_volunteer_
+roster_test.dart` **1/1**, full suite **20/20**, `flutter analyze` clean.
 - [ ] Real capacity meter (`remaining = capacity − filled` formula) + multiple shifts genuinely listed
   together via Repeater (not a hardcoded persona-priority selector showing one at a time).
 - [ ] Widget test: ≥2 shifts render simultaneously; meter reflects live sign-up count.
