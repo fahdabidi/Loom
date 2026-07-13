@@ -141,7 +141,7 @@ implementation-agent effort on repeated doomed `dart test` retries (observed in 
 transcript).
 
 ### Milestone 1.2 — Extended effect ops + read-side aggregate API
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
 - [ ] `effects` array supports `createInstance`, cross-instance `set` (`relatedInstance` + `field` +
   `value`), and `branch` (`if`/`then`/`else`), alongside the existing six ops.
 - [ ] `WorkflowEngineApi.aggregate({collection, column, op, filter, groupBy})` implemented in

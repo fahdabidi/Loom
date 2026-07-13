@@ -111,7 +111,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | Phase | Milestone | Status |
 | --- | --- | --- |
 | 1 — Tabletop Club | 1.1 Computed-field formulas (engine core) | `[x]` **CLOSED 2026-07-12** — independently verified: `loom_workflow_engine` analyze clean + 98/98 tests, `loom_ux_judges` analyze clean + 39/39 tests, commit `c860045` |
-| 1 | 1.2 Extended effect ops + read-side aggregate API | `[ ]` Not started |
+| 1 | 1.2 Extended effect ops + read-side aggregate API | `[~]` In progress — dispatched to implementation agent 2026-07-12 |
 | 1 | 1.3 Data-bound Repeater primitive | `[ ]` Not started |
 | 1 | 1.4 Scheduled notifications + cross-instance eligibility guard | `[ ]` Not started |
 | 1 | 1.5 Calendar month/week grid | `[ ]` Not started |
