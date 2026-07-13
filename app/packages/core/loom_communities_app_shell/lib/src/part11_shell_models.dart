@@ -384,6 +384,18 @@ class LoomVolunteerShiftSeed {
   final int filled;
 }
 
+class LoomAiSearchAnswer {
+  const LoomAiSearchAnswer({
+    required this.query,
+    required this.answer,
+    required this.citations,
+  });
+
+  final String query;
+  final String answer;
+  final List<String> citations;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -904,6 +916,21 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Volunteer rosters require simultaneous shift visibility and live capacity, not a single selected shift.',
   ),
+  'ai-search': LoomTabRendererContract(
+    rendererId: 'AiSearchTabSurface',
+    label: 'AI search with canned cited answers',
+    tabIds: ['search'],
+    surfaceFamilies: ['searchAiAnswer'],
+    requiredAnatomy: ['query input', 'answer', 'citations', 'not-found state'],
+    requiredInteractions: ['submitSearchQuery'],
+    requiredStates: ['ready', 'answer found', 'no citation found'],
+    evidenceRequirements: [
+      'AI search answer screenshot',
+      'no-citation screenshot',
+    ],
+    fallbackPolicy:
+        'AI search requires a query-driven cited result, not static preview copy.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1182,6 +1209,7 @@ class LoomExperienceDefinition {
     this.notifications,
     this.exportWizard,
     this.volunteerShifts,
+    this.aiSearchAnswers,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1199,6 +1227,7 @@ class LoomExperienceDefinition {
   final List<LoomNotificationItem>? notifications;
   final LoomExportWizardSeed? exportWizard;
   final List<LoomVolunteerShiftSeed>? volunteerShifts;
+  final List<LoomAiSearchAnswer>? aiSearchAnswers;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

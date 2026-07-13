@@ -124,6 +124,16 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     ];
     if (parsed.isNotEmpty) volunteerShifts = parsed;
   }
+  List<LoomAiSearchAnswer>? aiSearchAnswers;
+  final aiSearchAnswersRaw = experienceConfiguration['aiSearchAnswers'];
+  if (aiSearchAnswersRaw is List) {
+    final parsed = <LoomAiSearchAnswer>[
+      for (final entry in aiSearchAnswersRaw)
+        if (entry is Map<String, Object?>)
+          if (_parseAiSearchAnswer(entry) case final answer?) answer,
+    ];
+    if (parsed.isNotEmpty) aiSearchAnswers = parsed;
+  }
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -182,6 +192,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     notifications: notifications,
     exportWizard: exportWizard,
     volunteerShifts: volunteerShifts,
+    aiSearchAnswers: aiSearchAnswers,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -599,6 +610,20 @@ LoomVolunteerShiftSeed? _parseVolunteerShiftSeed(Map<String, Object?> map) {
     capacity: capacity,
     filled: filled as int? ?? 0,
   );
+}
+
+LoomAiSearchAnswer? _parseAiSearchAnswer(Map<String, Object?> map) {
+  final query = map['query'];
+  final answer = map['answer'];
+  final citations = _shellStringList(map['citations']);
+  if (query is! String ||
+      query.isEmpty ||
+      answer is! String ||
+      answer.isEmpty ||
+      citations.isEmpty) {
+    return null;
+  }
+  return LoomAiSearchAnswer(query: query, answer: answer, citations: citations);
 }
 
 LoomMarketplaceListing? _parseListing(

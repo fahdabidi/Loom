@@ -2188,6 +2188,197 @@ class _VolunteerRosterEngineStore {
   );
 }
 
+class _AiSearchTabSurface extends StatefulWidget {
+  const _AiSearchTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_AiSearchTabSurface> createState() => _AiSearchTabSurfaceState();
+}
+
+class _AiSearchTabSurfaceState extends State<_AiSearchTabSurface> {
+  static final _stores = <String, _AiSearchEngineStore>{};
+
+  late final _AiSearchEngineStore _store;
+  final _queryController = TextEditingController();
+  _AiSearchResult? _result;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _AiSearchEngineStore(
+        answers: widget.experience.aiSearchAnswers ?? const [],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final query = _queryController.text.trim();
+    if (query.isEmpty) return;
+    setState(() => _result = _store.search(query));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    final result = _result;
+    return Column(
+      key: const ValueKey('ai-search-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.modernTheme?.resolvedFill ?? widget.accent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(Icons.auto_awesome_outlined, color: foreground),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${widget.experience.displayName} knowledge search',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: const ValueKey('ai-search-field'),
+          controller: _queryController,
+          onSubmitted: (_) => _submit(),
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            labelText: 'Ask the club knowledge base',
+            hintText: 'Try a club question',
+            suffixIcon: IconButton(
+              key: const ValueKey('ai-search-submit'),
+              tooltip: 'Search',
+              onPressed: _submit,
+              icon: const Icon(Icons.search),
+            ),
+          ),
+        ),
+        if (result != null) ...[
+          const SizedBox(height: 12),
+          DecoratedBox(
+            key: ValueKey(
+              result.found ? 'ai-search-result' : 'ai-search-no-citation',
+            ),
+            decoration: BoxDecoration(
+              color: foreground.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: foreground.withValues(alpha: 0.14)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: result.found
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          result.answer!,
+                          key: const ValueKey('ai-search-answer'),
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Citations',
+                          style: TextStyle(
+                            color: foreground.withValues(alpha: 0.72),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        for (
+                          var index = 0;
+                          index < result.citations.length;
+                          index += 1
+                        )
+                          Text(
+                            result.citations[index],
+                            key: ValueKey('ai-search-citation-$index'),
+                          ),
+                      ],
+                    )
+                  : Text(
+                      'No citation found for "${result.query}".',
+                      key: const ValueKey('ai-search-no-citation-text'),
+                    ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AiSearchEngineStore {
+  _AiSearchEngineStore({required List<LoomAiSearchAnswer> answers})
+    : _answersByNormalizedQuery = {
+        for (final answer in answers) _normalize(answer.query): answer,
+      };
+
+  final Map<String, LoomAiSearchAnswer> _answersByNormalizedQuery;
+
+  _AiSearchResult search(String query) {
+    final answer = _answersByNormalizedQuery[_normalize(query)];
+    if (answer == null) return _AiSearchResult.notFound(query);
+    return _AiSearchResult.found(
+      query: query,
+      answer: answer.answer,
+      citations: answer.citations,
+    );
+  }
+
+  static String _normalize(String value) => value.trim().toLowerCase();
+}
+
+class _AiSearchResult {
+  const _AiSearchResult.found({
+    required this.query,
+    required String answer,
+    required this.citations,
+  }) : found = true,
+       answer = answer;
+
+  const _AiSearchResult.notFound(this.query)
+    : found = false,
+      answer = null,
+      citations = const [];
+
+  final String query;
+  final bool found;
+  final String? answer;
+  final List<String> citations;
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -2320,6 +2511,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'VolunteerRosterTabSurface':
         return _VolunteerRosterTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'AiSearchTabSurface':
+        return _AiSearchTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,

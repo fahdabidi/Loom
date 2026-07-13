@@ -391,6 +391,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'Volunteer shifts are browsed together so members can compare available capacity.',
         requiredPermission: 'community.surface.care.read',
       ),
+    if (experience.aiSearchAnswers?.isNotEmpty ?? false)
+      const LoomAppShellTabSpec(
+        tabId: 'search',
+        label: 'Search',
+        icon: Icons.search_outlined,
+        description: 'Search the club knowledge base for cited answers.',
+        rendererContractId: 'ai-search',
+        pinningPolicy: 'none-declared-for-search',
+        pinningPolicyRationale:
+            'Search results are query-specific platform-service responses rather than pinned workflow cards.',
+        requiredPermission: 'community.surface.documents.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',
