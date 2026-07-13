@@ -810,14 +810,41 @@ actually run, not assumed passing from a clean `analyze`. Independently re-ran a
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.14 — Single-item preference control
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** the pattern this replaces is real, in Mosque's
 `mosque-donor-visibility` workflow (`part20_mosque_engine.dart:1149-1258`) — a correctly-modeled 3-state
 mutually-exclusive preference rendered through the generic button-jump fallback instead of a real
-segmented/radio control. Mosque's usage is untouched by this milestone; builds a new Tabletop-Club
-`singleItem`-family surface following the 1.9-1.13 pattern. Kickoff explicitly flags 1.13's
-`editableFields` gap as a checklist item to avoid repeating.
+segmented/radio control. Mosque's usage was untouched by this milestone; built a new Tabletop-Club
+`singleItem`-family surface following the 1.9-1.13 pattern. Kickoff explicitly flagged 1.13's
+`editableFields` gap as a checklist item to avoid repeating — and it was: all 3 states here correctly
+declare `editableFields: ['preference']`.
+- [x] New reusable `SingleItemPreferenceControl` (new file, `part22_single_item_preference_control.dart`)
+  — a stateless, controlled wrapper around Flutter's real `SegmentedButton<String>`
+  (`emptySelectionAllowed: false`, `multiSelectionEnabled: false`, so exactly one option is always
+  selected). Wired into a new `_SingleItemPreferenceTabSurface`/`_SingleItemPreferenceEngineStore` for a
+  reminder preference workflow (all-updates/event-updates/no-reminders), each state declaring the
+  `set-*` transitions legal from the other two states.
+- [x] Widget test (`v3_milestone_1_14_single_item_preference_test.dart`): directly inspects the actual
+  `SegmentedButton<String>.selected` set via `tester.widget<SegmentedButton<String>>(...)` and asserts it
+  equals exactly `{value}` (not just "contains") across 3 sequential selections
+  (all-updates→event-updates→no-reminders), plus cross-checks the persisted field text each time —
+  stronger than a purely visual/text-based check.
+- [x] `flutter analyze` clean; full app-shell suite **24/24** (including this milestone's 1 new test).
+
+**Implementation history:** completed correctly in one dispatch round — no bugs found on independent
+review or test run. Diff was small and purely additive (26/12/28/104/287/46/1 lines across 7 files, zero
+deletions). Correctly could not run `flutter test` itself (same sandboxed pub.dev restriction as prior
+milestones) and left the tracker `[~]` rather than guess; also correctly did not touch a recurring
+`.git/index.lock`. Notably did its own end-to-end key/text review against production code before
+attempting to commit — direct evidence the accumulated kickoff guidance (from 1.7's and 1.13's real bugs)
+is being read and applied, not just restated.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Read the control, store, and state machine
+directly — confirmed all 3 states declare `editableFields` correctly (the exact gap 1.13 shipped with)
+and that the control genuinely enforces single-selection via `SegmentedButton`'s own API, not manual
+bookkeeping. Independently re-ran: `v3_milestone_1_14_single_item_preference_test.dart` **1/1**, full
+suite **24/24**, `flutter analyze` clean (commit `a00e233`).
 - [ ] Real segmented button / radio group replacing the generic button-jump card.
 - [ ] Widget test: selecting one option deselects the others; underlying field reflects the single
   chosen value.
