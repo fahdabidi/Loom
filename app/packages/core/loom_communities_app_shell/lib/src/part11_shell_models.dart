@@ -396,6 +396,18 @@ class LoomAiSearchAnswer {
   final List<String> citations;
 }
 
+class LoomAudiencePickerSeed {
+  const LoomAudiencePickerSeed({
+    required this.audienceId,
+    required this.title,
+    this.invitedPersonaIds = const [],
+  });
+
+  final String audienceId;
+  final String title;
+  final List<String> invitedPersonaIds;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -931,6 +943,18 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'AI search requires a query-driven cited result, not static preview copy.',
   ),
+  'audience-picker': LoomTabRendererContract(
+    rendererId: 'AudiencePickerTabSurface',
+    label: 'Audience picker with removable member chips',
+    tabIds: ['audience'],
+    surfaceFamilies: ['audiencePicker'],
+    requiredAnatomy: ['selected member chips', 'checkable member list'],
+    requiredInteractions: ['selectAudienceMember', 'deselectAudienceMember'],
+    requiredStates: ['member selected', 'member not selected'],
+    evidenceRequirements: ['audience picker screenshot'],
+    fallbackPolicy:
+        'Audience fields require structured persona IDs rather than comma-separated text.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1210,6 +1234,7 @@ class LoomExperienceDefinition {
     this.exportWizard,
     this.volunteerShifts,
     this.aiSearchAnswers,
+    this.audiencePicker,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1228,6 +1253,7 @@ class LoomExperienceDefinition {
   final LoomExportWizardSeed? exportWizard;
   final List<LoomVolunteerShiftSeed>? volunteerShifts;
   final List<LoomAiSearchAnswer>? aiSearchAnswers;
+  final LoomAudiencePickerSeed? audiencePicker;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

@@ -2379,6 +2379,234 @@ class _AiSearchResult {
   final List<String> citations;
 }
 
+class _AudiencePickerTabSurface extends StatefulWidget {
+  const _AudiencePickerTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_AudiencePickerTabSurface> createState() =>
+      _AudiencePickerTabSurfaceState();
+}
+
+class _AudiencePickerTabSurfaceState extends State<_AudiencePickerTabSurface> {
+  static final _stores = <String, _AudiencePickerEngineStore>{};
+
+  late final _AudiencePickerEngineStore _store;
+  WorkflowInstance? _audience;
+  var _loaded = false;
+  var _saving = false;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _AudiencePickerEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.audiencePicker!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final audience = await _store.load(personaId: widget.persona.personaId);
+      if (!mounted) return;
+      setState(() {
+        _audience = audience;
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = '$error';
+      });
+    }
+  }
+
+  Future<void> _updateAudience(Set<String> selectedPersonaIds) async {
+    final audience = _audience;
+    if (audience == null || _saving) return;
+    setState(() => _saving = true);
+    try {
+      await _store.setInvitedPersonaIds(
+        audience: audience,
+        invitedPersonaIds: selectedPersonaIds.toList()..sort(),
+        personaId: widget.persona.personaId,
+      );
+      final updated = await _store.load(personaId: widget.persona.personaId);
+      if (mounted) setState(() => _audience = updated);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    final seed = widget.experience.audiencePicker!;
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(
+        _loadError!,
+        key: const ValueKey('audience-picker-load-error'),
+      );
+    }
+    final audience = _audience;
+    if (audience == null) {
+      return const Text('Audience could not be loaded');
+    }
+    final selectedPersonaIds = _store.invitedPersonaIdsFor(audience);
+    final candidates = [
+      for (final persona
+          in widget.experience.personas ?? const <LoomPersonaDefinition>[])
+        AudienceMultiSelectCandidate(
+          personaId: persona.personaId,
+          label: persona.label,
+        ),
+    ];
+    return Column(
+      key: const ValueKey('audience-picker-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.modernTheme?.resolvedFill ?? widget.accent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Text(
+              seed.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        AudienceMultiSelectPicker(
+          candidates: candidates,
+          selectedPersonaIds: selectedPersonaIds,
+          onChanged: _saving ? (_) {} : _updateAudience,
+          label: 'Invite members',
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Invited persona ids: ${selectedPersonaIds.toList()..sort()}',
+          key: const ValueKey('audience-instance-array'),
+          style: TextStyle(color: foreground.withValues(alpha: 0.72)),
+        ),
+      ],
+    );
+  }
+}
+
+class _AudiencePickerEngineStore {
+  _AudiencePickerEngineStore({required this.communityId, required this.seed});
+
+  static const workflowType = 'tabletop-audience-selection';
+
+  final String communityId;
+  final LoomAudiencePickerSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: 'tabletop-organizer',
+      initialInstanceData: {
+        'audienceId': seed.audienceId,
+        'title': seed.title,
+        'invitedPersonaIds': seed.invitedPersonaIds,
+      },
+    );
+    _ready = true;
+  }
+
+  Future<WorkflowInstance?> load({required String personaId}) async {
+    final page = await _engine.queryInstances(
+      tabId: 'audience',
+      personaId: personaId,
+      limit: 10,
+    );
+    return page.items
+        .where((item) => item.workflowType == workflowType)
+        .firstOrNull;
+  }
+
+  Future<void> setInvitedPersonaIds({
+    required WorkflowInstance audience,
+    required List<String> invitedPersonaIds,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: audience.instanceId,
+    fieldUpdates: {'invitedPersonaIds': invitedPersonaIds},
+    personaId: personaId,
+  );
+
+  Set<String> invitedPersonaIdsFor(WorkflowInstance audience) => {
+    for (final personaId
+        in audience.instanceData['invitedPersonaIds'] as List? ?? const [])
+      '$personaId',
+  };
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'editing',
+    states: {
+      'editing': LoomWorkflowState(
+        label: 'Editing audience',
+        editableFields: ['invitedPersonaIds'],
+      ),
+    },
+    transitions: [],
+    renderBindings: [
+      RenderBinding(
+        states: ['editing'],
+        role: 'any',
+        tabId: 'audience',
+        cardSurfaceFamily: 'audiencePicker',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'audienceId': InstanceDataField(type: 'string', required: true),
+      'title': InstanceDataField(type: 'text', required: true),
+      'invitedPersonaIds': InstanceDataField(type: 'list', required: true),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -2518,6 +2746,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'AiSearchTabSurface':
         return _AiSearchTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'AudiencePickerTabSurface':
+        return _AudiencePickerTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,

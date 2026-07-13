@@ -403,6 +403,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'Search results are query-specific platform-service responses rather than pinned workflow cards.',
         requiredPermission: 'community.surface.documents.read',
       ),
+    if (experience.audiencePicker != null)
+      const LoomAppShellTabSpec(
+        tabId: 'audience',
+        label: 'Audience',
+        icon: Icons.people_alt_outlined,
+        description: 'Choose members for an event invitation.',
+        rendererContractId: 'audience-picker',
+        pinningPolicy: 'none-declared-for-audience-picker',
+        pinningPolicyRationale:
+            'Audience selection is a structured member-field editor rather than a pinned workflow card.',
+        requiredPermission: 'community.surface.messages.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',

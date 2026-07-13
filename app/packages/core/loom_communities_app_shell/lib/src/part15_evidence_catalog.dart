@@ -134,6 +134,9 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     ];
     if (parsed.isNotEmpty) aiSearchAnswers = parsed;
   }
+  final audiencePicker = _parseAudiencePickerSeed(
+    experienceConfiguration['audiencePicker'],
+  );
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -193,6 +196,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     exportWizard: exportWizard,
     volunteerShifts: volunteerShifts,
     aiSearchAnswers: aiSearchAnswers,
+    audiencePicker: audiencePicker,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -624,6 +628,23 @@ LoomAiSearchAnswer? _parseAiSearchAnswer(Map<String, Object?> map) {
     return null;
   }
   return LoomAiSearchAnswer(query: query, answer: answer, citations: citations);
+}
+
+LoomAudiencePickerSeed? _parseAudiencePickerSeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final audienceId = value['audienceId'];
+  final title = value['title'];
+  if (audienceId is! String ||
+      audienceId.isEmpty ||
+      title is! String ||
+      title.isEmpty) {
+    return null;
+  }
+  return LoomAudiencePickerSeed(
+    audienceId: audienceId,
+    title: title,
+    invitedPersonaIds: _shellStringList(value['invitedPersonaIds']),
+  );
 }
 
 LoomMarketplaceListing? _parseListing(
