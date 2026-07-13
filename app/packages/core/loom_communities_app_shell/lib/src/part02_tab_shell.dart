@@ -3203,6 +3203,187 @@ class _ProtectedDetailEngineStore {
   );
 }
 
+class _FormEntryTabSurface extends StatefulWidget {
+  const _FormEntryTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  @override
+  State<_FormEntryTabSurface> createState() => _FormEntryTabSurfaceState();
+}
+
+class _FormEntryTabSurfaceState extends State<_FormEntryTabSurface> {
+  static final _stores = <String, _FormEntryEngineStore>{};
+  late final _FormEntryEngineStore _store;
+  WorkflowInstance? _instance;
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _FormEntryEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.formEntry!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final value = await _store.load(widget.persona.personaId);
+    if (mounted) setState(() => _instance = value);
+  }
+
+  Future<void> _write(Map<String, dynamic> fields) async {
+    final instance = _instance;
+    if (instance == null) return;
+    await _store.update(instance, fields, widget.persona.personaId);
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final instance = _instance;
+    if (instance == null)
+      return const Center(child: CircularProgressIndicator());
+    final enabled = instance.instanceData['notificationsEnabled'] == true;
+    final offset = '${instance.instanceData['reminderOffset']}';
+    return Column(
+      key: const ValueKey('form-entry-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          widget.experience.formEntry!.title,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        CheckboxListTile(
+          key: const ValueKey('form-notifications-enabled'),
+          value: enabled,
+          onChanged: (value) => _write({'notificationsEnabled': value == true}),
+          title: const Text('Enable notification'),
+        ),
+        DropdownButtonFormField<String>(
+          key: const ValueKey('form-reminder-offset'),
+          initialValue: offset,
+          items: [
+            for (final value in _reminderOffsets.keys)
+              DropdownMenuItem(
+                value: value,
+                child: Text(_reminderOffsetLabel(value)),
+              ),
+          ],
+          onChanged: (value) {
+            if (value == null) return;
+            final reminderAt = _store.reminderAt(value);
+            _write({
+              'reminderOffset': value,
+              'reminderAt': reminderAt.toIso8601String(),
+            });
+          },
+        ),
+        Text(
+          'notificationsEnabled: $enabled',
+          key: const ValueKey('form-instance-notifications'),
+        ),
+        Text(
+          'reminderAt: ${instance.instanceData['reminderAt']}',
+          key: const ValueKey('form-instance-reminder-at'),
+        ),
+      ],
+    );
+  }
+}
+
+class _FormEntryEngineStore {
+  _FormEntryEngineStore({required this.communityId, required this.seed});
+  static const workflowType = 'tabletop-form-entry';
+  final String communityId;
+  final LoomFormEntrySeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _ready;
+  Future<void> ensureReady() => _ready ??= _init();
+  Future<void> _init() async {
+    _engine.registerDefinition(_machine);
+    await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: 'tabletop-member',
+      initialInstanceData: {
+        'formId': seed.formId,
+        'notificationsEnabled': seed.notificationsEnabled,
+        'referenceTime': seed.referenceTime.toIso8601String(),
+        'reminderOffset': seed.reminderOffset,
+        'reminderAt': reminderAt(seed.reminderOffset).toIso8601String(),
+      },
+    );
+  }
+
+  DateTime reminderAt(String offset) =>
+      seed.referenceTime.subtract(_reminderOffsets[offset]!);
+  Future<WorkflowInstance?> load(String persona) async {
+    final page = await _engine.queryInstances(
+      tabId: 'form',
+      personaId: persona,
+      limit: 10,
+    );
+    return page.items
+        .where((item) => item.workflowType == workflowType)
+        .firstOrNull;
+  }
+
+  Future<void> update(
+    WorkflowInstance instance,
+    Map<String, dynamic> fields,
+    String persona,
+  ) => _engine.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: instance.instanceId,
+    fieldUpdates: fields,
+    personaId: persona,
+  );
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'editing',
+    states: {
+      'editing': LoomWorkflowState(
+        label: 'Editing',
+        editableFields: [
+          'notificationsEnabled',
+          'reminderOffset',
+          'reminderAt',
+        ],
+      ),
+    },
+    transitions: [],
+    renderBindings: [
+      RenderBinding(
+        states: ['editing'],
+        role: 'any',
+        tabId: 'form',
+        cardSurfaceFamily: 'formEntry',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'formId': InstanceDataField(type: 'string', required: true),
+      'notificationsEnabled': InstanceDataField(type: 'bool', required: true),
+      'referenceTime': InstanceDataField(type: 'text', required: true),
+      'reminderOffset': InstanceDataField(type: 'string', required: true),
+      'reminderAt': InstanceDataField(type: 'text', required: true),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -3370,6 +3551,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'ProtectedDetailTabSurface':
         return _ProtectedDetailTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'FormEntryTabSurface':
+        return _FormEntryTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,

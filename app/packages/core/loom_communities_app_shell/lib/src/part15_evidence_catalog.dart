@@ -146,6 +146,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   final protectedDetail = _parseProtectedDetailSeed(
     experienceConfiguration['protectedDetail'],
   );
+  final formEntry = _parseFormEntrySeed(experienceConfiguration['formEntry']);
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -209,6 +210,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     singleItemPreference: singleItemPreference,
     statusTimeline: statusTimeline,
     protectedDetail: protectedDetail,
+    formEntry: formEntry,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -741,6 +743,27 @@ LoomProtectedDetailSeed? _parseProtectedDetailSeed(Object? value) {
     ownerPersonaId: ownerPersonaId,
     assignedTo: _shellStringList(value['assignedTo']),
     fullDetail: fullDetail,
+  );
+}
+
+LoomFormEntrySeed? _parseFormEntrySeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final id = value['formId'];
+  final title = value['title'];
+  final time = DateTime.tryParse(value['referenceTime'] as String? ?? '');
+  final offset = value['reminderOffset'];
+  if (id is! String ||
+      title is! String ||
+      time == null ||
+      offset is! String ||
+      !const {'at-time', 'one-hour', 'one-day', 'one-week'}.contains(offset))
+    return null;
+  return LoomFormEntrySeed(
+    formId: id,
+    title: title,
+    referenceTime: time,
+    notificationsEnabled: value['notificationsEnabled'] == true,
+    reminderOffset: offset,
   );
 }
 

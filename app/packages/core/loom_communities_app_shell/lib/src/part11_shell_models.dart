@@ -457,6 +457,21 @@ class LoomProtectedDetailSeed {
   final String fullDetail;
 }
 
+class LoomFormEntrySeed {
+  const LoomFormEntrySeed({
+    required this.formId,
+    required this.title,
+    required this.referenceTime,
+    required this.notificationsEnabled,
+    required this.reminderOffset,
+  });
+  final String formId;
+  final String title;
+  final DateTime referenceTime;
+  final bool notificationsEnabled;
+  final String reminderOffset;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -1047,6 +1062,17 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Protected content needs a visible lock treatment, not substituted text.',
   ),
+  'form-entry-controls': LoomTabRendererContract(
+    rendererId: 'FormEntryTabSurface',
+    label: 'Form notification controls',
+    tabIds: ['form'],
+    surfaceFamilies: ['formEntry'],
+    requiredAnatomy: ['checkbox', 'relative-time picker'],
+    requiredInteractions: ['setNotificationsEnabled', 'setReminderOffset'],
+    requiredStates: ['editing'],
+    evidenceRequirements: ['form control screenshot'],
+    fallbackPolicy: 'Form controls must persist typed values.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1330,6 +1356,7 @@ class LoomExperienceDefinition {
     this.singleItemPreference,
     this.statusTimeline,
     this.protectedDetail,
+    this.formEntry,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1352,6 +1379,7 @@ class LoomExperienceDefinition {
   final LoomSingleItemPreferenceSeed? singleItemPreference;
   final LoomStatusTimelineSeed? statusTimeline;
   final LoomProtectedDetailSeed? protectedDetail;
+  final LoomFormEntrySeed? formEntry;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

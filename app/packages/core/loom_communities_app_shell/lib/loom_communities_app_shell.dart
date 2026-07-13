@@ -30,5 +30,6 @@ part 'src/part20_mosque_engine.dart';
 part 'src/part21_audience_multi_select_picker.dart';
 part 'src/part22_single_item_preference_control.dart';
 part 'src/part23_timeline_and_protected_detail.dart';
+part 'src/part24_form_entry_controls.dart';
 part 'src/repeater_surface.dart';
 part 'src/calendar_month_grid.dart';

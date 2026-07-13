@@ -450,6 +450,17 @@ List<LoomAppShellTabSpec> appShellTabsFor({
         pinningPolicyRationale: 'Protected details use viewer-aware masking.',
         requiredPermission: 'community.surface.workflow.read',
       ),
+    if (experience.formEntry != null)
+      const LoomAppShellTabSpec(
+        tabId: 'form',
+        label: 'Form',
+        icon: Icons.edit_note_outlined,
+        description: 'Set event notification preferences.',
+        rendererContractId: 'form-entry-controls',
+        pinningPolicy: 'none-declared-for-form',
+        pinningPolicyRationale: 'Typed controls edit a real form instance.',
+        requiredPermission: 'community.surface.workflow.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',
