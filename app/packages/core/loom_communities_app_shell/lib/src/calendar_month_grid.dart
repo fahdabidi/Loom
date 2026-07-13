@@ -21,79 +21,90 @@ class CalendarMonthGrid extends StatelessWidget {
           .putIfAbsent(_isoDateKey(workflow.calendarItem!.dateTime), () => [])
           .add(workflow);
     }
-    return Column(
-      key: const ValueKey('calendar-month-grid'),
-      children: [
-        Text(
-          '${_monthLabel(first.month)} ${first.year}',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        Row(
-          children: [
-            for (final day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])
-              Expanded(child: Center(child: Text(day))),
-          ],
-        ),
-        for (var week = 0; week < 6; week++)
+    return SingleChildScrollView(
+      key: const ValueKey('calendar-month-grid-scroll'),
+      child: Column(
+        key: const ValueKey('calendar-month-grid'),
+        children: [
+          Text(
+            '${_monthLabel(first.month)} ${first.year}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (var weekday = 0; weekday < 7; weekday++)
-                Builder(
-                  builder: (context) {
-                    final day = start.add(Duration(days: week * 7 + weekday));
-                    final key = _isoDateKey(day);
-                    final events =
-                        byDay[key] ?? const <LoomWorkflowDefinition>[];
-                    return Expanded(
-                      child: Container(
-                        key: ValueKey('calendar-day-cell-$key'),
-                        constraints: const BoxConstraints(minHeight: 92),
-                        margin: const EdgeInsets.all(2),
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${day.day}',
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                            if (events.isNotEmpty)
-                              SizedBox(
-                                height: 62,
-                                child: RepeaterSurface.static(
-                                  items: events,
-                                  itemBuilder: (context, item) {
-                                    final event =
-                                        item as LoomWorkflowDefinition;
-                                    return InkWell(
-                                      key: ValueKey(
-                                        'calendar-grid-event-${event.workflowId}',
-                                      ),
-                                      onTap: () =>
-                                          onSelect?.call(event.workflowId),
-                                      child: Text(
-                                        _displayTitleFor(event),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              for (final day in [
+                'Mon',
+                'Tue',
+                'Wed',
+                'Thu',
+                'Fri',
+                'Sat',
+                'Sun',
+              ])
+                Expanded(child: Center(child: Text(day))),
             ],
           ),
-      ],
+          for (var week = 0; week < 6; week++)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var weekday = 0; weekday < 7; weekday++)
+                  Builder(
+                    builder: (context) {
+                      final day = start.add(Duration(days: week * 7 + weekday));
+                      final key = _isoDateKey(day);
+                      final events =
+                          byDay[key] ?? const <LoomWorkflowDefinition>[];
+                      return Expanded(
+                        child: Container(
+                          key: ValueKey('calendar-day-cell-$key'),
+                          constraints: const BoxConstraints(minHeight: 92),
+                          margin: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${day.day}',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                              if (events.isNotEmpty)
+                                SizedBox(
+                                  height: 62,
+                                  child: RepeaterSurface.static(
+                                    items: events,
+                                    itemBuilder: (context, item) {
+                                      final event =
+                                          item as LoomWorkflowDefinition;
+                                      return InkWell(
+                                        key: ValueKey(
+                                          'calendar-grid-event-${event.workflowId}',
+                                        ),
+                                        onTap: () =>
+                                            onSelect?.call(event.workflowId),
+                                        child: Text(
+                                          _displayTitleFor(event),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
