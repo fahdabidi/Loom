@@ -947,7 +947,13 @@ re-ran the full app-shell suite (**26/26**) and `flutter analyze` (clean, commit
 copy change introduced no regression elsewhere.
 
 ### Milestone 1.17 — formEntry checkbox + relative-time-picker control
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** per the Archetype Audit, `formEntry` today is
+always a flat `TextField` list + submit; HOA's architectural request form's only non-text control is a
+project-type dropdown wired `onChanged: (_) {}` — genuinely inert. No checkbox and no relative-time-
+picker exist anywhere in this archetype. Builds a new, separate Tabletop Club surface (HOA's form
+untouched), designed reusably since Milestone 1.18 (Tournament + Voting) depends on this control.
 - [ ] Real checkbox control (genuinely togglable, not `onChanged: (_) {}`) and a relative-time-picker
   control (e.g. "remind me 1 day before"), needed by the Tournament feature's notification-preference
   setup (§3) and reusable anywhere a boolean/scheduled-choice field appears.
