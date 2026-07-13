@@ -561,7 +561,16 @@ document" state (not merely that chips exist), and uses `documentId`/category st
 controls as widget keys — avoiding 1.7's engine-generated-id key pitfall entirely.
 
 ### Milestone 1.9 — Notification inbox
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** `_InboxPreviewCard`
+(`part02_tab_shell.dart:11246`) is dead code — a single hardcoded preview card with zero call sites
+anywhere in the file. No other class renders the `notificationInbox` card family; every other reference
+is JSON-literal schema/catalog metadata for other communities, not a real widget. Unlike 1.8, this
+milestone needs genuinely new UI, not a rewire of something already real. Kickoff points at
+`_MessagesTabSurface`/`_MessagesEngineStore` (1.7) as the architectural template (static store +
+`RepeaterSurface.live`) and at `WorkflowEngineApi.aggregate({workflowType, column, op, filter,
+groupBy})` (delivered in 1.2) for the unread-count requirement, rather than a hand-computed count.
 - [ ] Real list + unread state + timestamps, Repeater bound to a live query over notification
   instances, populated via `createInstance`/`dueNotifications` (1.2/1.4).
 - [ ] Widget test: multiple notifications render as a real list (not one hardcoded instance); dismiss
