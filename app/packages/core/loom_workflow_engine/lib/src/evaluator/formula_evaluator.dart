@@ -39,6 +39,36 @@ const Set<String> formulaFunctionNames = {
   'isPast',
 };
 
+/// Reduces [values] with the aggregate vocabulary shared by formula fields and
+/// the read-side aggregate API.  The caller is responsible for selecting a
+/// column before calling this function.
+dynamic aggregateValues(Iterable<dynamic> values, String op) {
+  final items = values.toList();
+  switch (op) {
+    case 'count':
+      return items.length;
+    case 'sum':
+      return items.fold<num>(0, (total, value) => total + _number(value));
+    case 'avg':
+      return items.isEmpty
+          ? null
+          : items.fold<num>(0, (total, value) => total + _number(value)) /
+                items.length;
+    case 'min':
+      return items.isEmpty
+          ? null
+          : items.reduce((a, b) => _compare(a, b) <= 0 ? a : b);
+    case 'max':
+      return items.isEmpty
+          ? null
+          : items.reduce((a, b) => _compare(a, b) >= 0 ? a : b);
+    case 'countDistinct':
+      return items.toSet().length;
+    default:
+      throw FormulaEvaluationException('Unknown aggregate "$op"');
+  }
+}
+
 /// Parses [formula] and reports direct field references and function calls.
 /// Aggregate column arguments (for example `choice` in `groupCount(rows,
 /// choice)`) are metadata, not field reads, so are deliberately excluded.
@@ -260,25 +290,17 @@ dynamic _call(String name, List<_Expr> args, _Context context) {
   ).map((row) => row is Map ? row[column(columnIndex)] : row).toList();
   switch (name) {
     case 'count':
-      return list(0).length;
+      return aggregateValues(list(0), 'count');
     case 'sum':
-      return values(
-        0,
-        1,
-      ).fold<num>(0, (total, value) => total + _number(value));
+      return aggregateValues(values(0, 1), 'sum');
     case 'avg':
-      final v = values(0, 1);
-      return v.isEmpty
-          ? null
-          : v.fold<num>(0, (t, x) => t + _number(x)) / v.length;
+      return aggregateValues(values(0, 1), 'avg');
     case 'min':
-      final v = values(0, 1);
-      return v.isEmpty ? null : v.reduce((a, b) => _compare(a, b) <= 0 ? a : b);
+      return aggregateValues(values(0, 1), 'min');
     case 'max':
-      final v = values(0, 1);
-      return v.isEmpty ? null : v.reduce((a, b) => _compare(a, b) >= 0 ? a : b);
+      return aggregateValues(values(0, 1), 'max');
     case 'countDistinct':
-      return values(0, 1).toSet().length;
+      return aggregateValues(values(0, 1), 'countDistinct');
     case 'groupCount':
       final result = <String, int>{};
       for (final v in values(0, 1)) {

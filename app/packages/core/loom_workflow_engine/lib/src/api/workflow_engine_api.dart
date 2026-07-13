@@ -119,4 +119,14 @@ abstract class WorkflowEngineApi {
     required Map<String, dynamic> fieldUpdates,
     required String personaId,
   });
+
+  /// Reads a scalar or grouped aggregate from persisted workflow instances.
+  /// With [groupBy], returns rows containing [groupBy] and [op].
+  Future<dynamic> aggregate({
+    required String workflowType,
+    required String column,
+    required String op,
+    Map<String, dynamic>? filter,
+    String? groupBy,
+  });
 }

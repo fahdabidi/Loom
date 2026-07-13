@@ -6,14 +6,19 @@ import '../models/workflow_models.dart';
 Map<String, dynamic> applyEffects(
   List<WorkflowEffect> effects,
   String personaId,
-  Map<String, dynamic> instanceData,
-) {
+  Map<String, dynamic> instanceData, {
+  Map<String, dynamic>? interpolationData,
+}) {
   final result = Map<String, dynamic>.from(instanceData);
 
   for (final effect in effects) {
     // Skip presentation-only ops (e.g. removeFromTileGrid) that have no key
     if (effect.key == null) continue;
-    final resolvedValue = _resolveValue(effect.value, personaId, result);
+    final resolvedValue = resolveEffectValue(
+      effect.value,
+      personaId,
+      interpolationData ?? result,
+    );
     final resolvedKey = effect.key!.replaceAll('\$actor', personaId);
     _applyOne(result, effect.op, resolvedKey, resolvedValue);
   }
@@ -22,7 +27,7 @@ Map<String, dynamic> applyEffects(
 }
 
 /// Resolves `$actor` to the acting persona ID, passes other values through.
-dynamic _resolveValue(
+dynamic resolveEffectValue(
   dynamic value,
   String personaId,
   Map<String, dynamic> instanceData,
@@ -37,12 +42,27 @@ dynamic _resolveValue(
     }
     return resolved;
   }
+  if (value is List) {
+    return value
+        .map((item) => resolveEffectValue(item, personaId, instanceData))
+        .toList();
+  }
+  if (value is Map) {
+    return value.map(
+      (key, item) =>
+          MapEntry(key, resolveEffectValue(item, personaId, instanceData)),
+    );
+  }
   return value;
 }
 
 /// Applies a single effect operation to the mutable [data] map.
 void _applyOne(
-    Map<String, dynamic> data, String op, String key, dynamic value) {
+  Map<String, dynamic> data,
+  String op,
+  String key,
+  dynamic value,
+) {
   switch (op) {
     case 'set':
       if (key.contains('.')) {

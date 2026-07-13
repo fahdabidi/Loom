@@ -1,15 +1,16 @@
 import '../models/workflow_models.dart';
+import 'formula_evaluator.dart';
 
 /// Evaluates a [WorkflowGuard] against the given persona and instance data.
 /// All conditions must pass (AND semantics). Empty/null guards always pass.
 bool evaluateGuard(
   WorkflowGuard guard,
   String personaId,
-  Map<String, dynamic> instanceData,
+  Map<String, dynamic> instanceData, {
   // completedWorkflowIds is reserved for Phase 3 (cross-workflow deps).
   // Accepted but not yet enforced in Phase 1.
-  {Set<String>? completedWorkflowIds,}
-) {
+  Set<String>? completedWorkflowIds,
+}) {
   // allowedPersonaIds — if non-null and non-empty, persona must be in the list.
   if (guard.allowedPersonaIds != null &&
       guard.allowedPersonaIds!.isNotEmpty &&
@@ -33,6 +34,16 @@ bool evaluateGuard(
     if (current != guard.instanceDataEquals!.value) {
       return false;
     }
+  }
+
+  if (guard.formula != null) {
+    final value = evaluateFormula(
+      guard.formula!,
+      instanceData: instanceData,
+      viewerId: personaId,
+      actorId: personaId,
+    );
+    if (value is! bool || !value) return false;
   }
 
   // requiresWorkflowsComplete — cross-workflow dependency (Phase 3).

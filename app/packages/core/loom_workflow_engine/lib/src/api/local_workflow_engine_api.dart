@@ -161,6 +161,49 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   @override
+  Future<dynamic> aggregate({
+    required String workflowType,
+    required String column,
+    required String op,
+    Map<String, dynamic>? filter,
+    String? groupBy,
+  }) async {
+    const supported = {'count', 'sum', 'avg', 'min', 'max', 'countDistinct'};
+    if (!supported.contains(op)) {
+      throw ArgumentError.value(op, 'op', 'Unsupported aggregate operation');
+    }
+    final rows = await _db.queryInstancesKeyset(
+      communityId: _communityId,
+      limit: 1 << 30,
+      sortKey: 'instanceId',
+    );
+    final data = rows
+        .where((row) => row.workflowType == workflowType)
+        .map((row) => jsonDecode(row.instanceData) as Map<String, dynamic>)
+        .where(
+          (row) =>
+              filter == null ||
+              filter.entries.every((entry) => row[entry.key] == entry.value),
+        )
+        .toList();
+    if (groupBy == null) {
+      return aggregateValues(data.map((row) => row[column]), op);
+    }
+    final groups = <dynamic, List<dynamic>>{};
+    for (final row in data) {
+      groups.putIfAbsent(row[groupBy], () => <dynamic>[]).add(row[column]);
+    }
+    return groups.entries
+        .map(
+          (entry) => <String, dynamic>{
+            groupBy: entry.key,
+            op: aggregateValues(entry.value, op),
+          },
+        )
+        .toList();
+  }
+
+  @override
   List<LoomWorkflowTransition> availableTransitions({
     required String workflowType,
     required String instanceId,
@@ -247,16 +290,12 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         ),
       );
 
-      for (final effect in transition.effects) {
-        if (effect.key != null &&
-            machine.instanceDataSchema[effect.key]?.formula != null) {
-          throw WorkflowAuthorizationError(
-            'Computed field "${effect.key}" cannot be written by an effect',
-          );
-        }
-      }
-      // Apply effects to stored (non-computed) data.
-      final newData = applyEffects(transition.effects, personaId, data);
+      final newData = await _applyExtendedEffects(
+        transition.effects,
+        machine: machine,
+        sourceData: data,
+        personaId: personaId,
+      );
       final newState = transition.to ?? row.currentState;
 
       await _db.updateInstanceState(
@@ -376,6 +415,103 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   // ── Helpers ───────────────────────────────────────────────────────────
 
+  Future<Map<String, dynamic>> _applyExtendedEffects(
+    List<WorkflowEffect> effects, {
+    required LoomWorkflowStateMachine machine,
+    required Map<String, dynamic> sourceData,
+    required String personaId,
+  }) async {
+    var data = Map<String, dynamic>.from(sourceData);
+    Future<void> applyList(List<WorkflowEffect> list) async {
+      for (final effect in list) {
+        final computed = _withComputedFields(
+          data,
+          machine,
+          viewerId: personaId,
+          actorId: personaId,
+        );
+        if (effect.op == 'branch') {
+          if (effect.condition == null) {
+            throw StateError('branch effect requires an "if" formula');
+          }
+          final condition = evaluateFormula(
+            effect.condition!,
+            instanceData: computed,
+            viewerId: personaId,
+            actorId: personaId,
+          );
+          if (condition is! bool) {
+            throw StateError('branch "if" formula must evaluate to bool');
+          }
+          await applyList(condition ? effect.thenEffects : effect.elseEffects);
+          continue;
+        }
+        if (effect.op == 'createInstance') {
+          if (effect.workflowType == null || effect.fields == null) {
+            throw StateError('createInstance requires workflowType and fields');
+          }
+          final fields = resolveEffectValue(effect.fields, personaId, computed);
+          await createInstance(
+            workflowType: effect.workflowType!,
+            initialInstanceData: Map<String, dynamic>.from(fields as Map),
+            personaId: personaId,
+          );
+          continue;
+        }
+        if (effect.op == 'set' && effect.relatedInstance != null) {
+          final targetId = computed[effect.relatedInstance];
+          if (targetId is! String || targetId.isEmpty) {
+            throw StateError(
+              'relatedInstance "${effect.relatedInstance}" is not an instance id',
+            );
+          }
+          final target = await _db.readInstance(targetId);
+          if (target == null)
+            throw StateError('Related instance $targetId not found');
+          final targetMachine = await _getDefinition(target.workflowType);
+          if (targetMachine == null) {
+            throw StateError('Unknown workflow type: ${target.workflowType}');
+          }
+          if (effect.key == null ||
+              targetMachine.instanceDataSchema[effect.key]?.formula != null) {
+            throw const WorkflowAuthorizationError(
+              'Computed or missing target field cannot be written',
+            );
+          }
+          final targetData =
+              jsonDecode(target.instanceData) as Map<String, dynamic>;
+          final value = resolveEffectValue(effect.value, personaId, computed);
+          final updated = applyEffects(
+            [WorkflowEffect(op: 'set', key: effect.key, value: value)],
+            personaId,
+            targetData,
+          );
+          await _db.updateInstanceState(
+            instanceId: targetId,
+            newState: target.currentState,
+            newInstanceData: updated,
+          );
+          continue;
+        }
+        if (effect.key != null &&
+            machine.instanceDataSchema[effect.key]?.formula != null) {
+          throw WorkflowAuthorizationError(
+            'Computed field "${effect.key}" cannot be written by an effect',
+          );
+        }
+        data = applyEffects(
+          [effect],
+          personaId,
+          data,
+          interpolationData: computed,
+        );
+      }
+    }
+
+    await applyList(effects);
+    return data;
+  }
+
   Map<String, dynamic> _withComputedFields(
     Map<String, dynamic> data,
     LoomWorkflowStateMachine? machine, {
@@ -429,7 +565,27 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
               if (!t.guard.isEmpty) 'guard': _serializeGuard(t.guard),
               if (t.effects.isNotEmpty)
                 'effects': t.effects
-                    .map((e) => {'op': e.op, 'key': e.key, 'value': e.value})
+                    .map(
+                      (e) => {
+                        'op': e.op,
+                        if (e.key != null) 'key': e.key,
+                        if (e.value != null) 'value': e.value,
+                        if (e.workflowType != null)
+                          'workflowType': e.workflowType,
+                        if (e.fields != null) 'fields': e.fields,
+                        if (e.relatedInstance != null)
+                          'relatedInstance': e.relatedInstance,
+                        if (e.condition != null) 'if': e.condition,
+                        if (e.thenEffects.isNotEmpty)
+                          'then': e.thenEffects
+                              .map((child) => _serializeEffect(child))
+                              .toList(),
+                        if (e.elseEffects.isNotEmpty)
+                          'else': e.elseEffects
+                              .map((child) => _serializeEffect(child))
+                              .toList(),
+                      },
+                    )
                     .toList(),
               if (t.linkedWorkflowId != null)
                 'linkedWorkflowId': t.linkedWorkflowId,
@@ -491,10 +647,26 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         'value': guard.instanceDataEquals!.value,
       };
     }
+    if (guard.formula != null) m['formula'] = guard.formula;
     if (guard.requiresWorkflowsComplete != null &&
         guard.requiresWorkflowsComplete!.isNotEmpty) {
       m['requiresWorkflowsComplete'] = guard.requiresWorkflowsComplete;
     }
     return m.isEmpty ? null : m;
   }
+
+  Map<String, dynamic> _serializeEffect(WorkflowEffect effect) => {
+    'op': effect.op,
+    if (effect.key != null) 'key': effect.key,
+    if (effect.value != null) 'value': effect.value,
+    if (effect.workflowType != null) 'workflowType': effect.workflowType,
+    if (effect.fields != null) 'fields': effect.fields,
+    if (effect.relatedInstance != null)
+      'relatedInstance': effect.relatedInstance,
+    if (effect.condition != null) 'if': effect.condition,
+    if (effect.thenEffects.isNotEmpty)
+      'then': effect.thenEffects.map(_serializeEffect).toList(),
+    if (effect.elseEffects.isNotEmpty)
+      'else': effect.elseEffects.map(_serializeEffect).toList(),
+  };
 }

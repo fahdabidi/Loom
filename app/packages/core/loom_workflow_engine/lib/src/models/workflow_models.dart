@@ -3,12 +3,16 @@ class WorkflowGuard {
   final List<String>? allowedPersonaIds;
   final ListMembershipGuard? actorInList;
   final KeyValueGuard? instanceDataEquals;
+
+  /// A computed-field formula which must evaluate to true.
+  final String? formula;
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
     this.allowedPersonaIds,
     this.actorInList,
     this.instanceDataEquals,
+    this.formula,
     this.requiresWorkflowsComplete,
   });
 
@@ -28,6 +32,7 @@ class WorkflowGuard {
               json['instanceDataEquals'] as Map<String, dynamic>,
             )
           : null,
+      formula: json['formula'] as String?,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -39,6 +44,7 @@ class WorkflowGuard {
       (allowedPersonaIds == null || allowedPersonaIds!.isEmpty) &&
       actorInList == null &&
       instanceDataEquals == null &&
+      formula == null &&
       (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
 }
 
@@ -83,14 +89,52 @@ class WorkflowEffect {
   /// The value for the operation. `$actor` is resolved to the acting persona ID,
   /// `null` sets the key to null.
   final dynamic value;
+  final String? workflowType;
+  final Map<String, dynamic>? fields;
+  final String? relatedInstance;
+  final String? condition;
+  final List<WorkflowEffect> thenEffects;
+  final List<WorkflowEffect> elseEffects;
 
-  const WorkflowEffect({required this.op, this.key, this.value});
+  const WorkflowEffect({
+    required this.op,
+    this.key,
+    this.value,
+    this.workflowType,
+    this.fields,
+    this.relatedInstance,
+    this.condition,
+    this.thenEffects = const [],
+    this.elseEffects = const [],
+  });
 
   factory WorkflowEffect.fromJson(Map<String, dynamic> json) {
     return WorkflowEffect(
       op: (json['op'] as String?) ?? '',
       key: json['key'] as String?,
       value: json['value'],
+      workflowType: json['workflowType'] as String?,
+      fields: (json['fields'] as Map<String, dynamic>?)?.map(
+        (key, value) => MapEntry(key, value),
+      ),
+      relatedInstance: json['relatedInstance'] as String?,
+      condition: json['if'] as String?,
+      thenEffects:
+          (json['then'] as List<dynamic>?)
+              ?.map(
+                (effect) =>
+                    WorkflowEffect.fromJson(effect as Map<String, dynamic>),
+              )
+              .toList() ??
+          const [],
+      elseEffects:
+          (json['else'] as List<dynamic>?)
+              ?.map(
+                (effect) =>
+                    WorkflowEffect.fromJson(effect as Map<String, dynamic>),
+              )
+              .toList() ??
+          const [],
     );
   }
 
