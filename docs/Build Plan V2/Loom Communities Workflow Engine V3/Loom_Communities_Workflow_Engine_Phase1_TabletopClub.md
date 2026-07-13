@@ -435,7 +435,7 @@ gate — not a rebuild of Marketplace, and not open-ended Repeater work beyond w
 needs.
 
 ### Milestone 1.7 — Discussion threads generalized
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
 - [ ] `_MessagesTabSurface` generalized to read threads from engine `WorkflowInstance`s via a
   live-query-bound Repeater, replacing Tabletop Club's current data source.
 - [ ] Widget test: a new message posted via the `createInstance` effect op appears as a new bubble

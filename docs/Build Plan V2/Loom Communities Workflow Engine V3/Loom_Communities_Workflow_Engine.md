@@ -116,7 +116,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | 1 | 1.4 Scheduled notifications + cross-instance eligibility guard | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 101/101 tests, commit `4130384`; known gap deferred to 1.18 (see phase doc) |
 | 1 | 1.5 Calendar month/week grid | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 11/11 app-shell tests, commit `8dcbdd6` (final of 5 rounds — see phase doc for the full trail: research pass, real implementation, a Material-ancestor test bug, a missing third test, and a genuine grid-overflow layout bug, all caught by independent verification) |
 | 1 | 1.6 Marketplace grid reformalized onto Repeater | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 13/13 app-shell tests + 16/16 b34 marketplace regression suite unmodified, commit `b395eea`; scope expanded mid-milestone to add Repeater's grid mode first (see phase doc) |
-| 1 | 1.7 Discussion threads generalized | `[ ]` Not started |
+| 1 | 1.7 Discussion threads generalized | `[~]` In progress — dispatched to implementation agent 2026-07-12 |
 | 1 | 1.8 Document library real data | `[ ]` Not started |
 | 1 | 1.9 Notification inbox | `[ ]` Not started |
 | 1 | 1.10 Export wizard step progression | `[ ]` Not started |
