@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import '../evaluator/effect_evaluator.dart';
+import '../evaluator/formula_evaluator.dart';
 import '../evaluator/transition_evaluator.dart' as trans_eval;
 import '../models/workflow_models.dart';
 import '../store/database.dart';
@@ -44,8 +45,8 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   LocalWorkflowEngineApi({
     required WorkflowDatabase db,
     required String communityId,
-  })  : _db = db,
-        _communityId = communityId;
+  }) : _db = db,
+       _communityId = communityId;
 
   // ── populate definitions (called before any API use) ──────────────────
 
@@ -53,12 +54,14 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   void registerDefinition(LoomWorkflowStateMachine machine) {
     final defId = '${_communityId}_${machine.workflowType}';
     _definitions[defId] = machine;
-    unawaited(_db.upsertDefinition(
-      definitionId: defId,
-      workflowType: machine.workflowType,
-      definitionJson: jsonEncode(_serializeMachine(machine)),
-      version: 1,
-    ));
+    unawaited(
+      _db.upsertDefinition(
+        definitionId: defId,
+        workflowType: machine.workflowType,
+        definitionJson: jsonEncode(_serializeMachine(machine)),
+        version: 1,
+      ),
+    );
   }
 
   Future<LoomWorkflowStateMachine?> _getDefinition(String workflowType) async {
@@ -70,8 +73,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     final jsonStr = await _db.loadDefinitionJson(defId);
     if (jsonStr == null) return null;
     final map = jsonDecode(jsonStr) as Map<String, dynamic>;
-    final machine =
-        LoomWorkflowStateMachine.fromJson(map, workflowType);
+    final machine = LoomWorkflowStateMachine.fromJson(map, workflowType);
     _definitions[defId] = machine;
     return machine;
   }
@@ -96,34 +98,49 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
 
     final hasMore = rows.length > limit;
-    final items = rows.take(limit).map((r) {
-      final data = jsonDecode(r.instanceData) as Map<String, dynamic>;
-      return WorkflowInstance(
-        instanceId: r.instanceId,
-        workflowType: r.workflowType,
-        currentState: r.currentState,
-        instanceData: data,
-        createdByPersonaId: r.createdByPersonaId,
-      );
-    }).where((instance) {
-      return _matchesAudienceQuery(instance.instanceData, personaId, query);
-    }).toList();
+    final rawItems = rows
+        .take(limit)
+        .map((r) {
+          final data = jsonDecode(r.instanceData) as Map<String, dynamic>;
+          return WorkflowInstance(
+            instanceId: r.instanceId,
+            workflowType: r.workflowType,
+            currentState: r.currentState,
+            instanceData: data,
+            createdByPersonaId: r.createdByPersonaId,
+          );
+        })
+        .where((instance) {
+          return _matchesAudienceQuery(instance.instanceData, personaId, query);
+        })
+        .toList();
+    final items = await Future.wait(
+      rawItems.map((instance) async {
+        final machine = await _getDefinition(instance.workflowType);
+        return WorkflowInstance(
+          instanceId: instance.instanceId,
+          workflowType: instance.workflowType,
+          currentState: instance.currentState,
+          instanceData: _withComputedFields(
+            instance.instanceData,
+            machine,
+            viewerId: personaId,
+          ),
+          createdByPersonaId: instance.createdByPersonaId,
+        );
+      }),
+    );
 
     String? nextCursor;
     if (hasMore && items.isNotEmpty) {
       final lastRow = rows[limit - 1];
-      final lastData =
-          jsonDecode(lastRow.instanceData) as Map<String, dynamic>;
+      final lastData = jsonDecode(lastRow.instanceData) as Map<String, dynamic>;
       final cursorValue = '${lastData[sortKey] ?? ''}';
       // Encode sortKey into cursor so the DB layer can detect mismatches.
       nextCursor = '$sortKey\x1f$cursorValue\x1f${lastRow.instanceId}';
     }
 
-    return InstancePage(
-      items: items,
-      nextCursor: nextCursor,
-      hasMore: hasMore,
-    );
+    return InstancePage(items: items, nextCursor: nextCursor, hasMore: hasMore);
   }
 
   bool _matchesAudienceQuery(
@@ -159,7 +176,7 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       machine,
       currentState,
       personaId,
-      instanceData,
+      _withComputedFields(instanceData, machine, viewerId: personaId),
     );
   }
 
@@ -206,30 +223,51 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       if (row == null) throw StateError('Instance $instanceId not found');
 
       final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
-      final completedWorkflowIds =
-          await completedWorkflowIdsForPersona(personaId);
+      final completedWorkflowIds = await completedWorkflowIdsForPersona(
+        personaId,
+      );
+      final computedData = _withComputedFields(
+        data,
+        machine,
+        viewerId: personaId,
+        actorId: personaId,
+      );
       final transitions = trans_eval.availableTransitions(
         machine,
         row.currentState,
         personaId,
-        data,
+        computedData,
         completedWorkflowIds: completedWorkflowIds,
       );
 
       final transition = transitions.firstWhere(
         (t) => t.id == transitionId,
         orElse: () => throw StateError(
-            'Transition $transitionId not available from state ${row.currentState}'),
+          'Transition $transitionId not available from state ${row.currentState}',
+        ),
       );
 
-      // Apply effects.
+      for (final effect in transition.effects) {
+        if (effect.key != null &&
+            machine.instanceDataSchema[effect.key]?.formula != null) {
+          throw WorkflowAuthorizationError(
+            'Computed field "${effect.key}" cannot be written by an effect',
+          );
+        }
+      }
+      // Apply effects to stored (non-computed) data.
       final newData = applyEffects(transition.effects, personaId, data);
       final newState = transition.to ?? row.currentState;
 
       await _db.updateInstanceState(
         instanceId: instanceId,
         newState: newState,
-        newInstanceData: newData,
+        newInstanceData: _withComputedFields(
+          newData,
+          machine,
+          viewerId: personaId,
+          actorId: personaId,
+        ),
       );
 
       result = WorkflowTransitionResult(
@@ -260,13 +298,19 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
         if (!initialInstanceData.containsKey(key) ||
             initialInstanceData[key] == null) {
           throw WorkflowValidationError(
-              key, 'Required field is missing or null');
+            key,
+            'Required field is missing or null',
+          );
         }
       }
     }
+    for (final key in initialInstanceData.keys) {
+      if (machine.instanceDataSchema[key]?.formula != null) {
+        throw WorkflowValidationError(key, 'Computed fields cannot be seeded');
+      }
+    }
 
-    final instanceId =
-        '${_communityId}_${workflowType}_${_generateId()}';
+    final instanceId = '${_communityId}_${workflowType}_${_generateId()}';
     await _db.insertInstance(
       instanceId: instanceId,
       communityId: _communityId,
@@ -297,20 +341,26 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
       final stateDef = machine.states[row.currentState];
       if (stateDef == null) {
-        throw StateError(
-            'Unknown state ${row.currentState} for $workflowType');
+        throw StateError('Unknown state ${row.currentState} for $workflowType');
       }
 
       final editable = stateDef.editableFields ?? const [];
       for (final key in fieldUpdates.keys) {
         if (!editable.contains(key)) {
           throw WorkflowAuthorizationError(
-              'Field "$key" is not editable in state "${row.currentState}"');
+            'Field "$key" is not editable in state "${row.currentState}"',
+          );
         }
         final schema = machine.instanceDataSchema[key];
+        if (schema?.formula != null) {
+          throw WorkflowAuthorizationError(
+            'Computed field "$key" cannot be user-edited',
+          );
+        }
         if (schema != null && schema.writableBy == 'effect') {
           throw WorkflowAuthorizationError(
-              'Field "$key" is effect-only and cannot be user-edited');
+            'Field "$key" is effect-only and cannot be user-edited',
+          );
         }
       }
 
@@ -326,75 +376,98 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
 
   // ── Helpers ───────────────────────────────────────────────────────────
 
+  Map<String, dynamic> _withComputedFields(
+    Map<String, dynamic> data,
+    LoomWorkflowStateMachine? machine, {
+    String? viewerId,
+    String? actorId,
+  }) {
+    if (machine == null) return Map<String, dynamic>.from(data);
+    final formulas = <String, String?>{
+      for (final entry in machine.instanceDataSchema.entries)
+        if (entry.value.formula != null) entry.key: entry.value.formula,
+    };
+    if (formulas.isEmpty) return Map<String, dynamic>.from(data);
+    return evaluateComputedFields(
+      instanceData: data,
+      formulas: formulas,
+      viewerId: viewerId,
+      actorId: actorId,
+    );
+  }
+
   static final _random = Random();
 
   String _generateId() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    return List.generate(12, (_) => chars[_random.nextInt(chars.length)])
-        .join();
+    return List.generate(
+      12,
+      (_) => chars[_random.nextInt(chars.length)],
+    ).join();
   }
 
-  Map<String, dynamic> _serializeMachine(
-      LoomWorkflowStateMachine machine) {
+  Map<String, dynamic> _serializeMachine(LoomWorkflowStateMachine machine) {
     // Re-serialize to JSON via jsonDecode/jsonEncode round-trip.
     final map = <String, dynamic>{
       'initialState': machine.initialState,
-      'states': machine.states.map((k, v) => MapEntry(k, {
-            'label': v.label,
-            if (v.tone != null) 'tone': v.tone,
-            if (v.editableFields != null) 'editableFields': v.editableFields,
-          })),
+      'states': machine.states.map(
+        (k, v) => MapEntry(k, {
+          'label': v.label,
+          if (v.tone != null) 'tone': v.tone,
+          if (v.editableFields != null) 'editableFields': v.editableFields,
+        }),
+      ),
       'transitions': machine.transitions
-          .map((t) => {
-                'id': t.id,
-                'label': t.label,
-                if (t.icon != null) 'icon': t.icon,
-                if (t.tone != null) 'tone': t.tone,
-                'from': t.from,
-                if (t.to != null) 'to': t.to,
-                if (!t.guard.isEmpty) 'guard': _serializeGuard(t.guard),
-                if (t.effects.isNotEmpty)
-                  'effects': t.effects
-                      .map((e) => {
-                            'op': e.op,
-                            'key': e.key,
-                            'value': e.value,
-                          })
-                      .toList(),
-                if (t.linkedWorkflowId != null)
-                  'linkedWorkflowId': t.linkedWorkflowId,
-              })
+          .map(
+            (t) => {
+              'id': t.id,
+              'label': t.label,
+              if (t.icon != null) 'icon': t.icon,
+              if (t.tone != null) 'tone': t.tone,
+              'from': t.from,
+              if (t.to != null) 'to': t.to,
+              if (!t.guard.isEmpty) 'guard': _serializeGuard(t.guard),
+              if (t.effects.isNotEmpty)
+                'effects': t.effects
+                    .map((e) => {'op': e.op, 'key': e.key, 'value': e.value})
+                    .toList(),
+              if (t.linkedWorkflowId != null)
+                'linkedWorkflowId': t.linkedWorkflowId,
+            },
+          )
           .toList(),
       if (machine.renderBindings.isNotEmpty)
         'renderBindings': machine.renderBindings
-            .map((b) => {
-                  'states': b.states,
-                  'role': b.role,
-                  'tabId': b.tabId,
-                  'cardSurfaceFamily': b.cardSurfaceFamily,
-                  'bindingKind': b.bindingKind,
-                  if (b.audienceMemberField != null)
-                    'audienceMemberField': b.audienceMemberField,
-                })
+            .map(
+              (b) => {
+                'states': b.states,
+                'role': b.role,
+                'tabId': b.tabId,
+                'cardSurfaceFamily': b.cardSurfaceFamily,
+                'bindingKind': b.bindingKind,
+                if (b.audienceMemberField != null)
+                  'audienceMemberField': b.audienceMemberField,
+              },
+            )
             .toList(),
       if (machine.instanceDataSchema.isNotEmpty)
-        'instanceDataSchema': machine.instanceDataSchema.map((k, v) => MapEntry(
-            k,
-            {
-              'type': v.type,
-              if (v.required) 'required': v.required,
-              if (v.writableBy != null) 'writableBy': v.writableBy,
-              if (v.storage != null) 'storage': v.storage,
-              if (v.storageTarget != null) 'storageTarget': v.storageTarget,
-              if (v.searchable) 'searchable': v.searchable,
-              if (v.sortable) 'sortable': v.sortable,
-              if (v.displayIcon != null) 'displayIcon': v.displayIcon,
-              if (v.labelTemplate != null) 'labelTemplate': v.labelTemplate,
-              if (v.displayContexts != null)
-                'displayContexts': v.displayContexts,
-              if (v.hideWhenEmpty) 'hideWhenEmpty': v.hideWhenEmpty,
-              if (v.maxLength != null) 'maxLength': v.maxLength,
-            })),
+        'instanceDataSchema': machine.instanceDataSchema.map(
+          (k, v) => MapEntry(k, {
+            'type': v.type,
+            if (v.required) 'required': v.required,
+            if (v.writableBy != null) 'writableBy': v.writableBy,
+            if (v.storage != null) 'storage': v.storage,
+            if (v.storageTarget != null) 'storageTarget': v.storageTarget,
+            if (v.searchable) 'searchable': v.searchable,
+            if (v.sortable) 'sortable': v.sortable,
+            if (v.displayIcon != null) 'displayIcon': v.displayIcon,
+            if (v.labelTemplate != null) 'labelTemplate': v.labelTemplate,
+            if (v.displayContexts != null) 'displayContexts': v.displayContexts,
+            if (v.hideWhenEmpty) 'hideWhenEmpty': v.hideWhenEmpty,
+            if (v.maxLength != null) 'maxLength': v.maxLength,
+            if (v.formula != null) 'formula': v.formula,
+          }),
+        ),
     };
     return map;
   }

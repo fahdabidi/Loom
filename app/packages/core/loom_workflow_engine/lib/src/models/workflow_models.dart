@@ -20,11 +20,13 @@ class WorkflowGuard {
           .toList(),
       actorInList: json['actorInList'] != null
           ? ListMembershipGuard.fromJson(
-              json['actorInList'] as Map<String, dynamic>)
+              json['actorInList'] as Map<String, dynamic>,
+            )
           : null,
       instanceDataEquals: json['instanceDataEquals'] != null
           ? KeyValueGuard.fromJson(
-              json['instanceDataEquals'] as Map<String, dynamic>)
+              json['instanceDataEquals'] as Map<String, dynamic>,
+            )
           : null,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
@@ -37,8 +39,7 @@ class WorkflowGuard {
       (allowedPersonaIds == null || allowedPersonaIds!.isEmpty) &&
       actorInList == null &&
       instanceDataEquals == null &&
-      (requiresWorkflowsComplete == null ||
-          requiresWorkflowsComplete!.isEmpty);
+      (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
 }
 
 /// Guards that check list membership: whether a persona ID is present or absent
@@ -65,10 +66,7 @@ class KeyValueGuard {
   const KeyValueGuard({required this.key, required this.value});
 
   factory KeyValueGuard.fromJson(Map<String, dynamic> json) {
-    return KeyValueGuard(
-      key: json['key'] as String,
-      value: json['value'],
-    );
+    return KeyValueGuard(key: json['key'] as String, value: json['value']);
   }
 }
 
@@ -86,11 +84,7 @@ class WorkflowEffect {
   /// `null` sets the key to null.
   final dynamic value;
 
-  const WorkflowEffect({
-    required this.op,
-    this.key,
-    this.value,
-  });
+  const WorkflowEffect({required this.op, this.key, this.value});
 
   factory WorkflowEffect.fromJson(Map<String, dynamic> json) {
     return WorkflowEffect(
@@ -137,9 +131,9 @@ class LoomWorkflowTransition {
       from: (json['from'] as List<dynamic>).map((e) => e as String).toList(),
       to: json['to'] as String?,
       guard: WorkflowGuard.fromJson(json['guard'] as Map<String, dynamic>?),
-      effects: (json['effects'] as List<dynamic>?)
-              ?.map(
-                  (e) => WorkflowEffect.fromJson(e as Map<String, dynamic>))
+      effects:
+          (json['effects'] as List<dynamic>?)
+              ?.map((e) => WorkflowEffect.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       linkedWorkflowId: json['linkedWorkflowId'] as String?,
@@ -194,8 +188,9 @@ class RenderBinding {
 
   factory RenderBinding.fromJson(Map<String, dynamic> json) {
     return RenderBinding(
-      states:
-          (json['states'] as List<dynamic>).map((e) => e as String).toList(),
+      states: (json['states'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
       role: json['role'] as String,
       tabId: json['tabId'] as String,
       cardSurfaceFamily: json['cardSurfaceFamily'] as String,
@@ -220,6 +215,10 @@ class InstanceDataField {
   final bool hideWhenEmpty;
   final int? maxLength;
 
+  /// A pure, read-time formula. Computed fields cannot be written by effects
+  /// or form edits.
+  final String? formula;
+
   const InstanceDataField({
     required this.type,
     this.required = false,
@@ -233,6 +232,7 @@ class InstanceDataField {
     this.displayContexts,
     this.hideWhenEmpty = false,
     this.maxLength,
+    this.formula,
   });
 
   factory InstanceDataField.fromJson(Map<String, dynamic> json) {
@@ -251,6 +251,7 @@ class InstanceDataField {
           .toList(),
       hideWhenEmpty: json['hideWhenEmpty'] as bool? ?? false,
       maxLength: json['maxLength'] as int?,
+      formula: json['formula'] as String?,
     );
   }
 }
@@ -274,7 +275,9 @@ class LoomWorkflowStateMachine {
   });
 
   factory LoomWorkflowStateMachine.fromJson(
-      Map<String, dynamic> json, String workflowType) {
+    Map<String, dynamic> json,
+    String workflowType,
+  ) {
     return LoomWorkflowStateMachine(
       workflowType: workflowType,
       initialState: json['initialState'] as String,
@@ -283,16 +286,22 @@ class LoomWorkflowStateMachine {
             MapEntry(k, LoomWorkflowState.fromJson(v as Map<String, dynamic>)),
       ),
       transitions: (json['transitions'] as List<dynamic>)
-          .map((e) => LoomWorkflowTransition.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => LoomWorkflowTransition.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
-      renderBindings: (json['renderBindings'] as List<dynamic>?)
-              ?.map(
-                  (e) => RenderBinding.fromJson(e as Map<String, dynamic>))
+      renderBindings:
+          (json['renderBindings'] as List<dynamic>?)
+              ?.map((e) => RenderBinding.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      instanceDataSchema: (json['instanceDataSchema'] as Map<String, dynamic>?)
-              ?.map((k, v) => MapEntry(
-                  k, InstanceDataField.fromJson(v as Map<String, dynamic>))) ??
+      instanceDataSchema:
+          (json['instanceDataSchema'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(
+              k,
+              InstanceDataField.fromJson(v as Map<String, dynamic>),
+            ),
+          ) ??
           const {},
     );
   }

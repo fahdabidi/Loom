@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:loom_workflow_engine/src/evaluator/formula_evaluator.dart';
 import 'package:loom_workflow_engine/src/models/workflow_models.dart';
 
 /// A single validation finding — either an error (blocks pass) or a warning.
@@ -17,11 +18,11 @@ class ValidationFinding {
   });
 
   Map<String, dynamic> toJson() => {
-        'type': type,
-        'message': message,
-        'location': location,
-        'isWarning': isWarning,
-      };
+    'type': type,
+    'message': message,
+    'location': location,
+    'isWarning': isWarning,
+  };
 
   @override
   String toString() => '[$type] $location: $message';
@@ -40,11 +41,11 @@ class ValidationReport {
   bool get passed => errors.isEmpty;
 
   Map<String, dynamic> toJson() => {
-        'status': passed ? 'pass' : 'fail',
-        'errorCount': errors.length,
-        'warningCount': warnings.length,
-        'findings': findings.map((f) => f.toJson()).toList(),
-      };
+    'status': passed ? 'pass' : 'fail',
+    'errorCount': errors.length,
+    'warningCount': warnings.length,
+    'findings': findings.map((f) => f.toJson()).toList(),
+  };
 }
 
 /// Validates a set of workflow definitions against the §7c checks.
@@ -82,8 +83,7 @@ class WorkflowValidator {
 
   /// Runs all validation checks against the given workflow definitions.
   /// [workflows] is a map of workflowType → LoomWorkflowStateMachine.
-  ValidationReport validate(
-      Map<String, LoomWorkflowStateMachine> workflows) {
+  ValidationReport validate(Map<String, LoomWorkflowStateMachine> workflows) {
     final findings = <ValidationFinding>[];
 
     for (final entry in workflows.entries) {
@@ -96,6 +96,7 @@ class WorkflowValidator {
       _checkMissingLabels(machine, findings);
       _checkBindingCap(machine, findings);
       _checkEditableFieldsReferences(machine, findings);
+      _checkFormulas(machine, findings);
 
       if (templates != null) {
         _checkActionButtonRow(machine, findings);
@@ -103,7 +104,10 @@ class WorkflowValidator {
       if (tableArchetypeConfigs != null &&
           tableArchetypeConfigs!.containsKey(wfType)) {
         _checkSortableFieldReferences(
-            machine, tableArchetypeConfigs![wfType]!, findings);
+          machine,
+          tableArchetypeConfigs![wfType]!,
+          findings,
+        );
       }
     }
 
@@ -113,10 +117,98 @@ class WorkflowValidator {
   }
 
   // ---------------------------------------------------------------------------
+  // Computed fields: formula references stay inside this workflow's schema,
+  // function calls use the fixed engine vocabulary, and formula dependencies
+  // form a directed acyclic graph.
+  // ---------------------------------------------------------------------------
+  void _checkFormulas(
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
+    final dependencies = <String, Set<String>>{};
+    for (final entry in machine.instanceDataSchema.entries) {
+      final formula = entry.value.formula;
+      if (formula == null) continue;
+      final location =
+          '${machine.workflowType}/instanceDataSchema/${entry.key}/formula';
+      FormulaAnalysis analysis;
+      try {
+        analysis = analyzeFormula(formula);
+      } on FormulaEvaluationException catch (error) {
+        findings.add(
+          ValidationFinding(
+            type: 'invalid_formula_syntax',
+            message: error.message,
+            location: location,
+          ),
+        );
+        continue;
+      }
+      for (final field in analysis.referencedFields) {
+        if (!machine.instanceDataSchema.containsKey(field)) {
+          findings.add(
+            ValidationFinding(
+              type: 'unknown_formula_field',
+              message:
+                  'Formula for "${entry.key}" references "$field", which is not declared in instanceDataSchema.',
+              location: location,
+            ),
+          );
+        }
+      }
+      for (final function in analysis.functionNames) {
+        if (!formulaFunctionNames.contains(function)) {
+          findings.add(
+            ValidationFinding(
+              type: 'unknown_formula_function',
+              message:
+                  'Formula for "${entry.key}" calls unknown function "$function".',
+              location: location,
+            ),
+          );
+        }
+      }
+      dependencies[entry.key] = analysis.referencedFields
+          .where((field) => machine.instanceDataSchema[field]?.formula != null)
+          .toSet();
+    }
+
+    final visiting = <String>{};
+    final visited = <String>{};
+    void visit(String field, List<String> path) {
+      if (visiting.contains(field)) {
+        final cycleStart = path.indexOf(field);
+        final cycle = [...path.sublist(cycleStart), field];
+        findings.add(
+          ValidationFinding(
+            type: 'circular_formula_dependency',
+            message: 'Circular formula dependency: ${cycle.join(' → ')}',
+            location:
+                '${machine.workflowType}/instanceDataSchema/$field/formula',
+          ),
+        );
+        return;
+      }
+      if (!visited.add(field)) return;
+      visiting.add(field);
+      for (final dependency in dependencies[field] ?? const <String>{}) {
+        visit(dependency, [...path, field]);
+      }
+      visiting.remove(field);
+    }
+
+    for (final field in dependencies.keys) {
+      visit(field, const []);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Stuck states (§7c): every non-terminal state must have ≥1 outgoing transition
   // ---------------------------------------------------------------------------
   void _checkStuckStates(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     for (final entry in machine.states.entries) {
       final stateName = entry.key;
       final state = entry.value;
@@ -125,14 +217,16 @@ class WorkflowValidator {
 
       final outgoing = machine.transitionsFrom(stateName);
       if (outgoing.isEmpty) {
-        findings.add(ValidationFinding(
-          type: 'stuck_state',
-          message:
-              'State "$stateName" (${state.label}) has no outgoing transitions '
-              'and is not declared terminal. Add at least one transition '
-              'originating from this state, or set "isTerminal": true.',
-          location: '${machine.workflowType}/states/$stateName',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'stuck_state',
+            message:
+                'State "$stateName" (${state.label}) has no outgoing transitions '
+                'and is not declared terminal. Add at least one transition '
+                'originating from this state, or set "isTerminal": true.',
+            location: '${machine.workflowType}/states/$stateName',
+          ),
+        );
       }
     }
   }
@@ -141,7 +235,9 @@ class WorkflowValidator {
   // Unreachable states (§7c): BFS from initialState
   // ---------------------------------------------------------------------------
   void _checkUnreachableStates(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     final reachable = <String>{};
     final queue = Queue<String>.from([machine.initialState]);
 
@@ -158,14 +254,16 @@ class WorkflowValidator {
 
     for (final stateName in machine.states.keys) {
       if (!reachable.contains(stateName)) {
-        findings.add(ValidationFinding(
-          type: 'unreachable_state',
-          message:
-              'State "$stateName" (${machine.states[stateName]!.label}) '
-              'is not reachable from initialState '
-              '"${machine.initialState}" via any transition path.',
-          location: '${machine.workflowType}/states/$stateName',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'unreachable_state',
+            message:
+                'State "$stateName" (${machine.states[stateName]!.label}) '
+                'is not reachable from initialState '
+                '"${machine.initialState}" via any transition path.',
+            location: '${machine.workflowType}/states/$stateName',
+          ),
+        );
       }
     }
   }
@@ -179,24 +277,27 @@ class WorkflowValidator {
   //   - instanceDataSchema keys in guards/effects must exist in the schema
   // ---------------------------------------------------------------------------
   void _checkDanglingReferences(
-      LoomWorkflowStateMachine machine,
-      Map<String, LoomWorkflowStateMachine> allWorkflows,
-      List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    Map<String, LoomWorkflowStateMachine> allWorkflows,
+    List<ValidationFinding> findings,
+  ) {
     for (final t in machine.transitions) {
       // Check requiresWorkflowsComplete
       if (t.guard.requiresWorkflowsComplete != null) {
         for (final depWfType in t.guard.requiresWorkflowsComplete!) {
           if (!allWorkflows.containsKey(depWfType)) {
-            findings.add(ValidationFinding(
-              type: 'dangling_requires_workflows_complete',
-              message:
-                  'Transition "${t.id}"\'s guard.requiresWorkflowsComplete '
-                  'references "$depWfType", which is not a known workflow type '
-                  'in the loaded definitions set.',
-              location:
-                  '${machine.workflowType}/transitions/${t.id}/guard/'
-                  'requiresWorkflowsComplete',
-            ));
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_requires_workflows_complete',
+                message:
+                    'Transition "${t.id}"\'s guard.requiresWorkflowsComplete '
+                    'references "$depWfType", which is not a known workflow type '
+                    'in the loaded definitions set.',
+                location:
+                    '${machine.workflowType}/transitions/${t.id}/guard/'
+                    'requiresWorkflowsComplete',
+              ),
+            );
           }
         }
       }
@@ -204,17 +305,19 @@ class WorkflowValidator {
       // Check linkedWorkflowId (warning — may be external)
       if (t.linkedWorkflowId != null) {
         if (!allWorkflows.containsKey(t.linkedWorkflowId!)) {
-          findings.add(ValidationFinding(
-            type: 'dangling_linked_workflow_id',
-            message:
-                'Transition "${t.id}"\'s linkedWorkflowId '
-                '"${t.linkedWorkflowId}" is not a known workflow type in the '
-                'loaded definitions set. If this is an external workflow, '
-                'this warning can be ignored.',
-            location:
-                '${machine.workflowType}/transitions/${t.id}/linkedWorkflowId',
-            isWarning: true,
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_linked_workflow_id',
+              message:
+                  'Transition "${t.id}"\'s linkedWorkflowId '
+                  '"${t.linkedWorkflowId}" is not a known workflow type in the '
+                  'loaded definitions set. If this is an external workflow, '
+                  'this warning can be ignored.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/linkedWorkflowId',
+              isWarning: true,
+            ),
+          );
         }
       }
 
@@ -231,18 +334,20 @@ class WorkflowValidator {
 
         for (final personaId in t.guard.allowedPersonaIds!) {
           if (!knownPersonaIds!.contains(personaId)) {
-            findings.add(ValidationFinding(
-              type: 'dangling_allowed_persona_id',
-              message:
-                  'Transition "${t.id}"\'s guard.allowedPersonaIds references '
-                  '"$personaId", which does not appear in the known persona '
-                  'registry. This may indicate a typo or a persona ID that '
-                  'was not declared anywhere.',
-              location:
-                  '${machine.workflowType}/transitions/${t.id}/guard/'
-                  'allowedPersonaIds',
-              isWarning: true,
-            ));
+            findings.add(
+              ValidationFinding(
+                type: 'dangling_allowed_persona_id',
+                message:
+                    'Transition "${t.id}"\'s guard.allowedPersonaIds references '
+                    '"$personaId", which does not appear in the known persona '
+                    'registry. This may indicate a typo or a persona ID that '
+                    'was not declared anywhere.',
+                location:
+                    '${machine.workflowType}/transitions/${t.id}/guard/'
+                    'allowedPersonaIds',
+                isWarning: true,
+              ),
+            );
           }
         }
       }
@@ -251,28 +356,32 @@ class WorkflowValidator {
       if (t.guard.actorInList != null) {
         final key = t.guard.actorInList!.key;
         if (!machine.instanceDataSchema.containsKey(key)) {
-          findings.add(ValidationFinding(
-            type: 'dangling_instance_data_key',
-            message:
-                'Transition "${t.id}"\'s guard.actorInList references '
-                '"$key", which is not declared in instanceDataSchema.',
-            location:
-                '${machine.workflowType}/transitions/${t.id}/guard/actorInList',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_instance_data_key',
+              message:
+                  'Transition "${t.id}"\'s guard.actorInList references '
+                  '"$key", which is not declared in instanceDataSchema.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/guard/actorInList',
+            ),
+          );
         }
       }
       if (t.guard.instanceDataEquals != null) {
         final key = t.guard.instanceDataEquals!.key;
         if (!machine.instanceDataSchema.containsKey(key)) {
-          findings.add(ValidationFinding(
-            type: 'dangling_instance_data_key',
-            message:
-                'Transition "${t.id}"\'s guard.instanceDataEquals references '
-                '"$key", which is not declared in instanceDataSchema.',
-            location:
-                '${machine.workflowType}/transitions/${t.id}/guard/'
-                'instanceDataEquals',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_instance_data_key',
+              message:
+                  'Transition "${t.id}"\'s guard.instanceDataEquals references '
+                  '"$key", which is not declared in instanceDataSchema.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/guard/'
+                  'instanceDataEquals',
+            ),
+          );
         }
       }
 
@@ -283,14 +392,27 @@ class WorkflowValidator {
         final effect = t.effects[i];
         if (effect.key == null) continue;
         if (!machine.instanceDataSchema.containsKey(effect.key)) {
-          findings.add(ValidationFinding(
-            type: 'dangling_instance_data_key',
-            message:
-                'Transition "${t.id}"\'s effect[$i] references "${effect.key}", '
-                'which is not declared in instanceDataSchema.',
-            location:
-                '${machine.workflowType}/transitions/${t.id}/effects[$i]',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_instance_data_key',
+              message:
+                  'Transition "${t.id}"\'s effect[$i] references "${effect.key}", '
+                  'which is not declared in instanceDataSchema.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/effects[$i]',
+            ),
+          );
+        } else if (machine.instanceDataSchema[effect.key]?.formula != null) {
+          findings.add(
+            ValidationFinding(
+              type: 'computed_field_written_by_effect',
+              message:
+                  'Transition "${t.id}"\'s effect[$i] attempts to write computed '
+                  'field "${effect.key}". Computed fields are read-only.',
+              location:
+                  '${machine.workflowType}/transitions/${t.id}/effects[$i]',
+            ),
+          );
         }
       }
     }
@@ -300,8 +422,9 @@ class WorkflowValidator {
   // Dependency cycles (§7c): DFS on requiresWorkflowsComplete graph
   // ---------------------------------------------------------------------------
   void _checkDependencyCycles(
-      Map<String, LoomWorkflowStateMachine> workflows,
-      List<ValidationFinding> findings) {
+    Map<String, LoomWorkflowStateMachine> workflows,
+    List<ValidationFinding> findings,
+  ) {
     // Build adjacency map from requiresWorkflowsComplete
     final adj = <String, Set<String>>{};
     for (final entry in workflows.entries) {
@@ -335,13 +458,15 @@ class WorkflowValidator {
             cur = parent[cur]!;
           }
           cycle.add(neighbor);
-          findings.add(ValidationFinding(
-            type: 'dependency_cycle',
-            message:
-                'Dependency cycle detected in requiresWorkflowsComplete: '
-                '${cycle.reversed.join(' → ')}',
-            location: 'requiresWorkflowsComplete graph',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dependency_cycle',
+              message:
+                  'Dependency cycle detected in requiresWorkflowsComplete: '
+                  '${cycle.reversed.join(' → ')}',
+              location: 'requiresWorkflowsComplete graph',
+            ),
+          );
           return false;
         }
         if ((color[neighbor] ?? white) == white) {
@@ -364,16 +489,20 @@ class WorkflowValidator {
   // Missing labels (§7c): every transition must have a label
   // ---------------------------------------------------------------------------
   void _checkMissingLabels(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     for (final t in machine.transitions) {
       if (t.label.isEmpty) {
-        findings.add(ValidationFinding(
-          type: 'missing_label',
-          message:
-              'Transition "${t.id}" has no label. Every transition must have '
-              'a non-empty label for button display text.',
-          location: '${machine.workflowType}/transitions/${t.id}',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'missing_label',
+            message:
+                'Transition "${t.id}" has no label. Every transition must have '
+                'a non-empty label for button display text.',
+            location: '${machine.workflowType}/transitions/${t.id}',
+          ),
+        );
       }
     }
   }
@@ -382,31 +511,37 @@ class WorkflowValidator {
   // Binding cap (§2a, §7c): ≤32 renderBindings, ≤16 distinct roles
   // ---------------------------------------------------------------------------
   void _checkBindingCap(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     final bindingCount = machine.renderBindings.length;
     if (bindingCount > 32) {
-      findings.add(ValidationFinding(
-        type: 'binding_cap_exceeded',
-        message:
-            'Workflow "${machine.workflowType}" has $bindingCount renderBindings '
-            '(cap is 32). This many bindings almost always indicates two '
-            'workflows that should be separated.',
-        location: '${machine.workflowType}/renderBindings',
-        isWarning: true,
-      ));
+      findings.add(
+        ValidationFinding(
+          type: 'binding_cap_exceeded',
+          message:
+              'Workflow "${machine.workflowType}" has $bindingCount renderBindings '
+              '(cap is 32). This many bindings almost always indicates two '
+              'workflows that should be separated.',
+          location: '${machine.workflowType}/renderBindings',
+          isWarning: true,
+        ),
+      );
     }
 
     final roles = machine.renderBindings.map((b) => b.role).toSet();
     if (roles.length > 16) {
-      findings.add(ValidationFinding(
-        type: 'binding_cap_exceeded',
-        message:
-            'Workflow "${machine.workflowType}" declares ${roles.length} '
-            'distinct roles (cap is 16). This many roles is a smell — '
-            'consider splitting into multiple workflows.',
-        location: '${machine.workflowType}/renderBindings',
-        isWarning: true,
-      ));
+      findings.add(
+        ValidationFinding(
+          type: 'binding_cap_exceeded',
+          message:
+              'Workflow "${machine.workflowType}" declares ${roles.length} '
+              'distinct roles (cap is 16). This many roles is a smell — '
+              'consider splitting into multiple workflows.',
+          location: '${machine.workflowType}/renderBindings',
+          isWarning: true,
+        ),
+      );
     }
   }
 
@@ -415,42 +550,50 @@ class WorkflowValidator {
   //   Every bindingKind:"primary" template must include WorkflowActionButtonRow
   // ---------------------------------------------------------------------------
   void _checkActionButtonRow(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     for (final binding in machine.renderBindings) {
       if (binding.bindingKind != 'primary') continue;
 
       final template = templates![binding.cardSurfaceFamily];
       if (template == null) {
-        findings.add(ValidationFinding(
-          type: 'missing_template',
-          message:
-              'Card surface family "${binding.cardSurfaceFamily}" used by '
-              'renderBinding for states [${binding.states.join(', ')}] '
-              '(role: ${binding.role}) has no registered template.',
-          location:
-              '${machine.workflowType}/renderBindings/${binding.cardSurfaceFamily}',
-          isWarning: true,
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'missing_template',
+            message:
+                'Card surface family "${binding.cardSurfaceFamily}" used by '
+                'renderBinding for states [${binding.states.join(', ')}] '
+                '(role: ${binding.role}) has no registered template.',
+            location:
+                '${machine.workflowType}/renderBindings/${binding.cardSurfaceFamily}',
+            isWarning: true,
+          ),
+        );
         continue;
       }
 
       final slots =
-          (template['slots'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              <String>[];
+          (template['slots'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          <String>[];
 
       if (!slots.contains('WorkflowActionButtonRow')) {
-        findings.add(ValidationFinding(
-          type: 'missing_action_button_row',
-          message:
-              'Primary binding "${binding.cardSurfaceFamily}" for states '
-              '[${binding.states.join(', ')}] (role: ${binding.role}) is '
-              'missing the mandatory WorkflowActionButtonRow slot. '
-              'Every primary-binding template must include exactly one '
-              'WorkflowActionButtonRow (§7d).',
-          location:
-              '${machine.workflowType}/renderBindings/${binding.cardSurfaceFamily}/'
-              'WorkflowActionButtonRow',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'missing_action_button_row',
+            message:
+                'Primary binding "${binding.cardSurfaceFamily}" for states '
+                '[${binding.states.join(', ')}] (role: ${binding.role}) is '
+                'missing the mandatory WorkflowActionButtonRow slot. '
+                'Every primary-binding template must include exactly one '
+                'WorkflowActionButtonRow (§7d).',
+            location:
+                '${machine.workflowType}/renderBindings/${binding.cardSurfaceFamily}/'
+                'WorkflowActionButtonRow',
+          ),
+        );
       }
     }
   }
@@ -459,7 +602,9 @@ class WorkflowValidator {
   // editableFields only references writableBy:"formEntry" keys (§7a-i)
   // ---------------------------------------------------------------------------
   void _checkEditableFieldsReferences(
-      LoomWorkflowStateMachine machine, List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    List<ValidationFinding> findings,
+  ) {
     for (final entry in machine.states.entries) {
       final stateName = entry.key;
       final state = entry.value;
@@ -469,28 +614,32 @@ class WorkflowValidator {
       for (final fieldName in state.editableFields!) {
         final field = machine.instanceDataSchema[fieldName];
         if (field == null) {
-          findings.add(ValidationFinding(
-            type: 'dangling_instance_data_key',
-            message:
-                'State "$stateName" editableFields references "$fieldName", '
-                'which is not declared in instanceDataSchema.',
-            location:
-                '${machine.workflowType}/states/$stateName/editableFields',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'dangling_instance_data_key',
+              message:
+                  'State "$stateName" editableFields references "$fieldName", '
+                  'which is not declared in instanceDataSchema.',
+              location:
+                  '${machine.workflowType}/states/$stateName/editableFields',
+            ),
+          );
           continue;
         }
 
         if (field.writableBy != 'formEntry') {
-          findings.add(ValidationFinding(
-            type: 'effect_field_in_editable_fields',
-            message:
-                'State "$stateName" editableFields references "$fieldName", '
-                'which is writableBy: "${field.writableBy ?? 'unspecified'}" — '
-                'only writableBy: "formEntry" fields may appear in editableFields '
-                '(§7a-i).',
-            location:
-                '${machine.workflowType}/states/$stateName/editableFields',
-          ));
+          findings.add(
+            ValidationFinding(
+              type: 'effect_field_in_editable_fields',
+              message:
+                  'State "$stateName" editableFields references "$fieldName", '
+                  'which is writableBy: "${field.writableBy ?? 'unspecified'}" — '
+                  'only writableBy: "formEntry" fields may appear in editableFields '
+                  '(§7a-i).',
+              location:
+                  '${machine.workflowType}/states/$stateName/editableFields',
+            ),
+          );
         }
       }
     }
@@ -500,12 +649,15 @@ class WorkflowValidator {
   // sortable table column without backing sortable:true field (§3b, §7c)
   // ---------------------------------------------------------------------------
   void _checkSortableFieldReferences(
-      LoomWorkflowStateMachine machine,
-      Map<String, dynamic> tableConfig,
-      List<ValidationFinding> findings) {
+    LoomWorkflowStateMachine machine,
+    Map<String, dynamic> tableConfig,
+    List<ValidationFinding> findings,
+  ) {
     final columns =
-        (tableConfig['columns'] as List<dynamic>?)?.map((e) => e as Map<String, dynamic>).toList() ??
-            <Map<String, dynamic>>[];
+        (tableConfig['columns'] as List<dynamic>?)
+            ?.map((e) => e as Map<String, dynamic>)
+            .toList() ??
+        <Map<String, dynamic>>[];
 
     for (final col in columns) {
       final key = col['key'] as String?;
@@ -515,28 +667,30 @@ class WorkflowValidator {
 
       final field = machine.instanceDataSchema[key];
       if (field == null) {
-        findings.add(ValidationFinding(
-          type: 'dangling_instance_data_key',
-          message:
-              'Table archetype column "$key" is declared sortable but the key '
-              'is not declared in instanceDataSchema.',
-          location:
-              'tableConfig/${machine.workflowType}/columns/$key',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'dangling_instance_data_key',
+            message:
+                'Table archetype column "$key" is declared sortable but the key '
+                'is not declared in instanceDataSchema.',
+            location: 'tableConfig/${machine.workflowType}/columns/$key',
+          ),
+        );
         continue;
       }
 
       if (!field.sortable) {
-        findings.add(ValidationFinding(
-          type: 'sortable_column_without_backing_field',
-          message:
-              'Table archetype column "$key" is declared sortable:true but '
-              'the instanceDataSchema field "$key" has sortable:false. '
-              'A sortable column requires the backing field to also declare '
-              'sortable:true (§3b).',
-          location:
-              'tableConfig/${machine.workflowType}/columns/$key',
-        ));
+        findings.add(
+          ValidationFinding(
+            type: 'sortable_column_without_backing_field',
+            message:
+                'Table archetype column "$key" is declared sortable:true but '
+                'the instanceDataSchema field "$key" has sortable:false. '
+                'A sortable column requires the backing field to also declare '
+                'sortable:true (§3b).',
+            location: 'tableConfig/${machine.workflowType}/columns/$key',
+          ),
+        );
       }
     }
   }
