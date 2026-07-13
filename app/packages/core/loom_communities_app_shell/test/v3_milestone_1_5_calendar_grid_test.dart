@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:loom_communities_app_shell/loom_communities_app_shell.dart';
 
+Widget _host(Widget child) => MaterialApp(home: Scaffold(body: child));
+
 LoomWorkflowDefinition _event(String id, DateTime date) =>
     LoomWorkflowDefinition(
       workflowId: id,
@@ -21,8 +23,8 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: CalendarMonthGrid(
+      _host(
+        CalendarMonthGrid(
           workflows: [
             _event('a', DateTime(2026, 7, 12)),
             _event('b', DateTime(2026, 7, 12)),
@@ -50,8 +52,8 @@ void main() {
   });
   testWidgets('different dates use distinct calendar cells', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: CalendarMonthGrid(
+      _host(
+        CalendarMonthGrid(
           workflows: [
             _event('a', DateTime(2026, 7, 12)),
             _event('b', DateTime(2026, 7, 13)),
@@ -74,5 +76,42 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+  testWidgets('tapping an event reveals its existing detail content', (
+    tester,
+  ) async {
+    final event = _event('detail', DateTime(2026, 7, 12));
+    String? selected;
+    await tester.pumpWidget(
+      _host(
+        StatefulBuilder(
+          builder: (context, setState) => Column(
+            children: [
+              Expanded(
+                child: CalendarMonthGrid(
+                  workflows: [event],
+                  onSelect: (id) => setState(() => selected = id),
+                ),
+              ),
+              if (selected != null)
+                CalendarEventDetail(
+                  accent: Colors.blue,
+                  workflow: event,
+                  personaId: 'member',
+                  onTransitionApplied: (_, __) async {},
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('calendar-grid-event-detail')));
+    await tester.pump();
+    expect(
+      find.byKey(const ValueKey('calendar-event-detail-detail')),
+      findsOneWidget,
+    );
+    expect(find.text('Host detail'), findsOneWidget);
+    expect(find.text('Room detail'), findsOneWidget);
   });
 }

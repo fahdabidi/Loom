@@ -2010,7 +2010,7 @@ class _CalendarEventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isFocused) {
-      return _CalendarEventDetail(
+      return CalendarEventDetail(
         accent: accent,
         modernTheme: modernTheme,
         workflow: workflow,
@@ -2187,8 +2187,8 @@ class _CalendarAgendaDateStrip extends StatelessWidget {
   }
 }
 
-class _CalendarEventDetail extends StatefulWidget {
-  const _CalendarEventDetail({
+class CalendarEventDetail extends StatefulWidget {
+  const CalendarEventDetail({
     required this.accent,
     this.modernTheme,
     required this.workflow,
@@ -2212,10 +2212,10 @@ class _CalendarEventDetail extends StatefulWidget {
   final VoidCallback? onToggleReminder;
 
   @override
-  State<_CalendarEventDetail> createState() => _CalendarEventDetailState();
+  State<CalendarEventDetail> createState() => _CalendarEventDetailState();
 }
 
-class _CalendarEventDetailState extends State<_CalendarEventDetail> {
+class _CalendarEventDetailState extends State<CalendarEventDetail> {
   var _transitionInFlight = false;
 
   @override
