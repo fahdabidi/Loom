@@ -913,6 +913,16 @@ analyze` clean.
 ### Milestone 1.16 — Dashboard prioritization
 **Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
 
+**Implementation decision (2026-07-13): retain the fixed category order.** The candidate engine signals
+considered were unread notification counts, individual workflow deadlines/overdue status, pending
+approvals, and volunteer capacity. None is a shared, cross-category urgency model: their meanings,
+audiences, and available aggregates differ, so using any one to reorder all eleven information-
+architecture categories would introduce arbitrary policy and volatile navigation. Per-workflow ordering
+already uses each tab's data-driven `pinnedWorkflowIds`, which is the right scope for contextual
+prioritization. The Home copy has been corrected from “prioritized surfaces” to “curated surfaces” so it
+does not claim unsupported category-level behavior. This is the tracker's permitted documented no-build
+outcome; verification still needs to confirm the decision and copy change before closure.
+
 **Pre-dispatch investigation (verification agent):** the gap is specifically the fixed *category-level*
 Home-tab ordering (`_orderedSectionTitles`, `part03_workflow_sections.dart:76-88`) — per-workflow-card
 ordering within each category is already genuinely data-driven via `pinnedWorkflowIds` promotion

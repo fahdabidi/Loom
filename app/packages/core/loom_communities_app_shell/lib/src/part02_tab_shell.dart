@@ -4077,7 +4077,7 @@ class _HomeTabSurfaceStack extends StatelessWidget {
           icon: Icons.home_outlined,
           title: '${experience.displayName} home',
           body:
-              'A personalized community home with prioritized surfaces, theme tokens, and minimized/medium/expanded presentation.',
+              'A personalized community home with curated surfaces, theme tokens, and minimized/medium/expanded presentation.',
           accent: accent,
           modernTheme: modernTheme,
           facts: [
