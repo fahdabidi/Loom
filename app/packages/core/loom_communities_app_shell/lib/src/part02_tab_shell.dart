@@ -180,116 +180,105 @@ class _MessagesTabSurface extends StatefulWidget {
 }
 
 class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
+  static final _stores = <String, _MessagesEngineStore>{};
+
+  late final _MessagesEngineStore _store;
   final _composerController = TextEditingController();
-  String? _selectedThreadId;
-  final _readMessageIds = <String>{};
-  final _mutedThreadIds = <String>{};
-  final _archivedThreadIds = <String>{};
-  // Locally-authored replies keyed by threadId
-  final _localReplies = <String, List<LoomMessage>>{};
+  WorkflowInstance? _selectedThread;
+  var _loaded = false;
+  var _visibleThreadCount = 0;
+  String? _loadError;
 
-  List<LoomMessageThread> get _threads => widget.experience.threads ?? const [];
-
-  List<LoomMessageThread> get _visibleThreads {
-    return _threads
-        .where(
-          (thread) =>
-              thread.participantPersonaIds.contains(widget.persona.personaId) &&
-              !_archivedThreadIds.contains(thread.threadId),
-        )
-        .toList();
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _MessagesEngineStore(
+        communityId: widget.experience.extensionId,
+        seedThreads: widget.experience.threads,
+      ),
+    );
+    unawaited(_load());
   }
 
-  LoomMessageThread? get _selectedThread {
-    if (_selectedThreadId == null) return null;
-    try {
-      final base = _threads.firstWhere(
-        (thread) => thread.threadId == _selectedThreadId,
-      );
-      final replies = _localReplies[_selectedThreadId] ?? const [];
-      return base.copyWith(messages: [...base.messages, ...replies]);
-    } catch (_) {
-      return null;
+  @override
+  void didUpdateWidget(_MessagesTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId) {
+      _selectedThread = null;
+      unawaited(_load());
     }
   }
 
-  bool _isUnread(String threadId) {
-    final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
-    return thread.messages.any(
-      (message) => !_readMessageIds.contains(message.messageId),
-    );
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final threads = await _store.threadsFor(widget.persona.personaId);
+      if (!mounted) return;
+      setState(() {
+        _visibleThreadCount = threads.length;
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = '$error';
+        _loaded = true;
+      });
+    }
   }
 
-  String _lastPreview(String threadId) {
-    final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
-    final last = thread.messages.isNotEmpty ? thread.messages.last.body : '';
-    return last.length > 60 ? '${last.substring(0, 57)}...' : last;
+  Future<void> _toggleThread(WorkflowInstance thread) async {
+    if (_selectedThread?.instanceId == thread.instanceId) {
+      setState(() => _selectedThread = null);
+      return;
+    }
+    await _store.markRead(thread: thread, personaId: widget.persona.personaId);
+    if (mounted) setState(() => _selectedThread = thread);
   }
 
-  void _toggleThread(String threadId) {
-    setState(() {
-      if (_selectedThreadId == threadId) {
-        _selectedThreadId = null;
-      } else {
-        _selectedThreadId = threadId;
-        // Mark all messages as read
-        final thread = _threads.firstWhere(
-          (thread) => thread.threadId == threadId,
-        );
-        for (final message in thread.messages) {
-          _readMessageIds.add(message.messageId);
-        }
-        final replies = _localReplies[threadId];
-        if (replies != null) {
-          for (final message in replies) {
-            _readMessageIds.add(message.messageId);
-          }
-        }
-      }
-    });
-  }
-
-  void _sendReply() {
+  Future<void> _sendReply() async {
     final text = _composerController.text.trim();
-    if (text.isEmpty || _selectedThreadId == null) return;
-    final message = LoomMessage(
-      messageId: 'local-${DateTime.now().millisecondsSinceEpoch}',
-      senderPersonaId: widget.persona.personaId,
+    final thread = _selectedThread;
+    if (text.isEmpty || thread == null) return;
+    await _store.postMessage(
+      thread: thread,
       body: text,
-      timestamp: DateTime.now(),
+      personaId: widget.persona.personaId,
     );
-    setState(() {
-      _localReplies.update(
-        _selectedThreadId!,
-        (list) => [...list, message],
-        ifAbsent: () => [message],
-      );
-      _readMessageIds.add(message.messageId);
-      _composerController.clear();
-    });
+    _composerController.clear();
+    final refreshed = await _store.threadById(
+      thread.instanceId,
+      widget.persona.personaId,
+    );
+    if (mounted && refreshed != null)
+      setState(() => _selectedThread = refreshed);
   }
 
-  void _toggleMute(String threadId) {
-    setState(() {
-      if (_mutedThreadIds.contains(threadId)) {
-        _mutedThreadIds.remove(threadId);
-      } else {
-        _mutedThreadIds.add(threadId);
-      }
-    });
+  Future<void> _toggleMute(WorkflowInstance thread) async {
+    await _store.setMuted(
+      thread: thread,
+      muted: !_store.isMuted(thread),
+      personaId: widget.persona.personaId,
+    );
+    final refreshed = await _store.threadById(
+      thread.instanceId,
+      widget.persona.personaId,
+    );
+    if (mounted && refreshed != null)
+      setState(() => _selectedThread = refreshed);
   }
 
-  void _toggleArchive(String threadId) {
-    setState(() {
-      if (_archivedThreadIds.contains(threadId)) {
-        _archivedThreadIds.remove(threadId);
-      } else {
-        _archivedThreadIds.add(threadId);
-        if (_selectedThreadId == threadId) {
-          _selectedThreadId = null;
-        }
-      }
-    });
+  Future<void> _toggleArchive(WorkflowInstance thread) async {
+    await _store.setArchived(
+      thread: thread,
+      archived: !_store.isArchived(thread),
+      personaId: widget.persona.personaId,
+    );
+    if (mounted) setState(() => _selectedThread = null);
+    await _load();
   }
 
   @override
@@ -302,23 +291,28 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   Widget build(BuildContext context) {
     final foreground =
         widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
-    final visibleThreads = _visibleThreads;
-    if (_selectedThread != null) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(_loadError!, key: const ValueKey('messages-load-error'));
+    }
+    final selectedThread = _selectedThread;
+    if (selectedThread != null) {
+      final thread = _store.toThread(selectedThread);
       return _ThreadDetailView(
-        thread: _selectedThread!,
+        thread: thread,
         foreground: foreground,
         accent: widget.accent,
         modernTheme: widget.modernTheme,
         personaId: widget.persona.personaId,
         composerController: _composerController,
-        muted: _mutedThreadIds.contains(_selectedThreadId!),
+        muted: _store.isMuted(selectedThread),
         onSend: _sendReply,
-        onBack: () => setState(() => _selectedThreadId = null),
-        onToggleMute: () => _toggleMute(_selectedThreadId!),
-        onToggleArchive: () => _toggleArchive(_selectedThreadId!),
+        onBack: () => setState(() => _selectedThread = null),
+        onToggleMute: () => unawaited(_toggleMute(selectedThread)),
+        onToggleArchive: () => unawaited(_toggleArchive(selectedThread)),
       );
     }
-    if (visibleThreads.isEmpty) {
+    if (_visibleThreadCount == 0) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -378,7 +372,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
                     ),
                   ),
                   Text(
-                    '${visibleThreads.length} thread${visibleThreads.length == 1 ? '' : 's'}',
+                    '$_visibleThreadCount thread${_visibleThreadCount == 1 ? '' : 's'}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: foreground.withValues(alpha: 0.80),
                     ),
@@ -388,75 +382,100 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
             ),
           ),
         ),
-        // Unrolled inbox list (no Expanded/ListView — parent is
-        // SingleChildScrollView via _TabNativeRenderer)
-        for (final thread in visibleThreads) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-            child: InkWell(
-              key: ValueKey('messages-inbox-item-${thread.threadId}'),
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => _toggleThread(thread.threadId),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: foreground.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: foreground.withValues(alpha: 0.14)),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: foreground.withValues(alpha: 0.14),
-                    child: Icon(
-                      _mutedThreadIds.contains(thread.threadId)
-                          ? Icons.volume_off_outlined
-                          : Icons.mark_chat_unread_outlined,
-                      color: foreground,
-                      size: 20,
+        RepeaterSurface.live(
+          key: ValueKey('messages-repeater-${widget.persona.personaId}'),
+          refreshInterval: const Duration(milliseconds: 50),
+          querySource: RepeaterQuerySource(
+            engine: _store.engine,
+            workflowType: _MessagesEngineStore.workflowType,
+            personaId: widget.persona.personaId,
+            tabId: 'messages',
+          ),
+          listShrinkWrap: true,
+          listScrollable: false,
+          itemBuilder: (context, item) {
+            final instance = item as WorkflowInstance;
+            final thread = _store.toThread(instance);
+            if (!_store.isVisibleTo(instance, widget.persona.personaId) ||
+                _store.isArchived(instance)) {
+              return const SizedBox.shrink();
+            }
+            final unread = _store.isUnread(instance, widget.persona.personaId);
+            final preview = _store.lastPreview(instance);
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: InkWell(
+                key: ValueKey('messages-inbox-item-${thread.threadId}'),
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => unawaited(_toggleThread(instance)),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: foreground.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: foreground.withValues(alpha: 0.14),
                     ),
                   ),
-                  title: Row(
-                    children: [
-                      if (_isUnread(thread.threadId)) ...[
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: widget.modernTheme?.accent ?? widget.accent,
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: foreground.withValues(alpha: 0.14),
+                      child: Icon(
+                        _store.isMuted(instance)
+                            ? Icons.volume_off_outlined
+                            : Icons.mark_chat_unread_outlined,
+                        color: foreground,
+                        size: 20,
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        if (unread) ...[
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color:
+                                  widget.modernTheme?.accent ?? widget.accent,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(
+                          child: Text(
+                            thread.subject,
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontWeight: unread
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
+                                ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
                       ],
-                      Expanded(
-                        child: Text(
-                          thread.subject,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(
-                                color: foreground,
-                                fontWeight: _isUnread(thread.threadId)
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                    ),
+                    subtitle: Text(
+                      preview,
+                      style: TextStyle(
+                        color: foreground.withValues(alpha: 0.80),
                       ),
-                    ],
-                  ),
-                  subtitle: Text(
-                    _lastPreview(thread.threadId),
-                    style: TextStyle(color: foreground.withValues(alpha: 0.80)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Text(
-                    '${thread.messages.length}',
-                    style: TextStyle(color: foreground.withValues(alpha: 0.72)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      '${thread.messages.length}',
+                      style: TextStyle(
+                        color: foreground.withValues(alpha: 0.72),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ],
     );
   }
@@ -653,6 +672,351 @@ class _ThreadDetailView extends StatelessWidget {
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute $period';
   }
+}
+
+class _MessagesEngineStore {
+  _MessagesEngineStore({
+    required this.communityId,
+    List<LoomMessageThread>? seedThreads,
+  }) : _seedThreads = seedThreads ?? _tabletopSeedThreads;
+
+  static const workflowType = 'discussion-thread';
+  static const messageWorkflowType = 'discussion-message';
+  static final _tabletopSeedThreads = <LoomMessageThread>[
+    LoomMessageThread(
+      threadId: 'tabletop-campaign-night',
+      subject: 'Campaign night: table assignments',
+      participantPersonaIds: [
+        'tabletop-member',
+        'tabletop-member-owner',
+        'tabletop-organizer',
+      ],
+      messages: [
+        LoomMessage(
+          messageId: 'tabletop-1',
+          senderPersonaId: 'tabletop-organizer',
+          body: 'Tables are set for Friday. Please confirm your seat.',
+          timestamp: DateTime(2026, 7, 10, 18),
+        ),
+      ],
+    ),
+    LoomMessageThread(
+      threadId: 'tabletop-library',
+      subject: 'Library game suggestions',
+      participantPersonaIds: [
+        'tabletop-member',
+        'tabletop-member-owner',
+        'tabletop-organizer',
+      ],
+      messages: [
+        LoomMessage(
+          messageId: 'tabletop-2',
+          senderPersonaId: 'tabletop-member',
+          body: 'I would love to try Cascadia next month.',
+          timestamp: DateTime(2026, 7, 9, 16, 30),
+        ),
+      ],
+    ),
+    LoomMessageThread(
+      threadId: 'tabletop-volunteers',
+      subject: 'Teach-a-game volunteer sign-up',
+      participantPersonaIds: [
+        'tabletop-member',
+        'tabletop-member-owner',
+        'tabletop-organizer',
+      ],
+      messages: [
+        LoomMessage(
+          messageId: 'tabletop-3',
+          senderPersonaId: 'tabletop-organizer',
+          body: 'Thanks for helping new members learn a game.',
+          timestamp: DateTime(2026, 7, 8, 12),
+        ),
+      ],
+    ),
+  ];
+
+  final String communityId;
+  final List<LoomMessageThread> _seedThreads;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  WorkflowEngineApi get engine => _engine;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    _engine.registerDefinition(_messageMachine);
+    for (final thread in _seedThreads) {
+      await _engine.createInstance(
+        workflowType: workflowType,
+        personaId:
+            thread.messages.firstOrNull?.senderPersonaId ??
+            'tabletop-organizer',
+        initialInstanceData: {
+          'threadId': thread.threadId,
+          'subject': thread.subject,
+          'participantPersonaIds': thread.participantPersonaIds,
+          'messages': [
+            for (final message in thread.messages)
+              {
+                'messageId': message.messageId,
+                'senderPersonaId': message.senderPersonaId,
+                'body': message.body,
+                'timestamp': message.timestamp.toUtc().toIso8601String(),
+              },
+          ],
+          'readByPersonaIds': const <String>[],
+          'muted': thread.muted,
+          'archived': thread.archived,
+          'draftBody': '',
+        },
+      );
+      for (final message in thread.messages) {
+        await _engine.createInstance(
+          workflowType: messageWorkflowType,
+          personaId: message.senderPersonaId,
+          initialInstanceData: {
+            'threadId': thread.threadId,
+            'messageId': message.messageId,
+            'senderPersonaId': message.senderPersonaId,
+            'body': message.body,
+            'timestamp': message.timestamp.toUtc().toIso8601String(),
+          },
+        );
+      }
+    }
+    _ready = true;
+  }
+
+  Future<List<WorkflowInstance>> threadsFor(String personaId) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: 'messages',
+      personaId: personaId,
+      limit: 1000,
+      query: const SurfaceQuery(sort: SortSpec(key: 'subject')),
+    );
+    return page.items
+        .where(
+          (thread) =>
+              thread.workflowType == workflowType &&
+              isVisibleTo(thread, personaId) &&
+              !isArchived(thread),
+        )
+        .toList(growable: false);
+  }
+
+  Future<WorkflowInstance?> threadById(
+    String instanceId,
+    String personaId,
+  ) async {
+    final page = await _engine.queryInstances(
+      tabId: 'messages',
+      personaId: personaId,
+      limit: 1000,
+    );
+    for (final thread in page.items) {
+      if (thread.instanceId == instanceId) return thread;
+    }
+    return null;
+  }
+
+  Future<void> markRead({
+    required WorkflowInstance thread,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: workflowType,
+    instanceId: thread.instanceId,
+    transitionId: 'mark-read',
+    personaId: personaId,
+  );
+
+  Future<void> postMessage({
+    required WorkflowInstance thread,
+    required String body,
+    required String personaId,
+  }) async {
+    await _engine.updateInstanceFields(
+      workflowType: workflowType,
+      instanceId: thread.instanceId,
+      fieldUpdates: {'draftBody': body},
+      personaId: personaId,
+    );
+    await _engine.applyTransition(
+      workflowType: workflowType,
+      instanceId: thread.instanceId,
+      transitionId: 'post-message',
+      personaId: personaId,
+    );
+  }
+
+  Future<void> setMuted({
+    required WorkflowInstance thread,
+    required bool muted,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: thread.instanceId,
+    fieldUpdates: {'muted': muted},
+    personaId: personaId,
+  );
+
+  Future<void> setArchived({
+    required WorkflowInstance thread,
+    required bool archived,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: workflowType,
+    instanceId: thread.instanceId,
+    fieldUpdates: {'archived': archived},
+    personaId: personaId,
+  );
+
+  bool isVisibleTo(WorkflowInstance thread, String personaId) =>
+      (thread.instanceData['participantPersonaIds'] as List? ?? const [])
+          .contains(personaId);
+  bool isMuted(WorkflowInstance thread) => thread.instanceData['muted'] == true;
+  bool isArchived(WorkflowInstance thread) =>
+      thread.instanceData['archived'] == true;
+  bool isUnread(WorkflowInstance thread, String personaId) =>
+      !(thread.instanceData['readByPersonaIds'] as List? ?? const []).contains(
+        personaId,
+      );
+  String lastPreview(WorkflowInstance thread) {
+    final messages = _messages(thread);
+    final text = messages.isEmpty ? '' : messages.last.body;
+    return text.length > 60 ? '${text.substring(0, 57)}...' : text;
+  }
+
+  LoomMessageThread toThread(WorkflowInstance thread) => LoomMessageThread(
+    threadId: thread.instanceId,
+    subject: '${thread.instanceData['subject'] ?? ''}',
+    participantPersonaIds: [
+      for (final id
+          in thread.instanceData['participantPersonaIds'] as List? ?? const [])
+        '$id',
+    ],
+    messages: _messages(thread),
+    muted: isMuted(thread),
+    archived: isArchived(thread),
+  );
+
+  List<LoomMessage> _messages(WorkflowInstance thread) => [
+    for (final raw in thread.instanceData['messages'] as List? ?? const [])
+      if (raw is Map)
+        LoomMessage(
+          messageId: '${raw['messageId'] ?? ''}',
+          senderPersonaId: '${raw['senderPersonaId'] ?? ''}',
+          body: '${raw['body'] ?? ''}',
+          timestamp:
+              DateTime.tryParse('${raw['timestamp'] ?? ''}')?.toLocal() ??
+              DateTime.fromMillisecondsSinceEpoch(0),
+        ),
+  ];
+
+  static final _machine = const LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'open',
+    states: const {
+      'open': LoomWorkflowState(
+        label: 'Open',
+        editableFields: ['draftBody', 'muted', 'archived'],
+      ),
+    },
+    transitions: const [
+      LoomWorkflowTransition(
+        id: 'mark-read',
+        label: 'Mark read',
+        from: ['open'],
+        to: 'open',
+        effects: [
+          WorkflowEffect(
+            op: 'appendUnique',
+            key: 'readByPersonaIds',
+            value: r'$actor',
+          ),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'post-message',
+        label: 'Post message',
+        from: ['open'],
+        to: 'open',
+        effects: [
+          WorkflowEffect(
+            op: 'append',
+            key: 'messages',
+            value: {
+              'messageId': r'$timestamp-$actor',
+              'senderPersonaId': r'$actor',
+              'body': '{draftBody}',
+              'timestamp': r'$timestamp',
+            },
+          ),
+          WorkflowEffect(
+            op: 'createInstance',
+            workflowType: messageWorkflowType,
+            fields: {
+              'threadId': '{threadId}',
+              'messageId': r'$timestamp-$actor',
+              'senderPersonaId': r'$actor',
+              'body': '{draftBody}',
+              'timestamp': r'$timestamp',
+            },
+          ),
+          WorkflowEffect(op: 'set', key: 'draftBody', value: ''),
+        ],
+      ),
+    ],
+    renderBindings: const [
+      RenderBinding(
+        states: ['open'],
+        role: 'any',
+        tabId: 'messages',
+        cardSurfaceFamily: 'discussionThread',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: const {
+      'threadId': InstanceDataField(type: 'string', required: true),
+      'subject': InstanceDataField(
+        type: 'text',
+        required: true,
+        searchable: true,
+        sortable: true,
+      ),
+      'participantPersonaIds': InstanceDataField(type: 'list', required: true),
+      'messages': InstanceDataField(type: 'list', writableBy: 'effect'),
+      'readByPersonaIds': InstanceDataField(type: 'list', writableBy: 'effect'),
+      'muted': InstanceDataField(type: 'boolean'),
+      'archived': InstanceDataField(type: 'boolean'),
+      'draftBody': InstanceDataField(type: 'text'),
+    },
+  );
+
+  static final _messageMachine = const LoomWorkflowStateMachine(
+    workflowType: messageWorkflowType,
+    initialState: 'posted',
+    states: const {'posted': LoomWorkflowState(label: 'Posted')},
+    transitions: const [],
+    instanceDataSchema: const {
+      'threadId': InstanceDataField(type: 'string', required: true),
+      'messageId': InstanceDataField(type: 'string', required: true),
+      'senderPersonaId': InstanceDataField(type: 'string', required: true),
+      'body': InstanceDataField(type: 'text', required: true, searchable: true),
+      'timestamp': InstanceDataField(type: 'text', required: true),
+    },
+  );
 }
 
 typedef _WorkflowSurfaceBuilder =

@@ -24,6 +24,8 @@ class RepeaterSurface extends StatefulWidget {
   final double gridCrossAxisSpacing;
   final bool gridShrinkWrap;
   final bool gridScrollable;
+  final bool listShrinkWrap;
+  final bool listScrollable;
 
   const RepeaterSurface.static({
     super.key,
@@ -38,6 +40,8 @@ class RepeaterSurface extends StatefulWidget {
     this.gridCrossAxisSpacing = 0,
     this.gridShrinkWrap = false,
     this.gridScrollable = true,
+    this.listShrinkWrap = false,
+    this.listScrollable = true,
   }) : staticItems = items,
        querySource = null,
        refreshInterval = Duration.zero;
@@ -56,6 +60,8 @@ class RepeaterSurface extends StatefulWidget {
     this.gridCrossAxisSpacing = 0,
     this.gridShrinkWrap = false,
     this.gridScrollable = true,
+    this.listShrinkWrap = false,
+    this.listScrollable = true,
   }) : staticItems = null;
 
   @override
@@ -153,6 +159,10 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
       );
     }
     return ListView.builder(
+      shrinkWrap: widget.listShrinkWrap,
+      physics: widget.listScrollable
+          ? null
+          : const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       itemBuilder: (context, index) => _buildItem(context, items[index], index),
     );
