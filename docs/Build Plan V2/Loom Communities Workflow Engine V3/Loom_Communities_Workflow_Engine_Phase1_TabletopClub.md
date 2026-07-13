@@ -761,14 +761,48 @@ test.dart` **2/2**, full suite **22/22**, `flutter analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.13 — Audience/multi-select picker
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** the comma-split pattern this replaces is real,
 in `part20_mosque_engine.dart` ~line 109-119 (`_fieldValue()` special-cases `invitedPersonaIds`/
-`privateFieldKeys` fields by splitting a plain `TextField`'s text on `,`). Mosque's usage is untouched by
-this milestone. This milestone builds a new, reusable picker component for Tabletop Club plus a minimal
-concrete usage to test it against — not the full Tournament + Voting feature (§3), which is a separate,
-later flagship milestone (1.18) that will consume this component.
+`privateFieldKeys` fields by splitting a plain `TextField`'s text on `,`). Mosque's usage was untouched by
+this milestone. Built a new, reusable picker component for Tabletop Club plus a minimal concrete usage to
+test it against — not the full Tournament + Voting feature (§3), which is a separate, later flagship
+milestone (1.18) that will consume this component.
+- [x] New reusable `AudienceMultiSelectPicker` (new file, `part21_audience_multi_select_picker.dart`) —
+  a stateless, controlled component (`candidates` + `selectedPersonaIds` + `onChanged`), deliberately not
+  carrying its own state, so it can be dropped into the Tournament feature's eligibility list later
+  without rework. Selected members render as removable `InputChip`s; all candidates render as a
+  `CheckboxListTile` list.
+- [x] Wired into a new `_AudiencePickerTabSurface`/`_AudiencePickerEngineStore` for Tabletop Club
+  (`part02_tab_shell.dart:2382`/`2521`), following the established static-store pattern — a minimal
+  concrete usage (event-invite audience), not a new feature in its own right.
+- [x] Widget test (`v3_milestone_1_13_audience_picker_test.dart`) with 3 candidate members (Alex, Bea,
+  Cara): starts with Cara pre-invited, selects Alex (array becomes `[Alex, Cara]`, order preserved),
+  deletes Alex's chip (array returns to `[Cara]`) — asserts the actual resulting field value each time,
+  not just chip presence, and covers both select and deselect directions.
+- [x] `flutter analyze` clean; full app-shell suite **23/23** (including this milestone's 1 new test).
+
+**Implementation history:** built correctly (component design, wiring, and test were all sound), but the
+first test run surfaced a genuine engine-level bug: `_AudiencePickerEngineStore`'s `'editing'` state was
+declared with no `editableFields` list, so `updateInstanceFields` rejected every write to
+`invitedPersonaIds` with `WorkflowAuthorizationError: Field "invitedPersonaIds" is not editable in state
+"editing"` — even though the field's own schema declaration had no restriction. States must explicitly
+list which fields they permit editing (the same convention used by `LoomWorkflowState(editableFields:
+[...])` elsewhere in this file, e.g. Chess/Garden's `'draft'` states) — this one simply omitted it. The
+implementation agent's own sandbox hit both the sandboxed pub.dev network restriction (couldn't run the
+test itself) and a recurring `.git/index.lock`; correctly reported both rather than working around them,
+and a mid-session `apply_patch` failure on the test file was fully recovered from by the time of the
+final commit attempt (confirmed by reading the final file end-to-end — no partial/corrupted content).
+
+**Verification agent's fix:** added `editableFields: ['invitedPersonaIds']` to the `'editing'` state
+declaration — a one-line, fully-understood fix, applied directly rather than dispatching another round.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Read the picker, the surface, and the engine
+store directly before trusting the test; the authorization bug was only caught because the test was
+actually run, not assumed passing from a clean `analyze`. Independently re-ran after the fix:
+`v3_milestone_1_13_audience_picker_test.dart` **1/1**, full suite **23/23**, `flutter analyze` clean
+(commit `2ee3d9b`).
 - [ ] Real chip + checkable-member-list picker via Repeater, replacing the comma-separated `TextField`
   split-by-`,` pattern. Reused directly by the Tournament feature's RSVP-gated eligibility list (§3).
 - [ ] Widget test: selecting/deselecting a member updates the underlying array field correctly with
