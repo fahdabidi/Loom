@@ -998,6 +998,33 @@ actions asynchronously without touching the existing sync method's contract or a
 sites across other communities. Kickoff is staged: engine addition + Repeater wiring first, then the
 full feature, given the size (spans two packages) — dispatched with an explicit instruction not to
 attempt the live emulator walk itself; that's handled separately once automated coverage is verified.
+
+**Stage 1 — CLOSED 2026-07-13 (Stage 2 and the live emulator walk remain open; milestone stays `[~]`
+overall).** Implementation agent delivered a clean stopping point: additive
+`WorkflowEngineApi.availableTransitionsAsync`, implemented by reusing the existing sync candidate list
+then awaiting `_passesRelatedListGuard` per candidate — zero changes to the sync method's contract, and
+`WorkflowEngineApi` has exactly one implementer (`LocalWorkflowEngineApi`) so the new abstract method
+carries no breakage risk elsewhere. `RepeaterSurface` now resolves+caches per-instance actions
+(`_actionsByInstanceId`) atomically alongside each `_items` poll refresh (both updated in the same
+`setState`, so items and their actions can never be out of sync with each other), with `_buildItem`
+reading from the cache instead of calling the sync method inline. The agent correctly stopped after this
+committed, analyzed stopping point rather than starting Stage 2 without budget to finish it, and
+correctly left the required tests for the verification agent to add.
+- [x] Verification agent wrote and verified both required Stage 1 tests directly (mirroring Milestone
+  1.4's own `RelatedListGuard` test setup): an engine-level test
+  (`v3_milestone_1_18_stage1_async_transitions_test.dart`, `loom_workflow_engine`) proving the sync
+  method still exposes a guarded transition to an ineligible persona (documenting the known gap) while
+  the new async method correctly excludes it for that persona and includes it for an eligible one; an
+  app-shell-level test (`v3_milestone_1_18_stage1_repeater_async_guard_test.dart`) proving a
+  `RepeaterSurface.live`-rendered guarded action button is genuinely absent for an ineligible persona and
+  present/tappable for an eligible one, confirmed by re-querying the instance after the tap.
+- [x] Regression check: full `loom_workflow_engine` suite **102/102** (up from 101), full
+  `loom_communities_app_shell` suite **28/28** (up from 27) — confirms the `RepeaterSurface` change is
+  safe across every existing community's usage (Garden, Camera, Chess, Book, Youth Soccer, Mosque, HOA,
+  and all of Tabletop's own 1.6/1.7/1.9/1.11/1.15 surfaces), not just the new guarded case.
+- [x] `dart analyze`/`flutter analyze` clean in both packages. Committed: `955268d` (implementation),
+  `2a62d0a` (tests).
+
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
