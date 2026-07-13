@@ -714,7 +714,14 @@ roster_test.dart` **1/1**, full suite **20/20**, `flutter analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.12 — AI search real query input
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific AI search surface exists.
+The only `searchAiAnswer`-family references anywhere are JSON schema-catalog metadata and static
+preview/description strings (`part09_action_surfaces.dart` ~753/1033) — no live functional code to
+generalize from. Needs genuinely new UI (same situation as 1.9/1.10/1.11). Kickoff points at
+`_VolunteerRosterTabSurface` (1.11) as the most recently-verified static-store template and at
+`ComputationModel.md` §8 for the canned-answer/no-citation-found platform-service framing.
 - [ ] Real `TextField` driving a new query (not a fixed "refine" string overwrite); demo search
   platform service (`ComputationModel.md` §8) returns a canned answer for seeded queries, a genuine
   "no citation found" state for unseeded ones.
