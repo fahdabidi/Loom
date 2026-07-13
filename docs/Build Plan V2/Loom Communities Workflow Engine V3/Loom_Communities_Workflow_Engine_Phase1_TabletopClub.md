@@ -1053,6 +1053,30 @@ new engine feature.
 - [x] `dart analyze` clean; full `loom_workflow_engine` suite **105/105** (up from 102). Committed:
   `af9d9ec`.
 
+**Stage 2b — CLOSED 2026-07-13 (ballot voting surface only; candidate detail popup, expiry
+notifications, tournament attendance display, and the live emulator walk remain open).** Five
+implementation-agent dispatches in a row on Stage 2 (two broad-scope, three progressively narrowed —
+down to "engine model only" then "one surface only") spent their entire turn budget on investigation and
+correctly-validated design confirmation without writing any code, each time. Given the fully-resolved,
+verified design from Stage 2a and the extensively-established 1.9-1.17 UI pattern, the verification agent
+wrote this slice directly rather than continuing to dispatch further narrowed rounds.
+- [x] New `_TournamentBallotTabSurface`/`_TournamentBallotEngineStore` (`part02_tab_shell.dart`) porting
+  the verified Stage 2a `event`/`ballot` schema directly. Candidates render via `RepeaterSurface.static`
+  with per-candidate vote buttons and a live vote-count display (`voteCounts`, read not recomputed).
+  Vote-button eligibility is gated via `availableTransitionsAsync` (Stage 1's mechanism), applied
+  manually since vote buttons are custom `itemBuilder` content, not the Repeater's own generic
+  transition-button rendering (which only auto-hides its *own* built-in buttons). Closing the vote reuses
+  the exact tie/runoff/propagation orchestration verified in Stage 2a.
+  Full model/parser/tab-routing wiring added (`LoomTournamentBallotSeed`/`LoomTournamentCandidate` in
+  `part11_shell_models.dart`, `_parseTournamentBallotSeed` in `part15_evidence_catalog.dart`, conditional
+  tab spec in `part12_persona_and_tabs.dart`, `tournament-ballot` renderer contract, dispatch case in the
+  tab-surface switch) — the full routing chain every 1.9-1.17 surface already uses.
+- [x] Widget test (`v3_milestone_1_18_stage2b_ballot_ui_test.dart`): 3 candidates render; casting votes to
+  a genuine 2/2/1 split (via the real `pendingChoice`+`cast-vote` UI flow) and tapping "Close vote"
+  replaces the ballot with a real new runoff instance containing only the two tied candidates — verified
+  by their continued presence/the third's absence in the actual widget tree, not a flag.
+- [x] `flutter analyze` clean; full app-shell suite **29/29** (up from 28). Committed: `7696245`.
+
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
