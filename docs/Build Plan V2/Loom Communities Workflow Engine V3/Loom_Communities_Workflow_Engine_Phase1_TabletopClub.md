@@ -911,7 +911,7 @@ analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.16 — Dashboard prioritization
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Implementation decision (2026-07-13): retain the fixed category order.** The candidate engine signals
 considered were unread notification counts, individual workflow deadlines/overdue status, pending
@@ -919,9 +919,8 @@ approvals, and volunteer capacity. None is a shared, cross-category urgency mode
 audiences, and available aggregates differ, so using any one to reorder all eleven information-
 architecture categories would introduce arbitrary policy and volatile navigation. Per-workflow ordering
 already uses each tab's data-driven `pinnedWorkflowIds`, which is the right scope for contextual
-prioritization. The Home copy has been corrected from “prioritized surfaces” to “curated surfaces” so it
-does not claim unsupported category-level behavior. This is the tracker's permitted documented no-build
-outcome; verification still needs to confirm the decision and copy change before closure.
+prioritization. The Home copy has been corrected from "prioritized surfaces" to "curated surfaces" so it
+does not claim unsupported category-level behavior.
 
 **Pre-dispatch investigation (verification agent):** the gap is specifically the fixed *category-level*
 Home-tab ordering (`_orderedSectionTitles`, `part03_workflow_sections.dart:76-88`) — per-workflow-card
@@ -930,11 +929,22 @@ ordering within each category is already genuinely data-driven via `pinnedWorkfl
 description string (`part02_tab_shell.dart:4080`) claims "prioritized surfaces," which the category
 ordering doesn't currently back up. Kickoff frames this explicitly as investigate-then-decide, per the
 tracker's own allowance for a documented "not worth it" outcome — not a presupposed build task.
-- [ ] Either a genuinely data-driven pin-priority formula (replacing `_orderedSectionTitles`'s hardcoded
-  global constant), or an explicit, documented decision that a simpler fixed design is not worth the
-  added complexity — decided during this milestone, not assumed in advance.
-- [ ] If data-driven: widget test proving pin order changes when the underlying priority signal changes.
-- [ ] `flutter analyze` clean, full suite green, exact counts cited.
+- [x] Explicit, documented decision that a data-driven category-priority formula is not worth the added
+  complexity — decided during this milestone (not assumed in advance), with the specific signals
+  considered and rejected named above.
+- [x] Copy correction: `part02_tab_shell.dart:4080` no longer claims "prioritized surfaces" it doesn't
+  deliver on at the category level.
+- [x] `flutter analyze` clean; full app-shell suite **26/26**, confirming the copy change broke nothing
+  elsewhere. No widget test applies to a no-build outcome, correctly not claimed.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Independently re-derived the same conclusion
+before reading the implementation agent's report: the four candidate signals (unread counts, deadlines,
+approvals, capacity) genuinely have no shared urgency semantics across 11 unrelated category types, so a
+forced formula would be arbitrary rather than meaningful — this reasoning holds up, not just asserted.
+The copy fix is precise (a single word, in the actual user-facing Home summary body text, not just
+internal spec metadata) and traced back correctly to the exact overclaim the audit flagged. Independently
+re-ran the full app-shell suite (**26/26**) and `flutter analyze` (clean, commit `aa197bc`) to confirm the
+copy change introduced no regression elsewhere.
 
 ### Milestone 1.17 — formEntry checkbox + relative-time-picker control
 **Status:** `[ ]` Not started.
