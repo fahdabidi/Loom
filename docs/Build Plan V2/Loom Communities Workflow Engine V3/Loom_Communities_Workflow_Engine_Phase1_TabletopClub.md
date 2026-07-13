@@ -985,7 +985,19 @@ the test. Ran `dart format`, `flutter analyze` (clean), the new test (**1/1**, f
 full suite (**27/27**) before committing (`3fa2091`, on top of the implementation commit `10750b7`).
 
 ### Milestone 1.18 — Tournament + Voting feature (flagship milestone)
-**Status:** `[ ]` Not started. Depends on 1.1-1.4, 1.13, 1.17.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13. Depends on 1.1-1.4, 1.13,
+1.17 (all closed).
+
+**Pre-dispatch investigation (verification agent):** confirmed the exact carried-forward gap from 1.4's
+own closure note — `LocalWorkflowEngineApi.availableTransitions` (sync,
+`local_workflow_engine_api.dart:237`) never checks `_passesRelatedListGuard` (line 453); only async
+`applyTransition` (line 282) does. `RepeaterSurface._buildItem` (`repeater_surface.dart:174`) is the
+concrete call site needing the new async variant — it already maintains a periodically-refreshed
+`_items` list via its own polling, giving a natural, additive place to also resolve+cache guarded
+actions asynchronously without touching the existing sync method's contract or any of its ~8 other call
+sites across other communities. Kickoff is staged: engine addition + Repeater wiring first, then the
+full feature, given the size (spans two packages) — dispatched with an explicit instruction not to
+attempt the live emulator walk itself; that's handled separately once automated coverage is verified.
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
