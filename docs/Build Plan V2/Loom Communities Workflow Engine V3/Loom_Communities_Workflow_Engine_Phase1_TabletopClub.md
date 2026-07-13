@@ -216,7 +216,7 @@ implementation-agent effort on repeated doomed `dart test` retries (observed in 
 transcript).
 
 ### Milestone 1.3 — Data-bound Repeater primitive
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
 - [ ] One generic, community-agnostic `_RepeaterSurface` widget in `loom_communities_app_shell`,
   parametrized by a `repeater` config block (source: static field or live `queryInstances` filter; item
   template; per-item actions via `availableTransitions` or an extended effect op).
