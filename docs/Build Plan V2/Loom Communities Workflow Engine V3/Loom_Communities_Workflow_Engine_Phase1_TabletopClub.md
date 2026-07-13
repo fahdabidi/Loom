@@ -851,15 +851,55 @@ suite **24/24**, `flutter analyze` clean (commit `a00e233`).
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.15 — Status timeline visual + protectedDetail masking
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** two distinct gaps, per the Archetype Audit.
 `statusTimeline`: `_historyItems()` (duplicated ~3x in `part02_tab_shell.dart`, HOA/Youth Soccer/Chess
 Club) string-key-sniffs any field containing "history" into a flat text list — no vertical line, no
 timestamped nodes. `protectedDetail`: permission logic is already real elsewhere (Mosque/Youth Soccer's
 `privateFieldKeys`); the gap is purely visual — a ternary swapped into plain `Text`, no masked-state
-affordance. Both get new, separate Tabletop Club surfaces (existing communities' usages untouched),
+affordance. Both got new, separate Tabletop Club surfaces (existing communities' usages untouched),
 following the 1.9-1.14 pattern.
+- [x] New `_StatusTimelineTabSurface`/`_StatusTimelineEngineStore` (`part02_tab_shell.dart:2890`/`2961`)
+  and reusable `_TimelineNode` widget (new file, `part23_timeline_and_protected_detail.dart`) — a real
+  circle-marker + connecting-line + timestamp/label layout, events sorted server-side by timestamp
+  (`..sort((a, b) => a.timestamp.compareTo(b.timestamp))`), rendered via `RepeaterSurface.static`.
+- [x] New `_ProtectedDetailTabSurface`/`_ProtectedDetailEngineStore` (`part02_tab_shell.dart:3039`/
+  `3138`) implementing exactly the named formula pattern: `isAuthorized = owner == viewer ||
+  assignedTo.contains(viewer)`. Two genuinely distinct visual states — `protected-detail-full` (real
+  content) vs. `protected-detail-masked` (lock icon + explanatory "why hidden" text), not one widget with
+  swapped text.
+- [x] Widget tests (`v3_milestone_1_15_timeline_and_protected_detail_test.dart`, 2 tests): timeline test
+  asserts actual pixel positions (`tester.getTopLeft(...).dy`) to prove 3 nodes render in true
+  chronological vertical order, not just that 3 texts exist; protectedDetail test uses two separate
+  community fixtures (owner vs. outsider persona) to prove both the authorized-full and
+  masked-with-lock-and-explanation states render correctly, including confirming the secret text never
+  leaks into the masked view.
+- [x] `flutter analyze` clean; full app-shell suite **26/26** (including this milestone's 2 new tests).
+
+**Implementation history:** the picker/store/formula design was correct on the first pass (`9ead6a9`),
+but the first test run surfaced two genuine, distinct bugs:
+1. **Test-fixture bug:** both fixtures used `'workflows': []`, unlike every prior milestone's fixture
+   (which always includes a placeholder workflow entry). `_experienceFromConfiguration`
+   (`part15_evidence_catalog.dart:58-60`) silently returns `null` for the *entire* experience if the
+   parsed `workflows` list is empty — not just skipping the two new fields, the whole `LocalExtension
+   Screen` had nothing to render, so neither tab ever appeared (`Bad state: No element` on both tab
+   lookups). Fixed by adding a minimal workflow entry to both fixtures.
+2. **Real, non-test layout bug:** `_TimelineNode`'s connecting line used `Expanded` inside a `Column`
+   with no bounded height — the widget is built inside a shrink-wrapped `RepeaterSurface.static` list
+   item, which gives its children unbounded height, so `Expanded` had nothing finite to expand into
+   (`BoxConstraints forces an infinite height`). This would have hit real users too, not just the test.
+   Fixed with the standard remedy for this exact shape (a connecting line that must match a sibling's
+   content height inside an unbounded parent): wrap the `Row` in `IntrinsicHeight`.
+Both fixes applied directly by the verification agent (commit `0d639d4`) rather than dispatching another
+round, since both were small and fully diagnosed from the actual Flutter error output.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Read the store, surface, and node widget code
+directly before trusting the tests; the layout bug in particular would not have been caught by `analyze`
+or by reading the code casually — only by actually running the widget test and reading the real
+`RenderFlex`/`BoxConstraints` assertion. Independently re-ran after both fixes:
+`v3_milestone_1_15_timeline_and_protected_detail_test.dart` **2/2**, full suite **26/26**, `flutter
+analyze` clean.
 - [ ] Real vertical-line, timestamped-node timeline via Repeater, replacing the plain string-key-sniffed
   text list.
 - [ ] Real protectedDetail masking treatment (visually distinct masked state, not a ternary swapped into
