@@ -622,7 +622,17 @@ whitespace-normalized diff isolating only the genuine additions (`LoomNotificati
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.10 — Export wizard step progression
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific export wizard surface
+exists. The only current `exportWizard`-family rendering is generic fallback UI shared across many
+workflow types (Garden Club's `_buildExportReview`/`_gardenButtonStyle`, `part02_tab_shell.dart:6242-
+6307`) — a flat `Chip` list plus buttons styled by guessing at transition-id substrings, exactly matching
+the tracker's "flat preview→generate→transfer→rollback→retry button sequence" description. This
+milestone needs genuinely new UI (same situation as 1.9), not a rewire. Kickoff points at
+`_MessagesEngineStore`/`_NotificationInboxEngineStore` as the state-machine/static-store template and
+asks the agent to design its own preview→generating→transferring→complete (+ rollback/retry) states,
+since no canonical shape exists yet for Tabletop Club specifically.
 - [ ] Real `Stepper` (or equivalent) replacing the flat preview→generate→transfer→rollback→retry button
   sequence, with genuine step gating tied to state.
 - [ ] Widget test: step N+1 is unavailable until step N completes.
