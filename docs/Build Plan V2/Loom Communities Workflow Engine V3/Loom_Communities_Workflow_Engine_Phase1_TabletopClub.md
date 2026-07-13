@@ -84,18 +84,61 @@ gets appended here by the implementation/verification loop as each milestone act
 way V2's phase docs accumulated close-out evidence.
 
 ### Milestone 1.1 — Computation model core: computed-field formulas
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
-- [ ] `instanceDataSchema` fields may declare a `formula` string; engine evaluates it against the
+**Status:** `[x]` **CLOSED 2026-07-12.**
+- [x] `instanceDataSchema` fields may declare a `formula` string; engine evaluates it against the
   instance's own declared fields (+ `$viewer`/`$actor`) using the vocabulary in
   [ComputationModel.md](./Loom_Communities_Workflow_Engine_ComputationModel.md) §1/§4.
-- [ ] Aggregate functions implemented once in `loom_workflow_engine`: `count`, `sum`, `avg`, `min`,
+- [x] Aggregate functions implemented once in `loom_workflow_engine`: `count`, `sum`, `avg`, `min`,
   `max`, `countDistinct`, `groupCount`, `argMaxKey`, `topKeys`, `size`, `contains`, `indexOf`,
   `sortBy`, arithmetic `+ − × ÷`, comparisons, `if`, `now`/`daysBetween`/`isBefore`/`isAfter`/`isPast`.
-- [ ] Validator (`workflow_state_machine_validator.dart`) extended to check: referenced fields exist in
+- [x] Validator (`workflow_state_machine_validator.dart`) extended to check: referenced fields exist in
   `instanceDataSchema`, no unknown function names, no circular formula dependencies.
-- [ ] Unit tests at the `loom_workflow_engine` package level: one per aggregate function, plus a
-  multi-step formula chain (e.g. `voteCounts`→`winner`→`isTie`) proving re-evaluation on input change.
-- [ ] `dart analyze` clean, full engine test suite green, exact count cited.
+- [x] Unit tests at the `loom_workflow_engine` package level: one per aggregate function, plus a
+  multi-step formula chain (`voteCounts`→`winner`/`tiedCandidates`→`isTie`) proving re-evaluation on
+  input change.
+- [x] `dart analyze` clean, full engine test suite green, exact count cited.
+
+**Implementation agent's own report:** wrote a real, safe, fixed-vocabulary recursive-descent
+parser/evaluator (`formula_evaluator.dart`, no dynamic code execution, field resolution limited to the
+declared schema), wired computed values into `LocalWorkflowEngineApi`'s reads
+(`queryInstances`/`availableTransitions`/transition results) and enforced computed fields as read-only
+(cannot be seeded, form-edited, or effect-written — both at runtime and via a new validator check,
+`computed_field_written_by_effect`). Could not itself run `dart test` to completion — every invocation
+in its sandbox hung after `Running build hooks...` with no test events emitted (a `HOME=/tmp` workaround
+instead tried to fetch `melos` from pub.dev, blocked by the sandbox's network restriction) — and
+correctly declined to claim the milestone done or commit, per the production-quality bar. Instead
+verified via `dart analyze` (clean) plus a standalone smoke script exercising the
+`groupCount`→`argMaxKey`→`topKeys`→`isTie` chain directly.
+
+**Verification Agent result (2026-07-12): PASS — CLOSED.** Independently re-ran everything the
+implementation agent couldn't, directly in an unsandboxed WSL shell (confirmed this is a sandbox-
+specific limitation, not a real defect — `dart test` runs normally outside the sandbox): `dart analyze`
+clean on `loom_workflow_engine`; `dart test` **98/98 passing** (including all new formula tests);
+`dart analyze` clean on `loom_ux_judges`; `dart test` **39/39 passing** (including the 3 new validator
+checks). Direct code read of `formula_evaluator.dart` (549 lines) confirmed: real lexer/parser/AST
+evaluator restricted to the fixed `formulaFunctionNames` set, `$viewer`/`$actor` handled specially (not
+treated as field lookups), both static (validator, DFS-based) and runtime (`active` set in
+`evaluateComputedFields`) circular-dependency detection. Direct read of
+`v3_milestone_1_1_formula_test.dart` confirmed genuine, non-gamed coverage: every function individually
+tested against real multi-row data, the formula-chain test proves a formula reading another formula's
+computed value and re-evaluating on changed input, and a full `LocalWorkflowEngineApi` round-trip test
+proves a real `winner` computed field renders correctly on `queryInstances` and that writing it via
+`updateInstanceFields` throws `WorkflowAuthorizationError`.
+
+Also investigated and ruled out a scope concern: a large (759-entry) pre-existing dirty working tree
+was found alongside this milestone's changes (`.codex-logs/chrome-cdp-profile*` cache noise, a
+`.agents/skills/using-loom-to-build-an-extension` symlink-vs-tracked-directory artifact, and an
+unrelated `CameraClub_Example.jsonc` reformat). Confirmed via `stat` mtimes that none of it was touched
+by this run (the Camera Club file's mtime predates this session by 4 days) — left entirely untouched,
+committed only the 7 files this milestone actually created/changed (commit `c860045`).
+
+**Process note for future milestones:** the implementation agent's sandbox cannot run `dart test` past
+its build-hooks step (network-restricted `melos` resolution) — this is a known, accepted limitation,
+not something to keep retrying. Kickoff prompts from here on tell the implementation agent to rely on
+`dart analyze` + direct code self-review + a standalone smoke script when this happens, state it
+plainly, and let the verification agent's unsandboxed run be the suite-level proof — avoids burning
+implementation-agent effort on repeated doomed `dart test` retries (observed in this run's own
+transcript).
 
 ### Milestone 1.2 — Extended effect ops + read-side aggregate API
 **Status:** `[ ]` Not started.
