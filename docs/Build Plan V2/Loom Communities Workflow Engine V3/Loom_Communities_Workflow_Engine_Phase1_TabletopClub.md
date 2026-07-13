@@ -561,16 +561,60 @@ document" state (not merely that chips exist), and uses `documentId`/category st
 controls as widget keys — avoiding 1.7's engine-generated-id key pitfall entirely.
 
 ### Milestone 1.9 — Notification inbox
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** `_InboxPreviewCard`
 (`part02_tab_shell.dart:11246`) is dead code — a single hardcoded preview card with zero call sites
 anywhere in the file. No other class renders the `notificationInbox` card family; every other reference
 is JSON-literal schema/catalog metadata for other communities, not a real widget. Unlike 1.8, this
-milestone needs genuinely new UI, not a rewire of something already real. Kickoff points at
+milestone needed genuinely new UI, not a rewire of something already real. Kickoff pointed at
 `_MessagesTabSurface`/`_MessagesEngineStore` (1.7) as the architectural template (static store +
 `RepeaterSurface.live`) and at `WorkflowEngineApi.aggregate({workflowType, column, op, filter,
 groupBy})` (delivered in 1.2) for the unread-count requirement, rather than a hand-computed count.
+- [x] New `_NotificationInboxTabSurface`/`_NotificationInboxEngineStore` (`part02_tab_shell.dart:1022`),
+  following the exact static-store + `RepeaterSurface.live` pattern from 1.7. `_InboxPreviewCard` was
+  left in place (already-dead code, out of this milestone's scope) rather than force-deleted without
+  certainty nothing else depends on it.
+- [x] Real list rendering (`RepeaterSurface.live`, 50ms refresh), unread state + timestamps
+  (`notification-unread-<id>` dot, `_formatNotificationTime`), swipe-to-dismiss via `Dismissible`
+  (`notification-dismiss-<id>`), tap-to-mark-read via `InkWell` (`notification-row-<id>`).
+- [x] Unread badge genuinely reads `WorkflowEngineApi.aggregate({workflowType, column: 'notificationId',
+  op: 'count', filter: {'isUnread': true, 'archived': false}})` — not a hand-counted client-side list
+  length. Verified by reading the implementation directly, not just trusting the pass count.
+- [x] `notificationId` round-trips through `instanceData['notificationId']` (the seed's own id), never
+  the engine's generated `instanceId` — the implementation agent explicitly avoided 1.7's key-vs-
+  instanceId pitfall this time, confirmed by direct code read.
+- [x] Widget test (`v3_milestone_1_9_notification_inbox_test.dart`): 3 notifications (2 unread) render
+  as a real list; unread count starts at "2 unread"; swipe-dismissing one narrows the list to the other
+  2 and drops the count to "1 unread" (the dismissed one was unread); tapping the remaining unread
+  notification marks it read and drops the count to "0 unread" — exercises both interactions and the
+  aggregate's actual output, not just widget existence.
+- [x] `flutter analyze` clean; full app-shell suite **18/18** (including this milestone's 1 new test).
+
+**Implementation history:** first pass (`70c006d`) built the full surface correctly per the above, but
+its own sandbox couldn't run `flutter test` (same pub.dev network restriction as prior milestones) so it
+left the tracker `[~]` rather than guess — appropriate. Independent verification caught a real bug this
+first pass missed: `_dismiss()` fired the archive write + reload asynchronously
+(`onDismissed: (_) => unawaited(_dismiss(instance))`), but Flutter's `Dismissible` requires the widget be
+removed from the tree by the very next frame after `onDismissed` fires, or its own internal assertion
+trips. `_MessagesTabSurface`'s archive flow (1.7) never hit this because it uses a toolbar button, not a
+swipe gesture — a genuinely new failure mode introduced by this milestone's UX, not a repeat of a known
+issue. Running the test caught it immediately (`A dismissed Dismissible widget is still part of the
+tree`).
+
+**Verification agent's fix (`fa80b8d`):** standard optimistic-removal pattern — a synchronous
+`_locallyDismissedIds` Set, added to immediately in `onDismissed` (before the async archive/reload), and
+checked alongside the store's own `isArchived()` in the repeater's `itemBuilder` guard. Applied directly
+rather than dispatching another round, since the fix was small, precise, and fully understood from
+reading the actual Flutter assertion message.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Independently verified the collateral
+`part11_shell_models.dart`/`part12_persona_and_tabs.dart` diffs (much larger than expected for this
+scope) were near-entirely `dart format` re-wrapping of pre-existing, unrelated code — confirmed via a
+whitespace-normalized diff isolating only the genuine additions (`LoomNotificationItem`, the
+`notification-inbox` tab contract, the `notifications` field) with nothing altered or reverted from
+1.7/1.8. Re-ran `v3_milestone_1_9_notification_inbox_test.dart` (1/1), the full suite (18/18), and
+`flutter analyze` (clean) after the dismiss fix.
 - [ ] Real list + unread state + timestamps, Repeater bound to a live query over notification
   instances, populated via `createInstance`/`dueNotifications` (1.2/1.4).
 - [ ] Widget test: multiple notifications render as a real list (not one hardcoded instance); dismiss
