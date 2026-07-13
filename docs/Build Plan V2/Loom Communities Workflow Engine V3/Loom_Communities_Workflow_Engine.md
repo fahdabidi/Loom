@@ -121,7 +121,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | 1 | 1.9 Notification inbox | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 18/18 app-shell tests, commits `70c006d` + `fa80b8d`; caught and fixed a real Dismissible-widget race the implementation agent's own sandbox couldn't test (see phase doc) |
 | 1 | 1.10 Export wizard step progression | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 19/19 app-shell tests, commit `de2bf1f`; genuine state gating at both UI and engine layers, no bugs found (see phase doc) |
 | 1 | 1.11 Volunteer roster capacity meter | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 20/20 app-shell tests, commit `a4d9087`; real engine-side guard + atomic increment, no bugs found (see phase doc) |
-| 1 | 1.12 AI search real query input | `[~]` In progress — dispatched to implementation agent 2026-07-13 |
+| 1 | 1.12 AI search real query input | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 22/22 app-shell tests, commit `46d5475`; genuine per-query replacement + negative-path test, no bugs found (see phase doc) |
 | 1 | 1.13 Audience/multi-select picker | `[ ]` Not started |
 | 1 | 1.14 Single-item preference control | `[ ]` Not started |
 | 1 | 1.15 Status timeline visual + protectedDetail masking | `[ ]` Not started |

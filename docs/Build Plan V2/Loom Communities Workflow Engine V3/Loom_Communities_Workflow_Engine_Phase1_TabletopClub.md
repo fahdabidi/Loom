@@ -714,14 +714,46 @@ roster_test.dart` **1/1**, full suite **20/20**, `flutter analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.12 — AI search real query input
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
-**Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific AI search surface exists.
-The only `searchAiAnswer`-family references anywhere are JSON schema-catalog metadata and static
+**Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific AI search surface existed.
+The only `searchAiAnswer`-family references anywhere were JSON schema-catalog metadata and static
 preview/description strings (`part09_action_surfaces.dart` ~753/1033) — no live functional code to
-generalize from. Needs genuinely new UI (same situation as 1.9/1.10/1.11). Kickoff points at
+generalize from. Needed genuinely new UI (same situation as 1.9/1.10/1.11). Kickoff pointed at
 `_VolunteerRosterTabSurface` (1.11) as the most recently-verified static-store template and at
 `ComputationModel.md` §8 for the canned-answer/no-citation-found platform-service framing.
+- [x] New `_AiSearchTabSurface`/`_AiSearchEngineStore` (`part02_tab_shell.dart:2191`). Sensible judgment
+  call: implemented as a simple, read-only `Map<String, LoomAiSearchAnswer>` lookup rather than forcing
+  engine/transition machinery onto what is fundamentally a static dispatch, not a stateful workflow — the
+  kickoff explicitly allowed this and the agent used the discretion well.
+- [x] Real `TextField` (`ai-search-field`) + submit (`ai-search-submit`/`onSubmitted`) drives a genuinely
+  new query lookup each submission via `_store.search(query)` — no stale/merged state between queries;
+  the whole `_result` is replaced per submission.
+- [x] Canned-answer/no-citation platform-service framing honored: seeded queries return their exact
+  answer + citations; any other query genuinely produces the `ai-search-no-citation` state with
+  `'No citation found for "<query>".'` — not a generic fallback.
+- [x] Widget tests (`v3_milestone_1_12_ai_search_test.dart`, 2 tests): the first submits two distinct
+  seeded queries in sequence and confirms each answer/citation replaces the previous one (`findsNothing`
+  on the prior query's text, not just presence of the new one — proves replacement, not accumulation);
+  the second is a dedicated negative-path test for the unseeded-query "no citation found" state.
+- [x] `flutter analyze` clean; full app-shell suite **22/22** (including this milestone's 2 new tests).
+
+**Implementation history:** completed correctly in one dispatch round — no bugs found. Diff was small and
+purely additive (29/12/25/132/198 lines across 5 files, zero deletions). The implementation agent's own
+sandbox again hit environment friction (a Flutter-wrapper cache-write restriction on the first format
+attempt, worked around by using the Dart SDK binary directly — a legitimate, non-destructive workaround)
+and again hit a `.git/index.lock` on commit; correctly reported both rather than repairing the lock
+itself, leaving all 5 files genuinely staged and complete.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Confirmed the `.git/index.lock` had already
+cleared by the time of independent verification (the codex process had fully exited). While
+investigating running processes for this, found an entirely unrelated, independently-scheduled
+autonomous agent for a different project ("TrackMap Compiler" / Pi Project/slam-pose-tracking) active on
+this same machine — confirmed via its sandbox's own permission profile that it has zero filesystem access
+outside its own project directory, so it was never a factor here; noted for transparency, not otherwise
+relevant. Read the actual `TextField`/store implementation directly, confirmed the key/text assertions in
+the test genuinely match the widget code, then independently re-ran: `v3_milestone_1_12_ai_search_
+test.dart` **2/2**, full suite **22/22**, `flutter analyze` clean.
 - [ ] Real `TextField` driving a new query (not a fixed "refine" string overwrite); demo search
   platform service (`ComputationModel.md` §8) returns a canned answer for seeded queries, a genuine
   "no citation found" state for unseeded ones.
