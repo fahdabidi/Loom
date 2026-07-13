@@ -947,19 +947,42 @@ re-ran the full app-shell suite (**26/26**) and `flutter analyze` (clean, commit
 copy change introduced no regression elsewhere.
 
 ### Milestone 1.17 — formEntry checkbox + relative-time-picker control
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** per the Archetype Audit, `formEntry` today is
 always a flat `TextField` list + submit; HOA's architectural request form's only non-text control is a
 project-type dropdown wired `onChanged: (_) {}` — genuinely inert. No checkbox and no relative-time-
-picker exist anywhere in this archetype. Builds a new, separate Tabletop Club surface (HOA's form
+picker exist anywhere in this archetype. Built as a new, separate Tabletop Club surface (HOA's form
 untouched), designed reusably since Milestone 1.18 (Tournament + Voting) depends on this control.
-- [ ] Real checkbox control (genuinely togglable, not `onChanged: (_) {}`) and a relative-time-picker
-  control (e.g. "remind me 1 day before"), needed by the Tournament feature's notification-preference
-  setup (§3) and reusable anywhere a boolean/scheduled-choice field appears.
-- [ ] Widget test: toggling the checkbox persists via `updateInstanceFields`; picking a relative time
-  writes a real, computed absolute timestamp field.
-- [ ] `flutter analyze` clean, full suite green, exact counts cited.
+- [x] New `_FormEntryTabSurface`/`_FormEntryEngineStore` (`part02_tab_shell.dart:3206`/`3304`) plus a
+  shared, reusable `_reminderOffsets`/`_reminderOffsetLabel` constants file (new,
+  `part24_form_entry_controls.dart`) — four offsets (`at-time`/`one-hour`/`one-day`/`one-week`), designed
+  for direct reuse by Milestone 1.18's Tournament notification-preference setup.
+- [x] Real, genuinely togglable `CheckboxListTile` writing `notificationsEnabled` through
+  `updateInstanceFields`; real `DropdownButtonFormField` for the four relative-time choices, each
+  selection computing a genuine absolute `reminderAt = referenceTime.subtract(offset)` and writing it —
+  not just storing the offset label. The `editing` state correctly declares `editableFields` for all
+  three written fields (`notificationsEnabled`/`reminderOffset`/`reminderAt`), avoiding 1.13's pitfall.
+- [x] Widget test (`v3_milestone_1_17_form_entry_test.dart`): toggles the checkbox and asserts the
+  reloaded instance's `notificationsEnabled` actually flips to `true`; selects "1 day before" against a
+  fixed known `referenceTime` (`2026-08-01T18:00:00.000Z`) and asserts the reloaded `reminderAt` equals
+  the exact computed instant one day earlier (`2026-07-31T18:00:00.000Z`) — a real, specific
+  timestamp-arithmetic assertion, not just "some value changed."
+- [x] `flutter analyze` clean; full app-shell suite **27/27** (including this milestone's 1 new test).
+
+**Implementation history:** took two dispatch rounds plus direct verification-agent authorship of the
+test, none due to defects — the first round ran out of turn budget mid-planning (left the working tree
+untouched, a clean stopping point) and handed off a complete, sound design; the second round implemented
+that design correctly (confirmed by direct code read: real `editableFields`, real computed timestamp,
+real `updateInstanceFields` writes) but ran out of turn budget again before writing the widget test.
+Given the design was already fully verified correct and the required test shape was by then extremely
+well established across ten prior milestones, the verification agent wrote the test directly rather than
+dispatching a third round — a one-shot pass with no fix-up needed.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Read the store, surface, and shared constants
+file directly, confirmed `editableFields` correctness and genuine timestamp computation before writing
+the test. Ran `dart format`, `flutter analyze` (clean), the new test (**1/1**, first attempt), and the
+full suite (**27/27**) before committing (`3fa2091`, on top of the implementation commit `10750b7`).
 
 ### Milestone 1.18 — Tournament + Voting feature (flagship milestone)
 **Status:** `[ ]` Not started. Depends on 1.1-1.4, 1.13, 1.17.
