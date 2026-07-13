@@ -361,16 +361,59 @@ counts, non-blank line counts) before accepting the reformatting as non-destruct
 against the Milestone 1.3-era baseline (9/9). Commits: `68dd0b0`, `052ece2`, `8dcbdd6`.
 
 ### Milestone 1.6 — Marketplace grid reformalized onto Repeater
-**Status:** `[~]` In progress — scope expanded 2026-07-12 (see finding below).
-- [ ] `RepeaterSurface` gains a grid-layout mode (configurable `crossAxisCount`, `childAspectRatio`,
-  spacing, non-scrollable/shrink-wrap sizing) — a genuine primitive extension, not scope creep: closing
-  a real gap against [ComputationModel.md](./Loom_Communities_Workflow_Engine_ComputationModel.md) §5's
+**Status:** `[x]` **CLOSED 2026-07-12.**
+- [x] `RepeaterSurface` gains a grid-layout mode (`RepeaterLayout.grid`; configurable
+  `gridCrossAxisCount`/`gridCrossAxisCountBuilder`, `gridChildAspectRatio`, `gridMainAxisSpacing`/
+  `gridCrossAxisSpacing`, `gridShrinkWrap`, `gridScrollable`) — additive, `list` remains the default;
+  reuses the exact same item-template/action/live-refresh wiring (`_buildItem`) as list mode. Closes a
+  real gap against [ComputationModel.md](./Loom_Communities_Workflow_Engine_ComputationModel.md) §5's
   own stated design, which named the marketplace grid as one of Repeater's intended use cases from the
-  start. Covered by its own dedicated tests proving the grid mode works generically.
-- [ ] `_MarketplaceBrowseSurface`'s grid rendering reformalized onto the Repeater primitive's new grid
-  mode (regression refactor, not a rebuild — existing search/filter behavior must be unchanged).
-- [ ] Existing Marketplace widget tests (b34 etc.) still pass unmodified.
-- [ ] `flutter analyze` clean, full suite green, exact counts cited, zero regressions.
+  start. Covered by 2 dedicated tests: static grid column/position layout, live-query grid growth.
+- [x] `_MarketplaceBrowseSurface`'s `GridView.builder` reformalized onto the new grid mode — a one-to-one
+  composition swap preserving the existing 3/2-column breakpoint, `0.72` aspect ratio, 10px spacing, and
+  non-scrollable shrink-wrapped embedding (`gridShrinkWrap: true` replaces the old manually-computed
+  `SizedBox(height: gridHeight)` — a legitimate simplification, not a behavior change).
+- [x] Existing Marketplace widget tests (`b34_marketplace_browse_test.dart`) pass unmodified — confirmed
+  zero diff on the test file itself, 16/16 passing.
+- [x] `flutter analyze` clean, full suite green — 13/13 app-shell (incl. 3 new grid tests) + 16/16 b34.
+
+**First-attempt finding (2026-07-12), correctly not forced through:** the implementation agent
+investigated and reported, accurately, that Milestone 1.3's `RepeaterSurface.static` is a
+one-dimensional `ListView.builder` with no grid delegate, while `_MarketplaceBrowseSurface`'s existing
+grid is a responsive, non-scrollable, 2-D `GridView.builder` (computed `crossAxisCount`, fixed `0.72`
+aspect ratio, fixed spacing, shrink-wrapped inside the surrounding tab scroll). Forcing the existing
+Repeater into this shape would visibly change card sizing/placement and violate the milestone's own
+regression-safety requirement — so it correctly made zero changes and reported the mismatch rather than
+forcing an awkward fit or silently leaving the tracker in a misleading state. This is exactly the
+"stop and say so explicitly" outcome the kickoff prompt explicitly permitted.
+
+**Verification agent's resolution:** this is a real, necessary extension to `RepeaterSurface`, not new
+scope to defer — the Computation Model design (written before Milestone 1.3 was built) already named
+the marketplace grid as one of the primitive's intended shared use cases; the gap is that Milestone 1.3's
+implementation only delivered the list-mode half of that promise. Re-dispatched (fresh session) with an
+expanded, still tightly-scoped kickoff: add the grid mode to `RepeaterSurface` (with its own tests,
+independent of Marketplace), then do the actual marketplace composition swap on top of it, with `b34` as
+the regression gate — not a rebuild of Marketplace, and not open-ended Repeater work beyond what this
+specific case needs.
+
+**Implementation history (second dispatch):** hit a stale `.git/index.lock` again (same recurring class
+of issue as Milestones 1.2/1.4 — plausibly OneDrive sync interference with git's write locking) plus a
+transient "Flutter SDK cache is read-only, cannot create lockfile" error preventing its own `flutter
+test` run — both correctly reported rather than worked around with `--no-verify` or a guessed pass
+count; left the milestone `[~]` with all three files genuinely staged and complete.
+
+**Verification Agent result (2026-07-12): PASS — CLOSED.** By the time of independent verification the
+`.git/index.lock` no longer existed (resolved on its own or from a retry within the agent's session) and
+`flutter`/`dart` ran normally — confirms both prior blockers were transient sandbox conditions, not code
+defects. Direct code read of `repeater_surface.dart`'s grid-mode addition confirmed it is genuinely
+additive and correctly reuses `_buildItem` for both layouts (identical item-template/action/live-refresh
+behavior regardless of layout mode) — not a parallel, divergent implementation. Direct read of the
+`part02_tab_shell.dart` diff confirmed the marketplace swap is a faithful one-to-one composition change:
+same breakpoint logic, same aspect ratio/spacing constants, same `_WorkflowMarketplaceListingCard`
+`onTap` behavior. Independently re-ran everything: `flutter analyze` clean; app-shell suite **13/13**
+(the new grid tests included); **`b34_marketplace_browse_test.dart` 16/16, file confirmed byte-identical
+via `git diff --stat` (zero output)** — the strongest possible evidence this refactor changed nothing
+observable about Marketplace's behavior.
 
 **First-attempt finding (2026-07-12), correctly not forced through:** the implementation agent
 investigated and reported, accurately, that Milestone 1.3's `RepeaterSurface.static` is a
