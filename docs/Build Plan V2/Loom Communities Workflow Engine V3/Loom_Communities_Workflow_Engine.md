@@ -120,7 +120,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | 1 | 1.8 Document library real data | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 17/17 app-shell tests, commit `6db6f89`; completed in one round, no false starts (see phase doc) |
 | 1 | 1.9 Notification inbox | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 18/18 app-shell tests, commits `70c006d` + `fa80b8d`; caught and fixed a real Dismissible-widget race the implementation agent's own sandbox couldn't test (see phase doc) |
 | 1 | 1.10 Export wizard step progression | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 19/19 app-shell tests, commit `de2bf1f`; genuine state gating at both UI and engine layers, no bugs found (see phase doc) |
-| 1 | 1.11 Volunteer roster capacity meter | `[ ]` Not started |
+| 1 | 1.11 Volunteer roster capacity meter | `[~]` In progress — dispatched to implementation agent 2026-07-13 |
 | 1 | 1.12 AI search real query input | `[ ]` Not started |
 | 1 | 1.13 Audience/multi-select picker | `[ ]` Not started |
 | 1 | 1.14 Single-item preference control | `[ ]` Not started |

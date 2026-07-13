@@ -671,7 +671,14 @@ at both the UI and engine layers before trusting the test. Committed (`de2bf1f`)
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.11 — Volunteer roster capacity meter
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific volunteer roster surface
+exists. Other communities' `volunteerRoster` workflows (Garden Club, Mosque) each seed a single shift
+with a hand-set `openSpots` field — not a computed `capacity − filled` meter, and not multiple shifts
+listed together — exactly the "hardcoded... showing one at a time" gap the tracker names. Needs genuinely
+new UI (same situation as 1.9/1.10). Kickoff points at `_ExportWizardTabSurface` (1.10) as the most
+recently-verified static-store template.
 - [ ] Real capacity meter (`remaining = capacity − filled` formula) + multiple shifts genuinely listed
   together via Repeater (not a hardcoded persona-priority selector showing one at a time).
 - [ ] Widget test: ≥2 shifts render simultaneously; meter reflects live sign-up count.
