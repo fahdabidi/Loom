@@ -133,9 +133,7 @@ void main() {
       threads: [_thread('persist', 'Persistence thread')],
     );
     await tester.pumpWidget(_host(community));
-    final threadItem = find.byKey(
-      const ValueKey('messages-inbox-item-persist'),
-    );
+    final threadItem = find.text('Persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(tester, threadItem);
     await tester.pump(const Duration(milliseconds: 300));
@@ -180,9 +178,7 @@ void main() {
       threads: [_thread('archive', 'Archive persistence thread')],
     );
     await tester.pumpWidget(_host(community));
-    final threadItem = find.byKey(
-      const ValueKey('messages-inbox-item-archive'),
-    );
+    final threadItem = find.text('Archive persistence thread');
     await _openMessages(tester, threadItem);
     await _tapVisible(tester, threadItem);
     await tester.pump(const Duration(milliseconds: 300));
