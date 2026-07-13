@@ -761,7 +761,14 @@ test.dart` **2/2**, full suite **22/22**, `flutter analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.13 — Audience/multi-select picker
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** the comma-split pattern this replaces is real,
+in `part20_mosque_engine.dart` ~line 109-119 (`_fieldValue()` special-cases `invitedPersonaIds`/
+`privateFieldKeys` fields by splitting a plain `TextField`'s text on `,`). Mosque's usage is untouched by
+this milestone. This milestone builds a new, reusable picker component for Tabletop Club plus a minimal
+concrete usage to test it against — not the full Tournament + Voting feature (§3), which is a separate,
+later flagship milestone (1.18) that will consume this component.
 - [ ] Real chip + checkable-member-list picker via Repeater, replacing the comma-separated `TextField`
   split-by-`,` pattern. Reused directly by the Tournament feature's RSVP-gated eligibility list (§3).
 - [ ] Widget test: selecting/deselecting a member updates the underlying array field correctly with
