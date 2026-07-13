@@ -435,7 +435,37 @@ gate — not a rebuild of Marketplace, and not open-ended Repeater work beyond w
 needs.
 
 ### Milestone 1.7 — Discussion threads generalized
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
+**Status:** `[~]` In progress — corrected re-dispatch 2026-07-12 (see finding below).
+
+**First-attempt finding (2026-07-12), correctly not forced through, but over-broad in its proposed
+fix:** the agent found `_MessagesTabSurfaceState` (`part02_tab_shell.dart:182`) has zero engine wiring
+today — pure local widget state (`_readMessageIds`/`_mutedThreadIds`/`_archivedThreadIds`/
+`_localReplies`, all plain instance fields). It correctly refused to wire in a private
+`WorkflowDatabase.memory()` scoped to the widget's own lifetime, since that would fail this milestone's
+own durability requirement (a persona switch or surface rebuild would silently lose data) — a real,
+well-reasoned refusal. But its proposed fix overstated the gap: it concluded this needs "a preceding or
+expanded milestone that introduces an app/community-scoped workflow-engine session... including
+lifecycle, seeded instance ownership, and persona reuse" as if no such concept existed anywhere in this
+codebase yet.
+
+**Verification agent's correction:** that concept already exists and is already used successfully by 5
+other surfaces in this exact file — `_GardenClubEngineStore`, `_CameraClubEngineStore`,
+`_ChessClubEngineStore`, `_BookClubEngineStore`, and HOA's `_ArchitecturalRequestStore` all use the same
+proven pattern: a `static final _stores = <String, _XxxEngineStore>{}` map keyed by
+`widget.experience.extensionId`, populated via `_stores.putIfAbsent(id, () => _XxxEngineStore(...))` in
+`initState()` (see `_GardenClubEngineTabSurfaceState`, lines 4963-4980, for the exact template) — this
+is precisely what V2's own Milestone 4.2 verified persists correctly across a live persona switch
+("switched back to homeowner and confirmed the identical state/reviewer note appeared"). The actual gap
+is narrower than the agent concluded: `_MessagesTabSurface` simply doesn't use this already-established
+pattern yet — no new architectural concept needs inventing, just applying the existing one.
+**Not** bundled into this fix: `_CalendarTabSurface` (Milestone 1.5) and `_MarketplaceBrowseSurface`
+(Milestone 1.6) were found, while investigating this, to use a different, private-per-widget-instance
+`WorkflowDatabase` (`late final WorkflowDatabase _database; ... _database = WorkflowDatabase.memory();`
+directly in `State`, not the static-store pattern) — this may be a latent, real gap in those milestones'
+own durability guarantees, but neither of their own required validation tests actually exercised
+cross-rebuild/cross-persona persistence, so it isn't a regression against what was promised and closed.
+**Filed as a tracked, non-blocking follow-up** — worth revisiting before Milestone 1.20's sign-off, not
+bundled into 1.7's fix to avoid destabilizing two already-closed milestones.
 - [ ] `_MessagesTabSurface` generalized to read threads from engine `WorkflowInstance`s via a
   live-query-bound Repeater, replacing Tabletop Club's current data source.
 - [ ] Widget test: a new message posted via the `createInstance` effect op appears as a new bubble
