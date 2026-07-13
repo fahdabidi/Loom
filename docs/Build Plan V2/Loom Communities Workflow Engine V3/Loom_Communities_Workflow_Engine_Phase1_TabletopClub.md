@@ -622,17 +622,49 @@ whitespace-normalized diff isolating only the genuine additions (`LoomNotificati
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.10 — Export wizard step progression
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **Pre-dispatch investigation (verification agent):** no Tabletop-Club-specific export wizard surface
 exists. The only current `exportWizard`-family rendering is generic fallback UI shared across many
 workflow types (Garden Club's `_buildExportReview`/`_gardenButtonStyle`, `part02_tab_shell.dart:6242-
 6307`) — a flat `Chip` list plus buttons styled by guessing at transition-id substrings, exactly matching
 the tracker's "flat preview→generate→transfer→rollback→retry button sequence" description. This
-milestone needs genuinely new UI (same situation as 1.9), not a rewire. Kickoff points at
+milestone needed genuinely new UI (same situation as 1.9), not a rewire. Kickoff pointed at
 `_MessagesEngineStore`/`_NotificationInboxEngineStore` as the state-machine/static-store template and
-asks the agent to design its own preview→generating→transferring→complete (+ rollback/retry) states,
-since no canonical shape exists yet for Tabletop Club specifically.
+asked the agent to design its own states, since no canonical shape existed yet for Tabletop Club
+specifically.
+- [x] New `_ExportWizardTabSurface`/`_ExportWizardEngineStore` (`part02_tab_shell.dart:1490`), following
+  the same static-store pattern as 1.7/1.9. Designed states `preview → generating → transferring →
+  complete`, with `fail-transfer`/`retry-transfer` and a `rollback` (from `failed` or `complete`, back to
+  `preview`) — a sensibly complete state machine, not just the minimum happy path.
+- [x] Real `Stepper` (`export-wizard-stepper` key), `currentStep` computed directly from the engine
+  instance's `currentState` via `_stepFor()` — not a client-side counter that could drift from the
+  backend. `controlsBuilder` overridden to `SizedBox.shrink()`; all step navigation instead comes from
+  each step's own conditionally-rendered action button.
+- [x] Genuine step gating, enforced at **both** layers: each step's action button (`export-action-
+  generate`/`-transfer`/`-complete`/`-fail`/`-retry`/`-rollback`) only exists in the widget tree at all
+  when `state == <matching state>` — a later step's action is not merely disabled, it is absent from the
+  tree entirely until reachable. The engine's own transition `from: [...]` lists enforce the identical
+  gating server-side, so the two layers cannot drift apart.
+- [x] Widget test (`v3_milestone_1_10_export_wizard_test.dart`): confirms the stepper and preview scope
+  render, that `export-action-generate` exists while `-transfer`/`-complete` are `findsNothing` (absent,
+  not just disabled), fires the `generate` transition, then confirms `-generate` is now gone and
+  `-transfer` has appeared. Exercises real state-driven gating across an actual transition, not just
+  static rendering.
+- [x] `flutter analyze` clean; full app-shell suite **19/19** (including this milestone's 1 new test).
+
+**Implementation history:** completed correctly in one dispatch round — no bugs found on independent
+review or test run, a contrast with 1.7 and 1.9. The only snag was environmental: the implementation
+agent's own sandbox hit a stale `.git/index.lock` a second time (same recurring class of issue as
+Milestones 1.2/1.4/1.6) and correctly reported it rather than repairing it itself, leaving all 5 files
+genuinely staged and complete.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Confirmed the `.git/index.lock` was stale (no
+live git process, per `ps -ef`) before removing it. Diff review found this round's `part11/12/15` changes
+were small and purely additive (42/12/12 lines, zero deletions) — no collateral `dart format` noise like
+1.9's. Read the actual `Stepper`/state-machine implementation directly and confirmed the gating is real
+at both the UI and engine layers before trusting the test. Committed (`de2bf1f`) and re-ran independently:
+`v3_milestone_1_10_export_wizard_test.dart` **1/1**, full suite **19/19**, `flutter analyze` clean.
 - [ ] Real `Stepper` (or equivalent) replacing the flat preview→generate→transfer→rollback→retry button
   sequence, with genuine step gating tied to state.
 - [ ] Widget test: step N+1 is unavailable until step N completes.
