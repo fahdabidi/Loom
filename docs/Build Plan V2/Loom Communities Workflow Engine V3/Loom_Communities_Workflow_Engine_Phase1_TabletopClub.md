@@ -252,18 +252,55 @@ that instance transitioned to `done` while the first remained in its own distinc
 proving the action closes over the correct item, not the first/all.
 
 ### Milestone 1.4 — Scheduled notifications + cross-instance eligibility guard
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12. Design refinement made at
-kickoff: `dueNotifications` will be implemented as a real `dueAt <= asOf` comparison over seeded
-instances rather than canned/fake data — genuinely no harder to build and more honest than a stub that
-ignores its own `asOf` parameter.
-- [ ] `WorkflowEngineApi.dueNotifications({required DateTime asOf})` — real API shape, demo
-  implementation returns pre-seeded canned "due" instances.
-- [ ] `WorkflowTransition.guard` extended to express "actor must appear in `<field>` on the instance
-  identified by `<relationship>`," evaluated for real by `availableTransitions`/`applyTransition`.
-- [ ] Unit tests: `dueNotifications` returns the correct canned set for a given `asOf`; the eligibility
-  guard genuinely blocks `applyTransition` (not just hides a button) for a persona who fails it, and
-  genuinely allows it for one who passes.
-- [ ] `dart analyze` clean, full engine test suite green (cumulative), exact count cited.
+**Status:** `[x]` **CLOSED 2026-07-12.** Design refinement made at kickoff: `dueNotifications` was
+implemented as a real `dueAt <= asOf` comparison over seeded instances rather than canned/fake data —
+genuinely no harder to build and more honest than a stub that ignores its own `asOf` parameter.
+- [x] `WorkflowEngineApi.dueNotifications({required DateTime asOf})` — real implementation: queries
+  persisted instances, parses each `dueAt` (ISO-8601), returns those `<= asOf`.
+- [x] `WorkflowTransition.guard` extended with a `RelatedListGuard` kind
+  (`relatedInstanceField`/`relatedListField`) expressing "actor must appear in `<field>` on the
+  instance identified by `<relationship>`," evaluated for real by `applyTransition` (see note on
+  `availableTransitions` below).
+- [x] Unit tests: `dueNotifications` returns the correct real subset for two different `asOf` values;
+  the eligibility guard genuinely blocks `applyTransition` (throws) for a persona not in the related
+  list, then genuinely allows it once the persona is added to that list via a real
+  `updateInstanceFields` call — proving live re-evaluation against current related-instance state, not
+  a snapshot frozen at the guarded instance's creation time.
+- [x] `dart analyze` clean, full engine test suite green (cumulative) — 101/101.
+
+**Known gap, deliberately not fixed here — deferred to Milestone 1.18:** the eligibility guard is only
+enforced by `applyTransition` (async, can do the real related-instance lookup), not by
+`availableTransitions` (synchronous interface, called from every existing community's UI `build()`
+methods). This means the *security* property holds — an ineligible persona genuinely cannot execute the
+guarded transition — but a UI naively built on `availableTransitions` alone would still show the action
+button before it fails on tap. The implementation agent correctly identified this rather than faking a
+cached/blocking lookup to paper over it. **Verification agent's assessment:** converting
+`availableTransitions` to async would ripple through every community's UI code built on it (Garden,
+Camera, Chess, Book, Youth Soccer, Mosque, HOA, Tabletop, plus Milestone 1.3's `RepeaterSurface`) —
+disproportionate scope for this milestone and unnecessary, since `RepeaterSurface` is already
+async-native (it already does live `queryInstances` polling). **Required for Milestone 1.18** (the
+first milestone that actually wires this guard into real UI, via the Tournament + Voting vote-casting
+flow): add a narrow async `availableTransitionsAsync`-style variant used specifically where cross-
+instance guards apply (the Repeater's per-item action resolution), rather than changing the existing
+synchronous method's contract for every other call site. Flagging this explicitly in 1.18's kickoff.
+
+**Implementation history:** the implementation agent staged all changes correctly but hit a hung
+`git commit` that left a stale `.git/index.lock` (0 bytes, no owning process — same underlying class of
+issue as Milestone 1.2's index truncation, both consistent with this repo living inside OneDrive sync
+interfering with git's write locking). Per its kickoff instructions it correctly did **not** use
+`--no-verify` to force past it and did not attempt its own repair — left it for the verification agent,
+who confirmed the lock was stale and removed it safely.
+
+**Verification Agent result (2026-07-12): PASS — CLOSED.** Independently re-ran `dart analyze` (clean)
+and `dart test` (**101/101 passing**, up from Milestone 1.3-era 99) directly in an unsandboxed WSL
+shell. Direct code read confirmed `_passesRelatedListGuard` in `local_workflow_engine_api.dart` is
+called from `applyTransition` before effects are applied, doing a genuine `_db.readInstance` lookup on
+the related instance and checking real list membership — not a stub. Direct read of
+`v3_milestone_1_4_test.dart` confirmed both tests are genuine and non-gamed: the `dueNotifications` test
+uses two real instances with different `dueAt` values and two different `asOf` calls yielding different
+result sets (1 then 2); the guard test creates the vote instance *before* the persona is eligible,
+proves `applyTransition` throws, then proves it succeeds only after a real `updateInstanceFields` call
+adds the persona to the related event's `goingPersonaIds` — conclusively proving live re-evaluation.
 
 ### Milestone 1.5 — Calendar month/week grid
 **Status:** `[ ]` Not started.
@@ -375,11 +412,18 @@ ignores its own `asOf` parameter.
 
 ### Milestone 1.18 — Tournament + Voting feature (flagship milestone)
 **Status:** `[ ]` Not started. Depends on 1.1-1.4, 1.13, 1.17.
+- [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
+  `availableTransitionsAsync`-style variant of the engine API, used specifically by
+  `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
+  `queryInstances` polling), so the ballot's per-candidate vote buttons correctly do NOT render for a
+  persona who fails the cross-instance eligibility guard — not just genuinely blocked on tap. Do not
+  change the existing synchronous `availableTransitions`'s contract or call sites; this is additive.
 - [ ] Full feature per §3: tournament creation with `minimumAttendance` + notification/reminder setup;
-  organizer-authored rich-candidate ballot; cross-instance eligibility guard enforced for real; deadline
-  + scheduled reminders; live per-candidate tally via Repeater + `groupCount` formula; winner/tie
-  detection via `argMaxKey`/`topKeys`/`isTie` formulas; real runoff round on tie; result propagated to
-  the tournament's `selectedGame` via cross-instance `set`.
+  organizer-authored rich-candidate ballot; cross-instance eligibility guard enforced for real (both
+  hidden from ineligible personas via the async variant above, AND genuinely blocked on attempt);
+  deadline + scheduled reminders; live per-candidate tally via Repeater + `groupCount` formula;
+  winner/tie detection via `argMaxKey`/`topKeys`/`isTie` formulas; real runoff round on tie; result
+  propagated to the tournament's `selectedGame` via cross-instance `set`.
 - [ ] Widget/unit tests: a 3-candidate regression with a genuine tie triggering a real runoff round; a
   persona who hasn't RSVP'd genuinely cannot cast a vote, proven by attempting it (not just the button
   being hidden); result propagation confirmed by reading the tournament instance's `selectedGame` after
