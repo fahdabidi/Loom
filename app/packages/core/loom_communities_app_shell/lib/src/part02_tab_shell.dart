@@ -116,7 +116,8 @@ class _SelectedTabHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final fill = modernTheme?.resolvedFill ?? accent.withValues(alpha: 0.90);
-    final body = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.88);
+    final body =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.88);
     return DecoratedBox(
       key: ValueKey('selected-tab-${tab.tabId}'),
       decoration: BoxDecoration(
@@ -145,9 +146,9 @@ class _SelectedTabHeader extends StatelessWidget {
                   ),
                   Text(
                     tab.descriptionFor(persona),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: body,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: body),
                   ),
                 ],
               ),
@@ -187,14 +188,15 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
   // Locally-authored replies keyed by threadId
   final _localReplies = <String, List<LoomMessage>>{};
 
-  List<LoomMessageThread> get _threads =>
-      widget.experience.threads ?? const [];
+  List<LoomMessageThread> get _threads => widget.experience.threads ?? const [];
 
   List<LoomMessageThread> get _visibleThreads {
     return _threads
-        .where((thread) =>
-            thread.participantPersonaIds.contains(widget.persona.personaId) &&
-            !_archivedThreadIds.contains(thread.threadId))
+        .where(
+          (thread) =>
+              thread.participantPersonaIds.contains(widget.persona.personaId) &&
+              !_archivedThreadIds.contains(thread.threadId),
+        )
         .toList();
   }
 
@@ -231,7 +233,9 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
       } else {
         _selectedThreadId = threadId;
         // Mark all messages as read
-        final thread = _threads.firstWhere((thread) => thread.threadId == threadId);
+        final thread = _threads.firstWhere(
+          (thread) => thread.threadId == threadId,
+        );
         for (final message in thread.messages) {
           _readMessageIds.add(message.messageId);
         }
@@ -296,8 +300,8 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.modernTheme?.resolvedHeading ??
-        _foregroundFor(widget.accent);
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
     final visibleThreads = _visibleThreads;
     if (_selectedThread != null) {
       return _ThreadDetailView(
@@ -344,7 +348,8 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
       );
     }
     final inboxFill = widget.modernTheme?.resolvedFill ?? widget.accent;
-    final inboxBorder = widget.modernTheme?.resolvedBorder ??
+    final inboxBorder =
+        widget.modernTheme?.resolvedBorder ??
         foreground.withValues(alpha: 0.18);
     return Column(
       key: const ValueKey('messages-tab-surface'),
@@ -396,9 +401,7 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
                 decoration: BoxDecoration(
                   color: foreground.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: foreground.withValues(alpha: 0.14),
-                  ),
+                  border: Border.all(color: foreground.withValues(alpha: 0.14)),
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
@@ -426,12 +429,13 @@ class _MessagesTabSurfaceState extends State<_MessagesTabSurface> {
                       Expanded(
                         child: Text(
                           thread.subject,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: foreground,
-                            fontWeight: _isUnread(thread.threadId)
-                                ? FontWeight.w800
-                                : FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                color: foreground,
+                                fontWeight: _isUnread(thread.threadId)
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -490,8 +494,8 @@ class _ThreadDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerFill = modernTheme?.resolvedFill ?? accent;
-    final headerBorder = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
+    final headerBorder =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
     return Column(
       key: ValueKey('messages-thread-detail-${thread.threadId}'),
       children: [
@@ -518,10 +522,11 @@ class _ThreadDetailView extends StatelessWidget {
                     children: [
                       Text(
                         thread.subject,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: foreground,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: foreground,
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
                       Text(
                         '${thread.messages.length} message${thread.messages.length == 1 ? '' : 's'}',
@@ -557,10 +562,9 @@ class _ThreadDetailView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
             child: Align(
-              alignment:
-                  message.senderPersonaId == personaId
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+              alignment: message.senderPersonaId == personaId
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Container(
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -571,11 +575,9 @@ class _ThreadDetailView extends StatelessWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color:
-                      message.senderPersonaId == personaId
-                          ? (modernTheme?.accent ?? accent)
-                              .withValues(alpha: 0.18)
-                          : foreground.withValues(alpha: 0.08),
+                  color: message.senderPersonaId == personaId
+                      ? (modernTheme?.accent ?? accent).withValues(alpha: 0.18)
+                      : foreground.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -583,18 +585,16 @@ class _ThreadDetailView extends StatelessWidget {
                   children: [
                     Text(
                       message.body,
-                      style:
-                          Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: foreground,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: foreground),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _formatMessageTime(message.timestamp),
-                      style:
-                          Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: foreground.withValues(alpha: 0.64),
-                          ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: foreground.withValues(alpha: 0.64),
+                      ),
                     ),
                   ],
                 ),
@@ -935,7 +935,8 @@ class _TabNativeRenderer extends StatelessWidget {
             workflow: givingWorkflow,
             personaId: persona.personaId,
             personaLabel: persona.label,
-            allowedPersonaIds: experience
+            allowedPersonaIds:
+                experience
                     .personaPolicies?[givingWorkflow.workflowId]
                     ?.actorPersonaIds ??
                 [persona.personaId],
@@ -998,7 +999,9 @@ class _TabNativeRenderer extends StatelessWidget {
             modernTheme: modernTheme,
           );
         }
-        if (experience.workflows.any((workflow) => workflow.documentLibrary != null)) {
+        if (experience.workflows.any(
+          (workflow) => workflow.documentLibrary != null,
+        )) {
           return _DocumentsTabSurface(
             experience: experience,
             persona: persona,
@@ -1342,7 +1345,9 @@ class _TabNativeRenderer extends StatelessWidget {
 }
 
 bool _isGardenEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('garden-event-rsvp') &&
       ids.contains('plant-exchange-submission') &&
       ids.contains('garden-tool-loan') &&
@@ -1351,7 +1356,9 @@ bool _isGardenEngineExperience(LoomExperienceDefinition experience) {
 }
 
 bool _isCameraEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('photo-walk-rsvp') &&
       ids.contains('critique-submission') &&
       ids.contains('gear-loan-request') &&
@@ -1359,7 +1366,9 @@ bool _isCameraEngineExperience(LoomExperienceDefinition experience) {
 }
 
 bool _isBookEngineExperience(LoomExperienceDefinition experience) {
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('book-nomination') &&
       ids.contains('book-vote') &&
       ids.contains('book-meeting-rsvp') &&
@@ -1370,7 +1379,9 @@ bool _isBookEngineExperience(LoomExperienceDefinition experience) {
 
 bool _isMosqueEngineExperience(LoomExperienceDefinition experience) {
   if (experience.extensionId == 'ext_mosque') return true;
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('mosque-event-rsvp') &&
       ids.contains('mosque-care-request') &&
       ids.contains('mosque-donation-payment') &&
@@ -1379,7 +1390,9 @@ bool _isMosqueEngineExperience(LoomExperienceDefinition experience) {
 
 bool _isYouthSoccerEngineExperience(LoomExperienceDefinition experience) {
   if (experience.extensionId == 'ext_youth_soccer') return true;
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('soccer-guardian-join-approval') &&
       ids.contains('soccer-team-roster') &&
       ids.contains('soccer-practice-schedule') &&
@@ -1388,7 +1401,9 @@ bool _isYouthSoccerEngineExperience(LoomExperienceDefinition experience) {
 
 bool _isChessEngineExperience(LoomExperienceDefinition experience) {
   if (experience.extensionId == 'ext_chess_club') return true;
-  final ids = experience.workflows.map((workflow) => workflow.workflowId).toSet();
+  final ids = experience.workflows
+      .map((workflow) => workflow.workflowId)
+      .toSet();
   return ids.contains('chess-match-meetup') &&
       ids.contains('chess-match-result') &&
       ids.contains('chess-rankings-table') &&
@@ -1574,9 +1589,9 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
   }
 
   Future<void> _seedAndLoad() async {
-    final workflows = _workflowsFromSections(widget.sections)
-        .where((workflow) => workflow.calendarItem != null)
-        .toList();
+    final workflows = _workflowsFromSections(
+      widget.sections,
+    ).where((workflow) => workflow.calendarItem != null).toList();
     final seededInstances = <String, WorkflowInstance>{};
     for (final workflow in workflows) {
       final machine = _machineForEvent(workflow);
@@ -1613,10 +1628,8 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
         ..addAll(seededInstances)
         ..addEntries(
           page.items.map(
-            (instance) => MapEntry(
-              '${instance.instanceData['workflowId']}',
-              instance,
-            ),
+            (instance) =>
+                MapEntry('${instance.instanceData['workflowId']}', instance),
           ),
         );
       _initialLoadComplete = true;
@@ -1637,12 +1650,12 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
     setState(() {
       _instancesByWorkflowId['${instance.instanceData['workflowId']}'] =
           WorkflowInstance(
-        instanceId: instance.instanceId,
-        workflowType: instance.workflowType,
-        currentState: result.newState,
-        instanceData: result.newInstanceData,
-        createdByPersonaId: instance.createdByPersonaId,
-      );
+            instanceId: instance.instanceId,
+            workflowType: instance.workflowType,
+            currentState: result.newState,
+            instanceData: result.newInstanceData,
+            createdByPersonaId: instance.createdByPersonaId,
+          );
     });
   }
 
@@ -1680,7 +1693,10 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
         key: const ValueKey('calendar-tab-surface'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _WeekDateStrip(accent: widget.accent, modernTheme: widget.modernTheme),
+          _WeekDateStrip(
+            accent: widget.accent,
+            modernTheme: widget.modernTheme,
+          ),
           const SizedBox(height: 12),
           _TabNativeSummary(
             icon: Icons.event_available_outlined,
@@ -1709,116 +1725,14 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final selectedDated = datedWorkflows.firstWhere(
-      (workflow) => workflow.workflowId == widget.focusedWorkflowId,
-      orElse: () => datedWorkflows.first,
-    );
-    // Group dated workflows by date string (ISO date YYYY-MM-DD)
-    final groupedByDate = <String, List<LoomWorkflowDefinition>>{};
-    for (final wf in datedWorkflows) {
-      final dateKey = _isoDateKey(wf.calendarItem!.dateTime);
-      groupedByDate.putIfAbsent(dateKey, () => []).add(wf);
-    }
-    final dateKeys = groupedByDate.keys.toList()..sort();
-
-    // Dedupe date-strip items by date key (one chip per date)
-    final stripItems = <String, LoomWorkflowDefinition>{};
-    for (final wf in datedWorkflows) {
-      stripItems.putIfAbsent(_isoDateKey(wf.calendarItem!.dateTime), () => wf);
-    }
     return Column(
       key: const ValueKey('calendar-tab-surface'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Horizontal quick-jump date strip — one chip per date, not per workflow
-        _CalendarAgendaDateStrip(
-          accent: widget.accent,
-          modernTheme: widget.modernTheme,
-          items: stripItems.values.toList()
-            ..sort((a, b) => a.calendarItem!.dateTime.compareTo(b.calendarItem!.dateTime)),
-          selectedWorkflowId: selectedDated.workflowId,
-          onSelectWorkflow: widget.onSelectCalendarDate,
+        CalendarMonthGrid(
+          workflows: datedWorkflows,
+          onSelect: widget.onSelectCalendarDate,
         ),
-        const SizedBox(height: 12),
-        // Vertical date-grouped agenda (unrolled — no Expanded/ListView
-        // since _TabNativeRenderer's output lives inside a SingleChildScrollView)
-        for (final dateKey in dateKeys) ...[
-          Builder(builder: (context) {
-            final events = groupedByDate[dateKey]!;
-            final date = events.first.calendarItem!.dateTime;
-            final foreground =
-                widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Date group header
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color:
-                          widget.modernTheme?.resolvedFill ??
-                          widget.accent.withValues(alpha: 0.82),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color:
-                            widget.modernTheme?.resolvedBorder ??
-                            widget.accent.withValues(alpha: 0.20),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      child: Text(
-                        '${_monthLabel(date.month)} ${date.day}',
-                        key: ValueKey(
-                          'calendar-agenda-date-group-$dateKey',
-                        ),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                              color: foreground,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Event cards under this date
-                for (final workflow in events)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _CalendarEventCard(
-                      workflow: workflow,
-                      accent: widget.accent,
-                      modernTheme: widget.modernTheme,
-                      isFocused:
-                          workflow.workflowId == selectedDated.workflowId,
-                      reminderEnabled: widget.reminderEnabledWorkflowIds.contains(
-                        workflow.workflowId,
-                      ),
-                      instance: _instancesByWorkflowId[workflow.workflowId],
-                      machine: _machinesByWorkflowId[workflow.workflowId],
-                      personaId: widget.persona.personaId,
-                      onTransitionApplied: _applyTransition,
-                      onTap: widget.onSelectCalendarDate == null
-                          ? null
-                          : () =>
-                              widget.onSelectCalendarDate!(workflow.workflowId),
-                      onToggleReminder: widget.onToggleReminder == null
-                          ? null
-                          : () =>
-                              widget.onToggleReminder!(workflow.workflowId),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-              ],
-            );
-          }),
-        ],
         const SizedBox(height: 12),
         for (final workflow in workflows)
           widget.workflowBuilder(
@@ -1843,9 +1757,7 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
         tone: 'destructive',
         from: ['open'],
         to: 'cancelled',
-        guard: WorkflowGuard(
-          allowedPersonaIds: ['tabletop-organizer'],
-        ),
+        guard: WorkflowGuard(allowedPersonaIds: ['tabletop-organizer']),
       ),
     ];
     return LoomWorkflowStateMachine(
@@ -1890,14 +1802,21 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
           searchable: true,
           sortable: true,
         ),
-        'eventDate': InstanceDataField(type: 'date', required: true, sortable: true),
+        'eventDate': InstanceDataField(
+          type: 'date',
+          required: true,
+          sortable: true,
+        ),
         'eventTime': InstanceDataField(type: 'time', required: true),
         'eventDateTime': InstanceDataField(type: 'text'),
         'host': InstanceDataField(type: 'text'),
         'location': InstanceDataField(type: 'text', required: true),
         'capacity': InstanceDataField(type: 'integer', required: true),
         'capacityLabel': InstanceDataField(type: 'text'),
-        'audienceScope': InstanceDataField(type: 'audienceSelector', required: true),
+        'audienceScope': InstanceDataField(
+          type: 'audienceSelector',
+          required: true,
+        ),
         'invitedPersonaIds': InstanceDataField(type: 'personaId[]'),
         'rsvpByPersona': InstanceDataField(type: 'personaResponseMap'),
         'goingPersonaIds': InstanceDataField(type: 'personaId[]'),
@@ -1909,18 +1828,19 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
   List<LoomWorkflowTransition> _responseTransitionsFor(
     LoomWorkflowDefinition workflow,
   ) {
-    final choices = workflow.responseChoices ?? const [
-      LoomWorkflowResponseChoice(responseId: 'going', label: 'Going'),
-      LoomWorkflowResponseChoice(responseId: 'maybe', label: 'Maybe'),
-      LoomWorkflowResponseChoice(
-        responseId: 'not-going',
-        label: 'Not going',
-        isDestructive: true,
-      ),
-    ];
+    final choices =
+        workflow.responseChoices ??
+        const [
+          LoomWorkflowResponseChoice(responseId: 'going', label: 'Going'),
+          LoomWorkflowResponseChoice(responseId: 'maybe', label: 'Maybe'),
+          LoomWorkflowResponseChoice(
+            responseId: 'not-going',
+            label: 'Not going',
+            isDestructive: true,
+          ),
+        ];
     final result = <LoomWorkflowTransition>[
-      for (final choice in choices)
-        _transitionForResponseChoice(choice),
+      for (final choice in choices) _transitionForResponseChoice(choice),
     ];
     if (!choices.any((choice) => choice.responseId == 'waitlist') &&
         _isCapacityFull(workflow.calendarItem?.capacityLabel)) {
@@ -1947,8 +1867,8 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
       tone: choice.isDestructive
           ? 'destructive'
           : responseId == 'going'
-              ? 'primary'
-              : 'secondary',
+          ? 'primary'
+          : 'secondary',
       from: const ['open'],
       guard: const WorkflowGuard(
         allowedPersonaIds: ['tabletop-member', 'tabletop-member-owner'],
@@ -1960,25 +1880,69 @@ class _CalendarTabSurfaceState extends State<_CalendarTabSurface> {
   List<WorkflowEffect> _effectsForResponse(String responseId) {
     return switch (responseId) {
       'going' => const [
-          WorkflowEffect(op: 'set', key: r'rsvpByPersona.$actor', value: 'going'),
-          WorkflowEffect(op: 'appendUnique', key: 'goingPersonaIds', value: r'$actor'),
-          WorkflowEffect(op: 'removeValue', key: 'waitlistedPersonaIds', value: r'$actor'),
-        ],
+        WorkflowEffect(op: 'set', key: r'rsvpByPersona.$actor', value: 'going'),
+        WorkflowEffect(
+          op: 'appendUnique',
+          key: 'goingPersonaIds',
+          value: r'$actor',
+        ),
+        WorkflowEffect(
+          op: 'removeValue',
+          key: 'waitlistedPersonaIds',
+          value: r'$actor',
+        ),
+      ],
       'waitlist' => const [
-          WorkflowEffect(op: 'set', key: r'rsvpByPersona.$actor', value: 'waitlist'),
-          WorkflowEffect(op: 'appendUnique', key: 'waitlistedPersonaIds', value: r'$actor'),
-          WorkflowEffect(op: 'removeValue', key: 'goingPersonaIds', value: r'$actor'),
-        ],
+        WorkflowEffect(
+          op: 'set',
+          key: r'rsvpByPersona.$actor',
+          value: 'waitlist',
+        ),
+        WorkflowEffect(
+          op: 'appendUnique',
+          key: 'waitlistedPersonaIds',
+          value: r'$actor',
+        ),
+        WorkflowEffect(
+          op: 'removeValue',
+          key: 'goingPersonaIds',
+          value: r'$actor',
+        ),
+      ],
       'not-going' => const [
-          WorkflowEffect(op: 'set', key: r'rsvpByPersona.$actor', value: 'not-going'),
-          WorkflowEffect(op: 'removeValue', key: 'goingPersonaIds', value: r'$actor'),
-          WorkflowEffect(op: 'removeValue', key: 'waitlistedPersonaIds', value: r'$actor'),
-        ],
+        WorkflowEffect(
+          op: 'set',
+          key: r'rsvpByPersona.$actor',
+          value: 'not-going',
+        ),
+        WorkflowEffect(
+          op: 'removeValue',
+          key: 'goingPersonaIds',
+          value: r'$actor',
+        ),
+        WorkflowEffect(
+          op: 'removeValue',
+          key: 'waitlistedPersonaIds',
+          value: r'$actor',
+        ),
+      ],
       _ => [
-          WorkflowEffect(op: 'set', key: r'rsvpByPersona.$actor', value: responseId),
-          const WorkflowEffect(op: 'removeValue', key: 'goingPersonaIds', value: r'$actor'),
-          const WorkflowEffect(op: 'removeValue', key: 'waitlistedPersonaIds', value: r'$actor'),
-        ],
+        WorkflowEffect(
+          op: 'set',
+          key: r'rsvpByPersona.$actor',
+          value: responseId,
+        ),
+        const WorkflowEffect(
+          op: 'removeValue',
+          key: 'goingPersonaIds',
+          value: r'$actor',
+        ),
+        const WorkflowEffect(
+          op: 'removeValue',
+          key: 'waitlistedPersonaIds',
+          value: r'$actor',
+        ),
+      ],
     };
   }
 
@@ -2039,7 +2003,7 @@ class _CalendarEventCard extends StatelessWidget {
   final LoomWorkflowStateMachine? machine;
   final String personaId;
   final Future<void> Function(WorkflowInstance instance, String transitionId)
-      onTransitionApplied;
+  onTransitionApplied;
   final VoidCallback? onTap;
   final VoidCallback? onToggleReminder;
 
@@ -2058,8 +2022,7 @@ class _CalendarEventCard extends StatelessWidget {
         onToggleReminder: onToggleReminder,
       );
     }
-    final foreground =
-        modernTheme?.resolvedHeading ?? _foregroundFor(accent);
+    final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final item = workflow.calendarItem!;
     return InkWell(
       key: ValueKey('calendar-event-card-${workflow.workflowId}'),
@@ -2124,8 +2087,18 @@ String _isoDateKey(DateTime date) {
 
 String _monthLabel(int month) {
   const labels = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return labels[(month - 1).clamp(0, 11)];
 }
@@ -2149,10 +2122,10 @@ class _CalendarAgendaDateStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(accent);
     final selectedFill = modernTheme?.accent ?? accent;
-    final unselectedFill = modernTheme?.resolvedFill ??
-        Colors.white.withValues(alpha: 0.72);
-    final stripBorder = modernTheme?.resolvedBorder ??
-        accent.withValues(alpha: 0.22);
+    final unselectedFill =
+        modernTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.72);
+    final stripBorder =
+        modernTheme?.resolvedBorder ?? accent.withValues(alpha: 0.22);
     return SizedBox(
       key: const ValueKey('calendar-agenda-date-strip'),
       height: 72,
@@ -2187,22 +2160,20 @@ class _CalendarAgendaDateStrip extends StatelessWidget {
                     children: [
                       Text(
                         _weekdayLabel(date.weekday),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.labelMedium?.copyWith(
-                          color: selected ? foreground : accent,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                              color: selected ? foreground : accent,
+                              fontWeight: FontWeight.w800,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${date.day}',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(
-                          color: selected ? foreground : accent,
-                          fontWeight: FontWeight.w900,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: selected ? foreground : accent,
+                              fontWeight: FontWeight.w900,
+                            ),
                       ),
                     ],
                   ),
@@ -2237,7 +2208,7 @@ class _CalendarEventDetail extends StatefulWidget {
   final String personaId;
   final bool reminderEnabled;
   final Future<void> Function(WorkflowInstance instance, String transitionId)
-      onTransitionApplied;
+  onTransitionApplied;
   final VoidCallback? onToggleReminder;
 
   @override
@@ -2251,9 +2222,11 @@ class _CalendarEventDetailState extends State<_CalendarEventDetail> {
   Widget build(BuildContext context) {
     final foreground =
         widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
-    final fill = widget.modernTheme?.resolvedFill ??
+    final fill =
+        widget.modernTheme?.resolvedFill ??
         Color.alphaBlend(foreground.withValues(alpha: 0.08), widget.accent);
-    final border = widget.modernTheme?.resolvedBorder ??
+    final border =
+        widget.modernTheme?.resolvedBorder ??
         foreground.withValues(alpha: 0.18);
     final item = widget.workflow.calendarItem!;
     return DecoratedBox(
@@ -2314,8 +2287,9 @@ class _CalendarEventDetailState extends State<_CalendarEventDetail> {
               instanceData: _eventRsvpInstanceData(item, widget.instance),
               instanceDataSchema: eventRsvpDefaultInstanceDataSchema,
               availableTransitions: _eventRsvpTransitions(widget.instance),
-              onTransitionPressed:
-                  _transitionInFlight ? null : _applyEngineTransition,
+              onTransitionPressed: _transitionInFlight
+                  ? null
+                  : _applyEngineTransition,
             ),
           ],
         ),
@@ -2338,15 +2312,19 @@ class _CalendarEventDetailState extends State<_CalendarEventDetail> {
   ) {
     final data = instance?.instanceData ?? const <String, dynamic>{};
     final responseId = _responseIdForPersona(data, widget.personaId);
-    final responseLabel = responseId == null ? '' : _labelForResponse(responseId);
+    final responseLabel = responseId == null
+        ? ''
+        : _labelForResponse(responseId);
     final goingPersonaIds = _stringList(data['goingPersonaIds']);
     final waitlistedPersonaIds = _stringList(data['waitlistedPersonaIds']);
-    final capacity = _intData(data['capacity']) ??
+    final capacity =
+        _intData(data['capacity']) ??
         _capacityFromLabel(item.capacityLabel) ??
         goingPersonaIds.length;
     return {
       'eventDate': data['eventDate'] ?? _formatEventDate(item.dateTime),
-      'eventDateTime': data['eventDateTime'] ?? _formatEventDateTime(item.dateTime),
+      'eventDateTime':
+          data['eventDateTime'] ?? _formatEventDateTime(item.dateTime),
       'host': data['host'] ?? item.host ?? '',
       'location': data['location'] ?? item.location ?? '',
       'capacityLabel': _capacityLabel(goingPersonaIds.length, capacity),
@@ -2361,9 +2339,12 @@ class _CalendarEventDetailState extends State<_CalendarEventDetail> {
   ) {
     final machine = widget.machine;
     if (machine == null || instance == null) return const [];
-    final currentResponseId =
-        _responseIdForPersona(instance.instanceData, widget.personaId);
-    final transitions = machine.transitionsFrom(instance.currentState)
+    final currentResponseId = _responseIdForPersona(
+      instance.instanceData,
+      widget.personaId,
+    );
+    final transitions = machine
+        .transitionsFrom(instance.currentState)
         .where(
           (transition) => evaluateGuard(
             transition.guard,
@@ -2623,8 +2604,9 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         );
       }
     }
-    final completed =
-        await _engine.completedWorkflowIdsForPersona(widget.persona.personaId);
+    final completed = await _engine.completedWorkflowIdsForPersona(
+      widget.persona.personaId,
+    );
     if (!mounted) return;
     setState(() => _completedWorkflowIds = completed);
   }
@@ -2667,8 +2649,9 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         personaId: widget.persona.personaId,
       );
     }
-    _completedWorkflowIds =
-        await _engine.completedWorkflowIdsForPersona(widget.persona.personaId);
+    _completedWorkflowIds = await _engine.completedWorkflowIdsForPersona(
+      widget.persona.personaId,
+    );
     await _loadNextPage();
   }
 
@@ -2683,9 +2666,11 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     );
     if (!mounted) return;
     setState(() {
-      _visibleInstances.addAll(page.items.where(
-        (instance) => instance.workflowType.startsWith('marketplace_'),
-      ));
+      _visibleInstances.addAll(
+        page.items.where(
+          (instance) => instance.workflowType.startsWith('marketplace_'),
+        ),
+      );
       _nextCursor = page.nextCursor;
       _hasMore = page.hasMore;
       _loadingPage = false;
@@ -2704,7 +2689,9 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     }
     if (_selectedCategory != null) {
       listings = listings
-          .where((listing) => _stringData(listing, 'category') == _selectedCategory)
+          .where(
+            (listing) => _stringData(listing, 'category') == _selectedCategory,
+          )
           .toList();
     }
     return listings;
@@ -2743,7 +2730,8 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         actorInList: transition.guard.actorInList,
         instanceDataEquals: transition.guard.instanceDataEquals,
       );
-      final waiting = !allowed &&
+      final waiting =
+          !allowed &&
           (transition.guard.requiresWorkflowsComplete?.isNotEmpty ?? false) &&
           evaluateGuard(
             guardWithoutPrerequisites,
@@ -2810,8 +2798,9 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
     });
 
     final linkedWorkflowId = transition.linkedWorkflowId;
-    final workflow =
-        linkedWorkflowId == null ? null : _resolveWorkflow(linkedWorkflowId);
+    final workflow = linkedWorkflowId == null
+        ? null
+        : _resolveWorkflow(linkedWorkflowId);
     if (workflow != null) {
       widget.onConfirmWorkflow?.call(workflow);
     }
@@ -2849,7 +2838,8 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         if (_stringData(listing, 'category').isNotEmpty)
           _stringData(listing, 'category'),
     };
-    final border = widget.modernTheme?.resolvedBorder ??
+    final border =
+        widget.modernTheme?.resolvedBorder ??
         foreground.withValues(alpha: 0.18);
     return Column(
       key: const ValueKey('marketplace-tab-surface'),
@@ -2896,8 +2886,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
                     key: ValueKey('marketplace-filter-$cat'),
                     borderRadius: BorderRadius.circular(999),
                     onTap: () => setState(() {
-                      _selectedCategory =
-                          _selectedCategory == cat ? null : cat;
+                      _selectedCategory = _selectedCategory == cat ? null : cat;
                     }),
                     child: Chip(
                       label: Text(cat),
@@ -2939,7 +2928,7 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
               final crossAxisCount = wide ? 3 : 2;
               final itemWidth =
                   (constraints.maxWidth - (crossAxisCount - 1) * 10) /
-                      crossAxisCount;
+                  crossAxisCount;
               final itemHeight = itemWidth / 0.72;
               final rows = (filtered.length / crossAxisCount).ceil();
               final gridHeight = rows * (itemHeight + 10) - 10;
@@ -2990,7 +2979,8 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
   }
 
   LoomWorkflowStateMachine _machineForListing(LoomMarketplaceListing listing) {
-    final legacy = listing.stateMachine ??
+    final legacy =
+        listing.stateMachine ??
         widget.marketplaceTemplate ??
         _defaultLoanMarketplaceTemplate(listing);
     final initialState = _initialStateFor(listing, legacy);
@@ -3037,16 +3027,10 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
         allowedPersonaIds: transition.allowedPersonaIds,
         requiresWorkflowsComplete: transition.requiresWorkflowsComplete,
         actorInList: transition.requiresActorInQueue
-            ? const ListMembershipGuard(
-                key: 'queuedPersonaIds',
-                present: true,
-              )
+            ? const ListMembershipGuard(key: 'queuedPersonaIds', present: true)
             : transition.requiresActorNotInQueue
-                ? const ListMembershipGuard(
-                    key: 'queuedPersonaIds',
-                    present: false,
-                  )
-                : null,
+            ? const ListMembershipGuard(key: 'queuedPersonaIds', present: false)
+            : null,
       ),
       effects: [
         if (transition.setsHolderToActor)
@@ -3291,8 +3275,8 @@ class _WorkflowMarketplaceListingCard extends StatelessWidget {
     final statusColor = state?.tone == 'positive'
         ? Colors.green
         : state?.tone == 'warning'
-            ? Colors.orange
-            : foreground.withValues(alpha: 0.70);
+        ? Colors.orange
+        : foreground.withValues(alpha: 0.70);
     return InkWell(
       key: ValueKey('marketplace-listing-$listingId'),
       borderRadius: BorderRadius.circular(14),
@@ -3323,9 +3307,9 @@ class _WorkflowMarketplaceListingCard extends StatelessWidget {
                     child: Text(
                       state?.label ?? listing.currentState,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: statusColor,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -3377,8 +3361,8 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
     final listingId = listing.instanceData['listingId'] as String;
     final title = listing.instanceData['title'] as String;
     final headerFill = modernTheme?.resolvedFill ?? accent;
-    final headerBorder = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
+    final headerBorder =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
     return Column(
       key: ValueKey('marketplace-listing-detail-$listingId'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -3404,9 +3388,9 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
                   child: Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: foreground,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
@@ -3416,7 +3400,8 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
         const SizedBox(height: 12),
         _SurfaceFactPill(
           icon: Icons.label_outline,
-          label: machine.states[listing.currentState]?.label ??
+          label:
+              machine.states[listing.currentState]?.label ??
               listing.currentState,
           foreground: foreground,
         ),
@@ -3438,8 +3423,8 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
             child: Text(
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: foreground.withValues(alpha: 0.88),
-                  ),
+                color: foreground.withValues(alpha: 0.88),
+              ),
             ),
           ),
         const SizedBox(height: 24),
@@ -3447,6 +3432,7 @@ class _WorkflowMarketplaceListingDetailView extends StatelessWidget {
     );
   }
 }
+
 /// Compact listing card for the marketplace grid.
 class _ListingCard extends StatelessWidget {
   const _ListingCard({
@@ -3469,23 +3455,26 @@ class _ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedState = listing.stateMachine?.states[listing.state ?? listing.availability];
-    final statusLabel = resolvedState?.label ?? switch (listing.availability) {
-      'onLoan' => 'On loan',
-      'queued' => 'Queued',
-      _ => 'Available',
-    };
+    final resolvedState =
+        listing.stateMachine?.states[listing.state ?? listing.availability];
+    final statusLabel =
+        resolvedState?.label ??
+        switch (listing.availability) {
+          'onLoan' => 'On loan',
+          'queued' => 'Queued',
+          _ => 'Available',
+        };
     final statusColor = resolvedState != null
         ? resolvedState.tone == 'positive'
-            ? Colors.green
-            : resolvedState.tone == 'warning'
-                ? Colors.orange
-                : foreground.withValues(alpha: 0.70)
+              ? Colors.green
+              : resolvedState.tone == 'warning'
+              ? Colors.orange
+              : foreground.withValues(alpha: 0.70)
         : listing.availability == 'available'
-            ? Colors.green
-            : listing.availability == 'queued'
-                ? Colors.orange
-                : foreground.withValues(alpha: 0.70);
+        ? Colors.green
+        : listing.availability == 'queued'
+        ? Colors.orange
+        : foreground.withValues(alpha: 0.70);
     return InkWell(
       key: ValueKey('marketplace-listing-${listing.listingId}'),
       borderRadius: BorderRadius.circular(14),
@@ -3604,9 +3593,10 @@ class _ListingDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final headerFill = modernTheme?.resolvedFill ?? accent;
-    final headerBorder = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
-    final factFill = modernTheme?.resolvedFill ??
+    final headerBorder =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
+    final factFill =
+        modernTheme?.resolvedFill ??
         Color.alphaBlend(foreground.withValues(alpha: 0.06), accent);
     return Column(
       key: ValueKey('marketplace-listing-detail-${listing.listingId}'),
@@ -3649,9 +3639,7 @@ class _ListingDetailView extends StatelessWidget {
           decoration: BoxDecoration(
             color: factFill,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: foreground.withValues(alpha: 0.14),
-            ),
+            border: Border.all(color: foreground.withValues(alpha: 0.14)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -3667,12 +3655,16 @@ class _ListingDetailView extends StatelessWidget {
                   ),
                 _SurfaceFactPill(
                   icon: Icons.label_outline,
-                  label: listing.stateMachine?.states[listing.state ?? listing.availability]?.label ??
+                  label:
+                      listing
+                          .stateMachine
+                          ?.states[listing.state ?? listing.availability]
+                          ?.label ??
                       (listing.availability == 'available'
                           ? 'Available'
                           : listing.availability == 'onLoan'
-                              ? 'On loan'
-                              : 'Queued'),
+                          ? 'On loan'
+                          : 'Queued'),
                   foreground: foreground,
                 ),
                 if (listing.category != null)
@@ -3729,7 +3721,7 @@ class _ListingDetailView extends StatelessWidget {
                         modernTheme?.primaryButton?.resolvedFill ?? accent,
                     foregroundColor:
                         modernTheme?.primaryButton?.resolvedForeground ??
-                            Colors.white,
+                        Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -3750,10 +3742,10 @@ class _ListingDetailView extends StatelessWidget {
                     transition.id == 'borrow'
                         ? Icons.swap_horiz
                         : transition.id == 'join-queue'
-                            ? Icons.queue_outlined
-                            : transition.id == 'return'
-                                ? Icons.assignment_return_outlined
-                                : Icons.arrow_forward,
+                        ? Icons.queue_outlined
+                        : transition.id == 'return'
+                        ? Icons.assignment_return_outlined
+                        : Icons.arrow_forward,
                   ),
                   label: Text(transition.label),
                 ),
@@ -3815,12 +3807,13 @@ class _DocumentsTabSurface extends StatelessWidget {
             accent: accent,
             modernTheme: modernTheme,
           ),
-        if (_workflowsFromSections(sections)
-            .where((workflow) => workflow.documentLibrary == null)
-            .isNotEmpty) ...[
+        if (_workflowsFromSections(
+          sections,
+        ).where((workflow) => workflow.documentLibrary == null).isNotEmpty) ...[
           const SizedBox(height: 12),
-          for (final workflow in _workflowsFromSections(sections)
-              .where((workflow) => workflow.documentLibrary == null))
+          for (final workflow in _workflowsFromSections(
+            sections,
+          ).where((workflow) => workflow.documentLibrary == null))
             workflowBuilder(
               workflow,
               _presentationStateForWorkflow(
@@ -3915,9 +3908,9 @@ class _DocumentLibraryWorkflowSurfaceState
           children: [
             Text(
               widget.workflow.title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 4),
             Text(widget.workflow.entryText),
@@ -3937,8 +3930,9 @@ class _DocumentLibraryWorkflowSurfaceState
                     selected: category == _selectedCategory,
                     onSelected: (_) => setState(() {
                       _selectedCategory = category;
-                      _selectedDocumentId =
-                          _documentsForCategory(category).firstOrNull?.documentId;
+                      _selectedDocumentId = _documentsForCategory(
+                        category,
+                      ).firstOrNull?.documentId;
                     }),
                   ),
               ],
@@ -3950,7 +3944,9 @@ class _DocumentLibraryWorkflowSurfaceState
                 child: ListTile(
                   leading: const Icon(Icons.description_outlined),
                   title: Text(document.title),
-                  subtitle: Text('${document.version} - ${document.updatedLabel}'),
+                  subtitle: Text(
+                    '${document.version} - ${document.updatedLabel}',
+                  ),
                   trailing: Text(_accessStateFor(document)),
                   selected: document.documentId == _selectedDocumentId,
                   onTap: () =>
@@ -3965,18 +3961,12 @@ class _DocumentLibraryWorkflowSurfaceState
                 currentState: selectedInstance.currentState,
                 persona: widget.persona,
                 accent: widget.accent,
-                onEmbeddedOpen: () => _applyDocumentTransition(
-                  selectedDocument,
-                  'open-embedded',
-                ),
-                onExternalOpen: () => _applyDocumentTransition(
-                  selectedDocument,
-                  'open-external',
-                ),
-                onAcknowledge: () => _applyDocumentTransition(
-                  selectedDocument,
-                  'acknowledge',
-                ),
+                onEmbeddedOpen: () =>
+                    _applyDocumentTransition(selectedDocument, 'open-embedded'),
+                onExternalOpen: () =>
+                    _applyDocumentTransition(selectedDocument, 'open-external'),
+                onAcknowledge: () =>
+                    _applyDocumentTransition(selectedDocument, 'acknowledge'),
                 onRequestAccess: () => _applyDocumentTransition(
                   selectedDocument,
                   'request-access',
@@ -3986,9 +3976,9 @@ class _DocumentLibraryWorkflowSurfaceState
             const SizedBox(height: 12),
             Text(
               'Audit trail',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
             if (_auditEntriesForSelected.isEmpty)
@@ -4029,11 +4019,13 @@ class _DocumentLibraryWorkflowSurfaceState
   List<String> get _auditEntriesForSelected {
     final selectedDocument = _selectedDocument;
     if (selectedDocument == null) return const [];
-    final auditTrail =
-        _instancesByDocumentId[selectedDocument.documentId]
-            ?.instanceData['auditTrail'];
+    final auditTrail = _instancesByDocumentId[selectedDocument.documentId]
+        ?.instanceData['auditTrail'];
     if (auditTrail is! List) return const [];
-    return [for (final entry in auditTrail) if (entry is String) entry];
+    return [
+      for (final entry in auditTrail)
+        if (entry is String) entry,
+    ];
   }
 
   Future<void> _seedAndLoad() async {
@@ -4103,9 +4095,7 @@ class _DocumentLibraryWorkflowSurfaceState
       'acknowledged',
       'access-requested',
     ];
-    final guard = WorkflowGuard(
-      allowedPersonaIds: [widget.persona.personaId],
-    );
+    final guard = WorkflowGuard(allowedPersonaIds: [widget.persona.personaId]);
     return LoomWorkflowStateMachine(
       workflowType: workflowType,
       initialState: 'available',
@@ -4150,11 +4140,7 @@ class _DocumentLibraryWorkflowSurfaceState
           to: 'read',
           guard: guard,
           effects: const [
-            WorkflowEffect(
-              op: 'set',
-              key: 'accessState',
-              value: 'read',
-            ),
+            WorkflowEffect(op: 'set', key: 'accessState', value: 'read'),
             WorkflowEffect(
               op: 'append',
               key: 'auditTrail',
@@ -4171,11 +4157,7 @@ class _DocumentLibraryWorkflowSurfaceState
           to: 'read',
           guard: guard,
           effects: const [
-            WorkflowEffect(
-              op: 'set',
-              key: 'accessState',
-              value: 'read',
-            ),
+            WorkflowEffect(op: 'set', key: 'accessState', value: 'read'),
             WorkflowEffect(
               op: 'append',
               key: 'auditTrail',
@@ -4256,8 +4238,8 @@ class _DocumentDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasAccess = accessState != 'restricted';
-    final canTransition = currentState != 'acknowledged' &&
-        currentState != 'access-requested';
+    final canTransition =
+        currentState != 'acknowledged' && currentState != 'access-requested';
     return DecoratedBox(
       key: ValueKey('document-detail-${document.documentId}'),
       decoration: BoxDecoration(
@@ -4272,9 +4254,9 @@ class _DocumentDetailCard extends StatelessWidget {
           children: [
             Text(
               document.title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
             if (document.summary case final summary?) ...[
               const SizedBox(height: 4),
@@ -4308,31 +4290,39 @@ class _DocumentDetailCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 FilledButton.icon(
-                  key: ValueKey('document-open-embedded-${document.documentId}'),
+                  key: ValueKey(
+                    'document-open-embedded-${document.documentId}',
+                  ),
                   onPressed: hasAccess && canTransition ? onEmbeddedOpen : null,
                   icon: const Icon(Icons.open_in_browser_outlined),
                   label: Text(document.embeddedLabel),
                 ),
                 OutlinedButton.icon(
-                  key: ValueKey('document-open-external-${document.documentId}'),
+                  key: ValueKey(
+                    'document-open-external-${document.documentId}',
+                  ),
                   onPressed: hasAccess && canTransition ? onExternalOpen : null,
                   icon: const Icon(Icons.open_in_new_outlined),
                   label: Text(document.externalLabel),
                 ),
                 if (hasAccess && canTransition)
                   OutlinedButton.icon(
-                    key: ValueKey('document-acknowledge-${document.documentId}'),
+                    key: ValueKey(
+                      'document-acknowledge-${document.documentId}',
+                    ),
                     onPressed: onAcknowledge,
                     icon: const Icon(Icons.fact_check_outlined),
                     label: Text(document.acknowledgeLabel),
                   ),
                 if (!hasAccess || accessState == 'access-requested')
                   OutlinedButton.icon(
-                    key: ValueKey('document-request-access-${document.documentId}'),
+                    key: ValueKey(
+                      'document-request-access-${document.documentId}',
+                    ),
                     onPressed:
                         accessState == 'access-requested' || !canTransition
-                            ? null
-                            : onRequestAccess,
+                        ? null
+                        : onRequestAccess,
                     icon: const Icon(Icons.lock_open_outlined),
                     label: Text(
                       accessState == 'access-requested'
@@ -4449,7 +4439,10 @@ class _ArchitecturalRequestTabSurfaceState
     await _load();
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -4505,9 +4498,9 @@ class _ArchitecturalRequestTabSurfaceState
           children: [
             Text(
               'Architectural request form',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
@@ -4523,7 +4516,9 @@ class _ArchitecturalRequestTabSurfaceState
             TextField(
               key: const ValueKey('hoa-request-project-description'),
               controller: _projectController,
-              decoration: const InputDecoration(labelText: 'Project description'),
+              decoration: const InputDecoration(
+                labelText: 'Project description',
+              ),
             ),
             TextField(
               key: const ValueKey('hoa-request-property-address'),
@@ -4566,9 +4561,9 @@ class _ArchitecturalRequestTabSurfaceState
           children: [
             Text(
               'Decision queue',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             if (_instances.isEmpty)
@@ -4581,14 +4576,17 @@ class _ArchitecturalRequestTabSurfaceState
                   ),
                   child: ListTile(
                     leading: const Icon(Icons.assignment_outlined),
-                    title: Text('${instance.instanceData['projectDescription']}'),
+                    title: Text(
+                      '${instance.instanceData['projectDescription']}',
+                    ),
                     subtitle: Text(
                       '${instance.instanceData['ownerLabel']} - ${_labelForState(instance.currentState)}',
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     selected: instance.instanceId == _selectedInstanceId,
-                    onTap: () =>
-                        setState(() => _selectedInstanceId = instance.instanceId),
+                    onTap: () => setState(
+                      () => _selectedInstanceId = instance.instanceId,
+                    ),
                   ),
                 ),
           ],
@@ -4604,7 +4602,10 @@ class _ArchitecturalRequestTabSurfaceState
     );
     final history = instance.instanceData['history'];
     final historyItems = history is List
-        ? [for (final entry in history) if (entry is String) entry]
+        ? [
+            for (final entry in history)
+              if (entry is String) entry,
+          ]
         : const <String>[];
     return DecoratedBox(
       key: const ValueKey('hoa-request-timeline'),
@@ -4618,9 +4619,9 @@ class _ArchitecturalRequestTabSurfaceState
               widget.boardMode
                   ? 'Committee decision card'
                   : 'Architectural request status',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -4646,7 +4647,9 @@ class _ArchitecturalRequestTabSurfaceState
             ),
             const SizedBox(height: 10),
             Text('Project: ${instance.instanceData['projectDescription']}'),
-            Text('Requested date: ${instance.instanceData['requestedCompletionDate']}'),
+            Text(
+              'Requested date: ${instance.instanceData['requestedCompletionDate']}',
+            ),
             Text('Attachments: ${instance.instanceData['attachments']}'),
             if (instance.instanceData['reviewerNote'] case final note?)
               Text('Reviewer note: $note'),
@@ -4657,9 +4660,7 @@ class _ArchitecturalRequestTabSurfaceState
               children: [
                 for (final transition in transitions)
                   OutlinedButton(
-                    key: ValueKey(
-                      'hoa-request-action-${transition.id}',
-                    ),
+                    key: ValueKey('hoa-request-action-${transition.id}'),
                     onPressed: () => _transition(instance, transition.id),
                     child: Text(transition.label),
                   ),
@@ -4668,12 +4669,15 @@ class _ArchitecturalRequestTabSurfaceState
             const SizedBox(height: 12),
             Text(
               'Status history',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
             for (final entry in historyItems)
-              Text(entry, key: ValueKey('hoa-request-history-${entry.hashCode}')),
+              Text(
+                entry,
+                key: ValueKey('hoa-request-history-${entry.hashCode}'),
+              ),
           ],
         ),
       ),
@@ -4681,14 +4685,14 @@ class _ArchitecturalRequestTabSurfaceState
   }
 
   BoxDecoration get _requestBoxDecoration => BoxDecoration(
-        color: widget.modernTheme?.resolvedFill ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              widget.modernTheme?.resolvedBorder ??
-              widget.accent.withValues(alpha: 0.2),
-        ),
-      );
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 
   WorkflowInstance? get _selectedInstance {
     for (final instance in _instances) {
@@ -4800,162 +4804,154 @@ class _ArchitecturalRequestStore {
   }
 
   LoomWorkflowStateMachine get _machine => LoomWorkflowStateMachine(
-        workflowType: workflowId,
-        initialState: 'submitted',
-        states: const {
-          'submitted': LoomWorkflowState(
-            label: 'Submitted',
-            editableFields: [
-              'projectDescription',
-              'propertyAddress',
-              'requestedCompletionDate',
-              'attachments',
-            ],
-          ),
-          'under-review': LoomWorkflowState(label: 'Under review'),
-          'changes-needed': LoomWorkflowState(
-            label: 'Changes needed',
-            editableFields: [
-              'projectDescription',
-              'propertyAddress',
-              'requestedCompletionDate',
-              'attachments',
-            ],
-          ),
-          'approved': LoomWorkflowState(label: 'Approved'),
-          'denied': LoomWorkflowState(label: 'Denied'),
-          'reopened': LoomWorkflowState(label: 'Reopened'),
-          'withdrawn': LoomWorkflowState(label: 'Withdrawn', isTerminal: true),
-        },
-        renderBindings: const [
-          RenderBinding(
-            states: [
-              'submitted',
-              'under-review',
-              'changes-needed',
-              'approved',
-              'denied',
-              'reopened',
-              'withdrawn',
-            ],
-            role: 'actor',
-            tabId: 'requests',
-            cardSurfaceFamily: 'statusTimeline',
-            bindingKind: 'primary',
-          ),
-          RenderBinding(
-            states: [
-              'submitted',
-              'under-review',
-              'changes-needed',
-              'reopened',
-            ],
-            role: 'receiver',
-            tabId: 'admin',
-            cardSurfaceFamily: 'dashboard',
-            bindingKind: 'summary',
-          ),
-          RenderBinding(
-            states: [
-              'submitted',
-              'under-review',
-              'changes-needed',
-              'approved',
-              'denied',
-              'reopened',
-            ],
-            role: 'receiver',
-            tabId: 'admin',
-            cardSurfaceFamily: 'statusTimeline',
-            bindingKind: 'primary',
-          ),
+    workflowType: workflowId,
+    initialState: 'submitted',
+    states: const {
+      'submitted': LoomWorkflowState(
+        label: 'Submitted',
+        editableFields: [
+          'projectDescription',
+          'propertyAddress',
+          'requestedCompletionDate',
+          'attachments',
         ],
-        instanceDataSchema: const {
-          'projectDescription': InstanceDataField(
-            type: 'text',
-            required: true,
-          ),
-          'propertyAddress': InstanceDataField(type: 'text', required: true),
-          'requestedCompletionDate': InstanceDataField(
-            type: 'date',
-            required: true,
-          ),
-          'attachments': InstanceDataField(type: 'text', required: true),
-          'ownerPersonaId': InstanceDataField(type: 'string', required: true),
-          'ownerLabel': InstanceDataField(type: 'string', required: true),
-          'reviewerNote': InstanceDataField(type: 'text'),
-          'history': InstanceDataField(type: 'list'),
-        },
-        transitions: [
-          _transition(
-            id: 'start-review',
-            label: 'Start review',
-            from: const ['submitted', 'reopened'],
-            to: 'under-review',
-            personas: const ['hoa-board'],
-            history: 'HOA Board at \$timestamp started review',
-          ),
-          _transition(
-            id: 'request-changes',
-            label: 'Request changes',
-            from: const ['submitted', 'under-review', 'reopened'],
-            to: 'changes-needed',
-            personas: const ['hoa-board'],
-            reviewerNote: 'Please revise the color sample and setback diagram.',
-            history: 'HOA Board at \$timestamp requested changes',
-          ),
-          _transition(
-            id: 'approve',
-            label: 'Approve request',
-            from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
-            to: 'approved',
-            personas: const ['hoa-board'],
-            reviewerNote: 'Approved with standard construction-hour conditions.',
-            history: 'HOA Board at \$timestamp approved request',
-          ),
-          _transition(
-            id: 'reject',
-            label: 'Reject request',
-            from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
-            to: 'denied',
-            personas: const ['hoa-board'],
-            reviewerNote: 'Rejected; proposal conflicts with current covenants.',
-            history: 'HOA Board at \$timestamp rejected request',
-          ),
-          _transition(
-            id: 'resubmit',
-            label: 'Retry submission',
-            from: const ['changes-needed'],
-            to: 'submitted',
-            personas: const ['hoa-homeowner'],
-            history: '{ownerLabel} at \$timestamp retried submission',
-          ),
-          _transition(
-            id: 'reopen',
-            label: 'Reopen request',
-            from: const ['approved', 'denied', 'changes-needed'],
-            to: 'reopened',
-            personas: const ['hoa-homeowner'],
-            history: '{ownerLabel} at \$timestamp reopened request',
-          ),
-          _transition(
-            id: 'appeal',
-            label: 'Appeal decision',
-            from: const ['denied'],
-            to: 'reopened',
-            personas: const ['hoa-homeowner'],
-            history: '{ownerLabel} at \$timestamp appealed decision',
-          ),
-          _transition(
-            id: 'withdraw',
-            label: 'Withdraw request',
-            from: const ['submitted', 'changes-needed', 'reopened'],
-            to: 'withdrawn',
-            personas: const ['hoa-homeowner'],
-            history: '{ownerLabel} at \$timestamp withdrew request',
-          ),
+      ),
+      'under-review': LoomWorkflowState(label: 'Under review'),
+      'changes-needed': LoomWorkflowState(
+        label: 'Changes needed',
+        editableFields: [
+          'projectDescription',
+          'propertyAddress',
+          'requestedCompletionDate',
+          'attachments',
         ],
-      );
+      ),
+      'approved': LoomWorkflowState(label: 'Approved'),
+      'denied': LoomWorkflowState(label: 'Denied'),
+      'reopened': LoomWorkflowState(label: 'Reopened'),
+      'withdrawn': LoomWorkflowState(label: 'Withdrawn', isTerminal: true),
+    },
+    renderBindings: const [
+      RenderBinding(
+        states: [
+          'submitted',
+          'under-review',
+          'changes-needed',
+          'approved',
+          'denied',
+          'reopened',
+          'withdrawn',
+        ],
+        role: 'actor',
+        tabId: 'requests',
+        cardSurfaceFamily: 'statusTimeline',
+        bindingKind: 'primary',
+      ),
+      RenderBinding(
+        states: ['submitted', 'under-review', 'changes-needed', 'reopened'],
+        role: 'receiver',
+        tabId: 'admin',
+        cardSurfaceFamily: 'dashboard',
+        bindingKind: 'summary',
+      ),
+      RenderBinding(
+        states: [
+          'submitted',
+          'under-review',
+          'changes-needed',
+          'approved',
+          'denied',
+          'reopened',
+        ],
+        role: 'receiver',
+        tabId: 'admin',
+        cardSurfaceFamily: 'statusTimeline',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: const {
+      'projectDescription': InstanceDataField(type: 'text', required: true),
+      'propertyAddress': InstanceDataField(type: 'text', required: true),
+      'requestedCompletionDate': InstanceDataField(
+        type: 'date',
+        required: true,
+      ),
+      'attachments': InstanceDataField(type: 'text', required: true),
+      'ownerPersonaId': InstanceDataField(type: 'string', required: true),
+      'ownerLabel': InstanceDataField(type: 'string', required: true),
+      'reviewerNote': InstanceDataField(type: 'text'),
+      'history': InstanceDataField(type: 'list'),
+    },
+    transitions: [
+      _transition(
+        id: 'start-review',
+        label: 'Start review',
+        from: const ['submitted', 'reopened'],
+        to: 'under-review',
+        personas: const ['hoa-board'],
+        history: 'HOA Board at \$timestamp started review',
+      ),
+      _transition(
+        id: 'request-changes',
+        label: 'Request changes',
+        from: const ['submitted', 'under-review', 'reopened'],
+        to: 'changes-needed',
+        personas: const ['hoa-board'],
+        reviewerNote: 'Please revise the color sample and setback diagram.',
+        history: 'HOA Board at \$timestamp requested changes',
+      ),
+      _transition(
+        id: 'approve',
+        label: 'Approve request',
+        from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
+        to: 'approved',
+        personas: const ['hoa-board'],
+        reviewerNote: 'Approved with standard construction-hour conditions.',
+        history: 'HOA Board at \$timestamp approved request',
+      ),
+      _transition(
+        id: 'reject',
+        label: 'Reject request',
+        from: const ['submitted', 'under-review', 'changes-needed', 'reopened'],
+        to: 'denied',
+        personas: const ['hoa-board'],
+        reviewerNote: 'Rejected; proposal conflicts with current covenants.',
+        history: 'HOA Board at \$timestamp rejected request',
+      ),
+      _transition(
+        id: 'resubmit',
+        label: 'Retry submission',
+        from: const ['changes-needed'],
+        to: 'submitted',
+        personas: const ['hoa-homeowner'],
+        history: '{ownerLabel} at \$timestamp retried submission',
+      ),
+      _transition(
+        id: 'reopen',
+        label: 'Reopen request',
+        from: const ['approved', 'denied', 'changes-needed'],
+        to: 'reopened',
+        personas: const ['hoa-homeowner'],
+        history: '{ownerLabel} at \$timestamp reopened request',
+      ),
+      _transition(
+        id: 'appeal',
+        label: 'Appeal decision',
+        from: const ['denied'],
+        to: 'reopened',
+        personas: const ['hoa-homeowner'],
+        history: '{ownerLabel} at \$timestamp appealed decision',
+      ),
+      _transition(
+        id: 'withdraw',
+        label: 'Withdraw request',
+        from: const ['submitted', 'changes-needed', 'reopened'],
+        to: 'withdrawn',
+        personas: const ['hoa-homeowner'],
+        history: '{ownerLabel} at \$timestamp withdrew request',
+      ),
+    ],
+  );
 }
 
 class _GardenClubEngineTabSurface extends StatefulWidget {
@@ -5021,13 +5017,17 @@ class _GardenClubEngineTabSurfaceState
         const Duration(seconds: 10),
         onTimeout: () => throw StateError('garden ensureReady timeout'),
       );
-      final instances = await _store.instancesFor(
-        tabId: widget.tabId,
-        personaId: widget.persona.personaId,
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => throw StateError('garden instancesFor timeout (${widget.tabId})'),
-      );
+      final instances = await _store
+          .instancesFor(
+            tabId: widget.tabId,
+            personaId: widget.persona.personaId,
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw StateError(
+              'garden instancesFor timeout (${widget.tabId})',
+            ),
+          );
       _syncControllers(instances);
       if (!mounted) return;
       setState(() {
@@ -5044,7 +5044,10 @@ class _GardenClubEngineTabSurfaceState
     }
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -5225,8 +5228,8 @@ class _GardenClubEngineTabSurfaceState
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(body),
@@ -5283,8 +5286,8 @@ class _GardenClubEngineTabSurfaceState
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(subtitle),
                     ],
@@ -5319,10 +5322,12 @@ class _GardenClubEngineTabSurfaceState
             if (data['shiftTitle'] case final value?) Text('$value'),
             if (instance.workflowType == 'garden-export-custom-schemas')
               _buildExportReview(data),
-            if (_store.editableFieldsFor(
+            if (_store
+                .editableFieldsFor(
                   workflowType: instance.workflowType,
                   state: instance.currentState,
-                ).isNotEmpty)
+                )
+                .isNotEmpty)
               _buildEditableFields(instance),
             const SizedBox(height: 12),
             Wrap(
@@ -5342,9 +5347,9 @@ class _GardenClubEngineTabSurfaceState
             const SizedBox(height: 12),
             Text(
               'Garden timeline',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
             for (final item in historyItems)
               Text(item, key: ValueKey('garden-history-${item.hashCode}')),
@@ -5364,7 +5369,8 @@ class _GardenClubEngineTabSurfaceState
       final iconName = field.displayIcon;
       if (iconName == null) continue;
       final value = data[entry.key];
-      final isEmpty = value == null ||
+      final isEmpty =
+          value == null ||
           (value is String && value.isEmpty) ||
           (value is List && value.isEmpty);
       if (field.hideWhenEmpty && isEmpty) continue;
@@ -5411,7 +5417,10 @@ class _GardenClubEngineTabSurfaceState
   Widget _buildExportReview(Map<String, dynamic> data) {
     final schemas = data['schemas'];
     final schemaItems = schemas is List
-        ? [for (final item in schemas) if (item is String) item]
+        ? [
+            for (final item in schemas)
+              if (item is String) item,
+          ]
         : const <String>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -5438,17 +5447,22 @@ class _GardenClubEngineTabSurfaceState
       if (!entry.key.toLowerCase().contains('history')) continue;
       final value = entry.value;
       if (value is List) {
-        return [for (final item in value) if (item is String) item];
+        return [
+          for (final item in value)
+            if (item is String) item,
+        ];
       }
     }
     return const <String>[];
   }
 
   ButtonStyle _gardenButtonStyle(LoomWorkflowTransition transition) {
-    final destructive = transition.tone == 'destructive' ||
+    final destructive =
+        transition.tone == 'destructive' ||
         transition.id.contains('cancel') ||
         transition.id.contains('withdraw');
-    final primary = transition.tone == 'primary' ||
+    final primary =
+        transition.tone == 'primary' ||
         transition.id.contains('submit') ||
         transition.id.contains('request') ||
         transition.id.contains('claim') ||
@@ -5458,8 +5472,8 @@ class _GardenClubEngineTabSurfaceState
       foregroundColor: destructive
           ? Colors.red.shade800
           : primary
-              ? Colors.white
-              : widget.accent,
+          ? Colors.white
+          : widget.accent,
       backgroundColor: primary ? widget.accent : null,
       side: BorderSide(
         color: destructive ? Colors.red.shade800 : widget.accent,
@@ -5539,7 +5553,10 @@ class _GardenClubEngineTabSurfaceState
     if (template == null) return '';
     return template
         .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
-        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+        .replaceAll(
+          '{value}',
+          value is List ? value.join(', ') : '${value ?? ''}',
+        );
   }
 
   String _gardenFieldLabel(String field) {
@@ -5557,14 +5574,14 @@ class _GardenClubEngineTabSurfaceState
   }
 
   BoxDecoration get _gardenBoxDecoration => BoxDecoration(
-        color: widget.modernTheme?.resolvedFill ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              widget.modernTheme?.resolvedBorder ??
-              widget.accent.withValues(alpha: 0.2),
-        ),
-      );
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 }
 
 class _GardenClubEngineStore {
@@ -5644,12 +5661,12 @@ class _GardenClubEngineStore {
       'care' => const {'garden-volunteer-shift'},
       'documents' => const {'garden-export-custom-schemas'},
       'home' => const {
-          'garden-event-rsvp',
-          'garden-tool-loan',
-          'plant-exchange-submission',
-          'garden-volunteer-shift',
-          'garden-export-custom-schemas',
-        },
+        'garden-event-rsvp',
+        'garden-tool-loan',
+        'plant-exchange-submission',
+        'garden-volunteer-shift',
+        'garden-export-custom-schemas',
+      },
       _ => const <String>{},
     };
     return page.items
@@ -5709,18 +5726,15 @@ class _GardenClubEngineStore {
 }
 
 class _GardenFixtureBundle {
-  _GardenFixtureBundle({
-    required this.machines,
-    required this.instances,
-  });
+  _GardenFixtureBundle({required this.machines, required this.instances});
 
   final Map<String, LoomWorkflowStateMachine> machines;
   final List<_GardenSeedInstance> instances;
 
   static Future<_GardenFixtureBundle> load() async {
     final content = _gardenBundledFixtureJsonc;
-    final json = jsonDecode(_stripGardenJsoncComments(content))
-        as Map<String, dynamic>;
+    final json =
+        jsonDecode(_stripGardenJsoncComments(content)) as Map<String, dynamic>;
     final definitions =
         json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
     final machines = <String, LoomWorkflowStateMachine>{};
@@ -5730,7 +5744,8 @@ class _GardenFixtureBundle {
         entry.key,
       );
     }
-    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final rawInstances =
+        json['workflowInstances'] as List<dynamic>? ?? const [];
     final instances = [
       for (final item in rawInstances)
         _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
@@ -5769,23 +5784,27 @@ class _GardenSeedInstance {
 
 Map<String, dynamic> _normalizeGardenMachineJson(Map<String, dynamic> json) {
   final next = Map<String, dynamic>.from(json);
-  final transitions = (json['transitions'] as List<dynamic>? ?? const [])
-      .map((transition) {
-        final map = Map<String, dynamic>.from(transition as Map<String, dynamic>);
-        final effects = (map['effects'] as List<dynamic>? ?? const []).map((effect) {
-          final effectMap = Map<String, dynamic>.from(effect as Map<String, dynamic>);
-          final value = effectMap['value'];
-          if (value is String) {
-            effectMap['value'] = value
-                .replaceAll('{actorLabel}', r'$actor')
-                .replaceAll('{actor}', r'$actor');
-          }
-          return effectMap;
-        }).toList();
-        map['effects'] = effects;
-        return map;
-      })
-      .toList();
+  final transitions = (json['transitions'] as List<dynamic>? ?? const []).map((
+    transition,
+  ) {
+    final map = Map<String, dynamic>.from(transition as Map<String, dynamic>);
+    final effects = (map['effects'] as List<dynamic>? ?? const []).map((
+      effect,
+    ) {
+      final effectMap = Map<String, dynamic>.from(
+        effect as Map<String, dynamic>,
+      );
+      final value = effectMap['value'];
+      if (value is String) {
+        effectMap['value'] = value
+            .replaceAll('{actorLabel}', r'$actor')
+            .replaceAll('{actor}', r'$actor');
+      }
+      return effectMap;
+    }).toList();
+    map['effects'] = effects;
+    return map;
+  }).toList();
   next['transitions'] = transitions;
   return next;
 }
@@ -6037,14 +6056,17 @@ class _CameraClubEngineTabSurfaceState
         const Duration(seconds: 10),
         onTimeout: () => throw StateError('camera ensureReady timeout'),
       );
-      final instances = await _store.instancesFor(
-        tabId: widget.tabId,
-        personaId: widget.persona.personaId,
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () =>
-            throw StateError('camera instancesFor timeout (${widget.tabId})'),
-      );
+      final instances = await _store
+          .instancesFor(
+            tabId: widget.tabId,
+            personaId: widget.persona.personaId,
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw StateError(
+              'camera instancesFor timeout (${widget.tabId})',
+            ),
+          );
       _syncControllers(instances);
       if (!mounted) return;
       setState(() {
@@ -6061,7 +6083,10 @@ class _CameraClubEngineTabSurfaceState
     }
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -6241,8 +6266,8 @@ class _CameraClubEngineTabSurfaceState
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(body),
@@ -6258,7 +6283,10 @@ class _CameraClubEngineTabSurfaceState
   Widget _cameraThreadCard(BuildContext context, WorkflowInstance? instance) {
     final comments = instance?.instanceData['critiqueComments'];
     final items = comments is List
-        ? [for (final item in comments) if (item is String) item]
+        ? [
+            for (final item in comments)
+              if (item is String) item,
+          ]
         : const <String>[];
     return DecoratedBox(
       key: const ValueKey('camera-critique-thread'),
@@ -6270,9 +6298,9 @@ class _CameraClubEngineTabSurfaceState
           children: [
             Text(
               'Attached critique thread',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             for (final item in items)
@@ -6308,7 +6336,9 @@ class _CameraClubEngineTabSurfaceState
     final queue = data['queuePersonaIds'];
     final queueCount = queue is List ? queue.length : 0;
     return DecoratedBox(
-      key: ValueKey('camera-card-${instance.workflowType}-${instance.instanceId}'),
+      key: ValueKey(
+        'camera-card-${instance.workflowType}-${instance.instanceId}',
+      ),
       decoration: _cameraBoxDecoration,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -6326,8 +6356,8 @@ class _CameraClubEngineTabSurfaceState
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(subtitle),
                     ],
@@ -6372,10 +6402,12 @@ class _CameraClubEngineTabSurfaceState
               ),
             if (instance.workflowType == 'camera-validation-report')
               _buildValidationReport(data),
-            if (_store.editableFieldsFor(
+            if (_store
+                .editableFieldsFor(
                   workflowType: instance.workflowType,
                   state: instance.currentState,
-                ).isNotEmpty)
+                )
+                .isNotEmpty)
               _buildEditableFields(instance),
             const SizedBox(height: 12),
             Wrap(
@@ -6436,8 +6468,12 @@ class _CameraClubEngineTabSurfaceState
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 8),
-        Text('Requested workflows: ${requested is List ? requested.join(', ') : requested ?? ''}'),
-        Text('Package paths: ${paths is List ? paths.join(', ') : paths ?? ''}'),
+        Text(
+          'Requested workflows: ${requested is List ? requested.join(', ') : requested ?? ''}',
+        ),
+        Text(
+          'Package paths: ${paths is List ? paths.join(', ') : paths ?? ''}',
+        ),
       ],
     );
   }
@@ -6452,7 +6488,8 @@ class _CameraClubEngineTabSurfaceState
       final iconName = field.displayIcon;
       if (iconName == null) continue;
       final value = data[entry.key];
-      final isEmpty = value == null ||
+      final isEmpty =
+          value == null ||
           (value is String && value.isEmpty) ||
           (value is List && value.isEmpty);
       if (field.hideWhenEmpty && isEmpty) continue;
@@ -6474,7 +6511,10 @@ class _CameraClubEngineTabSurfaceState
       if (!entry.key.toLowerCase().contains('history')) continue;
       final value = entry.value;
       if (value is List) {
-        return [for (final item in value) if (item is String) item];
+        return [
+          for (final item in value)
+            if (item is String) item,
+        ];
       }
     }
     return const <String>[];
@@ -6484,16 +6524,21 @@ class _CameraClubEngineTabSurfaceState
     if (template == null) return '';
     return template
         .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
-        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+        .replaceAll(
+          '{value}',
+          value is List ? value.join(', ') : '${value ?? ''}',
+        );
   }
 
   ButtonStyle _cameraButtonStyle(LoomWorkflowTransition transition) {
-    final destructive = transition.tone == 'destructive' ||
+    final destructive =
+        transition.tone == 'destructive' ||
         transition.id.contains('withdraw') ||
         transition.id.contains('leave') ||
         transition.id.contains('pause') ||
         transition.id.contains('delist');
-    final primary = transition.tone == 'primary' ||
+    final primary =
+        transition.tone == 'primary' ||
         transition.id.contains('submit') ||
         transition.id.contains('request') ||
         transition.id.contains('claim') ||
@@ -6503,8 +6548,8 @@ class _CameraClubEngineTabSurfaceState
       foregroundColor: destructive
           ? Colors.red.shade800
           : primary
-              ? Colors.white
-              : widget.accent,
+          ? Colors.white
+          : widget.accent,
       backgroundColor: primary ? widget.accent : null,
       side: BorderSide(
         color: destructive ? Colors.red.shade800 : widget.accent,
@@ -6579,14 +6624,14 @@ class _CameraClubEngineTabSurfaceState
   }
 
   BoxDecoration get _cameraBoxDecoration => BoxDecoration(
-        color: widget.modernTheme?.resolvedFill ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              widget.modernTheme?.resolvedBorder ??
-              widget.accent.withValues(alpha: 0.2),
-        ),
-      );
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 }
 
 class _CameraClubEngineStore {
@@ -6639,11 +6684,11 @@ class _CameraClubEngineStore {
       'messages' => const {'critique-submission'},
       'admin' => const {'camera-validation-report'},
       'home' => const {
-          'photo-walk-rsvp',
-          'critique-submission',
-          'gear-loan-request',
-          'camera-validation-report',
-        },
+        'photo-walk-rsvp',
+        'critique-submission',
+        'gear-loan-request',
+        'camera-validation-report',
+      },
       _ => const <String>{},
     };
     return rows
@@ -6719,8 +6764,9 @@ class _CameraFixtureBundle {
   final List<_GardenSeedInstance> instances;
 
   static Future<_CameraFixtureBundle> load() async {
-    final json = jsonDecode(_stripGardenJsoncComments(_cameraBundledFixtureJsonc))
-        as Map<String, dynamic>;
+    final json =
+        jsonDecode(_stripGardenJsoncComments(_cameraBundledFixtureJsonc))
+            as Map<String, dynamic>;
     final definitions =
         json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
     final machines = <String, LoomWorkflowStateMachine>{};
@@ -6730,7 +6776,8 @@ class _CameraFixtureBundle {
         entry.key,
       );
     }
-    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final rawInstances =
+        json['workflowInstances'] as List<dynamic>? ?? const [];
     final instances = [
       for (final item in rawInstances)
         _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
@@ -6865,63 +6912,788 @@ const _cameraBundledFixtureJsonc = r'''
 }
 ''';
 
-
 class _ChessClubEngineTabSurface extends StatefulWidget {
-  const _ChessClubEngineTabSurface({required this.experience, required this.persona, required this.tabId, required this.accent, this.modernTheme});
-  final LoomExperienceDefinition experience; final LoomPersonaDefinition persona; final String tabId; final Color accent; final LoomCardTheme? modernTheme;
-  @override State<_ChessClubEngineTabSurface> createState()=>_ChessClubEngineTabSurfaceState();
+  const _ChessClubEngineTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.tabId,
+    required this.accent,
+    this.modernTheme,
+  });
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final String tabId;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  @override
+  State<_ChessClubEngineTabSurface> createState() =>
+      _ChessClubEngineTabSurfaceState();
 }
 
-class _ChessClubEngineTabSurfaceState extends State<_ChessClubEngineTabSurface> {
-  static final _stores=<String,_ChessClubEngineStore>{}; late final _ChessClubEngineStore _store;
-  List<WorkflowInstance> _instances=const []; final _controllers=<String,TextEditingController>{}; String? _error; var _loaded=false;
-  @override void initState(){super.initState(); _store=_stores.putIfAbsent(widget.experience.extensionId,()=>_ChessClubEngineStore(communityId: widget.experience.extensionId)); unawaited(_load());}
-  @override void didUpdateWidget(_ChessClubEngineTabSurface old){super.didUpdateWidget(old); if(old.persona.personaId!=widget.persona.personaId||old.tabId!=widget.tabId) unawaited(_load());}
-  @override void dispose(){for(final c in _controllers.values){c.dispose();} super.dispose();}
-  Future<void> _load() async {try{await _store.ensureReady(); final rows=await _store.instancesFor(tabId: widget.tabId, personaId: widget.persona.personaId); _sync(rows); if(!mounted)return; setState((){_instances=rows; _error=null; _loaded=true;});}catch(e){if(!mounted)return; setState((){_error='$e'; _loaded=true;});}}
-  Future<void> _transition(WorkflowInstance i,String t) async {await _store.apply(instance:i,transitionId:t,personaId:widget.persona.personaId); await _load();}
-  Future<void> _save(WorkflowInstance i) async {final fields=_store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState).where((f)=>f!='rankingRows'&&f!='lastUpdated'); await _store.updateFields(instance:i, fieldUpdates:{for(final f in fields) f: f=='board' ? (int.tryParse(_controller(i.instanceId,f).text)??_controller(i.instanceId,f).text) : _controller(i.instanceId,f).text}, personaId:widget.persona.personaId); await _load();}
-  @override Widget build(BuildContext context){if(!_loaded)return const Center(child:CircularProgressIndicator()); if(_error!=null)return Text(_error!,key:ValueKey('chess-load-error-${widget.tabId}')); if(widget.tabId=='home')return _home(context); return Column(key:ValueKey('chess-engine-${widget.tabId}'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-    if(widget.tabId=='matches')...[_card(context,_first('chess-match-meetup'),'Board 1 ladder match','Form entry to timeline to confirmed calendar event',Icons.sports_esports_outlined),const SizedBox(height:12),_card(context,_first('chess-match-result'),'Board 1 result','Result timeline with correction and dispute path',Icons.scoreboard_outlined)],
-    if(widget.tabId=='calendar')...[_card(context,_first('chess-match-meetup'),'Confirmed match calendar','The match meetup instance becomes a calendarAgenda card once confirmed',Icons.event_available_outlined),const SizedBox(height:12),_card(context,_first('chess-club-night'),'Thursday Ladder Night','Club night, tournament pairing, and reminder',Icons.calendar_month_outlined)],
-    if(widget.tabId=='rankings') _card(context,_first('chess-rankings-table'),'Live ladder rankings','Table archetype with rankingMode rows updated by result effects',Icons.leaderboard_outlined,extra:_rankings(_first('chess-rankings-table'))),
-    if(widget.tabId=='admin')...[_card(context,_first('chess-pairing-queue'),'Pairing queue','Organizer dashboard for outstanding pairings',Icons.groups_outlined),const SizedBox(height:12),_card(context,_first('chess-match-result'),'Result disputes','Organizer status timeline for disputed results',Icons.report_problem_outlined),const SizedBox(height:12),_card(context,_first('chess-export-package'),'Chess records export','Export wizard for matches, rankings, and documents',Icons.ios_share_outlined)],
-    if(widget.tabId=='documents') _card(context,_first('chess-rules-documents'),'Club rules and ladder policy','Document library with embedded, external, and download actions',Icons.description_outlined),
-    if(widget.tabId=='messages') _card(context,_first('chess-discussion-thread'),'Thursday pairings thread','Discussion thread for club-night coordination',Icons.forum_outlined),
-  ]);}
-  Widget _home(BuildContext context){final m=_first('chess-match-meetup'), q=_first('chess-pairing-queue'), r=_first('chess-rankings-table'); return Column(key:const ValueKey('chess-engine-home'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[_pin(context,const ValueKey('chess-home-next-match'),'Next match',Icons.event_available_outlined,'${m?.instanceData['opponent']??'Opponent'} on ${m?.instanceData['matchTime']??'time pending'}'),const SizedBox(height:12),_pin(context,const ValueKey('chess-home-pairing'),'Open challenge',Icons.groups_outlined,'${q?.instanceData['queueTitle']??'Queue'} - ${q?.instanceData['waitingPlayers'] is List ? (q!.instanceData['waitingPlayers'] as List).length : 0} waiting'),const SizedBox(height:12),_pin(context,const ValueKey('chess-home-standings'),'Standings snippet',Icons.leaderboard_outlined,_top(r))]);}
-  Widget _pin(BuildContext c,Key k,String title,IconData icon,String body)=>DecoratedBox(key:k,decoration:_box,child:Padding(padding:const EdgeInsets.all(16),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Icon(icon,color:widget.accent),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:Theme.of(c).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w900)),const SizedBox(height:6),Text(body)]))])));
-  Widget _card(BuildContext c,WorkflowInstance? i,String title,String sub,IconData icon,{Widget? extra}){if(i==null)return _TabEmptyState(icon:icon,title:'$title unavailable',body:'No engine instance is available for this Chess Club surface.',accent:widget.accent,modernTheme:widget.modernTheme); final machine=_store.machineFor(i.workflowType); final transitions=_store.availableTransitions(instance:i,personaId:widget.persona.personaId); return DecoratedBox(key:ValueKey('chess-card-${i.workflowType}-${i.instanceId}'),decoration:_box,child:Padding(padding:const EdgeInsets.all(16),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Row(children:[Icon(icon,color:widget.accent),const SizedBox(width:10),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:Theme.of(c).textTheme.titleLarge?.copyWith(fontWeight:FontWeight.w900)),Text(sub)]))]),const SizedBox(height:10),Wrap(spacing:8,runSpacing:8,children:[_SurfaceFactPill(icon:Icons.flag_outlined,label:'State: ${machine.states[i.currentState]?.label??i.currentState}',foreground:widget.accent),for(final w in _pills(machine,i.instanceData)) w]),const SizedBox(height:10),for(final f in const ['opponent','matchTime','place','board','whitePlayer','blackPlayer','round','score','resultSummary','eventTitle','eventTime','location','pairing','queueTitle','exportScope','checksum','documentTitle','threadTitle']) if(i.instanceData[f] case final v?) Text('$v'),_edit(i),if(extra!=null)extra,const SizedBox(height:12),Wrap(spacing:8,runSpacing:8,children:[for(final t in transitions) OutlinedButton.icon(key:ValueKey('chess-action-${t.id}'),style:_style(t),onPressed:()=>_transition(i,t.id),icon:Icon(_icon(t.icon)),label:Text(t.label))]),const SizedBox(height:12),for(final entry in _history(i.instanceData).asMap().entries) Text(entry.value,key:ValueKey('chess-history-${i.instanceId}-${entry.key}-${entry.value.hashCode}'))])));}
-  Widget _edit(WorkflowInstance i){final fields=_store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState).where((f)=>f!='rankingRows'&&f!='lastUpdated').toList(); if(fields.isEmpty)return const SizedBox.shrink(); return Column(key:ValueKey('chess-edit-form-${i.workflowType}'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[const SizedBox(height:8),for(final f in fields) TextField(key:ValueKey('chess-edit-$f'),controller:_controller(i.instanceId,f),decoration:InputDecoration(labelText:f)),const SizedBox(height:12),FilledButton.icon(key:ValueKey('chess-save-edit-${i.workflowType}'),onPressed:()=>_save(i),icon:const Icon(Icons.save_outlined),label:const Text('Save edits'))]);}
-  Widget? _rankings(WorkflowInstance? i){if(i==null)return null; final rows=_rows(i); return Column(key:const ValueKey('chess-rankings-table'),crossAxisAlignment:CrossAxisAlignment.stretch,children:[const SizedBox(height:8),for(final r in rows) Text('${r['rank']}. ${r['player']} - ${r['score']} (${r['delta']})',key:ValueKey('chess-ranking-${r['player']}'))]);}
-  List<Widget> _pills(LoomWorkflowStateMachine m,Map<String,dynamic>d)=>[for(final e in m.instanceDataSchema.entries) if(e.value.displayIcon!=null && !(e.value.hideWhenEmpty && (d[e.key]==null || d[e.key] is List && (d[e.key] as List).isEmpty || d[e.key] is String && (d[e.key] as String).isEmpty))) _SurfaceFactPill(icon:_fact(e.value.displayIcon!),label:(e.value.labelTemplate??'{value}').replaceAll('{value.length}',d[e.key] is List?'${(d[e.key] as List).length}':'0').replaceAll('{value}',d[e.key] is List?(d[e.key] as List).join(', '):'${d[e.key]??''}'),foreground:widget.accent)];
-  List<String> _history(Map<String,dynamic>d){final out=<String>[]; for(final e in d.entries){if(e.key.toLowerCase().contains('history')||e.key.toLowerCase().contains('messages')){if(e.value is List)out.addAll([for(final x in e.value as List) if(x is String) x]);}} return out;}
-  void _sync(List<WorkflowInstance> rows){for(final i in rows){for(final f in _store.editableFieldsFor(workflowType:i.workflowType,state:i.currentState)){if(f!='rankingRows')_controller(i.instanceId,f).text='${i.instanceData[f]??''}';}}}
-  TextEditingController _controller(String id,String f)=>_controllers.putIfAbsent('$id::$f',TextEditingController.new);
-  WorkflowInstance? _first(String type){for(final i in _instances){if(i.workflowType==type)return i;}return null;}
-  List<Map<String,dynamic>> _rows(WorkflowInstance i)=>i.instanceData['rankingRows'] is List ? [for(final r in i.instanceData['rankingRows'] as List) if(r is Map) Map<String,dynamic>.from(r)] : const [];
-  String _top(WorkflowInstance? i){if(i==null)return 'Rankings unavailable'; final rows=_rows(i); return rows.isEmpty?'No rankings yet':'${rows.first['player']} leads with ${rows.first['score']}';}
-  ButtonStyle _style(LoomWorkflowTransition t){final destructive=t.tone=='destructive'; final primary=t.tone=='primary'; return OutlinedButton.styleFrom(foregroundColor:destructive?Colors.red.shade800:primary?Colors.white:widget.accent,backgroundColor:primary?widget.accent:null,side:BorderSide(color:destructive?Colors.red.shade800:widget.accent));}
-  IconData _icon(String? i)=>switch(i){'send'=>Icons.send_outlined,'check'=>Icons.check_circle_outline,'close'=>Icons.close_outlined,'schedule'=>Icons.schedule_outlined,'delete'=>Icons.delete_outline,'event_available'=>Icons.event_available_outlined,'scoreboard'=>Icons.scoreboard_outlined,'edit'=>Icons.edit_outlined,'report'=>Icons.report_problem_outlined,'verified'=>Icons.verified_outlined,'publish'=>Icons.publish_outlined,'notifications'=>Icons.notifications_outlined,'groups'=>Icons.groups_outlined,'download'=>Icons.download_outlined,'undo'=>Icons.undo_outlined,'open_in_browser'=>Icons.open_in_browser_outlined,'open_in_new'=>Icons.open_in_new_outlined,'reply'=>Icons.reply_outlined,_=>Icons.sports_esports_outlined};
-  IconData _fact(String i)=>switch(i){'person'=>Icons.person_outline,'schedule'=>Icons.schedule_outlined,'location_on'=>Icons.location_on_outlined,'table_bar'=>Icons.table_bar_outlined,'history'=>Icons.history_outlined,'flag'=>Icons.flag_outlined,'scoreboard'=>Icons.scoreboard_outlined,'leaderboard'=>Icons.leaderboard_outlined,'event'=>Icons.event_outlined,'groups'=>Icons.groups_outlined,'notifications'=>Icons.notifications_outlined,'description'=>Icons.description_outlined,'verified'=>Icons.verified_outlined,'forum'=>Icons.forum_outlined,_=>Icons.label_outline};
-  BoxDecoration get _box=>BoxDecoration(color:widget.modernTheme?.resolvedFill??Colors.white,borderRadius:BorderRadius.circular(20),border:Border.all(color:widget.modernTheme?.resolvedBorder??widget.accent.withValues(alpha:0.2)));
+class _ChessClubEngineTabSurfaceState
+    extends State<_ChessClubEngineTabSurface> {
+  static final _stores = <String, _ChessClubEngineStore>{};
+  late final _ChessClubEngineStore _store;
+  List<WorkflowInstance> _instances = const [];
+  final _controllers = <String, TextEditingController>{};
+  String? _error;
+  var _loaded = false;
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _ChessClubEngineStore(communityId: widget.experience.extensionId),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_ChessClubEngineTabSurface old) {
+    super.didUpdateWidget(old);
+    if (old.persona.personaId != widget.persona.personaId ||
+        old.tabId != widget.tabId)
+      unawaited(_load());
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final rows = await _store.instancesFor(
+        tabId: widget.tabId,
+        personaId: widget.persona.personaId,
+      );
+      _sync(rows);
+      if (!mounted) return;
+      setState(() {
+        _instances = rows;
+        _error = null;
+        _loaded = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = '$e';
+        _loaded = true;
+      });
+    }
+  }
+
+  Future<void> _transition(WorkflowInstance i, String t) async {
+    await _store.apply(
+      instance: i,
+      transitionId: t,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  Future<void> _save(WorkflowInstance i) async {
+    final fields = _store
+        .editableFieldsFor(workflowType: i.workflowType, state: i.currentState)
+        .where((f) => f != 'rankingRows' && f != 'lastUpdated');
+    await _store.updateFields(
+      instance: i,
+      fieldUpdates: {
+        for (final f in fields)
+          f: f == 'board'
+              ? (int.tryParse(_controller(i.instanceId, f).text) ??
+                    _controller(i.instanceId, f).text)
+              : _controller(i.instanceId, f).text,
+      },
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_error != null)
+      return Text(_error!, key: ValueKey('chess-load-error-${widget.tabId}'));
+    if (widget.tabId == 'home') return _home(context);
+    return Column(
+      key: ValueKey('chess-engine-${widget.tabId}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.tabId == 'matches') ...[
+          _card(
+            context,
+            _first('chess-match-meetup'),
+            'Board 1 ladder match',
+            'Form entry to timeline to confirmed calendar event',
+            Icons.sports_esports_outlined,
+          ),
+          const SizedBox(height: 12),
+          _card(
+            context,
+            _first('chess-match-result'),
+            'Board 1 result',
+            'Result timeline with correction and dispute path',
+            Icons.scoreboard_outlined,
+          ),
+        ],
+        if (widget.tabId == 'calendar') ...[
+          _card(
+            context,
+            _first('chess-match-meetup'),
+            'Confirmed match calendar',
+            'The match meetup instance becomes a calendarAgenda card once confirmed',
+            Icons.event_available_outlined,
+          ),
+          const SizedBox(height: 12),
+          _card(
+            context,
+            _first('chess-club-night'),
+            'Thursday Ladder Night',
+            'Club night, tournament pairing, and reminder',
+            Icons.calendar_month_outlined,
+          ),
+        ],
+        if (widget.tabId == 'rankings')
+          _card(
+            context,
+            _first('chess-rankings-table'),
+            'Live ladder rankings',
+            'Table archetype with rankingMode rows updated by result effects',
+            Icons.leaderboard_outlined,
+            extra: _rankings(_first('chess-rankings-table')),
+          ),
+        if (widget.tabId == 'admin') ...[
+          _card(
+            context,
+            _first('chess-pairing-queue'),
+            'Pairing queue',
+            'Organizer dashboard for outstanding pairings',
+            Icons.groups_outlined,
+          ),
+          const SizedBox(height: 12),
+          _card(
+            context,
+            _first('chess-match-result'),
+            'Result disputes',
+            'Organizer status timeline for disputed results',
+            Icons.report_problem_outlined,
+          ),
+          const SizedBox(height: 12),
+          _card(
+            context,
+            _first('chess-export-package'),
+            'Chess records export',
+            'Export wizard for matches, rankings, and documents',
+            Icons.ios_share_outlined,
+          ),
+        ],
+        if (widget.tabId == 'documents')
+          _card(
+            context,
+            _first('chess-rules-documents'),
+            'Club rules and ladder policy',
+            'Document library with embedded, external, and download actions',
+            Icons.description_outlined,
+          ),
+        if (widget.tabId == 'messages')
+          _card(
+            context,
+            _first('chess-discussion-thread'),
+            'Thursday pairings thread',
+            'Discussion thread for club-night coordination',
+            Icons.forum_outlined,
+          ),
+      ],
+    );
+  }
+
+  Widget _home(BuildContext context) {
+    final m = _first('chess-match-meetup'),
+        q = _first('chess-pairing-queue'),
+        r = _first('chess-rankings-table');
+    return Column(
+      key: const ValueKey('chess-engine-home'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _pin(
+          context,
+          const ValueKey('chess-home-next-match'),
+          'Next match',
+          Icons.event_available_outlined,
+          '${m?.instanceData['opponent'] ?? 'Opponent'} on ${m?.instanceData['matchTime'] ?? 'time pending'}',
+        ),
+        const SizedBox(height: 12),
+        _pin(
+          context,
+          const ValueKey('chess-home-pairing'),
+          'Open challenge',
+          Icons.groups_outlined,
+          '${q?.instanceData['queueTitle'] ?? 'Queue'} - ${q?.instanceData['waitingPlayers'] is List ? (q!.instanceData['waitingPlayers'] as List).length : 0} waiting',
+        ),
+        const SizedBox(height: 12),
+        _pin(
+          context,
+          const ValueKey('chess-home-standings'),
+          'Standings snippet',
+          Icons.leaderboard_outlined,
+          _top(r),
+        ),
+      ],
+    );
+  }
+
+  Widget _pin(
+    BuildContext c,
+    Key k,
+    String title,
+    IconData icon,
+    String body,
+  ) => DecoratedBox(
+    key: k,
+    decoration: _box,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: widget.accent),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(c).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(body),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+  Widget _card(
+    BuildContext c,
+    WorkflowInstance? i,
+    String title,
+    String sub,
+    IconData icon, {
+    Widget? extra,
+  }) {
+    if (i == null)
+      return _TabEmptyState(
+        icon: icon,
+        title: '$title unavailable',
+        body: 'No engine instance is available for this Chess Club surface.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    final machine = _store.machineFor(i.workflowType);
+    final transitions = _store.availableTransitions(
+      instance: i,
+      personaId: widget.persona.personaId,
+    );
+    return DecoratedBox(
+      key: ValueKey('chess-card-${i.workflowType}-${i.instanceId}'),
+      decoration: _box,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: widget.accent),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(c).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(sub),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SurfaceFactPill(
+                  icon: Icons.flag_outlined,
+                  label:
+                      'State: ${machine.states[i.currentState]?.label ?? i.currentState}',
+                  foreground: widget.accent,
+                ),
+                for (final w in _pills(machine, i.instanceData)) w,
+              ],
+            ),
+            const SizedBox(height: 10),
+            for (final f in const [
+              'opponent',
+              'matchTime',
+              'place',
+              'board',
+              'whitePlayer',
+              'blackPlayer',
+              'round',
+              'score',
+              'resultSummary',
+              'eventTitle',
+              'eventTime',
+              'location',
+              'pairing',
+              'queueTitle',
+              'exportScope',
+              'checksum',
+              'documentTitle',
+              'threadTitle',
+            ])
+              if (i.instanceData[f] case final v?) Text('$v'),
+            _edit(i),
+            if (extra != null) extra,
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final t in transitions)
+                  OutlinedButton.icon(
+                    key: ValueKey('chess-action-${t.id}'),
+                    style: _style(t),
+                    onPressed: () => _transition(i, t.id),
+                    icon: Icon(_icon(t.icon)),
+                    label: Text(t.label),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            for (final entry in _history(i.instanceData).asMap().entries)
+              Text(
+                entry.value,
+                key: ValueKey(
+                  'chess-history-${i.instanceId}-${entry.key}-${entry.value.hashCode}',
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _edit(WorkflowInstance i) {
+    final fields = _store
+        .editableFieldsFor(workflowType: i.workflowType, state: i.currentState)
+        .where((f) => f != 'rankingRows' && f != 'lastUpdated')
+        .toList();
+    if (fields.isEmpty) return const SizedBox.shrink();
+    return Column(
+      key: ValueKey('chess-edit-form-${i.workflowType}'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        for (final f in fields)
+          TextField(
+            key: ValueKey('chess-edit-$f'),
+            controller: _controller(i.instanceId, f),
+            decoration: InputDecoration(labelText: f),
+          ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: ValueKey('chess-save-edit-${i.workflowType}'),
+          onPressed: () => _save(i),
+          icon: const Icon(Icons.save_outlined),
+          label: const Text('Save edits'),
+        ),
+      ],
+    );
+  }
+
+  Widget? _rankings(WorkflowInstance? i) {
+    if (i == null) return null;
+    final rows = _rows(i);
+    return Column(
+      key: const ValueKey('chess-rankings-table'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        for (final r in rows)
+          Text(
+            '${r['rank']}. ${r['player']} - ${r['score']} (${r['delta']})',
+            key: ValueKey('chess-ranking-${r['player']}'),
+          ),
+      ],
+    );
+  }
+
+  List<Widget> _pills(LoomWorkflowStateMachine m, Map<String, dynamic> d) => [
+    for (final e in m.instanceDataSchema.entries)
+      if (e.value.displayIcon != null &&
+          !(e.value.hideWhenEmpty &&
+              (d[e.key] == null ||
+                  d[e.key] is List && (d[e.key] as List).isEmpty ||
+                  d[e.key] is String && (d[e.key] as String).isEmpty)))
+        _SurfaceFactPill(
+          icon: _fact(e.value.displayIcon!),
+          label: (e.value.labelTemplate ?? '{value}')
+              .replaceAll(
+                '{value.length}',
+                d[e.key] is List ? '${(d[e.key] as List).length}' : '0',
+              )
+              .replaceAll(
+                '{value}',
+                d[e.key] is List
+                    ? (d[e.key] as List).join(', ')
+                    : '${d[e.key] ?? ''}',
+              ),
+          foreground: widget.accent,
+        ),
+  ];
+  List<String> _history(Map<String, dynamic> d) {
+    final out = <String>[];
+    for (final e in d.entries) {
+      if (e.key.toLowerCase().contains('history') ||
+          e.key.toLowerCase().contains('messages')) {
+        if (e.value is List)
+          out.addAll([
+            for (final x in e.value as List)
+              if (x is String) x,
+          ]);
+      }
+    }
+    return out;
+  }
+
+  void _sync(List<WorkflowInstance> rows) {
+    for (final i in rows) {
+      for (final f in _store.editableFieldsFor(
+        workflowType: i.workflowType,
+        state: i.currentState,
+      )) {
+        if (f != 'rankingRows')
+          _controller(i.instanceId, f).text = '${i.instanceData[f] ?? ''}';
+      }
+    }
+  }
+
+  TextEditingController _controller(String id, String f) =>
+      _controllers.putIfAbsent('$id::$f', TextEditingController.new);
+  WorkflowInstance? _first(String type) {
+    for (final i in _instances) {
+      if (i.workflowType == type) return i;
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _rows(WorkflowInstance i) =>
+      i.instanceData['rankingRows'] is List
+      ? [
+          for (final r in i.instanceData['rankingRows'] as List)
+            if (r is Map) Map<String, dynamic>.from(r),
+        ]
+      : const [];
+  String _top(WorkflowInstance? i) {
+    if (i == null) return 'Rankings unavailable';
+    final rows = _rows(i);
+    return rows.isEmpty
+        ? 'No rankings yet'
+        : '${rows.first['player']} leads with ${rows.first['score']}';
+  }
+
+  ButtonStyle _style(LoomWorkflowTransition t) {
+    final destructive = t.tone == 'destructive';
+    final primary = t.tone == 'primary';
+    return OutlinedButton.styleFrom(
+      foregroundColor: destructive
+          ? Colors.red.shade800
+          : primary
+          ? Colors.white
+          : widget.accent,
+      backgroundColor: primary ? widget.accent : null,
+      side: BorderSide(
+        color: destructive ? Colors.red.shade800 : widget.accent,
+      ),
+    );
+  }
+
+  IconData _icon(String? i) => switch (i) {
+    'send' => Icons.send_outlined,
+    'check' => Icons.check_circle_outline,
+    'close' => Icons.close_outlined,
+    'schedule' => Icons.schedule_outlined,
+    'delete' => Icons.delete_outline,
+    'event_available' => Icons.event_available_outlined,
+    'scoreboard' => Icons.scoreboard_outlined,
+    'edit' => Icons.edit_outlined,
+    'report' => Icons.report_problem_outlined,
+    'verified' => Icons.verified_outlined,
+    'publish' => Icons.publish_outlined,
+    'notifications' => Icons.notifications_outlined,
+    'groups' => Icons.groups_outlined,
+    'download' => Icons.download_outlined,
+    'undo' => Icons.undo_outlined,
+    'open_in_browser' => Icons.open_in_browser_outlined,
+    'open_in_new' => Icons.open_in_new_outlined,
+    'reply' => Icons.reply_outlined,
+    _ => Icons.sports_esports_outlined,
+  };
+  IconData _fact(String i) => switch (i) {
+    'person' => Icons.person_outline,
+    'schedule' => Icons.schedule_outlined,
+    'location_on' => Icons.location_on_outlined,
+    'table_bar' => Icons.table_bar_outlined,
+    'history' => Icons.history_outlined,
+    'flag' => Icons.flag_outlined,
+    'scoreboard' => Icons.scoreboard_outlined,
+    'leaderboard' => Icons.leaderboard_outlined,
+    'event' => Icons.event_outlined,
+    'groups' => Icons.groups_outlined,
+    'notifications' => Icons.notifications_outlined,
+    'description' => Icons.description_outlined,
+    'verified' => Icons.verified_outlined,
+    'forum' => Icons.forum_outlined,
+    _ => Icons.label_outline,
+  };
+  BoxDecoration get _box => BoxDecoration(
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 }
 
 class _ChessClubEngineStore {
-  _ChessClubEngineStore({required this.communityId}); final String communityId; late final WorkflowDatabase _database=WorkflowDatabase.memory(); late final LocalWorkflowEngineApi _engine=LocalWorkflowEngineApi(db:_database,communityId:communityId); _ChessFixtureBundle? _fixture; Future<void>? _readyFuture; var _ready=false;
-  Future<void> ensureReady(){if(_ready)return Future.value(); return _readyFuture??=_init();}
-  Future<void> _init() async {_fixture??=await _ChessFixtureBundle.load(); for(final m in _fixture!.machines.values){_engine.registerDefinition(m);} for(final i in _fixture!.instances){await _engine.createInstance(workflowType:i.workflowType,initialInstanceData:i.instanceData,personaId:i.createdByPersonaId);} _ready=true;}
-  Future<List<WorkflowInstance>> instancesFor({required String tabId,required String personaId}) async {await ensureReady(); final page=await _engine.queryInstances(tabId:tabId,personaId:personaId,limit:100,query:const SurfaceQuery()); final allowed=switch(tabId){'matches'=>const {'chess-match-meetup','chess-match-result'},'calendar'=>const {'chess-match-meetup','chess-club-night'},'rankings'=>const {'chess-rankings-table'},'admin'=>const {'chess-pairing-queue','chess-match-result','chess-export-package'},'documents'=>const {'chess-rules-documents'},'messages'=>const {'chess-discussion-thread'},'home'=>const {'chess-match-meetup','chess-pairing-queue','chess-rankings-table'},_=>const <String>{}}; return page.items.where((i)=>allowed.contains(i.workflowType)).toList(growable:false);}
-  List<LoomWorkflowTransition> availableTransitions({required WorkflowInstance instance,required String personaId})=>_engine.availableTransitions(workflowType:instance.workflowType,instanceId:instance.instanceId,currentState:instance.currentState,instanceData:instance.instanceData,personaId:personaId);
-  Future<void> apply({required WorkflowInstance instance,required String transitionId,required String personaId}) async {final result=await _engine.applyTransition(workflowType:instance.workflowType,instanceId:instance.instanceId,transitionId:transitionId,personaId:personaId); if(instance.workflowType=='chess-match-result'&&(transitionId=='submit-result'||transitionId=='correct-result')) await _rankingsEffect(matchData:result.newInstanceData,transitionId:transitionId,personaId:personaId);}
-  Future<void> _rankingsEffect({required Map<String,dynamic> matchData,required String transitionId,required String personaId}) async {final white='${matchData['whitePlayer']??''}'.trim(); final black='${matchData['blackPlayer']??''}'.trim(); final score='${matchData['score']??''}'.trim(); if(white.isEmpty||black.isEmpty||score.isEmpty)return; final deltas=_rankingDeltas(score, transitionId=='correct-result'?12:16); final page=await _engine.queryInstances(tabId:'rankings',personaId:'chess-organizer',limit:100,query:const SurfaceQuery()); final ranking=page.items.firstWhere((i)=>i.workflowType=='chess-rankings-table'); final rows=[for(final r in ranking.instanceData['rankingRows'] as List) Map<String,dynamic>.from(r as Map)]; void applyDelta(String player,int delta){var row=rows.cast<Map<String,dynamic>?>().firstWhere((r)=>r?['player']==player,orElse:()=>null); if(row==null){row={'rank':rows.length+1,'player':player,'score':1450,'delta':0}; rows.add(row);} final current=row['score'] is int ? row['score'] as int : int.tryParse('${row['score']}')??1450; row['score']=current+delta; row['delta']=delta>0?'+$delta':'$delta';} applyDelta(white,deltas.$1); applyDelta(black,deltas.$2); rows.sort((a,b)=>(b['score'] as int).compareTo(a['score'] as int)); for(var i=0;i<rows.length;i++){rows[i]['rank']=i+1;} await _engine.updateInstanceFields(workflowType:ranking.workflowType,instanceId:ranking.instanceId,fieldUpdates:{'rankingRows':rows,'lastUpdated':'Updated from ${transitionId=='correct-result'?'corrected':'submitted'} result: $white vs $black $score'},personaId:personaId);}
-  (int,int) _rankingDeltas(String score,int magnitude){final normalized=score.replaceAll(' ', '').toLowerCase(); if(normalized=='1-0')return (magnitude,-magnitude); if(normalized=='0-1')return (-magnitude,magnitude); if(normalized=='1/2-1/2'||normalized=='0.5-0.5'||normalized=='draw')return (0,0); return (0,0);}
-  Future<void> updateFields({required WorkflowInstance instance,required Map<String,dynamic> fieldUpdates,required String personaId})=>_engine.updateInstanceFields(workflowType:instance.workflowType,instanceId:instance.instanceId,fieldUpdates:fieldUpdates,personaId:personaId);
-  LoomWorkflowStateMachine machineFor(String workflowType)=>_fixture!.machines[workflowType]!;
-  List<String> editableFieldsFor({required String workflowType,required String state})=>machineFor(workflowType).states[state]?.editableFields??const [];
+  _ChessClubEngineStore({required this.communityId});
+  final String communityId;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  _ChessFixtureBundle? _fixture;
+  Future<void>? _readyFuture;
+  var _ready = false;
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _init();
+  }
+
+  Future<void> _init() async {
+    _fixture ??= await _ChessFixtureBundle.load();
+    for (final m in _fixture!.machines.values) {
+      _engine.registerDefinition(m);
+    }
+    for (final i in _fixture!.instances) {
+      await _engine.createInstance(
+        workflowType: i.workflowType,
+        initialInstanceData: i.instanceData,
+        personaId: i.createdByPersonaId,
+      );
+    }
+    _ready = true;
+  }
+
+  Future<List<WorkflowInstance>> instancesFor({
+    required String tabId,
+    required String personaId,
+  }) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: tabId,
+      personaId: personaId,
+      limit: 100,
+      query: const SurfaceQuery(),
+    );
+    final allowed = switch (tabId) {
+      'matches' => const {'chess-match-meetup', 'chess-match-result'},
+      'calendar' => const {'chess-match-meetup', 'chess-club-night'},
+      'rankings' => const {'chess-rankings-table'},
+      'admin' => const {
+        'chess-pairing-queue',
+        'chess-match-result',
+        'chess-export-package',
+      },
+      'documents' => const {'chess-rules-documents'},
+      'messages' => const {'chess-discussion-thread'},
+      'home' => const {
+        'chess-match-meetup',
+        'chess-pairing-queue',
+        'chess-rankings-table',
+      },
+      _ => const <String>{},
+    };
+    return page.items
+        .where((i) => allowed.contains(i.workflowType))
+        .toList(growable: false);
+  }
+
+  List<LoomWorkflowTransition> availableTransitions({
+    required WorkflowInstance instance,
+    required String personaId,
+  }) => _engine.availableTransitions(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    currentState: instance.currentState,
+    instanceData: instance.instanceData,
+    personaId: personaId,
+  );
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    final result = await _engine.applyTransition(
+      workflowType: instance.workflowType,
+      instanceId: instance.instanceId,
+      transitionId: transitionId,
+      personaId: personaId,
+    );
+    if (instance.workflowType == 'chess-match-result' &&
+        (transitionId == 'submit-result' || transitionId == 'correct-result'))
+      await _rankingsEffect(
+        matchData: result.newInstanceData,
+        transitionId: transitionId,
+        personaId: personaId,
+      );
+  }
+
+  Future<void> _rankingsEffect({
+    required Map<String, dynamic> matchData,
+    required String transitionId,
+    required String personaId,
+  }) async {
+    final white = '${matchData['whitePlayer'] ?? ''}'.trim();
+    final black = '${matchData['blackPlayer'] ?? ''}'.trim();
+    final score = '${matchData['score'] ?? ''}'.trim();
+    if (white.isEmpty || black.isEmpty || score.isEmpty) return;
+    final deltas = _rankingDeltas(
+      score,
+      transitionId == 'correct-result' ? 12 : 16,
+    );
+    final page = await _engine.queryInstances(
+      tabId: 'rankings',
+      personaId: 'chess-organizer',
+      limit: 100,
+      query: const SurfaceQuery(),
+    );
+    final ranking = page.items.firstWhere(
+      (i) => i.workflowType == 'chess-rankings-table',
+    );
+    final rows = [
+      for (final r in ranking.instanceData['rankingRows'] as List)
+        Map<String, dynamic>.from(r as Map),
+    ];
+    void applyDelta(String player, int delta) {
+      var row = rows.cast<Map<String, dynamic>?>().firstWhere(
+        (r) => r?['player'] == player,
+        orElse: () => null,
+      );
+      if (row == null) {
+        row = {
+          'rank': rows.length + 1,
+          'player': player,
+          'score': 1450,
+          'delta': 0,
+        };
+        rows.add(row);
+      }
+      final current = row['score'] is int
+          ? row['score'] as int
+          : int.tryParse('${row['score']}') ?? 1450;
+      row['score'] = current + delta;
+      row['delta'] = delta > 0 ? '+$delta' : '$delta';
+    }
+
+    applyDelta(white, deltas.$1);
+    applyDelta(black, deltas.$2);
+    rows.sort((a, b) => (b['score'] as int).compareTo(a['score'] as int));
+    for (var i = 0; i < rows.length; i++) {
+      rows[i]['rank'] = i + 1;
+    }
+    await _engine.updateInstanceFields(
+      workflowType: ranking.workflowType,
+      instanceId: ranking.instanceId,
+      fieldUpdates: {
+        'rankingRows': rows,
+        'lastUpdated':
+            'Updated from ${transitionId == 'correct-result' ? 'corrected' : 'submitted'} result: $white vs $black $score',
+      },
+      personaId: personaId,
+    );
+  }
+
+  (int, int) _rankingDeltas(String score, int magnitude) {
+    final normalized = score.replaceAll(' ', '').toLowerCase();
+    if (normalized == '1-0') return (magnitude, -magnitude);
+    if (normalized == '0-1') return (-magnitude, magnitude);
+    if (normalized == '1/2-1/2' ||
+        normalized == '0.5-0.5' ||
+        normalized == 'draw')
+      return (0, 0);
+    return (0, 0);
+  }
+
+  Future<void> updateFields({
+    required WorkflowInstance instance,
+    required Map<String, dynamic> fieldUpdates,
+    required String personaId,
+  }) => _engine.updateInstanceFields(
+    workflowType: instance.workflowType,
+    instanceId: instance.instanceId,
+    fieldUpdates: fieldUpdates,
+    personaId: personaId,
+  );
+  LoomWorkflowStateMachine machineFor(String workflowType) =>
+      _fixture!.machines[workflowType]!;
+  List<String> editableFieldsFor({
+    required String workflowType,
+    required String state,
+  }) => machineFor(workflowType).states[state]?.editableFields ?? const [];
 }
 
-class _ChessFixtureBundle { _ChessFixtureBundle({required this.machines,required this.instances}); final Map<String,LoomWorkflowStateMachine> machines; final List<_GardenSeedInstance> instances; static Future<_ChessFixtureBundle> load() async {final json=jsonDecode(_stripGardenJsoncComments(_chessBundledFixtureJsonc)) as Map<String,dynamic>; final defs=json['workflowDefinitions'] as Map<String,dynamic>; final machines=<String,LoomWorkflowStateMachine>{}; for(final e in defs.entries){machines[e.key]=LoomWorkflowStateMachine.fromJson(_normalizeGardenMachineJson(e.value as Map<String,dynamic>),e.key);} final instances=[for(final item in (json['workflowInstances'] as List<dynamic>)) _GardenSeedInstance.fromJson(item as Map<String,dynamic>)]; return _ChessFixtureBundle(machines:machines,instances:instances);} }
+class _ChessFixtureBundle {
+  _ChessFixtureBundle({required this.machines, required this.instances});
+  final Map<String, LoomWorkflowStateMachine> machines;
+  final List<_GardenSeedInstance> instances;
+  static Future<_ChessFixtureBundle> load() async {
+    final json =
+        jsonDecode(_stripGardenJsoncComments(_chessBundledFixtureJsonc))
+            as Map<String, dynamic>;
+    final defs = json['workflowDefinitions'] as Map<String, dynamic>;
+    final machines = <String, LoomWorkflowStateMachine>{};
+    for (final e in defs.entries) {
+      machines[e.key] = LoomWorkflowStateMachine.fromJson(
+        _normalizeGardenMachineJson(e.value as Map<String, dynamic>),
+        e.key,
+      );
+    }
+    final instances = [
+      for (final item in (json['workflowInstances'] as List<dynamic>))
+        _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
+    ];
+    return _ChessFixtureBundle(machines: machines, instances: instances);
+  }
+}
 
 const _chessBundledFixtureJsonc = r'''
 {
@@ -8187,7 +8959,10 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     }
   }
 
-  Future<void> _transition(WorkflowInstance instance, String transitionId) async {
+  Future<void> _transition(
+    WorkflowInstance instance,
+    String transitionId,
+  ) async {
     await _store.apply(
       instance: instance,
       transitionId: transitionId,
@@ -8218,7 +8993,10 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     if (!_loaded) return const Center(child: CircularProgressIndicator());
     if (_loadError != null) {
       return Center(
-        child: Text(_loadError!, key: ValueKey('book-load-error-${widget.tabId}')),
+        child: Text(
+          _loadError!,
+          key: ValueKey('book-load-error-${widget.tabId}'),
+        ),
       );
     }
     if (widget.tabId == 'home') return _buildHome(context);
@@ -8262,13 +9040,18 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
               child: _bookWorkflowCard(
                 context,
                 instance,
-                title: '${instance.instanceData['itemTitle'] ?? 'Library item'}',
-                subtitle: '${instance.instanceData['format'] ?? 'Book'} shared item',
+                title:
+                    '${instance.instanceData['itemTitle'] ?? 'Library item'}',
+                subtitle:
+                    '${instance.instanceData['format'] ?? 'Book'} shared item',
                 icon: Icons.local_library_outlined,
               ),
             ),
         if (widget.tabId == 'discussions')
-          _bookDiscussionCard(context, _firstInstance('book-discussion-message')),
+          _bookDiscussionCard(
+            context,
+            _firstInstance('book-discussion-message'),
+          ),
         if (widget.tabId == 'documents')
           _bookWorkflowCard(
             context,
@@ -8368,8 +9151,8 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(body),
@@ -8397,8 +9180,12 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
               children: [
                 const SizedBox(height: 8),
                 Text('Parable: ${instance.instanceData['parableVotes'] ?? 0}'),
-                Text('Left Hand: ${instance.instanceData['leftHandVotes'] ?? 0}'),
-                Text('Winner: ${instance.instanceData['winnerTitle'] ?? 'Pending'}'),
+                Text(
+                  'Left Hand: ${instance.instanceData['leftHandVotes'] ?? 0}',
+                ),
+                Text(
+                  'Winner: ${instance.instanceData['winnerTitle'] ?? 'Pending'}',
+                ),
               ],
             ),
     );
@@ -8407,7 +9194,10 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
   Widget _bookDiscussionCard(BuildContext context, WorkflowInstance? instance) {
     final replies = instance?.instanceData['replies'];
     final items = replies is List
-        ? [for (final item in replies) if (item is String) item]
+        ? [
+            for (final item in replies)
+              if (item is String) item,
+          ]
         : const <String>[];
     return _bookWorkflowCard(
       context,
@@ -8453,7 +9243,9 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     final queue = data['queuePersonaIds'];
     final queueCount = queue is List ? queue.length : 0;
     return DecoratedBox(
-      key: ValueKey('book-card-${instance.workflowType}-${instance.instanceId}'),
+      key: ValueKey(
+        'book-card-${instance.workflowType}-${instance.instanceId}',
+      ),
       decoration: _bookBoxDecoration,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -8471,8 +9263,8 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
-                            ),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       Text(subtitle),
                     ],
@@ -8513,10 +9305,12 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
               'downloadStatus',
             ])
               if (data[field] case final value?) Text('$value'),
-            if (_store.editableFieldsFor(
+            if (_store
+                .editableFieldsFor(
                   workflowType: instance.workflowType,
                   state: instance.currentState,
-                ).isNotEmpty)
+                )
+                .isNotEmpty)
               _buildEditableFields(instance),
             if (extra != null) extra,
             const SizedBox(height: 12),
@@ -8580,7 +9374,8 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
       final iconName = field.displayIcon;
       if (iconName == null) continue;
       final value = data[entry.key];
-      final isEmpty = value == null ||
+      final isEmpty =
+          value == null ||
           (value is String && value.isEmpty) ||
           (value is List && value.isEmpty);
       if (field.hideWhenEmpty && isEmpty) continue;
@@ -8602,7 +9397,10 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
       if (!entry.key.toLowerCase().contains('history')) continue;
       final value = entry.value;
       if (value is List) {
-        return [for (final item in value) if (item is String) item];
+        return [
+          for (final item in value)
+            if (item is String) item,
+        ];
       }
     }
     return const <String>[];
@@ -8637,17 +9435,22 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
     if (template == null) return '';
     return template
         .replaceAll('{value.length}', value is List ? '${value.length}' : '0')
-        .replaceAll('{value}', value is List ? value.join(', ') : '${value ?? ''}');
+        .replaceAll(
+          '{value}',
+          value is List ? value.join(', ') : '${value ?? ''}',
+        );
   }
 
   ButtonStyle _bookButtonStyle(LoomWorkflowTransition transition) {
-    final destructive = transition.tone == 'destructive' ||
+    final destructive =
+        transition.tone == 'destructive' ||
         transition.id.contains('withdraw') ||
         transition.id.contains('clear') ||
         transition.id.contains('delete') ||
         transition.id.contains('lost') ||
         transition.id.contains('delist');
-    final primary = transition.tone == 'primary' ||
+    final primary =
+        transition.tone == 'primary' ||
         transition.id.contains('submit') ||
         transition.id.contains('cast') ||
         transition.id.contains('request') ||
@@ -8659,10 +9462,12 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
       foregroundColor: destructive
           ? Colors.red.shade800
           : primary
-              ? Colors.white
-              : widget.accent,
+          ? Colors.white
+          : widget.accent,
       backgroundColor: primary ? widget.accent : null,
-      side: BorderSide(color: destructive ? Colors.red.shade800 : widget.accent),
+      side: BorderSide(
+        color: destructive ? Colors.red.shade800 : widget.accent,
+      ),
     );
   }
 
@@ -8737,14 +9542,14 @@ class _BookClubEngineTabSurfaceState extends State<_BookClubEngineTabSurface> {
   }
 
   BoxDecoration get _bookBoxDecoration => BoxDecoration(
-        color: widget.modernTheme?.resolvedFill ?? Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              widget.modernTheme?.resolvedBorder ??
-              widget.accent.withValues(alpha: 0.2),
-        ),
-      );
+    color: widget.modernTheme?.resolvedFill ?? Colors.white,
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(
+      color:
+          widget.modernTheme?.resolvedBorder ??
+          widget.accent.withValues(alpha: 0.2),
+    ),
+  );
 }
 
 class _BookClubEngineStore {
@@ -8793,10 +9598,10 @@ class _BookClubEngineStore {
     );
     final allowed = switch (tabId) {
       'books' => const {
-          'book-nomination',
-          'book-vote',
-          'book-selection-publish',
-        },
+        'book-nomination',
+        'book-vote',
+        'book-selection-publish',
+      },
       'calendar' => const {'book-meeting-rsvp'},
       'library' => const {'book-library-item'},
       'discussions' => const {'book-discussion-message'},
@@ -8804,11 +9609,11 @@ class _BookClubEngineStore {
       'search' => const {'book-search-ai-digest'},
       'admin' => const {'book-selection-publish', 'book-export-metadata'},
       'home' => const {
-          'book-nomination',
-          'book-vote',
-          'book-meeting-rsvp',
-          'book-selection-publish',
-        },
+        'book-nomination',
+        'book-vote',
+        'book-meeting-rsvp',
+        'book-selection-publish',
+      },
       _ => const <String>{},
     };
     return page.items
@@ -8874,8 +9679,9 @@ class _BookFixtureBundle {
   final List<_GardenSeedInstance> instances;
 
   static Future<_BookFixtureBundle> load() async {
-    final json = jsonDecode(_stripGardenJsoncComments(_bookBundledFixtureJsonc))
-        as Map<String, dynamic>;
+    final json =
+        jsonDecode(_stripGardenJsoncComments(_bookBundledFixtureJsonc))
+            as Map<String, dynamic>;
     final definitions =
         json['workflowDefinitions'] as Map<String, dynamic>? ?? const {};
     final machines = <String, LoomWorkflowStateMachine>{};
@@ -8885,7 +9691,8 @@ class _BookFixtureBundle {
         entry.key,
       );
     }
-    final rawInstances = json['workflowInstances'] as List<dynamic>? ?? const [];
+    final rawInstances =
+        json['workflowInstances'] as List<dynamic>? ?? const [];
     final instances = [
       for (final item in rawInstances)
         _GardenSeedInstance.fromJson(item as Map<String, dynamic>),
@@ -9395,9 +10202,7 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
           tone: 'primary',
           from: const ['unpaid'],
           to: 'paid',
-          guard: WorkflowGuard(
-            allowedPersonaIds: widget.allowedPersonaIds,
-          ),
+          guard: WorkflowGuard(allowedPersonaIds: widget.allowedPersonaIds),
           effects: const [
             WorkflowEffect(op: 'set', key: 'receiptStatus', value: 'complete'),
             WorkflowEffect(
@@ -9459,13 +10264,16 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
-    final fill = widget.modernTheme?.resolvedFill ??
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    final fill =
+        widget.modernTheme?.resolvedFill ??
         Color.alphaBlend(foreground.withValues(alpha: 0.08), widget.accent);
-    final border = widget.modernTheme?.resolvedBorder ??
+    final border =
+        widget.modernTheme?.resolvedBorder ??
         foreground.withValues(alpha: 0.18);
-    final bodyColor = widget.modernTheme?.resolvedBody ??
-        foreground.withValues(alpha: 0.88);
+    final bodyColor =
+        widget.modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.88);
     final instance = _instance;
     if (!_seedComplete || instance == null) {
       return const Center(child: CircularProgressIndicator());
@@ -9511,9 +10319,7 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                         children: [
                           Text(
                             widget.givingPayment.amountLabel,
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
+                            style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(
                                   color: foreground,
                                   fontWeight: FontWeight.w900,
@@ -9523,21 +10329,15 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                             const SizedBox(height: 4),
                             Text(
                               widget.givingPayment.purpose!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: bodyColor,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: bodyColor),
                             ),
                           ],
                           const SizedBox(height: 4),
                           Text(
                             'Payer: ${widget.personaLabel}',
                             key: ValueKey('giving-payer-${widget.workflowId}'),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: bodyColor,
                                   fontWeight: FontWeight.w600,
@@ -9578,17 +10378,17 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                   Text(
                     'Payment history',
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: bodyColor,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      color: bodyColor,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   for (final entry in paymentHistoryItems)
                     Text(
                       entry,
                       key: ValueKey('giving-payment-history-${entry.hashCode}'),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: bodyColor,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: bodyColor),
                     ),
                 ],
               ],
@@ -9618,13 +10418,10 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
                   Expanded(
                     child: Text(
                       '${widget.givingPayment.amountLabel} — complete',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            color: bodyColor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: bodyColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -9638,10 +10435,11 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
               key: ValueKey('giving-checkout-${widget.workflowId}'),
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    widget.modernTheme?.primaryButton?.resolvedFill ?? widget.accent,
+                    widget.modernTheme?.primaryButton?.resolvedFill ??
+                    widget.accent,
                 foregroundColor:
                     widget.modernTheme?.primaryButton?.resolvedForeground ??
-                        Colors.white,
+                    Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -9664,9 +10462,9 @@ class _GivingTabSurfaceState extends State<_GivingTabSurface> {
               child: Text(
                 'Read-only ledger view. Payment actions are available to the payer.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: bodyColor,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: bodyColor,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -9719,12 +10517,13 @@ class _TabNativeSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
-    final fill = modernTheme?.resolvedFill ??
+    final fill =
+        modernTheme?.resolvedFill ??
         Color.alphaBlend(foreground.withValues(alpha: 0.08), accent);
-    final border = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
-    final bodyColor = modernTheme?.resolvedBody ??
-        foreground.withValues(alpha: 0.90);
+    final border =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: fill,
@@ -9755,9 +10554,9 @@ class _TabNativeSummary extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         body,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: bodyColor,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: bodyColor),
                       ),
                     ],
                   ),
@@ -9803,10 +10602,10 @@ class _TabEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final fill = modernTheme?.resolvedFill ?? accent.withValues(alpha: 0.82);
-    final border = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
-    final bodyColor = modernTheme?.resolvedBody ??
-        foreground.withValues(alpha: 0.90);
+    final border =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.90);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: fill,
@@ -9834,9 +10633,9 @@ class _TabEmptyState extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     body,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: bodyColor,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: bodyColor),
                   ),
                 ],
               ),
@@ -9871,10 +10670,10 @@ class _TabPlaceholderSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final fill = modernTheme?.resolvedFill ?? accent.withValues(alpha: 0.82);
-    final border = modernTheme?.resolvedBorder ??
-        foreground.withValues(alpha: 0.18);
-    final bodyColor = modernTheme?.resolvedBody ??
-        foreground.withValues(alpha: 0.86);
+    final border =
+        modernTheme?.resolvedBorder ?? foreground.withValues(alpha: 0.18);
+    final bodyColor =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.86);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 48),
@@ -9904,9 +10703,9 @@ class _TabPlaceholderSurface extends StatelessWidget {
                   'This tab will light up when $communityName publishes '
                   '${tabLabel.toLowerCase()} content. Check back soon.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: bodyColor,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: bodyColor),
                 ),
               ),
             ),
@@ -9927,10 +10726,10 @@ class _WeekDateStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = _foregroundFor(accent);
     final selectedFill = modernTheme?.accent ?? accent;
-    final unselectedFill = modernTheme?.resolvedFill ??
-        Colors.white.withValues(alpha: 0.72);
-    final stripBorder = modernTheme?.resolvedBorder ??
-        accent.withValues(alpha: 0.22);
+    final unselectedFill =
+        modernTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.72);
+    final stripBorder =
+        modernTheme?.resolvedBorder ?? accent.withValues(alpha: 0.22);
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return SizedBox(
       key: const ValueKey('calendar-week-strip'),
@@ -9988,7 +10787,8 @@ class _DocumentLibraryHeader extends StatelessWidget {
     return DecoratedBox(
       key: const ValueKey('documents-library-header'),
       decoration: BoxDecoration(
-        color: modernTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.86),
+        color:
+            modernTheme?.resolvedFill ?? Colors.white.withValues(alpha: 0.86),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: modernTheme?.resolvedBorder ?? accent.withValues(alpha: 0.22),
@@ -10037,7 +10837,8 @@ class _StatusTimelinePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final foreground = modernTheme?.resolvedHeading ?? _foregroundFor(accent);
     final fill = modernTheme?.resolvedFill ?? accent;
-    final body = modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.92);
+    final body =
+        modernTheme?.resolvedBody ?? foreground.withValues(alpha: 0.92);
     const steps = ['Submitted', 'Review', 'Changes', 'Approved'];
     return DecoratedBox(
       key: const ValueKey('workflow-status-timeline-preview'),
@@ -10077,9 +10878,9 @@ class _StatusTimelinePreview extends StatelessWidget {
                     Expanded(
                       child: Text(
                         steps[i],
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: body,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: body),
                       ),
                     ),
                   ],
