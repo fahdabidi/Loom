@@ -532,12 +532,33 @@ a WSL reboot since) was also removed before this milestone's commit could procee
 reflects a defect in this milestone's own code.
 
 ### Milestone 1.8 — Document library real data
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
-- [ ] Tabletop Club's fixture populates the real `documentLibrary` field (multiple documents, real
-  categories) so `_DocumentsTabSurface`/`_DocumentLibraryWorkflowSurface` — already real — renders a
-  genuine multi-document library instead of falling back to a single hardcoded-document card.
-- [ ] Widget test: library shows ≥3 documents across ≥2 categories, search/filter narrows correctly.
-- [ ] `flutter analyze` clean, full suite green, exact counts cited.
+**Status:** `[x]` **CLOSED 2026-07-13.**
+- [x] Tabletop Club fixture (new, per-milestone, following the established test-file pattern —
+  `v3_milestone_1_8_document_library_test.dart`) populates a real `documentLibrary` field: 3 documents
+  (`Code of conduct`, `Game lending policy`, `Teach-a-game host guide`) across 2 categories (`Club
+  policies`, `Game nights`). `_DocumentLibraryWorkflowSurface` itself needed no changes — confirmed
+  already correctly reading `LoomDocumentLibrary`/`LoomDocumentItem` and rendering category `ChoiceChip`s
+  + document rows from it.
+- [x] Widget test: confirms both category chips render; confirms the initial category shows exactly its
+  2 documents and not the third; taps the other category chip and confirms the list narrows to exactly
+  that category's 1 document. The surface has no text-search input — only category-chip filtering — and
+  the implementation agent correctly reported this rather than inventing a search UI to match the
+  tracker's "search/filter" wording literally.
+- [ ] Live emulator walk: deferred to Milestone 1.20's consolidated walk (standing convention).
+- [x] `flutter analyze` clean; full app-shell suite **17/17** (including this milestone's 1 new test).
+
+**Implementation history:** completed in one dispatch round, no false starts — a useful contrast with
+1.7's four rounds, and a sign the scope-narrowing note in this milestone's kickoff (the surface is
+already real; this is fixture + test coverage only, not new UI) mattered. Correctly could not run
+`flutter test` itself (same sandboxed pub.dev network restriction seen on 1.6/1.7) and left the tracker
+`[~]` rather than guess a result.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Independently ran the new test (`1/1`), the
+full app-shell suite (`17/17`), and `flutter analyze` (clean). Read the actual test and fixture content,
+not just the pass count: confirmed it seeds a real 3-document/2-category library, asserts both the
+"only this category's documents show" state and the "tapping the other chip narrows to just its
+document" state (not merely that chips exist), and uses `documentId`/category strings the test itself
+controls as widget keys — avoiding 1.7's engine-generated-id key pitfall entirely.
 
 ### Milestone 1.9 — Notification inbox
 **Status:** `[ ]` Not started.
