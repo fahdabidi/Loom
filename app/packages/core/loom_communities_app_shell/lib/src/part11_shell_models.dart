@@ -363,6 +363,13 @@ class LoomNotificationItem {
   final bool isUnread;
 }
 
+class LoomExportWizardSeed {
+  const LoomExportWizardSeed({required this.wizardId, required this.scope});
+
+  final String wizardId;
+  final List<String> scope;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -835,6 +842,39 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Notifications require an inbox list with unread state; a single preview card is not sufficient.',
   ),
+  'export-wizard-stepper': LoomTabRendererContract(
+    rendererId: 'ExportWizardTabSurface',
+    label:
+        'Export wizard with gated preview, generation, transfer, and result steps',
+    tabIds: ['export'],
+    surfaceFamilies: ['exportWizard'],
+    requiredAnatomy: [
+      'stepper',
+      'export scope preview',
+      'gated actions',
+      'result state',
+    ],
+    requiredInteractions: [
+      'previewExport',
+      'generateExport',
+      'transferExport',
+      'retryExport',
+      'rollbackExport',
+    ],
+    requiredStates: [
+      'preview',
+      'generating',
+      'transferring',
+      'complete',
+      'failed',
+    ],
+    evidenceRequirements: [
+      'export stepper screenshot',
+      'gated next-step screenshot',
+    ],
+    fallbackPolicy:
+        'Export flows need an explicit sequential stepper rather than a flat action row.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1111,6 +1151,7 @@ class LoomExperienceDefinition {
     this.personaPolicies,
     this.threads,
     this.notifications,
+    this.exportWizard,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1126,6 +1167,7 @@ class LoomExperienceDefinition {
   final Map<String, LoomWorkflowPersonaPolicy>? personaPolicies;
   final List<LoomMessageThread>? threads;
   final List<LoomNotificationItem>? notifications;
+  final LoomExportWizardSeed? exportWizard;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

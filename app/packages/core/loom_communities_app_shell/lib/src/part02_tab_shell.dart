@@ -1487,6 +1487,399 @@ class _NotificationInboxEngineStore {
   );
 }
 
+class _ExportWizardTabSurface extends StatefulWidget {
+  const _ExportWizardTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_ExportWizardTabSurface> createState() =>
+      _ExportWizardTabSurfaceState();
+}
+
+class _ExportWizardTabSurfaceState extends State<_ExportWizardTabSurface> {
+  static final _stores = <String, _ExportWizardEngineStore>{};
+
+  late final _ExportWizardEngineStore _store;
+  WorkflowInstance? _instance;
+  var _loaded = false;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _ExportWizardEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.exportWizard!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_ExportWizardTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId) {
+      unawaited(_load());
+    }
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final instance = await _store.instanceFor(widget.persona.personaId);
+      if (!mounted) return;
+      setState(() {
+        _instance = instance;
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = '$error';
+      });
+    }
+  }
+
+  Future<void> _apply(String transitionId) async {
+    final instance = _instance;
+    if (instance == null) return;
+    await _store.apply(
+      instance: instance,
+      transitionId: transitionId,
+      personaId: widget.persona.personaId,
+    );
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(_loadError!, key: const ValueKey('export-wizard-load-error'));
+    }
+    final instance = _instance;
+    if (instance == null) {
+      return _TabEmptyState(
+        icon: Icons.ios_share_outlined,
+        title: 'Export unavailable',
+        body: 'No export wizard instance is available for this community.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    final state = instance.currentState;
+    final currentStep = _stepFor(state);
+    final scope = [
+      for (final value in instance.instanceData['scope'] as List? ?? const [])
+        '$value',
+    ];
+    return DecoratedBox(
+      key: ValueKey('export-wizard-${instance.instanceData['wizardId']}'),
+      decoration: BoxDecoration(
+        color: widget.modernTheme?.resolvedFill ?? Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              widget.modernTheme?.resolvedBorder ??
+              widget.accent.withValues(alpha: 0.20),
+        ),
+      ),
+      child: Stepper(
+        key: const ValueKey('export-wizard-stepper'),
+        currentStep: currentStep,
+        controlsBuilder: (context, details) => const SizedBox.shrink(),
+        steps: [
+          Step(
+            title: const Text('Preview'),
+            isActive: currentStep >= 0,
+            state: _stepState(0, currentStep),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Review the records included in this export.'),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [for (final item in scope) Chip(label: Text(item))],
+                ),
+                if (state == 'preview') ...[
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    key: const ValueKey('export-action-generate'),
+                    onPressed: () => unawaited(_apply('generate')),
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                    label: const Text('Generate export'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Step(
+            title: const Text('Generate'),
+            isActive: currentStep >= 1,
+            state: _stepState(1, currentStep),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'The export package is generated and ready to transfer.',
+                ),
+                if (state == 'generating') ...[
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    key: const ValueKey('export-action-transfer'),
+                    onPressed: () => unawaited(_apply('begin-transfer')),
+                    icon: const Icon(Icons.ios_share_outlined),
+                    label: const Text('Begin transfer'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Step(
+            title: const Text('Transfer'),
+            isActive: currentStep >= 2,
+            state: _stepState(2, currentStep),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  state == 'failed'
+                      ? 'Transfer failed. Retry or roll back to the preview.'
+                      : 'Transfer the generated package to your destination.',
+                ),
+                if (state == 'transferring') ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        key: const ValueKey('export-action-complete'),
+                        onPressed: () => unawaited(_apply('complete-transfer')),
+                        icon: const Icon(Icons.check_circle_outline),
+                        label: const Text('Complete transfer'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('export-action-fail'),
+                        onPressed: () => unawaited(_apply('fail-transfer')),
+                        icon: const Icon(Icons.error_outline),
+                        label: const Text('Simulate transfer failure'),
+                      ),
+                    ],
+                  ),
+                ],
+                if (state == 'failed') ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        key: const ValueKey('export-action-retry'),
+                        onPressed: () => unawaited(_apply('retry-transfer')),
+                        icon: const Icon(Icons.refresh_outlined),
+                        label: const Text('Retry transfer'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('export-action-rollback'),
+                        onPressed: () => unawaited(_apply('rollback')),
+                        icon: const Icon(Icons.undo_outlined),
+                        label: const Text('Return to preview'),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Step(
+            title: const Text('Complete'),
+            isActive: currentStep >= 3,
+            state: _stepState(3, currentStep),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Your export transfer is complete.'),
+                if (state == 'complete') ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    key: const ValueKey('export-action-rollback-complete'),
+                    onPressed: () => unawaited(_apply('rollback')),
+                    icon: const Icon(Icons.undo_outlined),
+                    label: const Text('Start a new export'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _stepFor(String state) => switch (state) {
+    'preview' => 0,
+    'generating' => 1,
+    'transferring' || 'failed' => 2,
+    'complete' => 3,
+    _ => 0,
+  };
+
+  StepState _stepState(int index, int currentStep) {
+    if (index > currentStep) return StepState.disabled;
+    if (index < currentStep) return StepState.complete;
+    return StepState.indexed;
+  }
+}
+
+class _ExportWizardEngineStore {
+  _ExportWizardEngineStore({required this.communityId, required this.seed});
+
+  static const workflowType = 'tabletop-export-wizard';
+
+  final String communityId;
+  final LoomExportWizardSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: 'tabletop-organizer',
+      initialInstanceData: {
+        'wizardId': seed.wizardId,
+        'scope': seed.scope,
+        'status': 'Preview ready',
+      },
+    );
+    _ready = true;
+  }
+
+  Future<WorkflowInstance?> instanceFor(String personaId) async {
+    await ensureReady();
+    final page = await _engine.queryInstances(
+      tabId: 'export',
+      personaId: personaId,
+      limit: 10,
+    );
+    for (final instance in page.items) {
+      if (instance.workflowType == workflowType) return instance;
+    }
+    return null;
+  }
+
+  Future<void> apply({
+    required WorkflowInstance instance,
+    required String transitionId,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: workflowType,
+    instanceId: instance.instanceId,
+    transitionId: transitionId,
+    personaId: personaId,
+  );
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'preview',
+    states: {
+      'preview': LoomWorkflowState(label: 'Preview'),
+      'generating': LoomWorkflowState(label: 'Generated'),
+      'transferring': LoomWorkflowState(label: 'Transferring'),
+      'complete': LoomWorkflowState(label: 'Complete', isTerminal: true),
+      'failed': LoomWorkflowState(label: 'Transfer failed'),
+    },
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'generate',
+        label: 'Generate export',
+        from: ['preview'],
+        to: 'generating',
+        effects: [WorkflowEffect(op: 'set', key: 'status', value: 'Generated')],
+      ),
+      LoomWorkflowTransition(
+        id: 'begin-transfer',
+        label: 'Begin transfer',
+        from: ['generating'],
+        to: 'transferring',
+        effects: [
+          WorkflowEffect(op: 'set', key: 'status', value: 'Transferring'),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'complete-transfer',
+        label: 'Complete transfer',
+        from: ['transferring'],
+        to: 'complete',
+        effects: [WorkflowEffect(op: 'set', key: 'status', value: 'Complete')],
+      ),
+      LoomWorkflowTransition(
+        id: 'fail-transfer',
+        label: 'Transfer failed',
+        from: ['transferring'],
+        to: 'failed',
+        effects: [WorkflowEffect(op: 'set', key: 'status', value: 'Failed')],
+      ),
+      LoomWorkflowTransition(
+        id: 'retry-transfer',
+        label: 'Retry transfer',
+        from: ['failed'],
+        to: 'generating',
+        effects: [WorkflowEffect(op: 'set', key: 'status', value: 'Generated')],
+      ),
+      LoomWorkflowTransition(
+        id: 'rollback',
+        label: 'Return to preview',
+        from: ['failed', 'complete'],
+        to: 'preview',
+        effects: [
+          WorkflowEffect(op: 'set', key: 'status', value: 'Preview ready'),
+        ],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: ['preview', 'generating', 'transferring', 'complete', 'failed'],
+        role: 'any',
+        tabId: 'export',
+        cardSurfaceFamily: 'exportWizard',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'wizardId': InstanceDataField(type: 'string', required: true),
+      'scope': InstanceDataField(type: 'list', required: true),
+      'status': InstanceDataField(type: 'text', writableBy: 'effect'),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -1605,6 +1998,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'NotificationInboxTabSurface':
         return _NotificationInboxTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'ExportWizardTabSurface':
+        return _ExportWizardTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,

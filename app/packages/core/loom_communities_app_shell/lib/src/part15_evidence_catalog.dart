@@ -111,6 +111,9 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     ];
     if (parsed.isNotEmpty) notifications = parsed;
   }
+  final exportWizard = _parseExportWizardSeed(
+    experienceConfiguration['exportWizard'],
+  );
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -167,6 +170,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     ),
     threads: threads,
     notifications: notifications,
+    exportWizard: exportWizard,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -553,6 +557,14 @@ LoomNotificationItem? _parseNotificationItem(Map<String, Object?> map) {
     recipientPersonaIds: _shellStringList(map['recipientPersonaIds']),
     isUnread: map['isUnread'] != false,
   );
+}
+
+LoomExportWizardSeed? _parseExportWizardSeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final wizardId = value['wizardId'];
+  final scope = _shellStringList(value['scope']);
+  if (wizardId is! String || wizardId.isEmpty || scope.isEmpty) return null;
+  return LoomExportWizardSeed(wizardId: wizardId, scope: scope);
 }
 
 LoomMarketplaceListing? _parseListing(

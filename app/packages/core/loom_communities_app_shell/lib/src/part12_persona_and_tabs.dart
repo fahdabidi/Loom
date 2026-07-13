@@ -367,6 +367,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'Notifications are chronological inbox items rather than pinned workflow cards.',
         requiredPermission: 'community.surface.messages.read',
       ),
+    if (experience.exportWizard != null)
+      const LoomAppShellTabSpec(
+        tabId: 'export',
+        label: 'Export',
+        icon: Icons.ios_share_outlined,
+        description: 'Review, generate, and transfer a community export.',
+        rendererContractId: 'export-wizard-stepper',
+        pinningPolicy: 'none-declared-for-export',
+        pinningPolicyRationale:
+            'Exports are completed as a sequential wizard rather than a pinned card.',
+        requiredPermission: 'community.surface.documents.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',
