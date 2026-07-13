@@ -216,14 +216,40 @@ implementation-agent effort on repeated doomed `dart test` retries (observed in 
 transcript).
 
 ### Milestone 1.3 — Data-bound Repeater primitive
-**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
-- [ ] One generic, community-agnostic `_RepeaterSurface` widget in `loom_communities_app_shell`,
-  parametrized by a `repeater` config block (source: static field or live `queryInstances` filter; item
-  template; per-item actions via `availableTransitions` or an extended effect op).
-- [ ] Widget tests: static-source repeater renders N items matching N array entries (not hardcoded);
-  live-query-bound repeater picks up a newly created instance without a widget rebuild trigger; per-item
-  action closes over the correct item's data (proven with ≥3 items, not just 2).
-- [ ] `flutter analyze` clean, widget suite green, exact count cited.
+**Status:** `[x]` **CLOSED 2026-07-12.**
+- [x] One generic, community-agnostic `RepeaterSurface` widget in `loom_communities_app_shell`
+  (`.static`/`.live` constructors via a `RepeaterQuerySource`), parametrized entirely by config — not
+  rebuilt per archetype or community — with per-item actions via `availableTransitions`/
+  `applyTransition` and an `onItemAction` escape hatch for the static case.
+- [x] Widget tests: static-source repeater renders N items matching N array entries, proven at both 3
+  and 5 (not hardcoded, includes negative `findsNothing` assertions past the boundary); live-query-bound
+  repeater picks up a newly created instance via its own polling refresh, proven by creating a 4th real
+  instance externally and asserting it appears without the widget being rebuilt from scratch; per-item
+  action closes over the correct item's data, proven with 3 items in different states where only the
+  tapped (second) item's `applyTransition` call took effect.
+- [x] `flutter analyze` clean, widget suite green — 9/9 (cumulative app-shell suite).
+
+**Implementation history:** the first attempt built a sound `RepeaterSurface` design (confirmed clean
+via `flutter analyze`) but was interrupted by a tool-level `apply_patch verification failed` error
+before reaching the test-writing/commit steps — nothing was committed, no test file existed. Rather
+than discard the working design, the verification agent independently confirmed the widget's `analyze`
+cleanliness and dispatched a focused continuation (same session, `resume --last`) to finish the tests
+and commit — landed as `064126d`. Also noted the implementation agent used `git commit --no-verify`
+without being asked to; confirmed this repo has no active git hooks (only `.sample` files) so nothing
+was actually bypassed, but future kickoffs now explicitly instruct against using `--no-verify`.
+
+**Verification Agent result (2026-07-12): PASS — CLOSED.** Independently re-ran `flutter analyze`
+(clean) and the new test file directly — all 3 tests pass — then the full `loom_communities_app_shell`
+suite (9/9, zero regressions). Direct read of `v3_milestone_1_3_repeater_test.dart` confirmed genuine,
+non-gamed coverage matching every validation-test bullet: the static-cardinality test asserts presence
+*and* absence at the boundary (`repeater-item-3` `findsNothing` after 3 items, `findsOneWidget` after
+rebuilding with 5); the live-growth test seeds 3 real `WorkflowInstance`s via `LocalWorkflowEngineApi`,
+confirms exactly 3 render, creates a 4th directly against the same engine (simulating an external
+event), advances past the refresh interval, and confirms the 4th appears; the per-item-action test
+moves two of three seeded instances into different states with different available transitions, taps
+specifically the *second* instance's `complete-two` button (keyed by `instanceId`), and confirms only
+that instance transitioned to `done` while the first remained in its own distinct state — conclusively
+proving the action closes over the correct item, not the first/all.
 
 ### Milestone 1.4 — Scheduled notifications + cross-instance eligibility guard
 **Status:** `[ ]` Not started.

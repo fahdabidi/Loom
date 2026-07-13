@@ -112,7 +112,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | --- | --- | --- |
 | 1 — Tabletop Club | 1.1 Computed-field formulas (engine core) | `[x]` **CLOSED 2026-07-12** — independently verified: `loom_workflow_engine` analyze clean + 98/98 tests, `loom_ux_judges` analyze clean + 39/39 tests, commit `c860045` |
 | 1 | 1.2 Extended effect ops + read-side aggregate API | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 99/99 tests, commit `72a66e6`; 2 test-coverage gaps found and independently confirmed correct via diagnostic script, carried forward as non-blocking follow-up |
-| 1 | 1.3 Data-bound Repeater primitive | `[~]` In progress — dispatched to implementation agent 2026-07-12 |
+| 1 | 1.3 Data-bound Repeater primitive | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 9/9 tests, commit `064126d`; first attempt was interrupted by a tool-level glitch and required one resumption |
 | 1 | 1.4 Scheduled notifications + cross-instance eligibility guard | `[ ]` Not started |
 | 1 | 1.5 Calendar month/week grid | `[ ]` Not started |
 | 1 | 1.6 Marketplace grid reformalized onto Repeater | `[ ]` Not started |
