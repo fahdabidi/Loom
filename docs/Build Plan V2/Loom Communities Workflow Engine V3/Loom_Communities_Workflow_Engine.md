@@ -125,7 +125,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | 1 | 1.13 Audience/multi-select picker | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 23/23 app-shell tests, commit `2ee3d9b`; caught and fixed a real engine authorization bug (missing `editableFields`) the implementation agent's own sandbox couldn't test (see phase doc) |
 | 1 | 1.14 Single-item preference control | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 24/24 app-shell tests, commit `a00e233`; correctly avoided repeating 1.13's editableFields gap, no bugs found (see phase doc) |
 | 1 | 1.15 Status timeline visual + protectedDetail masking | `[x]` **CLOSED 2026-07-13** — independently verified: analyze clean + 26/26 app-shell tests, commits `9ead6a9` + `0d639d4`; caught a real layout bug (unbounded-height Expanded) and a test-fixture bug the implementation agent's own sandbox couldn't test (see phase doc) |
-| 1 | 1.16 Dashboard prioritization | `[ ]` Not started |
+| 1 | 1.16 Dashboard prioritization | `[~]` In progress — dispatched to implementation agent 2026-07-13 |
 | 1 | 1.17 formEntry checkbox + relative-time-picker control | `[ ]` Not started |
 | 1 | 1.18 Tournament + Voting feature (flagship) | `[ ]` Not started |
 | 1 | 1.19 Archetype Implementation Standard finalized | `[ ]` Not started |

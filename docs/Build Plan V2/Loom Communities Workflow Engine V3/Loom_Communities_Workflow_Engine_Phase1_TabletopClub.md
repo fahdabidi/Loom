@@ -911,7 +911,15 @@ analyze` clean.
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.16 — Dashboard prioritization
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** the gap is specifically the fixed *category-level*
+Home-tab ordering (`_orderedSectionTitles`, `part03_workflow_sections.dart:76-88`) — per-workflow-card
+ordering within each category is already genuinely data-driven via `pinnedWorkflowIds` promotion
+(`_communitySectionsForTab`, same file, lines 36-74) and is out of scope here. A renderer-contract
+description string (`part02_tab_shell.dart:4080`) claims "prioritized surfaces," which the category
+ordering doesn't currently back up. Kickoff frames this explicitly as investigate-then-decide, per the
+tracker's own allowance for a documented "not worth it" outcome — not a presupposed build task.
 - [ ] Either a genuinely data-driven pin-priority formula (replacing `_orderedSectionTitles`'s hardcoded
   global constant), or an explicit, documented decision that a simpler fixed design is not worth the
   added complexity — decided during this milestone, not assumed in advance.
