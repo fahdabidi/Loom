@@ -435,7 +435,7 @@ gate — not a rebuild of Marketplace, and not open-ended Repeater work beyond w
 needs.
 
 ### Milestone 1.7 — Discussion threads generalized
-**Status:** `[~]` In progress — corrected re-dispatch 2026-07-12 (see finding below).
+**Status:** `[x]` **CLOSED 2026-07-13.**
 
 **First-attempt finding (2026-07-12), correctly not forced through, but over-broad in its proposed
 fix:** the agent found `_MessagesTabSurfaceState` (`part02_tab_shell.dart:182`) has zero engine wiring
@@ -466,12 +466,62 @@ own durability guarantees, but neither of their own required validation tests ac
 cross-rebuild/cross-persona persistence, so it isn't a regression against what was promised and closed.
 **Filed as a tracked, non-blocking follow-up** — worth revisiting before Milestone 1.20's sign-off, not
 bundled into 1.7's fix to avoid destabilizing two already-closed milestones.
-- [ ] `_MessagesTabSurface` generalized to read threads from engine `WorkflowInstance`s via a
-  live-query-bound Repeater, replacing Tabletop Club's current data source.
-- [ ] Widget test: a new message posted via the `createInstance` effect op appears as a new bubble
-  without a manual refresh path.
-- [ ] Live emulator walk: post a message, confirm it renders immediately.
-- [ ] `flutter analyze` clean, full suite green, exact counts cited.
+- [x] `_MessagesTabSurface` generalized to read threads from engine `WorkflowInstance`s via a
+  live-query-bound Repeater (`RepeaterSurface.live`), replacing Tabletop Club's ad hoc local widget
+  state — now uses the same `static final _stores = <String, _MessagesEngineStore>{}` /
+  `putIfAbsent(widget.experience.extensionId, ...)` pattern as the other 5 engine-backed surfaces in
+  this file, giving it the same cross-rebuild/cross-persona durability already verified for those.
+- [x] Widget test: a new message posted via the `createInstance`/`applyTransition` effect ops appears
+  as a new bubble without a manual refresh path — covered by
+  `v3_milestone_1_7_messages_test.dart`'s reconstruction test.
+- [ ] Live emulator walk: deferred to Milestone 1.20's consolidated walk (per this Phase's standing
+  convention — see Milestones 1.1-1.6).
+- [x] `flutter analyze` clean; full app-shell suite **16/16** (including this milestone's 3 tests).
+
+**Implementation history (second dispatch, applying the corrected scope):** wired
+`_MessagesTabSurface`/`_MessagesEngineStore` onto the static-store pattern as directed. Its own new test
+file (`v3_milestone_1_7_messages_test.dart`, 3 tests: live cardinality, posted-message persistence,
+archived-thread persistence) initially showed 3 failures when the agent could run it. It correctly
+diagnosed and fixed the live-cardinality failure (a `RepeaterSurface.live` timing issue — content
+existing in the tree before its periodic refresh had actually reconciled) rather than forcing a pass,
+and reported the remaining 2 reconstruction-test failures honestly rather than guessing.
+
+**Verification agent's diagnosis (three rounds, 2026-07-12/13):** the remaining 2 failures were a
+genuine multi-layered bug, not one root cause — each round's fix was verified by an independent
+`flutter test` run, not taken on the implementation agent's word:
+1. First hypothesis (in-flight tab-transition animation not yet settled when `tester.tap()` fired) was
+   plausible from the stack trace alone (`RenderIgnorePointer`/`RenderAnimatedOpacity` in the hit-test
+   chain) but **wrong** — adding a bounded 300ms settle pump made zero measurable difference; same exact
+   failing offset before and after, which is what falsified it.
+2. Reading `part01_local_extension_screen.dart`'s `Scaffold.body` (a `SingleChildScrollView` with
+   `EdgeInsets.fromLTRB(16, 16, 16, shellSpec.theme.tabHeight + 48)`) against the default 800×600 Flutter
+   test viewport pointed at the real cause: the single-thread list item was being laid out below the
+   currently-visible scroll position, and nothing in the test scrolled it into view before
+   `tester.tap()` computed its (correct-but-invisible) on-screen offset — a scroll-position bug, not a
+   timing bug. `tester.ensureVisible()` was the right fix in principle.
+3. The first attempt at applying that fix introduced a **new**, independent bug: it switched the tap
+   target to `find.byKey(ValueKey('messages-inbox-item-persist'))`, wrongly assuming the widget key's
+   suffix equals the seed thread's raw id. Reading `_MessagesEngineStore.toThread()`
+   (`part02_tab_shell.dart:901-902`) showed `threadId: thread.instanceId` — the key is built from the
+   workflow engine's own generated instance id, never the seed's `'persist'`/`'archive'` string, so that
+   finder could never match anything (`Bad state: No element`). Corrected by hand back to
+   `find.text('Persistence thread')` / `find.text('Archive persistence thread')` as the tap target,
+   keeping the `ensureVisible` calls from step 2 — this combination is what actually fixed it.
+
+**Verification agent result (2026-07-13): PASS — CLOSED.** Independently re-ran after the final fix:
+`v3_milestone_1_7_messages_test.dart` **3/3**; full app-shell suite **16/16**; `flutter analyze` clean
+(`No issues found!`). `dart format` produced zero changes (already correctly formatted).
+
+**Unrelated environment incident during this milestone, resolved, no data loss:** mid-session the host
+machine's disk filled to 0 bytes free, which triggered a WSL virtual-disk sharing-violation lock
+(resolved via `wsl --shutdown` + waiting for the external lock to clear) and, separately, caused
+`.agents/skills/using-loom-to-build-an-extension/` (~118 files) to vanish from the working tree —
+restored via `git checkout` since nothing had been committed. A batch of unrelated documentation files
+also picked up pure LF→CRLF line-ending noise (zero content diff, confirmed via `git diff
+--ignore-space-at-eol`) from the same window; left as-is, cosmetic only. A stale `.git/index.lock` (from
+an interrupted process during the same incident, confirmed via `ps -ef` showing no live git process and
+a WSL reboot since) was also removed before this milestone's commit could proceed. None of this
+reflects a defect in this milestone's own code.
 
 ### Milestone 1.8 — Document library real data
 **Status:** `[ ]` Not started.
