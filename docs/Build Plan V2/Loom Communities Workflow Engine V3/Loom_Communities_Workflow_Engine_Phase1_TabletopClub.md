@@ -851,7 +851,15 @@ suite **24/24**, `flutter analyze` clean (commit `a00e233`).
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.15 — Status timeline visual + protectedDetail masking
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** two distinct gaps, per the Archetype Audit.
+`statusTimeline`: `_historyItems()` (duplicated ~3x in `part02_tab_shell.dart`, HOA/Youth Soccer/Chess
+Club) string-key-sniffs any field containing "history" into a flat text list — no vertical line, no
+timestamped nodes. `protectedDetail`: permission logic is already real elsewhere (Mosque/Youth Soccer's
+`privateFieldKeys`); the gap is purely visual — a ternary swapped into plain `Text`, no masked-state
+affordance. Both get new, separate Tabletop Club surfaces (existing communities' usages untouched),
+following the 1.9-1.14 pattern.
 - [ ] Real vertical-line, timestamped-node timeline via Repeater, replacing the plain string-key-sniffed
   text list.
 - [ ] Real protectedDetail masking treatment (visually distinct masked state, not a ternary swapped into
