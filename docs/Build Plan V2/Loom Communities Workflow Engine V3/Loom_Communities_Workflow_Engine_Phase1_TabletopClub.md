@@ -532,7 +532,7 @@ a WSL reboot since) was also removed before this milestone's commit could procee
 reflects a defect in this milestone's own code.
 
 ### Milestone 1.8 — Document library real data
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
 - [ ] Tabletop Club's fixture populates the real `documentLibrary` field (multiple documents, real
   categories) so `_DocumentsTabSurface`/`_DocumentLibraryWorkflowSurface` — already real — renders a
   genuine multi-document library instead of falling back to a single hardcoded-document card.
