@@ -137,6 +137,9 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   final audiencePicker = _parseAudiencePickerSeed(
     experienceConfiguration['audiencePicker'],
   );
+  final singleItemPreference = _parseSingleItemPreferenceSeed(
+    experienceConfiguration['singleItemPreference'],
+  );
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -197,6 +200,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     volunteerShifts: volunteerShifts,
     aiSearchAnswers: aiSearchAnswers,
     audiencePicker: audiencePicker,
+    singleItemPreference: singleItemPreference,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -644,6 +648,30 @@ LoomAudiencePickerSeed? _parseAudiencePickerSeed(Object? value) {
     audienceId: audienceId,
     title: title,
     invitedPersonaIds: _shellStringList(value['invitedPersonaIds']),
+  );
+}
+
+LoomSingleItemPreferenceSeed? _parseSingleItemPreferenceSeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final preferenceId = value['preferenceId'];
+  final title = value['title'];
+  final initialValue = value['initialValue'];
+  if (preferenceId is! String ||
+      preferenceId.isEmpty ||
+      title is! String ||
+      title.isEmpty ||
+      initialValue is! String ||
+      !const {
+        'all-updates',
+        'event-updates',
+        'no-reminders',
+      }.contains(initialValue)) {
+    return null;
+  }
+  return LoomSingleItemPreferenceSeed(
+    preferenceId: preferenceId,
+    title: title,
+    initialValue: initialValue,
   );
 }
 

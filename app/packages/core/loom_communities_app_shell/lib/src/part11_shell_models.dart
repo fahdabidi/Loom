@@ -408,6 +408,18 @@ class LoomAudiencePickerSeed {
   final List<String> invitedPersonaIds;
 }
 
+class LoomSingleItemPreferenceSeed {
+  const LoomSingleItemPreferenceSeed({
+    required this.preferenceId,
+    required this.title,
+    required this.initialValue,
+  });
+
+  final String preferenceId;
+  final String title;
+  final String initialValue;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -955,6 +967,18 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Audience fields require structured persona IDs rather than comma-separated text.',
   ),
+  'single-item-preference': LoomTabRendererContract(
+    rendererId: 'SingleItemPreferenceTabSurface',
+    label: 'Single-item preference with visibly exclusive selection',
+    tabIds: ['preferences'],
+    surfaceFamilies: ['singleItem'],
+    requiredAnatomy: ['all preference options', 'selected option indicator'],
+    requiredInteractions: ['setSinglePreference'],
+    requiredStates: ['all-updates', 'event-updates', 'no-reminders'],
+    evidenceRequirements: ['single-item preference screenshot'],
+    fallbackPolicy:
+        'Exclusive preferences require a grouped selection control rather than transition buttons.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1235,6 +1259,7 @@ class LoomExperienceDefinition {
     this.volunteerShifts,
     this.aiSearchAnswers,
     this.audiencePicker,
+    this.singleItemPreference,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1254,6 +1279,7 @@ class LoomExperienceDefinition {
   final List<LoomVolunteerShiftSeed>? volunteerShifts;
   final List<LoomAiSearchAnswer>? aiSearchAnswers;
   final LoomAudiencePickerSeed? audiencePicker;
+  final LoomSingleItemPreferenceSeed? singleItemPreference;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

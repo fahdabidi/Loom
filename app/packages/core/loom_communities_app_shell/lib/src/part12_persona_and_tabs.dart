@@ -415,6 +415,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'Audience selection is a structured member-field editor rather than a pinned workflow card.',
         requiredPermission: 'community.surface.messages.read',
       ),
+    if (experience.singleItemPreference != null)
+      const LoomAppShellTabSpec(
+        tabId: 'preferences',
+        label: 'Preferences',
+        icon: Icons.tune_outlined,
+        description: 'Choose how often the club should send reminders.',
+        rendererContractId: 'single-item-preference',
+        pinningPolicy: 'none-declared-for-preferences',
+        pinningPolicyRationale:
+            'A member preference is edited in place as one mutually exclusive value.',
+        requiredPermission: 'community.surface.messages.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',

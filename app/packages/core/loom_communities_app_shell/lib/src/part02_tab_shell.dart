@@ -2607,6 +2607,286 @@ class _AudiencePickerEngineStore {
   );
 }
 
+class _SingleItemPreferenceTabSurface extends StatefulWidget {
+  const _SingleItemPreferenceTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_SingleItemPreferenceTabSurface> createState() =>
+      _SingleItemPreferenceTabSurfaceState();
+}
+
+class _SingleItemPreferenceTabSurfaceState
+    extends State<_SingleItemPreferenceTabSurface> {
+  static final _stores = <String, _SingleItemPreferenceEngineStore>{};
+
+  late final _SingleItemPreferenceEngineStore _store;
+  WorkflowInstance? _preference;
+  var _loaded = false;
+  var _saving = false;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _SingleItemPreferenceEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.singleItemPreference!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      final preference = await _store.load(personaId: widget.persona.personaId);
+      if (!mounted) return;
+      setState(() {
+        _preference = preference;
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = '$error';
+      });
+    }
+  }
+
+  Future<void> _setPreference(String nextValue) async {
+    final preference = _preference;
+    if (preference == null || _saving || preference.currentState == nextValue) {
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await _store.setPreference(
+        preference: preference,
+        value: nextValue,
+        personaId: widget.persona.personaId,
+      );
+      final updated = await _store.load(personaId: widget.persona.personaId);
+      if (mounted) setState(() => _preference = updated);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(
+        _loadError!,
+        key: const ValueKey('single-item-preference-load-error'),
+      );
+    }
+    final preference = _preference;
+    if (preference == null) return const Text('Preference could not be loaded');
+    final value = _store.valueFor(preference);
+    return Column(
+      key: const ValueKey('single-item-preference-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.modernTheme?.resolvedFill ?? widget.accent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Text(
+              widget.experience.singleItemPreference!.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        SingleItemPreferenceControl(
+          options: const [
+            SingleItemPreferenceOption(
+              value: _SingleItemPreferenceEngineStore.allUpdates,
+              label: 'All updates',
+              icon: Icons.notifications_active_outlined,
+            ),
+            SingleItemPreferenceOption(
+              value: _SingleItemPreferenceEngineStore.eventUpdates,
+              label: 'Event updates',
+              icon: Icons.event_outlined,
+            ),
+            SingleItemPreferenceOption(
+              value: _SingleItemPreferenceEngineStore.noReminders,
+              label: 'No reminders',
+              icon: Icons.notifications_off_outlined,
+            ),
+          ],
+          selectedValue: value,
+          onChanged: _saving ? (_) {} : _setPreference,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Preference value: $value',
+          key: const ValueKey('single-item-preference-instance-value'),
+          style: TextStyle(color: foreground.withValues(alpha: 0.72)),
+        ),
+      ],
+    );
+  }
+}
+
+class _SingleItemPreferenceEngineStore {
+  _SingleItemPreferenceEngineStore({
+    required this.communityId,
+    required this.seed,
+  });
+
+  static const workflowType = 'tabletop-single-item-preference';
+  static const allUpdates = 'all-updates';
+  static const eventUpdates = 'event-updates';
+  static const noReminders = 'no-reminders';
+
+  final String communityId;
+  final LoomSingleItemPreferenceSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    final preference = await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: 'tabletop-member',
+      initialInstanceData: {
+        'preferenceId': seed.preferenceId,
+        'preference': allUpdates,
+      },
+    );
+    if (seed.initialValue != allUpdates) {
+      await _engine.applyTransition(
+        workflowType: workflowType,
+        instanceId: preference,
+        transitionId: 'set-${seed.initialValue}',
+        personaId: 'tabletop-member',
+      );
+    }
+    _ready = true;
+  }
+
+  Future<WorkflowInstance?> load({required String personaId}) async {
+    final page = await _engine.queryInstances(
+      tabId: 'preferences',
+      personaId: personaId,
+      limit: 10,
+    );
+    return page.items
+        .where((item) => item.workflowType == workflowType)
+        .firstOrNull;
+  }
+
+  Future<void> setPreference({
+    required WorkflowInstance preference,
+    required String value,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: workflowType,
+    instanceId: preference.instanceId,
+    transitionId: 'set-$value',
+    personaId: personaId,
+  );
+
+  String valueFor(WorkflowInstance preference) =>
+      '${preference.instanceData['preference'] ?? preference.currentState}';
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: allUpdates,
+    states: {
+      allUpdates: LoomWorkflowState(
+        label: 'All updates',
+        editableFields: ['preference'],
+      ),
+      eventUpdates: LoomWorkflowState(
+        label: 'Event updates',
+        editableFields: ['preference'],
+      ),
+      noReminders: LoomWorkflowState(
+        label: 'No reminders',
+        editableFields: ['preference'],
+      ),
+    },
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'set-$allUpdates',
+        label: 'Set all updates',
+        from: [eventUpdates, noReminders],
+        to: allUpdates,
+        effects: [
+          WorkflowEffect(op: 'set', key: 'preference', value: allUpdates),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'set-$eventUpdates',
+        label: 'Set event updates',
+        from: [allUpdates, noReminders],
+        to: eventUpdates,
+        effects: [
+          WorkflowEffect(op: 'set', key: 'preference', value: eventUpdates),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'set-$noReminders',
+        label: 'Set no reminders',
+        from: [allUpdates, eventUpdates],
+        to: noReminders,
+        effects: [
+          WorkflowEffect(op: 'set', key: 'preference', value: noReminders),
+        ],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: [allUpdates, eventUpdates, noReminders],
+        role: 'any',
+        tabId: 'preferences',
+        cardSurfaceFamily: 'singleItem',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'preferenceId': InstanceDataField(type: 'string', required: true),
+      'preference': InstanceDataField(type: 'string', required: true),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -2753,6 +3033,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'AudiencePickerTabSurface':
         return _AudiencePickerTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'SingleItemPreferenceTabSurface':
+        return _SingleItemPreferenceTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,
