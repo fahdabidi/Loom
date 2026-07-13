@@ -379,6 +379,18 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'Exports are completed as a sequential wizard rather than a pinned card.',
         requiredPermission: 'community.surface.documents.read',
       ),
+    if (experience.volunteerShifts?.isNotEmpty ?? false)
+      const LoomAppShellTabSpec(
+        tabId: 'roster',
+        label: 'Roster',
+        icon: Icons.volunteer_activism_outlined,
+        description: 'Volunteer shifts and remaining capacity.',
+        rendererContractId: 'volunteer-roster',
+        pinningPolicy: 'none-declared-for-roster',
+        pinningPolicyRationale:
+            'Volunteer shifts are browsed together so members can compare available capacity.',
+        requiredPermission: 'community.surface.care.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',

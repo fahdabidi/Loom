@@ -370,6 +370,20 @@ class LoomExportWizardSeed {
   final List<String> scope;
 }
 
+class LoomVolunteerShiftSeed {
+  const LoomVolunteerShiftSeed({
+    required this.shiftId,
+    required this.title,
+    required this.capacity,
+    this.filled = 0,
+  });
+
+  final String shiftId;
+  final String title;
+  final int capacity;
+  final int filled;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -875,6 +889,21 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Export flows need an explicit sequential stepper rather than a flat action row.',
   ),
+  'volunteer-roster': LoomTabRendererContract(
+    rendererId: 'VolunteerRosterTabSurface',
+    label: 'Volunteer roster with live shift capacity',
+    tabIds: ['roster'],
+    surfaceFamilies: ['volunteerRoster'],
+    requiredAnatomy: ['multiple shifts', 'capacity meter', 'sign-up action'],
+    requiredInteractions: ['listVolunteerShifts', 'signUpForShift'],
+    requiredStates: ['open capacity', 'partially filled', 'full'],
+    evidenceRequirements: [
+      'volunteer roster screenshot',
+      'capacity update screenshot',
+    ],
+    fallbackPolicy:
+        'Volunteer rosters require simultaneous shift visibility and live capacity, not a single selected shift.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1152,6 +1181,7 @@ class LoomExperienceDefinition {
     this.threads,
     this.notifications,
     this.exportWizard,
+    this.volunteerShifts,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1168,6 +1198,7 @@ class LoomExperienceDefinition {
   final List<LoomMessageThread>? threads;
   final List<LoomNotificationItem>? notifications;
   final LoomExportWizardSeed? exportWizard;
+  final List<LoomVolunteerShiftSeed>? volunteerShifts;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

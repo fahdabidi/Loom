@@ -1880,6 +1880,314 @@ class _ExportWizardEngineStore {
   );
 }
 
+class _VolunteerRosterTabSurface extends StatefulWidget {
+  const _VolunteerRosterTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+
+  @override
+  State<_VolunteerRosterTabSurface> createState() =>
+      _VolunteerRosterTabSurfaceState();
+}
+
+class _VolunteerRosterTabSurfaceState
+    extends State<_VolunteerRosterTabSurface> {
+  static final _stores = <String, _VolunteerRosterEngineStore>{};
+
+  late final _VolunteerRosterEngineStore _store;
+  final _signingUpShiftIds = <String>{};
+  var _loaded = false;
+  String? _loadError;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _VolunteerRosterEngineStore(
+        communityId: widget.experience.extensionId,
+        shifts: widget.experience.volunteerShifts ?? const [],
+      ),
+    );
+    unawaited(_load());
+  }
+
+  @override
+  void didUpdateWidget(_VolunteerRosterTabSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.persona.personaId != widget.persona.personaId) {
+      unawaited(_load());
+    }
+  }
+
+  Future<void> _load() async {
+    try {
+      await _store.ensureReady();
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loaded = true;
+        _loadError = '$error';
+      });
+    }
+  }
+
+  Future<void> _signUp(WorkflowInstance shift) async {
+    final shiftId = _store.shiftIdFor(shift);
+    if (_signingUpShiftIds.contains(shiftId) ||
+        _store.remainingFor(shift) == 0) {
+      return;
+    }
+    setState(() => _signingUpShiftIds.add(shiftId));
+    try {
+      await _store.signUp(shift: shift, personaId: widget.persona.personaId);
+    } finally {
+      if (mounted) setState(() => _signingUpShiftIds.remove(shiftId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    if (_loadError != null) {
+      return Text(_loadError!, key: const ValueKey('roster-load-error'));
+    }
+    final shifts = widget.experience.volunteerShifts ?? const [];
+    if (shifts.isEmpty) {
+      return _TabEmptyState(
+        icon: Icons.volunteer_activism_outlined,
+        title: 'No volunteer shifts',
+        body: 'New Tabletop Club volunteer opportunities will appear here.',
+        accent: widget.accent,
+        modernTheme: widget.modernTheme,
+      );
+    }
+    return Column(
+      key: const ValueKey('volunteer-roster-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: widget.modernTheme?.resolvedFill ?? widget.accent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(Icons.volunteer_activism_outlined, color: foreground),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${widget.experience.displayName} volunteer roster',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${shifts.length} shifts',
+                  style: TextStyle(color: foreground.withValues(alpha: 0.82)),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        RepeaterSurface.live(
+          key: ValueKey('roster-repeater-${widget.persona.personaId}'),
+          refreshInterval: const Duration(milliseconds: 50),
+          querySource: RepeaterQuerySource(
+            engine: _store.engine,
+            workflowType: _VolunteerRosterEngineStore.workflowType,
+            personaId: widget.persona.personaId,
+            tabId: 'roster',
+          ),
+          listShrinkWrap: true,
+          listScrollable: false,
+          itemBuilder: (context, item) {
+            final shift = item as WorkflowInstance;
+            final shiftId = _store.shiftIdFor(shift);
+            final capacity = _store.capacityFor(shift);
+            final filled = _store.filledFor(shift);
+            final remaining = capacity - filled;
+            final isSigningUp = _signingUpShiftIds.contains(shiftId);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: DecoratedBox(
+                key: ValueKey('roster-row-$shiftId'),
+                decoration: BoxDecoration(
+                  color: foreground.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: foreground.withValues(alpha: 0.14)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        _store.titleFor(shift),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(
+                        value: capacity == 0 ? 0 : filled / capacity,
+                        color: widget.modernTheme?.accent ?? widget.accent,
+                        backgroundColor: foreground.withValues(alpha: 0.14),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '$filled of $capacity filled · $remaining remaining',
+                        key: ValueKey('roster-capacity-$shiftId'),
+                        style: TextStyle(
+                          color: foreground.withValues(alpha: 0.82),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      if (remaining > 0)
+                        FilledButton.icon(
+                          key: ValueKey('roster-signup-$shiftId'),
+                          onPressed: isSigningUp
+                              ? null
+                              : () => unawaited(_signUp(shift)),
+                          icon: const Icon(Icons.volunteer_activism_outlined),
+                          label: Text(isSigningUp ? 'Signing up…' : 'Sign up'),
+                        )
+                      else
+                        Text(
+                          'This shift is full',
+                          key: ValueKey('roster-full-$shiftId'),
+                          style: TextStyle(
+                            color: foreground.withValues(alpha: 0.72),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _VolunteerRosterEngineStore {
+  _VolunteerRosterEngineStore({
+    required this.communityId,
+    required this.shifts,
+  });
+
+  static const workflowType = 'tabletop-volunteer-shift';
+
+  final String communityId;
+  final List<LoomVolunteerShiftSeed> shifts;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+
+  WorkflowEngineApi get engine => _engine;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    for (final shift in shifts) {
+      await _engine.createInstance(
+        workflowType: workflowType,
+        personaId: 'tabletop-organizer',
+        initialInstanceData: {
+          'shiftId': shift.shiftId,
+          'title': shift.title,
+          'capacity': shift.capacity,
+          'filled': shift.filled,
+        },
+      );
+    }
+    _ready = true;
+  }
+
+  Future<void> signUp({
+    required WorkflowInstance shift,
+    required String personaId,
+  }) => _engine.applyTransition(
+    workflowType: workflowType,
+    instanceId: shift.instanceId,
+    transitionId: 'sign-up',
+    personaId: personaId,
+  );
+
+  String shiftIdFor(WorkflowInstance shift) =>
+      '${shift.instanceData['shiftId'] ?? ''}';
+  String titleFor(WorkflowInstance shift) =>
+      '${shift.instanceData['title'] ?? ''}';
+  int capacityFor(WorkflowInstance shift) =>
+      (shift.instanceData['capacity'] as num?)?.toInt() ?? 0;
+  int filledFor(WorkflowInstance shift) =>
+      (shift.instanceData['filled'] as num?)?.toInt() ?? 0;
+  int remainingFor(WorkflowInstance shift) =>
+      capacityFor(shift) - filledFor(shift);
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'open',
+    states: {'open': LoomWorkflowState(label: 'Open')},
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'sign-up',
+        label: 'Sign up',
+        from: ['open'],
+        to: 'open',
+        guard: WorkflowGuard(formula: 'filled < capacity'),
+        effects: [WorkflowEffect(op: 'increment', key: 'filled')],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: ['open'],
+        role: 'any',
+        tabId: 'roster',
+        cardSurfaceFamily: 'volunteerRoster',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'shiftId': InstanceDataField(type: 'string', required: true),
+      'title': InstanceDataField(type: 'text', required: true, sortable: true),
+      'capacity': InstanceDataField(type: 'number', required: true),
+      'filled': InstanceDataField(type: 'number', writableBy: 'effect'),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -2005,6 +2313,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'ExportWizardTabSurface':
         return _ExportWizardTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'VolunteerRosterTabSurface':
+        return _VolunteerRosterTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,

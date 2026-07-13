@@ -114,6 +114,16 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   final exportWizard = _parseExportWizardSeed(
     experienceConfiguration['exportWizard'],
   );
+  List<LoomVolunteerShiftSeed>? volunteerShifts;
+  final volunteerShiftsRaw = experienceConfiguration['volunteerShifts'];
+  if (volunteerShiftsRaw is List) {
+    final parsed = <LoomVolunteerShiftSeed>[
+      for (final entry in volunteerShiftsRaw)
+        if (entry is Map<String, Object?>)
+          if (_parseVolunteerShiftSeed(entry) case final shift?) shift,
+    ];
+    if (parsed.isNotEmpty) volunteerShifts = parsed;
+  }
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -171,6 +181,7 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     threads: threads,
     notifications: notifications,
     exportWizard: exportWizard,
+    volunteerShifts: volunteerShifts,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -565,6 +576,29 @@ LoomExportWizardSeed? _parseExportWizardSeed(Object? value) {
   final scope = _shellStringList(value['scope']);
   if (wizardId is! String || wizardId.isEmpty || scope.isEmpty) return null;
   return LoomExportWizardSeed(wizardId: wizardId, scope: scope);
+}
+
+LoomVolunteerShiftSeed? _parseVolunteerShiftSeed(Map<String, Object?> map) {
+  final shiftId = map['shiftId'];
+  final title = map['title'];
+  final capacity = map['capacity'];
+  final filled = map['filled'];
+  if (shiftId is! String ||
+      shiftId.isEmpty ||
+      title is! String ||
+      title.isEmpty ||
+      capacity is! int ||
+      capacity <= 0 ||
+      (filled != null && filled is! int) ||
+      (filled is int && (filled < 0 || filled > capacity))) {
+    return null;
+  }
+  return LoomVolunteerShiftSeed(
+    shiftId: shiftId,
+    title: title,
+    capacity: capacity,
+    filled: filled as int? ?? 0,
+  );
 }
 
 LoomMarketplaceListing? _parseListing(
