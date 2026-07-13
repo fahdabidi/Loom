@@ -97,6 +97,15 @@ abstract class WorkflowEngineApi {
     required String personaId,
   });
 
+  /// Async transition resolution, including cross-instance guard checks.
+  Future<List<LoomWorkflowTransition>> availableTransitionsAsync({
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required Map<String, dynamic> instanceData,
+    required String personaId,
+  });
+
   /// MUTATE one instance via a state-changing transition.
   Future<WorkflowTransitionResult> applyTransition({
     required String workflowType,

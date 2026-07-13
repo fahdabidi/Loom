@@ -253,6 +253,32 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
     );
   }
 
+  @override
+  Future<List<LoomWorkflowTransition>> availableTransitionsAsync({
+    required String workflowType,
+    required String instanceId,
+    required String currentState,
+    required Map<String, dynamic> instanceData,
+    required String personaId,
+  }) async {
+    final candidates = availableTransitions(
+      workflowType: workflowType,
+      instanceId: instanceId,
+      currentState: currentState,
+      instanceData: instanceData,
+      personaId: personaId,
+    );
+    return [
+      for (final transition in candidates)
+        if (await _passesRelatedListGuard(
+          transition.guard,
+          instanceData,
+          personaId,
+        ))
+          transition,
+    ];
+  }
+
   Future<Set<String>> completedWorkflowIdsForPersona(String personaId) async {
     final rows = await _db.queryInstancesForPersona(
       communityId: _communityId,

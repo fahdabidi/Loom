@@ -87,6 +87,7 @@ class RepeaterQuerySource {
 class _RepeaterSurfaceState extends State<RepeaterSurface> {
   Timer? _timer;
   List<WorkflowInstance> _items = const [];
+  Map<String, List<LoomWorkflowTransition>> _actionsByInstanceId = const {};
 
   @override
   void initState() {
@@ -117,11 +118,24 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
       limit: 1000,
     );
     if (!mounted || source != widget.querySource) return;
-    setState(
-      () => _items = page.items
-          .where((item) => item.workflowType == source.workflowType)
-          .toList(),
-    );
+    final items = page.items
+        .where((item) => item.workflowType == source.workflowType)
+        .toList();
+    final actions = <String, List<LoomWorkflowTransition>>{};
+    for (final item in items) {
+      actions[item.instanceId] = await source.engine.availableTransitionsAsync(
+        workflowType: item.workflowType,
+        instanceId: item.instanceId,
+        currentState: item.currentState,
+        instanceData: item.instanceData,
+        personaId: source.personaId,
+      );
+    }
+    if (!mounted || source != widget.querySource) return;
+    setState(() {
+      _items = items;
+      _actionsByInstanceId = actions;
+    });
   }
 
   @override
@@ -170,15 +184,9 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
 
   Widget _buildItem(BuildContext context, dynamic item, int index) {
     final instance = item is WorkflowInstance ? item : null;
-    final actions = instance != null && widget.querySource != null
-        ? widget.querySource!.engine.availableTransitions(
-            workflowType: instance.workflowType,
-            instanceId: instance.instanceId,
-            currentState: instance.currentState,
-            instanceData: instance.instanceData,
-            personaId: widget.querySource!.personaId,
-          )
-        : const <LoomWorkflowTransition>[];
+    final actions = instance == null
+        ? const <LoomWorkflowTransition>[]
+        : (_actionsByInstanceId[instance.instanceId] ?? const []);
     return Column(
       key: ValueKey('repeater-item-$index'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
