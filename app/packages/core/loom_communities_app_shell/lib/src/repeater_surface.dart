@@ -1,5 +1,12 @@
 part of loom_communities_app_shell;
 
+/// The visual arrangement used by a [RepeaterSurface].
+enum RepeaterLayout { list, grid }
+
+/// Resolves a grid's column count from the space available to the repeater.
+typedef RepeaterGridCrossAxisCountBuilder =
+    int Function(BuildContext context, BoxConstraints constraints);
+
 /// A reusable, cardinality-driven surface for static data or live workflow
 /// instance queries. It owns periodic re-querying so a newly-created instance
 /// appears without its parent rebuilding the widget.
@@ -9,12 +16,28 @@ class RepeaterSurface extends StatefulWidget {
   final Widget Function(BuildContext context, dynamic item) itemBuilder;
   final Future<void> Function(dynamic item)? onItemAction;
   final Duration refreshInterval;
+  final RepeaterLayout layout;
+  final int gridCrossAxisCount;
+  final RepeaterGridCrossAxisCountBuilder? gridCrossAxisCountBuilder;
+  final double gridChildAspectRatio;
+  final double gridMainAxisSpacing;
+  final double gridCrossAxisSpacing;
+  final bool gridShrinkWrap;
+  final bool gridScrollable;
 
   const RepeaterSurface.static({
     super.key,
     required List<dynamic> items,
     required this.itemBuilder,
     this.onItemAction,
+    this.layout = RepeaterLayout.list,
+    this.gridCrossAxisCount = 2,
+    this.gridCrossAxisCountBuilder,
+    this.gridChildAspectRatio = 1.0,
+    this.gridMainAxisSpacing = 0,
+    this.gridCrossAxisSpacing = 0,
+    this.gridShrinkWrap = false,
+    this.gridScrollable = true,
   }) : staticItems = items,
        querySource = null,
        refreshInterval = Duration.zero;
@@ -25,6 +48,14 @@ class RepeaterSurface extends StatefulWidget {
     required this.itemBuilder,
     this.onItemAction,
     this.refreshInterval = const Duration(milliseconds: 250),
+    this.layout = RepeaterLayout.list,
+    this.gridCrossAxisCount = 2,
+    this.gridCrossAxisCountBuilder,
+    this.gridChildAspectRatio = 1.0,
+    this.gridMainAxisSpacing = 0,
+    this.gridCrossAxisSpacing = 0,
+    this.gridShrinkWrap = false,
+    this.gridScrollable = true,
   }) : staticItems = null;
 
   @override
@@ -96,51 +127,76 @@ class _RepeaterSurfaceState extends State<RepeaterSurface> {
   @override
   Widget build(BuildContext context) {
     final items = widget.staticItems ?? _items;
+    if (widget.layout == RepeaterLayout.grid) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final crossAxisCount =
+              widget.gridCrossAxisCountBuilder?.call(context, constraints) ??
+              widget.gridCrossAxisCount;
+          assert(crossAxisCount > 0, 'grid crossAxisCount must be positive');
+          return GridView.builder(
+            shrinkWrap: widget.gridShrinkWrap,
+            physics: widget.gridScrollable
+                ? null
+                : const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: widget.gridChildAspectRatio,
+              mainAxisSpacing: widget.gridMainAxisSpacing,
+              crossAxisSpacing: widget.gridCrossAxisSpacing,
+            ),
+            itemCount: items.length,
+            itemBuilder: (context, index) =>
+                _buildItem(context, items[index], index),
+          );
+        },
+      );
+    }
     return ListView.builder(
       itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final instance = item is WorkflowInstance ? item : null;
-        final body = widget.itemBuilder(context, item);
-        final actions = instance != null && widget.querySource != null
-            ? widget.querySource!.engine.availableTransitions(
-                workflowType: instance.workflowType,
+      itemBuilder: (context, index) => _buildItem(context, items[index], index),
+    );
+  }
+
+  Widget _buildItem(BuildContext context, dynamic item, int index) {
+    final instance = item is WorkflowInstance ? item : null;
+    final actions = instance != null && widget.querySource != null
+        ? widget.querySource!.engine.availableTransitions(
+            workflowType: instance.workflowType,
+            instanceId: instance.instanceId,
+            currentState: instance.currentState,
+            instanceData: instance.instanceData,
+            personaId: widget.querySource!.personaId,
+          )
+        : const <LoomWorkflowTransition>[];
+    return Column(
+      key: ValueKey('repeater-item-$index'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        widget.itemBuilder(context, item),
+        if (widget.onItemAction != null)
+          TextButton(
+            key: ValueKey('repeater-custom-action-$index'),
+            onPressed: () => widget.onItemAction!(item),
+            child: const Text('Action'),
+          ),
+        for (final transition in actions)
+          TextButton(
+            key: ValueKey(
+              'repeater-transition-${instance?.instanceId ?? index}-${transition.id}',
+            ),
+            onPressed: () async {
+              await widget.querySource!.engine.applyTransition(
+                workflowType: instance!.workflowType,
                 instanceId: instance.instanceId,
-                currentState: instance.currentState,
-                instanceData: instance.instanceData,
+                transitionId: transition.id,
                 personaId: widget.querySource!.personaId,
-              )
-            : const <LoomWorkflowTransition>[];
-        return Column(
-          key: ValueKey('repeater-item-$index'),
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            body,
-            if (widget.onItemAction != null)
-              TextButton(
-                key: ValueKey('repeater-custom-action-$index'),
-                onPressed: () => widget.onItemAction!(item),
-                child: const Text('Action'),
-              ),
-            for (final transition in actions)
-              TextButton(
-                key: ValueKey(
-                  'repeater-transition-${instance?.instanceId ?? index}-${transition.id}',
-                ),
-                onPressed: () async {
-                  await widget.querySource!.engine.applyTransition(
-                    workflowType: instance!.workflowType,
-                    instanceId: instance.instanceId,
-                    transitionId: transition.id,
-                    personaId: widget.querySource!.personaId,
-                  );
-                  await _refresh();
-                },
-                child: Text(transition.label),
-              ),
-          ],
-        );
-      },
+              );
+              await _refresh();
+            },
+            child: Text(transition.label),
+          ),
+      ],
     );
   }
 }

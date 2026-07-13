@@ -2922,45 +2922,31 @@ class _MarketplaceBrowseSurfaceState extends State<_MarketplaceBrowseSurface> {
             ),
           )
         else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final wide = constraints.maxWidth > 380;
-              final crossAxisCount = wide ? 3 : 2;
-              final itemWidth =
-                  (constraints.maxWidth - (crossAxisCount - 1) * 10) /
-                  crossAxisCount;
-              final itemHeight = itemWidth / 0.72;
-              final rows = (filtered.length / crossAxisCount).ceil();
-              final gridHeight = rows * (itemHeight + 10) - 10;
-              return SizedBox(
-                height: gridHeight,
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.72,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final item = filtered[index];
-                    final machine = _machinesByType[item.workflowType]!;
-                    final surfaceFamily = _surfaceFamilyFor(machine);
-                    return _WorkflowMarketplaceListingCard(
-                      listing: item,
-                      machine: machine,
-                      foreground: foreground,
-                      border: border,
-                      accent: widget.accent,
-                      modernTheme: widget.modernTheme,
-                      surfaceFamily: surfaceFamily,
-                      instanceDataSchema: _factPillSchemaFor(surfaceFamily),
-                      onTap: () =>
-                          setState(() => _selectedInstanceId = item.instanceId),
-                    );
-                  },
-                ),
+          RepeaterSurface.static(
+            items: filtered,
+            layout: RepeaterLayout.grid,
+            gridCrossAxisCountBuilder: (context, constraints) =>
+                constraints.maxWidth > 380 ? 3 : 2,
+            gridChildAspectRatio: 0.72,
+            gridCrossAxisSpacing: 10,
+            gridMainAxisSpacing: 10,
+            gridShrinkWrap: true,
+            gridScrollable: false,
+            itemBuilder: (context, item) {
+              final listing = item as WorkflowInstance;
+              final machine = _machinesByType[listing.workflowType]!;
+              final surfaceFamily = _surfaceFamilyFor(machine);
+              return _WorkflowMarketplaceListingCard(
+                listing: listing,
+                machine: machine,
+                foreground: foreground,
+                border: border,
+                accent: widget.accent,
+                modernTheme: widget.modernTheme,
+                surfaceFamily: surfaceFamily,
+                instanceDataSchema: _factPillSchemaFor(surfaceFamily),
+                onTap: () =>
+                    setState(() => _selectedInstanceId = listing.instanceId),
               );
             },
           ),
