@@ -1046,6 +1046,7 @@ class _NotificationInboxTabSurfaceState
   var _visibleCount = 0;
   var _unreadCount = 0;
   String? _loadError;
+  final _locallyDismissedIds = <String>{};
 
   @override
   void initState() {
@@ -1101,6 +1102,9 @@ class _NotificationInboxTabSurfaceState
   }
 
   Future<void> _dismiss(WorkflowInstance notification) async {
+    final notificationId =
+        '${notification.instanceData['notificationId'] ?? ''}';
+    setState(() => _locallyDismissedIds.add(notificationId));
     await _store.setArchived(
       notification: notification,
       archived: true,
@@ -1180,8 +1184,11 @@ class _NotificationInboxTabSurfaceState
           listScrollable: false,
           itemBuilder: (context, item) {
             final instance = item as WorkflowInstance;
+            final notificationId =
+                '${instance.instanceData['notificationId'] ?? ''}';
             if (!_store.isVisibleTo(instance, widget.persona.personaId) ||
-                _store.isArchived(instance)) {
+                _store.isArchived(instance) ||
+                _locallyDismissedIds.contains(notificationId)) {
               return const SizedBox.shrink();
             }
             final notification = _store.toNotification(instance);
