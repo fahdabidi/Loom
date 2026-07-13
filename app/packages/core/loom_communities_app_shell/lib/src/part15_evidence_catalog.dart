@@ -140,6 +140,12 @@ LoomExperienceDefinition? _experienceFromConfiguration(
   final singleItemPreference = _parseSingleItemPreferenceSeed(
     experienceConfiguration['singleItemPreference'],
   );
+  final statusTimeline = _parseStatusTimelineSeed(
+    experienceConfiguration['statusTimeline'],
+  );
+  final protectedDetail = _parseProtectedDetailSeed(
+    experienceConfiguration['protectedDetail'],
+  );
 
   // Parse marketplace templates first (listings may reference them)
   LoomListingStateMachine? marketplaceTemplate;
@@ -201,6 +207,8 @@ LoomExperienceDefinition? _experienceFromConfiguration(
     aiSearchAnswers: aiSearchAnswers,
     audiencePicker: audiencePicker,
     singleItemPreference: singleItemPreference,
+    statusTimeline: statusTimeline,
+    protectedDetail: protectedDetail,
     marketplaceListings: marketplaceListings,
     marketplaceTemplate: marketplaceTemplate,
   );
@@ -672,6 +680,67 @@ LoomSingleItemPreferenceSeed? _parseSingleItemPreferenceSeed(Object? value) {
     preferenceId: preferenceId,
     title: title,
     initialValue: initialValue,
+  );
+}
+
+LoomStatusTimelineSeed? _parseStatusTimelineSeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final timelineId = value['timelineId'];
+  final title = value['title'];
+  final eventsRaw = value['events'];
+  if (timelineId is! String || title is! String || eventsRaw is! List)
+    return null;
+  final events = <LoomStatusTimelineEvent>[
+    for (final entry in eventsRaw)
+      if (entry is Map<String, Object?>)
+        if (_parseStatusTimelineEvent(entry) case final event?) event,
+  ]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  if (timelineId.isEmpty || title.isEmpty || events.isEmpty) return null;
+  return LoomStatusTimelineSeed(
+    timelineId: timelineId,
+    title: title,
+    events: events,
+  );
+}
+
+LoomStatusTimelineEvent? _parseStatusTimelineEvent(Map<String, Object?> value) {
+  final eventId = value['eventId'];
+  final timestamp = DateTime.tryParse(value['timestamp'] as String? ?? '');
+  final label = value['label'];
+  if (eventId is! String ||
+      eventId.isEmpty ||
+      timestamp == null ||
+      label is! String ||
+      label.isEmpty)
+    return null;
+  return LoomStatusTimelineEvent(
+    eventId: eventId,
+    timestamp: timestamp,
+    label: label,
+  );
+}
+
+LoomProtectedDetailSeed? _parseProtectedDetailSeed(Object? value) {
+  if (value is! Map<String, Object?>) return null;
+  final detailId = value['detailId'];
+  final title = value['title'];
+  final ownerPersonaId = value['ownerPersonaId'];
+  final fullDetail = value['fullDetail'];
+  if (detailId is! String ||
+      title is! String ||
+      ownerPersonaId is! String ||
+      fullDetail is! String ||
+      detailId.isEmpty ||
+      title.isEmpty ||
+      ownerPersonaId.isEmpty ||
+      fullDetail.isEmpty)
+    return null;
+  return LoomProtectedDetailSeed(
+    detailId: detailId,
+    title: title,
+    ownerPersonaId: ownerPersonaId,
+    assignedTo: _shellStringList(value['assignedTo']),
+    fullDetail: fullDetail,
   );
 }
 

@@ -427,6 +427,29 @@ List<LoomAppShellTabSpec> appShellTabsFor({
             'A member preference is edited in place as one mutually exclusive value.',
         requiredPermission: 'community.surface.messages.read',
       ),
+    if (experience.statusTimeline != null)
+      const LoomAppShellTabSpec(
+        tabId: 'timeline',
+        label: 'Timeline',
+        icon: Icons.timeline_outlined,
+        description: 'Follow the event status progression.',
+        rendererContractId: 'status-timeline',
+        pinningPolicy: 'none-declared-for-timeline',
+        pinningPolicyRationale:
+            'Timeline events are read in chronological visual order.',
+        requiredPermission: 'community.surface.workflow.read',
+      ),
+    if (experience.protectedDetail != null)
+      const LoomAppShellTabSpec(
+        tabId: 'details',
+        label: 'Details',
+        icon: Icons.lock_outline,
+        description: 'View protected event details.',
+        rendererContractId: 'protected-detail',
+        pinningPolicy: 'none-declared-for-protected-detail',
+        pinningPolicyRationale: 'Protected details use viewer-aware masking.',
+        requiredPermission: 'community.surface.workflow.read',
+      ),
     const LoomAppShellTabSpec(
       tabId: 'messages',
       label: 'Messages',

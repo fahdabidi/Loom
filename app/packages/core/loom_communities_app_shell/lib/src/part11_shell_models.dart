@@ -420,6 +420,43 @@ class LoomSingleItemPreferenceSeed {
   final String initialValue;
 }
 
+class LoomStatusTimelineEvent {
+  const LoomStatusTimelineEvent({
+    required this.eventId,
+    required this.timestamp,
+    required this.label,
+  });
+  final String eventId;
+  final DateTime timestamp;
+  final String label;
+}
+
+class LoomStatusTimelineSeed {
+  const LoomStatusTimelineSeed({
+    required this.timelineId,
+    required this.title,
+    required this.events,
+  });
+  final String timelineId;
+  final String title;
+  final List<LoomStatusTimelineEvent> events;
+}
+
+class LoomProtectedDetailSeed {
+  const LoomProtectedDetailSeed({
+    required this.detailId,
+    required this.title,
+    required this.ownerPersonaId,
+    required this.assignedTo,
+    required this.fullDetail,
+  });
+  final String detailId;
+  final String title;
+  final String ownerPersonaId;
+  final List<String> assignedTo;
+  final String fullDetail;
+}
+
 class LoomProductionWorkflowContract {
   const LoomProductionWorkflowContract({
     required this.workflowId,
@@ -979,6 +1016,37 @@ const _tabRendererContractsById = <String, LoomTabRendererContract>{
     fallbackPolicy:
         'Exclusive preferences require a grouped selection control rather than transition buttons.',
   ),
+  'status-timeline': LoomTabRendererContract(
+    rendererId: 'StatusTimelineTabSurface',
+    label: 'Timestamped status timeline',
+    tabIds: ['timeline'],
+    surfaceFamilies: ['statusTimeline'],
+    requiredAnatomy: ['vertical progression line', 'timestamped nodes'],
+    requiredInteractions: ['viewStatusHistory'],
+    requiredStates: ['chronological event history'],
+    evidenceRequirements: ['timeline screenshot'],
+    fallbackPolicy:
+        'Status history must render as a visual timeline, not text rows.',
+  ),
+  'protected-detail': LoomTabRendererContract(
+    rendererId: 'ProtectedDetailTabSurface',
+    label: 'Protected detail with a distinct masked state',
+    tabIds: ['details'],
+    surfaceFamilies: ['protectedDetail'],
+    requiredAnatomy: [
+      'full detail',
+      'locked masked detail',
+      'why-hidden explanation',
+    ],
+    requiredInteractions: ['viewProtectedDetail'],
+    requiredStates: ['authorized', 'masked'],
+    evidenceRequirements: [
+      'authorized detail screenshot',
+      'masked detail screenshot',
+    ],
+    fallbackPolicy:
+        'Protected content needs a visible lock treatment, not substituted text.',
+  ),
   'marketplace-browse-listing-detail': LoomTabRendererContract(
     rendererId: 'MarketplaceTabSurface',
     label: 'Marketplace browse, search, listing, detail, custody, and queue',
@@ -1260,6 +1328,8 @@ class LoomExperienceDefinition {
     this.aiSearchAnswers,
     this.audiencePicker,
     this.singleItemPreference,
+    this.statusTimeline,
+    this.protectedDetail,
     this.marketplaceListings,
     this.marketplaceTemplate,
     this.themeOverride,
@@ -1280,6 +1350,8 @@ class LoomExperienceDefinition {
   final List<LoomAiSearchAnswer>? aiSearchAnswers;
   final LoomAudiencePickerSeed? audiencePicker;
   final LoomSingleItemPreferenceSeed? singleItemPreference;
+  final LoomStatusTimelineSeed? statusTimeline;
+  final LoomProtectedDetailSeed? protectedDetail;
   final List<LoomMarketplaceListing>? marketplaceListings;
   final LoomListingStateMachine? marketplaceTemplate;
   final LoomCardTheme? themeOverride;

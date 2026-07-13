@@ -2887,6 +2887,322 @@ class _SingleItemPreferenceEngineStore {
   );
 }
 
+class _StatusTimelineTabSurface extends StatefulWidget {
+  const _StatusTimelineTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  @override
+  State<_StatusTimelineTabSurface> createState() =>
+      _StatusTimelineTabSurfaceState();
+}
+
+class _StatusTimelineTabSurfaceState extends State<_StatusTimelineTabSurface> {
+  static final _stores = <String, _StatusTimelineEngineStore>{};
+  late final _StatusTimelineEngineStore _store;
+  List<LoomStatusTimelineEvent> _events = const [];
+  var _loaded = false;
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _StatusTimelineEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.statusTimeline!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final events = await _store.eventsFor(widget.persona.personaId);
+    if (mounted)
+      setState(() {
+        _events = events;
+        _loaded = true;
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    return Column(
+      key: const ValueKey('status-timeline-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          widget.experience.statusTimeline!.title,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        RepeaterSurface.static(
+          key: const ValueKey('status-timeline-repeater'),
+          items: _events,
+          listShrinkWrap: true,
+          listScrollable: false,
+          itemBuilder: (context, item) {
+            final event = item as LoomStatusTimelineEvent;
+            return _TimelineNode(event: event, drawLine: event != _events.last);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusTimelineEngineStore {
+  _StatusTimelineEngineStore({required this.communityId, required this.seed});
+  static const workflowType = 'tabletop-status-timeline';
+  final String communityId;
+  final LoomStatusTimelineSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+  Future<void> ensureReady() =>
+      _ready ? Future.value() : (_readyFuture ??= _initialize());
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: 'tabletop-member',
+      initialInstanceData: {
+        'timelineId': seed.timelineId,
+        'events': [
+          for (final event in seed.events)
+            {
+              'eventId': event.eventId,
+              'timestamp': event.timestamp.toIso8601String(),
+              'label': event.label,
+            },
+        ],
+      },
+    );
+    _ready = true;
+  }
+
+  Future<List<LoomStatusTimelineEvent>> eventsFor(String personaId) async {
+    final page = await _engine.queryInstances(
+      tabId: 'timeline',
+      personaId: personaId,
+      limit: 10,
+    );
+    final instance = page.items
+        .where((item) => item.workflowType == workflowType)
+        .firstOrNull;
+    final raw = instance?.instanceData['events'] as List? ?? const [];
+    return [
+      for (final item in raw)
+        if (item is Map)
+          if (DateTime.tryParse('${item['timestamp'] ?? ''}')
+              case final timestamp?)
+            LoomStatusTimelineEvent(
+              eventId: '${item['eventId']}',
+              timestamp: timestamp,
+              label: '${item['label']}',
+            ),
+    ]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+  }
+
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'viewing',
+    states: {'viewing': LoomWorkflowState(label: 'Viewing timeline')},
+    transitions: [],
+    renderBindings: [
+      RenderBinding(
+        states: ['viewing'],
+        role: 'any',
+        tabId: 'timeline',
+        cardSurfaceFamily: 'statusTimeline',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'timelineId': InstanceDataField(type: 'string', required: true),
+      'events': InstanceDataField(type: 'list', required: true),
+    },
+  );
+}
+
+class _ProtectedDetailTabSurface extends StatefulWidget {
+  const _ProtectedDetailTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  @override
+  State<_ProtectedDetailTabSurface> createState() =>
+      _ProtectedDetailTabSurfaceState();
+}
+
+class _ProtectedDetailTabSurfaceState
+    extends State<_ProtectedDetailTabSurface> {
+  static final _stores = <String, _ProtectedDetailEngineStore>{};
+  late final _ProtectedDetailEngineStore _store;
+  WorkflowInstance? _detail;
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _ProtectedDetailEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.protectedDetail!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final detail = await _store.load(widget.persona.personaId);
+    if (mounted) setState(() => _detail = detail);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detail = _detail;
+    if (detail == null) return const Center(child: CircularProgressIndicator());
+    final authorized = _store.isAuthorized(detail, widget.persona.personaId);
+    return Column(
+      key: const ValueKey('protected-detail-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          widget.experience.protectedDetail!.title,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        if (authorized)
+          DecoratedBox(
+            key: const ValueKey('protected-detail-full'),
+            decoration: BoxDecoration(
+              color: widget.accent.withValues(alpha: .12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                _store.fullDetailFor(detail),
+                key: const ValueKey('protected-detail-full-text'),
+              ),
+            ),
+          )
+        else
+          DecoratedBox(
+            key: const ValueKey('protected-detail-masked'),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.black26),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    key: ValueKey('protected-detail-lock'),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'This detail is hidden because you are not the owner or an assigned member.',
+                    key: ValueKey('protected-detail-why-hidden'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ProtectedDetailEngineStore {
+  _ProtectedDetailEngineStore({required this.communityId, required this.seed});
+  static const workflowType = 'tabletop-protected-detail';
+  final String communityId;
+  final LoomProtectedDetailSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  Future<void>? _readyFuture;
+  var _ready = false;
+  Future<void> ensureReady() =>
+      _ready ? Future.value() : (_readyFuture ??= _initialize());
+  Future<void> _initialize() async {
+    _engine.registerDefinition(_machine);
+    await _engine.createInstance(
+      workflowType: workflowType,
+      personaId: seed.ownerPersonaId,
+      initialInstanceData: {
+        'detailId': seed.detailId,
+        'owner': seed.ownerPersonaId,
+        'assignedTo': seed.assignedTo,
+        'full': seed.fullDetail,
+      },
+    );
+    _ready = true;
+  }
+
+  Future<WorkflowInstance?> load(String personaId) async {
+    final page = await _engine.queryInstances(
+      tabId: 'details',
+      personaId: personaId,
+      limit: 10,
+    );
+    return page.items
+        .where((item) => item.workflowType == workflowType)
+        .firstOrNull;
+  }
+
+  bool isAuthorized(WorkflowInstance detail, String viewer) =>
+      detail.instanceData['owner'] == viewer ||
+      (detail.instanceData['assignedTo'] as List? ?? const []).contains(viewer);
+  String fullDetailFor(WorkflowInstance detail) =>
+      '${detail.instanceData['full'] ?? ''}';
+  static const _machine = LoomWorkflowStateMachine(
+    workflowType: workflowType,
+    initialState: 'viewing',
+    states: {'viewing': LoomWorkflowState(label: 'Viewing protected detail')},
+    transitions: [],
+    renderBindings: [
+      RenderBinding(
+        states: ['viewing'],
+        role: 'any',
+        tabId: 'details',
+        cardSurfaceFamily: 'protectedDetail',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'detailId': InstanceDataField(type: 'string', required: true),
+      'owner': InstanceDataField(type: 'string', required: true),
+      'assignedTo': InstanceDataField(type: 'list', required: true),
+      'full': InstanceDataField(type: 'text', required: true),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -3040,6 +3356,20 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'SingleItemPreferenceTabSurface':
         return _SingleItemPreferenceTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'StatusTimelineTabSurface':
+        return _StatusTimelineTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'ProtectedDetailTabSurface':
+        return _ProtectedDetailTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,
