@@ -129,4 +129,6 @@ abstract class WorkflowEngineApi {
     Map<String, dynamic>? filter,
     String? groupBy,
   });
+
+  Future<List<WorkflowInstance>> dueNotifications({required DateTime asOf});
 }

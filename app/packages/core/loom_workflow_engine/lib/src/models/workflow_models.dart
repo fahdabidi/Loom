@@ -6,6 +6,7 @@ class WorkflowGuard {
 
   /// A computed-field formula which must evaluate to true.
   final String? formula;
+  final RelatedListGuard? relatedListMembership;
   final List<String>? requiresWorkflowsComplete;
 
   const WorkflowGuard({
@@ -13,6 +14,7 @@ class WorkflowGuard {
     this.actorInList,
     this.instanceDataEquals,
     this.formula,
+    this.relatedListMembership,
     this.requiresWorkflowsComplete,
   });
 
@@ -33,6 +35,9 @@ class WorkflowGuard {
             )
           : null,
       formula: json['formula'] as String?,
+      relatedListMembership: json['relatedInstanceField'] != null
+          ? RelatedListGuard.fromJson(json)
+          : null,
       requiresWorkflowsComplete:
           (json['requiresWorkflowsComplete'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -45,7 +50,22 @@ class WorkflowGuard {
       actorInList == null &&
       instanceDataEquals == null &&
       formula == null &&
+      relatedListMembership == null &&
       (requiresWorkflowsComplete == null || requiresWorkflowsComplete!.isEmpty);
+}
+
+class RelatedListGuard {
+  final String relatedInstanceField;
+  final String relatedListField;
+  const RelatedListGuard({
+    required this.relatedInstanceField,
+    required this.relatedListField,
+  });
+  factory RelatedListGuard.fromJson(Map<String, dynamic> json) =>
+      RelatedListGuard(
+        relatedInstanceField: json['relatedInstanceField'] as String,
+        relatedListField: json['relatedListField'] as String,
+      );
 }
 
 /// Guards that check list membership: whether a persona ID is present or absent

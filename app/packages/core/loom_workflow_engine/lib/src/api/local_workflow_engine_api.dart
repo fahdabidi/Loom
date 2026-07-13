@@ -204,6 +204,36 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   @override
+  Future<List<WorkflowInstance>> dueNotifications({
+    required DateTime asOf,
+  }) async {
+    final rows = await _db.queryInstancesKeyset(
+      communityId: _communityId,
+      limit: 1 << 30,
+      sortKey: 'dueAt',
+    );
+    final due = <WorkflowInstance>[];
+    for (final row in rows) {
+      final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+      final rawDueAt = data['dueAt'];
+      if (rawDueAt is! String) continue;
+      final dueAt = DateTime.tryParse(rawDueAt);
+      if (dueAt == null || dueAt.isAfter(asOf)) continue;
+      final machine = await _getDefinition(row.workflowType);
+      due.add(
+        WorkflowInstance(
+          instanceId: row.instanceId,
+          workflowType: row.workflowType,
+          currentState: row.currentState,
+          instanceData: _withComputedFields(data, machine),
+          createdByPersonaId: row.createdByPersonaId,
+        ),
+      );
+    }
+    return due;
+  }
+
+  @override
   List<LoomWorkflowTransition> availableTransitions({
     required String workflowType,
     required String instanceId,
@@ -289,6 +319,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
           'Transition $transitionId not available from state ${row.currentState}',
         ),
       );
+      if (!await _passesRelatedListGuard(transition.guard, data, personaId)) {
+        throw StateError(
+          'Transition $transitionId is not available for $personaId',
+        );
+      }
 
       final newData = await _applyExtendedEffects(
         transition.effects,
@@ -414,6 +449,22 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
+
+  Future<bool> _passesRelatedListGuard(
+    WorkflowGuard guard,
+    Map<String, dynamic> sourceData,
+    String personaId,
+  ) async {
+    final related = guard.relatedListMembership;
+    if (related == null) return true;
+    final id = sourceData[related.relatedInstanceField];
+    if (id is! String || id.isEmpty) return false;
+    final row = await _db.readInstance(id);
+    if (row == null) return false;
+    final data = jsonDecode(row.instanceData) as Map<String, dynamic>;
+    final members = data[related.relatedListField];
+    return members is Iterable && members.contains(personaId);
+  }
 
   Future<Map<String, dynamic>> _applyExtendedEffects(
     List<WorkflowEffect> effects, {
@@ -648,6 +699,11 @@ class LocalWorkflowEngineApi implements WorkflowEngineApi {
       };
     }
     if (guard.formula != null) m['formula'] = guard.formula;
+    if (guard.relatedListMembership != null) {
+      m['relatedInstanceField'] =
+          guard.relatedListMembership!.relatedInstanceField;
+      m['relatedListField'] = guard.relatedListMembership!.relatedListField;
+    }
     if (guard.requiresWorkflowsComplete != null &&
         guard.requiresWorkflowsComplete!.isNotEmpty) {
       m['requiresWorkflowsComplete'] = guard.requiresWorkflowsComplete;
