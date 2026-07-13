@@ -303,7 +303,7 @@ proves `applyTransition` throws, then proves it succeeds only after a real `upda
 adds the persona to the related event's `goingPersonaIds` — conclusively proving live re-evaluation.
 
 ### Milestone 1.5 — Calendar month/week grid
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
 - [ ] A real calendar grid (month or week view) replacing `_CalendarAgendaDateStrip`'s chip-only
   behavior; day-cells render via the Repeater (1.3) bound to that day's events.
 - [ ] Widget test: two same-week events land in the correct, distinct day cells (not the same cell,

@@ -114,7 +114,7 @@ opening every phase doc. All milestones below start `[ ]` — nothing in this ef
 | 1 | 1.2 Extended effect ops + read-side aggregate API | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 99/99 tests, commit `72a66e6`; 2 test-coverage gaps found and independently confirmed correct via diagnostic script, carried forward as non-blocking follow-up |
 | 1 | 1.3 Data-bound Repeater primitive | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 9/9 tests, commit `064126d`; first attempt was interrupted by a tool-level glitch and required one resumption |
 | 1 | 1.4 Scheduled notifications + cross-instance eligibility guard | `[x]` **CLOSED 2026-07-12** — independently verified: analyze clean + 101/101 tests, commit `4130384`; known gap deferred to 1.18 (see phase doc) |
-| 1 | 1.5 Calendar month/week grid | `[ ]` Not started |
+| 1 | 1.5 Calendar month/week grid | `[~]` In progress — dispatched to implementation agent 2026-07-12 |
 | 1 | 1.6 Marketplace grid reformalized onto Repeater | `[ ]` Not started |
 | 1 | 1.7 Discussion threads generalized | `[ ]` Not started |
 | 1 | 1.8 Document library real data | `[ ]` Not started |
