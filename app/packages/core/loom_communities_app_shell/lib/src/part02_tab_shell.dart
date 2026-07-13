@@ -3384,6 +3384,390 @@ class _FormEntryEngineStore {
   );
 }
 
+class _TournamentBallotTabSurface extends StatefulWidget {
+  const _TournamentBallotTabSurface({
+    required this.experience,
+    required this.persona,
+    required this.accent,
+    this.modernTheme,
+  });
+  final LoomExperienceDefinition experience;
+  final LoomPersonaDefinition persona;
+  final Color accent;
+  final LoomCardTheme? modernTheme;
+  @override
+  State<_TournamentBallotTabSurface> createState() =>
+      _TournamentBallotTabSurfaceState();
+}
+
+class _TournamentBallotTabSurfaceState
+    extends State<_TournamentBallotTabSurface> {
+  static final _stores = <String, _TournamentBallotEngineStore>{};
+  late final _TournamentBallotEngineStore _store;
+  WorkflowInstance? _ballot;
+  WorkflowInstance? _event;
+  var _loaded = false;
+  var _eligibleToVote = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _store = _stores.putIfAbsent(
+      widget.experience.extensionId,
+      () => _TournamentBallotEngineStore(
+        communityId: widget.experience.extensionId,
+        seed: widget.experience.tournamentBallot!,
+      ),
+    );
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    await _store.ensureReady();
+    final ballot = await _store.currentBallot();
+    final event = await _store.event();
+    var eligible = false;
+    if (ballot != null) {
+      final actions = await _store.engine.availableTransitionsAsync(
+        workflowType: _TournamentBallotEngineStore.ballotWorkflowType,
+        instanceId: ballot.instanceId,
+        currentState: ballot.currentState,
+        instanceData: ballot.instanceData,
+        personaId: widget.persona.personaId,
+      );
+      eligible = actions.any((t) => t.id == 'cast-vote');
+    }
+    if (!mounted) return;
+    setState(() {
+      _ballot = ballot;
+      _event = event;
+      _eligibleToVote = eligible;
+      _loaded = true;
+    });
+  }
+
+  Future<void> _vote(String candidateId) async {
+    final ballot = _ballot;
+    if (ballot == null) return;
+    await _store.castVote(
+      ballot: ballot,
+      personaId: widget.persona.personaId,
+      candidateId: candidateId,
+    );
+    await _load();
+  }
+
+  Future<void> _closeVote() async {
+    final ballot = _ballot;
+    if (ballot == null) return;
+    await _store.closeVote(ballot);
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground =
+        widget.modernTheme?.resolvedHeading ?? _foregroundFor(widget.accent);
+    if (!_loaded) return const Center(child: CircularProgressIndicator());
+    final ballot = _ballot;
+    if (ballot == null) {
+      return const Text(
+        'No ballot available',
+        key: ValueKey('tournament-no-ballot'),
+      );
+    }
+    final candidates = _store.candidatesFor(ballot);
+    final voteCounts = _store.voteCountsFor(ballot);
+    final selectedGame = '${_event?.instanceData['selectedGame'] ?? 'TBD'}';
+    return Column(
+      key: const ValueKey('tournament-ballot-tab-surface'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Selected game: $selectedGame',
+          key: const ValueKey('tournament-selected-game'),
+          style: TextStyle(color: foreground, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 12),
+        RepeaterSurface.static(
+          key: ValueKey('tournament-ballot-repeater-${ballot.instanceId}'),
+          items: candidates,
+          listShrinkWrap: true,
+          listScrollable: false,
+          itemBuilder: (context, item) {
+            final candidate = item as LoomTournamentCandidate;
+            final count = voteCounts[candidate.id] ?? 0;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                key: ValueKey('tournament-candidate-${candidate.id}'),
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${candidate.name}: $count votes',
+                      key: ValueKey(
+                        'tournament-candidate-count-${candidate.id}',
+                      ),
+                      style: TextStyle(color: foreground),
+                    ),
+                  ),
+                  if (_eligibleToVote)
+                    FilledButton(
+                      key: ValueKey('tournament-vote-${candidate.id}'),
+                      onPressed: () => unawaited(_vote(candidate.id)),
+                      child: const Text('Vote'),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: const ValueKey('tournament-close-vote'),
+          onPressed: () => unawaited(_closeVote()),
+          icon: const Icon(Icons.how_to_vote_outlined),
+          label: const Text('Close vote'),
+        ),
+      ],
+    );
+  }
+}
+
+class _TournamentBallotEngineStore {
+  _TournamentBallotEngineStore({required this.communityId, required this.seed});
+  static const eventWorkflowType = 'tournament-event';
+  static const ballotWorkflowType = 'tournament-ballot';
+  final String communityId;
+  final LoomTournamentBallotSeed seed;
+  late final WorkflowDatabase _database = WorkflowDatabase.memory();
+  late final LocalWorkflowEngineApi _engine = LocalWorkflowEngineApi(
+    db: _database,
+    communityId: communityId,
+  );
+  WorkflowEngineApi get engine => _engine;
+  Future<void>? _readyFuture;
+  var _ready = false;
+  late String _eventInstanceId;
+  late String _currentBallotId;
+
+  Future<void> ensureReady() {
+    if (_ready) return Future.value();
+    return _readyFuture ??= _init();
+  }
+
+  Future<void> _init() async {
+    _engine.registerDefinition(_eventMachine);
+    _engine.registerDefinition(_ballotMachine);
+    _eventInstanceId = await _engine.createInstance(
+      workflowType: eventWorkflowType,
+      personaId: 'tabletop-organizer',
+      initialInstanceData: {
+        'goingPersonaIds': seed.goingPersonaIds,
+        'selectedGame': 'TBD',
+      },
+    );
+    _currentBallotId = await _createBallot(seed.candidates);
+    _ready = true;
+  }
+
+  Future<String> _createBallot(List<LoomTournamentCandidate> candidates) =>
+      _engine.createInstance(
+        workflowType: ballotWorkflowType,
+        personaId: 'tabletop-organizer',
+        initialInstanceData: {
+          'eventId': _eventInstanceId,
+          'candidates': [
+            for (final c in candidates)
+              {'id': c.id, 'name': c.name, 'description': c.description},
+          ],
+          'pendingChoice': '',
+          'ballots': <dynamic>[],
+        },
+      );
+
+  Future<List<WorkflowInstance>> _allInstances() async {
+    final page = await _engine.queryInstances(
+      tabId: 'ballot',
+      personaId: 'tabletop-organizer',
+      limit: 1000,
+    );
+    return page.items;
+  }
+
+  Future<WorkflowInstance?> currentBallot() async {
+    await ensureReady();
+    final items = await _allInstances();
+    return items.where((i) => i.instanceId == _currentBallotId).firstOrNull;
+  }
+
+  Future<WorkflowInstance?> event() async {
+    await ensureReady();
+    final items = await _allInstances();
+    return items.where((i) => i.instanceId == _eventInstanceId).firstOrNull;
+  }
+
+  List<LoomTournamentCandidate> candidatesFor(WorkflowInstance ballot) => [
+    for (final entry in ballot.instanceData['candidates'] as List? ?? const [])
+      if (entry is Map)
+        LoomTournamentCandidate(
+          id: '${entry['id']}',
+          name: '${entry['name']}',
+          description: entry['description'] as String?,
+        ),
+  ];
+
+  Map<String, int> voteCountsFor(WorkflowInstance ballot) {
+    final raw = ballot.instanceData['voteCounts'];
+    if (raw is! Map) return const {};
+    return {
+      for (final entry in raw.entries) '${entry.key}': entry.value as int,
+    };
+  }
+
+  Future<void> castVote({
+    required WorkflowInstance ballot,
+    required String personaId,
+    required String candidateId,
+  }) async {
+    await _engine.updateInstanceFields(
+      workflowType: ballotWorkflowType,
+      instanceId: ballot.instanceId,
+      fieldUpdates: {'pendingChoice': candidateId},
+      personaId: personaId,
+    );
+    await _engine.applyTransition(
+      workflowType: ballotWorkflowType,
+      instanceId: ballot.instanceId,
+      transitionId: 'cast-vote',
+      personaId: personaId,
+    );
+  }
+
+  Future<void> closeVote(WorkflowInstance ballot) async {
+    final isTie = ballot.instanceData['isTie'] == true;
+    if (isTie) {
+      final tied = (ballot.instanceData['tiedCandidates'] as List? ?? const [])
+          .map((e) => '$e')
+          .toSet();
+      final runoffCandidates = candidatesFor(
+        ballot,
+      ).where((c) => tied.contains(c.id)).toList(growable: false);
+      _currentBallotId = await _createBallot(runoffCandidates);
+      return;
+    }
+    await _engine.applyTransition(
+      workflowType: ballotWorkflowType,
+      instanceId: ballot.instanceId,
+      transitionId: 'close',
+      personaId: 'tabletop-organizer',
+    );
+  }
+
+  static const _eventMachine = LoomWorkflowStateMachine(
+    workflowType: eventWorkflowType,
+    initialState: 'open',
+    states: {
+      'open': LoomWorkflowState(
+        label: 'Open',
+        editableFields: ['goingPersonaIds', 'selectedGame'],
+      ),
+    },
+    transitions: [],
+    renderBindings: [
+      RenderBinding(
+        states: ['open'],
+        role: 'any',
+        tabId: 'ballot',
+        cardSurfaceFamily: 'votePoll',
+        bindingKind: 'secondary',
+      ),
+    ],
+    instanceDataSchema: {
+      'goingPersonaIds': InstanceDataField(type: 'list'),
+      'selectedGame': InstanceDataField(type: 'string'),
+    },
+  );
+
+  static const _ballotMachine = LoomWorkflowStateMachine(
+    workflowType: ballotWorkflowType,
+    initialState: 'open',
+    states: {
+      'open': LoomWorkflowState(
+        label: 'Open',
+        editableFields: ['pendingChoice', 'ballots'],
+      ),
+      'closed': LoomWorkflowState(label: 'Closed'),
+    },
+    transitions: [
+      LoomWorkflowTransition(
+        id: 'cast-vote',
+        label: 'Cast vote',
+        from: ['open'],
+        to: 'open',
+        guard: WorkflowGuard(
+          relatedListMembership: RelatedListGuard(
+            relatedInstanceField: 'eventId',
+            relatedListField: 'goingPersonaIds',
+          ),
+        ),
+        effects: [
+          WorkflowEffect(
+            op: 'append',
+            key: 'ballots',
+            value: {'personaId': r'$actor', 'choice': '{pendingChoice}'},
+          ),
+        ],
+      ),
+      LoomWorkflowTransition(
+        id: 'close',
+        label: 'Close',
+        from: ['open'],
+        to: 'closed',
+        effects: [
+          WorkflowEffect(
+            op: 'set',
+            key: 'selectedGame',
+            value: '{winner}',
+            relatedInstance: 'eventId',
+          ),
+        ],
+      ),
+    ],
+    renderBindings: [
+      RenderBinding(
+        states: ['open', 'closed'],
+        role: 'any',
+        tabId: 'ballot',
+        cardSurfaceFamily: 'votePoll',
+        bindingKind: 'primary',
+      ),
+    ],
+    instanceDataSchema: {
+      'eventId': InstanceDataField(type: 'string', required: true),
+      'candidates': InstanceDataField(type: 'list', required: true),
+      'pendingChoice': InstanceDataField(type: 'string'),
+      'ballots': InstanceDataField(type: 'list', writableBy: 'formEntry'),
+      'voteCounts': InstanceDataField(
+        type: 'map',
+        formula: 'groupCount(ballots, choice)',
+      ),
+      'winner': InstanceDataField(
+        type: 'string',
+        formula: 'argMaxKey(voteCounts)',
+      ),
+      'tiedCandidates': InstanceDataField(
+        type: 'list',
+        formula: 'topKeys(voteCounts)',
+      ),
+      'isTie': InstanceDataField(
+        type: 'bool',
+        formula: 'size(tiedCandidates) > 1',
+      ),
+    },
+  );
+}
+
 typedef _WorkflowSurfaceBuilder =
     Widget Function(
       LoomWorkflowDefinition workflow,
@@ -3558,6 +3942,13 @@ class _TabNativeRenderer extends StatelessWidget {
         );
       case 'FormEntryTabSurface':
         return _FormEntryTabSurface(
+          experience: experience,
+          persona: persona,
+          accent: accent,
+          modernTheme: modernTheme,
+        );
+      case 'TournamentBallotTabSurface':
+        return _TournamentBallotTabSurface(
           experience: experience,
           persona: persona,
           accent: accent,
