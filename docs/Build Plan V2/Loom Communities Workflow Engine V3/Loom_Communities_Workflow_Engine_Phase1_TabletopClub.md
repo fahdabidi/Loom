@@ -512,6 +512,14 @@ genuine multi-layered bug, not one root cause — each round's fix was verified 
 `v3_milestone_1_7_messages_test.dart` **3/3**; full app-shell suite **16/16**; `flutter analyze` clean
 (`No issues found!`). `dart format` produced zero changes (already correctly formatted).
 
+**Self-caught commit error:** the code commit (`af39e5c`) was created from `git add`-staged content
+that predated the final `find.text()` fix (step 3 above) — the working tree had the fix, but it was
+never re-staged, so `af39e5c` actually contains the broken `find.byKey(...)` version. This was caught
+immediately by re-checking `git show af39e5c:...` against the working tree rather than assuming the
+commit matched what had just been tested, and corrected with a follow-up commit (`49bcbf1`). Re-verified
+**16/16** against the actual `HEAD` state after the fix, not just the working tree, to confirm the
+correction actually took.
+
 **Unrelated environment incident during this milestone, resolved, no data loss:** mid-session the host
 machine's disk filled to 0 bytes free, which triggered a WSL virtual-disk sharing-violation lock
 (resolved via `wsl --shutdown` + waiting for the external lock to clear) and, separately, caused
