@@ -361,7 +361,7 @@ counts, non-blank line counts) before accepting the reformatting as non-destruct
 against the Milestone 1.3-era baseline (9/9). Commits: `68dd0b0`, `052ece2`, `8dcbdd6`.
 
 ### Milestone 1.6 — Marketplace grid reformalized onto Repeater
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-12.
 - [ ] `_MarketplaceBrowseSurface`'s grid rendering reformalized onto the Repeater primitive (regression
   refactor, not a rebuild — existing search/filter behavior must be unchanged).
 - [ ] Existing Marketplace widget tests (b34 etc.) still pass unmodified.
