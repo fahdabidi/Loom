@@ -810,7 +810,14 @@ actually run, not assumed passing from a clean `analyze`. Independently re-ran a
 - [ ] `flutter analyze` clean, full suite green, exact counts cited.
 
 ### Milestone 1.14 — Single-item preference control
-**Status:** `[ ]` Not started.
+**Status:** `[~]` In progress — dispatched to implementation agent 2026-07-13.
+
+**Pre-dispatch investigation (verification agent):** the pattern this replaces is real, in Mosque's
+`mosque-donor-visibility` workflow (`part20_mosque_engine.dart:1149-1258`) — a correctly-modeled 3-state
+mutually-exclusive preference rendered through the generic button-jump fallback instead of a real
+segmented/radio control. Mosque's usage is untouched by this milestone; builds a new Tabletop-Club
+`singleItem`-family surface following the 1.9-1.13 pattern. Kickoff explicitly flags 1.13's
+`editableFields` gap as a checklist item to avoid repeating.
 - [ ] Real segmented button / radio group replacing the generic button-jump card.
 - [ ] Widget test: selecting one option deselects the others; underlying field reflects the single
   chosen value.
