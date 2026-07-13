@@ -1025,6 +1025,34 @@ correctly left the required tests for the verification agent to add.
 - [x] `dart analyze`/`flutter analyze` clean in both packages. Committed: `955268d` (implementation),
   `2a62d0a` (tests).
 
+**Stage 2a — CLOSED 2026-07-13 (ballot engine model only; app-shell UI, tournament event surface,
+notifications, and the live emulator walk remain open).** Two prior Stage 2 dispatches spent their
+entire turn budget on investigation without writing code, correctly validating the design but judging
+the full feature too large to attempt even partially. Narrowed to an engine-only slice, and a genuine
+discovery corrected the plan mid-flight: votes are **not** separate instances — `ballots` is a list field
+on the ballot instance itself (`voteCounts`/`winner`/`tiedCandidates`/`isTie` are formula-computed fields
+over that same field), exactly matching Milestone 1.1's own `groupCount`/tie-detection test precedent,
+which the verification agent found and handed off directly rather than letting the implementation agent
+re-discover it. Also resolved: casting a vote for one of N organizer-authored candidates is a two-call
+sequence (`updateInstanceFields(pendingChoice: ...)` then `applyTransition('cast-vote')`, whose effect
+appends `{personaId: $actor, choice: '{pendingChoice}'}`) — both substitutions are scalar strings, so
+this works within the existing interpolation model without needing N per-candidate transitions or any
+new engine feature.
+- [x] Real `event`/`ballot` workflow fixtures (`v3_milestone_1_18_stage2_ballot_engine_test.dart`,
+  `loom_workflow_engine`): `cast-vote` transition with the `relatedListMembership` guard against the
+  event's `goingPersonaIds`; `close` transition using the existing declarative cross-instance `set`
+  effect to propagate a clear winner to `selectedGame`; a `_BallotStore.closeVote()` orchestration that
+  reads genuinely formula-computed `isTie`/`tiedCandidates`/`winner` (never hand-computed) and, only for
+  the "spawn a new runoff instance" step (which the effect model cannot express declaratively, since
+  interpolation is string-only and can't carry a raw computed `List` into a new instance's fields), calls
+  `createInstance` directly with the tied candidates filtered from the real computed set.
+- [x] All 3 required tests pass: a 3-candidate 2/2/1 tie creates a real runoff ballot instance containing
+  exactly the two tied candidates; a non-going persona's direct `applyTransition('cast-vote')` genuinely
+  throws; a clear winner propagates into the related event's `selectedGame`, confirmed by reading the
+  event instance directly.
+- [x] `dart analyze` clean; full `loom_workflow_engine` suite **105/105** (up from 102). Committed:
+  `af9d9ec`.
+
 - [ ] **Carried forward from Milestone 1.4's known gap**: add a narrow async
   `availableTransitionsAsync`-style variant of the engine API, used specifically by
   `RepeaterSurface`'s per-item action resolution (it is already async-native via its live
